@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تعبئة البيانات | يمن ريتغ</title>
+<script src="js/supabase.js"></script>
+<style>
+body{font-family:sans-serif;background:#060D1A;color:#fff;padding:20px;}
+button{background:#D4AF37;color:#0A1628;padding:15px 30px;border:none;border-radius:8px;font-size:1.1rem;font-weight:bold;cursor:pointer;margin-top:15px;}
+#log{margin-top:20px;background:#0A1628;padding:15px;border-radius:8px;white-space:pre-line;line-height:2;}
+</style>
+</head>
+<body>
+<h1>🌱 تعبئة البيانات الأساسية</h1>
+<p>هذه الصفحة تعبّئ المدن والتصنيفات والأسعار في Supabase</p>
+<button onclick="seed()">▶️ ابدأ التعبئة</button>
+<div id="log">بانتظار البدء...</div>
+<script>
+function log(m){ document.getElementById('log').textContent += '\n' + m; }
+async function seed(){
+    if(!window.sb){ log('❌ Supabase غير متصل - انتظر ثوانٍ وجرّب مجدداً'); return; }
+
+    var r = await sb.from('cities').upsert([
+        {id:'c1',name:'صنعاء'},{id:'c2',name:'عدن'},{id:'c3',name:'تعز'},
+        {id:'c4',name:'إب'},{id:'c5',name:'الحديدة'},{id:'c6',name:'المكلا'}
+    ]);
+    log(r.error ? '❌ مدن: '+r.error.message : '✅ المدن: 6');
+
+    r = await sb.from('categories').upsert([
+        {id:'cat1',name:'تقنية',icon:'fa-laptop-code'},
+        {id:'cat2',name:'مقاولات',icon:'fa-helmet-safety'},
+        {id:'cat3',name:'تجارة',icon:'fa-store'},
+        {id:'cat4',name:'مطاعم',icon:'fa-utensils'},
+        {id:'cat5',name:'فنادق',icon:'fa-hotel'},
+        {id:'cat6',name:'نقل',icon:'fa-truck-fast'}
+    ]);
+    log(r.error ? '❌ تصنيفات: '+r.error.message : '✅ التصنيفات: 6');
+
+    r = await sb.from('exchange_rates').upsert([
+        {id:'r1',name:'الدولار الأمريكي',buy_price:'535',sell_price:'545',city:'صنعاء'},
+        {id:'r2',name:'الريال السعودي',buy_price:'141',sell_price:'144',city:'صنعاء'}
+    ]);
+    log(r.error ? '❌ صرف: '+r.error.message : '✅ أسعار الصرف: 2');
+
+    r = await sb.from('gold_prices').upsert([
+        {id:'g1',name:'ذهب عيار 21',price:'45000',city:'صنعاء'},
+        {id:'g2',name:'ذهب عيار 18',price:'38500',city:'صنعاء'}
+    ]);
+    log(r.error ? '❌ ذهب: '+r.error.message : '✅ الذهب: 2');
+
+    log('🎉 انتهت التعبئة!');
+}
+</script>
+</body>
+</html>

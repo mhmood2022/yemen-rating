@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الشركة | يمن ريتغ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/yemen-rating.css">
+    <style>
+        .dashboard-header { background:var(--bg-card); border-radius:var(--radius-lg); padding:30px; margin-bottom:30px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+        .dashboard-header h1 { color:var(--text-main); font-size:1.5rem; }
+        .dashboard-header p { color:var(--text-muted); font-size:0.9rem; }
+        .dash-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:30px; }
+        .dash-stat { background:var(--bg-card); border-radius:var(--radius-md); padding:22px; border:1px solid var(--border); display:flex; align-items:center; gap:16px; }
+        .dash-stat .icon { width:50px; height:50px; border-radius:var(--radius-sm); background:var(--gold-gradient); display:flex; align-items:center; justify-content:center; font-size:1.3rem; color:var(--navy-800); }
+        .dash-stat .num { font-size:1.5rem; font-weight:900; color:var(--gold-400); }
+        .dash-stat .lbl { color:var(--text-muted); font-size:0.85rem; }
+        .dash-tabs { display:flex; gap:8px; margin-bottom:24px; overflow-x:auto; padding-bottom:8px; }
+        .dash-tab { padding:12px 24px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text-muted); cursor:pointer; transition:var(--transition); white-space:nowrap; font-weight:600; }
+        .dash-tab.active { background:var(--gold-gradient); color:var(--navy-800); border-color:var(--gold-500); }
+        .dash-panel { display:none; }
+        .dash-panel.active { display:block; }
+        .app-item { background:var(--bg-card); border-radius:var(--radius-md); padding:20px; margin-bottom:12px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+        .app-info h4 { color:var(--text-main); margin-bottom:4px; }
+        .app-info p { color:var(--text-muted); font-size:0.85rem; }
+        .app-actions { display:flex; gap:8px; }
+        .status-badge { padding:4px 12px; border-radius:50px; font-size:0.75rem; font-weight:700; }
+        .status-pending { background:rgba(245,158,11,0.15); color:var(--warning); }
+        .status-approved { background:rgba(16,185,129,0.15); color:var(--success); }
+        .status-rejected { background:rgba(239,68,68,0.15); color:var(--danger); }
+        @media (max-width:768px) {
+            .dashboard-header { flex-direction:column; text-align:center; }
+            .dash-stats { grid-template-columns:1fr 1fr; }
+            .app-item { flex-direction:column; align-items:flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الهيدر -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="index.html" class="brand">
+                <div class="brand-mark"><i class="fas fa-star"></i></div>
+                <div class="brand-text">
+                    <strong>YEMEN RATING</strong>
+                    <span>لوحة تحكم الشركة</span>
+                </div>
+            </a>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+                <a href="index.html" class="btn btn-outline btn-sm"><i class="fas fa-globe"></i> الموقع</a>
+                <button class="btn btn-navy btn-sm" onclick="YRD.logout()"><i class="fas fa-right-from-bracket"></i> خروج</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى -->
+    <main class="section" style="min-height:80vh;">
+        <div class="container">
+
+            <!-- رأس اللوحة -->
+            <div class="dashboard-header">
+                <div>
+                    <h1><i class="fas fa-building" style="color:var(--gold-500);"></i> <span id="companyName">لوحة تحكم الشركة</span></h1>
+                    <p>إدارة بيانات شركتك ووظائفك وتقييماتك</p>
+                </div>
+                <button class="btn btn-gold" onclick="YRD.openEditCompany()">
+                    <i class="fas fa-pen"></i> تعديل بيانات الشركة
+                </button>
+            </div>
+
+            <!-- الإحصائيات -->
+            <div class="dash-stats">
+                <div class="dash-stat">
+                    <div class="icon"><i class="fas fa-eye"></i></div>
+                    <div><div class="num" id="statViews">0</div><div class="lbl">مشاهدة</div></div>
+                </div>
+                <div class="dash-stat">
+                    <div class="icon"><i class="fas fa-star"></i></div>
+                    <div><div class="num" id="statRating">0</div><div class="lbl">التقييم</div></div>
+                </div>
+                <div class="dash-stat">
+                    <div class="icon"><i class="fas fa-briefcase"></i></div>
+                    <div><div class="num" id="statJobs">0</div><div class="lbl">وظيفة نشطة</div></div>
+                </div>
+                <div class="dash-stat">
+                    <div class="icon"><i class="fas fa-file-lines"></i></div>
+                    <div><div class="num" id="statApps">0</div><div class="lbl">طلب توظيف</div></div>
+                </div>
+            </div>
+
+            <!-- التبويبات -->
+            <div class="dash-tabs">
+                <button class="dash-tab active" onclick="YRD.switchTab('jobs')"><i class="fas fa-briefcase"></i> الوظائف</button>
+                <button class="dash-tab" onclick="YRD.switchTab('applications')"><i class="fas fa-file-lines"></i> طلبات التوظيف</button>
+                <button class="dash-tab" onclick="YRD.switchTab('reviews')"><i class="fas fa-star"></i> التقييمات</button>
+                <button class="dash-tab" onclick="YRD.switchTab('info')"><i class="fas fa-circle-info"></i> بيانات الشركة</button>
+            </div>
+
+            <!-- لوحة الوظائف -->
+            <div class="dash-panel active" id="panel-jobs">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+                    <h3 style="color:var(--text-main);">الوظائف المنشورة</h3>
+                    <button class="btn btn-gold" onclick="YRD.openAddJob()"><i class="fas fa-plus"></i> إضافة وظيفة</button>
+                </div>
+                <div id="jobsList"></div>
+            </div>
+
+            <!-- لوحة الطلبات -->
+            <div class="dash-panel" id="panel-applications">
+                <h3 style="color:var(--text-main);margin-bottom:20px;">طلبات التوظيف الواردة</h3>
+                <div id="appsList"></div>
+            </div>
+
+            <!-- لوحة التقييمات -->
+            <div class="dash-panel" id="panel-reviews">
+                <h3 style="color:var(--text-main);margin-bottom:20px;">تقييمات العملاء</h3>
+                <div id="reviewsList"></div>
+            </div>
+
+            <!-- لوحة البيانات -->
+            <div class="dash-panel" id="panel-info">
+                <h3 style="color:var(--text-main);margin-bottom:20px;">بيانات الشركة</h3>
+                <div id="companyInfo" style="background:var(--bg-card);border-radius:var(--radius-md);padding:24px;border:1px solid var(--border);"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="overlay" id="overlay"></div>
+    <div id="modalRoot"></div>
+
+    <script src="js/db.js"></script>
+    <script>
+        const YRD = {
+            companyId: null,
+
+            init() {
+                YR_DB.init().then(() => {
+                    this.applyTheme();
+                    this.checkAuth();
+                });
+            },
+
+            applyTheme() {
+                const theme = localStorage.getItem('yr_theme') || 'dark';
+                if (theme === 'light') document.body.classList.add('light-mode');
+                const btn = document.getElementById('themeToggle');
+                if (btn) btn.innerHTML = document.body.classList.contains('light-mode') ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+                if (btn) btn.addEventListener('click', () => {
+                    document.body.classList.toggle('light-mode');
+                    localStorage.setItem('yr_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+                    btn.innerHTML = document.body.classList.contains('light-mode') ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+                });
+            },
+
+            checkAuth() {
+                const session = YR_DB.getSession();
+                if (!session) {
+                    this.showToast('سجل دخولك أولاً', 'error');
+                    setTimeout(() => window.location.href = 'index.html', 1500);
+                    return;
+                }
+                // ابحث عن شركة مرتبطة بالمستخدم
+                const companies = YR_DB.where('companies', 'ownerId', session.userId);
+                if (companies.length > 0) {
+                    this.companyId = companies[0].id;
+                    this.loadDashboard();
+                } else {
+                    // إذا لم تكن لديه شركة، اعرض نموذج إنشاء
+                    this.showCreateCompanyForm();
+                }
+            },
+
+            showCreateCompanyForm() {
+                document.querySelector('.container').innerHTML =
+                    '<div style="max-width:600px;margin:40px auto;background:var(--bg-card);border-radius:var(--radius-lg);padding:30px;border:1px solid var(--border);">' +
+                    '<h2 style="color:var(--gold-400);margin-bottom:20px;"><i class="fas fa-building-circle-plus"></i> أنشئ صفحة شركتك</h2>' +
+                    '<p style="color:var(--text-muted);margin-bottom:24px;">لم يتم ربط شركة بحسابك بعد. أنشئ صفحة شركتك الآن مجاناً.</p>' +
+                    '<form id="createCompanyForm">' +
+                    '<div class="form-group"><label>اسم الشركة <span class="required">*</span></label>' +
+                    '<input type="text" class="form-control" name="name" required></div>' +
+                    '<div class="form-row">' +
+                    '<div class="form-group"><label>التصنيف</label>' +
+                    '<select class="form-control" name="category" id="catSelect"></select></div>' +
+                    '<div class="form-group"><label>المدينة</label>' +
+                    '<select class="form-control" name="city" id="citySelect"></select></div>' +
+                    '</div>' +
+                    '<div class="form-group"><label>وصف الشركة</label>' +
+                    '<textarea class="form-control" name="description"></textarea></div>' +
+                    '<div class="form-group"><label>رقم الهاتف</label>' +
+                    '<input type="tel" class="form-control" name="phone"></div>' +
+                    '<div class="form-group"><label>الخدمات</label>' +
+                    '<textarea class="form-control" name="services" placeholder="اكتب خدماتك مفصولة بفاصلة..."></textarea></div>' +
+                    '<button type="submit" class="btn btn-gold btn-block"><i class="fas fa-plus"></i> إنشاء صفحة الشركة</button>' +
+                    '</form></div>';
+
+                const catSelect = document.getElementById('catSelect');
+                const citySelect = document.getElementById('citySelect');
+                YR_DB.get('categories').forEach(c => catSelect.innerHTML += '<option value="' + c.id + '">' + c.name + '</option>');
+                YR_DB.get('cities').forEach(c => citySelect.innerHTML += '<option value="' + c.id + '">' + c.name + '</option>');
+
+                const self = this;
+                document.getElementById('createCompanyForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const session = YR_DB.getSession();
+                    const fd = new FormData(e.target);
+                    YR_DB.add('companies', {
+                        ownerId: session.userId,
+                        name: fd.get('name'),
+                        category: fd.get('category'),
+                        city: fd.get('city'),
+                        description: fd.get('description'),
+                        phone: fd.get('phone'),
+                        services: fd.get('services'),
+                        verified: false,
+                        package: 'free',
+                        views: 0
+                    }).then(result => {
+                        self.companyId = result.id;
+                        self.showToast('🎉 تم إنشاء صفحة شركتك!', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    });
+                });
+            },
+
+            loadDashboard() {
+                const company = YR_DB.findById('companies', this.companyId);
+                if (!company) return;
+
+                document.getElementById('companyName').textContent = company.name;
+                document.getElementById('statViews').textContent = company.views || 0;
+                document.getElementById('statJobs').textContent = YR_DB.where('jobs', 'companyId', this.companyId).filter(j => j.status === 'active').length;
+
+                const rating = YR_DB.calcRating(this.companyId, 'company');
+                document.getElementById('statRating').textContent = rating.count > 0 ? rating.avg + '/5' : '0';
+
+                const jobIds = YR_DB.where('jobs', 'companyId', this.companyId).map(j => j.id);
+                const apps = YR_DB.get('job_applications').filter(a => jobIds.includes(a.jobId));
+                document.getElementById('statApps').textContent = apps.length;
+
+                this.renderJobs();
+                this.renderApplications();
+                this.renderReviews();
+                this.renderCompanyInfo(company);
+            },
+
+            switchTab(tab) {
+                document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.dash-panel').forEach(p => p.classList.remove('active'));
+                event.target.classList.add('active');
+                document.getElementById('panel-' + tab).classList.add('active');
+            },
+
+            renderJobs() {
+                const list = document.getElementById('jobsList');
+                const jobs = YR_DB.where('jobs', 'companyId', this.companyId);
+                if (jobs.length === 0) {
+                    list.innerHTML = '<div class="empty-state"><i class="fas fa-briefcase"></i><p>لا توجد وظائف - أضف أول وظيفة</p></div>';
+                    return;
+                }
+                list.innerHTML = jobs.map(job =>
+                    '<div class="app-item">' +
+                    '<div class="app-info">' +
+                    '<h4>' + this.esc(job.title) + '</h4>' +
+                    '<p>' + (job.salary || 'راتب غير محدد') + ' • ' + (job.type || 'دوام كامل') + '</p>' +
+                    '</div>' +
+                    '<div class="app-actions">' +
+                    '<span class="status-badge status-' + (job.status === 'active' ? 'approved' : 'rejected') + '">' + (job.status === 'active' ? 'نشطة' : 'مغلقة') + '</span>' +
+                    '<button class="btn btn-sm btn-navy" onclick="YRD.toggleJob(\'' + job.id + '\')"><i class="fas fa-' + (job.status === 'active' ? 'pause' : 'play') + '"></i></button>' +
+                    '<button class="btn btn-sm btn-outline" onclick="YRD.deleteJob(\'' + job.id + '\')"><i class="fas fa-trash"></i></button>' +
+                    '</div></div>'
+                ).join('');
+            },
+
+            renderApplications() {
+                const list = document.getElementById('appsList');
+                const jobIds = YR_DB.where('jobs', 'companyId', this.companyId).map(j => j.id);
+                const apps = YR_DB.get('job_applications').filter(a => jobIds.includes(a.jobId));
+
+                if (apps.length === 0) {
+                    list.innerHTML = '<div class="empty-state"><i class="fas fa-file-lines"></i><p>لا توجد طلبات توظيف بعد</p></div>';
+                    return;
+                }
+
+                list.innerHTML = apps.map(app => {
+                    const job = YR_DB.findById('jobs', app.jobId);
+                    return '<div class="app-item">' +
+                    '<div class="app-info">' +
+                    '<h4>' + this.esc(app.name) + '</h4>' +
+                    '<p>الوظيفة: ' + (job ? this.esc(job.title) : '-') + '</p>' +
+                    '<p><i class="fas fa-phone"></i> ' + this.esc(app.phone) + '</p>' +
+                    (app.cvFileName ? '<p style="color:var(--success);"><i class="fas fa-file-pdf"></i> سيرة ذاتية: ' + this.esc(app.cvFileName) + '</p>' : '') +
+                    (app.message ? '<p style="margin-top:6px;">"' + this.esc(app.message) + '"</p>' : '') +
+                    '</div>' +
+                    '<div class="app-actions">' +
+                    '<span class="status-badge status-' + app.status + '">' + this.statusLabel(app.status) + '</span>' +
+                    (app.status === 'pending' ?
+                        '<button class="btn btn-sm btn-gold" onclick="YRD.updateApp(\'' + app.id + '\',\'approved\')"><i class="fas fa-check"></i></button>' +
+                        '<button class="btn btn-sm btn-outline" onclick="YRD.updateApp(\'' + app.id + '\',\'rejected\')"><i class="fas fa-times"></i></button>' : '') +
+                    '</div></div>';
+                }).join('');
+            },
+
+            renderReviews() {
+                const list = document.getElementById('reviewsList');
+                const reviews = YR_DB.where('reviews', 'entityId', this.companyId);
+                if (reviews.length === 0) {
+                    list.innerHTML = '<div class="empty-state"><i class="fas fa-star"></i><p>لا توجد تقييمات بعد</p></div>';
+                    return;
+                }
+                list.innerHTML = reviews.map(r =>
+                    '<div class="app-item">' +
+                    '<div class="app-info">' +
+                    '<h4>' + this.esc(r.userName) + ' <span style="color:var(--gold-400);">' + '★'.repeat(r.stars) + '</span></h4>' +
+                    '<p>' + this.esc(r.comment || '') + '</p>' +
+                    '<p style="font-size:0.8rem;color:var(--text-muted);">' + this.formatDate(r.createdAt) + '</p>' +
+                    '</div></div>'
+                ).join('');
+            },
+
+            renderCompanyInfo(company) {
+                document.getElementById('companyInfo').innerHTML =
+                    '<ul class="info-list">' +
+                    '<li><i class="fas fa-building"></i><span><strong>الاسم:</strong> ' + this.esc(company.name) + '</span></li>' +
+                    '<li><i class="fas fa-phone"></i><span><strong>الهاتف:</strong> ' + this.esc(company.phone || '-') + '</span></li>' +
+                    '<li><i class="fas fa-location-dot"></i><span><strong>المدينة:</strong> ' + this.esc(this.getCityName(company.city)) + '</span></li>' +
+                    '<li><i class="fas fa-circle-check"></i><span><strong>التوثيق:</strong> ' + (company.verified ? '<span style="color:var(--success);">موثق ✓</span>' : '<span style="color:var(--warning);">غير موثق</span>') + '</span></li>' +
+                    (company.verified ? '' : '<li style="margin-top:12px;"><a href="verification.html" class="btn btn-gold btn-sm"><i class="fas fa-circle-check"></i> اطلب التوثيق الآن</a></li>') +
+                    '</ul>';
+            },
+
+            openAddJob() {
+                const self = this;
+                this.openModal(
+                    '<div class="modal-head"><h3><i class="fas fa-plus"></i> إضافة وظيفة جديدة</h3>' +
+                    '<button class="modal-close" onclick="YRD.closeModal()"><i class="fas fa-times"></i></button></div>' +
+                    '<div class="modal-body"><form id="addJobForm">' +
+                    '<div class="form-group"><label>المسمى الوظيفي <span class="required">*</span></label>' +
+                    '<input type="text" class="form-control" name="title" required></div>' +
+                    '<div class="form-row">' +
+                    '<div class="form-group"><label>الراتب</label>' +
+                    '<input type="text" class="form-control" name="salary" placeholder="$500 - $800"></div>' +
+                    '<div class="form-group"><label>نوع الدوام</label>' +
+                    '<select class="form-control" name="type">' +
+                    '<option value="دوام كامل">دوام كامل</option>' +
+                    '<option value="دوام جزئي">دوام جزئي</option>' +
+                    '<option value="عن بعد">عن بعد</option></select></div>' +
+                    '</div>' +
+                    '<div class="form-group"><label>الخبرة المطلوبة</label>' +
+                    '<input type="text" class="form-control" name="experience" placeholder="2-4 سنوات"></div>' +
+                    '<div class="form-group"><label>وصف الوظيفة</label>' +
+                    '<textarea class="form-control" name="description"></textarea></div>' +
+                    '<div class="form-group"><label>المتطلبات</label>' +
+                    '<textarea class="form-control" name="requirements"></textarea></div>' +
+                    '<button type="submit" class="btn btn-gold btn-block"><i class="fas fa-plus"></i> نشر الوظيفة</button>' +
+                    '</form></div>'
+                );
+
+                document.getElementById('addJobForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const fd = new FormData(e.target);
+                    YR_DB.add('jobs', {
+                        companyId: self.companyId,
+                        title: fd.get('title'),
+                        salary: fd.get('salary'),
+                        type: fd.get('type'),
+                        experience: fd.get('experience'),
+                        description: fd.get('description'),
+                        requirements: fd.get('requirements'),
+                        city: YR_DB.findById('companies', self.companyId).city,
+                        status: 'active'
+                    }).then(() => {
+                        self.closeModal();
+                        self.loadDashboard();
+                        self.showToast('✅ تم نشر الوظيفة!', 'success');
+                    });
+                });
+            },
+
+            toggleJob(jobId) {
+                const job = YR_DB.findById('jobs', jobId);
+                YR_DB.update('jobs', jobId, { status: job.status === 'active' ? 'closed' : 'active' }).then(() => {
+                    this.loadDashboard();
+                    this.showToast(job.status === 'active' ? 'تم إغلاق الوظيفة' : 'تم تفعيل الوظيفة', 'success');
+                });
+            },
+
+            deleteJob(jobId) {
+                if (!confirm('هل أنت متأكد من حذف هذه الوظيفة؟')) return;
+                YR_DB.remove('jobs', jobId).then(() => {
+                    this.loadDashboard();
+                    this.showToast('تم حذف الوظيفة', 'success');
+                });
+            },
+
+            updateApp(appId, status) {
+                YR_DB.update('job_applications', appId, { status: status }).then(() => {
+                    this.loadDashboard();
+                    this.showToast(status === 'approved' ? '✅ تم قبول الطلب' : 'تم رفض الطلب', 'success');
+                });
+            },
+
+            openEditCompany() {
+                const company = YR_DB.findById('companies', this.companyId);
+                const self = this;
+                this.openModal(
+                    '<div class="modal-head"><h3><i class="fas fa-pen"></i> تعديل بيانات الشركة</h3>' +
+                    '<button class="modal-close" onclick="YRD.closeModal()"><i class="fas fa-times"></i></button></div>' +
+                    '<div class="modal-body"><form id="editCompanyForm">' +
+                    '<div class="form-group"><label>اسم الشركة</label>' +
+                    '<input type="text" class="form-control" name="name" value="' + this.esc(company.name) + '" required></div>' +
+                    '<div class="form-group"><label>الوصف</label>' +
+                    '<textarea class="form-control" name="description">' + this.esc(company.description || '') + '</textarea></div>' +
+                    '<div class="form-group"><label>الهاتف</label>' +
+                    '<input type="tel" class="form-control" name="phone" value="' + this.esc(company.phone || '') + '"></div>' +
+                    '<div class="form-group"><label>الخدمات</label>' +
+                    '<textarea class="form-control" name="services">' + this.esc(company.services || '') + '</textarea></div>' +
+                    '<button type="submit" class="btn btn-gold btn-block"><i class="fas fa-save"></i> حفظ التعديلات</button>' +
+                    '</form></div>'
+                );
+
+                document.getElementById('editCompanyForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const fd = new FormData(e.target);
+                    YR_DB.update('companies', self.companyId, {
+                        name: fd.get('name'),
+                        description: fd.get('description'),
+                        phone: fd.get('phone'),
+                        services: fd.get('services')
+                    }).then(() => {
+                        self.closeModal();
+                        self.loadDashboard();
+                        self.showToast('✅ تم حفظ التعديلات', 'success');
+                    });
+                });
+            },
+
+            logout() {
+                YR_DB.clearSession();
+                window.location.href = 'index.html';
+            },
+
+            openModal(html) {
+                document.getElementById('modalRoot').innerHTML = '<div class="modal active">' + html + '</div>';
+                document.getElementById('overlay').classList.add('active');
+            },
+
+            closeModal() {
+                document.getElementById('modalRoot').innerHTML = '';
+                document.getElementById('overlay').classList.remove('active');
+            },
+
+            statusLabel(s) {
+                const labels = { pending: 'معلق', approved: 'مقبول', rejected: 'مرفوض' };
+                return labels[s] || s;
+            },
+
+            getCityName(cityId) {
+                const city = YR_DB.findById('cities', cityId);
+                return city ? city.name : '-';
+            },
+
+            formatDate(d) {
+                if (!d) return '';
+                return new Date(d).toLocaleDateString('ar-YE');
+            },
+
+            esc(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            },
+
+            showToast(msg, type) {
+                type = type || 'info';
+                let container = document.querySelector('.toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.className = 'toast-container';
+                    document.body.appendChild(container);
+                }
+                const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+                const toast = document.createElement('div');
+                toast.className = 'toast ' + type;
+                toast.innerHTML = '<i class="fas ' + (icons[type] || icons.info) + '" style="color:var(--gold-400);"></i><span>' + msg + '</span>';
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => YRD.init());
+    </script>
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملفي المهني | يمن ريتغ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/yemen-rating.css">
+    <style>
+        .profile-builder { max-width:900px; margin:0 auto; padding:30px; }
+        .profile-section { background:var(--bg-card); border-radius:var(--radius-md); padding:28px; margin-bottom:24px; border:1px solid var(--border); }
+        .profile-section h2 { color:var(--text-main); margin-bottom:20px; padding-bottom:12px; border-bottom:2px solid var(--border); display:flex; align-items:center; gap:12px; font-size:1.2rem; }
+        .profile-section h2 i { color:var(--gold-500); }
+        .cv-upload { border:2px dashed var(--gold-500); border-radius:var(--radius-md); padding:40px; text-align:center; cursor:pointer; background:rgba(212,175,55,0.05); transition:var(--transition); }
+        .cv-upload:hover { background:rgba(212,175,55,0.1); transform:translateY(-2px); }
+        .cv-upload i { font-size:3rem; color:var(--gold-500); margin-bottom:12px; display:block; }
+        .cv-upload p { color:var(--text-muted); font-size:0.95rem; }
+        .cv-upload .hint { font-size:0.8rem; color:var(--gold-400); margin-top:8px; }
+        .cv-uploaded { display:flex; align-items:center; gap:16px; background:rgba(16,185,129,0.1); border:1px solid var(--success); border-radius:var(--radius-md); padding:20px; margin-top:16px; }
+        .cv-uploaded i { font-size:2rem; color:var(--success); }
+        .cv-uploaded .info { flex:1; }
+        .cv-uploaded .info h4 { color:var(--text-main); margin-bottom:4px; }
+        .cv-uploaded .info p { color:var(--text-muted); font-size:0.85rem; }
+        .cv-uploaded button { color:var(--danger); background:none; border:none; cursor:pointer; font-size:1.2rem; }
+        .skill-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+        .skill-tag { background:rgba(212,175,55,0.15); color:var(--gold-400); padding:6px 14px; border-radius:50px; font-size:0.85rem; font-weight:600; border:1px solid rgba(212,175,55,0.3); display:flex; align-items:center; gap:6px; }
+        .skill-tag button { background:none; border:none; color:var(--danger); cursor:pointer; font-size:0.8rem; }
+        .skill-input-wrap { display:flex; gap:8px; margin-top:12px; }
+        .skill-input-wrap input { flex:1; }
+        .exp-item { background:var(--input-bg); border-radius:var(--radius-sm); padding:18px; margin-bottom:12px; border:1px solid var(--border); position:relative; }
+        .exp-item .remove-exp { position:absolute; top:12px; left:12px; color:var(--danger); background:none; border:none; cursor:pointer; }
+        .exp-item h4 { color:var(--text-main); margin-bottom:4px; }
+        .exp-item p { color:var(--text-muted); font-size:0.85rem; }
+        .completion-bar { background:var(--border); border-radius:50px; height:12px; overflow:hidden; margin:16px 0; }
+        .completion-fill { height:100%; background:var(--gold-gradient); border-radius:50px; transition:width 0.5s ease; }
+        .completion-text { display:flex; justify-content:space-between; font-size:0.85rem; color:var(--text-muted); }
+        @media (max-width:768px) {
+            .profile-builder { padding:16px; }
+            .profile-section { padding:20px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الهيدر -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="index.html" class="brand">
+                <div class="brand-mark"><i class="fas fa-star"></i></div>
+                <div class="brand-text">
+                    <strong>YEMEN RATING</strong>
+                    <span>يمن ريتغ | منصة الأعمال</span>
+                </div>
+            </a>
+            <nav class="desktop-nav">
+                <ul>
+                    <li><a href="companies.html" class="nav-link"><i class="fas fa-building"></i> الشركات</a></li>
+                    <li><a href="jobs.html" class="nav-link"><i class="fas fa-briefcase"></i> الوظائف</a></li>
+                    <li><a href="banks.html" class="nav-link"><i class="fas fa-landmark"></i> البنوك</a></li>
+                    <li><a href="verification.html" class="nav-link"><i class="fas fa-circle-check"></i> التوثيق</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+                <div id="headerActions"></div>
+                <button type="button" class="nav-toggle" id="navToggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى -->
+    <main class="section" style="min-height:80vh;">
+        <div class="container">
+            <div class="profile-builder">
+
+                <!-- اكتمال الملف -->
+                <div style="background:var(--bg-card);border-radius:var(--radius-md);padding:24px;margin-bottom:24px;border:1px solid var(--border);">
+                    <h2 style="color:var(--text-main);margin-bottom:8px;"><i class="fas fa-chart-pie" style="color:var(--gold-500);"></i> اكتمال ملفك المهني</h2>
+                    <div class="completion-bar"><div class="completion-fill" id="completionFill" style="width:0%"></div></div>
+                    <div class="completion-text">
+                        <span id="completionPercent">0% مكتمل</span>
+                        <span>أكمل ملفك للحصول على فرص أفضل</span>
+                    </div>
+                </div>
+
+                <!-- البيانات الشخصية -->
+                <div class="profile-section">
+                    <h2><i class="fas fa-user"></i> البيانات الشخصية</h2>
+                    <form id="personalForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الاسم الكامل <span class="required">*</span></label>
+                                <input type="text" class="form-control" name="fullName" id="fullName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>رقم الهاتف <span class="required">*</span></label>
+                                <input type="tel" class="form-control" name="phone" id="phone" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>البريد الإلكتروني</label>
+                                <input type="email" class="form-control" name="email" id="email">
+                            </div>
+                            <div class="form-group">
+                                <label>المدينة</label>
+                                <select class="form-control" name="city" id="citySelect"></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>المسمى الوظيفي المطلوب</label>
+                            <input type="text" class="form-control" name="desiredJob" id="desiredJob" placeholder="مثال: محاسب، مبرمج، مسوق...">
+                        </div>
+                        <div class="form-group">
+                            <label>نبذة عنك</label>
+                            <textarea class="form-control" name="bio" id="bio" placeholder="اكتب نبذة مختصرة عن نفسك ومؤهلاتك..."></textarea>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- السيرة الذاتية -->
+                <div class="profile-section">
+                    <h2><i class="fas fa-file-pdf"></i> السيرة الذاتية</h2>
+                    <div class="cv-upload" id="cvUploadArea" onclick="document.getElementById('cvInput').click()">
+                        <i class="fas fa-cloud-arrow-up"></i>
+                        <p>اضغط لرفع سيرتك الذاتية</p>
+                        <p class="hint">PDF أو صورة - الحد الأقصى 5MB</p>
+                        <input type="file" id="cvInput" accept=".pdf,image/*" style="display:none;" onchange="YRP.uploadCV(this)">
+                    </div>
+                    <div id="cvUploadedArea" style="display:none;"></div>
+                </div>
+
+                <!-- المهارات -->
+                <div class="profile-section">
+                    <h2><i class="fas fa-lightbulb"></i> المهارات</h2>
+                    <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:12px;">أضف مهاراتك لتظهر في نتائج المطابقة</p>
+                    <div class="skill-tags" id="skillTags"></div>
+                    <div class="skill-input-wrap">
+                        <input type="text" class="form-control" id="skillInput" placeholder="اكتب مهارة واضغط إضافة...">
+                        <button class="btn btn-gold" onclick="YRP.addSkill()"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+
+                <!-- الخبرات -->
+                <div class="profile-section">
+                    <h2><i class="fas fa-briefcase"></i> الخبرات العملية</h2>
+                    <div id="expList"></div>
+                    <button class="btn btn-outline" onclick="YRP.addExpForm()" style="margin-top:12px;">
+                        <i class="fas fa-plus"></i> إضافة خبرة
+                    </button>
+                </div>
+
+                <!-- المؤهلات -->
+                <div class="profile-section">
+                    <h2><i class="fas fa-graduation-cap"></i> المؤهلات العلمية</h2>
+                    <div id="eduList"></div>
+                    <button class="btn btn-outline" onclick="YRP.addEduForm()" style="margin-top:12px;">
+                        <i class="fas fa-plus"></i> إضافة مؤهل
+                    </button>
+                </div>
+
+                <!-- زر الحفظ -->
+                <button class="btn btn-gold btn-block" onclick="YRP.saveProfile()" style="font-size:1.1rem;padding:16px;">
+                    <i class="fas fa-save"></i> حفظ ملفي المهني
+                </button>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- الفوتر -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2026 YEMEN RATING يمن ريتغ - جميع الحقوق محفوظة</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- القائمة الجانبية -->
+    <nav id="mainNav">
+        <button type="button" class="nav-close-btn" onclick="YRP.closeNav()"><i class="fas fa-times"></i></button>
+        <ul>
+            <li><a href="companies.html"><i class="fas fa-building"></i> الشركات</a></li>
+            <li><a href="jobs.html"><i class="fas fa-briefcase"></i> الوظائف</a></li>
+            <li><a href="banks.html"><i class="fas fa-landmark"></i> البنوك</a></li>
+            <li><a href="verification.html"><i class="fas fa-circle-check" style="color:#fbbf24;"></i> التوثيق</a></li>
+        </ul>
+    </nav>
+
+    <div class="overlay" id="overlay"></div>
+
+    <script src="js/db.js"></script>
+    <script>
+        const YRP = {
+            skills: [],
+            experiences: [],
+            education: [],
+            cvData: null,
+
+            init() {
+                YR_DB.init().then(() => {
+                    this.applyTheme();
+                    this.bindThemeToggle();
+                    this.bindNav();
+                    this.loadCities();
+                    this.loadProfile();
+                    this.bindSkillInput();
+                });
+            },
+
+            applyTheme() {
+                const theme = localStorage.getItem('yr_theme') || 'dark';
+                if (theme === 'light') document.body.classList.add('light-mode');
+                const btn = document.getElementById('themeToggle');
+                if (btn) btn.innerHTML = document.body.classList.contains('light-mode') ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            },
+
+            bindThemeToggle() {
+                const btn = document.getElementById('themeToggle');
+                if (!btn) return;
+                btn.addEventListener('click', () => {
+                    document.body.classList.toggle('light-mode');
+                    localStorage.setItem('yr_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+                    btn.innerHTML = document.body.classList.contains('light-mode') ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+                });
+            },
+
+            closeNav() {
+                document.getElementById('mainNav').classList.remove('open');
+                document.getElementById('overlay').classList.remove('active');
+            },
+
+            bindNav() {
+                const toggle = document.getElementById('navToggle');
+                const overlay = document.getElementById('overlay');
+                if (toggle) toggle.addEventListener('click', () => {
+                    document.getElementById('mainNav').classList.add('open');
+                    overlay.classList.add('active');
+                });
+                if (overlay) overlay.addEventListener('click', () => this.closeNav());
+            },
+
+            loadCities() {
+                const select = document.getElementById('citySelect');
+                select.innerHTML = '<option value="">اختر المدينة</option>';
+                YR_DB.get('cities').forEach(city => {
+                    select.innerHTML += '<option value="' + city.id + '">' + this.esc(city.name) + '</option>';
+                });
+            },
+
+            loadProfile() {
+                const session = YR_DB.getSession();
+                if (!session) {
+                    this.showToast('سجل دخولك أولاً', 'error');
+                    setTimeout(() => window.location.href = 'index.html', 1500);
+                    return;
+                }
+                const profiles = YR_DB.where('candidate_profiles', 'userId', session.userId);
+                if (profiles.length > 0) {
+                    const p = profiles[0];
+                    document.getElementById('fullName').value = p.fullName || '';
+                    document.getElementById('phone').value = p.phone || '';
+                    document.getElementById('email').value = p.email || '';
+                    document.getElementById('citySelect').value = p.city || '';
+                    document.getElementById('desiredJob').value = p.desiredJob || '';
+                    document.getElementById('bio').value = p.bio || '';
+                    this.skills = p.skills || [];
+                    this.experiences = p.experiences || [];
+                    this.education = p.education || [];
+                    this.cvData = p.cvFileName || null;
+                    this.renderSkills();
+                    this.renderExps();
+                    this.renderEdus();
+                    if (this.cvData) this.showCvUploaded(this.cvData);
+                }
+                this.updateCompletion();
+            },
+
+            uploadCV(input) {
+                const file = input.files[0];
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) {
+                    this.showToast('الملف كبير جداً (الحد 5MB)', 'error');
+                    return;
+                }
+                this.cvData = file.name;
+                this.showCvUploaded(file.name);
+                this.updateCompletion();
+                this.showToast('✅ تم رفع السيرة الذاتية', 'success');
+            },
+
+            showCvUploaded(fileName) {
+                document.getElementById('cvUploadArea').style.display = 'none';
+                const area = document.getElementById('cvUploadedArea');
+                area.style.display = 'block';
+                area.innerHTML =
+                    '<div class="cv-uploaded">' +
+                    '<i class="fas fa-file-circle-check"></i>' +
+                    '<div class="info">' +
+                    '<h4>' + this.esc(fileName) + '</h4>' +
+                    '<p>تم رفع السيرة الذاتية بنجاح</p>' +
+                    '</div>' +
+                    '<button onclick="YRP.removeCV()"><i class="fas fa-trash"></i></button>' +
+                    '</div>';
+            },
+
+            removeCV() {
+                this.cvData = null;
+                document.getElementById('cvUploadArea').style.display = 'block';
+                document.getElementById('cvUploadedArea').style.display = 'none';
+                document.getElementById('cvInput').value = '';
+                this.updateCompletion();
+            },
+
+            bindSkillInput() {
+                document.getElementById('skillInput').addEventListener('keyup', e => {
+                    if (e.key === 'Enter') { e.preventDefault(); this.addSkill(); }
+                });
+            },
+
+            addSkill() {
+                const input = document.getElementById('skillInput');
+                const skill = input.value.trim();
+                if (!skill) return;
+                if (this.skills.includes(skill)) {
+                    this.showToast('المهارة موجودة بالفعل', 'error');
+                    return;
+                }
+                this.skills.push(skill);
+                input.value = '';
+                this.renderSkills();
+                this.updateCompletion();
+            },
+
+            removeSkill(index) {
+                this.skills.splice(index, 1);
+                this.renderSkills();
+                this.updateCompletion();
+            },
+
+            renderSkills() {
+                const container = document.getElementById('skillTags');
+                container.innerHTML = this.skills.map((skill, i) =>
+                    '<span class="skill-tag">' + this.esc(skill) +
+                    '<button onclick="YRP.removeSkill(' + i + ')"><i class="fas fa-times"></i></button></span>'
+                ).join('');
+            },
+
+            addExpForm() {
+                const title = prompt('المسمى الوظيفي:');
+                if (!title) return;
+                const company = prompt('اسم الشركة:');
+                const period = prompt('الفترة (مثال: 2020-2023):');
+                const desc = prompt('وصف مختصر للمهام:');
+                this.experiences.push({ title, company, period, desc });
+                this.renderExps();
+                this.updateCompletion();
+            },
+
+            removeExp(index) {
+                this.experiences.splice(index, 1);
+                this.renderExps();
+                this.updateCompletion();
+            },
+
+            renderExps() {
+                const list = document.getElementById('expList');
+                list.innerHTML = this.experiences.map((exp, i) =>
+                    '<div class="exp-item">' +
+                    '<button class="remove-exp" onclick="YRP.removeExp(' + i + ')"><i class="fas fa-trash"></i></button>' +
+                    '<h4>' + this.esc(exp.title) + '</h4>' +
+                    '<p><i class="fas fa-building"></i> ' + this.esc(exp.company || '') + '</p>' +
+                    '<p><i class="fas fa-calendar"></i> ' + this.esc(exp.period || '') + '</p>' +
+                    (exp.desc ? '<p style="margin-top:6px;">' + this.esc(exp.desc) + '</p>' : '') +
+                    '</div>'
+                ).join('');
+            },
+
+            addEduForm() {
+                const degree = prompt('الدرجة العلمية (مثال: بكالوريوس):');
+                if (!degree) return;
+                const field = prompt('التخصص:');
+                const university = prompt('الجامعة/المؤسسة:');
+                const year = prompt('سنة التخرج:');
+                this.education.push({ degree, field, university, year });
+                this.renderEdus();
+                this.updateCompletion();
+            },
+
+            removeEdu(index) {
+                this.education.splice(index, 1);
+                this.renderEdus();
+                this.updateCompletion();
+            },
+
+            renderEdus() {
+                const list = document.getElementById('eduList');
+                list.innerHTML = this.education.map((edu, i) =>
+                    '<div class="exp-item">' +
+                    '<button class="remove-exp" onclick="YRP.removeEdu(' + i + ')"><i class="fas fa-trash"></i></button>' +
+                    '<h4>' + this.esc(edu.degree) + ' - ' + this.esc(edu.field || '') + '</h4>' +
+                    '<p><i class="fas fa-university"></i> ' + this.esc(edu.university || '') + '</p>' +
+                    '<p><i class="fas fa-calendar"></i> ' + this.esc(edu.year || '') + '</p>' +
+                    '</div>'
+                ).join('');
+            },
+
+            updateCompletion() {
+                let score = 0;
+                if (document.getElementById('fullName').value) score += 20;
+                if (document.getElementById('phone').value) score += 10;
+                if (document.getElementById('desiredJob').value) score += 15;
+                if (this.cvData) score += 25;
+                if (this.skills.length > 0) score += 15;
+                if (this.experiences.length > 0) score += 10;
+                if (this.education.length > 0) score += 5;
+
+                document.getElementById('completionFill').style.width = score + '%';
+                document.getElementById('completionPercent').textContent = score + '% مكتمل';
+            },
+
+            saveProfile() {
+                const session = YR_DB.getSession();
+                if (!session) {
+                    this.showToast('سجل دخولك أولاً', 'error');
+                    return;
+                }
+
+                const profileData = {
+                    userId: session.userId,
+                    fullName: document.getElementById('fullName').value,
+                    phone: document.getElementById('phone').value,
+                    email: document.getElementById('email').value,
+                    city: document.getElementById('citySelect').value,
+                    desiredJob: document.getElementById('desiredJob').value,
+                    bio: document.getElementById('bio').value,
+                    skills: this.skills,
+                    experiences: this.experiences,
+                    education: this.education,
+                    cvFileName: this.cvData,
+                    updatedAt: new Date().toISOString()
+                };
+
+                const existing = YR_DB.where('candidate_profiles', 'userId', session.userId);
+                if (existing.length > 0) {
+                    YR_DB.update('candidate_profiles', existing[0].id, profileData).then(() => {
+                        this.showToast('✅ تم حفظ ملفك المهني!', 'success');
+                    });
+                } else {
+                    YR_DB.add('candidate_profiles', profileData).then(() => {
+                        this.showToast('✅ تم إنشاء ملفك المهني!', 'success');
+                    });
+                }
+            },
+
+            esc(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            },
+
+            showToast(msg, type) {
+                type = type || 'info';
+                let container = document.querySelector('.toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.className = 'toast-container';
+                    document.body.appendChild(container);
+                }
+                const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+                const toast = document.createElement('div');
+                toast.className = 'toast ' + type;
+                toast.innerHTML = '<i class="fas ' + (icons[type] || icons.info) + '" style="color:var(--gold-400);"></i><span>' + msg + '</span>';
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => YRP.init());
+    </script>
+</body>
+</html>

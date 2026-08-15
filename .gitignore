@@ -1,0 +1,12 @@
+# ملفات النظام
+.DS_Store
+Thumbs.db
+
+# ملفات مؤقتة
+*.log
+*.tmp
+
+# مجلدات غير ضرورية
+node_modules/
+.env
+.env.local

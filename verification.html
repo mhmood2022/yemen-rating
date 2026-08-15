@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التوثيق | يمن ريتغ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/yemen-rating.css">
+    <style>
+        .verification-form { max-width:700px; margin:0 auto; padding:30px; }
+        .verification-steps { display:flex; justify-content:space-between; margin-bottom:40px; position:relative; }
+        .verification-steps::before { content:''; position:absolute; top:20px; left:0; right:0; height:2px; background:var(--border); z-index:0; }
+        .verification-step { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:8px; }
+        .step-circle { width:40px; height:40px; border-radius:50%; background:var(--bg-card); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-weight:800; color:var(--text-muted); }
+        .verification-step.active .step-circle { background:var(--gold-gradient); border-color:var(--gold-500); color:var(--navy-800); }
+        .verification-step.completed .step-circle { background:var(--success); border-color:var(--success); color:#fff; }
+        .step-label { font-size:0.85rem; color:var(--text-muted); font-weight:600; }
+        .verification-step.active .step-label, .verification-step.completed .step-label { color:var(--text-main); }
+        .doc-upload { border:2px dashed var(--gold-500); border-radius:var(--radius-md); padding:30px; text-align:center; cursor:pointer; background:rgba(212,175,55,0.05); transition:var(--transition); margin-bottom:16px; }
+        .doc-upload:hover { background:rgba(212,175,55,0.1); transform:translateY(-2px); }
+        .doc-upload i { font-size:2.5rem; color:var(--gold-500); margin-bottom:10px; display:block; }
+        .doc-upload p { color:var(--text-muted); font-size:0.9rem; }
+        .doc-list { margin-top:16px; }
+        .doc-item { display:flex; align-items:center; gap:12px; padding:12px; background:var(--bg-card); border-radius:var(--radius-sm); margin-bottom:8px; border:1px solid var(--border); }
+        .doc-item i { color:var(--success); font-size:1.2rem; }
+        .doc-item span { flex:1; color:var(--text-main); font-size:0.9rem; }
+        .doc-item button { color:var(--danger); background:none; border:none; cursor:pointer; font-size:1rem; }
+        .status-timeline { padding:20px 0; }
+        .timeline-item { display:flex; gap:16px; padding:16px 0; position:relative; }
+        .timeline-item::before { content:''; position:absolute; top:50px; right:19px; bottom:-16px; width:2px; background:var(--border); }
+        .timeline-item:last-child::before { display:none; }
+        .timeline-icon { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .timeline-icon.done { background:rgba(16,185,129,0.15); color:var(--success); }
+        .timeline-icon.current { background:rgba(212,175,55,0.15); color:var(--gold-400); }
+        .timeline-icon.waiting { background:var(--bg-card); color:var(--text-muted); }
+        .timeline-content h4 { color:var(--text-main); margin-bottom:4px; }
+        .timeline-content p { color:var(--text-muted); font-size:0.85rem; }
+        @media (max-width:768px) {
+            .verification-steps { flex-direction:column; gap:16px; }
+            .verification-steps::before { display:none; }
+            .verification-step { flex-direction:row; gap:12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الهيدر -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="index.html" class="brand">
+                <div class="brand-mark"><i class="fas fa-star"></i></div>
+                <div class="brand-text">
+                    <strong>YEMEN RATING</strong>
+                    <span>يمن ريتغ | منصة الأعمال</span>
+                </div>
+            </a>
+            <nav class="desktop-nav">
+                <ul>
+                    <li><a href="companies.html" class="nav-link"><i class="fas fa-building"></i> الشركات</a></li>
+                    <li><a href="jobs.html" class="nav-link"><i class="fas fa-briefcase"></i> الوظائف</a></li>
+                    <li><a href="banks.html" class="nav-link"><i class="fas fa-landmark"></i> البنوك</a></li>
+                    <li><a href="verification.html" class="nav-link active gold-link"><i class="fas fa-circle-check"></i> التوثيق</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+                <div id="headerActions"></div>
+                <button type="button" class="nav-toggle" id="navToggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى -->
+    <main class="section" style="min-height:80vh;">
+        <div class="container">
+            <div class="section-head center">
+                <div class="section-titles">
+                    <h2>✓ توثيق شركتك على يمن ريتغ</h2>
+                    <p>احصل على شارة التوثيق وزد ثقة عملائك</p>
+                </div>
+            </div>
+
+            <!-- فوائد التوثيق -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:40px;">
+                <div style="background:var(--bg-card);padding:20px;border-radius:var(--radius-md);text-align:center;border:1px solid var(--border);">
+                    <i class="fas fa-shield-halved" style="font-size:2rem;color:var(--gold-500);margin-bottom:10px;display:block;"></i>
+                    <h4 style="color:var(--text-main);margin-bottom:6px;">مصداقية أعلى</h4>
+                    <p style="color:var(--text-muted);font-size:0.85rem;">شركة موثقة = ثقة أكبر</p>
+                </div>
+                <div style="background:var(--bg-card);padding:20px;border-radius:var(--radius-md);text-align:center;border:1px solid var(--border);">
+                    <i class="fas fa-chart-line" style="font-size:2rem;color:var(--gold-500);margin-bottom:10px;display:block;"></i>
+                    <h4 style="color:var(--text-main);margin-bottom:6px;">ظهور أفضل</h4>
+                    <p style="color:var(--text-muted);font-size:0.85rem;">أولوية في نتائج البحث</p>
+                </div>
+                <div style="background:var(--bg-card);padding:20px;border-radius:var(--radius-md);text-align:center;border:1px solid var(--border);">
+                    <i class="fas fa-star" style="font-size:2rem;color:var(--gold-500);margin-bottom:10px;display:block;"></i>
+                    <h4 style="color:var(--text-main);margin-bottom:6px;">شارة التوثيق</h4>
+                    <p style="color:var(--text-muted);font-size:0.85rem;">✓ تظهر بجانب اسم شركتك</p>
+                </div>
+            </div>
+
+            <!-- خطوات التوثيق -->
+            <div class="verification-steps">
+                <div class="verification-step active" id="step1">
+                    <div class="step-circle">1</div>
+                    <span class="step-label">البيانات</span>
+                </div>
+                <div class="verification-step" id="step2">
+                    <div class="step-circle">2</div>
+                    <span class="step-label">المستندات</span>
+                </div>
+                <div class="verification-step" id="step3">
+                    <div class="step-circle">3</div>
+                    <span class="step-label">المراجعة</span>
+                </div>
+                <div class="verification-step" id="step4">
+                    <div class="step-circle">4</div>
+                    <span class="step-label">التوثيق ✓</span>
+                </div>
+            </div>
+
+            <!-- نموذج التوثيق -->
+            <div class="verification-form" id="verificationForm">
+                <div style="background:var(--bg-card);border-radius:var(--radius-lg);padding:30px;border:1px solid var(--border);">
+                    <h3 style="color:var(--gold-400);margin-bottom:20px;"><i class="fas fa-file-circle-plus"></i> بيانات طلب التوثيق</h3>
+                    <form id="verifyForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>اسم الشركة <span class="required">*</span></label>
+                                <input type="text" class="form-control" name="companyName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>نوع النشاط <span class="required">*</span></label>
+                                <select class="form-control" name="category" id="categorySelect" required></select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>المدينة <span class="required">*</span></label>
+                                <select class="form-control" name="city" id="citySelect" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label>رقم الهاتف <span class="required">*</span></label>
+                                <input type="tel" class="form-control" name="phone" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>البريد الإلكتروني</label>
+                            <input type="email" class="form-control" name="email">
+                        </div>
+                        <div class="form-group">
+                            <label>العنوان التفصيلي</label>
+                            <input type="text" class="form-control" name="address" placeholder="الشارع، الحي، المعلم القريب">
+                        </div>
+                        <div class="form-group">
+                            <label>نبذة عن الشركة</label>
+                            <textarea class="form-control" name="description" placeholder="اكتب نبذة مختصرة عن نشاط شركتك..."></textarea>
+                        </div>
+
+                        <h4 style="color:var(--gold-400);margin:24px 0 16px;"><i class="fas fa-folder-open"></i> المستندات المطلوبة</h4>
+                        <div class="doc-upload" onclick="document.getElementById('docInput').click()">
+                            <i class="fas fa-cloud-arrow-up"></i>
+                            <p>اضغط لرفع المستندات (سجل تجاري، رخصة، هوية المالك)</p>
+                            <p style="font-size:0.8rem;color:var(--gold-400);margin-top:6px;">PDF أو صورة - الحد الأقصى 5MB</p>
+                            <input type="file" id="docInput" accept=".pdf,image/*" multiple style="display:none;" onchange="YRV.addDoc(this)">
+                        </div>
+                        <div class="doc-list" id="docList"></div>
+
+                        <button type="submit" class="btn btn-gold btn-block" style="margin-top:24px;font-size:1.1rem;">
+                            <i class="fas fa-paper-plane"></i> إرسال طلب التوثيق
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- حالة الطلب (مخفية افتراضياً) -->
+            <div id="requestStatus" style="display:none;">
+                <div style="background:var(--bg-card);border-radius:var(--radius-lg);padding:30px;border:1px solid var(--border);max-width:600px;margin:0 auto;">
+                    <div style="text-align:center;margin-bottom:24px;">
+                        <i class="fas fa-hourglass-half" style="font-size:3rem;color:var(--warning);margin-bottom:12px;display:block;"></i>
+                        <h3 style="color:var(--text-main);">طلبك قيد المراجعة</h3>
+                        <p style="color:var(--text-muted);font-size:0.9rem;">سيتم مراجعة طلبك خلال 24-48 ساعة</p>
+                    </div>
+                    <div class="status-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon done"><i class="fas fa-check"></i></div>
+                            <div class="timeline-content">
+                                <h4>تم استلام الطلب</h4>
+                                <p>تم إرسال طلبك بنجاح</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon current"><i class="fas fa-spinner fa-spin"></i></div>
+                            <div class="timeline-content">
+                                <h4>مراجعة المستندات</h4>
+                                <p>فريق الإدارة يراجع مستنداتك</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon waiting"><i class="fas fa-circle-check"></i></div>
+                            <div class="timeline-content">
+                                <h4>التوثيق</h4>
+                                <p>ستحصل على شارة التوثيق ✓</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- الفوتر -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2026 YEMEN RATING يمن ريتغ - جميع الحقوق محفوظة</p>
+                <a href="admin.html" class="footer-admin">لوحة الإدارة</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- القائمة الجانبية -->
+    <nav id="mainNav">
+        <button type="button" class="nav-close-btn" onclick="YRV.closeNav()"><i class="fas fa-times"></i></button>
+        <ul>
+            <li><a href="companies.html"><i class="fas fa-building"></i> الشركات</a></li>
+            <li><a href="jobs.html"><i class="fas fa-briefcase"></i> الوظائف</a></li>
+            <li><a href="banks.html"><i class="fas fa-landmark"></i> البنوك</a></li>
+            <li><a href="verification.html" class="active"><i class="fas fa-circle-check" style="color:#fbbf24;"></i> التوثيق</a></li>
+        </ul>
+    </nav>
+
+    <div class="overlay" id="overlay"></div>
+
+    <script src="js/db.js"></script>
+    <script>
+        const YRV = {
+            docs: [],
+
+            init() {
+                YR_DB.init().then(() => {
+                    this.applyTheme();
+                    this.bindThemeToggle();
+                    this.bindNav();
+                    this.loadSelects();
+                    this.bindForm();
+                    this.checkExistingRequest();
+                });
+            },
+
+            applyTheme() {
+                const theme = localStorage.getItem('yr_theme') || 'dark';
+                if (theme === 'light') document.body.classList.add('light-mode');
+                const btn = document.getElementById('themeToggle');
+                if (btn) btn.innerHTML = document.body.classList.contains('light-mode') ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            },
+
+            bindThemeToggle() {
+                const btn = document.getElementById('themeToggle');
+                if (!btn) return;
+                btn.addEventListener('click', () => {
+                    document.body.classList.toggle('light-mode');
+                    localStorage.setItem('yr_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+                    btn.innerHTML = document.body.classList.contains('light-mode') ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+                });
+            },
+
+            closeNav() {
+                document.getElementById('mainNav').classList.remove('open');
+                document.getElementById('overlay').classList.remove('active');
+            },
+
+            bindNav() {
+                const toggle = document.getElementById('navToggle');
+                const overlay = document.getElementById('overlay');
+                if (toggle) toggle.addEventListener('click', () => {
+                    document.getElementById('mainNav').classList.add('open');
+                    overlay.classList.add('active');
+                });
+                if (overlay) overlay.addEventListener('click', () => this.closeNav());
+            },
+
+            loadSelects() {
+                const catSelect = document.getElementById('categorySelect');
+                const citySelect = document.getElementById('citySelect');
+                catSelect.innerHTML = '<option value="">اختر النشاط</option>';
+                citySelect.innerHTML = '<option value="">اختر المدينة</option>';
+                YR_DB.get('categories').forEach(cat => {
+                    catSelect.innerHTML += '<option value="' + cat.id + '">' + this.esc(cat.name) + '</option>';
+                });
+                YR_DB.get('cities').forEach(city => {
+                    citySelect.innerHTML += '<option value="' + city.id + '">' + this.esc(city.name) + '</option>';
+                });
+            },
+
+            addDoc(input) {
+                const files = input.files;
+                for (let i = 0; i < files.length; i++) {
+                    if (files[i].size > 5 * 1024 * 1024) {
+                        this.showToast('الملف كبير جداً (الحد 5MB)', 'error');
+                        continue;
+                    }
+                    this.docs.push({ name: files[i].name, size: files[i].size });
+                }
+                this.renderDocs();
+                input.value = '';
+            },
+
+            removeDoc(index) {
+                this.docs.splice(index, 1);
+                this.renderDocs();
+            },
+
+            renderDocs() {
+                const list = document.getElementById('docList');
+                if (this.docs.length === 0) { list.innerHTML = ''; return; }
+                list.innerHTML = this.docs.map((doc, i) =>
+                    '<div class="doc-item">' +
+                    '<i class="fas fa-file-circle-check"></i>' +
+                    '<span>' + this.esc(doc.name) + '</span>' +
+                    '<button type="button" onclick="YRV.removeDoc(' + i + ')"><i class="fas fa-trash"></i></button>' +
+                    '</div>'
+                ).join('');
+            },
+
+            bindForm() {
+                const form = document.getElementById('verifyForm');
+                if (!form) return;
+                const self = this;
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const session = YR_DB.getSession();
+                    if (!session) {
+                        self.showToast('سجل دخولك أولاً لتقديم طلب التوثيق', 'error');
+                        return;
+                    }
+                    const fd = new FormData(e.target);
+                    YR_DB.add('verification_requests', {
+                        userId: session.userId,
+                        companyName: fd.get('companyName'),
+                        category: fd.get('category'),
+                        city: fd.get('city'),
+                        phone: fd.get('phone'),
+                        email: fd.get('email'),
+                        address: fd.get('address'),
+                        description: fd.get('description'),
+                        docsCount: self.docs.length,
+                        status: 'pending'
+                    }).then(() => {
+                        document.getElementById('verificationForm').style.display = 'none';
+                        document.getElementById('requestStatus').style.display = 'block';
+                        document.getElementById('step1').classList.add('completed');
+                        document.getElementById('step2').classList.add('completed');
+                        document.getElementById('step3').classList.add('active');
+                        self.showToast('✅ تم إرسال طلب التوثيق بنجاح!', 'success');
+                    });
+                });
+            },
+
+            checkExistingRequest() {
+                const session = YR_DB.getSession();
+                if (!session) return;
+                const requests = YR_DB.where('verification_requests', 'userId', session.userId);
+                if (requests.length > 0) {
+                    const latest = requests[0];
+                    if (latest.status === 'pending') {
+                        document.getElementById('verificationForm').style.display = 'none';
+                        document.getElementById('requestStatus').style.display = 'block';
+                        document.getElementById('step1').classList.add('completed');
+                        document.getElementById('step2').classList.add('completed');
+                        document.getElementById('step3').classList.add('active');
+                    } else if (latest.status === 'approved') {
+                        document.getElementById('verificationForm').style.display = 'none';
+                        document.getElementById('requestStatus').style.display = 'block';
+                        document.querySelector('#requestStatus .status-timeline').innerHTML =
+                            '<div style="text-align:center;padding:20px;">' +
+                            '<i class="fas fa-circle-check" style="font-size:4rem;color:var(--success);margin-bottom:16px;display:block;"></i>' +
+                            '<h3 style="color:var(--success);">🎉 شركتك موثقة!</h3>' +
+                            '<p style="color:var(--text-muted);margin-top:8px;">مبروك! حصلت على شارة التوثيق ✓</p>' +
+                            '</div>';
+                    }
+                }
+            },
+
+            esc(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            },
+
+            showToast(msg, type) {
+                type = type || 'info';
+                let container = document.querySelector('.toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.className = 'toast-container';
+                    document.body.appendChild(container);
+                }
+                const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+                const toast = document.createElement('div');
+                toast.className = 'toast ' + type;
+                toast.innerHTML = '<i class="fas ' + (icons[type] || icons.info) + '" style="color:var(--gold-400);"></i><span>' + msg + '</span>';
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => YRV.init());
+    </script>
+</body>
+</html>

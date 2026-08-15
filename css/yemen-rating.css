@@ -1,0 +1,401 @@
+/* ═══════════════════════════════════════════════════════════
+   YEMEN RATING - الإضافات الخاصة
+   التصنيفات، البنوك، التقييمات، التوثيق
+═══════════════════════════════════════════════════════════ */
+
+/* ═══ التصنيفات ═══ */
+.categories-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:16px;
+    margin:30px 0;
+}
+.category-card {
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    padding:24px 16px;
+    text-align:center;
+    cursor:pointer;
+    transition:var(--transition);
+}
+.category-card:hover {
+    border-color:var(--gold-500);
+    transform:translateY(-4px);
+    box-shadow:var(--shadow-gold);
+}
+.category-card i {
+    font-size:2rem;
+    color:var(--gold-500);
+    margin-bottom:12px;
+    display:block;
+}
+.category-card span {
+    font-weight:700;
+    color:var(--text-main);
+    font-size:0.95rem;
+}
+
+/* ═══ شارة المميز ═══ */
+.featured-badge {
+    position:absolute;
+    top:12px;
+    right:12px;
+    background:var(--gold-gradient);
+    color:var(--navy-800);
+    padding:4px 12px;
+    border-radius:50px;
+    font-size:0.7rem;
+    font-weight:800;
+    z-index:2;
+}
+
+/* ═══ بطاقات البنوك ═══ */
+.banks-showcase {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:20px;
+}
+.bank-card {
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:var(--radius-md);
+    padding:24px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    transition:var(--transition);
+    cursor:pointer;
+}
+.bank-card:hover {
+    border-color:var(--gold-500);
+    transform:translateY(-3px);
+    box-shadow:var(--shadow-gold);
+}
+.bank-logo {
+    width:70px;
+    height:70px;
+    border-radius:var(--radius-md);
+    background:var(--gold-gradient);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.8rem;
+    color:var(--navy-800);
+    flex-shrink:0;
+}
+.bank-info h3 {
+    color:var(--text-main);
+    font-size:1.05rem;
+    margin-bottom:6px;
+}
+.bank-info p {
+    color:var(--text-muted);
+    font-size:0.85rem;
+}
+
+/* ═══ التقييمات المتقدمة ═══ */
+.latest-reviews {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:20px;
+}
+.review-card {
+    background:var(--bg-card);
+    border-radius:var(--radius-md);
+    padding:20px;
+    border:1px solid var(--border);
+    transition:var(--transition);
+}
+.review-card:hover {
+    border-color:var(--gold-500);
+}
+.review-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:12px;
+}
+.review-user {
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+.review-avatar {
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    background:var(--gold-gradient);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--navy-800);
+    font-weight:800;
+    font-size:1.2rem;
+}
+.review-meta {
+    display:flex;
+    flex-direction:column;
+}
+.review-name {
+    font-weight:700;
+    color:var(--text-main);
+}
+.review-date {
+    font-size:0.8rem;
+    color:var(--text-muted);
+}
+.review-rating {
+    display:flex;
+    gap:4px;
+    color:var(--gold-500);
+    font-size:1.1rem;
+}
+.review-comment {
+    color:var(--text-main);
+    line-height:1.8;
+    margin-top:8px;
+}
+
+/* ═══ نجوم التقييم التفاعلية ═══ */
+.rating-stars-input {
+    display:flex;
+    gap:8px;
+    direction:ltr;
+    justify-content:flex-end;
+}
+.rating-star {
+    font-size:2rem;
+    cursor:pointer;
+    color:var(--border);
+    transition:var(--transition);
+}
+.rating-star.active,
+.rating-star:hover {
+    color:var(--gold-500);
+    transform:scale(1.15);
+}
+
+/* ═══ شارات التوثيق ═══ */
+.verification-badge {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 12px;
+    border-radius:50px;
+    font-size:0.75rem;
+    font-weight:700;
+}
+.badge-pending {
+    background:rgba(245,158,11,0.15);
+    color:var(--warning);
+    border:1px solid rgba(245,158,11,0.3);
+}
+.badge-rejected {
+    background:rgba(239,68,68,0.15);
+    color:var(--danger);
+    border:1px solid rgba(239,68,68,0.3);
+}
+
+/* ═══ CTA Section ═══ */
+.cta-section {
+    background:linear-gradient(135deg,var(--navy-800),var(--navy-600));
+    border:2px solid var(--gold-500);
+    border-radius:var(--radius-lg);
+    padding:40px;
+    text-align:center;
+    margin:40px 0;
+}
+.cta-section h2 {
+    color:var(--text-main);
+    font-size:1.8rem;
+    margin-bottom:12px;
+}
+.cta-section p {
+    color:var(--text-muted);
+    margin-bottom:24px;
+}
+
+/* ═══ صفحة الشركات ═══ */
+.filter-bar {
+    display:flex;
+    gap:12px;
+    margin-bottom:24px;
+    flex-wrap:wrap;
+}
+.filter-bar .form-control,
+.filter-bar select {
+    max-width:200px;
+    background:var(--bg-card);
+    color:var(--text-main);
+    border:1px solid var(--border);
+    padding:10px 14px;
+    border-radius:var(--radius-sm);
+}
+
+/* ═══ قائمة جانبية للهاتف ═══ */
+#mainNav {
+    position:fixed;
+    top:0;
+    right:-320px;
+    width:280px;
+    height:100vh;
+    background:var(--navy-900);
+    z-index:2100;
+    overflow-y:auto;
+    transition:right 0.3s ease;
+    box-shadow:-5px 0 25px rgba(0,0,0,0.5);
+    padding:70px 20px 20px;
+}
+#mainNav.open {
+    right:0;
+}
+.nav-close-btn {
+    position:absolute;
+    top:15px;
+    left:15px;
+    width:40px;
+    height:40px;
+    background:var(--navy-600);
+    color:var(--gold-400);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.2rem;
+    cursor:pointer;
+    border:1px solid var(--navy-500);
+}
+#mainNav ul {
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+#mainNav ul a {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 16px;
+    color:#cbd5e1;
+    font-weight:600;
+    border-bottom:1px solid var(--navy-700);
+    transition:var(--transition);
+}
+#mainNav ul a:hover,
+#mainNav ul a.active {
+    color:var(--gold-400);
+    background:rgba(212,175,55,0.08);
+}
+#mainNav ul a i {
+    color:var(--gold-500);
+    width:20px;
+    text-align:center;
+}
+#navMobileActions {
+    margin-top:20px;
+    padding-top:20px;
+    border-top:1px solid var(--navy-700);
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+/* ═══ قائمة سطح المكتب ═══ */
+.desktop-nav { display:none; }
+@media (min-width:901px) {
+    .desktop-nav {
+        display:flex !important;
+        flex:1;
+        justify-content:center;
+        align-items:center;
+    }
+    .desktop-nav ul {
+        display:flex;
+        gap:12px;
+        list-style:none;
+        margin:0;
+        padding:0;
+    }
+    .desktop-nav .nav-link {
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        padding:8px 12px;
+        color:#f1f5f9;
+        font-weight:700;
+        font-size:0.85rem;
+        white-space:nowrap;
+        border-radius:6px;
+    }
+    .desktop-nav .nav-link i { color:#fbbf24; }
+    .desktop-nav .nav-link:hover { background:rgba(255,255,255,0.06); }
+    #mainNav { display:none; }
+    .nav-toggle { display:none; }
+}
+@media (max-width:900px) {
+    .desktop-nav { display:none !important; }
+}
+
+/* ═══ إعلانات ثابتة ═══ */
+.ad-slot-sticky {
+    position:sticky;
+    top:0;
+    z-index:999;
+    background:var(--bg-body);
+    padding:8px 12px;
+}
+.ad-slot-sticky .ad-container img,
+.ad-slot-sticky .ad-container video {
+    max-height:150px;
+}
+
+/* ═══ Responsive للإضافات ═══ */
+@media (max-width:768px) {
+    .categories-grid {
+        grid-template-columns:repeat(3,1fr);
+        gap:10px;
+    }
+    .category-card {
+        padding:16px 10px;
+    }
+    .category-card i {
+        font-size:1.5rem;
+    }
+    .category-card span {
+        font-size:0.8rem;
+    }
+    .banks-showcase {
+        grid-template-columns:1fr;
+    }
+    .latest-reviews {
+        grid-template-columns:1fr;
+    }
+    .cta-section {
+        padding:24px 16px;
+    }
+    .cta-section h2 {
+        font-size:1.4rem;
+    }
+    .filter-bar {
+        flex-direction:column;
+    }
+    .filter-bar .form-control,
+    .filter-bar select {
+        max-width:100%;
+    }
+}
+
+@media (max-width:480px) {
+    .categories-grid {
+        grid-template-columns:repeat(2,1fr);
+    }
+    .bank-card {
+        flex-direction:column;
+        text-align:center;
+    }
+    .review-header {
+        flex-direction:column;
+        align-items:flex-start;
+        gap:10px;
+    }
+}
