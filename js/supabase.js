@@ -73,5 +73,11 @@ const AuthService = {
         return data.session;
     }
 };
+
+// === تهيئة تلقائية عند تحميل الصفحة ===
+document.addEventListener('DOMContentLoaded', async () => {
+    await initSupabase();
+    console.log('🚀 Yemen Rating System Ready');
+});
 ENDOFFILE
 echo "✅ تم إنشاء js/supabase.js"

@@ -1,245 +1,213 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><script src="js/db.js"></script>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="يمن ريتغ YEMEN RATING - منصة الأعمال والتقييم والتوظيف">
-    <meta name="theme-color" content="#0A1628">
-    <title>يمن ريتغ | YEMEN RATING - منصة الأعمال والتقييم والتوظيف</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>يمن ريتغ | المنصة الرسمية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/yemen-rating.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <style>
+        /* تنسيقات سريعة لشريط الأسعار */
+        .market-ticker { background: var(--navy-800); border-bottom: 1px solid var(--gold-500); padding: 10px 0; overflow: hidden; white-space: nowrap; }
+        .ticker-content { display: inline-block; animation: ticker 30s linear infinite; }
+        .ticker-item { display: inline-flex; align-items: center; gap: 8px; margin-left: 30px; color: #fff; font-size: 0.9rem; }
+        .ticker-item span.up { color: var(--success); }
+        .ticker-item span.down { color: var(--danger); }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        
+        .hero { background: linear-gradient(rgba(6,13,26,0.8), rgba(6,13,26,0.9)), url('assets/images/defaults/hero-bg.jpg'); background-size: cover; padding: 80px 0; text-align: center; }
+        .section-title { text-align: center; margin-bottom: 40px; color: var(--gold-400); font-size: 1.8rem; position: relative; }
+        .section-title::after { content: ''; display: block; width: 60px; height: 3px; background: var(--gold-500); margin: 10px auto; }
+    </style>
 </head>
 <body>
 
-    <!-- شريط الأسعار -->
-    <div class="rates-ticker">
-        <div class="ticker-label">
-            <i class="fas fa-chart-line"></i>
-            <span>أسعار الصرف والذهب</span>
-        </div>
-        <div class="ticker-track" id="tickerTrack"></div>
-    </div>
-<script src="js/supabase.js"></script>
-<script src="js/db.js"></script>
     <!-- الهيدر -->
     <header class="site-header">
         <div class="container header-inner">
             <a href="index.html" class="brand">
                 <div class="brand-mark"><i class="fas fa-star"></i></div>
-                <div class="brand-text">
-                    <strong>YEMEN RATING</strong>
-                    <span>يمن ريتغ | منصة الأعمال</span>
-                </div>
+                <div class="brand-text"><strong>YEMEN RATING</strong><span>يمن ريتغ</span></div>
             </a>
             <nav class="desktop-nav">
                 <ul>
-                    <li><a href="companies.html" class="nav-link"><i class="fas fa-building"></i> الشركات</a></li>
-                    <li><a href="jobs.html" class="nav-link"><i class="fas fa-briefcase"></i> الوظائف</a></li>
-                    <li><a href="banks.html" class="nav-link"><i class="fas fa-landmark"></i> البنوك</a></li>
-                    <li><a href="#reviews" class="nav-link"><i class="fas fa-star"></i> التقييمات</a></li>
-                    <li><a href="verification.html" class="nav-link gold-link"><i class="fas fa-circle-check"></i> التوثيق</a></li>
+                    <li><a href="companies.html">الشركات</a></li>
+                    <li><a href="banks.html">البنوك</a></li>
+                    <li><a href="jobs.html">الوظائف</a></li>
+                    <li><a href="verification.html" class="gold-link">التوثيق</a></li>
                 </ul>
             </nav>
             <div class="header-actions">
-                <button class="theme-toggle" id="themeToggle" title="تبديل الوضع"><i class="fas fa-moon"></i></button>
-                <div id="headerActions"></div>
-                <button type="button" class="nav-toggle" id="navToggle" title="القائمة"><i class="fas fa-bars"></i></button>
+                <button class="nav-toggle" id="navToggle"><i class="fas fa-bars"></i></button>
             </div>
         </div>
     </header>
 
-    <!-- إعلان أعلى الصفحة -->
-    <div class="ad-slot ad-slot-sticky" id="adSlotTop"></div>
-
-    <!-- Hero -->
-    <section class="hero">
-        <div class="hero-bg-pattern"></div>
-        <div class="container">
-            <div class="hero-content">
-                <div class="hero-badge">
-                    <i class="fas fa-star"></i>
-                    <span>المنصة الأولى للتقييم والتوظيف في اليمن</span>
-                </div>
-                <h1 class="hero-title">يمن <span class="gold-text">ريتغ</span></h1>
-                <p class="hero-subtitle">YEMEN RATING</p>
-                <p class="hero-desc">اكتشف الشركات والفرص في اليمن - تقييمات حقيقية، وظائف موثقة، وبنوك معتمدة في مكان واحد</p>
-
-                <div class="hero-search">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="globalSearch" placeholder="ابحث عن شركة، وظيفة، بنك...">
-                        <button class="btn btn-gold" id="searchBtn">بحث</button>
-                    </div>
-                </div>
-
-                <div class="hero-stats" id="heroStats"></div>
-            </div>
+    <!-- شريط الأسعار (ديناميكي) -->
+    <div class="market-ticker">
+        <div class="ticker-content" id="marketTicker">
+            <!-- سيتم ملؤه بالجافاسكربت -->
+            <span class="ticker-item">جاري تحميل الأسعار...</span>
         </div>
-        <div class="hero-wave">
-            <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
-                <path fill="var(--bg-section)" d="M0,60 C360,100 1080,20 1440,60 L1440,100 L0,100 Z"></path>
-            </svg>
+    </div>
+
+    <!-- القسم الرئيسي -->
+    <section class="hero">
+        <div class="container">
+            <h1 style="color: var(--gold-400); font-size: 2.5rem; margin-bottom: 20px;">اكتشف أفضل الشركات في اليمن</h1>
+            <p style="color: #ccc; margin-bottom: 30px;">دليلك الموثوق للتقييمات، الوظائف، والخدمات المالية</p>
+            <div class="hero-search" style="max-width: 600px; margin: 0 auto; display: flex; gap: 10px;">
+                <input type="text" id="mainSearch" placeholder="ابحث عن شركة، بنك، أو وظيفة..." style="flex: 1; padding: 15px; border-radius: 8px; border: none;">
+                <button class="btn btn-gold" onclick="window.location.href='companies.html?q='+document.getElementById('mainSearch').value">بحث</button>
+            </div>
         </div>
     </section>
 
-    <main class="main-content">
-
-        <!-- التصنيفات -->
-        <section class="section" id="categories">
-            <div class="container">
-                <div class="section-head center">
-                    <div class="section-titles">
-                        <h2>التصنيفات</h2>
-                        <p>استكشف حسب النشاط</p>
-                    </div>
-                </div>
-                <div class="categories-grid" id="categoriesGrid"></div>
+    <!-- التصنيفات -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">التصنيفات</h2>
+            <div class="categories-grid" id="categoriesGrid">
+                <!-- سيتم ملؤه بالجافاسكربت -->
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- إعلان وسط -->
-        <div class="ad-slot" id="adSlotMiddle1"></div>
-
-        <!-- الشركات المميزة -->
-        <section class="section section-alt" id="companies">
-            <div class="container">
-                <div class="section-head">
-                    <div class="section-icon"><i class="fas fa-crown"></i></div>
-                    <div class="section-titles">
-                        <h2>⭐ شركات مميزة</h2>
-                        <p>شركات موثقة وحاصلة على تقييمات عالية</p>
-                    </div>
-                </div>
-                <div class="cards-grid" id="featuredCompanies"></div>
+    <!-- الشركات المميزة -->
+    <section class="section" style="background: var(--bg-section);">
+        <div class="container">
+            <h2 class="section-title">⭐ شركات مميزة</h2>
+            <div class="cards-grid" id="featuredCompanies">
+                <!-- سيتم ملؤه بالجافاسكربت -->
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- أحدث الوظائف -->
-        <section class="section" id="jobs">
-            <div class="container">
-                <div class="section-head">
-                    <div class="section-icon"><i class="fas fa-briefcase"></i></div>
-                    <div class="section-titles">
-                        <h2>💼 أحدث الوظائف</h2>
-                        <p>فرص عمل جديدة يومياً</p>
-                    </div>
-                </div>
-                <div class="jobs-list" id="jobsList"></div>
+    <!-- البنوك -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">🏦 البنوك والمؤسسات</h2>
+            <div class="cards-grid" id="latestBanks">
+                <!-- سيتم ملؤه بالجافاسكربت -->
             </div>
-        </section>
-
-        <!-- إعلان وسط 2 -->
-        <div class="ad-slot" id="adSlotMiddle2"></div>
-
-        <!-- البنوك والمؤسسات -->
-        <section class="section section-dark" id="banks">
-            <div class="container">
-                <div class="section-head">
-                    <div class="section-icon gold"><i class="fas fa-landmark"></i></div>
-                    <div class="section-titles">
-                        <h2>🏦 البنوك والمؤسسات المالية</h2>
-                        <p>بنوك معتمدة ومحافظ إلكترونية</p>
-                    </div>
-                </div>
-                <div class="banks-showcase" id="banksGrid"></div>
-            </div>
-        </section>
-
-        <!-- آخر التقييمات -->
-        <section class="section section-alt" id="reviews">
-            <div class="container">
-                <div class="section-head">
-                    <div class="section-icon"><i class="fas fa-star"></i></div>
-                    <div class="section-titles">
-                        <h2>⭐ آخر التقييمات</h2>
-                        <p>آراء حقيقية من مستخدمين حقيقيين</p>
-                    </div>
-                </div>
-                <div class="latest-reviews" id="latestReviews"></div>
-            </div>
-        </section>
-
-        <!-- CTA أضف شركتك -->
-        <section class="section">
-            <div class="container">
-                <div class="cta-section">
-                    <h2>➕ أضف شركتك إلى يمن ريتغ</h2>
-                    <p>انضم إلى أكبر دليل أعمال في اليمن واحصل على تقييمات عملائك</p>
-                    <button class="btn btn-gold" onclick="YR.openAddCompany()">
-                        <i class="fas fa-plus"></i> سجل شركتك الآن - مجاناً
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- إعلان سفلي -->
-        <div class="ad-slot" id="adSlotBottom"></div>
-
-    </main>
+        </div>
+    </section>
 
     <!-- الفوتر -->
     <footer class="site-footer">
         <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col footer-about">
-                    <a href="index.html" class="brand footer-brand">
-                        <div class="brand-mark"><i class="fas fa-star"></i></div>
-                        <div class="brand-text">
-                            <strong>YEMEN RATING</strong>
-                            <span>يمن ريتغ</span>
-                        </div>
-                    </a>
-                    <p>منصة الأعمال والتقييم والتوظيف - منظومة رقمية متكاملة تجمع الاقتصاد اليمني في مكان واحد</p>
-                </div>
-                <div class="footer-col">
-                    <h4>الأقسام</h4>
-                    <ul>
-                        <li><a href="companies.html">الشركات</a></li>
-                        <li><a href="banks.html">البنوك</a></li>
-                        <li><a href="jobs.html">الوظائف</a></li>
-                        <li><a href="#reviews">التقييمات</a></li>
-                        <li><a href="verification.html">طلب التوثيق</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>تواصل معنا</h4>
-                    <ul class="footer-contact">
-                        <li><i class="fas fa-location-dot"></i><span>صنعاء - اليمن</span></li>
-                        <li><i class="fas fa-envelope"></i><span>info@yemenrating.ye</span></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>© 2026 YEMEN RATING يمن ريتغ - جميع الحقوق محفوظة</p>
-                <a href="admin.html" class="footer-admin">لوحة الإدارة</a>
-            </div>
+            <p>&copy; 2026 يمن ريتغ - جميع الحقوق محفوظة</p>
         </div>
     </footer>
 
-    <!-- القائمة الجانبية للهاتف -->
+    <!-- القائمة الجانبية -->
     <nav id="mainNav">
-        <button type="button" class="nav-close-btn" onclick="YR.closeNav()"><i class="fas fa-times"></i></button>
+        <button class="nav-close-btn" onclick="document.getElementById('mainNav').classList.remove('open')"><i class="fas fa-times"></i></button>
         <ul>
-            <li><a href="companies.html"><i class="fas fa-building"></i> الشركات</a></li>
-            <li><a href="jobs.html"><i class="fas fa-briefcase"></i> الوظائف</a></li>
-            <li><a href="banks.html"><i class="fas fa-landmark"></i> البنوك</a></li>
-            <li><a href="#reviews"><i class="fas fa-star"></i> التقييمات</a></li>
-            <li><a href="verification.html"><i class="fas fa-circle-check" style="color:#fbbf24;"></i> التوثيق</a></li>
+            <li><a href="index.html">الرئيسية</a></li>
+            <li><a href="companies.html">الشركات</a></li>
+            <li><a href="banks.html">البنوك</a></li>
+            <li><a href="jobs.html">الوظائف</a></li>
+            <li><a href="admin.html">لوحة التحكم</a></li>
         </ul>
-        <div id="navMobileActions"></div>
     </nav>
 
-    <div class="overlay" id="overlay"></div>
-    <div id="modalRoot"></div>
-    <div class="profile-page hidden" id="profilePage">
-        <div class="container" id="profileContent"></div>
-    </div>
-    <button class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></button>
+    <!-- السكربتات -->
+    <script src="js/supabase.js"></script>
+    <script>
+        // === منطق الصفحة الرئيسية ===
+        
+        // 1. قائمة التنقل
+        document.getElementById('navToggle').addEventListener('click', () => {
+            document.getElementById('mainNav').classList.add('open');
+        });
 
-    
-    <script src="js/main.js"></script>
+        // 2. دالة جلب البيانات وعرضها
+        async function loadHomePageData() {
+            try {
+                // التأكد من الاتصال
+                if (!sb) await initSupabase();
+                if (!sb) throw new Error("فشل الاتصال بقاعدة البيانات");
+
+                // أ. جلب الأسعار (شريطTicker)
+                const { data: rates } = await sb.from('exchange_rates').select('*').limit(5);
+                const { data: gold } = await sb.from('gold_prices').select('*').limit(3);
+                
+                let tickerHTML = '';
+                if (rates) {
+                    rates.forEach(r => {
+                        tickerHTML += `<span class="ticker-item"><i class="fas fa-dollar-sign"></i> ${r.currency} (${r.city}): شراء ${r.buy_price} | بيع ${r.sell_price}</span>`;
+                    });
+                }
+                if (gold) {
+                    gold.forEach(g => {
+                        tickerHTML += `<span class="ticker-item"><i class="fas fa-gem"></i> ذهب ${g.karat} (${g.city}): ${g.price}</span>`;
+                    });
+                }
+                if (tickerHTML) document.getElementById('marketTicker').innerHTML = tickerHTML;
+
+                // ب. جلب التصنيفات
+                const { data: cats } = await sb.from('categories').select('*');
+                if (cats) {
+                    document.getElementById('categoriesGrid').innerHTML = cats.map(c => `
+                        <a href="companies.html?cat=${c.id}" class="category-card">
+                            <div class="category-icon"><i class="fas ${c.icon || 'fa-tag'}"></i></div>
+                            <h3>${c.name}</h3>
+                        </a>
+                    `).join('');
+                }
+
+                // ج. جلب الشركات المميزة (ACTIVE فقط)
+                const { data: companies } = await sb.from('companies').select('*').eq('status', 'ACTIVE').limit(4);
+                if (companies && companies.length > 0) {
+                    document.getElementById('featuredCompanies').innerHTML = companies.map(c => `
+                        <div class="company-card">
+                            <div class="company-logo">
+                                ${c.logo_url ? `<img src="${c.logo_url}">` : '<i class="fas fa-building"></i>'}
+                            </div>
+                            <div class="company-info">
+                                <h3>${c.name}</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> ${c.city_id || 'اليمن'}</p>
+                                ${c.is_verified ? '<span class="badge badge-verified"><i class="fas fa-check-circle"></i> موثق</span>' : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('featuredCompanies').innerHTML = '<p style="text-align:center; width:100%; color:#777;">لا توجد شركات مضافة بعد</p>';
+                }
+
+                // د. جلب البنوك
+                const { data: banks } = await sb.from('banks').select('*').eq('status', 'ACTIVE').limit(4);
+                if (banks && banks.length > 0) {
+                    document.getElementById('latestBanks').innerHTML = banks.map(b => `
+                        <div class="company-card">
+                            <div class="company-logo">
+                                ${b.logo_url ? `<img src="${b.logo_url}">` : '<i class="fas fa-landmark"></i>'}
+                            </div>
+                            <div class="company-info">
+                                <h3>${b.name}</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> ${b.city_id || 'اليمن'}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('latestBanks').innerHTML = '<p style="text-align:center; width:100%; color:#777;">لا توجد بنوك مضافة بعد</p>';
+                }
+
+            } catch (error) {
+                console.error("Error loading home data:", error);
+                // لا نوقف الصفحة، فقط نطبع الخطأ في الكونسول
+            }
+        }
+
+        // تشغيل التحميل عند بدء الصفحة
+        // ملاحظة: initSupabase يتم استدعاؤها أيضاً في supabase.js، لكن نعيد التحقق هنا للأمان
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(loadHomePageData, 500); // تأخير بسيط لضمان جاهزية الاتصال
+        });
+    </script>
 </body>
 </html>
