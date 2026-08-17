@@ -4,23 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>يمن ريتغ | المنصة الرسمية</title>
+    
+    <!-- الخطوط -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- الأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+    
+    <!-- ملفات التنسيق -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/yemen-rating.css">
     <link rel="stylesheet" href="css/nav.css">
+    
     <style>
-        /* تنسيقات سريعة لشريط الأسعار */
-        .market-ticker { background: var(--navy-800); border-bottom: 1px solid var(--gold-500); padding: 10px 0; overflow: hidden; white-space: nowrap; }
+        /* تنسيقات شريط الأسعار */
+        .market-ticker { background: var(--navy-800, #0d1b2a); border-bottom: 1px solid var(--gold-500, #d4af37); padding: 10px 0; overflow: hidden; white-space: nowrap; }
         .ticker-content { display: inline-block; animation: ticker 30s linear infinite; }
         .ticker-item { display: inline-flex; align-items: center; gap: 8px; margin-left: 30px; color: #fff; font-size: 0.9rem; }
-        .ticker-item span.up { color: var(--success); }
-        .ticker-item span.down { color: var(--danger); }
+        .ticker-item span.up { color: var(--success, #28a745); }
+        .ticker-item span.down { color: var(--danger, #dc3545); }
         @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         
         .hero { background: linear-gradient(rgba(6,13,26,0.8), rgba(6,13,26,0.9)), url('assets/images/defaults/hero-bg.jpg'); background-size: cover; padding: 80px 0; text-align: center; }
-        .section-title { text-align: center; margin-bottom: 40px; color: var(--gold-400); font-size: 1.8rem; position: relative; }
-        .section-title::after { content: ''; display: block; width: 60px; height: 3px; background: var(--gold-500); margin: 10px auto; }
+        .section-title { text-align: center; margin-bottom: 40px; color: var(--gold-400, #fbbf24); font-size: 1.8rem; position: relative; }
+        .section-title::after { content: ''; display: block; width: 60px; height: 3px; background: var(--gold-500, #d4af37); margin: 10px auto; }
     </style>
 </head>
 <body>
@@ -49,19 +59,18 @@
     <!-- شريط الأسعار (ديناميكي) -->
     <div class="market-ticker">
         <div class="ticker-content" id="marketTicker">
-            <!-- سيتم ملؤه بالجافاسكربت -->
-            <span class="ticker-item">جاري تحميل الأسعار...</span>
+            <span class="ticker-item"><i class="fas fa-info-circle"></i> أهلاً بكم في منصة يمن ريتغ - دليلك للخدمات والتقييمات</span>
         </div>
     </div>
 
     <!-- القسم الرئيسي -->
     <section class="hero">
         <div class="container">
-            <h1 style="color: var(--gold-400); font-size: 2.5rem; margin-bottom: 20px;">اكتشف أفضل الشركات في اليمن</h1>
+            <h1 style="color: var(--gold-400, #fbbf24); font-size: 2.5rem; margin-bottom: 20px;">اكتشف أفضل الشركات في اليمن</h1>
             <p style="color: #ccc; margin-bottom: 30px;">دليلك الموثوق للتقييمات، الوظائف، والخدمات المالية</p>
             <div class="hero-search" style="max-width: 600px; margin: 0 auto; display: flex; gap: 10px;">
-                <input type="text" id="mainSearch" placeholder="ابحث عن شركة، بنك، أو وظيفة..." style="flex: 1; padding: 15px; border-radius: 8px; border: none;">
-                <button class="btn btn-gold" onclick="window.location.href='companies.html?q='+document.getElementById('mainSearch').value">بحث</button>
+                <input type="text" id="mainSearch" placeholder="ابحث عن شركة، بنك، أو خدمة..." style="flex: 1; padding: 15px; border-radius: 8px; border: none;">
+                <button class="btn btn-gold" onclick="window.location.href='companies.html?q='+encodeURIComponent(document.getElementById('mainSearch').value)">بحث</button>
             </div>
         </div>
     </section>
@@ -71,27 +80,17 @@
         <div class="container">
             <h2 class="section-title">التصنيفات</h2>
             <div class="categories-grid" id="categoriesGrid">
-                <!-- سيتم ملؤه بالجافاسكربت -->
+                <p style="text-align:center; width:100%; color:#777;">جاري تحميل التصنيفات...</p>
             </div>
         </div>
     </section>
 
-    <!-- الشركات المميزة -->
-    <section class="section" style="background: var(--bg-section);">
+    <!-- المنشآت والشركات المميزة -->
+    <section class="section" style="background: var(--bg-section, #0f172a);">
         <div class="container">
-            <h2 class="section-title">⭐ شركات مميزة</h2>
+            <h2 class="section-title">⭐ المنشآت والشركات</h2>
             <div class="cards-grid" id="featuredCompanies">
-                <!-- سيتم ملؤه بالجافاسكربت -->
-            </div>
-        </div>
-    </section>
-
-    <!-- البنوك -->
-    <section class="section">
-        <div class="container">
-            <h2 class="section-title">🏦 البنوك والمؤسسات</h2>
-            <div class="cards-grid" id="latestBanks">
-                <!-- سيتم ملؤه بالجافاسكربت -->
+                <p style="text-align:center; width:100%; color:#777;">جاري تحميل البيانات...</p>
             </div>
         </div>
     </section>
@@ -120,93 +119,66 @@
     <script>
         // === منطق الصفحة الرئيسية ===
         
-        // 1. قائمة التنقل
+        // 1. فتح وإغلاق القائمة الجانبية
         document.getElementById('navToggle').addEventListener('click', () => {
             document.getElementById('mainNav').classList.add('open');
         });
 
-        // 2. دالة جلب البيانات وعرضها
+        // 2. دالة جلب البيانات من Supabase وعرضها
         async function loadHomePageData() {
             try {
-                // التأكد من الاتصال
-                if (!sb) await initSupabase();
-                if (!sb) throw new Error("فشل الاتصال بقاعدة البيانات");
-
-                // أ. جلب الأسعار (شريطTicker)
-                const { data: rates } = await sb.from('exchange_rates').select('*').limit(5);
-                const { data: gold } = await sb.from('gold_prices').select('*').limit(3);
-                
-                let tickerHTML = '';
-                if (rates) {
-                    rates.forEach(r => {
-                        tickerHTML += `<span class="ticker-item"><i class="fas fa-dollar-sign"></i> ${r.currency} (${r.city}): شراء ${r.buy_price} | بيع ${r.sell_price}</span>`;
-                    });
+                // التأكد من تهيئة supabase
+                if (typeof initSupabase === 'function' && !window.sb) {
+                    await initSupabase();
                 }
-                if (gold) {
-                    gold.forEach(g => {
-                        tickerHTML += `<span class="ticker-item"><i class="fas fa-gem"></i> ذهب ${g.karat} (${g.city}): ${g.price}</span>`;
-                    });
-                }
-                if (tickerHTML) document.getElementById('marketTicker').innerHTML = tickerHTML;
 
-                // ب. جلب التصنيفات
-                const { data: cats } = await sb.from('categories').select('*');
-                if (cats) {
+                const client = window.sb;
+                if (!client) {
+                    console.warn("لم يتم الاتصال بـ Supabase بعد، تأكد من إعدادات js/supabase.js");
+                    return;
+                }
+
+                // أ. جلب التصنيفات من جدول (categories)
+                const { data: cats, error: catErr } = await client.from('categories').select('*');
+                if (cats && cats.length > 0) {
                     document.getElementById('categoriesGrid').innerHTML = cats.map(c => `
                         <a href="companies.html?cat=${c.id}" class="category-card">
                             <div class="category-icon"><i class="fas ${c.icon || 'fa-tag'}"></i></div>
                             <h3>${c.name}</h3>
                         </a>
                     `).join('');
+                } else {
+                    document.getElementById('categoriesGrid').innerHTML = '<p style="text-align:center; width:100%; color:#777;">لا توجد تصنيفات مضافة بعد</p>';
                 }
 
-                // ج. جلب الشركات المميزة (ACTIVE فقط)
-                const { data: companies } = await sb.from('companies').select('*').eq('status', 'ACTIVE').limit(4);
-                if (companies && companies.length > 0) {
-                    document.getElementById('featuredCompanies').innerHTML = companies.map(c => `
-                        <div class="company-card">
-                            <div class="company-logo">
-                                ${c.logo_url ? `<img src="${c.logo_url}">` : '<i class="fas fa-building"></i>'}
+                // ب. جلب المنشآت من جدول (entities)
+                const { data: entities, error: entErr } = await client.from('entities').select('*').limit(6);
+                
+                if (entities && entities.length > 0) {
+                    document.getElementById('featuredCompanies').innerHTML = entities.map(c => `
+                        <div class="company-card" style="background:#1e293b; padding:20px; border-radius:10px; border:1px solid #334155;">
+                            <div class="company-logo" style="margin-bottom:10px; font-size:2rem; color:#fbbf24;">
+                                ${c.logo_url ? `<img src="${c.logo_url}" alt="${c.name}" style="max-height:50px;">` : '<i class="fas fa-building"></i>'}
                             </div>
                             <div class="company-info">
-                                <h3>${c.name}</h3>
-                                <p><i class="fas fa-map-marker-alt"></i> ${c.city_id || 'اليمن'}</p>
-                                ${c.is_verified ? '<span class="badge badge-verified"><i class="fas fa-check-circle"></i> موثق</span>' : ''}
+                                <h3 style="color:#fff; margin-bottom:5px;">${c.name}</h3>
+                                <p style="color:#94a3b8; font-size:0.9rem;"><i class="fas fa-map-marker-alt"></i> ${c.city || 'صنعاء'}</p>
+                                ${c.description ? `<p style="color:#cbd5e1; font-size:0.85rem; margin-top:8px;">${c.description}</p>` : ''}
                             </div>
                         </div>
                     `).join('');
                 } else {
-                    document.getElementById('featuredCompanies').innerHTML = '<p style="text-align:center; width:100%; color:#777;">لا توجد شركات مضافة بعد</p>';
-                }
-
-                // د. جلب البنوك
-                const { data: banks } = await sb.from('banks').select('*').eq('status', 'ACTIVE').limit(4);
-                if (banks && banks.length > 0) {
-                    document.getElementById('latestBanks').innerHTML = banks.map(b => `
-                        <div class="company-card">
-                            <div class="company-logo">
-                                ${b.logo_url ? `<img src="${b.logo_url}">` : '<i class="fas fa-landmark"></i>'}
-                            </div>
-                            <div class="company-info">
-                                <h3>${b.name}</h3>
-                                <p><i class="fas fa-map-marker-alt"></i> ${b.city_id || 'اليمن'}</p>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    document.getElementById('latestBanks').innerHTML = '<p style="text-align:center; width:100%; color:#777;">لا توجد بنوك مضافة بعد</p>';
+                    document.getElementById('featuredCompanies').innerHTML = '<p style="text-align:center; width:100%; color:#777;">لا توجد منشآت مضافة بعد في جدول entities</p>';
                 }
 
             } catch (error) {
-                console.error("Error loading home data:", error);
-                // لا نوقف الصفحة، فقط نطبع الخطأ في الكونسول
+                console.error("خطأ أثناء تحميل بيانات الصفحة الرئيسية:", error);
             }
         }
 
-        // تشغيل التحميل عند بدء الصفحة
-        // ملاحظة: initSupabase يتم استدعاؤها أيضاً في supabase.js، لكن نعيد التحقق هنا للأمان
+        // تشغيل التحميل عند الكتمال
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(loadHomePageData, 500); // تأخير بسيط لضمان جاهزية الاتصال
+            setTimeout(loadHomePageData, 500);
         });
     </script>
 </body>
