@@ -7,411 +7,381 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/yemen-rating.css">
     <style>
-        .hidden { display:none !important; }
-        .admin-wrapper { display:flex; min-height:100vh; }
-        .admin-sidebar { width:260px; background:var(--navy-900, #0a1120); color:#fff; position:fixed; top:0; right:0; height:100vh; overflow-y:auto; z-index:100; border-left:1px solid var(--navy-600, #1e293b); transition:transform 0.3s; }
-        .sidebar-brand { display:flex; align-items:center; gap:12px; padding:22px 20px; border-bottom:1px solid var(--navy-700, #152033); }
-        .sidebar-brand .brand-mark { width:42px; height:42px; background:var(--gold-gradient, linear-gradient(135deg, #fbbf24, #d4af37)); border-radius:var(--radius-sm, 6px); display:flex; align-items:center; justify-content:center; color:#0d1b2a; font-size:1.2rem; }
-        .sidebar-brand span { font-weight:800; color:var(--gold-400, #fbbf24); font-size:1.05rem; }
-        .sidebar-nav { padding:16px 12px; }
-        .nav-item { display:flex; align-items:center; gap:12px; padding:12px 16px; color:#94a3b8; border-radius:var(--radius-sm, 6px); margin-bottom:4px; transition:all 0.2s; text-decoration:none; font-weight:600; cursor:pointer; }
-        .nav-item i { width:20px; text-align:center; color:var(--gold-400, #fbbf24); }
-        .nav-item:hover { background:var(--navy-700, #152033); color:#fff; }
-        .nav-item.active { background:var(--gold-gradient, linear-gradient(135deg, #fbbf24, #d4af37)); color:#0d1b2a; font-weight:800; }
-        .nav-item.active i { color:#0d1b2a; }
-        .admin-main { flex:1; margin-right:260px; min-height:100vh; background: #0b1329; color: #fff; }
-        .admin-header { background:var(--bg-section, #0f172a); padding:16px 28px; display:flex; align-items:center; gap:18px; position:sticky; top:0; z-index:50; border-bottom:1px solid #1e293b; }
-        .admin-header h1 { font-size:1.3rem; color:#fff; flex:1; font-weight:800; }
-        .admin-content { padding:28px; }
-        .admin-login { min-height:100vh; display:flex; align-items:center; justify-content:center; background:#0a1120; padding:20px; }
-        .login-card { background:#0f172a; border:1px solid #fbbf24; border-radius:12px; padding:44px 40px; width:100%; max-width:420px; text-align:center; }
-        .login-logo { width:70px; height:70px; background:linear-gradient(135deg, #fbbf24, #d4af37); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:2rem; color:#0a1120; margin:0 auto 20px; }
-        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:18px; margin-bottom:28px; }
-        .stat-card { background:#0f172a; border-radius:8px; padding:22px; display:flex; align-items:center; gap:16px; border:1px solid #1e293b; border-right:4px solid #fbbf24; }
-        .stat-card .icon { width:52px; height:52px; background:linear-gradient(135deg, #fbbf24, #d4af37); color:#0a1120; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; }
-        .stat-card .num { font-size:1.7rem; font-weight:900; color:#fbbf24; }
-        .stat-card .lbl { color:#94a3b8; font-size:0.85rem; }
-        .table-wrapper { background:#0f172a; border-radius:8px; overflow-x:auto; border:1px solid #1e293b; margin-top: 15px; }
-        .admin-table { width:100%; border-collapse:collapse; min-width:700px; }
-        .admin-table th { background:#152033; color:#fbbf24; padding:14px 16px; text-align:right; font-size:0.88rem; font-weight:700; }
-        .admin-table td { padding:14px 16px; border-bottom:1px solid #1e293b; font-size:0.9rem; color:#e2e8f0; }
-        .icon-btn { width:34px; height:34px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; border:none; cursor:pointer; font-size:0.85rem; margin:0 2px; }
-        .icon-btn.edit { background:rgba(59,130,246,0.2); color:#60a5fa; }
-        .icon-btn.toggle { background:rgba(245,158,11,0.2); color:#fbbf24; }
-        .icon-btn.delete { background:rgba(239,68,68,0.2); color:#f87171; }
-        .panel-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; }
-        .panel-header h2 { color:#fff; font-size:1.4rem; font-weight:800; }
-        .tab-panel { display:none; }
-        .tab-panel.active { display:block; }
-        .search-bar { padding: 10px 14px; background: #152033; border: 1px solid #334155; border-radius: 8px; color: #fff; width: 250px; font-family: 'Cairo', sans-serif; }
-        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; }
-        .modal-card { background:#0f172a; border:1px solid #fbbf24; border-radius:12px; padding:24px; width:100%; max-width:600px; max-height:90vh; overflow-y:auto; color:#fff; }
-        .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #1e293b; padding-bottom:10px; }
-        .form-group { margin-bottom:15px; text-align:right; }
-        .form-group label { display:block; margin-bottom:6px; color:#cbd5e1; font-size:0.9rem; }
-        .form-control { width:100%; padding:10px 14px; background:#152033; border:1px solid #334155; border-radius:6px; color:#fff; font-family:'Cairo', sans-serif; box-sizing:border-box; }
-        .btn-gold { background:linear-gradient(135deg, #fbbf24, #d4af37); color:#0a1120; font-weight:800; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-family:'Cairo', sans-serif; }
-        @media (max-width:900px) {
-            .admin-sidebar { transform:translateX(100%); width:280px; }
-            .admin-sidebar.open { transform:translateX(0); }
-            .admin-main { margin-right:0; }
-            .admin-content { padding:16px; }
+        :root {
+            --bg-dark: #0a1120;
+            --card-bg: #0f172a;
+            --header-bg: #152033;
+            --border-color: #1e293b;
+            --gold-gradient: linear-gradient(135deg, #fbbf24, #d4af37);
+            --gold-text: #fbbf24;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: var(--bg-dark); color: var(--text-main); min-height: 100vh; }
+        .hidden { display: none !important; }
+        
+        /* شاشة الدخول */
+        .login-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: var(--card-bg); border: 1px solid var(--gold-text); border-radius: 12px; padding: 35px; width: 100%; max-width: 400px; text-align: center; }
+        .login-logo { width: 60px; height: 60px; background: var(--gold-gradient); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #0a1120; margin: 0 auto 15px; }
+
+        /* الهيكل العام */
+        .admin-layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--bg-dark); border-left: 1px solid var(--border-color); height: 100vh; position: fixed; right: 0; top: 0; z-index: 100; }
+        .brand { padding: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); font-weight: 800; color: var(--gold-text); }
+        .nav-menu { padding: 15px 10px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: var(--text-muted); text-decoration: none; border-radius: 8px; margin-bottom: 5px; cursor: pointer; font-weight: 600; }
+        .nav-item:hover, .nav-item.active { background: var(--header-bg); color: var(--gold-text); }
+
+        .main-content { flex: 1; margin-right: 260px; padding: 25px; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: var(--card-bg); padding: 15px 20px; border-radius: 10px; border: 1px solid var(--border-color); }
+        
+        /* البطاقات والجداول */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card-bg); border-radius: 8px; padding: 20px; border-right: 4px solid var(--gold-text); border: 1px solid var(--border-color); }
+        .stat-card .num { font-size: 1.8rem; font-weight: 800; color: var(--gold-text); }
+
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .table-container { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: right; }
+        th { background: var(--header-bg); color: var(--gold-text); padding: 12px 15px; font-size: 0.9rem; }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+
+        /* الأزرار المدخلات */
+        .btn-gold { background: var(--gold-gradient); color: #0a1120; font-weight: 700; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+        .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+        .btn-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+        .btn-edit { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
+        .btn-verify { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
+        .form-control { width: 100%; padding: 10px; background: var(--header-bg); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; margin-top: 5px; }
+
+        /* النوافذ المنبثقة Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 15px; }
+        .modal-card { background: var(--card-bg); border: 1px solid var(--gold-text); border-radius: 12px; padding: 25px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .main-content { margin-right: 0; }
+            .admin-layout { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 
-    <!-- زر الرجوع للموقع الرئيسي -->
-    <div style="position:fixed; bottom:20px; left:20px; z-index:999;">
-        <a href="index.html" class="btn-gold" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
-            <i class="fas fa-arrow-right"></i> العودة للموقع
-        </a>
-    </div>
+    <!-- زر رجوع سريع للموقع -->
+    <a href="index.html" class="btn-gold" style="position:fixed; bottom:15px; left:15px; z-index:999;">
+        <i class="fas fa-arrow-right"></i> للموقع
+    </a>
 
-    <!-- شاشة التسجيل -->
-    <div class="admin-login" id="adminLogin">
+    <!-- 1. شاشة الدخول -->
+    <div class="login-wrapper" id="loginSec">
         <div class="login-card">
-            <div class="login-logo"><i class="fas fa-star"></i></div>
-            <h1 style="color:#fbbf24;margin-bottom:6px;">لوحة إدارة يمن ريتغ</h1>
-            <p style="color:#94a3b8;margin-bottom:26px;">دخول الإدارة فقط</p>
-            <form id="adminLoginForm">
-                <div class="form-group">
-                    <label>كلمة المرور للإدارة</label>
-                    <input type="password" class="form-control" id="adminPass" required placeholder="••••••••">
-                </div>
-                <button type="submit" class="btn-gold" style="width:100%; margin-top:10px;"><i class="fas fa-right-to-bracket"></i> دخول</button>
+            <div class="login-logo"><i class="fas fa-user-shield"></i></div>
+            <h2 style="color:var(--gold-text); margin-bottom:10px;">إدارة يمن ريتغ</h2>
+            <form id="loginForm">
+                <input type="password" id="passInput" class="form-control" placeholder="كلمة المرور (123456)" required>
+                <button type="submit" class="btn-gold" style="width:100%; margin-top:15px; justify-content:center;">دخول</button>
             </form>
         </div>
     </div>
 
-    <!-- لوحة التحكم -->
-    <div class="admin-wrapper hidden" id="adminWrapper">
-        <aside class="admin-sidebar" id="adminSidebar">
-            <div class="sidebar-brand">
-                <div class="brand-mark"><i class="fas fa-star"></i></div>
-                <span>YR Admin</span>
+    <!-- 2. لوحة التحكم -->
+    <div class="admin-layout hidden" id="appSec">
+        <aside class="sidebar">
+            <div class="brand"><i class="fas fa-star"></i> YEMEN RATING</div>
+            <div class="nav-menu">
+                <div class="nav-item active" onclick="switchTab('entities', this)"><i class="fas fa-building"></i> المنشآت والشركات</div>
+                <div class="nav-item" onclick="switchTab('categories', this)"><i class="fas fa-list"></i> التصنيفات</div>
+                <div class="nav-item" onclick="logout()" style="color:#f87171; margin-top:20px;"><i class="fas fa-power-off"></i> خروج</div>
             </div>
-            <nav class="sidebar-nav">
-                <a class="nav-item active" onclick="YRA.switchTab('dashboard',this)"><i class="fas fa-gauge-high"></i><span>الرئيسية</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('entities',this)"><i class="fas fa-building"></i><span>الشركات والبنوك</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('categories',this)"><i class="fas fa-tags"></i><span>التصنيفات</span></a>
-                <a class="nav-item" onclick="YRA.logout()" style="color:#f87171;"><i class="fas fa-right-from-bracket"></i><span>خروج</span></a>
-            </nav>
         </aside>
 
-        <main class="admin-main">
-            <header class="admin-header">
-                <button onclick="document.getElementById('adminSidebar').classList.toggle('open')" style="background:none; border:none; color:#fbbf24; font-size:1.3rem; cursor:pointer;"><i class="fas fa-bars"></i></button>
-                <h1 id="pageTitle">الرئيسية</h1>
-                <span style="color:#fbbf24;font-weight:700;">المدير العام</span>
-            </header>
+        <main class="main-content">
+            <div class="header-bar">
+                <h3 id="tabTitle">إدارة الشركات والمنشآت</h3>
+                <span style="color:var(--gold-text); font-weight:700;">المدير العام</span>
+            </div>
 
-            <div class="admin-content">
-                <!-- الرئيسية -->
-                <section class="tab-panel active" id="panel-dashboard">
-                    <div class="stats-grid" id="dashStats"></div>
-                </section>
+            <!-- إحصائيات -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="num" id="countEntities">0</div>
+                    <div>إجمالي المنشآت</div>
+                </div>
+                <div class="stat-card">
+                    <div class="num" id="countVerified">0</div>
+                    <div>منشآت موثقة</div>
+                </div>
+            </div>
 
-                <!-- إدارة المنشآت (entities) -->
-                <section class="tab-panel" id="panel-entities">
-                    <div class="panel-header">
-                        <h2>إدارة الشركات والبنوك</h2>
-                        <input type="text" class="search-bar" id="searchEntities" placeholder="بحث بالاسم..." oninput="YRA.filterEntities()">
-                        <button class="btn-gold" onclick="YRA.openAddEntityModal()"><i class="fas fa-plus"></i> إضافة جديد</button>
-                    </div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>الاسم</th>
-                                    <th>المدينة</th>
-                                    <th>الوصف</th>
-                                    <th>الحالة</th>
-                                    <th>الإجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="entitiesBody"></tbody>
-                        </table>
-                    </div>
-                </section>
+            <!-- تبويب المنشآت -->
+            <div id="tab-entities">
+                <div class="panel-header">
+                    <input type="text" id="searchEntity" class="form-control" style="max-width:250px;" placeholder="بحث بالاسم..." oninput="renderEntities()">
+                    <button class="btn-gold" onclick="openEntityModal()"><i class="fas fa-plus"></i> إضافة منشأة جديدة</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>اسم المنشأة</th>
+                                <th>القطاع/التصنيف</th>
+                                <th>المدينة</th>
+                                <th>التوثيق</th>
+                                <th>التحكم</th>
+                            </tr>
+                        </thead>
+                        <tbody id="entitiesTable"></tbody>
+                    </table>
+                </div>
+            </div>
 
-                <!-- إدارة التصنيفات (categories) -->
-                <section class="tab-panel" id="panel-categories">
-                    <div class="panel-header">
-                        <h2>إدارة التصنيفات</h2>
-                        <button class="btn-gold" onclick="YRA.openAddCategoryModal()"><i class="fas fa-plus"></i> إضافة تصنيف</button>
-                    </div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>الأيقونة</th>
-                                    <th>اسم التصنيف</th>
-                                    <th>الإجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="categoriesBody"></tbody>
-                        </table>
-                    </div>
-                </section>
+            <!-- تبويب التصنيفات -->
+            <div id="tab-categories" class="hidden">
+                <div class="panel-header">
+                    <h3>قائمة التصنيفات</h3>
+                    <button class="btn-gold" onclick="openCatModal()"><i class="fas fa-plus"></i> إضافة تصنيف</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>اسم التصنيف</th>
+                                <th>الأيقونة</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="categoriesTable"></tbody>
+                    </table>
+                </div>
             </div>
         </main>
     </div>
 
-    <div id="modalRoot"></div>
+    <!-- Modal Form (منبثق الإضافة والتعديل) -->
+    <div class="modal-overlay hidden" id="modalOverlay">
+        <div class="modal-card">
+            <div class="modal-head">
+                <h3 id="modalTitle" style="color:var(--gold-text);">إضافة منشأة</h3>
+                <button onclick="closeModal()" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
 
-    <script src="js/supabase.js"></script>
     <script>
-        const YRA = {
-            allEntities: [],
-            
-            async init() {
-                if (sessionStorage.getItem('yr_admin_auth') === 'true') {
-                    this.showDashboard();
-                } else {
-                    document.getElementById('adminLoginForm').addEventListener('submit', (e) => {
-                        e.preventDefault();
-                        const pass = document.getElementById('adminPass').value;
-                        if (pass === 'admin123' || pass === '123456') { // كلمة المرور الافتراضية
-                            sessionStorage.setItem('yr_admin_auth', 'true');
-                            this.showDashboard();
-                        } else {
-                            alert('كلمة المرور غير صحيحة!');
-                        }
-                    });
-                }
-            },
-
-            async showDashboard() {
-                document.getElementById('adminLogin').classList.add('hidden');
-                document.getElementById('adminWrapper').classList.remove('hidden');
-                if (typeof initSupabase === 'function') await initSupabase();
-                this.renderStats();
-            },
-
-            logout() {
-                sessionStorage.removeItem('yr_admin_auth');
-                location.reload();
-            },
-
-            switchTab(tab, el) {
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                if (el) el.classList.add('active');
-                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                document.getElementById('panel-' + tab).classList.add('active');
-                document.getElementById('adminSidebar').classList.remove('open');
-                
-                if (tab === 'entities') this.loadEntities();
-                if (tab === 'categories') this.loadCategories();
-                if (tab === 'dashboard') this.renderStats();
-            },
-
-            async renderStats() {
-                const client = window.sb;
-                let entCount = 0, catCount = 0;
-                if (client) {
-                    const { count: c1 } = await client.from('entities').select('*', { count: 'exact', head: true });
-                    const { count: c2 } = await client.from('categories').select('*', { count: 'exact', head: true });
-                    entCount = c1 || 0;
-                    catCount = c2 || 0;
-                }
-                document.getElementById('dashStats').innerHTML = `
-                    <div class="stat-card"><div class="icon"><i class="fas fa-building"></i></div><div><div class="num">${entCount}</div><div class="lbl">شركة وبنك</div></div></div>
-                    <div class="stat-card"><div class="icon"><i class="fas fa-tags"></i></div><div><div class="num">${catCount}</div><div class="lbl">تصنيف</div></div></div>
-                `;
-            },
-
-            // === إدارة المنشآت ===
-            async loadEntities() {
-                const client = window.sb;
-                if (!client) return;
-                const { data } = await client.from('entities').select('*').order('created_at', { ascending: false });
-                this.allEntities = data || [];
-                this.renderEntitiesTable(this.allEntities);
-            },
-
-            renderEntitiesTable(list) {
-                const body = document.getElementById('entitiesBody');
-                if (!list || list.length === 0) {
-                    body.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">لا توجد بيانات مضافة</td></tr>';
-                    return;
-                }
-                body.innerHTML = list.map(item => `
-                    <tr>
-                        <td><strong>${item.name}</strong></td>
-                        <td>${item.city || 'صنعاء'}</td>
-                        <td>${item.description || '-'}</td>
-                        <td><span style="color:${item.is_active !== false ? '#22c55e' : '#ef4444'};">${item.is_active !== false ? '🟢 ظاهر' : '🔴 مخفي'}</span></td>
-                        <td>
-                            <button class="icon-btn edit" title="تعديل" onclick="YRA.openEditEntityModal('${item.id}')"><i class="fas fa-edit"></i></button>
-                            <button class="icon-btn toggle" title="إخفاء/إظهار" onclick="YRA.toggleEntityStatus('${item.id}', ${item.is_active !== false})"><i class="fas fa-eye"></i></button>
-                            <button class="icon-btn delete" title="حذف" onclick="YRA.deleteEntity('${item.id}')"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
-            },
-
-            filterEntities() {
-                const q = document.getElementById('searchEntities').value.toLowerCase();
-                const filtered = this.allEntities.filter(e => e.name.toLowerCase().includes(q));
-                this.renderEntitiesTable(filtered);
-            },
-
-            async toggleEntityStatus(id, currentStatus) {
-                const client = window.sb;
-                await client.from('entities').update({ is_active: !currentStatus }).eq('id', id);
-                this.loadEntities();
-            },
-
-            async deleteEntity(id) {
-                if (!confirm('هل أنت تأكد من رغبتك في حذف هذا العنصر نهائياً؟')) return;
-                const client = window.sb;
-                await client.from('entities').delete().eq('id', id);
-                this.loadEntities();
-            },
-
-            openAddEntityModal() {
-                this.renderEntityForm();
-            },
-
-            openEditEntityModal(id) {
-                const item = this.allEntities.find(e => e.id == id);
-                if (item) this.renderEntityForm(item);
-            },
-
-            renderEntityForm(item = null) {
-                const isEdit = !!item;
-                const modalHtml = `
-                    <div class="modal-overlay">
-                        <div class="modal-card">
-                            <div class="modal-head">
-                                <h3>${isEdit ? 'تعديل بيانات المنشأة' : 'إضافة شركة أو بنك جديد'}</h3>
-                                <button onclick="YRA.closeModal()" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fas fa-times"></i></button>
-                            </div>
-                            <form id="entityForm">
-                                <div class="form-group">
-                                    <label>اسم المنشأة *</label>
-                                    <input type="text" class="form-control" name="name" value="${item ? item.name : ''}" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>المدينة</label>
-                                    <input type="text" class="form-control" name="city" value="${item ? item.city || '' : 'صنعاء'}">
-                                </div>
-                                <div class="form-group">
-                                    <label>الوصف</label>
-                                    <textarea class="form-control" name="description">${item ? item.description || '' : ''}</textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label>رقم الهاتف</label>
-                                    <input type="text" class="form-control" name="phone" value="${item ? item.phone || '' : ''}">
-                                </div>
-                                <div class="form-group">
-                                    <label>الموقع الإلكتروني</label>
-                                    <input type="url" class="form-control" name="website" value="${item ? item.website || '' : ''}">
-                                </div>
-                                <button type="submit" class="btn-gold" style="width:100%; margin-top:15px;">حفظ البيانات</button>
-                            </form>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('modalRoot').innerHTML = modalHtml;
-
-                document.getElementById('entityForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const fd = new FormData(e.target);
-                    const payload = {
-                        name: fd.get('name'),
-                        city: fd.get('city'),
-                        description: fd.get('description'),
-                        phone: fd.get('phone'),
-                        website: fd.get('website'),
-                        is_active: true
-                    };
-                    const client = window.sb;
-                    if (isEdit) {
-                        await client.from('entities').update(payload).eq('id', item.id);
-                    } else {
-                        await client.from('entities').insert([payload]);
-                    }
-                    this.closeModal();
-                    this.loadEntities();
-                });
-            },
-
-            // === إدارة التصنيفات ===
-            async loadCategories() {
-                const client = window.sb;
-                if (!client) return;
-                const { data } = await client.from('categories').select('*');
-                const body = document.getElementById('categoriesBody');
-                if (!data || data.length === 0) {
-                    body.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">لا توجد تصنيفات</td></tr>';
-                    return;
-                }
-                body.innerHTML = data.map(c => `
-                    <tr>
-                        <td><i class="fas ${c.icon || 'fa-tag'}" style="color:#fbbf24;"></i></td>
-                        <td><strong>${c.name}</strong></td>
-                        <td>
-                            <button class="icon-btn delete" onclick="YRA.deleteCategory('${c.id}')"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `).join('');
-            },
-
-            openAddCategoryModal() {
-                const modalHtml = `
-                    <div class="modal-overlay">
-                        <div class="modal-card">
-                            <div class="modal-head">
-                                <h3>إضافة تصنيف جديد</h3>
-                                <button onclick="YRA.closeModal()" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fas fa-times"></i></button>
-                            </div>
-                            <form id="catForm">
-                                <div class="form-group">
-                                    <label>اسم التصنيف *</label>
-                                    <input type="text" class="form-control" name="name" required placeholder="مثال: بنوك، اتصالات...">
-                                </div>
-                                <div class="form-group">
-                                    <label>اسم الأيقونة (FontAwesome)</label>
-                                    <input type="text" class="form-control" name="icon" placeholder="fa-landmark">
-                                </div>
-                                <button type="submit" class="btn-gold" style="width:100%; margin-top:15px;">إضافة</button>
-                            </form>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('modalRoot').innerHTML = modalHtml;
-
-                document.getElementById('catForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const fd = new FormData(e.target);
-                    const client = window.sb;
-                    await client.from('categories').insert([{
-                        name: fd.get('name'),
-                        icon: fd.get('icon') || 'fa-tag'
-                    }]);
-                    this.closeModal();
-                    this.loadCategories();
-                });
-            },
-
-            async deleteCategory(id) {
-                if (!confirm('حذف هذا التصنيف؟')) return;
-                const client = window.sb;
-                await client.from('categories').delete().eq('id', id);
-                this.loadCategories();
-            },
-
-            closeModal() {
-                document.getElementById('modalRoot').innerHTML = '';
-            }
+        // قواعد البيانات المحلية والتلقائية
+        let DB = {
+            entities: JSON.parse(localStorage.getItem('yr_entities')) || [
+                { id: 1, name: 'بنك اليمن والكويت', category: 'بنوك ومصارف', city: 'صنعاء', isVerified: true, phone: '01200300' },
+                { id: 2, name: 'شركة يمن موبايل', category: 'اتصالات', city: 'صنعاء', isVerified: true, phone: '01400400' }
+            ],
+            categories: JSON.parse(localStorage.getItem('yr_categories')) || [
+                { id: 1, name: 'بنوك ومصارف', icon: 'fa-landmark' },
+                { id: 2, name: 'اتصالات', icon: 'fa-phone' },
+                { id: 3, name: 'شحن ولوجستيات', icon: 'fa-truck' }
+            ]
         };
 
-        document.addEventListener('DOMContentLoaded', () => YRA.init());
+        function saveDB() {
+            localStorage.setItem('yr_entities', JSON.stringify(DB.entities));
+            localStorage.setItem('yr_categories', JSON.stringify(DB.categories));
+            updateStats();
+        }
+
+        // تسجيل الدخول
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pass = document.getElementById('passInput').value;
+            if (pass === '123456' || pass === 'admin') {
+                sessionStorage.setItem('yr_admin', '1');
+                initApp();
+            } else {
+                alert('كلمة المرور خاطئة! (الافتراضية: 123456)');
+            }
+        });
+
+        function initApp() {
+            if (sessionStorage.getItem('yr_admin') === '1') {
+                document.getElementById('loginSec').classList.add('hidden');
+                document.getElementById('appSec').classList.remove('hidden');
+                updateStats();
+                renderEntities();
+                renderCategories();
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('yr_admin');
+            location.reload();
+        }
+
+        function updateStats() {
+            document.getElementById('countEntities').innerText = DB.entities.length;
+            document.getElementById('countVerified').innerText = DB.entities.filter(e => e.isVerified).length;
+        }
+
+        function switchTab(tab, el) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            if(el) el.classList.add('active');
+            
+            document.getElementById('tab-entities').classList.add('hidden');
+            document.getElementById('tab-categories').classList.add('hidden');
+            
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.getElementById('tabTitle').innerText = tab === 'entities' ? 'إدارة الشركات والمنشآت' : 'إدارة التصنيفات';
+        }
+
+        // --- عرض وإدارة الشركات ---
+        function renderEntities() {
+            const query = document.getElementById('searchEntity').value.toLowerCase();
+            const tbody = document.getElementById('entitiesTable');
+            const filtered = DB.entities.filter(e => e.name.toLowerCase().includes(query));
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">لا توجد بيانات</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(item => `
+                <tr>
+                    <td><strong>${item.name}</strong></td>
+                    <td>${item.category || '-'}</td>
+                    <td>${item.city || 'صنعاء'}</td>
+                    <td>${item.isVerified ? '<span style="color:#4ade80;">✔ موثق</span>' : '<span style="color:#94a3b8;">غير موثق</span>'}</td>
+                    <td>
+                        <button class="btn-gold btn-sm btn-verify" onclick="toggleVerify(${item.id})"><i class="fas fa-check-circle"></i></button>
+                        <button class="btn-gold btn-sm btn-edit" onclick="openEntityModal(${item.id})"><i class="fas fa-edit"></i></button>
+                        <button class="btn-gold btn-sm btn-danger" onclick="deleteEntity(${item.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function toggleVerify(id) {
+            const ent = DB.entities.find(e => e.id === id);
+            if(ent) {
+                ent.isVerified = !ent.isVerified;
+                saveDB();
+                renderEntities();
+            }
+        }
+
+        function deleteEntity(id) {
+            if(confirm('هل أنت تأكد من الحذف؟')) {
+                DB.entities = DB.entities.filter(e => e.id !== id);
+                saveDB();
+                renderEntities();
+            }
+        }
+
+        function openEntityModal(id = null) {
+            const ent = id ? DB.entities.find(e => e.id === id) : null;
+            document.getElementById('modalTitle').innerText = ent ? 'تعديل منشأة' : 'إضافة منشأة جديدة';
+            
+            const catOptions = DB.categories.map(c => `<option value="${c.name}" ${ent && ent.category === c.name ? 'selected' : ''}>${c.name}</option>`).join('');
+
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveEntity(event, ${id})">
+                    <div style="margin-bottom:12px;">
+                        <label>اسم المنشأة *</label>
+                        <input type="text" id="entName" class="form-control" value="${ent ? ent.name : ''}" required>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label>التصنيف</label>
+                        <select id="entCat" class="form-control">${catOptions}</select>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label>المدينة</label>
+                        <input type="text" id="entCity" class="form-control" value="${ent ? ent.city : 'صنعاء'}">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label>رقم الهاتف</label>
+                        <input type="text" id="entPhone" class="form-control" value="${ent ? ent.phone || '' : ''}">
+                    </div>
+                    <button type="submit" class="btn-gold" style="width:100%; justify-content:center; margin-top:10px;">حفظ البيانات</button>
+                </form>
+            `;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        function saveEntity(e, id) {
+            e.preventDefault();
+            const name = document.getElementById('entName').value;
+            const category = document.getElementById('entCat').value;
+            const city = document.getElementById('entCity').value;
+            const phone = document.getElementById('entPhone').value;
+
+            if(id) {
+                const ent = DB.entities.find(x => x.id === id);
+                ent.name = name; ent.category = category; ent.city = city; ent.phone = phone;
+            } else {
+                DB.entities.push({ id: Date.now(), name, category, city, phone, isVerified: false });
+            }
+            saveDB();
+            closeModal();
+            renderEntities();
+        }
+
+        // --- عرض وإدارة التصنيفات ---
+        function renderCategories() {
+            const tbody = document.getElementById('categoriesTable');
+            tbody.innerHTML = DB.categories.map(c => `
+                <tr>
+                    <td><strong>${c.name}</strong></td>
+                    <td><i class="fas ${c.icon}"></i> (${c.icon})</td>
+                    <td>
+                        <button class="btn-gold btn-sm btn-danger" onclick="deleteCategory(${c.id})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openCatModal() {
+            document.getElementById('modalTitle').innerText = 'إضافة تصنيف جديد';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveCategory(event)">
+                    <div style="margin-bottom:12px;">
+                        <label>اسم التصنيف *</label>
+                        <input type="text" id="catName" class="form-control" required placeholder="مثال: مطاعم">
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label>أيقونة FontAwesome</label>
+                        <input type="text" id="catIcon" class="form-control" placeholder="fa-utensils">
+                    </div>
+                    <button type="submit" class="btn-gold" style="width:100%; justify-content:center; margin-top:10px;">إضافة</button>
+                </form>
+            `;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        function saveCategory(e) {
+            e.preventDefault();
+            const name = document.getElementById('catName').value;
+            const icon = document.getElementById('catIcon').value || 'fa-tag';
+            DB.categories.push({ id: Date.now(), name, icon });
+            saveDB();
+            closeModal();
+            renderCategories();
+        }
+
+        function deleteCategory(id) {
+            if(confirm('حذف التصنيف؟')) {
+                DB.categories = DB.categories.filter(c => c.id !== id);
+                saveDB();
+                renderCategories();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.add('hidden');
+        }
+
+        // التشغيل التلقائي
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
