@@ -2,27 +2,6 @@
 <html lang="ar" dir="rtl">
 <head>
 
-
-<!-- أدوات اكتشاف الأخطاء للجوال -->
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>
-  // 1. تشغيل لوحة التحكم العائمة على شاشة الجوال
-  eruda.init();
-
-  // 2. التقاط أخطاء الجافاسكريبت وإظهارها في نافذة تنبيه
-  window.addEventListener('error', function(e) {
-    alert("⚠️ خطأ برمجي:\n" + e.message + "\nفي السطر: " + e.lineno);
-  });
-
-  // 3. التقاط أخطاء الاتصال وسوبربيس (Supabase Errors)
-  window.addEventListener('unhandledrejection', function(e) {
-    alert("⚠️ خطأ في الاتصال/قاعدة البيانات:\n" + (e.reason.message || e.reason));
-  });
-</script>
-
-
-
-
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
