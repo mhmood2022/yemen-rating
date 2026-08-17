@@ -901,21 +901,7 @@
       
         }
    
-    <script src="js/supabase.js"></script> <!-- السكربت الخاص بنا -->
-
-<script>
-  // ضع الأكواد واستدعاء الدوال هنا
-  async function loadData() {
-      const client = await getSB();
-      const { data, error } = await client.from('profiles').select('*');
-      
-      if (error) console.error('خطأ في جلب البيانات:', error);
-      else console.log('البيانات:', data);
-  }
-
-  // مثال: استدعاء الدالة عند تعديل بيانات أو تغيير حالة
-  // await logAdminAction('UPDATE_USER', 'profiles', userId, 'تفعيل حساب المستخدم');
-</script>
+    </script>
 </body>
 
     
