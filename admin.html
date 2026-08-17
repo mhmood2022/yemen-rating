@@ -17,6 +17,10 @@
             --gold-text: #fbbf24;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
         body { background: var(--bg-dark); color: var(--text-main); min-height: 100vh; }
@@ -29,11 +33,12 @@
 
         /* الهيكل العام */
         .admin-layout { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background: var(--bg-dark); border-left: 1px solid var(--border-color); height: 100vh; position: fixed; right: 0; top: 0; z-index: 100; }
+        .sidebar { width: 260px; background: var(--bg-dark); border-left: 1px solid var(--border-color); height: 100vh; position: fixed; right: 0; top: 0; z-index: 100; overflow-y: auto; }
         .brand { padding: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); font-weight: 800; color: var(--gold-text); }
         .nav-menu { padding: 15px 10px; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: var(--text-muted); text-decoration: none; border-radius: 8px; margin-bottom: 5px; cursor: pointer; font-weight: 600; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: var(--text-muted); text-decoration: none; border-radius: 8px; margin-bottom: 5px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
         .nav-item:hover, .nav-item.active { background: var(--header-bg); color: var(--gold-text); }
+        .nav-section { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; padding: 15px 15px 5px; margin-top: 10px; }
 
         .main-content { flex: 1; margin-right: 260px; padding: 25px; }
         .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: var(--card-bg); padding: 15px 20px; border-radius: 10px; border: 1px solid var(--border-color); }
@@ -41,38 +46,57 @@
         /* البطاقات والجداول */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: var(--card-bg); border-radius: 8px; padding: 20px; border-right: 4px solid var(--gold-text); border: 1px solid var(--border-color); }
+        .stat-card .icon { width: 50px; height: 50px; background: var(--gold-gradient); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #0a1120; margin-bottom: 10px; }
         .stat-card .num { font-size: 1.8rem; font-weight: 800; color: var(--gold-text); }
+        .stat-card .label { color: var(--text-muted); font-size: 0.85rem; }
 
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
         .table-container { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color); overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: right; }
-        th { background: var(--header-bg); color: var(--gold-text); padding: 12px 15px; font-size: 0.9rem; }
-        td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+        th { background: var(--header-bg); color: var(--gold-text); padding: 12px 15px; font-size: 0.85rem; font-weight: 700; }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; }
+        tr:hover { background: rgba(251, 191, 36, 0.05); }
 
         /* الأزرار المدخلات */
-        .btn-gold { background: var(--gold-gradient); color: #0a1120; font-weight: 700; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
-        .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+        .btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border: none; font-weight: 600; font-size: 0.85rem; transition: all 0.2s; }
+        .btn-gold { background: var(--gold-gradient); color: #0a1120; }
+        .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
         .btn-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
         .btn-edit { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
         .btn-verify { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
-        .form-control { width: 100%; padding: 10px; background: var(--header-bg); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; margin-top: 5px; }
+        .btn-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+        .form-control { width: 100%; padding: 10px; background: var(--header-bg); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; margin-top: 5px; font-size: 0.9rem; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
 
         /* النوافذ المنبثقة Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 15px; }
-        .modal-card { background: var(--card-bg); border: 1px solid var(--gold-text); border-radius: 12px; padding: 25px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
-        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .modal-card { background: var(--card-bg); border: 1px solid var(--gold-text); border-radius: 12px; padding: 25px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
         
+        /* حالات البيانات */
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
+        .status-active { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .status-rejected { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .status-approved { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+
+        /* Toast */
+        .toast { position: fixed; top: 20px; left: 20px; background: var(--card-bg); border: 1px solid var(--gold-text); padding: 15px 20px; border-radius: 8px; z-index: 9999; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s; }
+        @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
         @media (max-width: 768px) {
             .sidebar { width: 100%; height: auto; position: relative; }
-            .main-content { margin-right: 0; }
+            .main-content { margin-right: 0; padding: 15px; }
             .admin-layout { flex-direction: column; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
 
     <!-- زر رجوع سريع للموقع -->
-    <a href="index.html" class="btn-gold" style="position:fixed; bottom:15px; left:15px; z-index:999;">
+    <a href="index.html" class="btn btn-gold" style="position:fixed; bottom:15px; left:15px; z-index:999;">
         <i class="fas fa-arrow-right"></i> للموقع
     </a>
 
@@ -81,9 +105,19 @@
         <div class="login-card">
             <div class="login-logo"><i class="fas fa-user-shield"></i></div>
             <h2 style="color:var(--gold-text); margin-bottom:10px;">إدارة يمن ريتغ</h2>
+            <p style="color:var(--text-muted); margin-bottom:20px; font-size: 0.9rem;">الدخول للمسؤولين فقط</p>
             <form id="loginForm">
-                <input type="password" id="passInput" class="form-control" placeholder="كلمة المرور (123456)" required>
-                <button type="submit" class="btn-gold" style="width:100%; margin-top:15px; justify-content:center;">دخول</button>
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="emailInput" class="form-control" placeholder="admin@yemenrating.ye" required>
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="passInput" class="form-control" placeholder="كلمة المرور" required>
+                </div>
+                <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:10px;">
+                    <i class="fas fa-sign-in-alt"></i> دخول
+                </button>
             </form>
         </div>
     </div>
@@ -93,287 +127,897 @@
         <aside class="sidebar">
             <div class="brand"><i class="fas fa-star"></i> YEMEN RATING</div>
             <div class="nav-menu">
-                <div class="nav-item active" onclick="switchTab('entities', this)"><i class="fas fa-building"></i> المنشآت والشركات</div>
+                <div class="nav-section">الرئيسية</div>
+                <div class="nav-item active" onclick="switchTab('dashboard', this)"><i class="fas fa-chart-line"></i> لوحة التحكم</div>
+                
+                <div class="nav-section">إدارة المحتوى</div>
+                <div class="nav-item" onclick="switchTab('companies', this)"><i class="fas fa-building"></i> الشركات</div>
+                <div class="nav-item" onclick="switchTab('banks', this)"><i class="fas fa-landmark"></i> البنوك</div>
+                <div class="nav-item" onclick="switchTab('jobs', this)"><i class="fas fa-briefcase"></i> الوظائف</div>
+                <div class="nav-item" onclick="switchTab('reviews', this)"><i class="fas fa-star"></i> التقييمات</div>
+                
+                <div class="nav-section">الإعدادات</div>
                 <div class="nav-item" onclick="switchTab('categories', this)"><i class="fas fa-list"></i> التصنيفات</div>
-                <div class="nav-item" onclick="logout()" style="color:#f87171; margin-top:20px;"><i class="fas fa-power-off"></i> خروج</div>
+                <div class="nav-item" onclick="switchTab('cities', this)"><i class="fas fa-map-marker-alt"></i> المدن</div>
+                <div class="nav-item" onclick="switchTab('prices', this)"><i class="fas fa-dollar-sign"></i> أسعار السوق</div>
+                
+                <div class="nav-section">المستخدمين</div>
+                <div class="nav-item" onclick="switchTab('verification', this)"><i class="fas fa-check-circle"></i> طلبات التوثيق</div>
+                <div class="nav-item" onclick="switchTab('users', this)"><i class="fas fa-users"></i> المستخدمين</div>
+                
+                <div class="nav-item" onclick="logout()" style="color:#f87171; margin-top:30px;"><i class="fas fa-power-off"></i> تسجيل خروج</div>
             </div>
         </aside>
 
         <main class="main-content">
             <div class="header-bar">
-                <h3 id="tabTitle">إدارة الشركات والمنشآت</h3>
-                <span style="color:var(--gold-text); font-weight:700;">المدير العام</span>
+                <h3 id="tabTitle" style="color:var(--gold-text);">لوحة التحكم</h3>
+                <span style="color:var(--text-muted); font-size: 0.9rem;"><i class="fas fa-user-circle"></i> المدير العام</span>
             </div>
 
-            <!-- إحصائيات -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="num" id="countEntities">0</div>
-                    <div>إجمالي المنشآت</div>
-                </div>
-                <div class="stat-card">
-                    <div class="num" id="countVerified">0</div>
-                    <div>منشآت موثقة</div>
+            <!-- لوحة التحكم -->
+            <div id="tab-dashboard">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-building"></i></div>
+                        <div class="num" id="statCompanies">0</div>
+                        <div class="label">شركة</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-landmark"></i></div>
+                        <div class="num" id="statBanks">0</div>
+                        <div class="label">بنك</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-briefcase"></i></div>
+                        <div class="num" id="statJobs">0</div>
+                        <div class="label">وظيفة</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-star"></i></div>
+                        <div class="num" id="statReviews">0</div>
+                        <div class="label">تقييم</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-users"></i></div>
+                        <div class="num" id="statUsers">0</div>
+                        <div class="label">مستخدم</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="num" id="statPending">0</div>
+                        <div class="label">طلب معلق</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- تبويب المنشآت -->
-            <div id="tab-entities">
+            <!-- الشركات -->
+            <div id="tab-companies" class="hidden">
                 <div class="panel-header">
-                    <input type="text" id="searchEntity" class="form-control" style="max-width:250px;" placeholder="بحث بالاسم..." oninput="renderEntities()">
-                    <button class="btn-gold" onclick="openEntityModal()"><i class="fas fa-plus"></i> إضافة منشأة جديدة</button>
+                    <input type="text" id="searchCompanies" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderCompanies()">
+                    <button class="btn btn-gold" onclick="openCompanyModal()"><i class="fas fa-plus"></i> إضافة شركة</button>
                 </div>
                 <div class="table-container">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>اسم المنشأة</th>
-                                <th>القطاع/التصنيف</th>
-                                <th>المدينة</th>
-                                <th>التوثيق</th>
-                                <th>التحكم</th>
-                            </tr>
-                        </thead>
-                        <tbody id="entitiesTable"></tbody>
+                        <thead><tr><th>الشركة</th><th>التصنيف</th><th>المدينة</th><th>الحالة</th><th>التوثيق</th><th>إجراءات</th></tr></thead>
+                        <tbody id="companiesTable"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- تبويب التصنيفات -->
-            <div id="tab-categories" class="hidden">
+            <!-- البنوك -->
+            <div id="tab-banks" class="hidden">
                 <div class="panel-header">
-                    <h3>قائمة التصنيفات</h3>
-                    <button class="btn-gold" onclick="openCatModal()"><i class="fas fa-plus"></i> إضافة تصنيف</button>
+                    <input type="text" id="searchBanks" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderBanks()">
+                    <button class="btn btn-gold" onclick="openBankModal()"><i class="fas fa-plus"></i> إضافة بنك</button>
                 </div>
                 <div class="table-container">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>اسم التصنيف</th>
-                                <th>الأيقونة</th>
-                                <th>إجراءات</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>البنك</th><th>التصنيف</th><th>المدينة</th><th>الحالة</th><th>التوثيق</th><th>إجراءات</th></tr></thead>
+                        <tbody id="banksTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- الوظائف -->
+            <div id="tab-jobs" class="hidden">
+                <div class="panel-header">
+                    <input type="text" id="searchJobs" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderJobs()">
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>الوظيفة</th><th>الشركة</th><th>المدينة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+                        <tbody id="jobsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- التقييمات -->
+            <div id="tab-reviews" class="hidden">
+                <div class="panel-header">
+                    <input type="text" id="searchReviews" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderReviews()">
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>المستخدم</th><th>الجهة</th><th>التقييم</th><th>التعليق</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+                        <tbody id="reviewsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- التصنيفات -->
+            <div id="tab-categories" class="hidden">
+                <div class="panel-header">
+                    <h3>التصنيفات</h3>
+                    <button class="btn btn-gold" onclick="openCategoryModal()"><i class="fas fa-plus"></i> إضافة تصنيف</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>التصنيف</th><th>الأيقونة</th><th>إجراءات</th></tr></thead>
                         <tbody id="categoriesTable"></tbody>
                     </table>
                 </div>
             </div>
+
+            <!-- المدن -->
+            <div id="tab-cities" class="hidden">
+                <div class="panel-header">
+                    <h3>المدن</h3>
+                    <button class="btn btn-gold" onclick="openCityModal()"><i class="fas fa-plus"></i> إضافة مدينة</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>المدينة</th><th>الاسم اللاتيني</th><th>إجراءات</th></tr></thead>
+                        <tbody id="citiesTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- أسعار السوق -->
+            <div id="tab-prices" class="hidden">
+                <div class="panel-header">
+                    <h3>أسعار السوق</h3>
+                    <div>
+                        <button class="btn btn-gold" onclick="openExchangeModal()"><i class="fas fa-plus"></i> سعر صرف</button>
+                        <button class="btn btn-gold" onclick="openGoldModal()"><i class="fas fa-plus"></i> سعر ذهب</button>
+                    </div>
+                </div>
+                <h4 style="margin: 20px 0 10px; color: var(--gold-text);">أسعار الصرف</h4>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>العملة</th><th>شراء</th><th>بيع</th><th>المدينة</th><th>إجراءات</th></tr></thead>
+                        <tbody id="exchangeTable"></tbody>
+                    </table>
+                </div>
+                <h4 style="margin: 20px 0 10px; color: var(--gold-text);">أسعار الذهب</h4>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>العيار</th><th>السعر</th><th>المدينة</th><th>إجراءات</th></tr></thead>
+                        <tbody id="goldTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- طلبات التوثيق -->
+            <div id="tab-verification" class="hidden">
+                <div class="panel-header">
+                    <h3>طلبات التوثيق</h3>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>الجهة</th><th>النوع</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+                        <tbody id="verificationTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- المستخدمين -->
+            <div id="tab-users" class="hidden">
+                <div class="panel-header">
+                    <input type="text" id="searchUsers" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderUsers()">
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>تاريخ الانضمام</th><th>إجراءات</th></tr></thead>
+                        <tbody id="usersTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
         </main>
     </div>
 
-    <!-- Modal Form (منبثق الإضافة والتعديل) -->
+    <!-- Modal -->
     <div class="modal-overlay hidden" id="modalOverlay">
         <div class="modal-card">
             <div class="modal-head">
-                <h3 id="modalTitle" style="color:var(--gold-text);">إضافة منشأة</h3>
-                <button onclick="closeModal()" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fas fa-times"></i></button>
+                <h3 id="modalTitle" style="color:var(--gold-text);">عنوان</h3>
+                <button onclick="closeModal()" style="background:none; border:none; color:#fff; cursor:pointer; font-size: 1.2rem;"><i class="fas fa-times"></i></button>
             </div>
             <div id="modalBody"></div>
         </div>
     </div>
 
+    <script src="js/supabase.js"></script>
     <script>
-        // قواعد البيانات المحلية والتلقائية
-        let DB = {
-            entities: JSON.parse(localStorage.getItem('yr_entities')) || [
-                { id: 1, name: 'بنك اليمن والكويت', category: 'بنوك ومصارف', city: 'صنعاء', isVerified: true, phone: '01200300' },
-                { id: 2, name: 'شركة يمن موبايل', category: 'اتصالات', city: 'صنعاء', isVerified: true, phone: '01400400' }
-            ],
-            categories: JSON.parse(localStorage.getItem('yr_categories')) || [
-                { id: 1, name: 'بنوك ومصارف', icon: 'fa-landmark' },
-                { id: 2, name: 'اتصالات', icon: 'fa-phone' },
-                { id: 3, name: 'شحن ولوجستيات', icon: 'fa-truck' }
-            ]
-        };
-
-        function saveDB() {
-            localStorage.setItem('yr_entities', JSON.stringify(DB.entities));
-            localStorage.setItem('yr_categories', JSON.stringify(DB.categories));
-            updateStats();
+        let sb;
+        
+        // Toast
+        function showToast(msg, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="color:var(--gold-text);"></i> ${msg}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         // تسجيل الدخول
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const email = document.getElementById('emailInput').value;
             const pass = document.getElementById('passInput').value;
-            if (pass === '123456' || pass === 'admin') {
+            
+            try {
+                if (!sb) await initSupabase();
+                const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+                if (error) throw error;
+                
                 sessionStorage.setItem('yr_admin', '1');
                 initApp();
-            } else {
-                alert('كلمة المرور خاطئة! (الافتراضية: 123456)');
+                showToast('مرحباً بك!');
+            } catch (err) {
+                alert('بيانات الدخول غير صحيحة: ' + err.message);
             }
         });
 
-        function initApp() {
+        async function initApp() {
             if (sessionStorage.getItem('yr_admin') === '1') {
                 document.getElementById('loginSec').classList.add('hidden');
                 document.getElementById('appSec').classList.remove('hidden');
-                updateStats();
-                renderEntities();
-                renderCategories();
+                
+                if (!sb) await initSupabase();
+                loadAllData();
             }
         }
 
         function logout() {
             sessionStorage.removeItem('yr_admin');
+            if (sb) sb.auth.signOut();
             location.reload();
-        }
-
-        function updateStats() {
-            document.getElementById('countEntities').innerText = DB.entities.length;
-            document.getElementById('countVerified').innerText = DB.entities.filter(e => e.isVerified).length;
         }
 
         function switchTab(tab, el) {
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             if(el) el.classList.add('active');
             
-            document.getElementById('tab-entities').classList.add('hidden');
-            document.getElementById('tab-categories').classList.add('hidden');
-            
+            document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.add('hidden'));
             document.getElementById('tab-' + tab).classList.remove('hidden');
-            document.getElementById('tabTitle').innerText = tab === 'entities' ? 'إدارة الشركات والمنشآت' : 'إدارة التصنيفات';
+            
+            const titles = {
+                dashboard: 'لوحة التحكم', companies: 'إدارة الشركات', banks: 'إدارة البنوك',
+                jobs: 'إدارة الوظائف', reviews: 'إدارة التقييمات', categories: 'إدارة التصنيفات',
+                cities: 'إدارة المدن', prices: 'أسعار السوق', verification: 'طلبات التوثيق', users: 'إدارة المستخدمين'
+            };
+            document.getElementById('tabTitle').innerText = titles[tab] || 'لوحة التحكم';
         }
 
-        // --- عرض وإدارة الشركات ---
-        function renderEntities() {
-            const query = document.getElementById('searchEntity').value.toLowerCase();
-            const tbody = document.getElementById('entitiesTable');
-            const filtered = DB.entities.filter(e => e.name.toLowerCase().includes(query));
+        async function loadAllData() {
+            await loadStats();
+            await renderCompanies();
+            await renderBanks();
+            await renderJobs();
+            await renderReviews();
+            await renderCategories();
+            await renderCities();
+            await renderPrices();
+            await renderVerification();
+            await renderUsers();
+        }
 
+        // الإحصائيات
+        async function loadStats() {
+            try {
+                const { count: companies } = await sb.from('companies').select('*', { count: 'exact', head: true });
+                const { count: banks } = await sb.from('banks').select('*', { count: 'exact', head: true });
+                const { count: jobs } = await sb.from('jobs').select('*', { count: 'exact', head: true });
+                const { count: reviews } = await sb.from('reviews').select('*', { count: 'exact', head: true });
+                const { count: users } = await sb.from('profiles').select('*', { count: 'exact', head: true });
+                const { count: pending } = await sb.from('verification_requests').select('*', { count: 'exact', head: true }).eq('status', 'PENDING');
+
+                document.getElementById('statCompanies').innerText = companies || 0;
+                document.getElementById('statBanks').innerText = banks || 0;
+                document.getElementById('statJobs').innerText = jobs || 0;
+                document.getElementById('statReviews').innerText = reviews || 0;
+                document.getElementById('statUsers').innerText = users || 0;
+                document.getElementById('statPending').innerText = pending || 0;
+            } catch (e) { console.error('Stats error:', e); }
+        }
+
+        // الشركات
+        async function renderCompanies() {
+            const query = document.getElementById('searchCompanies').value.toLowerCase();
+            const { data, error } = await sb.from('companies').select('*').order('created_at', { ascending: false });
+            if (error) { console.error(error); return; }
+            
+            const filtered = data.filter(c => c.name.toLowerCase().includes(query));
+            const tbody = document.getElementById('companiesTable');
+            
             if(filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">لا توجد بيانات</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">لا توجد شركات</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = filtered.map(item => `
-                <tr>
-                    <td><strong>${item.name}</strong></td>
-                    <td>${item.category || '-'}</td>
-                    <td>${item.city || 'صنعاء'}</td>
-                    <td>${item.isVerified ? '<span style="color:#4ade80;">✔ موثق</span>' : '<span style="color:#94a3b8;">غير موثق</span>'}</td>
-                    <td>
-                        <button class="btn-gold btn-sm btn-verify" onclick="toggleVerify(${item.id})"><i class="fas fa-check-circle"></i></button>
-                        <button class="btn-gold btn-sm btn-edit" onclick="openEntityModal(${item.id})"><i class="fas fa-edit"></i></button>
-                        <button class="btn-gold btn-sm btn-danger" onclick="deleteEntity(${item.id})"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function toggleVerify(id) {
-            const ent = DB.entities.find(e => e.id === id);
-            if(ent) {
-                ent.isVerified = !ent.isVerified;
-                saveDB();
-                renderEntities();
-            }
-        }
-
-        function deleteEntity(id) {
-            if(confirm('هل أنت تأكد من الحذف؟')) {
-                DB.entities = DB.entities.filter(e => e.id !== id);
-                saveDB();
-                renderEntities();
-            }
-        }
-
-        function openEntityModal(id = null) {
-            const ent = id ? DB.entities.find(e => e.id === id) : null;
-            document.getElementById('modalTitle').innerText = ent ? 'تعديل منشأة' : 'إضافة منشأة جديدة';
-            
-            const catOptions = DB.categories.map(c => `<option value="${c.name}" ${ent && ent.category === c.name ? 'selected' : ''}>${c.name}</option>`).join('');
-
-            document.getElementById('modalBody').innerHTML = `
-                <form onsubmit="saveEntity(event, ${id})">
-                    <div style="margin-bottom:12px;">
-                        <label>اسم المنشأة *</label>
-                        <input type="text" id="entName" class="form-control" value="${ent ? ent.name : ''}" required>
-                    </div>
-                    <div style="margin-bottom:12px;">
-                        <label>التصنيف</label>
-                        <select id="entCat" class="form-control">${catOptions}</select>
-                    </div>
-                    <div style="margin-bottom:12px;">
-                        <label>المدينة</label>
-                        <input type="text" id="entCity" class="form-control" value="${ent ? ent.city : 'صنعاء'}">
-                    </div>
-                    <div style="margin-bottom:12px;">
-                        <label>رقم الهاتف</label>
-                        <input type="text" id="entPhone" class="form-control" value="${ent ? ent.phone || '' : ''}">
-                    </div>
-                    <button type="submit" class="btn-gold" style="width:100%; justify-content:center; margin-top:10px;">حفظ البيانات</button>
-                </form>
-            `;
-            document.getElementById('modalOverlay').classList.remove('hidden');
-        }
-
-        function saveEntity(e, id) {
-            e.preventDefault();
-            const name = document.getElementById('entName').value;
-            const category = document.getElementById('entCat').value;
-            const city = document.getElementById('entCity').value;
-            const phone = document.getElementById('entPhone').value;
-
-            if(id) {
-                const ent = DB.entities.find(x => x.id === id);
-                ent.name = name; ent.category = category; ent.city = city; ent.phone = phone;
-            } else {
-                DB.entities.push({ id: Date.now(), name, category, city, phone, isVerified: false });
-            }
-            saveDB();
-            closeModal();
-            renderEntities();
-        }
-
-        // --- عرض وإدارة التصنيفات ---
-        function renderCategories() {
-            const tbody = document.getElementById('categoriesTable');
-            tbody.innerHTML = DB.categories.map(c => `
+            tbody.innerHTML = filtered.map(c => `
                 <tr>
                     <td><strong>${c.name}</strong></td>
-                    <td><i class="fas ${c.icon}"></i> (${c.icon})</td>
+                    <td>${c.category_id || '-'}</td>
+                    <td>${c.city_id || '-'}</td>
+                    <td><span class="status-badge status-${c.status.toLowerCase()}">${c.status}</span></td>
+                    <td>${c.is_verified ? '<span style="color:var(--success);">✔ موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>'}</td>
                     <td>
-                        <button class="btn-gold btn-sm btn-danger" onclick="deleteCategory(${c.id})"><i class="fas fa-trash"></i></button>
+                        <button class="btn btn-sm btn-verify" onclick="toggleVerifyCompany('${c.id}')"><i class="fas fa-check"></i></button>
+                        <button class="btn btn-sm btn-edit" onclick="openCompanyModal('${c.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCompany('${c.id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        function openCatModal() {
-            document.getElementById('modalTitle').innerText = 'إضافة تصنيف جديد';
+        async function toggleVerifyCompany(id) {
+            const { data } = await sb.from('companies').select('is_verified').eq('id', id).single();
+            await sb.from('companies').update({ is_verified: !data.is_verified }).eq('id', id);
+            renderCompanies();
+            showToast('تم التحديث');
+        }
+
+        async function deleteCompany(id) {
+            if(!confirm('هل أنت متأكد؟')) return;
+            await sb.from('companies').delete().eq('id', id);
+            renderCompanies();
+            loadStats();
+            showToast('تم الحذف');
+        }
+
+        async function openCompanyModal(id = null) {
+            let company = null;
+            if (id) {
+                const { data } = await sb.from('companies').select('*').eq('id', id).single();
+                company = data;
+            }
+            
+            const { data: cats } = await sb.from('categories').select('*');
+            const { data: cities } = await sb.from('cities').select('*');
+            
+            const catOptions = cats ? cats.map(c => `<option value="${c.id}" ${company && company.category_id === c.id ? 'selected' : ''}>${c.name}</option>`).join('') : '';
+            const cityOptions = cities ? cities.map(c => `<option value="${c.id}" ${company && company.city_id === c.id ? 'selected' : ''}>${c.name}</option>`).join('') : '';
+
+            document.getElementById('modalTitle').innerText = company ? 'تعديل شركة' : 'إضافة شركة جديدة';
             document.getElementById('modalBody').innerHTML = `
-                <form onsubmit="saveCategory(event)">
-                    <div style="margin-bottom:12px;">
-                        <label>اسم التصنيف *</label>
-                        <input type="text" id="catName" class="form-control" required placeholder="مثال: مطاعم">
-                    </div>
-                    <div style="margin-bottom:12px;">
-                        <label>أيقونة FontAwesome</label>
-                        <input type="text" id="catIcon" class="form-control" placeholder="fa-utensils">
-                    </div>
-                    <button type="submit" class="btn-gold" style="width:100%; justify-content:center; margin-top:10px;">إضافة</button>
+                <form onsubmit="saveCompany(event, '${id || ''}')">
+                    <div class="form-group"><label>اسم الشركة *</label><input type="text" id="compName" class="form-control" value="${company ? company.name : ''}" required></div>
+                    <div class="form-group"><label>التصنيف</label><select id="compCat" class="form-control"><option value="">-- اختر --</option>${catOptions}</select></div>
+                    <div class="form-group"><label>المدينة</label><select id="compCity" class="form-control"><option value="">-- اختر --</option>${cityOptions}</select></div>
+                    <div class="form-group"><label>الوصف</label><textarea id="compDesc" class="form-control" rows="3">${company ? company.description || '' : ''}</textarea></div>
+                    <div class="form-group"><label>الهاتف</label><input type="text" id="compPhone" class="form-control" value="${company ? company.phone || '' : ''}"></div>
+                    <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="compEmail" class="form-control" value="${company ? company.email || '' : ''}"></div>
+                    <div class="form-group"><label>الموقع الإلكتروني</label><input type="url" id="compWebsite" class="form-control" value="${company ? company.website || '' : ''}"></div>
+                    <div class="form-group"><label>الحالة</label><select id="compStatus" class="form-control">
+                        <option value="PENDING" ${company && company.status === 'PENDING' ? 'selected' : ''}>قيد المراجعة</option>
+                        <option value="ACTIVE" ${company && company.status === 'ACTIVE' ? 'selected' : ''}>نشطة</option>
+                        <option value="HIDDEN" ${company && company.status === 'HIDDEN' ? 'selected' : ''}>مخفية</option>
+                    </select></div>
+                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
                 </form>
             `;
             document.getElementById('modalOverlay').classList.remove('hidden');
         }
 
-        function saveCategory(e) {
+        async function saveCompany(e, id) {
             e.preventDefault();
-            const name = document.getElementById('catName').value;
-            const icon = document.getElementById('catIcon').value || 'fa-tag';
-            DB.categories.push({ id: Date.now(), name, icon });
-            saveDB();
+            const data = {
+                name: document.getElementById('compName').value,
+                category_id: document.getElementById('compCat').value || null,
+                city_id: document.getElementById('compCity').value || null,
+                description: document.getElementById('compDesc').value,
+                phone: document.getElementById('compPhone').value,
+                email: document.getElementById('compEmail').value,
+                website: document.getElementById('compWebsite').value,
+                status: document.getElementById('compStatus').value
+            };
+
+            if (id) {
+                await sb.from('companies').update(data).eq('id', id);
+            } else {
+                await sb.from('companies').insert(data);
+            }
+            
             closeModal();
-            renderCategories();
+            renderCompanies();
+            loadStats();
+            showToast('تم الحفظ');
         }
 
-        function deleteCategory(id) {
-            if(confirm('حذف التصنيف؟')) {
-                DB.categories = DB.categories.filter(c => c.id !== id);
-                saveDB();
-                renderCategories();
+        // البنوك (نفس منطق الشركات)
+        async function renderBanks() {
+            const query = document.getElementById('searchBanks').value.toLowerCase();
+            const { data } = await sb.from('banks').select('*').order('created_at', { ascending: false });
+            const filtered = data ? data.filter(b => b.name.toLowerCase().includes(query)) : [];
+            const tbody = document.getElementById('banksTable');
+            
+            if(filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">لا توجد بنوك</td></tr>';
+                return;
             }
+
+            tbody.innerHTML = filtered.map(b => `
+                <tr>
+                    <td><strong>${b.name}</strong></td>
+                    <td>${b.category_id || '-'}</td>
+                    <td>${b.city_id || '-'}</td>
+                    <td><span class="status-badge status-${b.status.toLowerCase()}">${b.status}</span></td>
+                    <td>${b.is_verified ? '<span style="color:var(--success);">✔ موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-verify" onclick="toggleVerifyBank('${b.id}')"><i class="fas fa-check"></i></button>
+                        <button class="btn btn-sm btn-edit" onclick="openBankModal('${b.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteBank('${b.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function toggleVerifyBank(id) {
+            const { data } = await sb.from('banks').select('is_verified').eq('id', id).single();
+            await sb.from('banks').update({ is_verified: !data.is_verified }).eq('id', id);
+            renderBanks();
+            showToast('تم التحديث');
+        }
+
+        async function deleteBank(id) {
+            if(!confirm('هل أنت متأكد؟')) return;
+            await sb.from('banks').delete().eq('id', id);
+            renderBanks();
+            loadStats();
+            showToast('تم الحذف');
+        }
+
+        async function openBankModal(id = null) {
+            let bank = null;
+            if (id) {
+                const { data } = await sb.from('banks').select('*').eq('id', id).single();
+                bank = data;
+            }
+            
+            const { data: cats } = await sb.from('categories').select('*');
+            const { data: cities } = await sb.from('cities').select('*');
+            
+            const catOptions = cats ? cats.map(c => `<option value="${c.id}" ${bank && bank.category_id === c.id ? 'selected' : ''}>${c.name}</option>`).join('') : '';
+            const cityOptions = cities ? cities.map(c => `<option value="${c.id}" ${bank && bank.city_id === c.id ? 'selected' : ''}>${c.name}</option>`).join('') : '';
+
+            document.getElementById('modalTitle').innerText = bank ? 'تعديل بنك' : 'إضافة بنك جديد';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveBank(event, '${id || ''}')">
+                    <div class="form-group"><label>اسم البنك *</label><input type="text" id="bankName" class="form-control" value="${bank ? bank.name : ''}" required></div>
+                    <div class="form-group"><label>التصنيف</label><select id="bankCat" class="form-control"><option value="">-- اختر --</option>${catOptions}</select></div>
+                    <div class="form-group"><label>المدينة</label><select id="bankCity" class="form-control"><option value="">-- اختر --</option>${cityOptions}</select></div>
+                    <div class="form-group"><label>الوصف</label><textarea id="bankDesc" class="form-control" rows="3">${bank ? bank.description || '' : ''}</textarea></div>
+                    <div class="form-group"><label>الهاتف</label><input type="text" id="bankPhone" class="form-control" value="${bank ? bank.phone || '' : ''}"></div>
+                    <div class="form-group"><label>أوقات العمل</label><input type="text" id="bankHours" class="form-control" value="${bank ? bank.working_hours || '' : ''}" placeholder="8:00 ص - 4:00 م"></div>
+                    <div class="form-group"><label>الحالة</label><select id="bankStatus" class="form-control">
+                        <option value="PENDING" ${bank && bank.status === 'PENDING' ? 'selected' : ''}>قيد المراجعة</option>
+                        <option value="ACTIVE" ${bank && bank.status === 'ACTIVE' ? 'selected' : ''}>نشط</option>
+                        <option value="HIDDEN" ${bank && bank.status === 'HIDDEN' ? 'selected' : ''}>مخفي</option>
+                    </select></div>
+                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
+                </form>
+            `;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        async function saveBank(e, id) {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('bankName').value,
+                category_id: document.getElementById('bankCat').value || null,
+                city_id: document.getElementById('bankCity').value || null,
+                description: document.getElementById('bankDesc').value,
+                phone: document.getElementById('bankPhone').value,
+                working_hours: document.getElementById('bankHours').value,
+                status: document.getElementById('bankStatus').value
+            };
+
+            if (id) {
+                await sb.from('banks').update(data).eq('id', id);
+            } else {
+                await sb.from('banks').insert(data);
+            }
+            
+            closeModal();
+            renderBanks();
+            loadStats();
+            showToast('تم الحفظ');
+        }
+
+        // الوظائف
+        async function renderJobs() {
+            const query = document.getElementById('searchJobs').value.toLowerCase();
+            const { data: jobs } = await sb.from('jobs').select('*, companies(name)').order('created_at', { ascending: false });
+            const filtered = jobs ? jobs.filter(j => j.title.toLowerCase().includes(query)) : [];
+            const tbody = document.getElementById('jobsTable');
+            
+            if(filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا توجد وظائف</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(j => `
+                <tr>
+                    <td><strong>${j.title}</strong></td>
+                    <td>${j.companies ? j.companies.name : '-'}</td>
+                    <td>${j.city_id || '-'}</td>
+                    <td><span class="status-badge status-${j.status.toLowerCase()}">${j.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteJob('${j.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function deleteJob(id) {
+            if(!confirm('هل أنت متأكد؟')) return;
+            await sb.from('jobs').delete().eq('id', id);
+            renderJobs();
+            loadStats();
+            showToast('تم الحذف');
+        }
+
+        // التقييمات
+        async function renderReviews() {
+            const query = document.getElementById('searchReviews').value.toLowerCase();
+            const { data: reviews } = await sb.from('reviews').select('*').order('created_at', { ascending: false });
+            const filtered = reviews ? reviews.filter(r => (r.comment || '').toLowerCase().includes(query)) : [];
+            const tbody = document.getElementById('reviewsTable');
+            
+            if(filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">لا توجد تقييمات</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(r => `
+                <tr>
+                    <td>${r.user_id || '-'}</td>
+                    <td>${r.entity_type} (${r.entity_id ? r.entity_id.substring(0,8) : '-'})</td>
+                    <td style="color:var(--gold-text);">${'★'.repeat(r.rating)}</td>
+                    <td>${(r.comment || '').substring(0, 50)}${(r.comment || '').length > 50 ? '...' : ''}</td>
+                    <td><span class="status-badge status-${r.status.toLowerCase()}">${r.status}</span></td>
+                    <td>
+                        ${r.status === 'PENDING' ? `
+                            <button class="btn btn-sm btn-verify" onclick="approveReview('${r.id}')"><i class="fas fa-check"></i></button>
+                            <button class="btn btn-sm btn-warning" onclick="rejectReview('${r.id}')"><i class="fas fa-times"></i></button>
+                        ` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="deleteReview('${r.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function approveReview(id) {
+            await sb.from('reviews').update({ status: 'APPROVED' }).eq('id', id);
+            renderReviews();
+            showToast('تمت الموافقة');
+        }
+
+        async function rejectReview(id) {
+            await sb.from('reviews').update({ status: 'REJECTED' }).eq('id', id);
+            renderReviews();
+            showToast('تم الرفض');
+        }
+
+        async function deleteReview(id) {
+            if(!confirm('هل أنت متأكد؟')) return;
+            await sb.from('reviews').delete().eq('id', id);
+            renderReviews();
+            loadStats();
+            showToast('تم الحذف');
+        }
+
+        // التصنيفات
+        async function renderCategories() {
+            const { data } = await sb.from('categories').select('*').order('name');
+            const tbody = document.getElementById('categoriesTable');
+            
+            if(!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px;">لا توجد تصنيفات</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(c => `
+                <tr>
+                    <td><strong>${c.name}</strong></td>
+                    <td><i class="fas ${c.icon || 'fa-tag'}"></i> (${c.icon || '-'})</td>
+                    <td>
+                        <button class="btn btn-sm btn-edit" onclick="openCategoryModal('${c.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCategory('${c.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function openCategoryModal(id = null) {
+            let cat = null;
+            if (id) {
+                const { data } = await sb.from('categories').select('*').eq('id', id).single();
+                cat = data;
+            }
+            
+            document.getElementById('modalTitle').innerText = cat ? 'تعديل تصنيف' : 'إضافة تصنيف جديد';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveCategory(event, '${id || ''}')">
+                    <div class="form-group"><label>اسم التصنيف *</label><input type="text" id="catName" class="form-control" value="${cat ? cat.name : ''}" required></div>
+                    <div class="form-group"><label>الأيقونة (FontAwesome)</label><input type="text" id="catIcon" class="form-control" value="${cat ? cat.icon || '' : ''}" placeholder="fa-tag"></div>
+                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
+                </form>
+            `;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        async function saveCategory(e, id) {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('catName').value,
+                icon: document.getElementById('catIcon').value || 'fa-tag'
+            };
+
+            if (id) {
+                await sb.from('categories').update(data).eq('id', id);
+            } else {
+                await sb.from('categories').insert(data);
+            }
+            
+            closeModal();
+            renderCategories();
+            showToast('تم الحفظ');
+        }
+
+        async function deleteCategory(id) {
+            if(!confirm('هل أنت متأكد؟')) return;
+            await sb.from('categories').delete().eq('id', id);
+            renderCategories();
+            showToast('تم الحذف');
+        }
+
+        // المدن
+        async function renderCities() {
+            const { data } = await sb.from('cities').select('*').order('name');
+            const tbody = document.getElementById('citiesTable');
+            
+            if(!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px;">لا توجد مدن</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(c => `
+                <tr>
+                    <td><strong>${c.name}</strong></td>
+                    <td>${c.slug || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-edit" onclick="openCityModal('${c.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCity('${c.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function openCityModal(id = null) {
+            let city = null;
+            if (id) {
+                const { data } = await sb.from('cities').select('*').eq('id', id).single();
+                city = data;
+            }
+            
+            document.getElementById('modalTitle').innerText = city ? 'تعديل مدينة' : 'إضافة مدينة جديدة';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveCity(event, '${id || ''}')">
+                    <div class="form-group"><label>اسم المدينة *</label><input type="text" id="cityName" class="form-control" value="${city ? city.name : ''}" required></div>
+                    <div class="form-group"><label>الاسم اللاتيني</label><input type="text" id="citySlug" class="form-control" value="${city ? city.slug || '' : ''}" placeholder="sanaa"></div>
+                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
+                </form>
+            `;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        async function saveCity(e, id) {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('cityName').value,
+                slug: document.getElementById('citySlug').value
+            };
+
+            if (id) {
+                await sb.from('cities').update(data).eq('id', id);
+            } else {
+                await sb.from('cities').insert(data);
+            }
+            
+            closeModal();
+            renderCities();
+            showToast('تم الحفظ');
+        }
+
+        async function deleteCity(id) {
+            if(!confirm('هل أنت متأكد؟')) return;
+            await sb.from('cities').delete().eq('id', id);
+            renderCities();
+            showToast('تم الحذف');
+        }
+
+        // أسعار السوق
+        async function renderPrices() {
+            const { data: exchange } = await sb.from('exchange_rates').select('*').order('updated_at', { ascending: false });
+            const { data: gold } = await sb.from('gold_prices').select('*').order('updated_at', { ascending: false });
+            
+            document.getElementById('exchangeTable').innerHTML = exchange ? exchange.map(e => `
+                <tr>
+                    <td><strong>${e.currency}</strong></td>
+                    <td>${e.buy_price}</td>
+                    <td>${e.sell_price}</td>
+                    <td>${e.city}</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="deleteExchange('${e.id}')"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('') : '<tr><td colspan="5" style="text-align:center;">لا توجد بيانات</td></tr>';
+            
+            document.getElementById('goldTable').innerHTML = gold ? gold.map(g => `
+                <tr>
+                    <td><strong>${g.karat} قيراط</strong></td>
+                    <td>${g.price}</td>
+                    <td>${g.city}</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="deleteGold('${g.id}')"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('') : '<tr><td colspan="4" style="text-align:center;">لا توجد بيانات</td></tr>';
+        }
+
+        async function openExchangeModal() {
+            document.getElementById('modalTitle').innerText = 'إضافة سعر صرف';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveExchange(event)">
+                    <div class="form-group"><label>العملة *</label><select id="exCurrency" class="form-control" required>
+                        <option value="USD">USD - دولار</option>
+                        <option value="SAR">SAR - ريال سعودي</option>
+                        <option value="EUR">EUR - يورو</option>
+                    </select></div>
+                    <div class="form-group"><label>سعر الشراء *</label><input type="number" id="exBuy" class="form-control" required></div>
+                    <div class="form-group"><label>سعر البيع *</label><input type="number" id="exSell" class="form-control" required></div>
+                    <div class="form-group"><label>المدينة *</label><select id="exCity" class="form-control" required>
+                        <option value="صنعاء">صنعاء</option>
+                        <option value="عدن">عدن</option>
+                    </select></div>
+                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
+                </form>
+            `;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        async function saveExchange(e) {
+            e.preventDefault();
+            await sb.from('exchange_rates').insert({
+                currency: document.getElementById('exCurrency').value,
+                buy_price: document.getElementById('exBuy').value,
+                sell_price: document.getElementById('exSell').value,
+                city: document.getElementById('exCity').value,
+                source: 'manual'
+            });
+            closeModal();
+            renderPrices();
+            showToast('تم الحفظ');
+        }
+
+        async function deleteExchange(id) {
+            if(!confirm('هل أنت متأكد؟')) return;
+            await sb.from('exchange_rates').delete().eq('id', id);
+            renderPrices();
+            showToast('تم الحذف');
+        }
+
+        async function openGoldModal() {
+            document.getElementById('modalTitle').innerText = 'إضافة سعر ذهب';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveGold(event)">
+                    <div class="form-group"><label>العيار *</label><select id="goldKarat" class="form-control" required>
+                        <option value="24">24 قيراط</option>
+                        <option value="21">21 قيراط</option>
+                        <option value="18">18 قيراط</option>
+                    </select></div>
+                    <div class="form-group"><label>السعر *</label><input type="number" id="goldPrice" class="form-control" required></div>
+                    <div class="form-group"><label>المدينة *</label><select id="goldCity" class="form-control" required>
+                        <option value="صنعاء">صنعاء</option>
+                        <option value="عدن">عدن</option>
+                    </select></div>
+                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
+                </form>
+            `;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        async function saveGold(e) {
+            e.preventDefault();
+            await sb.from('gold_prices').insert({
+                karat: document.getElementById('goldKarat').value,
+                price: document.getElementById('goldPrice').value,
+                city: document.getElementById('goldCity').value,
+                source: 'manual'
+            });
+            closeModal();
+            renderPrices();
+            showToast('تم الحفظ');
+        }
+
+        async function deleteGold(id) {
+            if(!confirm('هل أنت متأكد؟')) return;
+            await sb.from('gold_prices').delete().eq('id', id);
+            renderPrices();
+            showToast('تم الحذف');
+        }
+
+        // طلبات التوثيق
+        async function renderVerification() {
+            const { data } = await sb.from('verification_requests').select('*').order('created_at', { ascending: false });
+            const tbody = document.getElementById('verificationTable');
+            
+            if(!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا توجد طلبات</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(v => `
+                <tr>
+                    <td>${v.entity_id ? v.entity_id.substring(0,8) : '-'}</td>
+                    <td>${v.entity_type || '-'}</td>
+                    <td>${new Date(v.created_at).toLocaleDateString('ar-YE')}</td>
+                    <td><span class="status-badge status-${v.status.toLowerCase()}">${v.status}</span></td>
+                    <td>
+                        ${v.status === 'PENDING' ? `
+                            <button class="btn btn-sm btn-verify" onclick="approveVerification('${v.id}')"><i class="fas fa-check"></i> قبول</button>
+                            <button class="btn btn-sm btn-danger" onclick="rejectVerification('${v.id}')"><i class="fas fa-times"></i> رفض</button>
+                        ` : '-'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function approveVerification(id) {
+            await sb.from('verification_requests').update({ status: 'APPROVED', reviewed_at: new Date().toISOString() }).eq('id', id);
+            renderVerification();
+            loadStats();
+            showToast('تمت الموافقة');
+        }
+
+        async function rejectVerification(id) {
+            await sb.from('verification_requests').update({ status: 'REJECTED', reviewed_at: new Date().toISOString() }).eq('id', id);
+            renderVerification();
+            loadStats();
+            showToast('تم الرفض');
+        }
+
+        // المستخدمين
+        async function renderUsers() {
+            const query = document.getElementById('searchUsers').value.toLowerCase();
+            const { data } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+            const filtered = data ? data.filter(u => (u.full_name || '').toLowerCase().includes(query) || (u.email || '').toLowerCase().includes(query)) : [];
+            const tbody = document.getElementById('usersTable');
+            
+            if(filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا يوجد مستخدمين</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(u => `
+                <tr>
+                    <td><strong>${u.full_name || '-'}</strong></td>
+                    <td>${u.email || '-'}</td>
+                    <td>${u.role || 'user'}</td>
+                    <td>${new Date(u.created_at).toLocaleDateString('ar-YE')}</td>
+                    <td>-</td>
+                </tr>
+            `).join('');
         }
 
         function closeModal() {
