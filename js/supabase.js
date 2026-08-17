@@ -1,83 +1,48 @@
-cat > js/supabase.js << 'ENDOFFILE'
-// === YEMEN RATING - Supabase Connection ===
-// ⚠️ ضع مفاتيحك الحقيقية هنا ⚠️
-const SUPABASE_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
+/* ═══════════════════════════════════════════════════════════
+   YEMEN RATING — طبقة الاتصال الموحّدة بـ Supabase
+   يُستخدم هذا الملف الآن فقط من admin.html، وسيُعتمد لاحقًا
+   في بقية الصفحات عند تحويلها من YR_DB إلى Supabase الحقيقي.
+═══════════════════════════════════════════════════════════ */
 
+const SUPABASE_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_4StPj676njVXlDg4UUwaJg_xSqhsIuT';
 
-let sb = null;
+// كل الصفحات تنتظر هذا الـ Promise قبل أي استعلام، فلا يوجد أبدًا
+// سباق بين "الصفحة تُحمّل" و"الاتصال جاهز".
+window.YR_SUPABASE_READY = (async () => {
+    const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    const client = module.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.sb = client;   // متاح عالميًا لكل الصفحات: window.sb أو sb مباشرة
+    console.log('✅ Supabase connected');
+    return client;
+})();
 
-async function initSupabase() {
+/**
+ * دالة مساعدة: استخدمها في بداية أي دالة async تحتاج قاعدة البيانات
+ *   const sb = await getSB();
+ * تضمن أن الاتصال جاهز قبل الاستمرار، بدل الاعتماد على توقيت DOMContentLoaded.
+ */
+async function getSB() {
+    return window.YR_SUPABASE_READY;
+}
+
+/**
+ * تسجيل إجراء إداري حسّاس في audit_logs.
+ * يُستخدم من admin.html عند كل تعديل/حذف/تغيير حالة.
+ */
+async function logAdminAction(action, targetTable, targetId, reason = null) {
     try {
-        const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-        sb = module.createClient(SUPABASE_URL, SUPABASE_KEY);
-        console.log('✅ Supabase connected');
-        return sb;
+        const client = await getSB();
+        const { data: { user } } = await client.auth.getUser();
+        if (!user) return;
+        await client.from('audit_logs').insert({
+            admin_id: user.id,
+            action,
+            target_table: targetTable,
+            target_id: String(targetId),
+            reason
+        });
     } catch (e) {
-        console.error('❌ Supabase failed:', e);
-        return null;
+        console.warn('تعذّر تسجيل الإجراء في audit_logs:', e);
     }
 }
-
-function getSB() {
-    if (!sb) throw new Error('Call initSupabase() first');
-    return sb;
-}
-
-// === Company Service ===
-const CompanyService = {
-    async getAll(filters = {}) {
-        let q = getSB().from('companies').select('*').eq('status', 'ACTIVE');
-        if (filters.city) q = q.eq('city', filters.city);
-        if (filters.search) q = q.ilike('name', `%${filters.search}%`);
-        const { data, error } = await q.order('created_at', { ascending: false });
-        if (error) throw error;
-        return data || [];
-    },
-    async getById(id) {
-        const { data, error } = await getSB().from('companies').select('*').eq('id', id).single();
-        if (error) throw error;
-        return data;
-    },
-    async uploadLogo(file, companyId) {
-        const path = `${companyId}/${Date.now()}-${file.name}`;
-        const { error } = await getSB().storage.from('company-logos').upload(path, file);
-        if (error) throw error;
-        const { data } = getSB().storage.from('company-logos').getPublicUrl(path);
-        return data.publicUrl;
-    }
-};
-
-// === Bank Service ===
-const BankService = {
-    async getAll() {
-        const { data, error } = await getSB().from('banks').select('*').eq('status', 'ACTIVE');
-        if (error) throw error;
-        return data || [];
-    }
-};
-
-// === Auth Service ===
-const AuthService = {
-    async login(email, password) {
-        const { data, error } = await getSB().auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        return data;
-    },
-    async logout() {
-        await getSB().auth.signOut();
-        window.location.href = 'index.html';
-    },
-    async getSession() {
-        const { data } = await getSB().auth.getSession();
-        return data.session;
-    }
-};
-
-// === تهيئة تلقائية عند تحميل الصفحة ===
-document.addEventListener('DOMContentLoaded', async () => {
-    await initSupabase();
-    console.log('🚀 Yemen Rating System Ready');
-});
-ENDOFFILE
-echo "✅ تم إنشاء js/supabase.js"
