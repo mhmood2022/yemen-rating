@@ -22,6 +22,10 @@
         .login-card { background: var(--card-bg); border: 1px solid var(--gold-text); border-radius: 12px; padding: 35px; width: 100%; max-width: 400px; text-align: center; }
         .login-logo { width: 60px; height: 60px; background: var(--gold-gradient); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #0a1120; margin: 0 auto 15px; }
         .login-error { background: rgba(239,68,68,0.15); border: 1px solid var(--danger); color: #fca5a5; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; }
+        .boot-error { color: #f87171; }
+        .boot-error i { font-size: 2rem; }
+        .boot-error p { margin-top: 15px; }
+        .boot-error button { margin-top: 15px; }
 
         .admin-layout { display: flex; min-height: 100vh; }
         .sidebar { width: 260px; background: var(--bg-dark); border-left: 1px solid var(--border-color); height: 100vh; position: fixed; right: 0; top: 0; z-index: 100; overflow-y: auto; }
@@ -70,6 +74,7 @@
         .status-hidden { background: rgba(148, 163, 184, 0.2); color: var(--text-muted); }
 
         .toast { position: fixed; top: 20px; left: 20px; background: var(--card-bg); border: 1px solid var(--gold-text); padding: 15px 20px; border-radius: 8px; z-index: 9999; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s; }
+        .toast.toast-error { border-color: var(--danger); }
         @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -86,7 +91,7 @@
 
     <!-- 1. شاشة التحقق من الاتصال -->
     <div class="login-wrapper" id="bootSec">
-        <div style="text-align:center; color:var(--text-muted);">
+        <div style="text-align:center; color:var(--text-muted);" id="bootContent">
             <i class="fas fa-circle-notch spin" style="font-size:2rem; color:var(--gold-text);"></i>
             <p style="margin-top:15px;">جاري الاتصال بقاعدة البيانات...</p>
         </div>
@@ -249,8 +254,8 @@
 
         function showToast(msg, type = 'success') {
             const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="color:var(--gold-text);"></i> ${msg}`;
+            toast.className = 'toast' + (type === 'error' ? ' toast-error' : '');
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="color:${type === 'success' ? 'var(--gold-text)' : 'var(--danger)'};"></i> ${esc(msg)}`;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
@@ -261,18 +266,63 @@
             box.classList.remove('hidden');
         }
 
+        // ── تسجيل إجراءات الإدارة في audit_logs (لم تكن معرّفة سابقًا وكانت تكسر كل عملية حفظ/تعديل/حذف)
+        async function logAdminAction(action, targetTable, targetId, reason = null) {
+            try {
+                const client = await getSB();
+                await client.from('audit_logs').insert({
+                    admin_id: currentAdmin ? currentAdmin.id : null,
+                    action,
+                    target_table: targetTable,
+                    target_id: targetId,
+                    reason
+                });
+            } catch (e) {
+                // لا نكسر تدفق الواجهة إذا فشل تسجيل النشاط فقط
+                console.error('Audit log error:', e);
+            }
+        }
+
+        // ── مهلة زمنية تمنع تعليق شاشة "جاري الاتصال" للأبد
+        function withTimeout(promise, ms, message) {
+            return Promise.race([
+                promise,
+                new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms))
+            ]);
+        }
+
+        function showBootError(message) {
+            document.getElementById('bootContent').innerHTML = `
+                <div class="boot-error">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>تعذّر الاتصال بقاعدة البيانات</p>
+                    <p style="font-size:0.8rem; color:var(--text-muted); margin-top:5px;">${esc(message)}</p>
+                    <button class="btn btn-gold" onclick="location.reload()">
+                        <i class="fas fa-redo"></i> إعادة المحاولة
+                    </button>
+                </div>`;
+        }
+
         // ── بدء التشغيل: ننتظر الاتصال، ثم نتحقق إن كانت هناك جلسة قائمة أصلاً
         (async function boot() {
-            const client = await getSB();
-            const { data: { session } } = await client.auth.getSession();
+            try {
+                const client = await withTimeout(getSB(), 10000, 'انتهت مهلة الاتصال بالخادم');
+                const { data: { session }, error } = await withTimeout(
+                    client.auth.getSession(), 10000, 'انتهت مهلة التحقق من الجلسة'
+                );
+                if (error) throw error;
 
-            document.getElementById('bootSec').classList.add('hidden');
+                document.getElementById('bootSec').classList.add('hidden');
 
-            if (session) {
-                const ok = await checkAdminAndEnter(session.user);
-                if (!ok) document.getElementById('loginSec').classList.remove('hidden');
-            } else {
-                document.getElementById('loginSec').classList.remove('hidden');
+                if (session) {
+                    const ok = await checkAdminAndEnter(session.user);
+                    if (!ok) document.getElementById('loginSec').classList.remove('hidden');
+                } else {
+                    document.getElementById('loginSec').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error('Boot error:', err);
+                showBootError(err && err.message ? err.message : 'خطأ غير معروف');
             }
         })();
 
@@ -300,20 +350,25 @@
 
         // ── يتحقق أن المستخدم موجود في profiles بدور admin/super_admin قبل فتح اللوحة
         async function checkAdminAndEnter(user) {
-            const client = await getSB();
-            const { data: profile, error } = await client
-                .from('profiles').select('id, email, role').eq('id', user.id).single();
+            try {
+                const client = await getSB();
+                const { data: profile, error } = await client
+                    .from('profiles').select('id, email, role').eq('id', user.id).single();
 
-            if (error || !profile || !['admin', 'super_admin'].includes(profile.role)) {
+                if (error || !profile || !['admin', 'super_admin'].includes(profile.role)) {
+                    return false;
+                }
+
+                currentAdmin = profile;
+                document.getElementById('loginSec').classList.add('hidden');
+                document.getElementById('appSec').classList.remove('hidden');
+                document.getElementById('adminEmail').textContent = profile.email;
+                loadAllData();
+                return true;
+            } catch (err) {
+                console.error('checkAdminAndEnter error:', err);
                 return false;
             }
-
-            currentAdmin = profile;
-            document.getElementById('loginSec').classList.add('hidden');
-            document.getElementById('appSec').classList.remove('hidden');
-            document.getElementById('adminEmail').textContent = profile.email;
-            loadAllData();
-            return true;
         }
 
         async function logout() {
@@ -376,7 +431,7 @@
             const query = document.getElementById('searchCompanies').value.toLowerCase();
             const { data, error } = await client.from('companies').select('*, categories(name), cities(name)').order('created_at', { ascending: false });
             const tbody = document.getElementById('companiesTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="6">خطأ: ${error.message}</td></tr>`; return; }
+            if (error) { tbody.innerHTML = `<tr><td colspan="6">خطأ: ${esc(error.message)}</td></tr>`; return; }
 
             const filtered = (data || []).filter(c => c.name.toLowerCase().includes(query));
             if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">لا توجد شركات</td></tr>'; return; }
@@ -397,20 +452,26 @@
         }
 
         async function toggleVerifyCompany(id, current) {
-            const client = await getSB();
-            await client.from('companies').update({ is_verified: !current }).eq('id', id);
-            await logAdminAction(!current ? 'توثيق شركة' : 'إلغاء توثيق شركة', 'companies', id);
-            renderCompanies();
-            showToast('تم التحديث');
+            try {
+                const client = await getSB();
+                const { error } = await client.from('companies').update({ is_verified: !current }).eq('id', id);
+                if (error) throw error;
+                await logAdminAction(!current ? 'توثيق شركة' : 'إلغاء توثيق شركة', 'companies', id);
+                renderCompanies();
+                showToast('تم التحديث');
+            } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
         }
 
         async function deleteCompany(id) {
             if (!confirm('هل أنت متأكد من حذف هذه الشركة؟')) return;
-            const client = await getSB();
-            await client.from('companies').delete().eq('id', id);
-            await logAdminAction('حذف شركة', 'companies', id);
-            renderCompanies(); loadStats();
-            showToast('تم الحذف');
+            try {
+                const client = await getSB();
+                const { error } = await client.from('companies').delete().eq('id', id);
+                if (error) throw error;
+                await logAdminAction('حذف شركة', 'companies', id);
+                renderCompanies(); loadStats();
+                showToast('تم الحذف');
+            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
 
         async function openCompanyModal(id = null) {
@@ -443,26 +504,30 @@
 
         async function saveCompany(e, id) {
             e.preventDefault();
-            const client = await getSB();
-            const payload = {
-                name: document.getElementById('compName').value,
-                category_id: document.getElementById('compCat').value || null,
-                city_id: document.getElementById('compCity').value || null,
-                description: document.getElementById('compDesc').value,
-                phone: document.getElementById('compPhone').value,
-                email: document.getElementById('compEmail').value,
-                website: document.getElementById('compWebsite').value,
-                status: document.getElementById('compStatus').value
-            };
-            if (id) {
-                await client.from('companies').update(payload).eq('id', id);
-                await logAdminAction('تعديل شركة', 'companies', id);
-            } else {
-                const { data } = await client.from('companies').insert(payload).select().single();
-                await logAdminAction('إضافة شركة', 'companies', data ? data.id : null);
-            }
-            closeModal(); renderCompanies(); loadStats();
-            showToast('تم الحفظ');
+            try {
+                const client = await getSB();
+                const payload = {
+                    name: document.getElementById('compName').value,
+                    category_id: document.getElementById('compCat').value || null,
+                    city_id: document.getElementById('compCity').value || null,
+                    description: document.getElementById('compDesc').value,
+                    phone: document.getElementById('compPhone').value,
+                    email: document.getElementById('compEmail').value,
+                    website: document.getElementById('compWebsite').value,
+                    status: document.getElementById('compStatus').value
+                };
+                if (id) {
+                    const { error } = await client.from('companies').update(payload).eq('id', id);
+                    if (error) throw error;
+                    await logAdminAction('تعديل شركة', 'companies', id);
+                } else {
+                    const { data, error } = await client.from('companies').insert(payload).select().single();
+                    if (error) throw error;
+                    await logAdminAction('إضافة شركة', 'companies', data ? data.id : null);
+                }
+                closeModal(); renderCompanies(); loadStats();
+                showToast('تم الحفظ');
+            } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
         }
 
         // ═══════════ البنوك ═══════════
@@ -471,7 +536,7 @@
             const query = document.getElementById('searchBanks').value.toLowerCase();
             const { data, error } = await client.from('banks').select('*, categories(name), cities(name)').order('created_at', { ascending: false });
             const tbody = document.getElementById('banksTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="6">خطأ: ${error.message}</td></tr>`; return; }
+            if (error) { tbody.innerHTML = `<tr><td colspan="6">خطأ: ${esc(error.message)}</td></tr>`; return; }
 
             const filtered = (data || []).filter(b => b.name.toLowerCase().includes(query));
             if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">لا توجد بنوك</td></tr>'; return; }
@@ -492,20 +557,26 @@
         }
 
         async function toggleVerifyBank(id, current) {
-            const client = await getSB();
-            await client.from('banks').update({ is_verified: !current }).eq('id', id);
-            await logAdminAction(!current ? 'توثيق بنك' : 'إلغاء توثيق بنك', 'banks', id);
-            renderBanks();
-            showToast('تم التحديث');
+            try {
+                const client = await getSB();
+                const { error } = await client.from('banks').update({ is_verified: !current }).eq('id', id);
+                if (error) throw error;
+                await logAdminAction(!current ? 'توثيق بنك' : 'إلغاء توثيق بنك', 'banks', id);
+                renderBanks();
+                showToast('تم التحديث');
+            } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
         }
 
         async function deleteBank(id) {
             if (!confirm('هل أنت متأكد؟')) return;
-            const client = await getSB();
-            await client.from('banks').delete().eq('id', id);
-            await logAdminAction('حذف بنك', 'banks', id);
-            renderBanks(); loadStats();
-            showToast('تم الحذف');
+            try {
+                const client = await getSB();
+                const { error } = await client.from('banks').delete().eq('id', id);
+                if (error) throw error;
+                await logAdminAction('حذف بنك', 'banks', id);
+                renderBanks(); loadStats();
+                showToast('تم الحذف');
+            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
 
         async function openBankModal(id = null) {
@@ -537,25 +608,29 @@
 
         async function saveBank(e, id) {
             e.preventDefault();
-            const client = await getSB();
-            const payload = {
-                name: document.getElementById('bankName').value,
-                category_id: document.getElementById('bankCat').value || null,
-                city_id: document.getElementById('bankCity').value || null,
-                description: document.getElementById('bankDesc').value,
-                phone: document.getElementById('bankPhone').value,
-                working_hours: document.getElementById('bankHours').value,
-                status: document.getElementById('bankStatus').value
-            };
-            if (id) {
-                await client.from('banks').update(payload).eq('id', id);
-                await logAdminAction('تعديل بنك', 'banks', id);
-            } else {
-                const { data } = await client.from('banks').insert(payload).select().single();
-                await logAdminAction('إضافة بنك', 'banks', data ? data.id : null);
-            }
-            closeModal(); renderBanks(); loadStats();
-            showToast('تم الحفظ');
+            try {
+                const client = await getSB();
+                const payload = {
+                    name: document.getElementById('bankName').value,
+                    category_id: document.getElementById('bankCat').value || null,
+                    city_id: document.getElementById('bankCity').value || null,
+                    description: document.getElementById('bankDesc').value,
+                    phone: document.getElementById('bankPhone').value,
+                    working_hours: document.getElementById('bankHours').value,
+                    status: document.getElementById('bankStatus').value
+                };
+                if (id) {
+                    const { error } = await client.from('banks').update(payload).eq('id', id);
+                    if (error) throw error;
+                    await logAdminAction('تعديل بنك', 'banks', id);
+                } else {
+                    const { data, error } = await client.from('banks').insert(payload).select().single();
+                    if (error) throw error;
+                    await logAdminAction('إضافة بنك', 'banks', data ? data.id : null);
+                }
+                closeModal(); renderBanks(); loadStats();
+                showToast('تم الحفظ');
+            } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
         }
 
         // ═══════════ الوظائف ═══════════
@@ -564,7 +639,7 @@
             const query = document.getElementById('searchJobs').value.toLowerCase();
             const { data, error } = await client.from('jobs').select('*, companies(name)').order('created_at', { ascending: false });
             const tbody = document.getElementById('jobsTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${error.message}</td></tr>`; return; }
+            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${esc(error.message)}</td></tr>`; return; }
 
             const filtered = (data || []).filter(j => j.title.toLowerCase().includes(query));
             if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا توجد وظائف</td></tr>'; return; }
@@ -582,20 +657,26 @@
         }
 
         async function setJobStatus(id, status) {
-            const client = await getSB();
-            await client.from('jobs').update({ status }).eq('id', id);
-            await logAdminAction('تغيير حالة وظيفة إلى ' + status, 'jobs', id);
-            renderJobs();
-            showToast('تم التحديث');
+            try {
+                const client = await getSB();
+                const { error } = await client.from('jobs').update({ status }).eq('id', id);
+                if (error) throw error;
+                await logAdminAction('تغيير حالة وظيفة إلى ' + status, 'jobs', id);
+                renderJobs();
+                showToast('تم التحديث');
+            } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
         }
 
         async function deleteJob(id) {
             if (!confirm('هل أنت متأكد؟')) return;
-            const client = await getSB();
-            await client.from('jobs').delete().eq('id', id);
-            await logAdminAction('حذف وظيفة', 'jobs', id);
-            renderJobs(); loadStats();
-            showToast('تم الحذف');
+            try {
+                const client = await getSB();
+                const { error } = await client.from('jobs').delete().eq('id', id);
+                if (error) throw error;
+                await logAdminAction('حذف وظيفة', 'jobs', id);
+                renderJobs(); loadStats();
+                showToast('تم الحذف');
+            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
 
         // ═══════════ التقييمات ═══════════
@@ -604,14 +685,14 @@
             const query = document.getElementById('searchReviews').value.toLowerCase();
             const { data, error } = await client.from('reviews').select('*').order('created_at', { ascending: false });
             const tbody = document.getElementById('reviewsTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${error.message}</td></tr>`; return; }
+            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${esc(error.message)}</td></tr>`; return; }
 
             const filtered = (data || []).filter(r => (r.comment || '').toLowerCase().includes(query));
             if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا توجد تقييمات</td></tr>'; return; }
 
             tbody.innerHTML = filtered.map(r => `
                 <tr>
-                    <td>${r.entity_type === 'company' ? 'شركة' : 'بنك'} (${r.entity_id.substring(0,8)})</td>
+                    <td>${r.entity_type === 'company' ? 'شركة' : 'بنك'} (${esc(r.entity_id.substring(0,8))})</td>
                     <td style="color:var(--gold-text);">${'★'.repeat(r.rating)}</td>
                     <td>${esc((r.comment || '').substring(0, 50))}${(r.comment || '').length > 50 ? '...' : ''}</td>
                     <td><span class="status-badge status-${r.status.toLowerCase()}">${r.status}</span></td>
@@ -623,20 +704,26 @@
         }
 
         async function setReviewStatus(id, status) {
-            const client = await getSB();
-            await client.from('reviews').update({ status }).eq('id', id);
-            await logAdminAction('تغيير حالة تقييم إلى ' + status, 'reviews', id);
-            renderReviews();
-            showToast('تم التحديث');
+            try {
+                const client = await getSB();
+                const { error } = await client.from('reviews').update({ status }).eq('id', id);
+                if (error) throw error;
+                await logAdminAction('تغيير حالة تقييم إلى ' + status, 'reviews', id);
+                renderReviews();
+                showToast('تم التحديث');
+            } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
         }
 
         async function deleteReview(id) {
             if (!confirm('هل أنت متأكد؟')) return;
-            const client = await getSB();
-            await client.from('reviews').delete().eq('id', id);
-            await logAdminAction('حذف تقييم', 'reviews', id);
-            renderReviews(); loadStats();
-            showToast('تم الحذف');
+            try {
+                const client = await getSB();
+                const { error } = await client.from('reviews').delete().eq('id', id);
+                if (error) throw error;
+                await logAdminAction('حذف تقييم', 'reviews', id);
+                renderReviews(); loadStats();
+                showToast('تم الحذف');
+            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
 
         // ═══════════ التصنيفات ═══════════
@@ -644,7 +731,7 @@
             const client = await getSB();
             const { data, error } = await client.from('categories').select('*').order('name');
             const tbody = document.getElementById('categoriesTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="3">خطأ: ${error.message}</td></tr>`; return; }
+            if (error) { tbody.innerHTML = `<tr><td colspan="3">خطأ: ${esc(error.message)}</td></tr>`; return; }
             if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px;">لا توجد تصنيفات</td></tr>'; return; }
 
             tbody.innerHTML = data.map(c => `
@@ -671,21 +758,33 @@
 
         async function saveCategory(e, id) {
             e.preventDefault();
-            const client = await getSB();
-            const payload = { name: document.getElementById('catName').value, icon: document.getElementById('catIcon').value || 'fa-tag' };
-            if (id) { await client.from('categories').update(payload).eq('id', id); await logAdminAction('تعديل تصنيف', 'categories', id); }
-            else { const { data } = await client.from('categories').insert(payload).select().single(); await logAdminAction('إضافة تصنيف', 'categories', data ? data.id : null); }
-            closeModal(); renderCategories();
-            showToast('تم الحفظ');
+            try {
+                const client = await getSB();
+                const payload = { name: document.getElementById('catName').value, icon: document.getElementById('catIcon').value || 'fa-tag' };
+                if (id) {
+                    const { error } = await client.from('categories').update(payload).eq('id', id);
+                    if (error) throw error;
+                    await logAdminAction('تعديل تصنيف', 'categories', id);
+                } else {
+                    const { data, error } = await client.from('categories').insert(payload).select().single();
+                    if (error) throw error;
+                    await logAdminAction('إضافة تصنيف', 'categories', data ? data.id : null);
+                }
+                closeModal(); renderCategories();
+                showToast('تم الحفظ');
+            } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
         }
 
         async function deleteCategory(id) {
             if (!confirm('هل أنت متأكد؟')) return;
-            const client = await getSB();
-            await client.from('categories').delete().eq('id', id);
-            await logAdminAction('حذف تصنيف', 'categories', id);
-            renderCategories();
-            showToast('تم الحذف');
+            try {
+                const client = await getSB();
+                const { error } = await client.from('categories').delete().eq('id', id);
+                if (error) throw error;
+                await logAdminAction('حذف تصنيف', 'categories', id);
+                renderCategories();
+                showToast('تم الحذف');
+            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
 
         // ═══════════ المدن ═══════════
@@ -693,7 +792,7 @@
             const client = await getSB();
             const { data, error } = await client.from('cities').select('*').order('name');
             const tbody = document.getElementById('citiesTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="3">خطأ: ${error.message}</td></tr>`; return; }
+            if (error) { tbody.innerHTML = `<tr><td colspan="3">خطأ: ${esc(error.message)}</td></tr>`; return; }
             if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px;">لا توجد مدن</td></tr>'; return; }
 
             tbody.innerHTML = data.map(c => `
@@ -720,21 +819,33 @@
 
         async function saveCity(e, id) {
             e.preventDefault();
-            const client = await getSB();
-            const payload = { name: document.getElementById('cityName').value, slug: document.getElementById('citySlug').value || null };
-            if (id) { await client.from('cities').update(payload).eq('id', id); await logAdminAction('تعديل مدينة', 'cities', id); }
-            else { const { data } = await client.from('cities').insert(payload).select().single(); await logAdminAction('إضافة مدينة', 'cities', data ? data.id : null); }
-            closeModal(); renderCities();
-            showToast('تم الحفظ');
+            try {
+                const client = await getSB();
+                const payload = { name: document.getElementById('cityName').value, slug: document.getElementById('citySlug').value || null };
+                if (id) {
+                    const { error } = await client.from('cities').update(payload).eq('id', id);
+                    if (error) throw error;
+                    await logAdminAction('تعديل مدينة', 'cities', id);
+                } else {
+                    const { data, error } = await client.from('cities').insert(payload).select().single();
+                    if (error) throw error;
+                    await logAdminAction('إضافة مدينة', 'cities', data ? data.id : null);
+                }
+                closeModal(); renderCities();
+                showToast('تم الحفظ');
+            } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
         }
 
         async function deleteCity(id) {
             if (!confirm('هل أنت متأكد؟')) return;
-            const client = await getSB();
-            await client.from('cities').delete().eq('id', id);
-            await logAdminAction('حذف مدينة', 'cities', id);
-            renderCities();
-            showToast('تم الحذف');
+            try {
+                const client = await getSB();
+                const { error } = await client.from('cities').delete().eq('id', id);
+                if (error) throw error;
+                await logAdminAction('حذف مدينة', 'cities', id);
+                renderCities();
+                showToast('تم الحذف');
+            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
 
         // ═══════════ الأسعار ═══════════
@@ -744,12 +855,12 @@
             const { data: gold } = await client.from('gold_prices').select('*').order('updated_at', { ascending: false });
 
             document.getElementById('exchangeTable').innerHTML = (exchange || []).map(e => `
-                <tr><td><strong>${esc(e.currency)}</strong></td><td>${e.buy_price}</td><td>${e.sell_price}</td><td>${esc(e.city)}</td>
+                <tr><td><strong>${esc(e.currency)}</strong></td><td>${esc(e.buy_price)}</td><td>${esc(e.sell_price)}</td><td>${esc(e.city)}</td>
                 <td><button class="btn btn-sm btn-danger" onclick="deleteExchange('${e.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('')
                 || '<tr><td colspan="5" style="text-align:center;">لا توجد بيانات</td></tr>';
 
             document.getElementById('goldTable').innerHTML = (gold || []).map(g => `
-                <tr><td><strong>${esc(g.karat)} قيراط</strong></td><td>${g.price}</td><td>${esc(g.city)}</td>
+                <tr><td><strong>${esc(g.karat)} قيراط</strong></td><td>${esc(g.price)}</td><td>${esc(g.city)}</td>
                 <td><button class="btn btn-sm btn-danger" onclick="deleteGold('${g.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('')
                 || '<tr><td colspan="4" style="text-align:center;">لا توجد بيانات</td></tr>';
         }
@@ -769,27 +880,33 @@
 
         async function saveExchange(e) {
             e.preventDefault();
-            const client = await getSB();
-            const { data } = await client.from('exchange_rates').insert({
-                currency: document.getElementById('exCurrency').value,
-                buy_price: document.getElementById('exBuy').value,
-                sell_price: document.getElementById('exSell').value,
-                city: document.getElementById('exCity').value,
-                source: 'manual',
-                updated_at: new Date().toISOString()
-            }).select().single();
-            await logAdminAction('إضافة سعر صرف', 'exchange_rates', data ? data.id : null);
-            closeModal(); renderPrices();
-            showToast('تم الحفظ');
+            try {
+                const client = await getSB();
+                const { data, error } = await client.from('exchange_rates').insert({
+                    currency: document.getElementById('exCurrency').value,
+                    buy_price: document.getElementById('exBuy').value,
+                    sell_price: document.getElementById('exSell').value,
+                    city: document.getElementById('exCity').value,
+                    source: 'manual',
+                    updated_at: new Date().toISOString()
+                }).select().single();
+                if (error) throw error;
+                await logAdminAction('إضافة سعر صرف', 'exchange_rates', data ? data.id : null);
+                closeModal(); renderPrices();
+                showToast('تم الحفظ');
+            } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
         }
 
         async function deleteExchange(id) {
             if (!confirm('هل أنت متأكد؟')) return;
-            const client = await getSB();
-            await client.from('exchange_rates').delete().eq('id', id);
-            await logAdminAction('حذف سعر صرف', 'exchange_rates', id);
-            renderPrices();
-            showToast('تم الحذف');
+            try {
+                const client = await getSB();
+                const { error } = await client.from('exchange_rates').delete().eq('id', id);
+                if (error) throw error;
+                await logAdminAction('حذف سعر صرف', 'exchange_rates', id);
+                renderPrices();
+                showToast('تم الحذف');
+            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
 
         async function openGoldModal() {
@@ -806,26 +923,32 @@
 
         async function saveGold(e) {
             e.preventDefault();
-            const client = await getSB();
-            const { data } = await client.from('gold_prices').insert({
-                karat: document.getElementById('goldKarat').value,
-                price: document.getElementById('goldPrice').value,
-                city: document.getElementById('goldCity').value,
-                source: 'manual',
-                updated_at: new Date().toISOString()
-            }).select().single();
-            await logAdminAction('إضافة سعر ذهب', 'gold_prices', data ? data.id : null);
-            closeModal(); renderPrices();
-            showToast('تم الحفظ');
+            try {
+                const client = await getSB();
+                const { data, error } = await client.from('gold_prices').insert({
+                    karat: document.getElementById('goldKarat').value,
+                    price: document.getElementById('goldPrice').value,
+                    city: document.getElementById('goldCity').value,
+                    source: 'manual',
+                    updated_at: new Date().toISOString()
+                }).select().single();
+                if (error) throw error;
+                await logAdminAction('إضافة سعر ذهب', 'gold_prices', data ? data.id : null);
+                closeModal(); renderPrices();
+                showToast('تم الحفظ');
+            } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
         }
 
         async function deleteGold(id) {
             if (!confirm('هل أنت متأكد؟')) return;
-            const client = await getSB();
-            await client.from('gold_prices').delete().eq('id', id);
-            await logAdminAction('حذف سعر ذهب', 'gold_prices', id);
-            renderPrices();
-            showToast('تم الحذف');
+            try {
+                const client = await getSB();
+                const { error } = await client.from('gold_prices').delete().eq('id', id);
+                if (error) throw error;
+                await logAdminAction('حذف سعر ذهب', 'gold_prices', id);
+                renderPrices();
+                showToast('تم الحذف');
+            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
 
         // ═══════════ طلبات التوثيق ═══════════
@@ -833,12 +956,12 @@
             const client = await getSB();
             const { data, error } = await client.from('verification_requests').select('*').order('created_at', { ascending: false });
             const tbody = document.getElementById('verificationTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${error.message}</td></tr>`; return; }
+            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${esc(error.message)}</td></tr>`; return; }
             if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا توجد طلبات</td></tr>'; return; }
 
             tbody.innerHTML = data.map(v => `
                 <tr>
-                    <td>${v.entity_id.substring(0,8)}</td>
+                    <td>${esc(v.entity_id.substring(0,8))}</td>
                     <td>${v.entity_type === 'company' ? 'شركة' : 'بنك'}</td>
                     <td>${new Date(v.created_at).toLocaleDateString('ar-YE')}</td>
                     <td><span class="status-badge status-${v.status.toLowerCase()}">${v.status}</span></td>
@@ -847,15 +970,18 @@
         }
 
         async function reviewVerification(id, status, entityType, entityId) {
-            const client = await getSB();
-            await client.from('verification_requests').update({ status, reviewed_at: new Date().toISOString() }).eq('id', id);
-            if (status === 'APPROVED') {
-                const table = entityType === 'company' ? 'companies' : 'banks';
-                await client.from(table).update({ is_verified: true }).eq('id', entityId);
-            }
-            await logAdminAction('مراجعة طلب توثيق: ' + status, 'verification_requests', id);
-            renderVerification(); loadStats();
-            showToast(status === 'APPROVED' ? 'تمت الموافقة' : 'تم الرفض');
+            try {
+                const client = await getSB();
+                const { error } = await client.from('verification_requests').update({ status, reviewed_at: new Date().toISOString() }).eq('id', id);
+                if (error) throw error;
+                if (status === 'APPROVED') {
+                    const table = entityType === 'company' ? 'companies' : 'banks';
+                    await client.from(table).update({ is_verified: true }).eq('id', entityId);
+                }
+                await logAdminAction('مراجعة طلب توثيق: ' + status, 'verification_requests', id);
+                renderVerification(); loadStats();
+                showToast(status === 'APPROVED' ? 'تمت الموافقة' : 'تم الرفض');
+            } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
         }
 
         // ═══════════ المستخدمين ═══════════
@@ -864,7 +990,7 @@
             const query = document.getElementById('searchUsers').value.toLowerCase();
             const { data, error } = await client.from('profiles').select('*').order('created_at', { ascending: false });
             const tbody = document.getElementById('usersTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="4">خطأ: ${error.message}</td></tr>`; return; }
+            if (error) { tbody.innerHTML = `<tr><td colspan="4">خطأ: ${esc(error.message)}</td></tr>`; return; }
 
             const filtered = (data || []).filter(u => (u.full_name || '').toLowerCase().includes(query) || (u.email || '').toLowerCase().includes(query));
             if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px;">لا يوجد مستخدمين</td></tr>'; return; }
@@ -878,7 +1004,7 @@
             const client = await getSB();
             const { data, error } = await client.from('audit_logs').select('*, profiles(email)').order('created_at', { ascending: false }).limit(100);
             const tbody = document.getElementById('auditTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${error.message}</td></tr>`; return; }
+            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${esc(error.message)}</td></tr>`; return; }
             if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا يوجد نشاط مسجّل بعد</td></tr>'; return; }
 
             tbody.innerHTML = data.map(a => `
