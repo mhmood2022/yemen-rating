@@ -46,3 +46,11 @@ async function logAdminAction(action, targetTable, targetId, reason = null) {
         console.warn('تعذّر تسجيل الإجراء في audit_logs:', e);
     }
 }
+
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const SUPABASE_URL = 'رابط_مشروعك_الحالي_في_سوبابيز';
+const SUPABASE_ANON_KEY = 'مفتاحك_الحالي_في_سوبابيز';
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
