@@ -107,7 +107,7 @@
             <form id="loginForm">
                 <div class="form-group">
                     <label>البريد الإلكتروني</label>
-                    <input type="email" id="emailInput" class="form-control" placeholder="admin@yemenrating.ye" required>
+                    <input type="email" id="emailInput" class="form-control" placeholder="admin@yemen-rating.com" required>
                 </div>
                 <div class="form-group">
                     <label>كلمة المرور</label>
@@ -248,9 +248,19 @@
         </div>
     </div>
 
-    <script src="js/supabase.js"></script>
+    <!-- استدعاء ملف supabase.js كـ module -->
+    <script type="module" src="supabase.js"></script>
+
     <script>
-        let currentAdmin = null; // { id, email, role }
+        let currentAdmin = null;
+
+        // دالة جلب كائن Supabase المباشر بعد التأكد من جاهزية الاتصال
+        async function getSB() {
+            if (window.sbReady) {
+                await window.sbReady;
+            }
+            return window.supabaseClient || window.supabase;
+        }
 
         function showToast(msg, type = 'success') {
             const toast = document.createElement('div');
@@ -266,7 +276,6 @@
             box.classList.remove('hidden');
         }
 
-        // ── تسجيل إجراءات الإدارة في audit_logs (لم تكن معرّفة سابقًا وكانت تكسر كل عملية حفظ/تعديل/حذف)
         async function logAdminAction(action, targetTable, targetId, reason = null) {
             try {
                 const client = await getSB();
@@ -278,12 +287,10 @@
                     reason
                 });
             } catch (e) {
-                // لا نكسر تدفق الواجهة إذا فشل تسجيل النشاط فقط
                 console.error('Audit log error:', e);
             }
         }
 
-        // ── مهلة زمنية تمنع تعليق شاشة "جاري الاتصال" للأبد
         function withTimeout(promise, ms, message) {
             return Promise.race([
                 promise,
@@ -303,7 +310,6 @@
                 </div>`;
         }
 
-        // ── بدء التشغيل: ننتظر الاتصال، ثم نتحقق إن كانت هناك جلسة قائمة أصلاً
         (async function boot() {
             try {
                 const client = await withTimeout(getSB(), 10000, 'انتهت مهلة الاتصال بالخادم');
@@ -326,7 +332,6 @@
             }
         })();
 
-        // ── تسجيل الدخول
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             document.getElementById('loginError').classList.add('hidden');
@@ -348,7 +353,6 @@
             }
         });
 
-        // ── يتحقق أن المستخدم موجود في profiles بدور admin/super_admin قبل فتح اللوحة
         async function checkAdminAndEnter(user) {
             try {
                 const client = await getSB();
@@ -377,6 +381,8 @@
             location.reload();
         }
 
+        window.logout = logout;
+
         function switchTab(tab, el) {
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             if (el) el.classList.add('active');
@@ -390,6 +396,8 @@
             };
             document.getElementById('tabTitle').innerText = titles[tab] || 'لوحة التحكم';
         }
+
+        window.switchTab = switchTab;
 
         async function loadAllData() {
             await loadStats();
@@ -441,7 +449,7 @@
                     <td><strong>${esc(c.name)}</strong></td>
                     <td>${c.categories ? esc(c.categories.name) : '-'}</td>
                     <td>${c.cities ? esc(c.cities.name) : '-'}</td>
-                    <td><span class="status-badge status-${c.status.toLowerCase()}">${c.status}</span></td>
+                    <td><span class="status-badge status-${(c.status || '').toLowerCase()}">${c.status || 'PENDING'}</span></td>
                     <td>${c.is_verified ? '<span style="color:var(--success);">✔ موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>'}</td>
                     <td>
                         <button class="btn btn-sm btn-verify" onclick="toggleVerifyCompany('${c.id}', ${c.is_verified})"><i class="fas fa-check"></i></button>
@@ -450,6 +458,8 @@
                     </td>
                 </tr>`).join('');
         }
+
+        window.renderCompanies = renderCompanies;
 
         async function toggleVerifyCompany(id, current) {
             try {
@@ -462,6 +472,8 @@
             } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
         }
 
+        window.toggleVerifyCompany = toggleVerifyCompany;
+
         async function deleteCompany(id) {
             if (!confirm('هل أنت متأكد من حذف هذه الشركة؟')) return;
             try {
@@ -473,6 +485,8 @@
                 showToast('تم الحذف');
             } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
+
+        window.deleteCompany = deleteCompany;
 
         async function openCompanyModal(id = null) {
             const client = await getSB();
@@ -502,6 +516,8 @@
             document.getElementById('modalOverlay').classList.remove('hidden');
         }
 
+        window.openCompanyModal = openCompanyModal;
+
         async function saveCompany(e, id) {
             e.preventDefault();
             try {
@@ -530,6 +546,8 @@
             } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
         }
 
+        window.saveCompany = saveCompany;
+
         // ═══════════ البنوك ═══════════
         async function renderBanks() {
             const client = await getSB();
@@ -546,7 +564,7 @@
                     <td><strong>${esc(b.name)}</strong></td>
                     <td>${b.categories ? esc(b.categories.name) : '-'}</td>
                     <td>${b.cities ? esc(b.cities.name) : '-'}</td>
-                    <td><span class="status-badge status-${b.status.toLowerCase()}">${b.status}</span></td>
+                    <td><span class="status-badge status-${(b.status || '').toLowerCase()}">${b.status || 'PENDING'}</span></td>
                     <td>${b.is_verified ? '<span style="color:var(--success);">✔ موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>'}</td>
                     <td>
                         <button class="btn btn-sm btn-verify" onclick="toggleVerifyBank('${b.id}', ${b.is_verified})"><i class="fas fa-check"></i></button>
@@ -555,6 +573,8 @@
                     </td>
                 </tr>`).join('');
         }
+
+        window.renderBanks = renderBanks;
 
         async function toggleVerifyBank(id, current) {
             try {
@@ -567,6 +587,8 @@
             } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
         }
 
+        window.toggleVerifyBank = toggleVerifyBank;
+
         async function deleteBank(id) {
             if (!confirm('هل أنت متأكد؟')) return;
             try {
@@ -578,6 +600,8 @@
                 showToast('تم الحذف');
             } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
+
+        window.deleteBank = deleteBank;
 
         async function openBankModal(id = null) {
             const client = await getSB();
@@ -606,6 +630,8 @@
             document.getElementById('modalOverlay').classList.remove('hidden');
         }
 
+        window.openBankModal = openBankModal;
+
         async function saveBank(e, id) {
             e.preventDefault();
             try {
@@ -633,6 +659,8 @@
             } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
         }
 
+        window.saveBank = saveBank;
+
         // ═══════════ الوظائف ═══════════
         async function renderJobs() {
             const client = await getSB();
@@ -648,13 +676,15 @@
                 <tr>
                     <td><strong>${esc(j.title)}</strong></td>
                     <td>${j.companies ? esc(j.companies.name) : '-'}</td>
-                    <td><span class="status-badge status-${j.status.toLowerCase()}">${j.status}</span></td>
+                    <td><span class="status-badge status-${(j.status || '').toLowerCase()}">${j.status || 'PENDING'}</span></td>
                     <td>
                         ${j.status === 'PENDING' ? `<button class="btn btn-sm btn-verify" onclick="setJobStatus('${j.id}','APPROVED')"><i class="fas fa-check"></i></button> <button class="btn btn-sm btn-warning" onclick="setJobStatus('${j.id}','REJECTED')"><i class="fas fa-times"></i></button>` : ''}
                         <button class="btn btn-sm btn-danger" onclick="deleteJob('${j.id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`).join('');
         }
+
+        window.renderJobs = renderJobs;
 
         async function setJobStatus(id, status) {
             try {
@@ -667,6 +697,8 @@
             } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
         }
 
+        window.setJobStatus = setJobStatus;
+
         async function deleteJob(id) {
             if (!confirm('هل أنت متأكد؟')) return;
             try {
@@ -678,6 +710,8 @@
                 showToast('تم الحذف');
             } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
+
+        window.deleteJob = deleteJob;
 
         // ═══════════ التقييمات ═══════════
         async function renderReviews() {
@@ -695,13 +729,15 @@
                     <td>${r.entity_type === 'company' ? 'شركة' : 'بنك'} (${esc(r.entity_id.substring(0,8))})</td>
                     <td style="color:var(--gold-text);">${'★'.repeat(r.rating)}</td>
                     <td>${esc((r.comment || '').substring(0, 50))}${(r.comment || '').length > 50 ? '...' : ''}</td>
-                    <td><span class="status-badge status-${r.status.toLowerCase()}">${r.status}</span></td>
+                    <td><span class="status-badge status-${(r.status || '').toLowerCase()}">${r.status || 'PENDING'}</span></td>
                     <td>
                         ${r.status === 'PENDING' ? `<button class="btn btn-sm btn-verify" onclick="setReviewStatus('${r.id}','APPROVED')"><i class="fas fa-check"></i></button> <button class="btn btn-sm btn-warning" onclick="setReviewStatus('${r.id}','REJECTED')"><i class="fas fa-times"></i></button>` : ''}
                         <button class="btn btn-sm btn-danger" onclick="deleteReview('${r.id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`).join('');
         }
+
+        window.renderReviews = renderReviews;
 
         async function setReviewStatus(id, status) {
             try {
@@ -714,6 +750,8 @@
             } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
         }
 
+        window.setReviewStatus = setReviewStatus;
+
         async function deleteReview(id) {
             if (!confirm('هل أنت متأكد؟')) return;
             try {
@@ -725,6 +763,8 @@
                 showToast('تم الحذف');
             } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
+
+        window.deleteReview = deleteReview;
 
         // ═══════════ التصنيفات ═══════════
         async function renderCategories() {
@@ -756,6 +796,8 @@
             document.getElementById('modalOverlay').classList.remove('hidden');
         }
 
+        window.openCategoryModal = openCategoryModal;
+
         async function saveCategory(e, id) {
             e.preventDefault();
             try {
@@ -775,6 +817,8 @@
             } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
         }
 
+        window.saveCategory = saveCategory;
+
         async function deleteCategory(id) {
             if (!confirm('هل أنت متأكد؟')) return;
             try {
@@ -786,6 +830,8 @@
                 showToast('تم الحذف');
             } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
+
+        window.deleteCategory = deleteCategory;
 
         // ═══════════ المدن ═══════════
         async function renderCities() {
@@ -817,6 +863,8 @@
             document.getElementById('modalOverlay').classList.remove('hidden');
         }
 
+        window.openCityModal = openCityModal;
+
         async function saveCity(e, id) {
             e.preventDefault();
             try {
@@ -836,6 +884,8 @@
             } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
         }
 
+        window.saveCity = saveCity;
+
         async function deleteCity(id) {
             if (!confirm('هل أنت متأكد؟')) return;
             try {
@@ -847,6 +897,8 @@
                 showToast('تم الحذف');
             } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
+
+        window.deleteCity = deleteCity;
 
         // ═══════════ الأسعار ═══════════
         async function renderPrices() {
@@ -878,6 +930,8 @@
             document.getElementById('modalOverlay').classList.remove('hidden');
         }
 
+        window.openExchangeModal = openExchangeModal;
+
         async function saveExchange(e) {
             e.preventDefault();
             try {
@@ -897,6 +951,8 @@
             } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
         }
 
+        window.saveExchange = saveExchange;
+
         async function deleteExchange(id) {
             if (!confirm('هل أنت متأكد؟')) return;
             try {
@@ -909,6 +965,8 @@
             } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
 
+        window.deleteExchange = deleteExchange;
+
         async function openGoldModal() {
             document.getElementById('modalTitle').innerText = 'إضافة سعر ذهب';
             document.getElementById('modalBody').innerHTML = `
@@ -920,6 +978,8 @@
                 </form>`;
             document.getElementById('modalOverlay').classList.remove('hidden');
         }
+
+        window.openGoldModal = openGoldModal;
 
         async function saveGold(e) {
             e.preventDefault();
@@ -939,6 +999,8 @@
             } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
         }
 
+        window.saveGold = saveGold;
+
         async function deleteGold(id) {
             if (!confirm('هل أنت متأكد؟')) return;
             try {
@@ -950,6 +1012,8 @@
                 showToast('تم الحذف');
             } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
         }
+
+        window.deleteGold = deleteGold;
 
         // ═══════════ طلبات التوثيق ═══════════
         async function renderVerification() {
@@ -964,7 +1028,7 @@
                     <td>${esc(v.entity_id.substring(0,8))}</td>
                     <td>${v.entity_type === 'company' ? 'شركة' : 'بنك'}</td>
                     <td>${new Date(v.created_at).toLocaleDateString('ar-YE')}</td>
-                    <td><span class="status-badge status-${v.status.toLowerCase()}">${v.status}</span></td>
+                    <td><span class="status-badge status-${(v.status || '').toLowerCase()}">${v.status || 'PENDING'}</span></td>
                     <td>${v.status === 'PENDING' ? `<button class="btn btn-sm btn-verify" onclick="reviewVerification('${v.id}','APPROVED','${v.entity_type}','${v.entity_id}')"><i class="fas fa-check"></i> قبول</button> <button class="btn btn-sm btn-danger" onclick="reviewVerification('${v.id}','REJECTED','${v.entity_type}','${v.entity_id}')"><i class="fas fa-times"></i> رفض</button>` : '-'}</td>
                 </tr>`).join('');
         }
@@ -984,6 +1048,8 @@
             } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
         }
 
+        window.reviewVerification = reviewVerification;
+
         // ═══════════ المستخدمين ═══════════
         async function renderUsers() {
             const client = await getSB();
@@ -998,6 +1064,8 @@
             tbody.innerHTML = filtered.map(u => `
                 <tr><td><strong>${esc(u.full_name || '-')}</strong></td><td>${esc(u.email || '-')}</td><td>${esc(u.role || 'user')}</td><td>${new Date(u.created_at).toLocaleDateString('ar-YE')}</td></tr>`).join('');
         }
+
+        window.renderUsers = renderUsers;
 
         // ═══════════ سجل النشاط ═══════════
         async function renderAudit() {
@@ -1018,8 +1086,8 @@
         }
 
         function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
+        window.closeModal = closeModal;
 
-        // منع أي إدخال HTML من كسر الصفحة (XSS بسيط)
         function esc(str) {
             const div = document.createElement('div');
             div.textContent = str == null ? '' : String(str);
