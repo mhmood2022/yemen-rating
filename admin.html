@@ -307,11 +307,130 @@ const readImg=id=>{const i=document.getElementById(id);return i.style.display!==
 let editId=null;
 function resetEntForm(){editId=null;document.getElementById('entForm').reset();pLogo.style.display='none';pCover.style.display='none';cancelEdit.style.display='none';entFormTitle.innerHTML='<i class="fas fa-plus-circle"></i> إضافة / تعديل منشأة'}
 function editEnt(id){const x=get('yr_entities').find(e=>e.id===id);if(!x)return;editId=id;eName.value=x.name;eType.value=x.type;eCity.value=x.city;eAddr.value=x.addr||'';ePhone.value=x.phone;eWa.value=x.wa||'';eEmail.value=x.email||'';eWeb.value=x.web||'';eDesc.value=x.desc;eServ.value=(x.services||[]).join('، ');eBranch.value=(x.branches||[]).join('، ');eStatus.value=x.status==='PUBLISHED'?'PUBLISHED':'PENDING';eBadge.value=x.badge||'';if(x.logo){pLogo.src=x.logo;pLogo.style.display='block'}if(x.cover){pCover.src=x.cover;pCover.style.display='block'}cancelEdit.style.display='inline-flex';entFormTitle.innerHTML='<i class="fas fa-pen"></i> تعديل: '+x.name;window.scrollTo({top:0,behavior:'smooth'})}
-function saveEntity(e){e.preventDefault();const list=get('yr_entities');const data={name:eName.value.trim(),type:eType.value,city:eCity.value.trim(),addr:eAddr.value.trim(),phone:ePhone.value.trim(),wa:eWa.value.trim(),email:eEmail.value.trim(),web:eWeb.value.trim(),desc:eDesc.value.trim(),services:split(eServ.value),branches:split(eBranch.value),status:eStatus.value,badge:eBadge.value,logo:readImg('pLogo'),cover:readImg('pCover')};if(editId){const i=list.findIndex(x=>x.id===editId);list[i]={...list[i],...data};showToast('✅ تم تعديل المنشأة')}else{list.push({id:Date.now(),owner:'الإدارة',...data});showToast('✅ تم إضافة المنشأة')}try{set('yr_entities',list)}catch(err){showToast('⚠️ الصور كبيرة — احفظ بدون صور')}resetEntForm();render()}
-function saveAd(e){e.preventDefault();const list=get('yr_ads');list.push({id:Date.now(),owner:'الإدارة',title:aTitle.value.trim(),place:aPlace.value,link:aLink.value.trim(),status:aStatus.value,img:readImg('pAd'),clicks:0});try{set('yr_ads',list);showToast('✅ تم حفظ الإعلان')}catch(err){showToast('⚠️ الصورة كبيرة')}e.target.reset();pAd.style.display='none';render()}
+async function saveEntity(e){e.preventDefault();const list=get('yr_entities');const data={name:eName.value.trim(),type:eType.value,city:eCity.value.trim(),addr:eAddr.value.trim(),phone:ePhone.value.trim(),wa:eWa.value.trim(),email:eEmail.value.trim(),web:eWeb.value.trim(),desc:eDesc.value.trim(),services:split(eServ.value),branches:split(eBranch.value),status:eStatus.value,badge:eBadge.value,logo:readImg('pLogo'),cover:readImg('pCover')};
+
+// محاولة الحفظ في Supabase أولاً
+let savedToSupabase = false;
+if (window.yrSupabase) {
+    try {
+        if (editId && editId.startsWith('sb_')) {
+            // تعديل منشأة موجودة
+            const sbId = editId.replace('sb_', '');
+            await window.yrSupabase.from('entities').update({
+                type: data.type, name: data.name, city: data.city,
+                address: data.addr, phone: data.phone, whatsapp: data.wa,
+                email: data.email, website: data.web, description: data.desc,
+                services: data.services, branches: data.branches,
+                logo_url: data.logo, cover_url: data.cover,
+                status: data.status, badge: data.badge
+            }).eq('id', sbId);
+            showToast('✅ تم تعديل المنشأة (Supabase)');
+        } else {
+            // إضافة منشأة جديدة
+            const { data: inserted, error } = await window.yrSupabase.from('entities').insert({
+                type: data.type, name: data.name, city: data.city,
+                address: data.addr, phone: data.phone, whatsapp: data.wa,
+                email: data.email, website: data.web, description: data.desc,
+                services: data.services, branches: data.branches,
+                logo_url: data.logo, cover_url: data.cover,
+                status: data.status, badge: data.badge,
+                owner_id: window.yrAdminUser?.userId || null
+            }).select().single();
+            
+            if (error) throw error;
+            savedToSupabase = true;
+            showToast('✅ تم إضافة المنشأة (Supabase)');
+        }
+    } catch (err) {
+        console.warn('Supabase save failed:', err);
+    }
+}
+
+// الحفظ في localStorage (كـ fallback أو للعرض المحلي)
+if (editId) {
+    const i = list.findIndex(x => x.id === editId);
+    list[i] = { ...list[i], ...data };
+} else {
+    list.push({ id: savedToSupabase ? 'sb_pending_' + Date.now() : Date.now(), owner: 'الإدارة', ...data });
+}
+try { set('yr_entities', list) } catch(err) { showToast('⚠️ الصور كبيرة — احفظ بدون صور') }
+resetEntForm();
+render();
+}
+async function saveAd(e){e.preventDefault();const list=get('yr_ads');const adData={title:aTitle.value.trim(),place:aPlace.value,link:aLink.value.trim(),status:aStatus.value,img:readImg('pAd'),clicks:0};
+
+// محاولة الحفظ في Supabase
+if (window.yrSupabase) {
+    try {
+        await window.yrSupabase.from('advertisements').insert({
+            title: adData.title,
+            link_url: adData.link,
+            image_url: adData.img,
+            status: adData.status,
+            clicks: 0
+        });
+        showToast('✅ تم حفظ الإعلان (Supabase)');
+    } catch (err) {
+        console.warn('Supabase ad save failed:', err);
+        showToast('✅ تم حفظ الإعلان محلياً');
+    }
+}
+
+list.push({id:Date.now(),owner:'الإدارة',...adData});
+try{set('yr_ads',list)}catch(err){showToast('⚠️ الصورة كبيرة')}
+e.target.reset();
+pAd.style.display='none';
+render();
+}
 function saveAdsense(){localStorage.setItem('yr_adsense',document.getElementById('adsenseCode').value);showToast('✅ تم حفظ كود AdSense')}
-function setStatus(key,id,st){set(key,get(key).map(x=>x.id===id?{...x,status:st}:x));showToast('✅ تم التحديث');render()}
-function del(key,id){set(key,get(key).filter(x=>x.id!==id));showToast('🗑️ تم الحذف');render()}
+async function setStatus(key,id,st){
+// تحديث Supabase
+if (window.yrSupabase && id.startsWith('sb_')) {
+    const sbId = id.replace('sb_', '');
+    const tableMap = {
+        'yr_entities': 'entities',
+        'yr_jobs': 'jobs',
+        'yr_ads': 'advertisements',
+        'yr_reviews': 'reviews',
+        'yr_applications': 'applications'
+    };
+    const table = tableMap[key];
+    if (table) {
+        try {
+            await window.yrSupabase.from(table).update({ status: st }).eq('id', sbId);
+        } catch (err) {
+            console.warn('Supabase status update failed:', err);
+        }
+    }
+}
+set(key,get(key).map(x=>x.id===id?{...x,status:st}:x));
+showToast('✅ تم التحديث');
+render();
+}
+async function del(key,id){
+// حذف من Supabase
+if (window.yrSupabase && id.startsWith('sb_')) {
+    const sbId = id.replace('sb_', '');
+    const tableMap = {
+        'yr_entities': 'entities',
+        'yr_jobs': 'jobs',
+        'yr_ads': 'advertisements',
+        'yr_reviews': 'reviews',
+        'yr_applications': 'applications'
+    };
+    const table = tableMap[key];
+    if (table) {
+        try {
+            await window.yrSupabase.from(table).delete().eq('id', sbId);
+        } catch (err) {
+            console.warn('Supabase delete failed:', err);
+        }
+    }
+}
+set(key,get(key).filter(x=>x.id!==id));
+showToast('🗑️ تم الحذف');
+render();
+}
 function setOwnerStatus(phone,st){set('yr_users',get('yr_users').map(u=>u.phone===phone?{...u,status:st}:u));showToast('✅ تم التحديث');render()}
 function saveRates(){const rates={sanaa:{ub:s_ub.value,us:s_us.value,sb:s_sb.value,ss:s_ss.value,g21:s_g21.value,g24:s_g24.value},aden:{ub:a_ub.value,us:a_us.value,sb:a_sb.value,ss:a_ss.value,g21:a_g21.value,g24:a_g24.value},source:pSource.value.trim()||'الإدارة',updated:new Date().toLocaleString('ar-YE')};localStorage.setItem('yr_rates',JSON.stringify(rates));ratesMeta.textContent='🕐 آخر نشر: '+rates.updated;showToast('✅ تم نشر الأسعار')}
 
