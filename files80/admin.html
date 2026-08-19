@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الإدارة | يمن ريتغ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0a1120; --card-bg: #0f172a; --header-bg: #152033; --border-color: #1e293b;
+            --gold-gradient: linear-gradient(135deg, #fbbf24, #d4af37); --gold-text: #fbbf24;
+            --text-main: #f8fafc; --text-muted: #94a3b8;
+            --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --info: #3b82f6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+        body { background: var(--bg-dark); color: var(--text-main); min-height: 100vh; }
+        .hidden { display: none !important; }
+
+        .login-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: var(--card-bg); border: 1px solid var(--gold-text); border-radius: 12px; padding: 35px; width: 100%; max-width: 400px; text-align: center; }
+        .login-logo { width: 60px; height: 60px; background: var(--gold-gradient); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #0a1120; margin: 0 auto 15px; }
+        .login-error { background: rgba(239,68,68,0.15); border: 1px solid var(--danger); color: #fca5a5; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; }
+
+        .admin-layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--bg-dark); border-left: 1px solid var(--border-color); height: 100vh; position: fixed; right: 0; top: 0; z-index: 100; overflow-y: auto; }
+        .brand { padding: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); font-weight: 800; color: var(--gold-text); }
+        .nav-menu { padding: 15px 10px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: var(--text-muted); text-decoration: none; border-radius: 8px; margin-bottom: 5px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+        .nav-item:hover, .nav-item.active { background: var(--header-bg); color: var(--gold-text); }
+        .nav-section { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; padding: 15px 15px 5px; margin-top: 10px; }
+
+        .main-content { flex: 1; margin-right: 260px; padding: 25px; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: var(--card-bg); padding: 15px 20px; border-radius: 10px; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px; }
+        .back-link { background: var(--header-bg); color: var(--gold-text); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: var(--card-bg); border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); }
+        .stat-card .icon { width: 50px; height: 50px; background: var(--gold-gradient); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #0a1120; margin-bottom: 10px; }
+        .stat-card .num { font-size: 1.8rem; font-weight: 800; color: var(--gold-text); }
+        .stat-card .label { color: var(--text-muted); font-size: 0.85rem; }
+
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .table-container { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: right; }
+        th { background: var(--header-bg); color: var(--gold-text); padding: 12px 15px; font-size: 0.85rem; font-weight: 700; white-space: nowrap; }
+        td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; }
+        tr:hover { background: rgba(251, 191, 36, 0.05); }
+
+        .btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border: none; font-weight: 600; font-size: 0.85rem; transition: all 0.2s; }
+        .btn-gold { background: var(--gold-gradient); color: #0a1120; }
+        .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+        .btn-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+        .btn-edit { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
+        .btn-verify { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
+        .btn-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+        .form-control { width: 100%; padding: 10px; background: var(--header-bg); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; margin-top: 5px; font-size: 0.9rem; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 15px; }
+        .modal-card { background: var(--card-bg); border: 1px solid var(--gold-text); border-radius: 12px; padding: 25px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; white-space: nowrap; }
+        .status-active, .status-approved { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .status-rejected, .status-blocked, .status-suspended { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .status-hidden { background: rgba(148, 163, 184, 0.2); color: var(--text-muted); }
+
+        .toast { position: fixed; top: 20px; left: 20px; background: var(--card-bg); border: 1px solid var(--gold-text); padding: 15px 20px; border-radius: 8px; z-index: 9999; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s; }
+        @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .spin { animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .main-content { margin-right: 0; padding: 15px; }
+            .admin-layout { flex-direction: column; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. شاشة التحقق من الاتصال -->
+    <div class="login-wrapper" id="bootSec">
+        <div style="text-align:center; color:var(--text-muted);">
+            <i class="fas fa-circle-notch spin" style="font-size:2rem; color:var(--gold-text);"></i>
+            <p style="margin-top:15px;">جاري الاتصال بقاعدة البيانات...</p>
+        </div>
+    </div>
+
+    <!-- 2. شاشة الدخول -->
+    <div class="login-wrapper hidden" id="loginSec">
+        <div class="login-card">
+            <div class="login-logo"><i class="fas fa-user-shield"></i></div>
+            <h2 style="color:var(--gold-text); margin-bottom:10px;">إدارة يمن ريتغ</h2>
+            <p style="color:var(--text-muted); margin-bottom:20px; font-size: 0.9rem;">الدخول للمسؤولين فقط</p>
+            <div id="loginError" class="login-error hidden"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="emailInput" class="form-control" placeholder="admin@yemenrating.ye" required>
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="passInput" class="form-control" placeholder="كلمة المرور" required>
+                </div>
+                <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:10px;">
+                    <i class="fas fa-sign-in-alt"></i> دخول
+                </button>
+            </form>
+            <a href="index.html" class="back-link" style="margin-top:20px; justify-content:center;">
+                <i class="fas fa-arrow-right"></i> رجوع للموقع
+            </a>
+        </div>
+    </div>
+
+    <!-- 3. لوحة التحكم -->
+    <div class="admin-layout hidden" id="appSec">
+        <aside class="sidebar">
+            <div class="brand"><i class="fas fa-star"></i> YEMEN RATING</div>
+            <div class="nav-menu">
+                <div class="nav-section">الرئيسية</div>
+                <div class="nav-item active" onclick="switchTab('dashboard', this)"><i class="fas fa-chart-line"></i> لوحة التحكم</div>
+
+                <div class="nav-section">إدارة المحتوى</div>
+                <div class="nav-item" onclick="switchTab('companies', this)"><i class="fas fa-building"></i> الشركات</div>
+                <div class="nav-item" onclick="switchTab('banks', this)"><i class="fas fa-landmark"></i> البنوك</div>
+                <div class="nav-item" onclick="switchTab('jobs', this)"><i class="fas fa-briefcase"></i> الوظائف</div>
+                <div class="nav-item" onclick="switchTab('reviews', this)"><i class="fas fa-star"></i> التقييمات</div>
+
+                <div class="nav-section">الإعدادات</div>
+                <div class="nav-item" onclick="switchTab('categories', this)"><i class="fas fa-list"></i> التصنيفات</div>
+                <div class="nav-item" onclick="switchTab('cities', this)"><i class="fas fa-map-marker-alt"></i> المدن</div>
+                <div class="nav-item" onclick="switchTab('prices', this)"><i class="fas fa-dollar-sign"></i> أسعار السوق</div>
+
+                <div class="nav-section">المستخدمين</div>
+                <div class="nav-item" onclick="switchTab('verification', this)"><i class="fas fa-check-circle"></i> طلبات التوثيق</div>
+                <div class="nav-item" onclick="switchTab('users', this)"><i class="fas fa-users"></i> المستخدمين</div>
+                <div class="nav-item" onclick="switchTab('audit', this)"><i class="fas fa-clipboard-list"></i> سجل النشاط</div>
+
+                <a href="index.html" class="nav-item" style="color:var(--text-muted); margin-top:20px;"><i class="fas fa-arrow-right"></i> رجوع للموقع</a>
+                <div class="nav-item" onclick="logout()" style="color:#f87171;"><i class="fas fa-power-off"></i> تسجيل خروج</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="header-bar">
+                <h3 id="tabTitle" style="color:var(--gold-text);">لوحة التحكم</h3>
+                <span style="color:var(--text-muted); font-size: 0.9rem;"><i class="fas fa-user-circle"></i> <span id="adminEmail">-</span></span>
+            </div>
+
+            <div id="tab-dashboard">
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="icon"><i class="fas fa-building"></i></div><div class="num" id="statCompanies">0</div><div class="label">شركة</div></div>
+                    <div class="stat-card"><div class="icon"><i class="fas fa-landmark"></i></div><div class="num" id="statBanks">0</div><div class="label">بنك</div></div>
+                    <div class="stat-card"><div class="icon"><i class="fas fa-briefcase"></i></div><div class="num" id="statJobs">0</div><div class="label">وظيفة</div></div>
+                    <div class="stat-card"><div class="icon"><i class="fas fa-star"></i></div><div class="num" id="statReviews">0</div><div class="label">تقييم</div></div>
+                    <div class="stat-card"><div class="icon"><i class="fas fa-users"></i></div><div class="num" id="statUsers">0</div><div class="label">مستخدم</div></div>
+                    <div class="stat-card"><div class="icon"><i class="fas fa-check-circle"></i></div><div class="num" id="statPending">0</div><div class="label">طلب معلق</div></div>
+                </div>
+            </div>
+
+            <div id="tab-companies" class="hidden">
+                <div class="panel-header">
+                    <input type="text" id="searchCompanies" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderCompanies()">
+                    <button class="btn btn-gold" onclick="openCompanyModal()"><i class="fas fa-plus"></i> إضافة شركة</button>
+                </div>
+                <div class="table-container">
+                    <table><thead><tr><th>الشركة</th><th>التصنيف</th><th>المدينة</th><th>الحالة</th><th>التوثيق</th><th>إجراءات</th></tr></thead><tbody id="companiesTable"></tbody></table>
+                </div>
+            </div>
+
+            <div id="tab-banks" class="hidden">
+                <div class="panel-header">
+                    <input type="text" id="searchBanks" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderBanks()">
+                    <button class="btn btn-gold" onclick="openBankModal()"><i class="fas fa-plus"></i> إضافة بنك</button>
+                </div>
+                <div class="table-container">
+                    <table><thead><tr><th>البنك</th><th>التصنيف</th><th>المدينة</th><th>الحالة</th><th>التوثيق</th><th>إجراءات</th></tr></thead><tbody id="banksTable"></tbody></table>
+                </div>
+            </div>
+
+            <div id="tab-jobs" class="hidden">
+                <div class="panel-header"><input type="text" id="searchJobs" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderJobs()"></div>
+                <div class="table-container">
+                    <table><thead><tr><th>الوظيفة</th><th>الشركة</th><th>المدينة</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="jobsTable"></tbody></table>
+                </div>
+            </div>
+
+            <div id="tab-reviews" class="hidden">
+                <div class="panel-header"><input type="text" id="searchReviews" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderReviews()"></div>
+                <div class="table-container">
+                    <table><thead><tr><th>الجهة</th><th>التقييم</th><th>التعليق</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="reviewsTable"></tbody></table>
+                </div>
+            </div>
+
+            <div id="tab-categories" class="hidden">
+                <div class="panel-header"><h3>التصنيفات</h3><button class="btn btn-gold" onclick="openCategoryModal()"><i class="fas fa-plus"></i> إضافة تصنيف</button></div>
+                <div class="table-container"><table><thead><tr><th>التصنيف</th><th>الأيقونة</th><th>إجراءات</th></tr></thead><tbody id="categoriesTable"></tbody></table></div>
+            </div>
+
+            <div id="tab-cities" class="hidden">
+                <div class="panel-header"><h3>المدن</h3><button class="btn btn-gold" onclick="openCityModal()"><i class="fas fa-plus"></i> إضافة مدينة</button></div>
+                <div class="table-container"><table><thead><tr><th>المدينة</th><th>الاسم اللاتيني</th><th>إجراءات</th></tr></thead><tbody id="citiesTable"></tbody></table></div>
+            </div>
+
+            <div id="tab-prices" class="hidden">
+                <div class="panel-header">
+                    <h3>أسعار السوق</h3>
+                    <div><button class="btn btn-gold" onclick="openExchangeModal()"><i class="fas fa-plus"></i> سعر صرف</button> <button class="btn btn-gold" onclick="openGoldModal()"><i class="fas fa-plus"></i> سعر ذهب</button></div>
+                </div>
+                <h4 style="margin: 20px 0 10px; color: var(--gold-text);">أسعار الصرف</h4>
+                <div class="table-container"><table><thead><tr><th>العملة</th><th>شراء</th><th>بيع</th><th>المدينة</th><th>إجراءات</th></tr></thead><tbody id="exchangeTable"></tbody></table></div>
+                <h4 style="margin: 20px 0 10px; color: var(--gold-text);">أسعار الذهب</h4>
+                <div class="table-container"><table><thead><tr><th>العيار</th><th>السعر</th><th>المدينة</th><th>إجراءات</th></tr></thead><tbody id="goldTable"></tbody></table></div>
+            </div>
+
+            <div id="tab-verification" class="hidden">
+                <div class="panel-header"><h3>طلبات التوثيق</h3></div>
+                <div class="table-container"><table><thead><tr><th>الجهة</th><th>النوع</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="verificationTable"></tbody></table></div>
+            </div>
+
+            <div id="tab-users" class="hidden">
+                <div class="panel-header"><input type="text" id="searchUsers" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderUsers()"></div>
+                <div class="table-container"><table><thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>تاريخ الانضمام</th></tr></thead><tbody id="usersTable"></tbody></table></div>
+            </div>
+
+            <div id="tab-audit" class="hidden">
+                <div class="panel-header"><h3>سجل نشاط الإدارة</h3></div>
+                <div class="table-container"><table><thead><tr><th>المسؤول</th><th>الإجراء</th><th>الجدول</th><th>السبب</th><th>التاريخ</th></tr></thead><tbody id="auditTable"></tbody></table></div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay hidden" id="modalOverlay">
+        <div class="modal-card">
+            <div class="modal-head"><h3 id="modalTitle" style="color:var(--gold-text);">عنوان</h3><button onclick="closeModal()" style="background:none; border:none; color:#fff; cursor:pointer; font-size: 1.2rem;"><i class="fas fa-times"></i></button></div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="js/supabase.js"></script>
+    <script>
+        let currentAdmin = null; // { id, email, role }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="color:var(--gold-text);"></i> ${msg}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function showLoginError(msg) {
+            const box = document.getElementById('loginError');
+            box.textContent = msg;
+            box.classList.remove('hidden');
+        }
+
+        // ── بدء التشغيل: ننتظر الاتصال، ثم نتحقق إن كانت هناك جلسة قائمة أصلاً
+        (async function boot() {
+            const client = await getSB();
+            const { data: { session } } = await client.auth.getSession();
+
+            document.getElementById('bootSec').classList.add('hidden');
+
+            if (session) {
+                const ok = await checkAdminAndEnter(session.user);
+                if (!ok) document.getElementById('loginSec').classList.remove('hidden');
+            } else {
+                document.getElementById('loginSec').classList.remove('hidden');
+            }
+        })();
+
+        // ── تسجيل الدخول
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            document.getElementById('loginError').classList.add('hidden');
+            const email = document.getElementById('emailInput').value.trim();
+            const pass = document.getElementById('passInput').value;
+
+            try {
+                const client = await getSB();
+                const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
+                if (error) { showLoginError('بيانات الدخول غير صحيحة'); return; }
+
+                const ok = await checkAdminAndEnter(data.user);
+                if (!ok) {
+                    await client.auth.signOut();
+                    showLoginError('هذا الحساب ليس لديه صلاحية الدخول إلى لوحة الإدارة');
+                }
+            } catch (err) {
+                showLoginError('تعذّر الاتصال: ' + err.message);
+            }
+        });
+
+        // ── يتحقق أن المستخدم موجود في profiles بدور admin/super_admin قبل فتح اللوحة
+        async function checkAdminAndEnter(user) {
+            const client = await getSB();
+            const { data: profile, error } = await client
+                .from('profiles').select('id, email, role').eq('id', user.id).single();
+
+            if (error || !profile || !['admin', 'super_admin'].includes(profile.role)) {
+                return false;
+            }
+
+            currentAdmin = profile;
+            document.getElementById('loginSec').classList.add('hidden');
+            document.getElementById('appSec').classList.remove('hidden');
+            document.getElementById('adminEmail').textContent = profile.email;
+            loadAllData();
+            return true;
+        }
+
+        async function logout() {
+            const client = await getSB();
+            await client.auth.signOut();
+            location.reload();
+        }
+
+        function switchTab(tab, el) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            if (el) el.classList.add('active');
+            document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.add('hidden'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            const titles = {
+                dashboard: 'لوحة التحكم', companies: 'إدارة الشركات', banks: 'إدارة البنوك',
+                jobs: 'إدارة الوظائف', reviews: 'إدارة التقييمات', categories: 'إدارة التصنيفات',
+                cities: 'إدارة المدن', prices: 'أسعار السوق', verification: 'طلبات التوثيق',
+                users: 'إدارة المستخدمين', audit: 'سجل النشاط'
+            };
+            document.getElementById('tabTitle').innerText = titles[tab] || 'لوحة التحكم';
+        }
+
+        async function loadAllData() {
+            await loadStats();
+            await renderCompanies();
+            await renderBanks();
+            await renderJobs();
+            await renderReviews();
+            await renderCategories();
+            await renderCities();
+            await renderPrices();
+            await renderVerification();
+            await renderUsers();
+            await renderAudit();
+        }
+
+        async function loadStats() {
+            const client = await getSB();
+            try {
+                const [c, b, j, r, u, p] = await Promise.all([
+                    client.from('companies').select('*', { count: 'exact', head: true }),
+                    client.from('banks').select('*', { count: 'exact', head: true }),
+                    client.from('jobs').select('*', { count: 'exact', head: true }),
+                    client.from('reviews').select('*', { count: 'exact', head: true }),
+                    client.from('profiles').select('*', { count: 'exact', head: true }),
+                    client.from('verification_requests').select('*', { count: 'exact', head: true }).eq('status', 'PENDING')
+                ]);
+                document.getElementById('statCompanies').innerText = c.count || 0;
+                document.getElementById('statBanks').innerText = b.count || 0;
+                document.getElementById('statJobs').innerText = j.count || 0;
+                document.getElementById('statReviews').innerText = r.count || 0;
+                document.getElementById('statUsers').innerText = u.count || 0;
+                document.getElementById('statPending').innerText = p.count || 0;
+            } catch (e) { console.error('Stats error:', e); }
+        }
+
+        // ═══════════ الشركات ═══════════
+        async function renderCompanies() {
+            const client = await getSB();
+            const query = document.getElementById('searchCompanies').value.toLowerCase();
+            const { data, error } = await client.from('companies').select('*, categories(name), cities(name)').order('created_at', { ascending: false });
+            const tbody = document.getElementById('companiesTable');
+            if (error) { tbody.innerHTML = `<tr><td colspan="6">خطأ: ${error.message}</td></tr>`; return; }
+
+            const filtered = (data || []).filter(c => c.name.toLowerCase().includes(query));
+            if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">لا توجد شركات</td></tr>'; return; }
+
+            tbody.innerHTML = filtered.map(c => `
+                <tr>
+                    <td><strong>${esc(c.name)}</strong></td>
+                    <td>${c.categories ? esc(c.categories.name) : '-'}</td>
+                    <td>${c.cities ? esc(c.cities.name) : '-'}</td>
+                    <td><span class="status-badge status-${c.status.toLowerCase()}">${c.status}</span></td>
+                    <td>${c.is_verified ? '<span style="color:var(--success);">✔ موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-verify" onclick="toggleVerifyCompany('${c.id}', ${c.is_verified})"><i class="fas fa-check"></i></button>
+                        <button class="btn btn-sm btn-edit" onclick="openCompanyModal('${c.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCompany('${c.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        async function toggleVerifyCompany(id, current) {
+            const client = await getSB();
+            await client.from('companies').update({ is_verified: !current }).eq('id', id);
+            await logAdminAction(!current ? 'توثيق شركة' : 'إلغاء توثيق شركة', 'companies', id);
+            renderCompanies();
+            showToast('تم التحديث');
+        }
+
+        async function deleteCompany(id) {
+            if (!confirm('هل أنت متأكد من حذف هذه الشركة؟')) return;
+            const client = await getSB();
+            await client.from('companies').delete().eq('id', id);
+            await logAdminAction('حذف شركة', 'companies', id);
+            renderCompanies(); loadStats();
+            showToast('تم الحذف');
+        }
+
+        async function openCompanyModal(id = null) {
+            const client = await getSB();
+            let company = null;
+            if (id) { const { data } = await client.from('companies').select('*').eq('id', id).single(); company = data; }
+            const { data: cats } = await client.from('categories').select('*');
+            const { data: cities } = await client.from('cities').select('*');
+
+            const catOptions = (cats || []).map(c => `<option value="${c.id}" ${company && company.category_id === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+            const cityOptions = (cities || []).map(c => `<option value="${c.id}" ${company && company.city_id === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+
+            document.getElementById('modalTitle').innerText = company ? 'تعديل شركة' : 'إضافة شركة جديدة';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveCompany(event, '${id || ''}')">
+                    <div class="form-group"><label>اسم الشركة *</label><input type="text" id="compName" class="form-control" value="${company ? esc(company.name) : ''}" required></div>
+                    <div class="form-group"><label>التصنيف</label><select id="compCat" class="form-control"><option value="">-- اختر --</option>${catOptions}</select></div>
+                    <div class="form-group"><label>المدينة</label><select id="compCity" class="form-control"><option value="">-- اختر --</option>${cityOptions}</select></div>
+                    <div class="form-group"><label>الوصف</label><textarea id="compDesc" class="form-control" rows="3">${company ? esc(company.description || '') : ''}</textarea></div>
+                    <div class="form-group"><label>الهاتف</label><input type="text" id="compPhone" class="form-control" value="${company ? esc(company.phone || '') : ''}"></div>
+                    <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="compEmail" class="form-control" value="${company ? esc(company.email || '') : ''}"></div>
+                    <div class="form-group"><label>الموقع الإلكتروني</label><input type="url" id="compWebsite" class="form-control" value="${company ? esc(company.website || '') : ''}"></div>
+                    <div class="form-group"><label>الحالة</label><select id="compStatus" class="form-control">
+                        ${['PENDING','ACTIVE','HIDDEN','SUSPENDED','BLOCKED','REJECTED'].map(s => `<option value="${s}" ${company && company.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+                    </select></div>
+                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
+                </form>`;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        async function saveCompany(e, id) {
+            e.preventDefault();
+            const client = await getSB();
+            const payload = {
+                name: document.getElementById('compName').value,
+                category_id: document.getElementById('compCat').value || null,
+                city_id: document.getElementById('compCity').value || null,
+                description: document.getElementById('compDesc').value,
+                phone: document.getElementById('compPhone').value,
+                email: document.getElementById('compEmail').value,
+                website: document.getElementById('compWebsite').value,
+                status: document.getElementById('compStatus').value
+            };
+            if (id) {
+                await client.from('companies').update(payload).eq('id', id);
+                await logAdminAction('تعديل شركة', 'companies', id);
+            } else {
+                const { data } = await client.from('companies').insert(payload).select().single();
+                await logAdminAction('إضافة شركة', 'companies', data ? data.id : null);
+            }
+            closeModal(); renderCompanies(); loadStats();
+            showToast('تم الحفظ');
+        }
+
+        // ═══════════ البنوك ═══════════
+        async function renderBanks() {
+            const client = await getSB();
+            const query = document.getElementById('searchBanks').value.toLowerCase();
+            const { data, error } = await client.from('banks').select('*, categories(name), cities(name)').order('created_at', { ascending: false });
+            const tbody = document.getElementById('banksTable');
+            if (error) { tbody.innerHTML = `<tr><td colspan="6">خطأ: ${error.message}</td></tr>`; return; }
+
+            const filtered = (data || []).filter(b => b.name.toLowerCase().includes(query));
+            if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">لا توجد بنوك</td></tr>'; return; }
+
+            tbody.innerHTML = filtered.map(b => `
+                <tr>
+                    <td><strong>${esc(b.name)}</strong></td>
+                    <td>${b.categories ? esc(b.categories.name) : '-'}</td>
+                    <td>${b.cities ? esc(b.cities.name) : '-'}</td>
+                    <td><span class="status-badge status-${b.status.toLowerCase()}">${b.status}</span></td>
+                    <td>${b.is_verified ? '<span style="color:var(--success);">✔ موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-verify" onclick="toggleVerifyBank('${b.id}', ${b.is_verified})"><i class="fas fa-check"></i></button>
+                        <button class="btn btn-sm btn-edit" onclick="openBankModal('${b.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteBank('${b.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        async function toggleVerifyBank(id, current) {
+            const client = await getSB();
+            await client.from('banks').update({ is_verified: !current }).eq('id', id);
+            await logAdminAction(!current ? 'توثيق بنك' : 'إلغاء توثيق بنك', 'banks', id);
+            renderBanks();
+            showToast('تم التحديث');
+        }
+
+        async function deleteBank(id) {
+            if (!confirm('هل أنت متأكد؟')) return;
+            const client = await getSB();
+            await client.from('banks').delete().eq('id', id);
+            await logAdminAction('حذف بنك', 'banks', id);
+            renderBanks(); loadStats();
+            showToast('تم الحذف');
+        }
+
+        async function openBankModal(id = null) {
+            const client = await getSB();
+            let bank = null;
+            if (id) { const { data } = await client.from('banks').select('*').eq('id', id).single(); bank = data; }
+            const { data: cats } = await client.from('categories').select('*');
+            const { data: cities } = await client.from('cities').select('*');
+
+            const catOptions = (cats || []).map(c => `<option value="${c.id}" ${bank && bank.category_id === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+            const cityOptions = (cities || []).map(c => `<option value="${c.id}" ${bank && bank.city_id === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+
+            document.getElementById('modalTitle').innerText = bank ? 'تعديل بنك' : 'إضافة بنك جديد';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveBank(event, '${id || ''}')">
+                    <div class="form-group"><label>اسم البنك *</label><input type="text" id="bankName" class="form-control" value="${bank ? esc(bank.name) : ''}" required></div>
+                    <div class="form-group"><label>التصنيف</label><select id="bankCat" class="form-control"><option value="">-- اختر --</option>${catOptions}</select></div>
+                    <div class="form-group"><label>المدينة</label><select id="bankCity" class="form-control"><option value="">-- اختر --</option>${cityOptions}</select></div>
+                    <div class="form-group"><label>الوصف</label><textarea id="bankDesc" class="form-control" rows="3">${bank ? esc(bank.description || '') : ''}</textarea></div>
+                    <div class="form-group"><label>الهاتف</label><input type="text" id="bankPhone" class="form-control" value="${bank ? esc(bank.phone || '') : ''}"></div>
+                    <div class="form-group"><label>أوقات العمل</label><input type="text" id="bankHours" class="form-control" value="${bank ? esc(bank.working_hours || '') : ''}" placeholder="8:00 ص - 4:00 م"></div>
+                    <div class="form-group"><label>الحالة</label><select id="bankStatus" class="form-control">
+                        ${['PENDING','ACTIVE','HIDDEN','SUSPENDED','BLOCKED','REJECTED'].map(s => `<option value="${s}" ${bank && bank.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+                    </select></div>
+                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
+                </form>`;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        async function saveBank(e, id) {
+            e.preventDefault();
+            const client = await getSB();
+            const payload = {
+                name: document.getElementById('bankName').value,
+                category_id: document.getElementById('bankCat').value || null,
+                city_id: document.getElementById('bankCity').value || null,
+                description: document.getElementById('bankDesc').value,
+                phone: document.getElementById('bankPhone').value,
+                working_hours: document.getElementById('bankHours').value,
+                status: document.getElementById('bankStatus').value
+            };
+            if (id) {
+                await client.from('banks').update(payload).eq('id', id);
+                await logAdminAction('تعديل بنك', 'banks', id);
+            } else {
+                const { data } = await client.from('banks').insert(payload).select().single();
+                await logAdminAction('إضافة بنك', 'banks', data ? data.id : null);
+            }
+            closeModal(); renderBanks(); loadStats();
+            showToast('تم الحفظ');
+        }
+
+        // ═══════════ الوظائف ═══════════
+        async function renderJobs() {
+            const client = await getSB();
+            const query = document.getElementById('searchJobs').value.toLowerCase();
+            const { data, error } = await client.from('jobs').select('*, companies(name)').order('created_at', { ascending: false });
+            const tbody = document.getElementById('jobsTable');
+            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${error.message}</td></tr>`; return; }
+
+            const filtered = (data || []).filter(j => j.title.toLowerCase().includes(query));
+            if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا توجد وظائف</td></tr>'; return; }
+
+            tbody.innerHTML = filtered.map(j => `
+                <tr>
+                    <td><strong>${esc(j.title)}</strong></td>
+                    <td>${j.companies ? esc(j.companies.name) : '-'}</td>
+                    <td><span class="status-badge status-${j.status.toLowerCase()}">${j.status}</span></td>
+                    <td>
+                        ${j.status === 'PENDING' ? `<button class="btn btn-sm btn-verify" onclick="setJobStatus('${j.id}','APPROVED')"><i class="fas fa-check"></i></button> <button class="btn btn-sm btn-warning" onclick="setJobStatus('${j.id}','REJECTED')"><i class="fas fa-times"></i></button>` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="deleteJob('${j.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        async function setJobStatus(id, status) {
+            const client = await getSB();
+            await client.from('jobs').update({ status }).eq('id', id);
+            await logAdminAction('تغيير حالة وظيفة إلى ' + status, 'jobs', id);
+            renderJobs();
+            showToast('تم التحديث');
+        }
+
+        async function deleteJob(id) {
+            if (!confirm('هل أنت متأكد؟')) return;
+            const client = await getSB();
+            await client.from('jobs').delete().eq('id', id);
+            await logAdminAction('حذف وظيفة', 'jobs', id);
+            renderJobs(); loadStats();
+            showToast('تم الحذف');
+        }
+
+        // ═══════════ التقييمات ═══════════
+        async function renderReviews() {
+            const client = await getSB();
+            const query = document.getElementById('searchReviews').value.toLowerCase();
+            const { data, error } = await client.from('reviews').select('*').order('created_at', { ascending: false });
+            const tbody = document.getElementById('reviewsTable');
+            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${error.message}</td></tr>`; return; }
+
+            const filtered = (data || []).filter(r => (r.comment || '').toLowerCase().includes(query));
+            if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا توجد تقييمات</td></tr>'; return; }
+
+            tbody.innerHTML = filtered.map(r => `
+                <tr>
+                    <td>${r.entity_type === 'company' ? 'شركة' : 'بنك'} (${r.entity_id.substring(0,8)})</td>
+                    <td style="color:var(--gold-text);">${'★'.repeat(r.rating)}</td>
+                    <td>${esc((r.comment || '').substring(0, 50))}${(r.comment || '').length > 50 ? '...' : ''}</td>
+                    <td><span class="status-badge status-${r.status.toLowerCase()}">${r.status}</span></td>
+                    <td>
+                        ${r.status === 'PENDING' ? `<button class="btn btn-sm btn-verify" onclick="setReviewStatus('${r.id}','APPROVED')"><i class="fas fa-check"></i></button> <button class="btn btn-sm btn-warning" onclick="setReviewStatus('${r.id}','REJECTED')"><i class="fas fa-times"></i></button>` : ''}
+                        <button class="btn btn-sm btn-danger" onclick="deleteReview('${r.id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        async function setReviewStatus(id, status) {
+            const client = await getSB();
+            await client.from('reviews').update({ status }).eq('id', id);
+            await logAdminAction('تغيير حالة تقييم إلى ' + status, 'reviews', id);
+            renderReviews();
+            showToast('تم التحديث');
+        }
+
+        async function deleteReview(id) {
+            if (!confirm('هل أنت متأكد؟')) return;
+            const client = await getSB();
+            await client.from('reviews').delete().eq('id', id);
+            await logAdminAction('حذف تقييم', 'reviews', id);
+            renderReviews(); loadStats();
+            showToast('تم الحذف');
+        }
+
+        // ═══════════ التصنيفات ═══════════
+        async function renderCategories() {
+            const client = await getSB();
+            const { data, error } = await client.from('categories').select('*').order('name');
+            const tbody = document.getElementById('categoriesTable');
+            if (error) { tbody.innerHTML = `<tr><td colspan="3">خطأ: ${error.message}</td></tr>`; return; }
+            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px;">لا توجد تصنيفات</td></tr>'; return; }
+
+            tbody.innerHTML = data.map(c => `
+                <tr>
+                    <td><strong>${esc(c.name)}</strong></td>
+                    <td><i class="fas ${esc(c.icon || 'fa-tag')}"></i> (${esc(c.icon || '-')})</td>
+                    <td><button class="btn btn-sm btn-edit" onclick="openCategoryModal('${c.id}')"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="deleteCategory('${c.id}')"><i class="fas fa-trash"></i></button></td>
+                </tr>`).join('');
+        }
+
+        async function openCategoryModal(id = null) {
+            const client = await getSB();
+            let cat = null;
+            if (id) { const { data } = await client.from('categories').select('*').eq('id', id).single(); cat = data; }
+            document.getElementById('modalTitle').innerText = cat ? 'تعديل تصنيف' : 'إضافة تصنيف جديد';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveCategory(event, '${id || ''}')">
+                    <div class="form-group"><label>اسم التصنيف *</label><input type="text" id="catName" class="form-control" value="${cat ? esc(cat.name) : ''}" required></div>
+                    <div class="form-group"><label>الأيقونة (FontAwesome)</label><input type="text" id="catIcon" class="form-control" value="${cat ? esc(cat.icon || '') : ''}" placeholder="fa-tag"></div>
+                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
+                </form>`;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        async function saveCategory(e, id) {
+            e.preventDefault();
+            const client = await getSB();
+            const payload = { name: document.getElementById('catName').value, icon: document.getElementById('catIcon').value || 'fa-tag' };
+            if (id) { await client.from('categories').update(payload).eq('id', id); await logAdminAction('تعديل تصنيف', 'categories', id); }
+            else { const { data } = await client.from('categories').insert(payload).select().single(); await logAdminAction('إضافة تصنيف', 'categories', data ? data.id : null); }
+            closeModal(); renderCategories();
+            showToast('تم الحفظ');
+        }
+
+        async function deleteCategory(id) {
+            if (!confirm('هل أنت متأكد؟')) return;
+            const client = await getSB();
+            await client.from('categories').delete().eq('id', id);
+            await logAdminAction('حذف تصنيف', 'categories', id);
+            renderCategories();
+            showToast('تم الحذف');
+        }
+
+        // ═══════════ المدن ═══════════
+        async function renderCities() {
+            const client = await getSB();
+            const { data, error } = await client.from('cities').select('*').order('name');
+            const tbody = document.getElementById('citiesTable');
+            if (error) { tbody.innerHTML = `<tr><td colspan="3">خطأ: ${error.message}</td></tr>`; return; }
+            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px;">لا توجد مدن</td></tr>'; return; }
+
+            tbody.innerHTML = data.map(c => `
+                <tr>
+                    <td><strong>${esc(c.name)}</strong></td>
+                    <td>${esc(c.slug || '-')}</td>
+                    <td><button class="btn btn-sm btn-edit" onclick="openCityModal('${c.id}')"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="deleteCity('${c.id}')"><i class="fas fa-trash"></i></button></td>
+                </tr>`).join('');
+        }
+
+        async function openCityModal(id = null) {
+            const client = await getSB();
+            let city = null;
+            if (id) { const { data } = await client.from('cities').select('*').eq('id', id).single(); city = data; }
+            document.getElementById('modalTitle').innerText = city ? 'تعديل مدينة' : 'إضافة مدينة جديدة';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveCity(event, '${id || ''}')">
+                    <div class="form-group"><label>اسم المدينة *</label><input type="text" id="cityName" class="form-control" value="${city ? esc(city.name) : ''}" required></div>
+                    <div class="form-group"><label>الاسم اللاتيني</label><input type="text" id="citySlug" class="form-control" value="${city ? esc(city.slug || '') : ''}" placeholder="sanaa"></div>
+                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
+                </form>`;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        async function saveCity(e, id) {
+            e.preventDefault();
+            const client = await getSB();
+            const payload = { name: document.getElementById('cityName').value, slug: document.getElementById('citySlug').value || null };
+            if (id) { await client.from('cities').update(payload).eq('id', id); await logAdminAction('تعديل مدينة', 'cities', id); }
+            else { const { data } = await client.from('cities').insert(payload).select().single(); await logAdminAction('إضافة مدينة', 'cities', data ? data.id : null); }
+            closeModal(); renderCities();
+            showToast('تم الحفظ');
+        }
+
+        async function deleteCity(id) {
+            if (!confirm('هل أنت متأكد؟')) return;
+            const client = await getSB();
+            await client.from('cities').delete().eq('id', id);
+            await logAdminAction('حذف مدينة', 'cities', id);
+            renderCities();
+            showToast('تم الحذف');
+        }
+
+        // ═══════════ الأسعار ═══════════
+        async function renderPrices() {
+            const client = await getSB();
+            const { data: exchange } = await client.from('exchange_rates').select('*').order('updated_at', { ascending: false });
+            const { data: gold } = await client.from('gold_prices').select('*').order('updated_at', { ascending: false });
+
+            document.getElementById('exchangeTable').innerHTML = (exchange || []).map(e => `
+                <tr><td><strong>${esc(e.currency)}</strong></td><td>${e.buy_price}</td><td>${e.sell_price}</td><td>${esc(e.city)}</td>
+                <td><button class="btn btn-sm btn-danger" onclick="deleteExchange('${e.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('')
+                || '<tr><td colspan="5" style="text-align:center;">لا توجد بيانات</td></tr>';
+
+            document.getElementById('goldTable').innerHTML = (gold || []).map(g => `
+                <tr><td><strong>${esc(g.karat)} قيراط</strong></td><td>${g.price}</td><td>${esc(g.city)}</td>
+                <td><button class="btn btn-sm btn-danger" onclick="deleteGold('${g.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('')
+                || '<tr><td colspan="4" style="text-align:center;">لا توجد بيانات</td></tr>';
+        }
+
+        async function openExchangeModal() {
+            document.getElementById('modalTitle').innerText = 'إضافة سعر صرف';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveExchange(event)">
+                    <div class="form-group"><label>العملة *</label><select id="exCurrency" class="form-control" required><option value="USD">USD - دولار</option><option value="SAR">SAR - ريال سعودي</option><option value="EUR">EUR - يورو</option></select></div>
+                    <div class="form-group"><label>سعر الشراء *</label><input type="number" step="0.01" id="exBuy" class="form-control" required></div>
+                    <div class="form-group"><label>سعر البيع *</label><input type="number" step="0.01" id="exSell" class="form-control" required></div>
+                    <div class="form-group"><label>المدينة *</label><select id="exCity" class="form-control" required><option value="صنعاء">صنعاء</option><option value="عدن">عدن</option></select></div>
+                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
+                </form>`;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        async function saveExchange(e) {
+            e.preventDefault();
+            const client = await getSB();
+            const { data } = await client.from('exchange_rates').insert({
+                currency: document.getElementById('exCurrency').value,
+                buy_price: document.getElementById('exBuy').value,
+                sell_price: document.getElementById('exSell').value,
+                city: document.getElementById('exCity').value,
+                source: 'manual',
+                updated_at: new Date().toISOString()
+            }).select().single();
+            await logAdminAction('إضافة سعر صرف', 'exchange_rates', data ? data.id : null);
+            closeModal(); renderPrices();
+            showToast('تم الحفظ');
+        }
+
+        async function deleteExchange(id) {
+            if (!confirm('هل أنت متأكد؟')) return;
+            const client = await getSB();
+            await client.from('exchange_rates').delete().eq('id', id);
+            await logAdminAction('حذف سعر صرف', 'exchange_rates', id);
+            renderPrices();
+            showToast('تم الحذف');
+        }
+
+        async function openGoldModal() {
+            document.getElementById('modalTitle').innerText = 'إضافة سعر ذهب';
+            document.getElementById('modalBody').innerHTML = `
+                <form onsubmit="saveGold(event)">
+                    <div class="form-group"><label>العيار *</label><select id="goldKarat" class="form-control" required><option value="24">24 قيراط</option><option value="21">21 قيراط</option><option value="18">18 قيراط</option></select></div>
+                    <div class="form-group"><label>السعر *</label><input type="number" step="0.01" id="goldPrice" class="form-control" required></div>
+                    <div class="form-group"><label>المدينة *</label><select id="goldCity" class="form-control" required><option value="صنعاء">صنعاء</option><option value="عدن">عدن</option></select></div>
+                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
+                </form>`;
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        async function saveGold(e) {
+            e.preventDefault();
+            const client = await getSB();
+            const { data } = await client.from('gold_prices').insert({
+                karat: document.getElementById('goldKarat').value,
+                price: document.getElementById('goldPrice').value,
+                city: document.getElementById('goldCity').value,
+                source: 'manual',
+                updated_at: new Date().toISOString()
+            }).select().single();
+            await logAdminAction('إضافة سعر ذهب', 'gold_prices', data ? data.id : null);
+            closeModal(); renderPrices();
+            showToast('تم الحفظ');
+        }
+
+        async function deleteGold(id) {
+            if (!confirm('هل أنت متأكد؟')) return;
+            const client = await getSB();
+            await client.from('gold_prices').delete().eq('id', id);
+            await logAdminAction('حذف سعر ذهب', 'gold_prices', id);
+            renderPrices();
+            showToast('تم الحذف');
+        }
+
+        // ═══════════ طلبات التوثيق ═══════════
+        async function renderVerification() {
+            const client = await getSB();
+            const { data, error } = await client.from('verification_requests').select('*').order('created_at', { ascending: false });
+            const tbody = document.getElementById('verificationTable');
+            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${error.message}</td></tr>`; return; }
+            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا توجد طلبات</td></tr>'; return; }
+
+            tbody.innerHTML = data.map(v => `
+                <tr>
+                    <td>${v.entity_id.substring(0,8)}</td>
+                    <td>${v.entity_type === 'company' ? 'شركة' : 'بنك'}</td>
+                    <td>${new Date(v.created_at).toLocaleDateString('ar-YE')}</td>
+                    <td><span class="status-badge status-${v.status.toLowerCase()}">${v.status}</span></td>
+                    <td>${v.status === 'PENDING' ? `<button class="btn btn-sm btn-verify" onclick="reviewVerification('${v.id}','APPROVED','${v.entity_type}','${v.entity_id}')"><i class="fas fa-check"></i> قبول</button> <button class="btn btn-sm btn-danger" onclick="reviewVerification('${v.id}','REJECTED','${v.entity_type}','${v.entity_id}')"><i class="fas fa-times"></i> رفض</button>` : '-'}</td>
+                </tr>`).join('');
+        }
+
+        async function reviewVerification(id, status, entityType, entityId) {
+            const client = await getSB();
+            await client.from('verification_requests').update({ status, reviewed_at: new Date().toISOString() }).eq('id', id);
+            if (status === 'APPROVED') {
+                const table = entityType === 'company' ? 'companies' : 'banks';
+                await client.from(table).update({ is_verified: true }).eq('id', entityId);
+            }
+            await logAdminAction('مراجعة طلب توثيق: ' + status, 'verification_requests', id);
+            renderVerification(); loadStats();
+            showToast(status === 'APPROVED' ? 'تمت الموافقة' : 'تم الرفض');
+        }
+
+        // ═══════════ المستخدمين ═══════════
+        async function renderUsers() {
+            const client = await getSB();
+            const query = document.getElementById('searchUsers').value.toLowerCase();
+            const { data, error } = await client.from('profiles').select('*').order('created_at', { ascending: false });
+            const tbody = document.getElementById('usersTable');
+            if (error) { tbody.innerHTML = `<tr><td colspan="4">خطأ: ${error.message}</td></tr>`; return; }
+
+            const filtered = (data || []).filter(u => (u.full_name || '').toLowerCase().includes(query) || (u.email || '').toLowerCase().includes(query));
+            if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px;">لا يوجد مستخدمين</td></tr>'; return; }
+
+            tbody.innerHTML = filtered.map(u => `
+                <tr><td><strong>${esc(u.full_name || '-')}</strong></td><td>${esc(u.email || '-')}</td><td>${esc(u.role || 'user')}</td><td>${new Date(u.created_at).toLocaleDateString('ar-YE')}</td></tr>`).join('');
+        }
+
+        // ═══════════ سجل النشاط ═══════════
+        async function renderAudit() {
+            const client = await getSB();
+            const { data, error } = await client.from('audit_logs').select('*, profiles(email)').order('created_at', { ascending: false }).limit(100);
+            const tbody = document.getElementById('auditTable');
+            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${error.message}</td></tr>`; return; }
+            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا يوجد نشاط مسجّل بعد</td></tr>'; return; }
+
+            tbody.innerHTML = data.map(a => `
+                <tr>
+                    <td>${a.profiles ? esc(a.profiles.email) : '-'}</td>
+                    <td>${esc(a.action)}</td>
+                    <td>${esc(a.target_table || '-')}</td>
+                    <td>${esc(a.reason || '-')}</td>
+                    <td>${new Date(a.created_at).toLocaleString('ar-YE')}</td>
+                </tr>`).join('');
+        }
+
+        function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
+
+        // منع أي إدخال HTML من كسر الصفحة (XSS بسيط)
+        function esc(str) {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

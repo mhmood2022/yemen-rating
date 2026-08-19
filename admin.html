@@ -1,1098 +1,308 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة الإدارة | يمن ريتغ</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root {
-            --bg-dark: #0a1120; --card-bg: #0f172a; --header-bg: #152033; --border-color: #1e293b;
-            --gold-gradient: linear-gradient(135deg, #fbbf24, #d4af37); --gold-text: #fbbf24;
-            --text-main: #f8fafc; --text-muted: #94a3b8;
-            --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --info: #3b82f6;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background: var(--bg-dark); color: var(--text-main); min-height: 100vh; }
-        .hidden { display: none !important; }
-
-        .login-wrapper { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .login-card { background: var(--card-bg); border: 1px solid var(--gold-text); border-radius: 12px; padding: 35px; width: 100%; max-width: 400px; text-align: center; }
-        .login-logo { width: 60px; height: 60px; background: var(--gold-gradient); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #0a1120; margin: 0 auto 15px; }
-        .login-error { background: rgba(239,68,68,0.15); border: 1px solid var(--danger); color: #fca5a5; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; }
-        .boot-error { color: #f87171; }
-        .boot-error i { font-size: 2rem; }
-        .boot-error p { margin-top: 15px; }
-        .boot-error button { margin-top: 15px; }
-
-        .admin-layout { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background: var(--bg-dark); border-left: 1px solid var(--border-color); height: 100vh; position: fixed; right: 0; top: 0; z-index: 100; overflow-y: auto; }
-        .brand { padding: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); font-weight: 800; color: var(--gold-text); }
-        .nav-menu { padding: 15px 10px; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: var(--text-muted); text-decoration: none; border-radius: 8px; margin-bottom: 5px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
-        .nav-item:hover, .nav-item.active { background: var(--header-bg); color: var(--gold-text); }
-        .nav-section { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; padding: 15px 15px 5px; margin-top: 10px; }
-
-        .main-content { flex: 1; margin-right: 260px; padding: 25px; }
-        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: var(--card-bg); padding: 15px 20px; border-radius: 10px; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px; }
-        .back-link { background: var(--header-bg); color: var(--gold-text); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 0.85rem; }
-
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: var(--card-bg); border-radius: 8px; padding: 20px; border: 1px solid var(--border-color); }
-        .stat-card .icon { width: 50px; height: 50px; background: var(--gold-gradient); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #0a1120; margin-bottom: 10px; }
-        .stat-card .num { font-size: 1.8rem; font-weight: 800; color: var(--gold-text); }
-        .stat-card .label { color: var(--text-muted); font-size: 0.85rem; }
-
-        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
-        .table-container { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color); overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: right; }
-        th { background: var(--header-bg); color: var(--gold-text); padding: 12px 15px; font-size: 0.85rem; font-weight: 700; white-space: nowrap; }
-        td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); font-size: 0.85rem; }
-        tr:hover { background: rgba(251, 191, 36, 0.05); }
-
-        .btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border: none; font-weight: 600; font-size: 0.85rem; transition: all 0.2s; }
-        .btn-gold { background: var(--gold-gradient); color: #0a1120; }
-        .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
-        .btn-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
-        .btn-edit { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
-        .btn-verify { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
-        .btn-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
-        .form-control { width: 100%; padding: 10px; background: var(--header-bg); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; margin-top: 5px; font-size: 0.9rem; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
-
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 15px; }
-        .modal-card { background: var(--card-bg); border: 1px solid var(--gold-text); border-radius: 12px; padding: 25px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
-        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
-
-        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; white-space: nowrap; }
-        .status-active, .status-approved { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-        .status-pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-        .status-rejected, .status-blocked, .status-suspended { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-        .status-hidden { background: rgba(148, 163, 184, 0.2); color: var(--text-muted); }
-
-        .toast { position: fixed; top: 20px; left: 20px; background: var(--card-bg); border: 1px solid var(--gold-text); padding: 15px 20px; border-radius: 8px; z-index: 9999; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s; }
-        .toast.toast-error { border-color: var(--danger); }
-        @keyframes slideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .spin { animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        @media (max-width: 768px) {
-            .sidebar { width: 100%; height: auto; position: relative; }
-            .main-content { margin-right: 0; padding: 15px; }
-            .admin-layout { flex-direction: column; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم | يمن ريتغ</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<style>
+:root{--navy-900:#0a1120;--navy-800:#0f172a;--navy-700:#152033;--navy-600:#1e293b;--gold-500:#d4af37;--gold-400:#fbbf24;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--info:#3b82f6;--text-main:#f8fafc;--text-muted:#94a3b8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--navy-900);color:var(--text-main);line-height:1.6;font-size:15px}
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+a{text-decoration:none;color:inherit}
+/* Header */
+.adm-header{background:linear-gradient(135deg,var(--navy-800),var(--navy-700));border-bottom:2px solid var(--gold-500);position:sticky;top:0;z-index:1000;padding:14px 0;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.adm-head-inner{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.adm-brand{display:flex;align-items:center;gap:12px}
+.adm-logo{width:42px;height:42px;background:linear-gradient(135deg,var(--danger),#b91c1c);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;box-shadow:0 4px 12px rgba(239,68,68,.4)}
+.adm-brand h1{font-size:1.05rem;font-weight:800;background:linear-gradient(135deg,var(--gold-400),var(--gold-500));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.adm-brand span{font-size:.7rem;color:var(--text-muted)}
+.adm-actions{display:flex;align-items:center;gap:10px}
+.notif-btn{position:relative;background:var(--navy-600);border:1px solid var(--navy-600);color:var(--gold-400);width:42px;height:42px;border-radius:12px;cursor:pointer;font-size:1.05rem;transition:.2s}
+.notif-btn:hover{border-color:var(--gold-500)}
+#notifBadge{position:absolute;top:-5px;left:-5px;background:var(--danger);color:#fff;font-size:.6rem;font-weight:800;min-width:18px;height:18px;border-radius:9px;display:none;align-items:center;justify-content:center;padding:0 4px}
+.btn{padding:9px 16px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:.78rem;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:.2s}
+.btn-gold{background:linear-gradient(135deg,var(--gold-400),var(--gold-500));color:var(--navy-900)}
+.btn-ok{background:var(--success);color:#fff}
+.btn-no{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.btn-edit{background:var(--navy-600);color:var(--text-main)}
+.btn:hover{transform:translateY(-1px);opacity:.92}
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin:24px 0}
+.stat-card{background:linear-gradient(135deg,var(--navy-700),var(--navy-800));border:1px solid var(--navy-600);border-radius:14px;padding:18px;position:relative;overflow:hidden;transition:.3s}
+.stat-card:hover{border-color:var(--gold-500);transform:translateY(-3px)}
+.stat-card::before{content:"";position:absolute;top:-30px;left:-30px;width:80px;height:80px;border-radius:50%;opacity:.08}
+.stat-card.c1::before{background:var(--gold-400)}.stat-card.c2::before{background:var(--info)}.stat-card.c3::before{background:var(--success)}.stat-card.c4::before{background:var(--warning)}.stat-card.c5::before{background:var(--danger)}.stat-card.c6::before{background:#8b5cf6}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:10px}
+.c1 .stat-icon{background:rgba(251,191,36,.15);color:var(--gold-400)}.c2 .stat-icon{background:rgba(59,130,246,.15);color:var(--info)}.c3 .stat-icon{background:rgba(16,185,129,.15);color:var(--success)}.c4 .stat-icon{background:rgba(245,158,11,.15);color:var(--warning)}.c5 .stat-icon{background:rgba(239,68,68,.15);color:var(--danger)}.c6 .stat-icon{background:rgba(139,92,246,.15);color:#8b5cf6}
+.stat-num{font-size:1.7rem;font-weight:900;line-height:1}
+.stat-lbl{font-size:.72rem;color:var(--text-muted);margin-top:4px}
+/* Tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;background:var(--navy-800);padding:8px;border-radius:14px;border:1px solid var(--navy-600)}
+.tab-btn{padding:10px 16px;border-radius:10px;border:none;background:transparent;color:var(--text-muted);font-family:inherit;font-weight:700;font-size:.8rem;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px}
+.tab-btn.active{background:linear-gradient(135deg,var(--gold-400),var(--gold-500));color:var(--navy-900)}
+.tab-btn .cnt{background:rgba(0,0,0,.2);padding:1px 7px;border-radius:10px;font-size:.65rem}
+.tab-btn.active .cnt{background:rgba(10,17,32,.25)}
+/* Box */
+.box{background:var(--navy-800);border:1px solid var(--navy-600);border-radius:16px;padding:22px;margin-bottom:18px}
+.box h3{color:var(--gold-400);font-size:1rem;margin-bottom:16px;display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--navy-600)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:.75rem;color:var(--text-muted);margin-bottom:5px;font-weight:600}
+.form-control{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--navy-600);background:var(--navy-900);color:var(--text-main);font-family:inherit;font-size:.85rem;outline:none;transition:.2s}
+.form-control:focus{border-color:var(--gold-500)}
+/* Items */
+.item-row{background:var(--navy-700);border:1px solid var(--navy-600);border-radius:12px;padding:14px;margin-bottom:10px;transition:.2s}
+.item-row:hover{border-color:var(--gold-500)}
+.item-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.item-name{font-weight:700;font-size:.92rem;display:flex;align-items:center;gap:8px}
+.item-sub{font-size:.75rem;color:var(--text-muted);margin-top:4px}
+.badge{padding:3px 10px;border-radius:20px;font-size:.62rem;font-weight:800}
+.b-pending{background:rgba(245,158,11,.15);color:var(--warning)}.b-ok{background:rgba(16,185,129,.15);color:var(--success)}.b-sus{background:rgba(239,68,68,.15);color:var(--danger)}
+.empty{text-align:center;color:var(--text-muted);padding:35px;font-size:.85rem}
+.empty i{font-size:2.5rem;color:var(--navy-600);display:block;margin-bottom:10px}
+.img-preview{width:60px;height:60px;border-radius:10px;object-fit:cover;border:2px solid var(--gold-500);display:none;margin-top:6px}
+/* Notifications panel */
+.notif-panel{position:fixed;top:70px;left:20px;width:320px;max-height:420px;background:var(--navy-800);border:1px solid var(--gold-500);border-radius:14px;box-shadow:0 15px 40px rgba(0,0,0,.6);z-index:1100;display:none;overflow:hidden}
+.notif-panel.open{display:block}
+.notif-head{padding:14px 16px;border-bottom:1px solid var(--navy-600);display:flex;justify-content:space-between;align-items:center}
+.notif-head h4{color:var(--gold-400);font-size:.9rem}
+.notif-list{max-height:340px;overflow-y:auto}
+.notif-item{padding:12px 16px;border-bottom:1px solid var(--navy-600);font-size:.8rem;display:flex;gap:10px}
+.notif-item.unread{background:rgba(251,191,36,.05);border-right:3px solid var(--gold-400)}
+.notif-item .nt{font-size:.65rem;color:var(--text-muted);margin-top:3px}
+.toast{position:fixed;top:20px;left:20px;background:var(--navy-700);border:1px solid var(--gold-500);color:#fff;padding:14px 22px;border-radius:12px;z-index:9999;font-size:.85rem;font-family:'Cairo',sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.stats-grid{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}.notif-panel{left:10px;right:10px;width:auto}}
+</style>
 </head>
 <body>
 
-    <!-- 1. شاشة التحقق من الاتصال -->
-    <div class="login-wrapper" id="bootSec">
-        <div style="text-align:center; color:var(--text-muted);" id="bootContent">
-            <i class="fas fa-circle-notch spin" style="font-size:2rem; color:var(--gold-text);"></i>
-            <p style="margin-top:15px;">جاري الاتصال بقاعدة البيانات...</p>
+<header class="adm-header">
+    <div class="container adm-head-inner">
+        <div class="adm-brand">
+            <div class="adm-logo"><i class="fas fa-user-shield"></i></div>
+            <div><h1>لوحة التحكم</h1><span>يمن ريتغ — مركز الإدارة</span></div>
+        </div>
+        <div class="adm-actions">
+            <button class="notif-btn" onclick="toggleNotif()"><i class="fas fa-bell"></i><span id="notifBadge"></span></button>
+            <a href="index.html" class="btn btn-edit"><i class="fas fa-home"></i> الموقع</a>
+            <button class="btn btn-no" onclick="localStorage.removeItem('yr_session');location.href='register.html?role=admin'"><i class="fas fa-sign-out-alt"></i> خروج</button>
         </div>
     </div>
+</header>
 
-    <!-- 2. شاشة الدخول -->
-    <div class="login-wrapper hidden" id="loginSec">
-        <div class="login-card">
-            <div class="login-logo"><i class="fas fa-user-shield"></i></div>
-            <h2 style="color:var(--gold-text); margin-bottom:10px;">إدارة يمن ريتغ</h2>
-            <p style="color:var(--text-muted); margin-bottom:20px; font-size: 0.9rem;">الدخول للمسؤولين فقط</p>
-            <div id="loginError" class="login-error hidden"></div>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label>البريد الإلكتروني</label>
-                    <input type="email" id="emailInput" class="form-control" placeholder="admin@yemen-rating.com" required>
+<div class="notif-panel" id="notifPanel">
+    <div class="notif-head"><h4><i class="fas fa-bell"></i> الإشعارات</h4><button class="btn btn-edit" style="padding:4px 10px;font-size:.65rem" onclick="markAllRead()">تعيين الكل مقروء</button></div>
+    <div class="notif-list" id="notifList"></div>
+</div>
+
+<div class="container">
+    <div class="stats-grid">
+        <div class="stat-card c1"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-num" id="sOwners">0</div><div class="stat-lbl">ملاك معلقون</div></div>
+        <div class="stat-card c2"><div class="stat-icon"><i class="fas fa-building"></i></div><div class="stat-num" id="sEnts">0</div><div class="stat-lbl">منشآت معلقة</div></div>
+        <div class="stat-card c3"><div class="stat-icon"><i class="fas fa-briefcase"></i></div><div class="stat-num" id="sJobs">0</div><div class="stat-lbl">وظائف معلقة</div></div>
+        <div class="stat-card c4"><div class="stat-icon"><i class="fas fa-ad"></i></div><div class="stat-num" id="sAds">0</div><div class="stat-lbl">إعلانات معلقة</div></div>
+        <div class="stat-card c5"><div class="stat-icon"><i class="fas fa-star"></i></div><div class="stat-num" id="sRevs">0</div><div class="stat-lbl">تقييمات معلقة</div></div>
+        <div class="stat-card c6"><div class="stat-icon"><i class="fas fa-envelope-open-text"></i></div><div class="stat-num" id="sApps">0</div><div class="stat-lbl">طلبات توظيف</div></div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('dash',this)"><i class="fas fa-chart-pie"></i> النظرة العامة</button>
+        <button class="tab-btn" onclick="showTab('owners',this)"><i class="fas fa-users"></i> الملاك <span class="cnt" id="tOwners">0</span></button>
+        <button class="tab-btn" onclick="showTab('ents',this)"><i class="fas fa-building"></i> المنشآت <span class="cnt" id="tEnts">0</span></button>
+        <button class="tab-btn" onclick="showTab('jobs',this)"><i class="fas fa-briefcase"></i> الوظائف <span class="cnt" id="tJobs">0</span></button>
+        <button class="tab-btn" onclick="showTab('ads',this)"><i class="fas fa-ad"></i> الإعلانات <span class="cnt" id="tAds">0</span></button>
+        <button class="tab-btn" onclick="showTab('revs',this)"><i class="fas fa-star"></i> التقييمات <span class="cnt" id="tRevs">0</span></button>
+        <button class="tab-btn" onclick="showTab('apps',this)"><i class="fas fa-envelope-open-text"></i> الطلبات <span class="cnt" id="tApps">0</span></button>
+        <button class="tab-btn" onclick="showTab('prices',this)"><i class="fas fa-coins"></i> الأسعار</button>
+    </div>
+
+    <!-- النظرة العامة -->
+    <div id="sec-dash" class="box">
+        <h3><i class="fas fa-chart-pie"></i> النظرة العامة</h3>
+        <div id="dashSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px"></div>
+        <div style="margin-top:20px"><h3 style="border:none;padding:0;margin-bottom:12px"><i class="fas fa-clock"></i> آخر النشاطات</h3><div id="recentActivity"></div></div>
+    </div>
+
+    <!-- الملاك -->
+    <div id="sec-owners" class="box" style="display:none"><h3><i class="fas fa-users"></i> حسابات الملاك</h3><div id="listOwners"></div></div>
+
+    <!-- المنشآت -->
+    <div id="sec-ents" style="display:none">
+        <div class="box">
+            <h3 id="entFormTitle"><i class="fas fa-plus-circle"></i> إضافة / تعديل منشأة</h3>
+            <form id="entForm" onsubmit="saveEntity(event)">
+                <div class="form-grid">
+                    <div class="form-group"><label>اسم المنشأة *</label><input type="text" class="form-control" id="eName" required></div>
+                    <div class="form-group"><label>التصنيف *</label><select class="form-control" id="eType"><option value="company">شركة</option><option value="bank">بنك</option><option value="shop">محل</option><option value="hotel">فندق</option><option value="restaurant">مطعم</option><option value="exchange">صرافة</option><option value="transport">شركة نقل</option><option value="wallet">محفظة إلكترونية</option></select></div>
+                    <div class="form-group"><label>المدينة *</label><input type="text" class="form-control" id="eCity" required></div>
+                    <div class="form-group"><label>العنوان</label><input type="text" class="form-control" id="eAddr"></div>
+                    <div class="form-group"><label>الهاتف *</label><input type="tel" class="form-control" id="ePhone" required></div>
+                    <div class="form-group"><label>واتساب</label><input type="tel" class="form-control" id="eWa"></div>
+                    <div class="form-group"><label>البريد</label><input type="email" class="form-control" id="eEmail"></div>
+                    <div class="form-group"><label>الموقع</label><input type="url" class="form-control" id="eWeb"></div>
+                    <div class="form-group"><label>الحالة</label><select class="form-control" id="eStatus"><option value="PENDING">قيد المراجعة</option><option value="PUBLISHED">منشورة ✅</option></select></div>
+                    <div class="form-group"><label>الشارة</label><select class="form-control" id="eBadge"><option value="">بدون</option><option value="🥇 الأفضل">🥇 الأفضل</option><option value="✓ موثوقة">✓ موثوقة</option><option value="⭐ مميزة">⭐ مميزة</option><option value="ذهبي">ذهبي</option><option value="فضي">فضي</option><option value="برونزي">برونزي</option></select></div>
                 </div>
-                <div class="form-group">
-                    <label>كلمة المرور</label>
-                    <input type="password" id="passInput" class="form-control" placeholder="كلمة المرور" required>
+                <div class="form-group"><label>الوصف *</label><textarea class="form-control" id="eDesc" rows="2" required></textarea></div>
+                <div class="form-group"><label>الخدمات (بفاصلة)</label><input type="text" class="form-control" id="eServ"></div>
+                <div class="form-group"><label>الفروع (بفاصلة)</label><input type="text" class="form-control" id="eBranch"></div>
+                <div class="form-grid">
+                    <div class="form-group"><label>الشعار</label><input type="file" class="form-control" id="eLogo" accept="image/*" onchange="previewImg(this,'pLogo')"><img id="pLogo" class="img-preview"></div>
+                    <div class="form-group"><label>الغلاف</label><input type="file" class="form-control" id="eCover" accept="image/*" onchange="previewImg(this,'pCover')"><img id="pCover" class="img-preview"></div>
                 </div>
-                <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:10px;">
-                    <i class="fas fa-sign-in-alt"></i> دخول
-                </button>
+                <div style="display:flex;gap:8px"><button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> حفظ</button><button type="button" class="btn btn-edit" id="cancelEdit" style="display:none" onclick="resetEntForm()"><i class="fas fa-times"></i> إلغاء</button></div>
             </form>
-            <a href="index.html" class="back-link" style="margin-top:20px; justify-content:center;">
-                <i class="fas fa-arrow-right"></i> رجوع للموقع
-            </a>
+        </div>
+        <div class="box"><h3><i class="fas fa-list"></i> كل المنشآت</h3><div id="listEnts"></div></div>
+    </div>
+
+    <!-- الوظائف -->
+    <div id="sec-jobs" class="box" style="display:none"><h3><i class="fas fa-briefcase"></i> كل الوظائف</h3><div id="listJobs"></div></div>
+
+    <!-- الإعلانات -->
+    <div id="sec-ads" style="display:none">
+        <div class="box">
+            <h3><i class="fas fa-plus-circle"></i> إضافة إعلان</h3>
+            <form id="adForm" onsubmit="saveAd(event)">
+                <div class="form-grid">
+                    <div class="form-group"><label>عنوان الإعلان *</label><input type="text" class="form-control" id="aTitle" required></div>
+                    <div class="form-group"><label>الموضع *</label><select class="form-control" id="aPlace"><option value="homepage_top">أعلى الرئيسية</option><option value="homepage_middle">وسط الرئيسية</option><option value="homepage_bottom">أسفل الرئيسية</option><option value="companies_top">أعلى الشركات</option><option value="banks_top">أعلى البنوك</option><option value="jobs_top">أعلى الوظائف</option><option value="entity_top">صفحات الكيانات</option></select></div>
+                    <div class="form-group"><label>الرابط</label><input type="url" class="form-control" id="aLink"></div>
+                    <div class="form-group"><label>الحالة</label><select class="form-control" id="aStatus"><option value="PUBLISHED">منشور ✅</option><option value="PENDING">قيد المراجعة</option></select></div>
+                </div>
+                <div class="form-group"><label>صورة الإعلان</label><input type="file" class="form-control" id="aImg" accept="image/*" onchange="previewImg(this,'pAd')"><img id="pAd" class="img-preview"></div>
+                <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> حفظ الإعلان</button>
+            </form>
+        </div>
+        <div class="box">
+            <h3><i class="fas fa-code"></i> كود Google AdSense</h3>
+            <div class="form-group"><textarea class="form-control" id="adsenseCode" rows="3" placeholder='<script async src="...adsbygoogle.js"></script>'></textarea></div>
+            <button class="btn btn-gold" onclick="saveAdsense()"><i class="fas fa-save"></i> حفظ الكود</button>
+        </div>
+        <div class="box"><h3><i class="fas fa-bullhorn"></i> كل الإعلانات <span style="font-size:.7rem;color:var(--text-muted);font-weight:400">(مع إحصاء النقرات)</span></h3><div id="listAds"></div></div>
+    </div>
+
+    <!-- التقييمات -->
+    <div id="sec-revs" class="box" style="display:none"><h3><i class="fas fa-star"></i> كل التقييمات</h3><div id="listRevs"></div></div>
+
+    <!-- الطلبات -->
+    <div id="sec-apps" class="box" style="display:none"><h3><i class="fas fa-envelope-open-text"></i> طلبات التوظيف</h3><div id="listApps"></div></div>
+
+    <!-- الأسعار -->
+    <div id="sec-prices" style="display:none">
+        <div class="box">
+            <h3><i class="fas fa-coins"></i> أسعار الصرف والذهب</h3>
+            <div class="form-group"><label>المصدر الرسمي *</label><input type="text" class="form-control" id="pSource" placeholder="البنك المركزي اليمني"></div>
+            <h4 style="color:#10b981;font-size:.8rem;margin:14px 0 8px">🏙️ صنعاء — الصرف</h4>
+            <div class="form-grid">
+                <div class="form-group"><label style="color:#10b981">$ شراء</label><input type="number" class="form-control" id="s_ub"></div>
+                <div class="form-group"><label style="color:#ef4444">$ بيع</label><input type="number" class="form-control" id="s_us"></div>
+                <div class="form-group"><label style="color:#10b981">🇸 شراء</label><input type="number" class="form-control" id="s_sb"></div>
+                <div class="form-group"><label style="color:#ef4444">🇸🇦 بيع</label><input type="number" class="form-control" id="s_ss"></div>
+            </div>
+            <h4 style="color:#fbbf24;font-size:.8rem;margin:14px 0 8px">🏙️ صنعاء — الذهب</h4>
+            <div class="form-grid">
+                <div class="form-group"><label style="color:#fbbf24">عيار 21</label><input type="number" class="form-control" id="s_g21"></div>
+                <div class="form-group"><label style="color:#fbbf24">عيار 24</label><input type="number" class="form-control" id="s_g24"></div>
+            </div>
+            <h4 style="color:#10b981;font-size:.8rem;margin:14px 0 8px">🏙️ عدن — الصرف</h4>
+            <div class="form-grid">
+                <div class="form-group"><label style="color:#10b981">$ شراء</label><input type="number" class="form-control" id="a_ub"></div>
+                <div class="form-group"><label style="color:#ef4444">$ بيع</label><input type="number" class="form-control" id="a_us"></div>
+                <div class="form-group"><label style="color:#10b981">🇸🇦 شراء</label><input type="number" class="form-control" id="a_sb"></div>
+                <div class="form-group"><label style="color:#ef4444">🇸🇦 بيع</label><input type="number" class="form-control" id="a_ss"></div>
+            </div>
+            <h4 style="color:#fbbf24;font-size:.8rem;margin:14px 0 8px">🏙️ عدن — الذهب</h4>
+            <div class="form-grid">
+                <div class="form-group"><label style="color:#fbbf24">عيار 21</label><input type="number" class="form-control" id="a_g21"></div>
+                <div class="form-group"><label style="color:#fbbf24">عيار 24</label><input type="number" class="form-control" id="a_g24"></div>
+            </div>
+            <button class="btn btn-gold" onclick="saveRates()" style="margin-top:8px"><i class="fas fa-save"></i> نشر الأسعار</button>
+            <p id="ratesMeta" style="font-size:.72rem;color:var(--text-muted);margin-top:10px"></p>
         </div>
     </div>
-
-    <!-- 3. لوحة التحكم -->
-    <div class="admin-layout hidden" id="appSec">
-        <aside class="sidebar">
-            <div class="brand"><i class="fas fa-star"></i> YEMEN RATING</div>
-            <div class="nav-menu">
-                <div class="nav-section">الرئيسية</div>
-                <div class="nav-item active" onclick="switchTab('dashboard', this)"><i class="fas fa-chart-line"></i> لوحة التحكم</div>
-
-                <div class="nav-section">إدارة المحتوى</div>
-                <div class="nav-item" onclick="switchTab('companies', this)"><i class="fas fa-building"></i> الشركات</div>
-                <div class="nav-item" onclick="switchTab('banks', this)"><i class="fas fa-landmark"></i> البنوك</div>
-                <div class="nav-item" onclick="switchTab('jobs', this)"><i class="fas fa-briefcase"></i> الوظائف</div>
-                <div class="nav-item" onclick="switchTab('reviews', this)"><i class="fas fa-star"></i> التقييمات</div>
-
-                <div class="nav-section">الإعدادات</div>
-                <div class="nav-item" onclick="switchTab('categories', this)"><i class="fas fa-list"></i> التصنيفات</div>
-                <div class="nav-item" onclick="switchTab('cities', this)"><i class="fas fa-map-marker-alt"></i> المدن</div>
-                <div class="nav-item" onclick="switchTab('prices', this)"><i class="fas fa-dollar-sign"></i> أسعار السوق</div>
-
-                <div class="nav-section">المستخدمين</div>
-                <div class="nav-item" onclick="switchTab('verification', this)"><i class="fas fa-check-circle"></i> طلبات التوثيق</div>
-                <div class="nav-item" onclick="switchTab('users', this)"><i class="fas fa-users"></i> المستخدمين</div>
-                <div class="nav-item" onclick="switchTab('audit', this)"><i class="fas fa-clipboard-list"></i> سجل النشاط</div>
-
-                <a href="index.html" class="nav-item" style="color:var(--text-muted); margin-top:20px;"><i class="fas fa-arrow-right"></i> رجوع للموقع</a>
-                <div class="nav-item" onclick="logout()" style="color:#f87171;"><i class="fas fa-power-off"></i> تسجيل خروج</div>
-            </div>
-        </aside>
-
-        <main class="main-content">
-            <div class="header-bar">
-                <h3 id="tabTitle" style="color:var(--gold-text);">لوحة التحكم</h3>
-                <span style="color:var(--text-muted); font-size: 0.9rem;"><i class="fas fa-user-circle"></i> <span id="adminEmail">-</span></span>
-            </div>
-
-            <div id="tab-dashboard">
-                <div class="stats-grid">
-                    <div class="stat-card"><div class="icon"><i class="fas fa-building"></i></div><div class="num" id="statCompanies">0</div><div class="label">شركة</div></div>
-                    <div class="stat-card"><div class="icon"><i class="fas fa-landmark"></i></div><div class="num" id="statBanks">0</div><div class="label">بنك</div></div>
-                    <div class="stat-card"><div class="icon"><i class="fas fa-briefcase"></i></div><div class="num" id="statJobs">0</div><div class="label">وظيفة</div></div>
-                    <div class="stat-card"><div class="icon"><i class="fas fa-star"></i></div><div class="num" id="statReviews">0</div><div class="label">تقييم</div></div>
-                    <div class="stat-card"><div class="icon"><i class="fas fa-users"></i></div><div class="num" id="statUsers">0</div><div class="label">مستخدم</div></div>
-                    <div class="stat-card"><div class="icon"><i class="fas fa-check-circle"></i></div><div class="num" id="statPending">0</div><div class="label">طلب معلق</div></div>
-                </div>
-            </div>
-
-            <div id="tab-companies" class="hidden">
-                <div class="panel-header">
-                    <input type="text" id="searchCompanies" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderCompanies()">
-                    <button class="btn btn-gold" onclick="openCompanyModal()"><i class="fas fa-plus"></i> إضافة شركة</button>
-                </div>
-                <div class="table-container">
-                    <table><thead><tr><th>الشركة</th><th>التصنيف</th><th>المدينة</th><th>الحالة</th><th>التوثيق</th><th>إجراءات</th></tr></thead><tbody id="companiesTable"></tbody></table>
-                </div>
-            </div>
-
-            <div id="tab-banks" class="hidden">
-                <div class="panel-header">
-                    <input type="text" id="searchBanks" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderBanks()">
-                    <button class="btn btn-gold" onclick="openBankModal()"><i class="fas fa-plus"></i> إضافة بنك</button>
-                </div>
-                <div class="table-container">
-                    <table><thead><tr><th>البنك</th><th>التصنيف</th><th>المدينة</th><th>الحالة</th><th>التوثيق</th><th>إجراءات</th></tr></thead><tbody id="banksTable"></tbody></table>
-                </div>
-            </div>
-
-            <div id="tab-jobs" class="hidden">
-                <div class="panel-header"><input type="text" id="searchJobs" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderJobs()"></div>
-                <div class="table-container">
-                    <table><thead><tr><th>الوظيفة</th><th>الشركة</th><th>المدينة</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="jobsTable"></tbody></table>
-                </div>
-            </div>
-
-            <div id="tab-reviews" class="hidden">
-                <div class="panel-header"><input type="text" id="searchReviews" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderReviews()"></div>
-                <div class="table-container">
-                    <table><thead><tr><th>الجهة</th><th>التقييم</th><th>التعليق</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="reviewsTable"></tbody></table>
-                </div>
-            </div>
-
-            <div id="tab-categories" class="hidden">
-                <div class="panel-header"><h3>التصنيفات</h3><button class="btn btn-gold" onclick="openCategoryModal()"><i class="fas fa-plus"></i> إضافة تصنيف</button></div>
-                <div class="table-container"><table><thead><tr><th>التصنيف</th><th>الأيقونة</th><th>إجراءات</th></tr></thead><tbody id="categoriesTable"></tbody></table></div>
-            </div>
-
-            <div id="tab-cities" class="hidden">
-                <div class="panel-header"><h3>المدن</h3><button class="btn btn-gold" onclick="openCityModal()"><i class="fas fa-plus"></i> إضافة مدينة</button></div>
-                <div class="table-container"><table><thead><tr><th>المدينة</th><th>الاسم اللاتيني</th><th>إجراءات</th></tr></thead><tbody id="citiesTable"></tbody></table></div>
-            </div>
-
-            <div id="tab-prices" class="hidden">
-                <div class="panel-header">
-                    <h3>أسعار السوق</h3>
-                    <div><button class="btn btn-gold" onclick="openExchangeModal()"><i class="fas fa-plus"></i> سعر صرف</button> <button class="btn btn-gold" onclick="openGoldModal()"><i class="fas fa-plus"></i> سعر ذهب</button></div>
-                </div>
-                <h4 style="margin: 20px 0 10px; color: var(--gold-text);">أسعار الصرف</h4>
-                <div class="table-container"><table><thead><tr><th>العملة</th><th>شراء</th><th>بيع</th><th>المدينة</th><th>إجراءات</th></tr></thead><tbody id="exchangeTable"></tbody></table></div>
-                <h4 style="margin: 20px 0 10px; color: var(--gold-text);">أسعار الذهب</h4>
-                <div class="table-container"><table><thead><tr><th>العيار</th><th>السعر</th><th>المدينة</th><th>إجراءات</th></tr></thead><tbody id="goldTable"></tbody></table></div>
-            </div>
-
-            <div id="tab-verification" class="hidden">
-                <div class="panel-header"><h3>طلبات التوثيق</h3></div>
-                <div class="table-container"><table><thead><tr><th>الجهة</th><th>النوع</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="verificationTable"></tbody></table></div>
-            </div>
-
-            <div id="tab-users" class="hidden">
-                <div class="panel-header"><input type="text" id="searchUsers" class="form-control" style="max-width:250px;" placeholder="بحث..." oninput="renderUsers()"></div>
-                <div class="table-container"><table><thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>تاريخ الانضمام</th></tr></thead><tbody id="usersTable"></tbody></table></div>
-            </div>
-
-            <div id="tab-audit" class="hidden">
-                <div class="panel-header"><h3>سجل نشاط الإدارة</h3></div>
-                <div class="table-container"><table><thead><tr><th>المسؤول</th><th>الإجراء</th><th>الجدول</th><th>السبب</th><th>التاريخ</th></tr></thead><tbody id="auditTable"></tbody></table></div>
-            </div>
-        </main>
-    </div>
-
-    <div class="modal-overlay hidden" id="modalOverlay">
-        <div class="modal-card">
-            <div class="modal-head"><h3 id="modalTitle" style="color:var(--gold-text);">عنوان</h3><button onclick="closeModal()" style="background:none; border:none; color:#fff; cursor:pointer; font-size: 1.2rem;"><i class="fas fa-times"></i></button></div>
-            <div id="modalBody"></div>
-        </div>
-    </div>
-
-    <!-- استدعاء ملف supabase.js كـ module -->
-    <script type="module" src="supabase.js"></script>
-
-    <script>
-        let currentAdmin = null;
-
-        // دالة جلب كائن Supabase المباشر بعد التأكد من جاهزية الاتصال
-        async function getSB() {
-            if (window.sbReady) {
-                await window.sbReady;
-            }
-            return window.supabaseClient || window.supabase;
-        }
-
-        function showToast(msg, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = 'toast' + (type === 'error' ? ' toast-error' : '');
-            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="color:${type === 'success' ? 'var(--gold-text)' : 'var(--danger)'};"></i> ${esc(msg)}`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        function showLoginError(msg) {
-            const box = document.getElementById('loginError');
-            box.textContent = msg;
-            box.classList.remove('hidden');
-        }
-
-        async function logAdminAction(action, targetTable, targetId, reason = null) {
-            try {
-                const client = await getSB();
-                await client.from('audit_logs').insert({
-                    admin_id: currentAdmin ? currentAdmin.id : null,
-                    action,
-                    target_table: targetTable,
-                    target_id: targetId,
-                    reason
-                });
-            } catch (e) {
-                console.error('Audit log error:', e);
-            }
-        }
-
-        function withTimeout(promise, ms, message) {
-            return Promise.race([
-                promise,
-                new Promise((_, reject) => setTimeout(() => reject(new Error(message)), ms))
-            ]);
-        }
-
-        function showBootError(message) {
-            document.getElementById('bootContent').innerHTML = `
-                <div class="boot-error">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>تعذّر الاتصال بقاعدة البيانات</p>
-                    <p style="font-size:0.8rem; color:var(--text-muted); margin-top:5px;">${esc(message)}</p>
-                    <button class="btn btn-gold" onclick="location.reload()">
-                        <i class="fas fa-redo"></i> إعادة المحاولة
-                    </button>
-                </div>`;
-        }
-
-        (async function boot() {
-            try {
-                const client = await withTimeout(getSB(), 10000, 'انتهت مهلة الاتصال بالخادم');
-                const { data: { session }, error } = await withTimeout(
-                    client.auth.getSession(), 10000, 'انتهت مهلة التحقق من الجلسة'
-                );
-                if (error) throw error;
-
-                document.getElementById('bootSec').classList.add('hidden');
-
-                if (session) {
-                    const ok = await checkAdminAndEnter(session.user);
-                    if (!ok) document.getElementById('loginSec').classList.remove('hidden');
-                } else {
-                    document.getElementById('loginSec').classList.remove('hidden');
-                }
-            } catch (err) {
-                console.error('Boot error:', err);
-                showBootError(err && err.message ? err.message : 'خطأ غير معروف');
-            }
-        })();
-
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            document.getElementById('loginError').classList.add('hidden');
-            const email = document.getElementById('emailInput').value.trim();
-            const pass = document.getElementById('passInput').value;
-
-            try {
-                const client = await getSB();
-                const { data, error } = await client.auth.signInWithPassword({ email, password: pass });
-                if (error) { showLoginError('بيانات الدخول غير صحيحة'); return; }
-
-                const ok = await checkAdminAndEnter(data.user);
-                if (!ok) {
-                    await client.auth.signOut();
-                    showLoginError('هذا الحساب ليس لديه صلاحية الدخول إلى لوحة الإدارة');
-                }
-            } catch (err) {
-                showLoginError('تعذّر الاتصال: ' + err.message);
-            }
-        });
-
-        async function checkAdminAndEnter(user) {
-            try {
-                const client = await getSB();
-                const { data: profile, error } = await client
-                    .from('profiles').select('id, email, role').eq('id', user.id).single();
-
-                if (error || !profile || !['admin', 'super_admin'].includes(profile.role)) {
-                    return false;
-                }
-
-                currentAdmin = profile;
-                document.getElementById('loginSec').classList.add('hidden');
-                document.getElementById('appSec').classList.remove('hidden');
-                document.getElementById('adminEmail').textContent = profile.email;
-                loadAllData();
-                return true;
-            } catch (err) {
-                console.error('checkAdminAndEnter error:', err);
-                return false;
-            }
-        }
-
-        async function logout() {
-            const client = await getSB();
-            await client.auth.signOut();
-            location.reload();
-        }
-
-        window.logout = logout;
-
-        function switchTab(tab, el) {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            if (el) el.classList.add('active');
-            document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.add('hidden'));
-            document.getElementById('tab-' + tab).classList.remove('hidden');
-            const titles = {
-                dashboard: 'لوحة التحكم', companies: 'إدارة الشركات', banks: 'إدارة البنوك',
-                jobs: 'إدارة الوظائف', reviews: 'إدارة التقييمات', categories: 'إدارة التصنيفات',
-                cities: 'إدارة المدن', prices: 'أسعار السوق', verification: 'طلبات التوثيق',
-                users: 'إدارة المستخدمين', audit: 'سجل النشاط'
-            };
-            document.getElementById('tabTitle').innerText = titles[tab] || 'لوحة التحكم';
-        }
-
-        window.switchTab = switchTab;
-
-        async function loadAllData() {
-            await loadStats();
-            await renderCompanies();
-            await renderBanks();
-            await renderJobs();
-            await renderReviews();
-            await renderCategories();
-            await renderCities();
-            await renderPrices();
-            await renderVerification();
-            await renderUsers();
-            await renderAudit();
-        }
-
-        async function loadStats() {
-            const client = await getSB();
-            try {
-                const [c, b, j, r, u, p] = await Promise.all([
-                    client.from('companies').select('*', { count: 'exact', head: true }),
-                    client.from('banks').select('*', { count: 'exact', head: true }),
-                    client.from('jobs').select('*', { count: 'exact', head: true }),
-                    client.from('reviews').select('*', { count: 'exact', head: true }),
-                    client.from('profiles').select('*', { count: 'exact', head: true }),
-                    client.from('verification_requests').select('*', { count: 'exact', head: true }).eq('status', 'PENDING')
-                ]);
-                document.getElementById('statCompanies').innerText = c.count || 0;
-                document.getElementById('statBanks').innerText = b.count || 0;
-                document.getElementById('statJobs').innerText = j.count || 0;
-                document.getElementById('statReviews').innerText = r.count || 0;
-                document.getElementById('statUsers').innerText = u.count || 0;
-                document.getElementById('statPending').innerText = p.count || 0;
-            } catch (e) { console.error('Stats error:', e); }
-        }
-
-        // ═══════════ الشركات ═══════════
-        async function renderCompanies() {
-            const client = await getSB();
-            const query = document.getElementById('searchCompanies').value.toLowerCase();
-            const { data, error } = await client.from('companies').select('*, categories(name), cities(name)').order('created_at', { ascending: false });
-            const tbody = document.getElementById('companiesTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="6">خطأ: ${esc(error.message)}</td></tr>`; return; }
-
-            const filtered = (data || []).filter(c => c.name.toLowerCase().includes(query));
-            if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">لا توجد شركات</td></tr>'; return; }
-
-            tbody.innerHTML = filtered.map(c => `
-                <tr>
-                    <td><strong>${esc(c.name)}</strong></td>
-                    <td>${c.categories ? esc(c.categories.name) : '-'}</td>
-                    <td>${c.cities ? esc(c.cities.name) : '-'}</td>
-                    <td><span class="status-badge status-${(c.status || '').toLowerCase()}">${c.status || 'PENDING'}</span></td>
-                    <td>${c.is_verified ? '<span style="color:var(--success);">✔ موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-verify" onclick="toggleVerifyCompany('${c.id}', ${c.is_verified})"><i class="fas fa-check"></i></button>
-                        <button class="btn btn-sm btn-edit" onclick="openCompanyModal('${c.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteCompany('${c.id}')"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>`).join('');
-        }
-
-        window.renderCompanies = renderCompanies;
-
-        async function toggleVerifyCompany(id, current) {
-            try {
-                const client = await getSB();
-                const { error } = await client.from('companies').update({ is_verified: !current }).eq('id', id);
-                if (error) throw error;
-                await logAdminAction(!current ? 'توثيق شركة' : 'إلغاء توثيق شركة', 'companies', id);
-                renderCompanies();
-                showToast('تم التحديث');
-            } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
-        }
-
-        window.toggleVerifyCompany = toggleVerifyCompany;
-
-        async function deleteCompany(id) {
-            if (!confirm('هل أنت متأكد من حذف هذه الشركة؟')) return;
-            try {
-                const client = await getSB();
-                const { error } = await client.from('companies').delete().eq('id', id);
-                if (error) throw error;
-                await logAdminAction('حذف شركة', 'companies', id);
-                renderCompanies(); loadStats();
-                showToast('تم الحذف');
-            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
-        }
-
-        window.deleteCompany = deleteCompany;
-
-        async function openCompanyModal(id = null) {
-            const client = await getSB();
-            let company = null;
-            if (id) { const { data } = await client.from('companies').select('*').eq('id', id).single(); company = data; }
-            const { data: cats } = await client.from('categories').select('*');
-            const { data: cities } = await client.from('cities').select('*');
-
-            const catOptions = (cats || []).map(c => `<option value="${c.id}" ${company && company.category_id === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
-            const cityOptions = (cities || []).map(c => `<option value="${c.id}" ${company && company.city_id === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
-
-            document.getElementById('modalTitle').innerText = company ? 'تعديل شركة' : 'إضافة شركة جديدة';
-            document.getElementById('modalBody').innerHTML = `
-                <form onsubmit="saveCompany(event, '${id || ''}')">
-                    <div class="form-group"><label>اسم الشركة *</label><input type="text" id="compName" class="form-control" value="${company ? esc(company.name) : ''}" required></div>
-                    <div class="form-group"><label>التصنيف</label><select id="compCat" class="form-control"><option value="">-- اختر --</option>${catOptions}</select></div>
-                    <div class="form-group"><label>المدينة</label><select id="compCity" class="form-control"><option value="">-- اختر --</option>${cityOptions}</select></div>
-                    <div class="form-group"><label>الوصف</label><textarea id="compDesc" class="form-control" rows="3">${company ? esc(company.description || '') : ''}</textarea></div>
-                    <div class="form-group"><label>الهاتف</label><input type="text" id="compPhone" class="form-control" value="${company ? esc(company.phone || '') : ''}"></div>
-                    <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="compEmail" class="form-control" value="${company ? esc(company.email || '') : ''}"></div>
-                    <div class="form-group"><label>الموقع الإلكتروني</label><input type="url" id="compWebsite" class="form-control" value="${company ? esc(company.website || '') : ''}"></div>
-                    <div class="form-group"><label>الحالة</label><select id="compStatus" class="form-control">
-                        ${['PENDING','ACTIVE','HIDDEN','SUSPENDED','BLOCKED','REJECTED'].map(s => `<option value="${s}" ${company && company.status === s ? 'selected' : ''}>${s}</option>`).join('')}
-                    </select></div>
-                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
-                </form>`;
-            document.getElementById('modalOverlay').classList.remove('hidden');
-        }
-
-        window.openCompanyModal = openCompanyModal;
-
-        async function saveCompany(e, id) {
-            e.preventDefault();
-            try {
-                const client = await getSB();
-                const payload = {
-                    name: document.getElementById('compName').value,
-                    category_id: document.getElementById('compCat').value || null,
-                    city_id: document.getElementById('compCity').value || null,
-                    description: document.getElementById('compDesc').value,
-                    phone: document.getElementById('compPhone').value,
-                    email: document.getElementById('compEmail').value,
-                    website: document.getElementById('compWebsite').value,
-                    status: document.getElementById('compStatus').value
-                };
-                if (id) {
-                    const { error } = await client.from('companies').update(payload).eq('id', id);
-                    if (error) throw error;
-                    await logAdminAction('تعديل شركة', 'companies', id);
-                } else {
-                    const { data, error } = await client.from('companies').insert(payload).select().single();
-                    if (error) throw error;
-                    await logAdminAction('إضافة شركة', 'companies', data ? data.id : null);
-                }
-                closeModal(); renderCompanies(); loadStats();
-                showToast('تم الحفظ');
-            } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
-        }
-
-        window.saveCompany = saveCompany;
-
-        // ═══════════ البنوك ═══════════
-        async function renderBanks() {
-            const client = await getSB();
-            const query = document.getElementById('searchBanks').value.toLowerCase();
-            const { data, error } = await client.from('banks').select('*, categories(name), cities(name)').order('created_at', { ascending: false });
-            const tbody = document.getElementById('banksTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="6">خطأ: ${esc(error.message)}</td></tr>`; return; }
-
-            const filtered = (data || []).filter(b => b.name.toLowerCase().includes(query));
-            if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">لا توجد بنوك</td></tr>'; return; }
-
-            tbody.innerHTML = filtered.map(b => `
-                <tr>
-                    <td><strong>${esc(b.name)}</strong></td>
-                    <td>${b.categories ? esc(b.categories.name) : '-'}</td>
-                    <td>${b.cities ? esc(b.cities.name) : '-'}</td>
-                    <td><span class="status-badge status-${(b.status || '').toLowerCase()}">${b.status || 'PENDING'}</span></td>
-                    <td>${b.is_verified ? '<span style="color:var(--success);">✔ موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-verify" onclick="toggleVerifyBank('${b.id}', ${b.is_verified})"><i class="fas fa-check"></i></button>
-                        <button class="btn btn-sm btn-edit" onclick="openBankModal('${b.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteBank('${b.id}')"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>`).join('');
-        }
-
-        window.renderBanks = renderBanks;
-
-        async function toggleVerifyBank(id, current) {
-            try {
-                const client = await getSB();
-                const { error } = await client.from('banks').update({ is_verified: !current }).eq('id', id);
-                if (error) throw error;
-                await logAdminAction(!current ? 'توثيق بنك' : 'إلغاء توثيق بنك', 'banks', id);
-                renderBanks();
-                showToast('تم التحديث');
-            } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
-        }
-
-        window.toggleVerifyBank = toggleVerifyBank;
-
-        async function deleteBank(id) {
-            if (!confirm('هل أنت متأكد؟')) return;
-            try {
-                const client = await getSB();
-                const { error } = await client.from('banks').delete().eq('id', id);
-                if (error) throw error;
-                await logAdminAction('حذف بنك', 'banks', id);
-                renderBanks(); loadStats();
-                showToast('تم الحذف');
-            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
-        }
-
-        window.deleteBank = deleteBank;
-
-        async function openBankModal(id = null) {
-            const client = await getSB();
-            let bank = null;
-            if (id) { const { data } = await client.from('banks').select('*').eq('id', id).single(); bank = data; }
-            const { data: cats } = await client.from('categories').select('*');
-            const { data: cities } = await client.from('cities').select('*');
-
-            const catOptions = (cats || []).map(c => `<option value="${c.id}" ${bank && bank.category_id === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
-            const cityOptions = (cities || []).map(c => `<option value="${c.id}" ${bank && bank.city_id === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
-
-            document.getElementById('modalTitle').innerText = bank ? 'تعديل بنك' : 'إضافة بنك جديد';
-            document.getElementById('modalBody').innerHTML = `
-                <form onsubmit="saveBank(event, '${id || ''}')">
-                    <div class="form-group"><label>اسم البنك *</label><input type="text" id="bankName" class="form-control" value="${bank ? esc(bank.name) : ''}" required></div>
-                    <div class="form-group"><label>التصنيف</label><select id="bankCat" class="form-control"><option value="">-- اختر --</option>${catOptions}</select></div>
-                    <div class="form-group"><label>المدينة</label><select id="bankCity" class="form-control"><option value="">-- اختر --</option>${cityOptions}</select></div>
-                    <div class="form-group"><label>الوصف</label><textarea id="bankDesc" class="form-control" rows="3">${bank ? esc(bank.description || '') : ''}</textarea></div>
-                    <div class="form-group"><label>الهاتف</label><input type="text" id="bankPhone" class="form-control" value="${bank ? esc(bank.phone || '') : ''}"></div>
-                    <div class="form-group"><label>أوقات العمل</label><input type="text" id="bankHours" class="form-control" value="${bank ? esc(bank.working_hours || '') : ''}" placeholder="8:00 ص - 4:00 م"></div>
-                    <div class="form-group"><label>الحالة</label><select id="bankStatus" class="form-control">
-                        ${['PENDING','ACTIVE','HIDDEN','SUSPENDED','BLOCKED','REJECTED'].map(s => `<option value="${s}" ${bank && bank.status === s ? 'selected' : ''}>${s}</option>`).join('')}
-                    </select></div>
-                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
-                </form>`;
-            document.getElementById('modalOverlay').classList.remove('hidden');
-        }
-
-        window.openBankModal = openBankModal;
-
-        async function saveBank(e, id) {
-            e.preventDefault();
-            try {
-                const client = await getSB();
-                const payload = {
-                    name: document.getElementById('bankName').value,
-                    category_id: document.getElementById('bankCat').value || null,
-                    city_id: document.getElementById('bankCity').value || null,
-                    description: document.getElementById('bankDesc').value,
-                    phone: document.getElementById('bankPhone').value,
-                    working_hours: document.getElementById('bankHours').value,
-                    status: document.getElementById('bankStatus').value
-                };
-                if (id) {
-                    const { error } = await client.from('banks').update(payload).eq('id', id);
-                    if (error) throw error;
-                    await logAdminAction('تعديل بنك', 'banks', id);
-                } else {
-                    const { data, error } = await client.from('banks').insert(payload).select().single();
-                    if (error) throw error;
-                    await logAdminAction('إضافة بنك', 'banks', data ? data.id : null);
-                }
-                closeModal(); renderBanks(); loadStats();
-                showToast('تم الحفظ');
-            } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
-        }
-
-        window.saveBank = saveBank;
-
-        // ═══════════ الوظائف ═══════════
-        async function renderJobs() {
-            const client = await getSB();
-            const query = document.getElementById('searchJobs').value.toLowerCase();
-            const { data, error } = await client.from('jobs').select('*, companies(name)').order('created_at', { ascending: false });
-            const tbody = document.getElementById('jobsTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${esc(error.message)}</td></tr>`; return; }
-
-            const filtered = (data || []).filter(j => j.title.toLowerCase().includes(query));
-            if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا توجد وظائف</td></tr>'; return; }
-
-            tbody.innerHTML = filtered.map(j => `
-                <tr>
-                    <td><strong>${esc(j.title)}</strong></td>
-                    <td>${j.companies ? esc(j.companies.name) : '-'}</td>
-                    <td><span class="status-badge status-${(j.status || '').toLowerCase()}">${j.status || 'PENDING'}</span></td>
-                    <td>
-                        ${j.status === 'PENDING' ? `<button class="btn btn-sm btn-verify" onclick="setJobStatus('${j.id}','APPROVED')"><i class="fas fa-check"></i></button> <button class="btn btn-sm btn-warning" onclick="setJobStatus('${j.id}','REJECTED')"><i class="fas fa-times"></i></button>` : ''}
-                        <button class="btn btn-sm btn-danger" onclick="deleteJob('${j.id}')"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>`).join('');
-        }
-
-        window.renderJobs = renderJobs;
-
-        async function setJobStatus(id, status) {
-            try {
-                const client = await getSB();
-                const { error } = await client.from('jobs').update({ status }).eq('id', id);
-                if (error) throw error;
-                await logAdminAction('تغيير حالة وظيفة إلى ' + status, 'jobs', id);
-                renderJobs();
-                showToast('تم التحديث');
-            } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
-        }
-
-        window.setJobStatus = setJobStatus;
-
-        async function deleteJob(id) {
-            if (!confirm('هل أنت متأكد؟')) return;
-            try {
-                const client = await getSB();
-                const { error } = await client.from('jobs').delete().eq('id', id);
-                if (error) throw error;
-                await logAdminAction('حذف وظيفة', 'jobs', id);
-                renderJobs(); loadStats();
-                showToast('تم الحذف');
-            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
-        }
-
-        window.deleteJob = deleteJob;
-
-        // ═══════════ التقييمات ═══════════
-        async function renderReviews() {
-            const client = await getSB();
-            const query = document.getElementById('searchReviews').value.toLowerCase();
-            const { data, error } = await client.from('reviews').select('*').order('created_at', { ascending: false });
-            const tbody = document.getElementById('reviewsTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${esc(error.message)}</td></tr>`; return; }
-
-            const filtered = (data || []).filter(r => (r.comment || '').toLowerCase().includes(query));
-            if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا توجد تقييمات</td></tr>'; return; }
-
-            tbody.innerHTML = filtered.map(r => `
-                <tr>
-                    <td>${r.entity_type === 'company' ? 'شركة' : 'بنك'} (${esc(r.entity_id.substring(0,8))})</td>
-                    <td style="color:var(--gold-text);">${'★'.repeat(r.rating)}</td>
-                    <td>${esc((r.comment || '').substring(0, 50))}${(r.comment || '').length > 50 ? '...' : ''}</td>
-                    <td><span class="status-badge status-${(r.status || '').toLowerCase()}">${r.status || 'PENDING'}</span></td>
-                    <td>
-                        ${r.status === 'PENDING' ? `<button class="btn btn-sm btn-verify" onclick="setReviewStatus('${r.id}','APPROVED')"><i class="fas fa-check"></i></button> <button class="btn btn-sm btn-warning" onclick="setReviewStatus('${r.id}','REJECTED')"><i class="fas fa-times"></i></button>` : ''}
-                        <button class="btn btn-sm btn-danger" onclick="deleteReview('${r.id}')"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>`).join('');
-        }
-
-        window.renderReviews = renderReviews;
-
-        async function setReviewStatus(id, status) {
-            try {
-                const client = await getSB();
-                const { error } = await client.from('reviews').update({ status }).eq('id', id);
-                if (error) throw error;
-                await logAdminAction('تغيير حالة تقييم إلى ' + status, 'reviews', id);
-                renderReviews();
-                showToast('تم التحديث');
-            } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
-        }
-
-        window.setReviewStatus = setReviewStatus;
-
-        async function deleteReview(id) {
-            if (!confirm('هل أنت متأكد؟')) return;
-            try {
-                const client = await getSB();
-                const { error } = await client.from('reviews').delete().eq('id', id);
-                if (error) throw error;
-                await logAdminAction('حذف تقييم', 'reviews', id);
-                renderReviews(); loadStats();
-                showToast('تم الحذف');
-            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
-        }
-
-        window.deleteReview = deleteReview;
-
-        // ═══════════ التصنيفات ═══════════
-        async function renderCategories() {
-            const client = await getSB();
-            const { data, error } = await client.from('categories').select('*').order('name');
-            const tbody = document.getElementById('categoriesTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="3">خطأ: ${esc(error.message)}</td></tr>`; return; }
-            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px;">لا توجد تصنيفات</td></tr>'; return; }
-
-            tbody.innerHTML = data.map(c => `
-                <tr>
-                    <td><strong>${esc(c.name)}</strong></td>
-                    <td><i class="fas ${esc(c.icon || 'fa-tag')}"></i> (${esc(c.icon || '-')})</td>
-                    <td><button class="btn btn-sm btn-edit" onclick="openCategoryModal('${c.id}')"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="deleteCategory('${c.id}')"><i class="fas fa-trash"></i></button></td>
-                </tr>`).join('');
-        }
-
-        async function openCategoryModal(id = null) {
-            const client = await getSB();
-            let cat = null;
-            if (id) { const { data } = await client.from('categories').select('*').eq('id', id).single(); cat = data; }
-            document.getElementById('modalTitle').innerText = cat ? 'تعديل تصنيف' : 'إضافة تصنيف جديد';
-            document.getElementById('modalBody').innerHTML = `
-                <form onsubmit="saveCategory(event, '${id || ''}')">
-                    <div class="form-group"><label>اسم التصنيف *</label><input type="text" id="catName" class="form-control" value="${cat ? esc(cat.name) : ''}" required></div>
-                    <div class="form-group"><label>الأيقونة (FontAwesome)</label><input type="text" id="catIcon" class="form-control" value="${cat ? esc(cat.icon || '') : ''}" placeholder="fa-tag"></div>
-                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
-                </form>`;
-            document.getElementById('modalOverlay').classList.remove('hidden');
-        }
-
-        window.openCategoryModal = openCategoryModal;
-
-        async function saveCategory(e, id) {
-            e.preventDefault();
-            try {
-                const client = await getSB();
-                const payload = { name: document.getElementById('catName').value, icon: document.getElementById('catIcon').value || 'fa-tag' };
-                if (id) {
-                    const { error } = await client.from('categories').update(payload).eq('id', id);
-                    if (error) throw error;
-                    await logAdminAction('تعديل تصنيف', 'categories', id);
-                } else {
-                    const { data, error } = await client.from('categories').insert(payload).select().single();
-                    if (error) throw error;
-                    await logAdminAction('إضافة تصنيف', 'categories', data ? data.id : null);
-                }
-                closeModal(); renderCategories();
-                showToast('تم الحفظ');
-            } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
-        }
-
-        window.saveCategory = saveCategory;
-
-        async function deleteCategory(id) {
-            if (!confirm('هل أنت متأكد؟')) return;
-            try {
-                const client = await getSB();
-                const { error } = await client.from('categories').delete().eq('id', id);
-                if (error) throw error;
-                await logAdminAction('حذف تصنيف', 'categories', id);
-                renderCategories();
-                showToast('تم الحذف');
-            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
-        }
-
-        window.deleteCategory = deleteCategory;
-
-        // ═══════════ المدن ═══════════
-        async function renderCities() {
-            const client = await getSB();
-            const { data, error } = await client.from('cities').select('*').order('name');
-            const tbody = document.getElementById('citiesTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="3">خطأ: ${esc(error.message)}</td></tr>`; return; }
-            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px;">لا توجد مدن</td></tr>'; return; }
-
-            tbody.innerHTML = data.map(c => `
-                <tr>
-                    <td><strong>${esc(c.name)}</strong></td>
-                    <td>${esc(c.slug || '-')}</td>
-                    <td><button class="btn btn-sm btn-edit" onclick="openCityModal('${c.id}')"><i class="fas fa-edit"></i></button> <button class="btn btn-sm btn-danger" onclick="deleteCity('${c.id}')"><i class="fas fa-trash"></i></button></td>
-                </tr>`).join('');
-        }
-
-        async function openCityModal(id = null) {
-            const client = await getSB();
-            let city = null;
-            if (id) { const { data } = await client.from('cities').select('*').eq('id', id).single(); city = data; }
-            document.getElementById('modalTitle').innerText = city ? 'تعديل مدينة' : 'إضافة مدينة جديدة';
-            document.getElementById('modalBody').innerHTML = `
-                <form onsubmit="saveCity(event, '${id || ''}')">
-                    <div class="form-group"><label>اسم المدينة *</label><input type="text" id="cityName" class="form-control" value="${city ? esc(city.name) : ''}" required></div>
-                    <div class="form-group"><label>الاسم اللاتيني</label><input type="text" id="citySlug" class="form-control" value="${city ? esc(city.slug || '') : ''}" placeholder="sanaa"></div>
-                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
-                </form>`;
-            document.getElementById('modalOverlay').classList.remove('hidden');
-        }
-
-        window.openCityModal = openCityModal;
-
-        async function saveCity(e, id) {
-            e.preventDefault();
-            try {
-                const client = await getSB();
-                const payload = { name: document.getElementById('cityName').value, slug: document.getElementById('citySlug').value || null };
-                if (id) {
-                    const { error } = await client.from('cities').update(payload).eq('id', id);
-                    if (error) throw error;
-                    await logAdminAction('تعديل مدينة', 'cities', id);
-                } else {
-                    const { data, error } = await client.from('cities').insert(payload).select().single();
-                    if (error) throw error;
-                    await logAdminAction('إضافة مدينة', 'cities', data ? data.id : null);
-                }
-                closeModal(); renderCities();
-                showToast('تم الحفظ');
-            } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
-        }
-
-        window.saveCity = saveCity;
-
-        async function deleteCity(id) {
-            if (!confirm('هل أنت متأكد؟')) return;
-            try {
-                const client = await getSB();
-                const { error } = await client.from('cities').delete().eq('id', id);
-                if (error) throw error;
-                await logAdminAction('حذف مدينة', 'cities', id);
-                renderCities();
-                showToast('تم الحذف');
-            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
-        }
-
-        window.deleteCity = deleteCity;
-
-        // ═══════════ الأسعار ═══════════
-        async function renderPrices() {
-            const client = await getSB();
-            const { data: exchange } = await client.from('exchange_rates').select('*').order('updated_at', { ascending: false });
-            const { data: gold } = await client.from('gold_prices').select('*').order('updated_at', { ascending: false });
-
-            document.getElementById('exchangeTable').innerHTML = (exchange || []).map(e => `
-                <tr><td><strong>${esc(e.currency)}</strong></td><td>${esc(e.buy_price)}</td><td>${esc(e.sell_price)}</td><td>${esc(e.city)}</td>
-                <td><button class="btn btn-sm btn-danger" onclick="deleteExchange('${e.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('')
-                || '<tr><td colspan="5" style="text-align:center;">لا توجد بيانات</td></tr>';
-
-            document.getElementById('goldTable').innerHTML = (gold || []).map(g => `
-                <tr><td><strong>${esc(g.karat)} قيراط</strong></td><td>${esc(g.price)}</td><td>${esc(g.city)}</td>
-                <td><button class="btn btn-sm btn-danger" onclick="deleteGold('${g.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('')
-                || '<tr><td colspan="4" style="text-align:center;">لا توجد بيانات</td></tr>';
-        }
-
-        async function openExchangeModal() {
-            document.getElementById('modalTitle').innerText = 'إضافة سعر صرف';
-            document.getElementById('modalBody').innerHTML = `
-                <form onsubmit="saveExchange(event)">
-                    <div class="form-group"><label>العملة *</label><select id="exCurrency" class="form-control" required><option value="USD">USD - دولار</option><option value="SAR">SAR - ريال سعودي</option><option value="EUR">EUR - يورو</option></select></div>
-                    <div class="form-group"><label>سعر الشراء *</label><input type="number" step="0.01" id="exBuy" class="form-control" required></div>
-                    <div class="form-group"><label>سعر البيع *</label><input type="number" step="0.01" id="exSell" class="form-control" required></div>
-                    <div class="form-group"><label>المدينة *</label><select id="exCity" class="form-control" required><option value="صنعاء">صنعاء</option><option value="عدن">عدن</option></select></div>
-                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
-                </form>`;
-            document.getElementById('modalOverlay').classList.remove('hidden');
-        }
-
-        window.openExchangeModal = openExchangeModal;
-
-        async function saveExchange(e) {
-            e.preventDefault();
-            try {
-                const client = await getSB();
-                const { data, error } = await client.from('exchange_rates').insert({
-                    currency: document.getElementById('exCurrency').value,
-                    buy_price: document.getElementById('exBuy').value,
-                    sell_price: document.getElementById('exSell').value,
-                    city: document.getElementById('exCity').value,
-                    source: 'manual',
-                    updated_at: new Date().toISOString()
-                }).select().single();
-                if (error) throw error;
-                await logAdminAction('إضافة سعر صرف', 'exchange_rates', data ? data.id : null);
-                closeModal(); renderPrices();
-                showToast('تم الحفظ');
-            } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
-        }
-
-        window.saveExchange = saveExchange;
-
-        async function deleteExchange(id) {
-            if (!confirm('هل أنت متأكد؟')) return;
-            try {
-                const client = await getSB();
-                const { error } = await client.from('exchange_rates').delete().eq('id', id);
-                if (error) throw error;
-                await logAdminAction('حذف سعر صرف', 'exchange_rates', id);
-                renderPrices();
-                showToast('تم الحذف');
-            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
-        }
-
-        window.deleteExchange = deleteExchange;
-
-        async function openGoldModal() {
-            document.getElementById('modalTitle').innerText = 'إضافة سعر ذهب';
-            document.getElementById('modalBody').innerHTML = `
-                <form onsubmit="saveGold(event)">
-                    <div class="form-group"><label>العيار *</label><select id="goldKarat" class="form-control" required><option value="24">24 قيراط</option><option value="21">21 قيراط</option><option value="18">18 قيراط</option></select></div>
-                    <div class="form-group"><label>السعر *</label><input type="number" step="0.01" id="goldPrice" class="form-control" required></div>
-                    <div class="form-group"><label>المدينة *</label><select id="goldCity" class="form-control" required><option value="صنعاء">صنعاء</option><option value="عدن">عدن</option></select></div>
-                    <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; margin-top:15px;">حفظ</button>
-                </form>`;
-            document.getElementById('modalOverlay').classList.remove('hidden');
-        }
-
-        window.openGoldModal = openGoldModal;
-
-        async function saveGold(e) {
-            e.preventDefault();
-            try {
-                const client = await getSB();
-                const { data, error } = await client.from('gold_prices').insert({
-                    karat: document.getElementById('goldKarat').value,
-                    price: document.getElementById('goldPrice').value,
-                    city: document.getElementById('goldCity').value,
-                    source: 'manual',
-                    updated_at: new Date().toISOString()
-                }).select().single();
-                if (error) throw error;
-                await logAdminAction('إضافة سعر ذهب', 'gold_prices', data ? data.id : null);
-                closeModal(); renderPrices();
-                showToast('تم الحفظ');
-            } catch (err) { showToast('فشل الحفظ: ' + err.message, 'error'); }
-        }
-
-        window.saveGold = saveGold;
-
-        async function deleteGold(id) {
-            if (!confirm('هل أنت متأكد؟')) return;
-            try {
-                const client = await getSB();
-                const { error } = await client.from('gold_prices').delete().eq('id', id);
-                if (error) throw error;
-                await logAdminAction('حذف سعر ذهب', 'gold_prices', id);
-                renderPrices();
-                showToast('تم الحذف');
-            } catch (err) { showToast('فشل الحذف: ' + err.message, 'error'); }
-        }
-
-        window.deleteGold = deleteGold;
-
-        // ═══════════ طلبات التوثيق ═══════════
-        async function renderVerification() {
-            const client = await getSB();
-            const { data, error } = await client.from('verification_requests').select('*').order('created_at', { ascending: false });
-            const tbody = document.getElementById('verificationTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${esc(error.message)}</td></tr>`; return; }
-            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا توجد طلبات</td></tr>'; return; }
-
-            tbody.innerHTML = data.map(v => `
-                <tr>
-                    <td>${esc(v.entity_id.substring(0,8))}</td>
-                    <td>${v.entity_type === 'company' ? 'شركة' : 'بنك'}</td>
-                    <td>${new Date(v.created_at).toLocaleDateString('ar-YE')}</td>
-                    <td><span class="status-badge status-${(v.status || '').toLowerCase()}">${v.status || 'PENDING'}</span></td>
-                    <td>${v.status === 'PENDING' ? `<button class="btn btn-sm btn-verify" onclick="reviewVerification('${v.id}','APPROVED','${v.entity_type}','${v.entity_id}')"><i class="fas fa-check"></i> قبول</button> <button class="btn btn-sm btn-danger" onclick="reviewVerification('${v.id}','REJECTED','${v.entity_type}','${v.entity_id}')"><i class="fas fa-times"></i> رفض</button>` : '-'}</td>
-                </tr>`).join('');
-        }
-
-        async function reviewVerification(id, status, entityType, entityId) {
-            try {
-                const client = await getSB();
-                const { error } = await client.from('verification_requests').update({ status, reviewed_at: new Date().toISOString() }).eq('id', id);
-                if (error) throw error;
-                if (status === 'APPROVED') {
-                    const table = entityType === 'company' ? 'companies' : 'banks';
-                    await client.from(table).update({ is_verified: true }).eq('id', entityId);
-                }
-                await logAdminAction('مراجعة طلب توثيق: ' + status, 'verification_requests', id);
-                renderVerification(); loadStats();
-                showToast(status === 'APPROVED' ? 'تمت الموافقة' : 'تم الرفض');
-            } catch (err) { showToast('فشل التحديث: ' + err.message, 'error'); }
-        }
-
-        window.reviewVerification = reviewVerification;
-
-        // ═══════════ المستخدمين ═══════════
-        async function renderUsers() {
-            const client = await getSB();
-            const query = document.getElementById('searchUsers').value.toLowerCase();
-            const { data, error } = await client.from('profiles').select('*').order('created_at', { ascending: false });
-            const tbody = document.getElementById('usersTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="4">خطأ: ${esc(error.message)}</td></tr>`; return; }
-
-            const filtered = (data || []).filter(u => (u.full_name || '').toLowerCase().includes(query) || (u.email || '').toLowerCase().includes(query));
-            if (filtered.length === 0) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px;">لا يوجد مستخدمين</td></tr>'; return; }
-
-            tbody.innerHTML = filtered.map(u => `
-                <tr><td><strong>${esc(u.full_name || '-')}</strong></td><td>${esc(u.email || '-')}</td><td>${esc(u.role || 'user')}</td><td>${new Date(u.created_at).toLocaleDateString('ar-YE')}</td></tr>`).join('');
-        }
-
-        window.renderUsers = renderUsers;
-
-        // ═══════════ سجل النشاط ═══════════
-        async function renderAudit() {
-            const client = await getSB();
-            const { data, error } = await client.from('audit_logs').select('*, profiles(email)').order('created_at', { ascending: false }).limit(100);
-            const tbody = document.getElementById('auditTable');
-            if (error) { tbody.innerHTML = `<tr><td colspan="5">خطأ: ${esc(error.message)}</td></tr>`; return; }
-            if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">لا يوجد نشاط مسجّل بعد</td></tr>'; return; }
-
-            tbody.innerHTML = data.map(a => `
-                <tr>
-                    <td>${a.profiles ? esc(a.profiles.email) : '-'}</td>
-                    <td>${esc(a.action)}</td>
-                    <td>${esc(a.target_table || '-')}</td>
-                    <td>${esc(a.reason || '-')}</td>
-                    <td>${new Date(a.created_at).toLocaleString('ar-YE')}</td>
-                </tr>`).join('');
-        }
-
-        function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
-        window.closeModal = closeModal;
-
-        function esc(str) {
-            const div = document.createElement('div');
-            div.textContent = str == null ? '' : String(str);
-            return div.innerHTML;
-        }
-    </script>
+</div>
+
+<script src="js/admin-engine.js"></script>
+<script src="js/ads-loader.js"></script>
+<script>
+const session=JSON.parse(localStorage.getItem('yr_session')||'null');
+if(!session||session.role!=='admin'){location.href='register.html?role=admin'}
+const get=k=>{try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}};
+const set=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const split=v=>v.split('،').join(',').split(',').map(s=>s.trim()).filter(Boolean);
+
+function showTab(t,btn){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['dash','owners','ents','jobs','ads','revs','apps','prices'].forEach(s=>document.getElementById('sec-'+s).style.display=s===t?'block':'none');
+}
+
+// ── الإشعارات ──
+function toggleNotif(){document.getElementById('notifPanel').classList.toggle('open');renderNotifs()}
+function renderNotifs(){
+    const n=get('yr_notifs');
+    document.getElementById('notifList').innerHTML=n.length?n.map(x=>`<div class="notif-item ${x.read?'':'unread'}"><div style="flex:1"><div>${x.msg}</div><div class="nt">${x.time}</div></div></div>`).join(''):'<div class="empty" style="padding:25px"><i class="fas fa-bell-slash"></i>لا إشعارات</div>';
+}
+function markAllRead(){set('yr_notifs',get('yr_notifs').map(x=>({...x,read:true})));renderNotifs();checkNew&&checkNew()}
+document.addEventListener('click',e=>{if(!e.target.closest('.notif-btn')&&!e.target.closest('.notif-panel'))document.getElementById('notifPanel').classList.remove('open')});
+
+function previewImg(input,imgId){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){const img=new Image();img.onload=function(){const sc=Math.min(1,600/Math.max(img.width,img.height));const cv=document.createElement('canvas');cv.width=Math.round(img.width*sc);cv.height=Math.round(img.height*sc);cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);const el=document.getElementById(imgId);el.src=cv.toDataURL('image/jpeg',0.72);el.style.display='block'};img.src=e.target.result};r.readAsDataURL(f)}
+const readImg=id=>{const i=document.getElementById(id);return i.style.display!=='none'?i.src:''};
+
+let editId=null;
+function resetEntForm(){editId=null;document.getElementById('entForm').reset();pLogo.style.display='none';pCover.style.display='none';cancelEdit.style.display='none';entFormTitle.innerHTML='<i class="fas fa-plus-circle"></i> إضافة / تعديل منشأة'}
+function editEnt(id){const x=get('yr_entities').find(e=>e.id===id);if(!x)return;editId=id;eName.value=x.name;eType.value=x.type;eCity.value=x.city;eAddr.value=x.addr||'';ePhone.value=x.phone;eWa.value=x.wa||'';eEmail.value=x.email||'';eWeb.value=x.web||'';eDesc.value=x.desc;eServ.value=(x.services||[]).join('، ');eBranch.value=(x.branches||[]).join('، ');eStatus.value=x.status==='PUBLISHED'?'PUBLISHED':'PENDING';eBadge.value=x.badge||'';if(x.logo){pLogo.src=x.logo;pLogo.style.display='block'}if(x.cover){pCover.src=x.cover;pCover.style.display='block'}cancelEdit.style.display='inline-flex';entFormTitle.innerHTML='<i class="fas fa-pen"></i> تعديل: '+x.name;window.scrollTo({top:0,behavior:'smooth'})}
+function saveEntity(e){e.preventDefault();const list=get('yr_entities');const data={name:eName.value.trim(),type:eType.value,city:eCity.value.trim(),addr:eAddr.value.trim(),phone:ePhone.value.trim(),wa:eWa.value.trim(),email:eEmail.value.trim(),web:eWeb.value.trim(),desc:eDesc.value.trim(),services:split(eServ.value),branches:split(eBranch.value),status:eStatus.value,badge:eBadge.value,logo:readImg('pLogo'),cover:readImg('pCover')};if(editId){const i=list.findIndex(x=>x.id===editId);list[i]={...list[i],...data};showToast('✅ تم تعديل المنشأة')}else{list.push({id:Date.now(),owner:'الإدارة',...data});showToast('✅ تم إضافة المنشأة')}try{set('yr_entities',list)}catch(err){showToast('⚠️ الصور كبيرة — احفظ بدون صور')}resetEntForm();render()}
+function saveAd(e){e.preventDefault();const list=get('yr_ads');list.push({id:Date.now(),owner:'الإدارة',title:aTitle.value.trim(),place:aPlace.value,link:aLink.value.trim(),status:aStatus.value,img:readImg('pAd'),clicks:0});try{set('yr_ads',list);showToast('✅ تم حفظ الإعلان')}catch(err){showToast('⚠️ الصورة كبيرة')}e.target.reset();pAd.style.display='none';render()}
+function saveAdsense(){localStorage.setItem('yr_adsense',document.getElementById('adsenseCode').value);showToast('✅ تم حفظ كود AdSense')}
+function setStatus(key,id,st){set(key,get(key).map(x=>x.id===id?{...x,status:st}:x));showToast('✅ تم التحديث');render()}
+function del(key,id){set(key,get(key).filter(x=>x.id!==id));showToast('🗑️ تم الحذف');render()}
+function setOwnerStatus(phone,st){set('yr_users',get('yr_users').map(u=>u.phone===phone?{...u,status:st}:u));showToast('✅ تم التحديث');render()}
+function saveRates(){const rates={sanaa:{ub:s_ub.value,us:s_us.value,sb:s_sb.value,ss:s_ss.value,g21:s_g21.value,g24:s_g24.value},aden:{ub:a_ub.value,us:a_us.value,sb:a_sb.value,ss:a_ss.value,g21:a_g21.value,g24:a_g24.value},source:pSource.value.trim()||'الإدارة',updated:new Date().toLocaleString('ar-YE')};localStorage.setItem('yr_rates',JSON.stringify(rates));ratesMeta.textContent='🕐 آخر نشر: '+rates.updated;showToast('✅ تم نشر الأسعار')}
+
+const badge=s=>s==='PENDING'?'<span class="badge b-pending">⏳ معلق</span>':s==='ACTIVE'||s==='PUBLISHED'?'<span class="badge b-ok">✅ نشط</span>':'<span class="badge b-sus">🚫 موقوف</span>';
+
+function render(){
+    const owners=get('yr_users').filter(u=>u.role==='owner');
+    const ents=get('yr_entities'),jobs=get('yr_jobs'),ads=get('yr_ads'),revs=get('yr_reviews'),apps=get('yr_applications');
+    const pO=owners.filter(u=>u.status==='PENDING').length,pE=ents.filter(x=>x.status==='PENDING').length,pJ=jobs.filter(x=>x.status==='PENDING').length,pA=ads.filter(x=>x.status==='PENDING').length,pR=revs.filter(x=>x.status==='PENDING').length;
+    sOwners.textContent=pO;sEnts.textContent=pE;sJobs.textContent=pJ;sAds.textContent=pA;sRevs.textContent=pR;sApps.textContent=apps.length;
+    tOwners.textContent=pO;tEnts.textContent=ents.length;tJobs.textContent=jobs.length;tAds.textContent=ads.length;tRevs.textContent=revs.length;tApps.textContent=apps.length;
+
+    // النظرة العامة
+    const totalClicks=ads.reduce((s,a)=>s+(a.clicks||0),0);
+    dashSummary.innerHTML=`
+        <div class="stat-card c3" style="margin:0"><div class="stat-icon"><i class="fas fa-check-double"></i></div><div class="stat-num">${ents.filter(x=>x.status==='PUBLISHED').length}</div><div class="stat-lbl">منشأة منشورة</div></div>
+        <div class="stat-card c2" style="margin:0"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-num">${owners.filter(u=>u.status==='ACTIVE').length}</div><div class="stat-lbl">مالك مفعّل</div></div>
+        <div class="stat-card c1" style="margin:0"><div class="stat-icon"><i class="fas fa-mouse-pointer"></i></div><div class="stat-num">${totalClicks}</div><div class="stat-lbl">نقرة إعلانية</div></div>
+        <div class="stat-card c6" style="margin:0"><div class="stat-icon"><i class="fas fa-star"></i></div><div class="stat-num">${revs.filter(x=>x.status==='PUBLISHED').length}</div><div class="stat-lbl">تقييم منشور</div></div>`;
+    const recent=get('yr_notifs').slice(0,5);
+    recentActivity.innerHTML=recent.length?recent.map(x=>`<div class="item-row" style="padding:10px 14px"><div class="item-sub" style="margin:0">${x.msg} <span style="float:left;color:var(--text-muted)">${x.time}</span></div></div>`).join(''):'<div class="empty"><i class="fas fa-inbox"></i>لا نشاط بعد</div>';
+
+    listOwners.innerHTML=owners.length?owners.map(u=>`<div class="item-row"><div class="item-top"><div><div class="item-name">${u.name} ${badge(u.status)}</div><div class="item-sub">📞 ${u.phone} • ${u.etype||'-'} • ${u.email||''}</div></div><div style="display:flex;gap:5px;flex-wrap:wrap">${u.status!=='ACTIVE'?`<button class="btn btn-ok" onclick="setOwnerStatus('${u.phone}','ACTIVE')"><i class="fas fa-check"></i> تفعيل</button>`:`<button class="btn btn-edit" onclick="setOwnerStatus('${u.phone}','SUSPENDED')"><i class="fas fa-pause"></i> إيقاف</button>`}<button class="btn btn-no" onclick="set('yr_users',get('yr_users').filter(x=>x.phone!=='${u.phone}'));render()"><i class="fas fa-trash"></i></button></div></div></div>`).join(''):'<div class="empty"><i class="fas fa-users"></i>لا يوجد ملاك</div>';
+
+    listEnts.innerHTML=ents.length?ents.map(x=>`<div class="item-row"><div class="item-top"><div><div class="item-name">${x.logo?`<img src="${x.logo}" style="width:30px;height:30px;border-radius:8px;object-fit:cover">`:''}${x.name} ${badge(x.status)} ${x.badge?`<span class="badge b-ok">${x.badge}</span>`:''}</div><div class="item-sub">${x.type} • ${x.city} • المالك: ${x.owner}</div></div><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-edit" onclick="editEnt(${x.id})"><i class="fas fa-pen"></i></button>${x.status!=='PUBLISHED'?`<button class="btn btn-ok" onclick="setStatus('yr_entities',${x.id},'PUBLISHED')"><i class="fas fa-check"></i></button>`:''}<button class="btn btn-no" onclick="del('yr_entities',${x.id})"><i class="fas fa-trash"></i></button></div></div></div>`).join(''):'<div class="empty"><i class="fas fa-building"></i>لا توجد منشآت</div>';
+
+    listJobs.innerHTML=jobs.length?jobs.map(x=>`<div class="item-row"><div class="item-top"><div><div class="item-name">${x.title} ${badge(x.status)}</div><div class="item-sub">${x.city} • ${x.salary} • المالك: ${x.owner}</div></div><div style="display:flex;gap:5px">${x.status!=='PUBLISHED'?`<button class="btn btn-ok" onclick="setStatus('yr_jobs',${x.id},'PUBLISHED')"><i class="fas fa-check"></i></button>`:`<button class="btn btn-edit" onclick="setStatus('yr_jobs',${x.id},'PENDING')"><i class="fas fa-pause"></i></button>`}<button class="btn btn-no" onclick="del('yr_jobs',${x.id})"><i class="fas fa-trash"></i></button></div></div></div>`).join(''):'<div class="empty"><i class="fas fa-briefcase"></i>لا توجد وظائف</div>';
+
+    listAds.innerHTML=ads.length?ads.map(x=>`<div class="item-row"><div class="item-top"><div><div class="item-name">${x.img?`<img src="${x.img}" style="width:30px;height:30px;border-radius:8px;object-fit:cover">`:''}${x.title} ${badge(x.status)}</div><div class="item-sub">${x.place} • 👆 ${x.clicks||0} نقرة • ${x.owner}</div></div><div style="display:flex;gap:5px">${x.status!=='PUBLISHED'?`<button class="btn btn-ok" onclick="setStatus('yr_ads',${x.id},'PUBLISHED')"><i class="fas fa-check"></i></button>`:''}<button class="btn btn-no" onclick="del('yr_ads',${x.id})"><i class="fas fa-trash"></i></button></div></div></div>`).join(''):'<div class="empty"><i class="fas fa-ad"></i>لا توجد إعلانات</div>';
+
+    listRevs.innerHTML=revs.length?revs.map(x=>`<div class="item-row"><div class="item-top"><div><div class="item-name">${'★'.repeat(x.stars||0)} — ${x.compName||''} ${badge(x.status)}</div><div class="item-sub">${x.name}: ${x.text}</div></div><div style="display:flex;gap:5px">${x.status!=='PUBLISHED'?`<button class="btn btn-ok" onclick="setStatus('yr_reviews',${x.id},'PUBLISHED')"><i class="fas fa-check"></i></button>`:''}<button class="btn btn-no" onclick="del('yr_reviews',${x.id})"><i class="fas fa-trash"></i></button></div></div></div>`).join(''):'<div class="empty"><i class="fas fa-star"></i>لا توجد تقييمات</div>';
+
+    listApps.innerHTML=apps.length?apps.map(x=>`<div class="item-row"><div class="item-top"><div><div class="item-name">${x.name} — ${x.jobTitle}</div><div class="item-sub">📞 ${x.phone} • ${x.email||'-'} • خبرة: ${x.exp} • ${x.date}</div>${x.message?`<div class="item-sub">💬 ${x.message}</div>`:''}</div><div style="display:flex;gap:5px"><button class="btn btn-no" onclick="del('yr_applications',${x.id})"><i class="fas fa-trash"></i></button></div></div></div>`).join(''):'<div class="empty"><i class="fas fa-envelope-open-text"></i>لا توجد طلبات</div>';
+
+    const r=JSON.parse(localStorage.getItem('yr_rates')||'null');
+    if(r)ratesMeta.textContent='🕐 آخر نشر: '+r.updated+' • المصدر: '+r.source;
+    document.getElementById('adsenseCode').value=localStorage.getItem('yr_adsense')||'';
+}
+function showToast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),3000)}
+render();
+</script>
 </body>
 </html>

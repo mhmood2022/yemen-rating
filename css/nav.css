@@ -1,0 +1,56 @@
+/* === إصلاح القائمة الجانبية والهيدر === */
+#mainNav {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 280px;
+    height: 100vh;
+    background: var(--navy-900);
+    z-index: 1000;
+    transition: right 0.3s ease;
+    padding: 20px;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+    overflow-y: auto;
+}
+#mainNav.open { right: 0; }
+.nav-close-btn {
+    background: none;
+    border: none;
+    color: var(--gold-400);
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-bottom: 20px;
+    display: block;
+    width: 100%;
+    text-align: left;
+}
+#mainNav ul { list-style: none; padding: 0; }
+#mainNav li { margin-bottom: 10px; }
+#mainNav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #fff;
+    text-decoration: none;
+    padding: 12px;
+    border-radius: 8px;
+    transition: 0.2s;
+    font-weight: 600;
+}
+#mainNav a:hover { background: var(--navy-700); color: var(--gold-400); }
+#mainNav i { width: 24px; text-align: center; color: var(--gold-400); }
+
+/* === زر القائمة في الهيدر === */
+.nav-toggle {
+    display: block !important;
+    background: none;
+    border: none;
+    color: var(--gold-400);
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 8px;
+}
+@media (min-width: 900px) {
+    .nav-toggle { display: none !important; }
+    #mainNav { display: none !important; }
+}
