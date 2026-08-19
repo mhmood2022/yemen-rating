@@ -231,8 +231,57 @@ a{text-decoration:none;color:inherit}
 <script src="js/admin-engine.js"></script>
 <script src="js/ads-loader.js"></script>
 <script>
-const session=JSON.parse(localStorage.getItem('yr_session')||'null');
-if(!session||session.role!=='admin'){location.href='register.html?role=admin'}
+<script>
+// ═══ Admin Auth Guard (Supabase) ═══
+const _sb = window.supabase.createClient(
+    'https://wkdqeghotlipciqiytuj.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE'
+);
+
+(async function checkAdmin(){
+    const { data: { user } } = await _sb.auth.getUser();
+    if (!user) {
+        location.href = 'register.html?role=admin';
+        return;
+    }
+    // قراءة role من profiles
+    const { data: profile, error } = await _sb.from('profiles')
+        .select('role, full_name, status')
+        .eq('id', user.id)
+        .single();
+    
+    if (error || !profile) {
+        console.warn('Profile not found:', error);
+        location.href = 'register.html?role=admin';
+        return;
+    }
+    
+    if (profile.role !== 'admin' && profile.role !== 'super_admin') {
+        alert('⛔ ليس لديك صلاحية الدخول للوحة التحكم');
+        await _sb.auth.signOut();
+        location.href = 'index.html';
+        return;
+    }
+    
+    if (profile.status === 'SUSPENDED') {
+        alert('⛔ حسابك موقوف');
+        await _sb.auth.signOut();
+        location.href = 'index.html';
+        return;
+    }
+    
+    // نجاح — تحديث الـ session وعرض اسم المستخدم
+    const session = {
+        role: profile.role,
+        name: profile.full_name || user.email,
+        userId: user.id,
+        email: user.email,
+        source: 'supabase'
+    };
+    localStorage.setItem('yr_session', JSON.stringify(session));
+    window.yrAdminUser = session;
+})();
+</script>
 const get=k=>{try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}};
 const set=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 const split=v=>v.split('،').join(',').split(',').map(s=>s.trim()).filter(Boolean);
