@@ -203,7 +203,7 @@ async function handleSupabaseSignUp(email, password, name, phone, role) {
     if (error) return { success: false, error: error.message };
     if (data.user) {
       const status = (role === "owner") ? "PENDING" : "ACTIVE";
-      await sb.from("profiles").update({ phone, role, etype: curEtype, status }).eq("id", data.user.id);
+      await sb.from("profiles").upsert({ id: data.user.id, full_name: name, email, phone, role, etype: curEtype, status }, { onConflict: "id" });
     }
     return { success: true, user: data.user };
   } catch (e) {
