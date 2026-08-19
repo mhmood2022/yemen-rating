@@ -121,6 +121,8 @@ select option{background:var(--navy-800);color:var(--text-main);padding:8px}
 .custom-option.selected{background:rgba(251,191,36,.12);color:var(--gold-400);font-weight:700}
 .custom-option.selected::before{content:"\f00c";font-family:"Font Awesome 5 Free";font-weight:900;font-size:.65rem;margin-left:auto}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/sb-init.js"></script>
 </head>
 <body>
 
@@ -231,7 +233,89 @@ select option{background:var(--navy-800);color:var(--text-main);padding:8px}
     </form>
 </div></div>
 
-<script>
+<script type="module">
+import { supabase } from './js/supabase-client.js';
+
+// ═══ جلب الوظائف من Supabase + localStorage (fallback) ═══
+async function loadJobsFromSupabase() {
+    try {
+        const { data, error } = await supabase
+            .from('jobs')
+            .select('*')
+            .eq('status', 'PUBLISHED')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        return data || [];
+    } catch (err) {
+        console.warn('Supabase jobs fetch failed, using localStorage:', err);
+        return [];
+    }
+}
+
+// ═══ حفظ طلب التوظيف في Supabase ═══
+async function submitApplicationToSupabase(jobId, jobTitle, applicantData) {
+    try {
+        const user = JSON.parse(localStorage.getItem('yr_session') || 'null');
+        const { data, error } = await supabase
+            .from('applications')
+            .insert({
+                job_id: jobId,
+                user_id: user?.userId || null,
+                applicant_name: applicantData.name,
+                applicant_phone: applicantData.phone,
+                applicant_email: applicantData.email,
+                experience: applicantData.exp,
+                message: applicantData.message,
+                status: 'PENDING'
+            })
+            .select()
+            .single();
+        
+        if (error) throw error;
+        
+        // Audit log
+        await supabase.from('audit_logs').insert({
+            user_id: user?.userId || null,
+            action: 'JOB_APPLICATION_SUBMITTED',
+            entity: 'applications',
+            entity_id: data.id,
+            new_value: { jobTitle, applicantName: applicantData.name }
+        });
+        
+        return { success: true, data };
+    } catch (err) {
+        console.warn('Supabase application submit failed:', err);
+        return { success: false, error: err.message };
+    }
+}
+
+// ═══ دمج الوظائف من Supabase + Demo ═══
+async function mergeJobs() {
+    const supabaseJobs = await loadJobsFromSupabase();
+    const mapped = supabaseJobs.map(j => ({
+        id: 'sb_' + j.id,
+        title: j.title,
+        type: j.type || 'full',
+        city: j.city,
+        salary: j.salary || 'يُحدد لاحقاً',
+        deadline: j.deadline,
+        desc: j.description || j.desc,
+        reqs: j.requirements || [],
+        source: 'supabase'
+    }));
+    return [...mapped, ...(typeof DEMO_JOBS !== 'undefined' ? DEMO_JOBS : [])];
+}
+
+// ═══ تحميل الوظائف عند فتح الصفحة ═══
+(async () => {
+    const allJobs = await mergeJobs();
+    if (typeof DEMO_JOBS !== 'undefined') {
+        window.DEMO_JOBS = allJobs;
+        if (typeof renderJobs === 'function') renderJobs();
+    }
+})();
+
 // بيانات تجريبية مؤقتاً (تُستبدل بـ Supabase في مرحلة الربط)
 const DEMO_JOBS=[
 {id:1,title:'محاسب مالي',city:'صنعاء',type:'full',salary:'200,000 ريال',deadline:'30/09/2026',days:'منذ 3 أيام',views:245,desc:'مطلوب محاسب مالي لديه خبرة في إعداد التقارير المالية ومراجعة الفواتير.',req:['بكالوريوس محاسبة','خبرة 3 سنوات','إجادة Excel']},
@@ -291,7 +375,7 @@ function openApply(id){var j=ALL_JOBS?ALL_JOBS().find(x=>x.id===id):DEMO_JOBS.fi
 function openModal(id){document.getElementById(id).classList.add('active');document.body.style.overflow='hidden'}
 function closeModals(){document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('active'));document.body.style.overflow=''}
 
-document.getElementById('applyForm').addEventListener('submit',e=>{
+document.getElementById('applyForm').addEventListener('submit',async e=>{
     e.preventDefault();
     var f=e.target;
     var apps=JSON.parse(localStorage.getItem('yr_applications'))||[];
