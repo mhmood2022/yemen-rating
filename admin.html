@@ -189,7 +189,8 @@
                     <div class="panel-header"><h2>إدارة المستخدمين</h2></div>
                     <div class="table-wrapper">
                         <table class="admin-table">
-                            <thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>إجراءات</th></tr></thead>
+                            <thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th>
+                                <th>الحالة</th><th>إجراءات</th></tr></thead>
                             <tbody id="usersBody"></tbody>
                         </table>
                     </div>
@@ -363,6 +364,56 @@
                 });
             },
 
+        // ═══ إدارة المستخدمين ═══
+        async approveUser(id) {
+          if (!confirm('هل تريد قبول هذا الحساب وتفعيله؟')) return;
+          try {
+            const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+            const sb = module.createClient('https://wkdqeghotlipciqiytuj.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE');
+            const { error } = await sb.from('profiles').update({ status: 'ACTIVE' }).eq('id', id);
+            if (error) throw error;
+            this.showToast('✅ تم قبول الحساب بنجاح', 'success');
+            this.renderUsers();
+          } catch (e) {
+            this.showToast('❌ خطأ: ' + e.message, 'error');
+          }
+        },
+
+        async editUser(id, currentStatus) {
+          const newStatus = prompt('اختر الحالة الجديدة:\n1. ACTIVE (نشط)\n2. PENDING (معلق)\n3. SUSPENDED (موقوف)\n4. BLOCKED (محظور)', currentStatus);
+          if (!newStatus) return;
+          const validStatuses = ['ACTIVE', 'PENDING', 'SUSPENDED', 'BLOCKED'];
+          if (!validStatuses.includes(newStatus)) {
+            this.showToast('⚠️ حالة غير صحيحة', 'error');
+            return;
+          }
+          try {
+            const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+            const sb = module.createClient('https://wkdqeghotlipciqiytuj.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE');
+            const { error } = await sb.from('profiles').update({ status: newStatus }).eq('id', id);
+            if (error) throw error;
+            this.showToast('✅ تم تحديث حالة الحساب', 'success');
+            this.renderUsers();
+          } catch (e) {
+            this.showToast('❌ خطأ: ' + e.message, 'error');
+          }
+        },
+
+        async deleteUser(id) {
+          if (!confirm('⚠️ هل أنت متأكد من حذف هذا الحساب؟ هذا الإجراء لا يمكن التراجع عنه!')) return;
+          try {
+            const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+            const sb = module.createClient('https://wkdqeghotlipciqiytuj.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE');
+            const { error } = await sb.from('profiles').delete().eq('id', id);
+            if (error) throw error;
+            this.showToast('✅ تم حذف الحساب', 'success');
+            this.renderUsers();
+          } catch (e) {
+            this.showToast('❌ خطأ: ' + e.message, 'error');
+          }
+        },
+
+
             rejectVerif(id) {
                 YR_DB.update('verification_requests', id, { status: 'rejected' }).then(() => {
                     this.renderVerification();
@@ -394,16 +445,45 @@
             },
 
             renderUsers() {
-                const body = document.getElementById('usersBody');
-                const users = YR_DB.get('users');
-                const roles = { admin: 'إدارة', individual: 'فرد', company: 'شركة', jobseeker: 'باحث عن عمل' };
-                body.innerHTML = users.map(u =>
-                    '<tr><td><strong>' + this.esc(u.name) + '</strong></td>' +
-                    '<td>' + this.esc(u.email) + '</td>' +
-                    '<td>' + (roles[u.role] || u.role) + '</td>' +
-                    '<td>' + (u.role !== 'admin' ? '<button class="icon-btn delete" onclick="YRA.deleteItem(\'users\',\'' + u.id + '\')"><i class="fas fa-trash"></i></button>' : '<span style="color:var(--text-muted);font-size:0.8rem;">حساب رئيسي</span>') + '</td></tr>'
+            const body = document.getElementById('usersBody');
+            body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">جاري التحميل...</td></tr>';
+            
+            (async () => {
+              try {
+                const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+                const sb = module.createClient('https://wkdqeghotlipciqiytuj.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE');
+                const { data: profiles, error } = await sb.from('profiles').select('id,full_name,email,role,phone,status').order('created_at', {ascending: false});
+                
+                if (error) throw error;
+                
+                const roles = { super_admin: 'إدارة عليا', admin: 'إدارة', user: 'مستخدم', company_owner: 'مالك شركة', bank_owner: 'مالك بنك' };
+                const statusLabels = { ACTIVE: '✅ نشط', PENDING: '⏳ معلق', SUSPENDED: '⛔ موقوف', BLOCKED: '🚫 محظور' };
+                
+                if (!profiles || profiles.length === 0) {
+                  body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted);">لا يوجد مستخدمون</td></tr>';
+                  return;
+                }
+                
+                body.innerHTML = profiles.map(u => 
+                  '<tr>' +
+                  '<td><strong>' + this.esc(u.full_name || 'غير محدد') + '</strong>' + (u.phone ? '<br><small style="color:var(--text-muted);">' + u.phone + '</small>' : '') + '</td>' +
+                  '<td>' + this.esc(u.email) + '</td>' +
+                  '<td>' + (roles[u.role] || u.role) + '</td>' +
+                  '<td>' + (statusLabels[u.status] || u.status) + '</td>' +
+                  '<td>' +
+                  (u.role !== 'super_admin' ? (
+                    (u.status === 'PENDING' ? '<button class="icon-btn approve" onclick="YRA.approveUser(\'' + u.id + '\')" style="background:var(--green-600);color:white;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;"><i class="fas fa-check"></i> قبول</button> ' : '') +
+                    '<button class="icon-btn edit" onclick="YRA.editUser(\'' + u.id + '\', \'' + u.status + '\')" style="background:var(--gold-500);color:var(--navy-900);padding:6px 10px;border-radius:6px;border:none;cursor:pointer;margin:2px;"><i class="fas fa-edit"></i></button> ' +
+                    '<button class="icon-btn delete" onclick="YRA.deleteUser(\'' + u.id + '\')" style="background:var(--red-600);color:white;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;margin:2px;"><i class="fas fa-trash"></i></button>'
+                  ) : '<span style="color:var(--text-muted);font-size:0.8rem;">حساب رئيسي</span>') +
+                  '</td></tr>'
                 ).join('');
-            },
+              } catch (e) {
+                console.error('Error loading users:', e);
+                body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--red-600);">خطأ: ' + e.message + '</td></tr>';
+              }
+            })();
+        },
 
             openAddCompany() {
                 const self = this;
