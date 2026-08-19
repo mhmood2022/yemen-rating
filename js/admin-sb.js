@@ -13,7 +13,7 @@
         if (!bar) {
             bar = document.createElement('div');
             bar.id = 'sb-debug-bar';
-            bar.style.cssText = 'position:fixed;bottom:64px;left:0;right:0;background:#0f172a;color:#fbbf24;padding:8px 12px;font-size:11px;z-index:9999;border-top:2px solid #d4af37;font-family:monospace;direction:rtl;max-height:90px;overflow-y:auto;';
+            bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#0f172a;color:#fbbf24;padding:8px 12px;font-size:11px;z-index:9999;border-top:2px solid #d4af37;font-family:monospace;direction:rtl;max-height:90px;overflow-y:auto;';
             document.body.appendChild(bar);
         }
         var line = document.createElement('div');
@@ -75,7 +75,7 @@
     // ═══ اعتراض الكتابة: أي حفظ في اللوحة → Supabase ═══
     function entPayload(t,r){ return { type:t==='banks'?'bank':'company', name:r.name, city:cityIdToName(r.city), address:r.address||'', phone:r.phone||'', whatsapp:r.whatsapp||'', email:r.email||'', description:r.description||'', services:splitList(r.services,'،'), branches:splitList(r.branches,'\n'), status:r.verified?'PUBLISHED':(r.status||'PENDING'), badge:r.package||null, owner_id:sbUid }; }
     async function mirrorAdd(t,r){
-        if (!authed) return null;
+        if (!authed) { console.warn('[SB] ⚠️ لم يُحفظ في Supabase — اربط الحساب من الشريط البرتقالي بالأعلى'); return null; }
         try {
             if (t==='companies'||t==='banks') { var res=await sb.from('entities').insert(entPayload(t,r)).select().single(); if(res.error) throw res.error; console.log('[SB] ✅ حفظ في entities: '+r.name); return res.data.id; }
             if (t==='jobs') { var r2=await sb.from('jobs').insert({ title:r.title, city:cityIdToName(r.city), salary:r.salary, description:r.description, requirements:r.skills||[], type:r.type, status:r.status==='active'?'PUBLISHED':'PENDING', entity_id:r.companyId&&r.companyId.indexOf('sb_')===0?r.companyId.replace('sb_',''):null, owner_id:sbUid }).select().single(); if(r2.error) throw r2.error; console.log('[SB] ✅ حفظ في jobs: '+r.title); return r2.data.id; }
@@ -114,9 +114,10 @@
         if (document.getElementById('sb-link-bar')) return;
         var bar = document.createElement('div');
         bar.id = 'sb-link-bar';
-        bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1e293b;color:#f8fafc;padding:10px;z-index:10000;border-top:3px solid #d4af37;font-family:Cairo,sans-serif;direction:rtl;text-align:center;';
+        bar.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#7c2d12;color:#fff;padding:12px;z-index:10001;border-bottom:3px solid #fbbf24;font-family:Cairo,sans-serif;direction:rtl;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.6)';
         bar.innerHTML = '<b style="color:#fbbf24">🔗 ربط قاعدة البيانات (مرة واحدة)</b><br><input id="sb-link-email" value="mhmood7015@gmail.com" dir="ltr" style="margin:3px;padding:7px;border-radius:6px;border:1px solid #475569;background:#0f172a;color:#f8fafc;width:44%;font-size:11px"><input id="sb-link-pass" type="password" placeholder="كلمة المرور" dir="ltr" style="margin:3px;padding:7px;border-radius:6px;border:1px solid #475569;background:#0f172a;color:#f8fafc;width:26%;font-size:11px"><button id="sb-link-btn" style="margin:3px;padding:7px 14px;border-radius:6px;border:none;background:#d4af37;color:#0f172a;font-weight:bold">ربط</button>';
         document.body.appendChild(bar);
+        console.log('[SB] ⚠️ اضغط الشريط البرتقالي بالأعلى وأدخل كلمة مرور Supabase');
         document.getElementById('sb-link-btn').onclick = async function(){
             var email = document.getElementById('sb-link-email').value.trim();
             var pass = document.getElementById('sb-link-pass').value;
