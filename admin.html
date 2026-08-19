@@ -213,7 +213,7 @@
 
             checkAuth() {
                 const session = YR_DB.getSession();
-                if (!session || session.role !== 'admin') {
+                if (!session || (session.role !== 'admin' && session.role !== 'super_admin')) {
                     document.getElementById('adminLogin').classList.remove('hidden');
                     document.getElementById('adminWrapper').classList.add('hidden');
                     this.bindLogin();

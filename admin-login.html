@@ -54,6 +54,7 @@ body{font-family:'Cairo',sans-serif;background:var(--navy-900);color:var(--text-
     </div>
 </div>
 
+<script src="js/db.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const sb = window.supabase.createClient(
@@ -120,13 +121,25 @@ async function doLogin(e) {
         }
         
         // الخطوة 4: نجاح!
-        localStorage.setItem('yr_session', JSON.stringify({
-            role: profile.role,
-            name: profile.full_name || email,
+        // كتابة الجلسة بصيغة YR_DB (التوافق مع admin.html القديم)
+        var userForOldSystem = {
+            id: authData.user.id,
             userId: authData.user.id,
             email: email,
+            name: profile.full_name || email,
+            role: 'admin',  // البوابة القديمة تفحص 'admin' فقط
+            phone: '+967000000000',
+            type: 'admin',
+            verified: true,
             source: 'supabase'
-        }));
+        };
+        
+        // استخدام YR_DB.setSession إن كان متاحاً
+        if (typeof window.YR_DB !== 'undefined' && typeof window.YR_DB.setSession === 'function') {
+            window.YR_DB.setSession(userForOldSystem);
+        } else {
+            localStorage.setItem('yr_session', JSON.stringify(userForOldSystem));
+        }
         
         location.href = 'admin.html';
     } catch (err) {
