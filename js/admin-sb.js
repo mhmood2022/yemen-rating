@@ -12,6 +12,35 @@
     var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
     
     var sb = window.supabase.createClient(SB_URL, SB_KEY);
+    // ═══ شريط تشخيص مرئي على الهاتف ═══
+    function showSBLog(msg) {
+        var bar = document.getElementById('sb-debug-bar');
+        if (!bar) {
+            bar = document.createElement('div');
+            bar.id = 'sb-debug-bar';
+            bar.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#0f172a;color:#fbbf24;padding:8px 12px;font-size:12px;z-index:9999;border-top:2px solid #d4af37;font-family:monospace;direction:rtl;max-height:100px;overflow-y:auto;';
+            document.body.appendChild(bar);
+        }
+        var line = document.createElement('div');
+        line.textContent = '[' + new Date().toLocaleTimeString('ar-YE') + '] ' + msg;
+        bar.insertBefore(line, bar.firstChild);
+        while (bar.children.length > 5) bar.removeChild(bar.lastChild);
+    }
+    var _origLog = console.log;
+    var _origWarn = console.warn;
+    console.log = function() {
+        _origLog.apply(console, arguments);
+        if (arguments[0] && String(arguments[0]).indexOf('[SB]') === 0) {
+            showSBLog(Array.from(arguments).join(' '));
+        }
+    };
+    console.warn = function() {
+        _origWarn.apply(console, arguments);
+        if (arguments[0] && String(arguments[0]).indexOf('[SB]') === 0) {
+            showSBLog('⚠️ ' + Array.from(arguments).join(' '));
+        }
+    };
+
     window.yrSupabase = sb;
     
     function getCurrentUser() {
