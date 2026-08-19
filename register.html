@@ -246,7 +246,7 @@ async function doRegister(e){
         switchTab('login');
     } else {
         // Fallback to localStorage if Supabase fails
-        console.warn('Supabase signup failed, using localStorage:', result.error);
+        console.warn('Supabase signup failed:', result.error); showToast('⚠️ خطأ Supabase: ' + (result.error || 'غير معروف'));
         const users=getUsers();
         if(users.find(u=>u.phone===phone)){showToast('⚠️ هذا الرقم مسجل مسبقاً — سجل دخولك');return}
         users.push({
