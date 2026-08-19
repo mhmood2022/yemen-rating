@@ -205,7 +205,7 @@ async function handleSupabaseSignUp(email, password, name, phone, role) {
       const status = (role === "owner") ? "PENDING" : "ACTIVE";
       const { error: upsertError } = await sb.from("profiles").upsert({ id: data.user.id, full_name: name, email, phone, role, etype: curEtype, status }, { onConflict: "id" });
       if (upsertError) {
-        console.error("Upsert error:", upsertError); showToast("⚠️ " + upsertError.message);
+        console.error("Upsert error:", upsertError); alert("❌ فشل حفظ الحساب:\n\n" + upsertError.message);
         return { success: false, error: "فشل حفظ الملف الشخصي: " + upsertError.message };
       }
     }
