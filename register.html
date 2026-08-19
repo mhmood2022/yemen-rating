@@ -65,6 +65,13 @@ a{text-decoration:none;color:inherit}
 .toast{position:fixed;top:20px;left:20px;background:var(--navy-700);border:1px solid var(--gold-500);color:#fff;padding:12px 20px;border-radius:10px;z-index:9999;font-size:var(--text-xs);font-family:'Cairo',sans-serif}
 #floatingBackBtn{position:fixed;bottom:20px;right:20px;width:45px;height:45px;border-radius:50%;background:var(--navy-700);border:1px solid var(--gold-500);color:var(--gold-400);font-size:1.1rem;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:999}
 </style>
+
+<!-- Redirect old admin login URL to new dedicated page -->
+<script>
+if (location.search.includes('role=admin')) {
+    location.replace('admin-login.html');
+}
+</script>
 </head>
 <body>
 
