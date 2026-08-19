@@ -1,456 +1,308 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة الإدارة | يمن ريتغ</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/yemen-rating.css">
-    <style>
-        .hidden { display:none !important; }
-        .admin-wrapper { display:flex; min-height:100vh; }
-        .admin-sidebar { width:260px; background:var(--navy-900); color:#fff; position:fixed; top:0; right:0; height:100vh; overflow-y:auto; z-index:100; border-left:1px solid var(--navy-600); transition:transform 0.3s; }
-        .sidebar-brand { display:flex; align-items:center; gap:12px; padding:22px 20px; border-bottom:1px solid var(--navy-700); }
-        .sidebar-brand .brand-mark { width:42px; height:42px; background:var(--gold-gradient); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:var(--navy-800); font-size:1.2rem; }
-        .sidebar-brand span { font-weight:800; color:var(--gold-400); font-size:1.05rem; }
-        .sidebar-nav { padding:16px 12px; }
-        .nav-item { display:flex; align-items:center; gap:12px; padding:12px 16px; color:#94a3b8; border-radius:var(--radius-sm); margin-bottom:4px; transition:var(--transition); text-decoration:none; font-weight:600; cursor:pointer; }
-        .nav-item i { width:20px; text-align:center; color:var(--gold-400); }
-        .nav-item:hover { background:var(--navy-700); color:#fff; }
-        .nav-item.active { background:var(--gold-gradient); color:var(--navy-800); font-weight:800; }
-        .nav-item.active i { color:var(--navy-800); }
-        .nav-badge { margin-right:auto; background:var(--danger); color:#fff; font-size:0.7rem; padding:2px 8px; border-radius:20px; font-weight:700; }
-        .admin-main { flex:1; margin-right:260px; min-height:100vh; }
-        .admin-header { background:var(--bg-section); padding:16px 28px; display:flex; align-items:center; gap:18px; box-shadow:var(--shadow-sm); position:sticky; top:0; z-index:50; border-bottom:1px solid var(--border); }
-        .admin-header h1 { font-size:1.3rem; color:var(--text-main); flex:1; font-weight:800; }
-        .admin-content { padding:28px; }
-        .admin-login { min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--navy-900),var(--navy-700)); padding:20px; }
-        .login-card { background:var(--bg-card); border:1px solid var(--gold-500); border-radius:var(--radius-lg); padding:44px 40px; width:100%; max-width:420px; text-align:center; box-shadow:var(--shadow-gold); }
-        .login-logo { width:70px; height:70px; background:var(--gold-gradient); border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:2rem; color:var(--navy-800); margin:0 auto 20px; }
-        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:18px; margin-bottom:28px; }
-        .stat-card { background:var(--bg-card); border-radius:var(--radius-md); padding:22px; box-shadow:var(--shadow-sm); display:flex; align-items:center; gap:16px; border:1px solid var(--border); border-right:4px solid var(--gold-500); }
-        .stat-card .icon { width:52px; height:52px; background:var(--gold-gradient); color:var(--navy-800); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:1.3rem; }
-        .stat-card .num { font-size:1.7rem; font-weight:900; color:var(--gold-400); }
-        .stat-card .lbl { color:var(--text-muted); font-size:0.85rem; }
-        .table-wrapper { background:var(--bg-card); border-radius:var(--radius-md); box-shadow:var(--shadow-sm); overflow-x:auto; border:1px solid var(--border); }
-        .admin-table { width:100%; border-collapse:collapse; min-width:700px; }
-        .admin-table th { background:var(--navy-800); color:var(--gold-400); padding:14px 16px; text-align:right; font-size:0.88rem; font-weight:700; }
-        .admin-table td { padding:14px 16px; border-bottom:1px solid var(--border); font-size:0.9rem; color:var(--text-main); }
-        .admin-table tbody tr:hover { background:rgba(212,175,55,0.05); }
-        .status-badge { padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; display:inline-block; }
-        .status-active { background:rgba(16,185,129,0.15); color:var(--success); }
-        .status-pending { background:rgba(245,158,11,0.15); color:var(--warning); }
-        .status-rejected { background:rgba(239,68,68,0.15); color:var(--danger); }
-        .icon-btn { width:34px; height:34px; border-radius:var(--radius-sm); display:inline-flex; align-items:center; justify-content:center; border:none; cursor:pointer; transition:var(--transition); font-size:0.85rem; margin:0 2px; }
-        .icon-btn.edit { background:rgba(59,130,246,0.15); color:var(--info); }
-        .icon-btn.delete { background:rgba(239,68,68,0.15); color:var(--danger); }
-        .panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:14px; }
-        .panel-header h2 { color:var(--text-main); font-size:1.4rem; font-weight:800; }
-        .tab-panel { display:none; }
-        .tab-panel.active { display:block; }
-        .sidebar-toggle { display:none; background:none; border:none; color:var(--gold-400); font-size:1.3rem; cursor:pointer; }
-        .empty-state { text-align:center; padding:40px 20px; color:var(--text-muted); }
-        .empty-state i { font-size:2.5rem; color:var(--border); margin-bottom:12px; display:block; }
-        .image-upload-group { margin-bottom:20px; }
-        .image-upload-label { display:block; font-weight:700; color:var(--text-main); margin-bottom:10px; font-size:0.95rem; }
-        .image-upload-area { border:2px dashed var(--gold-500); border-radius:var(--radius-md); padding:30px 20px; text-align:center; cursor:pointer; background:rgba(212,175,55,0.05); transition:var(--transition); }
-        .image-upload-area:hover { background:rgba(212,175,55,0.1); }
-        .image-upload-area i { font-size:2.5rem; color:var(--gold-500); margin-bottom:10px; display:block; }
-        .image-upload-area p { color:var(--text-muted); font-size:0.9rem; margin:0; }
-        .image-upload-area .hint { font-size:0.8rem; color:var(--gold-400); margin-top:6px; display:block; }
-        .image-preview { margin-top:12px; border-radius:var(--radius-sm); overflow:hidden; position:relative; display:none; border:1px solid var(--border); }
-        .image-preview img { width:100%; display:block; max-height:200px; object-fit:cover; }
-        .image-preview .remove-img { position:absolute; top:8px; left:8px; background:rgba(239,68,68,0.9); color:#fff; width:32px; height:32px; border-radius:50%; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-        @media (max-width:900px) {
-            .admin-sidebar { transform:translateX(100%); width:280px; }
-            .admin-sidebar.open { transform:translateX(0); }
-            .admin-main { margin-right:0; }
-            .admin-content { padding:16px; }
-            .sidebar-toggle { display:block !important; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم | يمن ريتغ</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<style>
+:root{--navy-900:#0a1120;--navy-800:#0f172a;--navy-700:#152033;--navy-600:#1e293b;--gold-500:#d4af37;--gold-400:#fbbf24;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;--info:#3b82f6;--text-main:#f8fafc;--text-muted:#94a3b8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:var(--navy-900);color:var(--text-main);line-height:1.6;font-size:15px}
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+a{text-decoration:none;color:inherit}
+/* Header */
+.adm-header{background:linear-gradient(135deg,var(--navy-800),var(--navy-700));border-bottom:2px solid var(--gold-500);position:sticky;top:0;z-index:1000;padding:14px 0;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.adm-head-inner{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.adm-brand{display:flex;align-items:center;gap:12px}
+.adm-logo{width:42px;height:42px;background:linear-gradient(135deg,var(--danger),#b91c1c);border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;box-shadow:0 4px 12px rgba(239,68,68,.4)}
+.adm-brand h1{font-size:1.05rem;font-weight:800;background:linear-gradient(135deg,var(--gold-400),var(--gold-500));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.adm-brand span{font-size:.7rem;color:var(--text-muted)}
+.adm-actions{display:flex;align-items:center;gap:10px}
+.notif-btn{position:relative;background:var(--navy-600);border:1px solid var(--navy-600);color:var(--gold-400);width:42px;height:42px;border-radius:12px;cursor:pointer;font-size:1.05rem;transition:.2s}
+.notif-btn:hover{border-color:var(--gold-500)}
+#notifBadge{position:absolute;top:-5px;left:-5px;background:var(--danger);color:#fff;font-size:.6rem;font-weight:800;min-width:18px;height:18px;border-radius:9px;display:none;align-items:center;justify-content:center;padding:0 4px}
+.btn{padding:9px 16px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:.78rem;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:.2s}
+.btn-gold{background:linear-gradient(135deg,var(--gold-400),var(--gold-500));color:var(--navy-900)}
+.btn-ok{background:var(--success);color:#fff}
+.btn-no{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.btn-edit{background:var(--navy-600);color:var(--text-main)}
+.btn:hover{transform:translateY(-1px);opacity:.92}
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin:24px 0}
+.stat-card{background:linear-gradient(135deg,var(--navy-700),var(--navy-800));border:1px solid var(--navy-600);border-radius:14px;padding:18px;position:relative;overflow:hidden;transition:.3s}
+.stat-card:hover{border-color:var(--gold-500);transform:translateY(-3px)}
+.stat-card::before{content:"";position:absolute;top:-30px;left:-30px;width:80px;height:80px;border-radius:50%;opacity:.08}
+.stat-card.c1::before{background:var(--gold-400)}.stat-card.c2::before{background:var(--info)}.stat-card.c3::before{background:var(--success)}.stat-card.c4::before{background:var(--warning)}.stat-card.c5::before{background:var(--danger)}.stat-card.c6::before{background:#8b5cf6}
+.stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:10px}
+.c1 .stat-icon{background:rgba(251,191,36,.15);color:var(--gold-400)}.c2 .stat-icon{background:rgba(59,130,246,.15);color:var(--info)}.c3 .stat-icon{background:rgba(16,185,129,.15);color:var(--success)}.c4 .stat-icon{background:rgba(245,158,11,.15);color:var(--warning)}.c5 .stat-icon{background:rgba(239,68,68,.15);color:var(--danger)}.c6 .stat-icon{background:rgba(139,92,246,.15);color:#8b5cf6}
+.stat-num{font-size:1.7rem;font-weight:900;line-height:1}
+.stat-lbl{font-size:.72rem;color:var(--text-muted);margin-top:4px}
+/* Tabs */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;background:var(--navy-800);padding:8px;border-radius:14px;border:1px solid var(--navy-600)}
+.tab-btn{padding:10px 16px;border-radius:10px;border:none;background:transparent;color:var(--text-muted);font-family:inherit;font-weight:700;font-size:.8rem;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px}
+.tab-btn.active{background:linear-gradient(135deg,var(--gold-400),var(--gold-500));color:var(--navy-900)}
+.tab-btn .cnt{background:rgba(0,0,0,.2);padding:1px 7px;border-radius:10px;font-size:.65rem}
+.tab-btn.active .cnt{background:rgba(10,17,32,.25)}
+/* Box */
+.box{background:var(--navy-800);border:1px solid var(--navy-600);border-radius:16px;padding:22px;margin-bottom:18px}
+.box h3{color:var(--gold-400);font-size:1rem;margin-bottom:16px;display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--navy-600)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:.75rem;color:var(--text-muted);margin-bottom:5px;font-weight:600}
+.form-control{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--navy-600);background:var(--navy-900);color:var(--text-main);font-family:inherit;font-size:.85rem;outline:none;transition:.2s}
+.form-control:focus{border-color:var(--gold-500)}
+/* Items */
+.item-row{background:var(--navy-700);border:1px solid var(--navy-600);border-radius:12px;padding:14px;margin-bottom:10px;transition:.2s}
+.item-row:hover{border-color:var(--gold-500)}
+.item-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.item-name{font-weight:700;font-size:.92rem;display:flex;align-items:center;gap:8px}
+.item-sub{font-size:.75rem;color:var(--text-muted);margin-top:4px}
+.badge{padding:3px 10px;border-radius:20px;font-size:.62rem;font-weight:800}
+.b-pending{background:rgba(245,158,11,.15);color:var(--warning)}.b-ok{background:rgba(16,185,129,.15);color:var(--success)}.b-sus{background:rgba(239,68,68,.15);color:var(--danger)}
+.empty{text-align:center;color:var(--text-muted);padding:35px;font-size:.85rem}
+.empty i{font-size:2.5rem;color:var(--navy-600);display:block;margin-bottom:10px}
+.img-preview{width:60px;height:60px;border-radius:10px;object-fit:cover;border:2px solid var(--gold-500);display:none;margin-top:6px}
+/* Notifications panel */
+.notif-panel{position:fixed;top:70px;left:20px;width:320px;max-height:420px;background:var(--navy-800);border:1px solid var(--gold-500);border-radius:14px;box-shadow:0 15px 40px rgba(0,0,0,.6);z-index:1100;display:none;overflow:hidden}
+.notif-panel.open{display:block}
+.notif-head{padding:14px 16px;border-bottom:1px solid var(--navy-600);display:flex;justify-content:space-between;align-items:center}
+.notif-head h4{color:var(--gold-400);font-size:.9rem}
+.notif-list{max-height:340px;overflow-y:auto}
+.notif-item{padding:12px 16px;border-bottom:1px solid var(--navy-600);font-size:.8rem;display:flex;gap:10px}
+.notif-item.unread{background:rgba(251,191,36,.05);border-right:3px solid var(--gold-400)}
+.notif-item .nt{font-size:.65rem;color:var(--text-muted);margin-top:3px}
+.toast{position:fixed;top:20px;left:20px;background:var(--navy-700);border:1px solid var(--gold-500);color:#fff;padding:14px 22px;border-radius:12px;z-index:9999;font-size:.85rem;font-family:'Cairo',sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+@media(max-width:900px){.stats-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.stats-grid{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:1fr}.notif-panel{left:10px;right:10px;width:auto}}
+</style>
 </head>
 <body>
 
-    <div class="admin-login" id="adminLogin">
-        <div class="login-card">
-            <div class="login-logo"><i class="fas fa-star"></i></div>
-            <h1 style="color:var(--gold-400);margin-bottom:6px;">لوحة إدارة يمن ريتغ</h1>
-            <p style="color:var(--text-muted);margin-bottom:26px;">دخول الإدارة فقط</p>
-            <form id="adminLoginForm">
-                <div class="form-group" style="text-align:right;">
-                    <label>البريد الإلكتروني</label>
-                    <input type="email" class="form-control" name="email" required placeholder="admin@yemenrating.ye">
-                </div>
-                <div class="form-group" style="text-align:right;">
-                    <label>كلمة المرور</label>
-                    <input type="password" class="form-control" name="password" required placeholder="••••••••">
-                </div>
-                <button type="submit" class="btn btn-gold btn-block"><i class="fas fa-right-to-bracket"></i> دخول</button>
-            </form>
+<header class="adm-header">
+    <div class="container adm-head-inner">
+        <div class="adm-brand">
+            <div class="adm-logo"><i class="fas fa-user-shield"></i></div>
+            <div><h1>لوحة التحكم</h1><span>يمن ريتغ — مركز الإدارة</span></div>
+        </div>
+        <div class="adm-actions">
+            <button class="notif-btn" onclick="toggleNotif()"><i class="fas fa-bell"></i><span id="notifBadge"></span></button>
+            <a href="index.html" class="btn btn-edit"><i class="fas fa-home"></i> الموقع</a>
+            <button class="btn btn-no" onclick="localStorage.removeItem('yr_session');location.href='register.html?role=admin'"><i class="fas fa-sign-out-alt"></i> خروج</button>
         </div>
     </div>
+</header>
 
-    <div class="admin-wrapper hidden" id="adminWrapper">
-        <aside class="admin-sidebar" id="adminSidebar">
-            <div class="sidebar-brand">
-                <div class="brand-mark"><i class="fas fa-star"></i></div>
-                <span>YR Admin</span>
-            </div>
-            <nav class="sidebar-nav">
-                <a class="nav-item active" onclick="YRA.switchTab('dashboard',this)"><i class="fas fa-gauge-high"></i><span>الرئيسية</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('companies',this)"><i class="fas fa-building"></i><span>الشركات</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('banks',this)"><i class="fas fa-landmark"></i><span>البنوك</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('jobs',this)"><i class="fas fa-briefcase"></i><span>الوظائف</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('verification',this)"><i class="fas fa-circle-check"></i><span>طلبات التوثيق</span><span class="nav-badge" id="verifBadge">0</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('applications',this)"><i class="fas fa-file-lines"></i><span>طلبات التوظيف</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('reviews',this)"><i class="fas fa-star"></i><span>التقييمات</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('users',this)"><i class="fas fa-users"></i><span>المستخدمون</span></a>
-                <a href="index.html" class="nav-item"><i class="fas fa-globe"></i><span>عرض الموقع</span></a>
-                <a class="nav-item" onclick="YRA.logout()" style="color:var(--danger);"><i class="fas fa-right-from-bracket"></i><span>خروج</span></a>
-            </nav>
-        </aside>
+<div class="notif-panel" id="notifPanel">
+    <div class="notif-head"><h4><i class="fas fa-bell"></i> الإشعارات</h4><button class="btn btn-edit" style="padding:4px 10px;font-size:.65rem" onclick="markAllRead()">تعيين الكل مقروء</button></div>
+    <div class="notif-list" id="notifList"></div>
+</div>
 
-        <main class="admin-main">
-            <header class="admin-header">
-                <button class="sidebar-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
-                <h1 id="pageTitle">الرئيسية</h1>
-                <span style="color:var(--gold-400);font-weight:700;" id="adminName">المدير</span>
-            </header>
-
-            <div class="admin-content">
-                <section class="tab-panel active" id="panel-dashboard"><div class="stats-grid" id="dashStats"></div></section>
-                <section class="tab-panel" id="panel-companies">
-                    <div class="panel-header"><h2>إدارة الشركات</h2><button class="btn btn-gold" onclick="YRA.openAddCompany()"><i class="fas fa-plus"></i> إضافة شركة</button></div>
-                    <div class="table-wrapper"><table class="admin-table"><thead><tr><th>الاسم</th><th>المدينة</th><th>التوثيق</th><th>الباقة</th><th>إجراءات</th></tr></thead><tbody id="companiesBody"></tbody></table></div>
-                </section>
-                <section class="tab-panel" id="panel-banks">
-                    <div class="panel-header"><h2>إدارة البنوك</h2><button class="btn btn-gold" onclick="YRA.openAddBank()"><i class="fas fa-plus"></i> إضافة بنك</button></div>
-                    <div class="table-wrapper"><table class="admin-table"><thead><tr><th>الاسم</th><th>المدينة</th><th>التوثيق</th><th>إجراءات</th></tr></thead><tbody id="banksBody"></tbody></table></div>
-                </section>
-                <section class="tab-panel" id="panel-jobs">
-                    <div class="panel-header"><h2>إدارة الوظائف</h2></div>
-                    <div class="table-wrapper"><table class="admin-table"><thead><tr><th>المسمى</th><th>الشركة</th><th>الراتب</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="jobsBody"></tbody></table></div>
-                </section>
-                <section class="tab-panel" id="panel-verification">
-                    <div class="panel-header"><h2>طلبات التوثيق</h2></div>
-                    <div id="verificationList"></div>
-                </section>
-                <section class="tab-panel" id="panel-applications">
-                    <div class="panel-header"><h2>طلبات التوظيف</h2></div>
-                    <div class="table-wrapper"><table class="admin-table"><thead><tr><th>المتقدم</th><th>الهاتف</th><th>السيرة</th><th>الحالة</th></tr></thead><tbody id="appsBody"></tbody></table></div>
-                </section>
-                <section class="tab-panel" id="panel-reviews">
-                    <div class="panel-header"><h2>إدارة التقييمات</h2></div>
-                    <div class="table-wrapper"><table class="admin-table"><thead><tr><th>المستخدم</th><th>النجوم</th><th>التعليق</th><th>إجراءات</th></tr></thead><tbody id="reviewsBody"></tbody></table></div>
-                </section>
-                <section class="tab-panel" id="panel-users">
-                    <div class="panel-header"><h2>إدارة المستخدمين</h2></div>
-                    <div class="table-wrapper"><table class="admin-table"><thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>إجراءات</th></tr></thead><tbody id="usersBody"></tbody></table></div>
-                </section>
-            </div>
-        </main>
+<div class="container">
+    <div class="stats-grid">
+        <div class="stat-card c1"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-num" id="sOwners">0</div><div class="stat-lbl">ملاك معلقون</div></div>
+        <div class="stat-card c2"><div class="stat-icon"><i class="fas fa-building"></i></div><div class="stat-num" id="sEnts">0</div><div class="stat-lbl">منشآت معلقة</div></div>
+        <div class="stat-card c3"><div class="stat-icon"><i class="fas fa-briefcase"></i></div><div class="stat-num" id="sJobs">0</div><div class="stat-lbl">وظائف معلقة</div></div>
+        <div class="stat-card c4"><div class="stat-icon"><i class="fas fa-ad"></i></div><div class="stat-num" id="sAds">0</div><div class="stat-lbl">إعلانات معلقة</div></div>
+        <div class="stat-card c5"><div class="stat-icon"><i class="fas fa-star"></i></div><div class="stat-num" id="sRevs">0</div><div class="stat-lbl">تقييمات معلقة</div></div>
+        <div class="stat-card c6"><div class="stat-icon"><i class="fas fa-envelope-open-text"></i></div><div class="stat-num" id="sApps">0</div><div class="stat-lbl">طلبات توظيف</div></div>
     </div>
 
-    <div class="overlay" id="overlay"></div>
-    <div id="modalRoot"></div>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('dash',this)"><i class="fas fa-chart-pie"></i> النظرة العامة</button>
+        <button class="tab-btn" onclick="showTab('owners',this)"><i class="fas fa-users"></i> الملاك <span class="cnt" id="tOwners">0</span></button>
+        <button class="tab-btn" onclick="showTab('ents',this)"><i class="fas fa-building"></i> المنشآت <span class="cnt" id="tEnts">0</span></button>
+        <button class="tab-btn" onclick="showTab('jobs',this)"><i class="fas fa-briefcase"></i> الوظائف <span class="cnt" id="tJobs">0</span></button>
+        <button class="tab-btn" onclick="showTab('ads',this)"><i class="fas fa-ad"></i> الإعلانات <span class="cnt" id="tAds">0</span></button>
+        <button class="tab-btn" onclick="showTab('revs',this)"><i class="fas fa-star"></i> التقييمات <span class="cnt" id="tRevs">0</span></button>
+        <button class="tab-btn" onclick="showTab('apps',this)"><i class="fas fa-envelope-open-text"></i> الطلبات <span class="cnt" id="tApps">0</span></button>
+        <button class="tab-btn" onclick="showTab('prices',this)"><i class="fas fa-coins"></i> الأسعار</button>
+    </div>
 
-    <script src="js/db.js"></script>
-    <script>
-        const YRA = {
-            tempLogo: null,
-            tempCover: null,
+    <!-- النظرة العامة -->
+    <div id="sec-dash" class="box">
+        <h3><i class="fas fa-chart-pie"></i> النظرة العامة</h3>
+        <div id="dashSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px"></div>
+        <div style="margin-top:20px"><h3 style="border:none;padding:0;margin-bottom:12px"><i class="fas fa-clock"></i> آخر النشاطات</h3><div id="recentActivity"></div></div>
+    </div>
 
-            init() { YR_DB.init().then(() => this.checkAuth()); },
+    <!-- الملاك -->
+    <div id="sec-owners" class="box" style="display:none"><h3><i class="fas fa-users"></i> حسابات الملاك</h3><div id="listOwners"></div></div>
 
-            checkAuth() {
-                const session = YR_DB.getSession();
-                if (!session || session.role !== 'admin') {
-                    document.getElementById('adminLogin').classList.remove('hidden');
-                    document.getElementById('adminWrapper').classList.add('hidden');
-                    this.bindLogin();
-                    return;
-                }
-                document.getElementById('adminLogin').classList.add('hidden');
-                document.getElementById('adminWrapper').classList.remove('hidden');
-                document.getElementById('adminName').textContent = session.name;
-                this.renderDashboard();
-                this.updateBadges();
-            },
+    <!-- المنشآت -->
+    <div id="sec-ents" style="display:none">
+        <div class="box">
+            <h3 id="entFormTitle"><i class="fas fa-plus-circle"></i> إضافة / تعديل منشأة</h3>
+            <form id="entForm" onsubmit="saveEntity(event)">
+                <div class="form-grid">
+                    <div class="form-group"><label>اسم المنشأة *</label><input type="text" class="form-control" id="eName" required></div>
+                    <div class="form-group"><label>التصنيف *</label><select class="form-control" id="eType"><option value="company">شركة</option><option value="bank">بنك</option><option value="shop">محل</option><option value="hotel">فندق</option><option value="restaurant">مطعم</option><option value="exchange">صرافة</option><option value="transport">شركة نقل</option><option value="wallet">محفظة إلكترونية</option></select></div>
+                    <div class="form-group"><label>المدينة *</label><input type="text" class="form-control" id="eCity" required></div>
+                    <div class="form-group"><label>العنوان</label><input type="text" class="form-control" id="eAddr"></div>
+                    <div class="form-group"><label>الهاتف *</label><input type="tel" class="form-control" id="ePhone" required></div>
+                    <div class="form-group"><label>واتساب</label><input type="tel" class="form-control" id="eWa"></div>
+                    <div class="form-group"><label>البريد</label><input type="email" class="form-control" id="eEmail"></div>
+                    <div class="form-group"><label>الموقع</label><input type="url" class="form-control" id="eWeb"></div>
+                    <div class="form-group"><label>الحالة</label><select class="form-control" id="eStatus"><option value="PENDING">قيد المراجعة</option><option value="PUBLISHED">منشورة ✅</option></select></div>
+                    <div class="form-group"><label>الشارة</label><select class="form-control" id="eBadge"><option value="">بدون</option><option value="🥇 الأفضل">🥇 الأفضل</option><option value="✓ موثوقة">✓ موثوقة</option><option value="⭐ مميزة">⭐ مميزة</option><option value="ذهبي">ذهبي</option><option value="فضي">فضي</option><option value="برونزي">برونزي</option></select></div>
+                </div>
+                <div class="form-group"><label>الوصف *</label><textarea class="form-control" id="eDesc" rows="2" required></textarea></div>
+                <div class="form-group"><label>الخدمات (بفاصلة)</label><input type="text" class="form-control" id="eServ"></div>
+                <div class="form-group"><label>الفروع (بفاصلة)</label><input type="text" class="form-control" id="eBranch"></div>
+                <div class="form-grid">
+                    <div class="form-group"><label>الشعار</label><input type="file" class="form-control" id="eLogo" accept="image/*" onchange="previewImg(this,'pLogo')"><img id="pLogo" class="img-preview"></div>
+                    <div class="form-group"><label>الغلاف</label><input type="file" class="form-control" id="eCover" accept="image/*" onchange="previewImg(this,'pCover')"><img id="pCover" class="img-preview"></div>
+                </div>
+                <div style="display:flex;gap:8px"><button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> حفظ</button><button type="button" class="btn btn-edit" id="cancelEdit" style="display:none" onclick="resetEntForm()"><i class="fas fa-times"></i> إلغاء</button></div>
+            </form>
+        </div>
+        <div class="box"><h3><i class="fas fa-list"></i> كل المنشآت</h3><div id="listEnts"></div></div>
+    </div>
 
-            bindLogin() {
-                const self = this;
-                document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const users = YR_DB.get('users');
-                    const user = users.find(u => u.email === e.target.email.value && u.password === YR_DB.hash(e.target.password.value) && u.role === 'admin');
-                    if (user) { YR_DB.setSession(user); location.reload(); }
-                    else { self.showToast('بيانات الدخول غير صحيحة', 'error'); }
-                });
-            },
+    <!-- الوظائف -->
+    <div id="sec-jobs" class="box" style="display:none"><h3><i class="fas fa-briefcase"></i> كل الوظائف</h3><div id="listJobs"></div></div>
 
-            switchTab(tab, el) {
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                if (el) el.classList.add('active');
-                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                document.getElementById('panel-' + tab).classList.add('active');
-                document.getElementById('adminSidebar').classList.remove('open');
-                const titles = { dashboard:'الرئيسية', companies:'الشركات', banks:'البنوك', jobs:'الوظائف', verification:'طلبات التوثيق', applications:'طلبات التوظيف', reviews:'التقييمات', users:'المستخدمون' };
-                document.getElementById('pageTitle').textContent = titles[tab] || '';
-                if (tab==='companies') this.renderCompanies();
-                if (tab==='banks') this.renderBanks();
-                if (tab==='jobs') this.renderJobs();
-                if (tab==='verification') this.renderVerification();
-                if (tab==='applications') this.renderApplications();
-                if (tab==='reviews') this.renderReviews();
-                if (tab==='users') this.renderUsers();
-            },
+    <!-- الإعلانات -->
+    <div id="sec-ads" style="display:none">
+        <div class="box">
+            <h3><i class="fas fa-plus-circle"></i> إضافة إعلان</h3>
+            <form id="adForm" onsubmit="saveAd(event)">
+                <div class="form-grid">
+                    <div class="form-group"><label>عنوان الإعلان *</label><input type="text" class="form-control" id="aTitle" required></div>
+                    <div class="form-group"><label>الموضع *</label><select class="form-control" id="aPlace"><option value="homepage_top">أعلى الرئيسية</option><option value="homepage_middle">وسط الرئيسية</option><option value="homepage_bottom">أسفل الرئيسية</option><option value="companies_top">أعلى الشركات</option><option value="banks_top">أعلى البنوك</option><option value="jobs_top">أعلى الوظائف</option><option value="entity_top">صفحات الكيانات</option></select></div>
+                    <div class="form-group"><label>الرابط</label><input type="url" class="form-control" id="aLink"></div>
+                    <div class="form-group"><label>الحالة</label><select class="form-control" id="aStatus"><option value="PUBLISHED">منشور ✅</option><option value="PENDING">قيد المراجعة</option></select></div>
+                </div>
+                <div class="form-group"><label>صورة الإعلان</label><input type="file" class="form-control" id="aImg" accept="image/*" onchange="previewImg(this,'pAd')"><img id="pAd" class="img-preview"></div>
+                <button type="submit" class="btn btn-gold"><i class="fas fa-save"></i> حفظ الإعلان</button>
+            </form>
+        </div>
+        <div class="box">
+            <h3><i class="fas fa-code"></i> كود Google AdSense</h3>
+            <div class="form-group"><textarea class="form-control" id="adsenseCode" rows="3" placeholder='<script async src="...adsbygoogle.js"></script>'></textarea></div>
+            <button class="btn btn-gold" onclick="saveAdsense()"><i class="fas fa-save"></i> حفظ الكود</button>
+        </div>
+        <div class="box"><h3><i class="fas fa-bullhorn"></i> كل الإعلانات <span style="font-size:.7rem;color:var(--text-muted);font-weight:400">(مع إحصاء النقرات)</span></h3><div id="listAds"></div></div>
+    </div>
 
-            renderDashboard() {
-                const s = YR_DB.getStats();
-                const v = YR_DB.where('verification_requests','status','pending').length;
-                document.getElementById('dashStats').innerHTML =
-                    '<div class="stat-card"><div class="icon"><i class="fas fa-building"></i></div><div><div class="num">'+s.companies+'</div><div class="lbl">شركة</div></div></div>'+
-                    '<div class="stat-card"><div class="icon"><i class="fas fa-landmark"></i></div><div><div class="num">'+s.banks+'</div><div class="lbl">بنك</div></div></div>'+
-                    '<div class="stat-card"><div class="icon"><i class="fas fa-briefcase"></i></div><div><div class="num">'+s.jobs+'</div><div class="lbl">وظيفة</div></div></div>'+
-                    '<div class="stat-card"><div class="icon"><i class="fas fa-users"></i></div><div><div class="num">'+s.users+'</div><div class="lbl">مستخدم</div></div></div>'+
-                    '<div class="stat-card"><div class="icon"><i class="fas fa-star"></i></div><div><div class="num">'+s.reviews+'</div><div class="lbl">تقييم</div></div></div>'+
-                    '<div class="stat-card"><div class="icon"><i class="fas fa-circle-check"></i></div><div><div class="num">'+v+'</div><div class="lbl">طلب توثيق معلق</div></div></div>';
-            },
+    <!-- التقييمات -->
+    <div id="sec-revs" class="box" style="display:none"><h3><i class="fas fa-star"></i> كل التقييمات</h3><div id="listRevs"></div></div>
 
-            updateBadges() {
-                document.getElementById('verifBadge').textContent = YR_DB.where('verification_requests','status','pending').length;
-            },
+    <!-- الطلبات -->
+    <div id="sec-apps" class="box" style="display:none"><h3><i class="fas fa-envelope-open-text"></i> طلبات التوظيف</h3><div id="listApps"></div></div>
 
-            readImage(file, callback) {
-                if (file.size > 2 * 1024 * 1024) {
-                    this.showToast('الصورة كبيرة جداً (الحد 2MB)', 'error');
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = e => callback(e.target.result);
-                reader.readAsDataURL(file);
-            },
+    <!-- الأسعار -->
+    <div id="sec-prices" style="display:none">
+        <div class="box">
+            <h3><i class="fas fa-coins"></i> أسعار الصرف والذهب</h3>
+            <div class="form-group"><label>المصدر الرسمي *</label><input type="text" class="form-control" id="pSource" placeholder="البنك المركزي اليمني"></div>
+            <h4 style="color:#10b981;font-size:.8rem;margin:14px 0 8px">🏙️ صنعاء — الصرف</h4>
+            <div class="form-grid">
+                <div class="form-group"><label style="color:#10b981">$ شراء</label><input type="number" class="form-control" id="s_ub"></div>
+                <div class="form-group"><label style="color:#ef4444">$ بيع</label><input type="number" class="form-control" id="s_us"></div>
+                <div class="form-group"><label style="color:#10b981">🇸 شراء</label><input type="number" class="form-control" id="s_sb"></div>
+                <div class="form-group"><label style="color:#ef4444">🇸🇦 بيع</label><input type="number" class="form-control" id="s_ss"></div>
+            </div>
+            <h4 style="color:#fbbf24;font-size:.8rem;margin:14px 0 8px">🏙️ صنعاء — الذهب</h4>
+            <div class="form-grid">
+                <div class="form-group"><label style="color:#fbbf24">عيار 21</label><input type="number" class="form-control" id="s_g21"></div>
+                <div class="form-group"><label style="color:#fbbf24">عيار 24</label><input type="number" class="form-control" id="s_g24"></div>
+            </div>
+            <h4 style="color:#10b981;font-size:.8rem;margin:14px 0 8px">🏙️ عدن — الصرف</h4>
+            <div class="form-grid">
+                <div class="form-group"><label style="color:#10b981">$ شراء</label><input type="number" class="form-control" id="a_ub"></div>
+                <div class="form-group"><label style="color:#ef4444">$ بيع</label><input type="number" class="form-control" id="a_us"></div>
+                <div class="form-group"><label style="color:#10b981">🇸🇦 شراء</label><input type="number" class="form-control" id="a_sb"></div>
+                <div class="form-group"><label style="color:#ef4444">🇸🇦 بيع</label><input type="number" class="form-control" id="a_ss"></div>
+            </div>
+            <h4 style="color:#fbbf24;font-size:.8rem;margin:14px 0 8px">🏙️ عدن — الذهب</h4>
+            <div class="form-grid">
+                <div class="form-group"><label style="color:#fbbf24">عيار 21</label><input type="number" class="form-control" id="a_g21"></div>
+                <div class="form-group"><label style="color:#fbbf24">عيار 24</label><input type="number" class="form-control" id="a_g24"></div>
+            </div>
+            <button class="btn btn-gold" onclick="saveRates()" style="margin-top:8px"><i class="fas fa-save"></i> نشر الأسعار</button>
+            <p id="ratesMeta" style="font-size:.72rem;color:var(--text-muted);margin-top:10px"></p>
+        </div>
+    </div>
+</div>
 
-            showImagePreview(previewId, imgSrc) {
-                const preview = document.getElementById(previewId);
-                preview.querySelector('img').src = imgSrc;
-                preview.style.display = 'block';
-            },
+<script src="js/admin-engine.js"></script>
+<script src="js/ads-loader.js"></script>
+<script>
+const session=JSON.parse(localStorage.getItem('yr_session')||'null');
+if(!session||session.role!=='admin'){location.href='register.html?role=admin'}
+const get=k=>{try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}};
+const set=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const split=v=>v.split('،').join(',').split(',').map(s=>s.trim()).filter(Boolean);
 
-            hideImagePreview(previewId, inputId) {
-                document.getElementById(previewId).style.display = 'none';
-                document.getElementById(inputId).value = '';
-            },
+function showTab(t,btn){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['dash','owners','ents','jobs','ads','revs','apps','prices'].forEach(s=>document.getElementById('sec-'+s).style.display=s===t?'block':'none');
+}
 
-            handleLogoUpload(input) {
-                const file = input.files[0];
-                if (!file) return;
-                this.readImage(file, (imgSrc) => {
-                    this.tempLogo = imgSrc;
-                    this.showImagePreview('logoPreview', imgSrc);
-                    this.showToast('✅ تم اختيار الشعار', 'success');
-                });
-            },
+// ── الإشعارات ──
+function toggleNotif(){document.getElementById('notifPanel').classList.toggle('open');renderNotifs()}
+function renderNotifs(){
+    const n=get('yr_notifs');
+    document.getElementById('notifList').innerHTML=n.length?n.map(x=>`<div class="notif-item ${x.read?'':'unread'}"><div style="flex:1"><div>${x.msg}</div><div class="nt">${x.time}</div></div></div>`).join(''):'<div class="empty" style="padding:25px"><i class="fas fa-bell-slash"></i>لا إشعارات</div>';
+}
+function markAllRead(){set('yr_notifs',get('yr_notifs').map(x=>({...x,read:true})));renderNotifs();checkNew&&checkNew()}
+document.addEventListener('click',e=>{if(!e.target.closest('.notif-btn')&&!e.target.closest('.notif-panel'))document.getElementById('notifPanel').classList.remove('open')});
 
-            handleCoverUpload(input) {
-                const file = input.files[0];
-                if (!file) return;
-                this.readImage(file, (imgSrc) => {
-                    this.tempCover = imgSrc;
-                    this.showImagePreview('coverPreview', imgSrc);
-                    this.showToast('✅ تم اختيار صورة الغلاف', 'success');
-                });
-            },
+function previewImg(input,imgId){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=function(e){const img=new Image();img.onload=function(){const sc=Math.min(1,600/Math.max(img.width,img.height));const cv=document.createElement('canvas');cv.width=Math.round(img.width*sc);cv.height=Math.round(img.height*sc);cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);const el=document.getElementById(imgId);el.src=cv.toDataURL('image/jpeg',0.72);el.style.display='block'};img.src=e.target.result};r.readAsDataURL(f)}
+const readImg=id=>{const i=document.getElementById(id);return i.style.display!=='none'?i.src:''};
 
-            renderCompanies() {
-                const body = document.getElementById('companiesBody');
-                const list = YR_DB.get('companies');
-                if (!list.length) { body.innerHTML='<tr><td colspan="5" class="empty-state"><i class="fas fa-building"></i><p>لا توجد شركات</p></td></tr>'; return; }
-                body.innerHTML = list.map(c =>
-                    '<tr><td><strong>'+this.esc(c.name)+'</strong>'+(c.logo?'<img src="'+c.logo+'" style="width:32px;height:32px;border-radius:6px;margin-right:8px;vertical-align:middle;object-fit:cover;background:#fff;">':'')+'</td><td>'+this.esc(this.getCityName(c.city))+'</td><td>'+(c.verified?'<span style="color:var(--success);">✓ موثق</span>':'<span style="color:var(--text-muted);">غير موثق</span>')+'</td><td>'+(c.package||'free')+'</td><td><button class="icon-btn edit" onclick="YRA.toggleVerify(\''+c.id+'\',\'companies\')"><i class="fas fa-circle-check"></i></button><button class="icon-btn delete" onclick="YRA.deleteItem(\'companies\',\''+c.id+'\')"><i class="fas fa-trash"></i></button></td></tr>'
-                ).join('');
-            },
+let editId=null;
+function resetEntForm(){editId=null;document.getElementById('entForm').reset();pLogo.style.display='none';pCover.style.display='none';cancelEdit.style.display='none';entFormTitle.innerHTML='<i class="fas fa-plus-circle"></i> إضافة / تعديل منشأة'}
+function editEnt(id){const x=get('yr_entities').find(e=>e.id===id);if(!x)return;editId=id;eName.value=x.name;eType.value=x.type;eCity.value=x.city;eAddr.value=x.addr||'';ePhone.value=x.phone;eWa.value=x.wa||'';eEmail.value=x.email||'';eWeb.value=x.web||'';eDesc.value=x.desc;eServ.value=(x.services||[]).join('، ');eBranch.value=(x.branches||[]).join('، ');eStatus.value=x.status==='PUBLISHED'?'PUBLISHED':'PENDING';eBadge.value=x.badge||'';if(x.logo){pLogo.src=x.logo;pLogo.style.display='block'}if(x.cover){pCover.src=x.cover;pCover.style.display='block'}cancelEdit.style.display='inline-flex';entFormTitle.innerHTML='<i class="fas fa-pen"></i> تعديل: '+x.name;window.scrollTo({top:0,behavior:'smooth'})}
+function saveEntity(e){e.preventDefault();const list=get('yr_entities');const data={name:eName.value.trim(),type:eType.value,city:eCity.value.trim(),addr:eAddr.value.trim(),phone:ePhone.value.trim(),wa:eWa.value.trim(),email:eEmail.value.trim(),web:eWeb.value.trim(),desc:eDesc.value.trim(),services:split(eServ.value),branches:split(eBranch.value),status:eStatus.value,badge:eBadge.value,logo:readImg('pLogo'),cover:readImg('pCover')};if(editId){const i=list.findIndex(x=>x.id===editId);list[i]={...list[i],...data};showToast('✅ تم تعديل المنشأة')}else{list.push({id:Date.now(),owner:'الإدارة',...data});showToast('✅ تم إضافة المنشأة')}try{set('yr_entities',list)}catch(err){showToast('⚠️ الصور كبيرة — احفظ بدون صور')}resetEntForm();render()}
+function saveAd(e){e.preventDefault();const list=get('yr_ads');list.push({id:Date.now(),owner:'الإدارة',title:aTitle.value.trim(),place:aPlace.value,link:aLink.value.trim(),status:aStatus.value,img:readImg('pAd'),clicks:0});try{set('yr_ads',list);showToast('✅ تم حفظ الإعلان')}catch(err){showToast('⚠️ الصورة كبيرة')}e.target.reset();pAd.style.display='none';render()}
+function saveAdsense(){localStorage.setItem('yr_adsense',document.getElementById('adsenseCode').value);showToast('✅ تم حفظ كود AdSense')}
+function setStatus(key,id,st){set(key,get(key).map(x=>x.id===id?{...x,status:st}:x));showToast('✅ تم التحديث');render()}
+function del(key,id){set(key,get(key).filter(x=>x.id!==id));showToast('🗑️ تم الحذف');render()}
+function setOwnerStatus(phone,st){set('yr_users',get('yr_users').map(u=>u.phone===phone?{...u,status:st}:u));showToast('✅ تم التحديث');render()}
+function saveRates(){const rates={sanaa:{ub:s_ub.value,us:s_us.value,sb:s_sb.value,ss:s_ss.value,g21:s_g21.value,g24:s_g24.value},aden:{ub:a_ub.value,us:a_us.value,sb:a_sb.value,ss:a_ss.value,g21:a_g21.value,g24:a_g24.value},source:pSource.value.trim()||'الإدارة',updated:new Date().toLocaleString('ar-YE')};localStorage.setItem('yr_rates',JSON.stringify(rates));ratesMeta.textContent='🕐 آخر نشر: '+rates.updated;showToast('✅ تم نشر الأسعار')}
 
-            renderBanks() {
-                const body = document.getElementById('banksBody');
-                const list = YR_DB.get('banks');
-                if (!list.length) { body.innerHTML='<tr><td colspan="4" class="empty-state"><i class="fas fa-landmark"></i><p>لا توجد بنوك</p></td></tr>'; return; }
-                body.innerHTML = list.map(b =>
-                    '<tr><td><strong>'+this.esc(b.name)+'</strong>'+(b.logo?'<img src="'+b.logo+'" style="width:32px;height:32px;border-radius:6px;margin-right:8px;vertical-align:middle;object-fit:cover;background:#fff;">':'')+'</td><td>'+this.esc(this.getCityName(b.city))+'</td><td>'+(b.verified?'<span style="color:var(--success);">✓ موثق</span>':'<span style="color:var(--text-muted);">غير موثق</span>')+'</td><td><button class="icon-btn edit" onclick="YRA.toggleVerify(\''+b.id+'\',\'banks\')"><i class="fas fa-circle-check"></i></button><button class="icon-btn delete" onclick="YRA.deleteItem(\'banks\',\''+b.id+'\')"><i class="fas fa-trash"></i></button></td></tr>'
-                ).join('');
-            },
+const badge=s=>s==='PENDING'?'<span class="badge b-pending">⏳ معلق</span>':s==='ACTIVE'||s==='PUBLISHED'?'<span class="badge b-ok">✅ نشط</span>':'<span class="badge b-sus">🚫 موقوف</span>';
 
-            renderJobs() {
-                const body = document.getElementById('jobsBody');
-                const list = YR_DB.get('jobs');
-                if (!list.length) { body.innerHTML='<tr><td colspan="5" class="empty-state"><i class="fas fa-briefcase"></i><p>لا توجد وظائف</p></td></tr>'; return; }
-                body.innerHTML = list.map(j => {
-                    const co = YR_DB.findById('companies', j.companyId);
-                    return '<tr><td><strong>'+this.esc(j.title)+'</strong></td><td>'+(co?this.esc(co.name):'-')+'</td><td>'+this.esc(j.salary||'-')+'</td><td><span class="status-badge status-'+(j.status==='active'?'active':'rejected')+'">'+(j.status==='active'?'نشطة':'مغلقة')+'</span></td><td><button class="icon-btn delete" onclick="YRA.deleteItem(\'jobs\',\''+j.id+'\')"><i class="fas fa-trash"></i></button></td></tr>';
-                }).join('');
-            },
+function render(){
+    const owners=get('yr_users').filter(u=>u.role==='owner');
+    const ents=get('yr_entities'),jobs=get('yr_jobs'),ads=get('yr_ads'),revs=get('yr_reviews'),apps=get('yr_applications');
+    const pO=owners.filter(u=>u.status==='PENDING').length,pE=ents.filter(x=>x.status==='PENDING').length,pJ=jobs.filter(x=>x.status==='PENDING').length,pA=ads.filter(x=>x.status==='PENDING').length,pR=revs.filter(x=>x.status==='PENDING').length;
+    sOwners.textContent=pO;sEnts.textContent=pE;sJobs.textContent=pJ;sAds.textContent=pA;sRevs.textContent=pR;sApps.textContent=apps.length;
+    tOwners.textContent=pO;tEnts.textContent=ents.length;tJobs.textContent=jobs.length;tAds.textContent=ads.length;tRevs.textContent=revs.length;tApps.textContent=apps.length;
 
-            renderVerification() {
-                const list = document.getElementById('verificationList');
-                const reqs = YR_DB.get('verification_requests');
-                if (!reqs.length) { list.innerHTML='<div class="empty-state"><i class="fas fa-circle-check"></i><p>لا توجد طلبات توثيق</p></div>'; return; }
-                list.innerHTML = reqs.map(r =>
-                    '<div style="background:var(--bg-card);border-radius:var(--radius-md);padding:20px;margin-bottom:12px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;"><div><h4 style="color:var(--text-main);">'+this.esc(r.companyName)+'</h4><p style="color:var(--text-muted);font-size:0.85rem;">'+this.esc(r.phone||'')+' • '+this.esc(this.getCityName(r.city))+'</p></div><div style="display:flex;gap:8px;align-items:center;"><span class="status-badge status-'+r.status+'">'+this.statusLabel(r.status)+'</span>'+(r.status==='pending'?'<button class="btn btn-sm btn-gold" onclick="YRA.approveVerif(\''+r.id+'\')"><i class="fas fa-check"></i> قبول</button><button class="btn btn-sm btn-outline" onclick="YRA.rejectVerif(\''+r.id+'\')"><i class="fas fa-times"></i> رفض</button>':'')+'</div></div>'
-                ).join('');
-            },
+    // النظرة العامة
+    const totalClicks=ads.reduce((s,a)=>s+(a.clicks||0),0);
+    dashSummary.innerHTML=`
+        <div class="stat-card c3" style="margin:0"><div class="stat-icon"><i class="fas fa-check-double"></i></div><div class="stat-num">${ents.filter(x=>x.status==='PUBLISHED').length}</div><div class="stat-lbl">منشأة منشورة</div></div>
+        <div class="stat-card c2" style="margin:0"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-num">${owners.filter(u=>u.status==='ACTIVE').length}</div><div class="stat-lbl">مالك مفعّل</div></div>
+        <div class="stat-card c1" style="margin:0"><div class="stat-icon"><i class="fas fa-mouse-pointer"></i></div><div class="stat-num">${totalClicks}</div><div class="stat-lbl">نقرة إعلانية</div></div>
+        <div class="stat-card c6" style="margin:0"><div class="stat-icon"><i class="fas fa-star"></i></div><div class="stat-num">${revs.filter(x=>x.status==='PUBLISHED').length}</div><div class="stat-lbl">تقييم منشور</div></div>`;
+    const recent=get('yr_notifs').slice(0,5);
+    recentActivity.innerHTML=recent.length?recent.map(x=>`<div class="item-row" style="padding:10px 14px"><div class="item-sub" style="margin:0">${x.msg} <span style="float:left;color:var(--text-muted)">${x.time}</span></div></div>`).join(''):'<div class="empty"><i class="fas fa-inbox"></i>لا نشاط بعد</div>';
 
-            approveVerif(id) {
-                const req = YR_DB.findById('verification_requests', id);
-                YR_DB.update('verification_requests', id, {status:'approved'}).then(() => {
-                    const companies = YR_DB.get('companies');
-                    const company = companies.find(c => c.name === req.companyName);
-                    if (company) YR_DB.update('companies', company.id, {verified:true});
-                    this.renderVerification(); this.updateBadges();
-                    this.showToast('✅ تم قبول التوثيق','success');
-                });
-            },
+    listOwners.innerHTML=owners.length?owners.map(u=>`<div class="item-row"><div class="item-top"><div><div class="item-name">${u.name} ${badge(u.status)}</div><div class="item-sub">📞 ${u.phone} • ${u.etype||'-'} • ${u.email||''}</div></div><div style="display:flex;gap:5px;flex-wrap:wrap">${u.status!=='ACTIVE'?`<button class="btn btn-ok" onclick="setOwnerStatus('${u.phone}','ACTIVE')"><i class="fas fa-check"></i> تفعيل</button>`:`<button class="btn btn-edit" onclick="setOwnerStatus('${u.phone}','SUSPENDED')"><i class="fas fa-pause"></i> إيقاف</button>`}<button class="btn btn-no" onclick="set('yr_users',get('yr_users').filter(x=>x.phone!=='${u.phone}'));render()"><i class="fas fa-trash"></i></button></div></div></div>`).join(''):'<div class="empty"><i class="fas fa-users"></i>لا يوجد ملاك</div>';
 
-            rejectVerif(id) {
-                YR_DB.update('verification_requests', id, {status:'rejected'}).then(() => {
-                    this.renderVerification(); this.updateBadges();
-                    this.showToast('تم رفض التوثيق','success');
-                });
-            },
+    listEnts.innerHTML=ents.length?ents.map(x=>`<div class="item-row"><div class="item-top"><div><div class="item-name">${x.logo?`<img src="${x.logo}" style="width:30px;height:30px;border-radius:8px;object-fit:cover">`:''}${x.name} ${badge(x.status)} ${x.badge?`<span class="badge b-ok">${x.badge}</span>`:''}</div><div class="item-sub">${x.type} • ${x.city} • المالك: ${x.owner}</div></div><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-edit" onclick="editEnt(${x.id})"><i class="fas fa-pen"></i></button>${x.status!=='PUBLISHED'?`<button class="btn btn-ok" onclick="setStatus('yr_entities',${x.id},'PUBLISHED')"><i class="fas fa-check"></i></button>`:''}<button class="btn btn-no" onclick="del('yr_entities',${x.id})"><i class="fas fa-trash"></i></button></div></div></div>`).join(''):'<div class="empty"><i class="fas fa-building"></i>لا توجد منشآت</div>';
 
-            renderApplications() {
-                const body = document.getElementById('appsBody');
-                const list = YR_DB.get('job_applications');
-                if (!list.length) { body.innerHTML='<tr><td colspan="4" class="empty-state"><i class="fas fa-file-lines"></i><p>لا توجد طلبات</p></td></tr>'; return; }
-                body.innerHTML = list.map(a =>
-                    '<tr><td><strong>'+this.esc(a.name)+'</strong></td><td>'+this.esc(a.phone||'-')+'</td><td>'+(a.cvFileName?'<span style="color:var(--success);"><i class="fas fa-file-pdf"></i> '+this.esc(a.cvFileName)+'</span>':'-')+'</td><td><span class="status-badge status-'+a.status+'">'+this.statusLabel(a.status)+'</span></td></tr>'
-                ).join('');
-            },
+    listJobs.innerHTML=jobs.length?jobs.map(x=>`<div class="item-row"><div class="item-top"><div><div class="item-name">${x.title} ${badge(x.status)}</div><div class="item-sub">${x.city} • ${x.salary} • المالك: ${x.owner}</div></div><div style="display:flex;gap:5px">${x.status!=='PUBLISHED'?`<button class="btn btn-ok" onclick="setStatus('yr_jobs',${x.id},'PUBLISHED')"><i class="fas fa-check"></i></button>`:`<button class="btn btn-edit" onclick="setStatus('yr_jobs',${x.id},'PENDING')"><i class="fas fa-pause"></i></button>`}<button class="btn btn-no" onclick="del('yr_jobs',${x.id})"><i class="fas fa-trash"></i></button></div></div></div>`).join(''):'<div class="empty"><i class="fas fa-briefcase"></i>لا توجد وظائف</div>';
 
-            renderReviews() {
-                const body = document.getElementById('reviewsBody');
-                const list = YR_DB.get('reviews');
-                if (!list.length) { body.innerHTML='<tr><td colspan="4" class="empty-state"><i class="fas fa-star"></i><p>لا توجد تقييمات</p></td></tr>'; return; }
-                body.innerHTML = list.map(r =>
-                    '<tr><td>'+this.esc(r.userName)+'</td><td style="color:var(--gold-400);">'+'★'.repeat(r.stars)+'</td><td>'+this.esc((r.comment||'').substring(0,50))+'</td><td><button class="icon-btn delete" onclick="YRA.deleteItem(\'reviews\',\''+r.id+'\')"><i class="fas fa-trash"></i></button></td></tr>'
-                ).join('');
-            },
+    listAds.innerHTML=ads.length?ads.map(x=>`<div class="item-row"><div class="item-top"><div><div class="item-name">${x.img?`<img src="${x.img}" style="width:30px;height:30px;border-radius:8px;object-fit:cover">`:''}${x.title} ${badge(x.status)}</div><div class="item-sub">${x.place} • 👆 ${x.clicks||0} نقرة • ${x.owner}</div></div><div style="display:flex;gap:5px">${x.status!=='PUBLISHED'?`<button class="btn btn-ok" onclick="setStatus('yr_ads',${x.id},'PUBLISHED')"><i class="fas fa-check"></i></button>`:''}<button class="btn btn-no" onclick="del('yr_ads',${x.id})"><i class="fas fa-trash"></i></button></div></div></div>`).join(''):'<div class="empty"><i class="fas fa-ad"></i>لا توجد إعلانات</div>';
 
-            renderUsers() {
-                const body = document.getElementById('usersBody');
-                const list = YR_DB.get('users');
-                const roles = {admin:'إدارة',individual:'فرد',company:'شركة',jobseeker:'باحث عن عمل'};
-                if (!list.length) { body.innerHTML='<tr><td colspan="4" class="empty-state"><i class="fas fa-users"></i><p>لا يوجد مستخدمون</p></td></tr>'; return; }
-                body.innerHTML = list.map(u =>
-                    '<tr><td><strong>'+this.esc(u.name)+'</strong></td><td>'+this.esc(u.email)+'</td><td>'+(roles[u.role]||u.role)+'</td><td>'+(u.role!=='admin'?'<button class="icon-btn delete" onclick="YRA.deleteItem(\'users\',\''+u.id+'\')"><i class="fas fa-trash"></i></button>':'<span style="color:var(--text-muted);font-size:0.8rem;">حساب رئيسي</span>')+'</td></tr>'
-                ).join('');
-            },
+    listRevs.innerHTML=revs.length?revs.map(x=>`<div class="item-row"><div class="item-top"><div><div class="item-name">${'★'.repeat(x.stars||0)} — ${x.compName||''} ${badge(x.status)}</div><div class="item-sub">${x.name}: ${x.text}</div></div><div style="display:flex;gap:5px">${x.status!=='PUBLISHED'?`<button class="btn btn-ok" onclick="setStatus('yr_reviews',${x.id},'PUBLISHED')"><i class="fas fa-check"></i></button>`:''}<button class="btn btn-no" onclick="del('yr_reviews',${x.id})"><i class="fas fa-trash"></i></button></div></div></div>`).join(''):'<div class="empty"><i class="fas fa-star"></i>لا توجد تقييمات</div>';
 
-            openAddCompany() {
-                this.tempLogo = null;
-                this.tempCover = null;
-                const self = this;
-                this.openModal(
-                    '<div class="modal-head"><h3><i class="fas fa-plus"></i> إضافة شركة جديدة</h3><button class="modal-close" onclick="YRA.closeModal()"><i class="fas fa-times"></i></button></div>'+
-                    '<div class="modal-body"><form id="addCompanyForm">'+
-                    '<div class="form-group"><label>اسم الشركة <span style="color:var(--danger);">*</span></label><input type="text" class="form-control" name="name" required></div>'+
-                    '<div class="form-row"><div class="form-group"><label>التصنيف</label><select class="form-control" name="category" id="addCatSelect"></select></div><div class="form-group"><label>المدينة</label><select class="form-control" name="city" id="addCitySelect"></select></div></div>'+
-                    '<div class="form-group"><label>الوصف</label><textarea class="form-control" name="description" placeholder="نبذة عن الشركة..."></textarea></div>'+
-                    '<div class="form-group"><label>رقم الهاتف</label><input type="tel" class="form-control" name="phone" placeholder="+967..."></div>'+
-                    '<div class="form-group"><label>الخدمات</label><textarea class="form-control" name="services" placeholder="خدمة 1، خدمة 2..."></textarea></div>'+
-                    '<h4 style="color:var(--gold-400);margin:20px 0 12px;"><i class="fas fa-images"></i> الصور</h4>'+
-                    '<div class="image-upload-group"><label class="image-upload-label">📷 صورة الغلاف</label><div class="image-upload-area" onclick="document.getElementById(\'coverInput\').click()"><i class="fas fa-image"></i><p>اضغط لاختيار صورة الغلاف</p><span class="hint">يُفضّل 1200x400 بكسل</span></div><input type="file" id="coverInput" accept="image/*" style="display:none;" onchange="YRA.handleCoverUpload(this)"><div class="image-preview" id="coverPreview"><img src=""><button type="button" class="remove-img" onclick="YRA.hideImagePreview(\'coverPreview\',\'coverInput\');YRA.tempCover=null;"><i class="fas fa-times"></i></button></div></div>'+
-                    '<div class="image-upload-group"><label class="image-upload-label">🎯 شعار الشركة</label><div class="image-upload-area" onclick="document.getElementById(\'logoInput\').click()"><i class="fas fa-circle-user"></i><p>اضغط لاختيار الشعار</p><span class="hint">يُفضّل 400x400 بكسل</span></div><input type="file" id="logoInput" accept="image/*" style="display:none;" onchange="YRA.handleLogoUpload(this)"><div class="image-preview" id="logoPreview"><img src=""><button type="button" class="remove-img" onclick="YRA.hideImagePreview(\'logoPreview\',\'logoInput\');YRA.tempLogo=null;"><i class="fas fa-times"></i></button></div></div>'+
-                    '<label style="display:flex;align-items:center;gap:8px;margin:16px 0;"><input type="checkbox" name="verified"><span style="color:var(--text-main);">✓ شركة موثقة</span></label>'+
-                    '<button type="submit" class="btn btn-gold btn-block"><i class="fas fa-plus"></i> إضافة الشركة</button>'+
-                    '</form></div>'
-                );
-                const catS = document.getElementById('addCatSelect'), cityS = document.getElementById('addCitySelect');
-                YR_DB.get('categories').forEach(c => catS.innerHTML += '<option value="'+c.id+'">'+c.name+'</option>');
-                YR_DB.get('cities').forEach(c => cityS.innerHTML += '<option value="'+c.id+'">'+c.name+'</option>');
-                document.getElementById('addCompanyForm').addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const fd = new FormData(e.target);
-                    YR_DB.add('companies', {
-                        name: fd.get('name'), category: fd.get('category'), city: fd.get('city'),
-                        description: fd.get('description'), phone: fd.get('phone'), services: fd.get('services'),
-                        logo: self.tempLogo, coverImage: self.tempCover,
-                        verified: fd.get('verified') === 'on', package: 'free'
-                    }).then(() => { self.closeModal(); self.renderCompanies(); self.showToast('✅ تمت إضافة الشركة بنجاح!','success'); });
-                });
-            },
+    listApps.innerHTML=apps.length?apps.map(x=>`<div class="item-row"><div class="item-top"><div><div class="item-name">${x.name} — ${x.jobTitle}</div><div class="item-sub">📞 ${x.phone} • ${x.email||'-'} • خبرة: ${x.exp} • ${x.date}</div>${x.message?`<div class="item-sub">💬 ${x.message}</div>`:''}</div><div style="display:flex;gap:5px"><button class="btn btn-no" onclick="del('yr_applications',${x.id})"><i class="fas fa-trash"></i></button></div></div></div>`).join(''):'<div class="empty"><i class="fas fa-envelope-open-text"></i>لا توجد طلبات</div>';
 
-            openAddBank() {
-                this.tempLogo = null;
-                this.tempCover = null;
-                const self = this;
-                this.openModal(
-                    '<div class="modal-head"><h3><i class="fas fa-plus"></i> إضافة بنك جديد</h3><button class="modal-close" onclick="YRA.closeModal()"><i class="fas fa-times"></i></button></div>'+
-                    '<div class="modal-body"><form id="addBankForm">'+
-                    '<div class="form-group"><label>اسم البنك <span style="color:var(--danger);">*</span></label><input type="text" class="form-control" name="name" required></div>'+
-                    '<div class="form-group"><label>المدينة</label><select class="form-control" name="city" id="bankCitySelect"></select></div>'+
-                    '<div class="form-group"><label>الوصف</label><textarea class="form-control" name="description" placeholder="نبذة عن البنك..."></textarea></div>'+
-                    '<div class="form-group"><label>رقم الهاتف</label><input type="tel" class="form-control" name="phone"></div>'+
-                    '<div class="form-group"><label>الخدمات</label><textarea class="form-control" name="services" placeholder="خدمة 1، خدمة 2..."></textarea></div>'+
-                    '<h4 style="color:var(--gold-400);margin:20px 0 12px;"><i class="fas fa-images"></i> الصور</h4>'+
-                    '<div class="image-upload-group"><label class="image-upload-label">📷 صورة الغلاف</label><div class="image-upload-area" onclick="document.getElementById(\'bankCoverInput\').click()"><i class="fas fa-image"></i><p>اضغط لاختيار صورة الغلاف</p></div><input type="file" id="bankCoverInput" accept="image/*" style="display:none;" onchange="YRA.handleCoverUpload(this)"><div class="image-preview" id="coverPreview"><img src=""><button type="button" class="remove-img" onclick="YRA.hideImagePreview(\'coverPreview\',\'bankCoverInput\');YRA.tempCover=null;"><i class="fas fa-times"></i></button></div></div>'+
-                    '<div class="image-upload-group"><label class="image-upload-label">🎯 شعار البنك</label><div class="image-upload-area" onclick="document.getElementById(\'bankLogoInput\').click()"><i class="fas fa-circle-user"></i><p>اضغط لاختيار الشعار</p></div><input type="file" id="bankLogoInput" accept="image/*" style="display:none;" onchange="YRA.handleLogoUpload(this)"><div class="image-preview" id="logoPreview"><img src=""><button type="button" class="remove-img" onclick="YRA.hideImagePreview(\'logoPreview\',\'bankLogoInput\');YRA.tempLogo=null;"><i class="fas fa-times"></i></button></div></div>'+
-                    '<button type="submit" class="btn btn-gold btn-block"><i class="fas fa-plus"></i> إضافة البنك</button>'+
-                    '</form></div>'
-                );
-                const cityS = document.getElementById('bankCitySelect');
-                YR_DB.get('cities').forEach(c => cityS.innerHTML += '<option value="'+c.id+'">'+c.name+'</option>');
-                document.getElementById('addBankForm').addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const fd = new FormData(e.target);
-                    YR_DB.add('banks', {
-                        name: fd.get('name'), city: fd.get('city'), description: fd.get('description'),
-                        phone: fd.get('phone'), services: fd.get('services'),
-                        logo: self.tempLogo, coverImage: self.tempCover, verified: true
-                    }).then(() => { self.closeModal(); self.renderBanks(); self.showToast('✅ تمت إضافة البنك بنجاح!','success'); });
-                });
-            },
-
-            toggleVerify(id, table) {
-                const item = YR_DB.findById(table, id);
-                YR_DB.update(table, id, {verified:!item.verified}).then(() => {
-                    if (table==='companies') this.renderCompanies();
-                    if (table==='banks') this.renderBanks();
-                    this.showToast(item.verified?'تم إلغاء التوثيق':'✅ تم التوثيق','success');
-                });
-            },
-
-            deleteItem(table, id) {
-                if (!confirm('هل أنت متأكد من الحذف؟')) return;
-                YR_DB.remove(table, id).then(() => {
-                    const map = {companies:'companies',banks:'banks',jobs:'jobs',reviews:'reviews',users:'users'};
-                    this.switchTab(map[table]||'dashboard');
-                    this.showToast('تم الحذف','success');
-                });
-            },
-
-            logout() { YR_DB.clearSession(); location.href='index.html'; },
-            openModal(html) { document.getElementById('modalRoot').innerHTML='<div class="modal active" style="max-width:700px;">'+html+'</div>'; document.getElementById('overlay').classList.add('active'); },
-            closeModal() { document.getElementById('modalRoot').innerHTML=''; document.getElementById('overlay').classList.remove('active'); },
-            statusLabel(s) { return {pending:'معلق',approved:'مقبول',rejected:'مرفوض',active:'نشط'}[s]||s; },
-            getCityName(id) { const c=YR_DB.findById('cities',id); return c?c.name:'-'; },
-            esc(t) { if(!t)return''; const d=document.createElement('div'); d.textContent=t; return d.innerHTML; },
-            showToast(msg,type) {
-                type=type||'info';
-                let c=document.querySelector('.toast-container');
-                if(!c){c=document.createElement('div');c.className='toast-container';document.body.appendChild(c);}
-                const icons={success:'fa-circle-check',error:'fa-circle-xmark',info:'fa-circle-info'};
-                const t=document.createElement('div');
-                t.className='toast '+type;
-                t.innerHTML='<i class="fas '+(icons[type]||icons.info)+'" style="color:var(--gold-400);"></i><span>'+msg+'</span>';
-                c.appendChild(t);
-                setTimeout(()=>t.remove(),4000);
-            }
-        };
-        document.addEventListener('DOMContentLoaded', () => YRA.init());
-    </script>
+    const r=JSON.parse(localStorage.getItem('yr_rates')||'null');
+    if(r)ratesMeta.textContent='🕐 آخر نشر: '+r.updated+' • المصدر: '+r.source;
+    document.getElementById('adsenseCode').value=localStorage.getItem('yr_adsense')||'';
+}
+function showToast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),3000)}
+render();
+</script>
 </body>
 </html>

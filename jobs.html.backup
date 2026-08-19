@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الوظائف | يمن ريتغ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/yemen-rating.css">
+</head>
+<body>
+
+    <!-- الهيدر -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="index.html" class="brand">
+                <div class="brand-mark"><i class="fas fa-star"></i></div>
+                <div class="brand-text">
+                    <strong>YEMEN RATING</strong>
+                    <span>يمن ريتغ | منصة الأعمال</span>
+                </div>
+            </a>
+            <nav class="desktop-nav">
+                <ul>
+                    <li><a href="companies.html" class="nav-link"><i class="fas fa-building"></i> الشركات</a></li>
+                    <li><a href="jobs.html" class="nav-link active"><i class="fas fa-briefcase"></i> الوظائف</a></li>
+                    <li><a href="banks.html" class="nav-link"><i class="fas fa-landmark"></i> البنوك</a></li>
+                    <li><a href="verification.html" class="nav-link gold-link"><i class="fas fa-circle-check"></i> التوثيق</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+                <div id="headerActions"></div>
+                <button type="button" class="nav-toggle" id="navToggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى -->
+    <main class="section" style="min-height:80vh;">
+        <div class="container">
+            <div class="section-head">
+                <div class="section-icon"><i class="fas fa-briefcase"></i></div>
+                <div class="section-titles">
+                    <h2>💼 الوظائف المتاحة</h2>
+                    <p id="jobsCount">فرص عمل جديدة يومياً</p>
+                </div>
+            </div>
+
+            <!-- الفلاتر -->
+            <div class="filter-bar">
+                <input type="text" class="form-control" id="searchInput" placeholder="🔍 ابحث عن وظيفة...">
+                <select class="form-control" id="cityFilter">
+                    <option value="all">كل المدن</option>
+                </select>
+                <select class="form-control" id="typeFilter">
+                    <option value="all">كل الأنواع</option>
+                    <option value="دوام كامل">دوام كامل</option>
+                    <option value="دوام جزئي">دوام جزئي</option>
+                    <option value="عن بعد">عن بعد</option>
+                </select>
+            </div>
+
+            <!-- قائمة الوظائف -->
+            <div class="jobs-list" id="jobsList"></div>
+        </div>
+    </main>
+
+    <!-- الفوتر -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>© 2026 YEMEN RATING يمن ريتغ - جميع الحقوق محفوظة</p>
+                <a href="admin.html" class="footer-admin">لوحة الإدارة</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- القائمة الجانبية -->
+    <nav id="mainNav">
+        <button type="button" class="nav-close-btn" onclick="YRJ.closeNav()"><i class="fas fa-times"></i></button>
+        <ul>
+            <li><a href="companies.html"><i class="fas fa-building"></i> الشركات</a></li>
+            <li><a href="jobs.html" class="active"><i class="fas fa-briefcase"></i> الوظائف</a></li>
+            <li><a href="banks.html"><i class="fas fa-landmark"></i> البنوك</a></li>
+            <li><a href="verification.html"><i class="fas fa-circle-check" style="color:#fbbf24;"></i> التوثيق</a></li>
+        </ul>
+    </nav>
+
+    <div class="overlay" id="overlay"></div>
+    <div id="modalRoot"></div>
+    <div class="profile-page hidden" id="profilePage">
+        <div class="container" id="profileContent"></div>
+    </div>
+
+    <script src="js/db.js"></script>
+    <script>
+        const YRJ = {
+            applyCvFile: null,
+
+            init() {
+                YR_DB.init().then(() => {
+                    this.applyTheme();
+                    this.bindThemeToggle();
+                    this.bindNav();
+                    this.loadCityFilter();
+                    this.bindFilters();
+                    this.renderJobs();
+                    this.renderHeaderActions();
+                });
+            },
+
+            applyTheme() {
+                const theme = localStorage.getItem('yr_theme') || 'dark';
+                if (theme === 'light') document.body.classList.add('light-mode');
+                this.updateThemeIcon();
+            },
+
+            updateThemeIcon() {
+                const btn = document.getElementById('themeToggle');
+                if (!btn) return;
+                btn.innerHTML = document.body.classList.contains('light-mode')
+                    ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            },
+
+            bindThemeToggle() {
+                const btn = document.getElementById('themeToggle');
+                if (!btn) return;
+                btn.addEventListener('click', () => {
+                    document.body.classList.toggle('light-mode');
+                    localStorage.setItem('yr_theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+                    this.updateThemeIcon();
+                });
+            },
+
+            closeNav() {
+                document.getElementById('mainNav').classList.remove('open');
+                document.getElementById('overlay').classList.remove('active');
+            },
+
+            bindNav() {
+                const toggle = document.getElementById('navToggle');
+                const overlay = document.getElementById('overlay');
+                if (toggle) toggle.addEventListener('click', () => {
+                    document.getElementById('mainNav').classList.add('open');
+                    overlay.classList.add('active');
+                });
+                if (overlay) overlay.addEventListener('click', () => this.closeNav());
+            },
+
+            loadCityFilter() {
+                const citySelect = document.getElementById('cityFilter');
+                YR_DB.get('cities').forEach(city => {
+                    citySelect.innerHTML += '<option value="' + city.id + '">' + this.esc(city.name) + '</option>';
+                });
+            },
+
+            bindFilters() {
+                document.getElementById('searchInput').addEventListener('input', () => this.renderJobs());
+                document.getElementById('cityFilter').addEventListener('change', () => this.renderJobs());
+                document.getElementById('typeFilter').addEventListener('change', () => this.renderJobs());
+            },
+
+            renderJobs() {
+                const list = document.getElementById('jobsList');
+                const search = (document.getElementById('searchInput').value || '').toLowerCase();
+                const city = document.getElementById('cityFilter').value;
+                const type = document.getElementById('typeFilter').value;
+
+                let jobs = YR_DB.get('jobs').filter(j => j.status === 'active');
+
+                if (search) {
+                    jobs = jobs.filter(j =>
+                        j.title.toLowerCase().includes(search) ||
+                        (j.description || '').toLowerCase().includes(search)
+                    );
+                }
+                if (city !== 'all') jobs = jobs.filter(j => j.city === city);
+                if (type !== 'all') jobs = jobs.filter(j => j.type === type);
+
+                document.getElementById('jobsCount').textContent =
+                    'تم العثور على ' + jobs.length + ' وظيفة';
+
+                if (jobs.length === 0) {
+                    list.innerHTML = '<div class="empty-state"><i class="fas fa-briefcase"></i><p>لا توجد وظائف مطابقة</p></div>';
+                    return;
+                }
+
+                list.innerHTML = jobs.map(job => {
+                    const company = YR_DB.findById('companies', job.companyId);
+                    return '<div class="job-card" onclick="YRJ.openJob(\'' + job.id + '\')">' +
+                        '<div class="job-main">' +
+                        '<h3>' + this.esc(job.title) + '</h3>' +
+                        '<div class="job-tags">' +
+                        (company ? '<span><i class="fas fa-building"></i>' + this.esc(company.name) + '</span>' : '') +
+                        (job.city ? '<span><i class="fas fa-location-dot"></i>' + this.esc(this.getCityName(job.city)) + '</span>' : '') +
+                        (job.type ? '<span><i class="fas fa-clock"></i>' + this.esc(job.type) + '</span>' : '') +
+                        (job.salary ? '<span class="job-salary"><i class="fas fa-money-bill-wave"></i>' + this.esc(job.salary) + '</span>' : '') +
+                        '</div></div>' +
+                        '<div class="job-actions">' +
+                        '<button class="btn btn-gold btn-sm"><i class="fas fa-eye"></i> التفاصيل</button>' +
+                        '</div></div>';
+                }).join('');
+            },
+
+            openJob(jobId) {
+                const job = YR_DB.findById('jobs', jobId);
+                if (!job) return;
+                const company = YR_DB.findById('companies', job.companyId);
+                const content = document.getElementById('profileContent');
+
+                content.innerHTML =
+                    '<button class="btn btn-navy profile-close" onclick="YRJ.closeProfile()"><i class="fas fa-arrow-right"></i> رجوع</button>' +
+                    '<div class="profile-hero">' +
+                    '<div class="profile-logo"><i class="fas fa-briefcase"></i></div>' +
+                    '<div class="profile-info">' +
+                    '<h1>' + this.esc(job.title) + '</h1>' +
+                    '<div class="profile-badges">' +
+                    (company ? '<span class="badge badge-premium"><i class="fas fa-building"></i> ' + this.esc(company.name) + '</span>' : '') +
+                    (job.type ? '<span class="badge badge-verified"><i class="fas fa-clock"></i> ' + this.esc(job.type) + '</span>' : '') +
+                    '</div>' +
+                    '<p class="profile-desc">' + this.esc(job.description || '') + '</p>' +
+                    '</div></div>' +
+                    '<div class="profile-grid"><div>' +
+                    '<div class="profile-box"><h2><i class="fas fa-circle-info"></i> تفاصيل الوظيفة</h2>' +
+                    '<ul class="info-list">' +
+                    (company ? '<li><i class="fas fa-building"></i><span>الشركة: ' + this.esc(company.name) + '</span></li>' : '') +
+                    (job.city ? '<li><i class="fas fa-location-dot"></i><span>الموقع: ' + this.esc(this.getCityName(job.city)) + '</span></li>' : '') +
+                    (job.salary ? '<li><i class="fas fa-money-bill-wave"></i><span>الراتب: ' + this.esc(job.salary) + '</span></li>' : '') +
+                    (job.type ? '<li><i class="fas fa-clock"></i><span>نوع العمل: ' + this.esc(job.type) + '</span></li>' : '') +
+                    (job.experience ? '<li><i class="fas fa-star"></i><span>الخبرة: ' + this.esc(job.experience) + '</span></li>' : '') +
+                    '</ul></div>' +
+                    (job.requirements ?
+                        '<div class="profile-box"><h2><i class="fas fa-list-check"></i> المتطلبات</h2>' +
+                        '<p style="color:var(--text-muted);line-height:2;">' + this.esc(job.requirements) + '</p></div>' : '') +
+                    '<div class="profile-box"><h2><i class="fas fa-paper-plane"></i> قدّم الآن</h2>' +
+                    '<button class="btn btn-gold btn-block" onclick="YRJ.openApplyModal(\'' + job.id + '\')"><i class="fas fa-paper-plane"></i> تقديم على الوظيفة</button>' +
+                    '</div></div>' +
+                    '<div><div class="profile-box"><h2><i class="fas fa-address-card"></i> التواصل</h2>' +
+                    '<div class="contact-actions">' +
+                    (company && company.phone ? '<a href="tel:' + company.phone + '" class="btn btn-navy btn-block"><i class="fas fa-phone"></i> اتصال</a>' : '') +
+                    (company && company.whatsapp ? '<a href="https://wa.me/' + company.whatsapp.replace(/[^0-9]/g, '') + '" target="_blank" class="btn btn-block whatsapp-btn"><i class="fab fa-whatsapp"></i> واتساب</a>' : '') +
+                    '</div></div></div></div>';
+
+                document.getElementById('profilePage').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            },
+
+            openApplyModal(jobId) {
+                const self = this;
+                this.applyCvFile = null;
+                this.openModal(
+                    '<div class="modal-head"><h3><i class="fas fa-paper-plane"></i> التقديم على الوظيفة</h3>' +
+                    '<button class="modal-close" onclick="YRJ.closeModal()"><i class="fas fa-times"></i></button></div>' +
+                    '<div class="modal-body"><form id="applyForm">' +
+                    '<div class="form-group"><label>الاسم الكامل <span class="required">*</span></label>' +
+                    '<input type="text" class="form-control" name="name" required></div>' +
+                    '<div class="form-group"><label>رقم الهاتف <span class="required">*</span></label>' +
+                    '<input type="tel" class="form-control" name="phone" required></div>' +
+                    '<div class="form-group"><label>البريد الإلكتروني</label>' +
+                    '<input type="email" class="form-control" name="email"></div>' +
+                    '<div class="form-group"><label>السيرة الذاتية (PDF أو صورة) <span class="required">*</span></label>' +
+                    '<div style="border:2px dashed var(--gold-500);border-radius:var(--radius-sm);padding:20px;text-align:center;cursor:pointer;background:rgba(212,175,55,0.05);" onclick="document.getElementById(\'applyCvInput\').click()">' +
+                    '<i class="fas fa-cloud-arrow-up" style="font-size:1.8rem;color:var(--gold-500);margin-bottom:8px;display:block;"></i>' +
+                    '<p id="applyCvName" style="color:var(--text-muted);font-size:0.9rem;">اضغط لرفع السيرة الذاتية</p>' +
+                    '<input type="file" id="applyCvInput" accept=".pdf,image/*" style="display:none;" onchange="YRJ.onCvSelected(this)">' +
+                    '</div>' +
+                    '<div id="applyCvPreview" style="display:none;margin-top:10px;background:rgba(16,185,129,0.1);padding:10px 14px;border-radius:var(--radius-sm);color:var(--success);font-size:0.85rem;font-weight:700;">' +
+                    '<i class="fas fa-file-circle-check"></i> تم اختيار الملف</div></div>' +
+                    '<div class="form-group"><label>رسالة تعريفية</label>' +
+                    '<textarea class="form-control" name="message" placeholder="اكتب نبذة قصيرة عن نفسك..."></textarea></div>' +
+                    '<button type="submit" class="btn btn-gold btn-block"><i class="fas fa-paper-plane"></i> إرسال الطلب</button>' +
+                    '</form></div>'
+                );
+
+                document.getElementById('applyForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (!self.applyCvFile) {
+                        self.showToast('⚠️ ارفع سيرتك الذاتية أولاً', 'error');
+                        return;
+                    }
+                    const fd = new FormData(e.target);
+                    YR_DB.add('job_applications', {
+                        jobId: jobId,
+                        name: fd.get('name'),
+                        phone: fd.get('phone'),
+                        email: fd.get('email'),
+                        message: fd.get('message'),
+                        cvFileName: self.applyCvFile.name,
+                        cvFileSize: self.applyCvFile.size,
+                        status: 'pending'
+                    }).then(() => {
+                        self.closeModal();
+                        self.showToast('✅ تم إرسال طلبك بنجاح!', 'success');
+                    });
+                });
+            },
+
+            onCvSelected(input) {
+                const file = input.files[0];
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) {
+                    this.showToast('الملف كبير جداً (الحد 5MB)', 'error');
+                    input.value = '';
+                    return;
+                }
+                this.applyCvFile = file;
+                document.getElementById('applyCvName').textContent = file.name;
+                document.getElementById('applyCvPreview').style.display = 'block';
+                this.showToast('✅ تم اختيار السيرة الذاتية', 'success');
+            },
+
+            closeProfile() {
+                document.getElementById('profilePage').classList.add('hidden');
+                document.body.style.overflow = '';
+            },
+
+            renderHeaderActions() {
+                const session = YR_DB.getSession();
+                const c = document.getElementById('headerActions');
+                if (!c) return;
+                if (session) {
+                    c.innerHTML =
+                        '<span style="color:var(--gold-400);font-weight:700;"><i class="fas fa-user-circle"></i> ' + this.esc(session.name) + '</span>' +
+                        (session.role === 'admin' ? '<a href="admin.html" class="btn btn-gold btn-sm">الإدارة</a>' : '') +
+                        '<button class="btn btn-outline btn-sm" onclick="YRJ.logout()">خروج</button>';
+                } else {
+                    c.innerHTML = '<a href="index.html" class="btn btn-outline btn-sm">دخول</a>';
+                }
+            },
+
+            logout() {
+                YR_DB.clearSession();
+                this.renderHeaderActions();
+                this.showToast('تم الخروج', 'success');
+            },
+
+            openModal(html) {
+                document.getElementById('modalRoot').innerHTML = '<div class="modal active">' + html + '</div>';
+                document.getElementById('overlay').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            },
+
+            closeModal() {
+                document.getElementById('modalRoot').innerHTML = '';
+                document.getElementById('overlay').classList.remove('active');
+                document.body.style.overflow = '';
+            },
+
+            getCityName(cityId) {
+                const city = YR_DB.findById('cities', cityId);
+                return city ? city.name : cityId;
+            },
+
+            esc(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            },
+
+            showToast(msg, type) {
+                type = type || 'info';
+                let container = document.querySelector('.toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.className = 'toast-container';
+                    document.body.appendChild(container);
+                }
+                const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+                const toast = document.createElement('div');
+                toast.className = 'toast ' + type;
+                toast.innerHTML = '<i class="fas ' + (icons[type] || icons.info) + '" style="color:var(--gold-400);"></i><span>' + msg + '</span>';
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => YRJ.init());
+    </script>
+</body>
+</html>

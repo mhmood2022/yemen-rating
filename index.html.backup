@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>يمن ريتغ | المنصة الرسمية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/yemen-rating.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <style>
+        /* تنسيقات سريعة لشريط الأسعار */
+        .market-ticker { background: var(--navy-800); border-bottom: 1px solid var(--gold-500); padding: 10px 0; overflow: hidden; white-space: nowrap; }
+        .ticker-content { display: inline-block; animation: ticker 30s linear infinite; }
+        .ticker-item { display: inline-flex; align-items: center; gap: 8px; margin-left: 30px; color: #fff; font-size: 0.9rem; }
+        .ticker-item span.up { color: var(--success); }
+        .ticker-item span.down { color: var(--danger); }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        
+        .hero { background: linear-gradient(rgba(6,13,26,0.8), rgba(6,13,26,0.9)), url('assets/images/defaults/hero-bg.jpg'); background-size: cover; padding: 80px 0; text-align: center; }
+        .section-title { text-align: center; margin-bottom: 40px; color: var(--gold-400); font-size: 1.8rem; position: relative; }
+        .section-title::after { content: ''; display: block; width: 60px; height: 3px; background: var(--gold-500); margin: 10px auto; }
+    </style>
+</head>
+<body>
+
+    <!-- الهيدر -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="index.html" class="brand">
+                <div class="brand-mark"><i class="fas fa-star"></i></div>
+                <div class="brand-text"><strong>YEMEN RATING</strong><span>يمن ريتغ</span></div>
+            </a>
+            <nav class="desktop-nav">
+                <ul>
+                    <li><a href="companies.html">الشركات</a></li>
+                    <li><a href="banks.html">البنوك</a></li>
+                    <li><a href="jobs.html">الوظائف</a></li>
+                    <li><a href="verification.html" class="gold-link">التوثيق</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <button class="nav-toggle" id="navToggle"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- شريط الأسعار (ديناميكي) -->
+    <div class="market-ticker">
+        <div class="ticker-content" id="marketTicker">
+            <!-- سيتم ملؤه بالجافاسكربت -->
+            <span class="ticker-item">جاري تحميل الأسعار...</span>
+        </div>
+    </div>
+
+    <!-- القسم الرئيسي -->
+    <section class="hero">
+        <div class="container">
+            <h1 style="color: var(--gold-400); font-size: 2.5rem; margin-bottom: 20px;">اكتشف أفضل الشركات في اليمن</h1>
+            <p style="color: #ccc; margin-bottom: 30px;">دليلك الموثوق للتقييمات، الوظائف، والخدمات المالية</p>
+            <div class="hero-search" style="max-width: 600px; margin: 0 auto; display: flex; gap: 10px;">
+                <input type="text" id="mainSearch" placeholder="ابحث عن شركة، بنك، أو وظيفة..." style="flex: 1; padding: 15px; border-radius: 8px; border: none;">
+                <button class="btn btn-gold" onclick="window.location.href='companies.html?q='+document.getElementById('mainSearch').value">بحث</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- التصنيفات -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">التصنيفات</h2>
+            <div class="categories-grid" id="categoriesGrid">
+                <!-- سيتم ملؤه بالجافاسكربت -->
+            </div>
+        </div>
+    </section>
+
+    <!-- الشركات المميزة -->
+    <section class="section" style="background: var(--bg-section);">
+        <div class="container">
+            <h2 class="section-title">⭐ شركات مميزة</h2>
+            <div class="cards-grid" id="featuredCompanies">
+                <!-- سيتم ملؤه بالجافاسكربت -->
+            </div>
+        </div>
+    </section>
+
+    <!-- البنوك -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">🏦 البنوك والمؤسسات</h2>
+            <div class="cards-grid" id="latestBanks">
+                <!-- سيتم ملؤه بالجافاسكربت -->
+            </div>
+        </div>
+    </section>
+
+    <!-- الفوتر -->
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 يمن ريتغ - جميع الحقوق محفوظة</p>
+        </div>
+    </footer>
+
+    <!-- القائمة الجانبية -->
+    <nav id="mainNav">
+        <button class="nav-close-btn" onclick="document.getElementById('mainNav').classList.remove('open')"><i class="fas fa-times"></i></button>
+        <ul>
+            <li><a href="index.html">الرئيسية</a></li>
+            <li><a href="companies.html">الشركات</a></li>
+            <li><a href="banks.html">البنوك</a></li>
+            <li><a href="jobs.html">الوظائف</a></li>
+            <li><a href="admin.html">لوحة التحكم</a></li>
+        </ul>
+    </nav>
+
+    <!-- السكربتات -->
+    <script src="js/supabase.js"></script>
+    <script>
+        // === منطق الصفحة الرئيسية ===
+        
+        // 1. قائمة التنقل
+        document.getElementById('navToggle').addEventListener('click', () => {
+            document.getElementById('mainNav').classList.add('open');
+        });
+
+        // 2. دالة جلب البيانات وعرضها
+        async function loadHomePageData() {
+            try {
+                // التأكد من الاتصال
+                if (!sb) await initSupabase();
+                if (!sb) throw new Error("فشل الاتصال بقاعدة البيانات");
+
+                // أ. جلب الأسعار (شريطTicker)
+                const { data: rates } = await sb.from('exchange_rates').select('*').limit(5);
+                const { data: gold } = await sb.from('gold_prices').select('*').limit(3);
+                
+                let tickerHTML = '';
+                if (rates) {
+                    rates.forEach(r => {
+                        tickerHTML += `<span class="ticker-item"><i class="fas fa-dollar-sign"></i> ${r.currency} (${r.city}): شراء ${r.buy_price} | بيع ${r.sell_price}</span>`;
+                    });
+                }
+                if (gold) {
+                    gold.forEach(g => {
+                        tickerHTML += `<span class="ticker-item"><i class="fas fa-gem"></i> ذهب ${g.karat} (${g.city}): ${g.price}</span>`;
+                    });
+                }
+                if (tickerHTML) document.getElementById('marketTicker').innerHTML = tickerHTML;
+
+                // ب. جلب التصنيفات
+                const { data: cats } = await sb.from('categories').select('*');
+                if (cats) {
+                    document.getElementById('categoriesGrid').innerHTML = cats.map(c => `
+                        <a href="companies.html?cat=${c.id}" class="category-card">
+                            <div class="category-icon"><i class="fas ${c.icon || 'fa-tag'}"></i></div>
+                            <h3>${c.name}</h3>
+                        </a>
+                    `).join('');
+                }
+
+                // ج. جلب الشركات المميزة (ACTIVE فقط)
+                const { data: companies } = await sb.from('companies').select('*').eq('status', 'ACTIVE').limit(4);
+                if (companies && companies.length > 0) {
+                    document.getElementById('featuredCompanies').innerHTML = companies.map(c => `
+                        <div class="company-card">
+                            <div class="company-logo">
+                                ${c.logo_url ? `<img src="${c.logo_url}">` : '<i class="fas fa-building"></i>'}
+                            </div>
+                            <div class="company-info">
+                                <h3>${c.name}</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> ${c.city_id || 'اليمن'}</p>
+                                ${c.is_verified ? '<span class="badge badge-verified"><i class="fas fa-check-circle"></i> موثق</span>' : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('featuredCompanies').innerHTML = '<p style="text-align:center; width:100%; color:#777;">لا توجد شركات مضافة بعد</p>';
+                }
+
+                // د. جلب البنوك
+                const { data: banks } = await sb.from('banks').select('*').eq('status', 'ACTIVE').limit(4);
+                if (banks && banks.length > 0) {
+                    document.getElementById('latestBanks').innerHTML = banks.map(b => `
+                        <div class="company-card">
+                            <div class="company-logo">
+                                ${b.logo_url ? `<img src="${b.logo_url}">` : '<i class="fas fa-landmark"></i>'}
+                            </div>
+                            <div class="company-info">
+                                <h3>${b.name}</h3>
+                                <p><i class="fas fa-map-marker-alt"></i> ${b.city_id || 'اليمن'}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('latestBanks').innerHTML = '<p style="text-align:center; width:100%; color:#777;">لا توجد بنوك مضافة بعد</p>';
+                }
+
+            } catch (error) {
+                console.error("Error loading home data:", error);
+                // لا نوقف الصفحة، فقط نطبع الخطأ في الكونسول
+            }
+        }
+
+        // تشغيل التحميل عند بدء الصفحة
+        // ملاحظة: initSupabase يتم استدعاؤها أيضاً في supabase.js، لكن نعيد التحقق هنا للأمان
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(loadHomePageData, 500); // تأخير بسيط لضمان جاهزية الاتصال
+        });
+    </script>
+</body>
+</html>

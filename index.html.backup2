@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>يمن ريتنج | المنصة الرسمية لتقييم الشركات والبنوك في اليمن</title>
+    <meta name="description" content="دليلك الموثوق لتقييم الشركات والبنوك والمحلات والفنادق والمطاعم في اليمن">
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/yemen-rating.css">
+    <link rel="stylesheet" href="css/nav.css">
+    
+    <style>
+        /* ═══════════════════════════════════════════
+           المتغيرات الأساسية
+        ═══════════════════════════════════════════ */
+        :root {
+            --navy-900: #0a1120;
+            --navy-800: #0f172a;
+            --navy-700: #152033;
+            --navy-600: #1e293b;
+            --gold-500: #d4af37;
+            --gold-400: #fbbf24;
+            --gold-300: #fde68a;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--navy-900);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ═══════════════════════════════════════════
+           شريط الأسعار
+        ═══════════════════════════════════════════ */
+        .market-ticker {
+            background: var(--navy-800);
+            border-bottom: 1px solid var(--gold-500);
+            padding: 10px 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .ticker-track {
+            display: inline-block;
+            animation: ticker 40s linear infinite;
+        }
+        .ticker-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 30px;
+            color: #fff;
+            font-size: 0.85rem;
+        }
+        .ticker-item .city {
+            color: var(--gold-400);
+            font-weight: 700;
+        }
+        .ticker-item .label { color: var(--text-muted); }
+        .ticker-item .up { color: var(--success); }
+        .ticker-item .down { color: var(--danger); }
+        @keyframes ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* ═══════════════════════════════════════════
+           القسم الرئيسي (Hero)
+        ═══════════════════════════════════════════ */
+        .hero {
+            background: linear-gradient(135deg, rgba(10,17,32,0.95), rgba(15,23,42,0.9)), 
+                        url('assets/images/defaults/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+        .hero h1 {
+            color: var(--gold-400);
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 15px;
+        }
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        .stat-pill {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid var(--gold-500);
+            padding: 12px 24px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stat-pill .num {
+            color: var(--gold-400);
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+        .stat-pill .lbl {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* ═══════════════════════════════════════════
+           البحث
+        ═══════════════════════════════════════════ */
+        .search-box {
+            max-width: 650px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+            background: rgba(255,255,255,0.05);
+            padding: 8px;
+            border-radius: 50px;
+            border: 1px solid var(--navy-600);
+        }
+        .search-box input {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: #fff;
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+        }
+        .search-box input::placeholder { color: var(--text-muted); }
+
+        /* ═══════════════════════════════════════════
+           الأزرار
+        ═══════════════════════════════════════════ */
+        .btn {
+            padding: 12px 28px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.9rem;
+            font-family: inherit;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold-400), var(--gold-500));
+            color: var(--navy-900);
+        }
+        .btn-gold:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(251, 191, 36, 0.3);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--gold-400);
+            border: 1px solid var(--gold-500);
+        }
+        .btn-outline:hover {
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        /* ═══════════════════════════════════════════
+           العناوين
+        ═══════════════════════════════════════════ */
+        .section {
+            padding: 60px 0;
+        }
+        .section-alt {
+            background: var(--navy-800);
+        }
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+            color: var(--gold-400);
+            font-size: 1.8rem;
+            font-weight: 800;
+            position: relative;
+        }
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: var(--gold-500);
+            margin: 12px auto;
+            border-radius: 2px;
+        }
+
+        /* ═══════════════════════════════════════════
+           التصنيفات
+        ═══════════════════════════════════════════ */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+        }
+        .category-card {
+            background: var(--navy-700);
+            border: 1px solid var(--navy-600);
+            padding: 25px 15px;
+            border-radius: 12px;
+            text-align: center;
+            text-decoration: none;
+            color: #fff;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .category-card:hover {
+            border-color: var(--gold-500);
+            transform: translateY(-4px);
+            background: var(--navy-600);
+        }
+        .category-card i {
+            font-size: 2rem;
+            color: var(--gold-400);
+            margin-bottom: 10px;
+            display: block;
+        }
+        .category-card h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+        .category-card .count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ═══════════════════════════════════════════
+           بطاقات الكيانات
+        ═══════════════════════════════════════════ */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .entity-card {
+            background: var(--navy-700);
+            border: 1px solid var(--navy-600);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .entity-card:hover {
+            border-color: var(--gold-500);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .entity-cover {
+            height: 120px;
+            background: linear-gradient(135deg, var(--navy-600), var(--navy-800));
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .entity-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .entity-cover .placeholder {
+            font-size: 3rem;
+            color: var(--navy-600);
+        }
+        .entity-logo {
+            position: absolute;
+            bottom: -25px;
+            right: 15px;
+            width: 55px;
+            height: 55px;
+            background: #fff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .entity-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .entity-logo i {
+            font-size: 1.5rem;
+            color: var(--navy-800);
+        }
+        .entity-body {
+            padding: 35px 15px 15px;
+        }
+        .entity-name {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .entity-desc {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .entity-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+        .entity-meta i {
+            color: var(--gold-400);
+            margin-left: 4px;
+        }
+
+        /* الشارات */
+        .badge-verified {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .badge-gold {
+            background: linear-gradient(135deg, var(--gold-400), var(--gold-500));
+            color: var(--navy-900);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .badge-silver {
+            background: #e5e7eb;
+            color: #374151;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .badge-bronze {
+            background: #fed7aa;
+            color: #9a3412;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        /* التقييم */
+        .rating-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 0.85rem;
+        }
+        .rating-stars {
+            color: var(--gold-400);
+            letter-spacing: 1px;
+        }
+        .rating-score {
+            color: var(--gold-400);
+            font-weight: 700;
+        }
+        .rating-count {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* ═══════════════════════════════════════════
+           الوظائف (مجهولة الهوية)
+        ═══════════════════════════════════════════ */
+        .job-card {
+            background: var(--navy-700);
+            border: 1px solid var(--navy-600);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .job-card:hover {
+            border-color: var(--gold-500);
+            transform: translateY(-2px);
+        }
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        .job-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+        .job-type {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+        .job-type.full { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .job-type.part { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .job-type.remote { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        
+        .job-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        .job-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .job-meta i { color: var(--gold-400); }
+        
+        .job-anonymous {
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px dashed var(--gold-500);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            color: var(--gold-300);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        /* ═══════════════════════════════════════════
+           الإعلانات (Ad Slots)
+        ═══════════════════════════════════════════ */
+        .ad-slot {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), rgba(251, 191, 36, 0.02));
+            border: 2px dashed var(--gold-500);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+            min-height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .ad-slot i {
+            color: var(--gold-400);
+            margin-left: 8px;
+        }
+        .ad-slot img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+
+        /* ═══════════════════════════════════════════
+           التقييمات الأخيرة
+        ═══════════════════════════════════════════ */
+        .review-card {
+            background: var(--navy-700);
+            border: 1px solid var(--navy-600);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .review-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .review-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--gold-400);
+            color: var(--navy-900);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .review-meta {
+            flex: 1;
+        }
+        .review-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .review-target {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .review-date {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .review-comment {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            line-height: 1.7;
+            margin-top: 8px;
+        }
+
+        /* ═══════════════════════════════════════════
+           الفوتر
+        ═══════════════════════════════════════════ */
+        .site-footer {
+            background: var(--navy-900);
+            border-top: 1px solid var(--navy-600);
+            padding: 50px 0 20px;
+            margin-top: 60px;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .footer-col h3 {
+            color: var(--gold-400);
+            font-size: 1.05rem;
+            margin-bottom: 15px;
+        }
+        .footer-col p, .footer-col li {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 2;
+        }
+        .footer-col ul {
+            list-style: none;
+        }
+        .footer-col a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-col a:hover {
+            color: var(--gold-400);
+        }
+        .footer-bottom {
+            border-top: 1px solid var(--navy-600);
+            padding-top: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* ═══════════════════════════════════════════
+           حالات فارغة
+        ═══════════════════════════════════════════ */
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-muted);
+            grid-column: 1 / -1;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--navy-600);
+            margin-bottom: 15px;
+        }
+        .empty-state p {
+            font-size: 0.95rem;
+        }
+
+        /* ═══════════════════════════════════════════
+           زر العودة للأعلى
+        ═══════════════════════════════════════════ */
+        #backToTop {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--gold-400);
+            color: var(--navy-900);
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+            z-index: 90;
+            transition: all 0.3s;
+        }
+        #backToTop.visible {
+            display: flex;
+        }
+        #backToTop:hover {
+            transform: translateY(-3px);
+        }
+
+        /* ═══════════════════════════════════════════
+           الاستجابة
+        ═══════════════════════════════════════════ */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 1.8rem; }
+            .hero p { font-size: 0.95rem; }
+            .hero-stats { gap: 10px; }
+            .stat-pill { padding: 8px 15px; }
+            .stat-pill .num { font-size: 1.1rem; }
+            .section { padding: 40px 0; }
+            .section-title { font-size: 1.4rem; }
+            .categories-grid { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+            .cards-grid { grid-template-columns: 1fr; }
+            .search-box { flex-direction: column; border-radius: 15px; }
+            .search-box .btn { width: 100%; justify-content: center; }
+        }
+
+        @media (max-width: 480px) {
+            .hero { padding: 50px 0 40px; }
+            .hero h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══════════════════════════════════════════
+         الهيدر
+    ═══════════════════════════════════════════ -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="index.html" class="brand">
+                <div class="brand-mark"><i class="fas fa-star"></i></div>
+                <div class="brand-text">
+                    <strong>YEMEN RATING</strong>
+                    <span>يمن ريتنج</span>
+                </div>
+            </a>
+            
+            <nav class="desktop-nav">
+                <ul>
+                    <li><a href="companies.html"><i class="fas fa-building"></i> الشركات</a></li>
+                    <li><a href="banks.html"><i class="fas fa-landmark"></i> البنوك</a></li>
+                    <li><a href="shops.html"><i class="fas fa-store"></i> المحلات</a></li>
+                    <li><a href="hotels.html"><i class="fas fa-hotel"></i> الفنادق</a></li>
+                    <li><a href="exchanges.html"><i class="fas fa-money-bill-transfer"></i> الصرافة</a></li>
+                    <li><a href="restaurants.html"><i class="fas fa-utensils"></i> المطاعم</a></li>
+                    <li><a href="jobs.html"><i class="fas fa-briefcase"></i> الوظائف</a></li>
+                </ul>
+            </nav>
+            
+            <div class="header-actions">
+                <div id="headerActions">
+                    <!-- يتم ملؤه بالجافاسكربت -->
+                </div>
+                <button class="nav-toggle" id="navToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════
+         شريط الأسعار (صنعاء + عدن)
+    ═══════════════════════════════════════════ -->
+    <div class="market-ticker">
+        <div class="ticker-track" id="marketTicker">
+            <span class="ticker-item">
+                <i class="fas fa-circle-notch fa-spin"></i>
+                جاري تحميل الأسعار...
+            </span>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         القسم الرئيسي
+    ═══════════════════════════════════════════ -->
+    <section class="hero">
+        <div class="container">
+            <h1>اكتشف أفضل الشركات والخدمات في اليمن</h1>
+            <p>دليلك الموثوق لتقييم الشركات، البنوك، الفنادق، المطاعم، والمحلات التجارية</p>
+            
+            <!-- البحث -->
+            <div class="search-box">
+                <input type="text" id="mainSearch" placeholder="ابحث عن شركة، بنك، فندق، مطعم، وظيفة...">
+                <button class="btn btn-gold" onclick="doSearch()">
+                    <i class="fas fa-search"></i> بحث
+                </button>
+            </div>
+            
+            <!-- إحصائيات سريعة -->
+            <div class="hero-stats" id="heroStats">
+                <!-- يتم ملؤها بالجافاسكربت -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         إعلان أعلى الصفحة الرئيسية
+    ═══════════════════════════════════════════ -->
+    <div class="container">
+        <div class="ad-slot" id="ad_homepage_top" data-placement="homepage_top">
+            <i class="fas fa-ad"></i>
+            مساحة إعلانية - أعلى الصفحة الرئيسية
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         التصنيفات
+    ═══════════════════════════════════════════ -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">🗂️ التصنيفات</h2>
+            <div class="categories-grid" id="categoriesGrid">
+                <!-- يتم ملؤها بالجافاسكربت -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         الشركات المميزة
+    ═══════════════════════════════════════════ -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">🏢 الشركات المميزة</h2>
+            <div class="cards-grid" id="featuredCompanies">
+                <div class="empty-state">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <p>جاري التحميل...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         البنوك والمؤسسات
+    ═══════════════════════════════════════════ -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">🏦 البنوك والمؤسسات</h2>
+            <div class="cards-grid" id="latestBanks">
+                <div class="empty-state">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <p>جاري التحميل...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         إعلان وسط الصفحة الرئيسية
+    ═══════════════════════════════════════════ -->
+    <div class="container">
+        <div class="ad-slot" id="ad_homepage_middle" data-placement="homepage_middle">
+            <i class="fas fa-ad"></i>
+            مساحة إعلانية - وسط الصفحة الرئيسية
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         المحلات التجارية
+    ═══════════════════════════════════════════ -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">🛒 المحلات التجارية</h2>
+            <div class="cards-grid" id="latestShops">
+                <div class="empty-state">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <p>جاري التحميل...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         الفنادق
+    ═══════════════════════════════════════════ -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">🏨 الفنادق المميزة</h2>
+            <div class="cards-grid" id="latestHotels">
+                <div class="empty-state">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <p>جاري التحميل...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         محلات الصرافة
+    ═══════════════════════════════════════════ -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">💱 محلات الصرافة</h2>
+            <div class="cards-grid" id="latestExchanges">
+                <div class="empty-state">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <p>جاري التحميل...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         المطاعم
+    ═══════════════════════════════════════════ -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">🍽️ المطاعم والكافيهات</h2>
+            <div class="cards-grid" id="latestRestaurants">
+                <div class="empty-state">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <p>جاري التحميل...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         الوظائف الحديثة (مجهولة الهوية)
+    ═══════════════════════════════════════════ -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">💼 أحدث الوظائف</h2>
+            <div class="cards-grid" id="latestJobs">
+                <div class="empty-state">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <p>جاري التحميل...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         إعلان أسفل الصفحة الرئيسية
+    ═══════════════════════════════════════════ -->
+    <div class="container">
+        <div class="ad-slot" id="ad_homepage_bottom" data-placement="homepage_bottom">
+            <i class="fas fa-ad"></i>
+            مساحة إعلانية - أسفل الصفحة الرئيسية
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         آخر التقييمات
+    ═══════════════════════════════════════════ -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">⭐ آخر التقييمات</h2>
+            <div class="cards-grid" id="latestReviews">
+                <div class="empty-state">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <p>جاري التحميل...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         الفوتر
+    ═══════════════════════════════════════════ -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h3>⭐ يمن ريتنج</h3>
+                    <p>المنصة اليمنية الأولى لتقييم الشركات والبنوك والمحلات والفنادق والمطاعم. نساعدك على اتخاذ قرارات أفضل.</p>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>التصنيفات</h3>
+                    <ul>
+                        <li><a href="companies.html">🏢 الشركات</a></li>
+                        <li><a href="banks.html">🏦 البنوك</a></li>
+                        <li><a href="shops.html">🛒 المحلات</a></li>
+                        <li><a href="hotels.html">🏨 الفنادق</a></li>
+                        <li><a href="exchanges.html">💱 الصرافة</a></li>
+                        <li><a href="restaurants.html">🍽️ المطاعم</a></li>
+                        <li><a href="jobs.html">💼 الوظائف</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>روابط مهمة</h3>
+                    <ul>
+                        <li><a href="about.html">من نحن</a></li>
+                        <li><a href="contact.html">اتصل بنا</a></li>
+                        <li><a href="terms.html">الشروط والأحكام</a></li>
+                        <li><a href="privacy.html">سياسة الخصوصية</a></li>
+                        <li><a href="rating-policy.html">سياسة التقييم</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>تواصل معنا</h3>
+                    <ul>
+                        <li><i class="fas fa-envelope" style="color:var(--gold-400);"></i> info@yemen-rating.com</li>
+                        <li><i class="fas fa-phone" style="color:var(--gold-400);"></i> +967 XXX XXX XXX</li>
+                        <li><i class="fas fa-map-marker-alt" style="color:var(--gold-400);"></i> اليمن</li>
+                    </ul>
+                    <div style="margin-top:15px; display:flex; gap:10px;">
+                        <a href="#" style="color:var(--gold-400); font-size:1.3rem;"><i class="fab fa-facebook"></i></a>
+                        <a href="#" style="color:var(--gold-400); font-size:1.3rem;"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color:var(--gold-400); font-size:1.3rem;"><i class="fab fa-instagram"></i></a>
+                        <a href="#" style="color:var(--gold-400); font-size:1.3rem;"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                © 2026 يمن ريتنج - جميع الحقوق محفوظة
+            </div>
+        </div>
+    </footer>
+
+    <!-- ═══════════════════════════════════════════
+         القائمة الجانبية (Mobile)
+    ═══════════════════════════════════════════ -->
+    <nav id="mainNav">
+        <button class="nav-close-btn" onclick="document.getElementById('mainNav').classList.remove('open')">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="nav-brand">
+            <i class="fas fa-star"></i> يمن ريتنج
+        </div>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+            <li><a href="companies.html"><i class="fas fa-building"></i> الشركات</a></li>
+            <li><a href="banks.html"><i class="fas fa-landmark"></i> البنوك</a></li>
+            <li><a href="shops.html"><i class="fas fa-store"></i> المحلات</a></li>
+            <li><a href="hotels.html"><i class="fas fa-hotel"></i> الفنادق</a></li>
+            <li><a href="exchanges.html"><i class="fas fa-money-bill-transfer"></i> الصرافة</a></li>
+            <li><a href="restaurants.html"><i class="fas fa-utensils"></i> المطاعم</a></li>
+            <li><a href="jobs.html"><i class="fas fa-briefcase"></i> الوظائف</a></li>
+            <li><a href="about.html"><i class="fas fa-info-circle"></i> من نحن</a></li>
+            <li><a href="contact.html"><i class="fas fa-envelope"></i> اتصل بنا</a></li>
+        </ul>
+        <!-- ملاحظة: رابط لوحة الإدارة محذوف عمداً - الوصول يتم عبر مسار محمي فقط -->
+    </nav>
+
+    <!-- زر العودة للأعلى -->
+    <button id="backToTop" title="العودة للأعلى">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- ═══════════════════════════════════════════
+         السكربتات
+    ═══════════════════════════════════════════ -->
+    <script src="js/supabase.js"></script>
+    <script src="js/db.js"></script>
+    
+    <script>
+    /* ═══════════════════════════════════════════════════════════
+       المنطق الرئيسي للصفحة الرئيسية
+       - متوافق مع Supabase
+       - يدعم كل التصنيفات السبعة
+       - الوظائف مجهولة الهوية
+       - 3 أماكن للإعلانات
+    ═══════════════════════════════════════════════════════════ */
+
+    (async function() {
+        'use strict';
+        
+        let sb = null;
+        
+        // ═══ بدء التشغيل ═══
+        async function boot() {
+            try {
+                sb = await getSB();
+                if (!sb) throw new Error('فشل الاتصال بقاعدة البيانات');
+                
+                // تحميل كل الأقسام بالتوازي
+                await Promise.all([
+                    loadTicker(),
+                    loadStats(),
+                    loadCategories(),
+                    loadFeaturedCompanies(),
+                    loadBanks(),
+                    loadShops(),
+                    loadHotels(),
+                    loadExchanges(),
+                    loadRestaurants(),
+                    loadJobs(),       // ← وظائف مجهولة الهوية
+                    loadLatestReviews(),
+                    loadAds()         // ← نظام الإعلانات
+                ]);
+                
+                setupSearch();
+                setupBackToTop();
+                setupHeaderActions();
+                
+            } catch (error) {
+                console.error('Boot error:', error);
+                showToast('تعذر تحميل بعض البيانات', 'error');
+            }
+        }
+        
+        // ═══ شريط الأسعار (صنعاء + عدن) ═══
+        async function loadTicker() {
+            try {
+                const [ratesRes, goldRes] = await Promise.all([
+                    sb.from('exchange_rates').select('*').order('updated_at', { ascending: false }).limit(10),
+                    sb.from('gold_prices').select('*').order('updated_at', { ascending: false }).limit(10)
+                ]);
+                
+                const rates = ratesRes.data || [];
+                const gold = goldRes.data || [];
+                
+                if (rates.length === 0 && gold.length === 0) {
+                    document.getElementById('marketTicker').innerHTML = 
+                        '<span class="ticker-item"><span class="label">سيتم عرض الأسعار قريباً</span></span>';
+                    return;
+                }
+                
+                let html = '';
+                
+                // فصل حسب المدينة
+                const sanaaRates = rates.filter(r => r.city === 'صنعاء');
+                const adenRates = rates.filter(r => r.city === 'عدن');
+                const sanaaGold = gold.filter(g => g.city === 'صنعاء');
+                const adenGold = gold.filter(g => g.city === 'عدن');
+                
+                // صنعاء
+                if (sanaaRates.length > 0 || sanaaGold.length > 0) {
+                    html += '<span class="ticker-item"><span class="city">🏙️ صنعاء</span></span>';
+                    sanaaRates.forEach(r => {
+                        html += `<span class="ticker-item">
+                            <span class="label">${esc(r.currency)}</span>
+                            <span>شراء: ${esc(r.buy_price)}</span>
+                            <span>|</span>
+                            <span>بيع: ${esc(r.sell_price)}</span>
+                        </span>`;
+                    });
+                    sanaaGold.forEach(g => {
+                        html += `<span class="ticker-item">
+                            <span>🥇 ذهب ${esc(g.karat)}</span>
+                            <span>${esc(g.price)}</span>
+                        </span>`;
+                    });
+                }
+                
+                // عدن
+                if (adenRates.length > 0 || adenGold.length > 0) {
+                    html += '<span class="ticker-item"><span class="city">🌊 عدن</span></span>';
+                    adenRates.forEach(r => {
+                        html += `<span class="ticker-item">
+                            <span class="label">${esc(r.currency)}</span>
+                            <span>شراء: ${esc(r.buy_price)}</span>
+                            <span>|</span>
+                            <span>بيع: ${esc(r.sell_price)}</span>
+                        </span>`;
+                    });
+                    adenGold.forEach(g => {
+                        html += `<span class="ticker-item">
+                            <span>🥇 ذهب ${esc(g.karat)}</span>
+                            <span>${esc(g.price)}</span>
+                        </span>`;
+                    });
+                }
+                
+                // تكرار للتمرير المستمر
+                document.getElementById('marketTicker').innerHTML = html + html;
+                
+            } catch (error) {
+                console.error('Ticker error:', error);
+            }
+        }
+        
+        // ═══ الإحصائيات السريعة ═══
+        async function loadStats() {
+            try {
+                const [c, b, s, h, x, r, j, u] = await Promise.all([
+                    sb.from('companies').select('*', { count: 'exact', head: true }).eq('status', 'ACTIVE'),
+                    sb.from('banks').select('*', { count: 'exact', head: true }).eq('status', 'ACTIVE'),
+                    sb.from('entities').select('*', { count: 'exact', head: true }).eq('type', 'shop').eq('status', 'ACTIVE'),
+                    sb.from('entities').select('*', { count: 'exact', head: true }).eq('type', 'hotel').eq('status', 'ACTIVE'),
+                    sb.from('entities').select('*', { count: 'exact', head: true }).eq('type', 'exchange').eq('status', 'ACTIVE'),
+                    sb.from('entities').select('*', { count: 'exact', head: true }).eq('type', 'restaurant').eq('status', 'ACTIVE'),
+                    sb.from('jobs').select('*', { count: 'exact', head: true }).eq('status', 'PUBLISHED'),
+                    sb.from('profiles').select('*', { count: 'exact', head: true })
+                ]);
+                
+                const total = (c.count||0) + (b.count||0) + (s.count||0) + (h.count||0) + (x.count||0) + (r.count||0);
+                
+                document.getElementById('heroStats').innerHTML = `
+                    <div class="stat-pill">
+                        <span class="num">${total}</span>
+                        <span class="lbl">كيان مسجل</span>
+                    </div>
+                    <div class="stat-pill">
+                        <span class="num">${j.count || 0}</span>
+                        <span class="lbl">وظيفة متاحة</span>
+                    </div>
+                    <div class="stat-pill">
+                        <span class="num">${u.count || 0}</span>
+                        <span class="lbl">مستخدم</span>
+                    </div>
+                `;
+            } catch (error) {
+                // في حالة عدم وجود جدول entities، استخدم إحصائيات بديلة
+                document.getElementById('heroStats').innerHTML = `
+                    <div class="stat-pill">
+                        <span class="num"><i class="fas fa-building"></i></span>
+                        <span class="lbl">شركات وبنوك</span>
+                    </div>
+                    <div class="stat-pill">
+                        <span class="num"><i class="fas fa-briefcase"></i></span>
+                        <span class="lbl">وظائف</span>
+                    </div>
+                    <div class="stat-pill">
+                        <span class="num"><i class="fas fa-users"></i></span>
+                        <span class="lbl">مستخدمين</span>
+                    </div>
+                `;
+            }
+        }
+        
+        // ═══ التصنيفات ═══
+        async function loadCategories() {
+            const categories = [
+                { id: 'company', name: 'الشركات', icon: 'fa-building', href: 'companies.html' },
+                { id: 'bank', name: 'البنوك', icon: 'fa-landmark', href: 'banks.html' },
+                { id: 'shop', name: 'المحلات', icon: 'fa-store', href: 'shops.html' },
+                { id: 'hotel', name: 'الفنادق', icon: 'fa-hotel', href: 'hotels.html' },
+                { id: 'exchange', name: 'الصرافة', icon: 'fa-money-bill-transfer', href: 'exchanges.html' },
+                { id: 'restaurant', name: 'المطاعم', icon: 'fa-utensils', href: 'restaurants.html' },
+                { id: 'job', name: 'الوظائف', icon: 'fa-briefcase', href: 'jobs.html' }
+            ];
+            
+            document.getElementById('categoriesGrid').innerHTML = categories.map(cat => `
+                <a href="${cat.href}" class="category-card">
+                    <i class="fas ${cat.icon}"></i>
+                    <h3>${esc(cat.name)}</h3>
+                </a>
+            `).join('');
+        }
+        
+        // ═══ الشركات المميزة ═══
+        async function loadFeaturedCompanies() {
+            try {
+                const { data, error } = await sb
+                    .from('companies')
+                    .select('*, cities(name), categories(name)')
+                    .eq('status', 'ACTIVE')
+                    .or('is_verified.eq.true,package.eq.gold,package.eq.diamond')
+                    .limit(4);
+                
+                if (error) throw error;
+                
+                renderEntities('featuredCompanies', data || [], 'company');
+            } catch (error) {
+                document.getElementById('featuredCompanies').innerHTML = 
+                    '<div class="empty-state"><i class="fas fa-building"></i><p>لا توجد شركات مميزة حالياً</p></div>';
+            }
+        }
+        
+        // ═══ البنوك ═══
+        async function loadBanks() {
+            try {
+                const { data, error } = await sb
+                    .from('banks')
+                    .select('*, cities(name)')
+                    .eq('status', 'ACTIVE')
+                    .limit(4);
+                
+                if (error) throw error;
+                
+                renderEntities('latestBanks', data || [], 'bank');
+            } catch (error) {
+                document.getElementById('latestBanks').innerHTML = 
+                    '<div class="empty-state"><i class="fas fa-landmark"></i><p>لا توجد بنوك مسجلة</p></div>';
+            }
+        }
+        
+        // ═══ المحلات التجارية ═══
+        async function loadShops() {
+            try {
+                const { data, error } = await sb
+                    .from('entities')
+                    .select('*, cities(name)')
+                    .eq('type', 'shop')
+                    .eq('status', 'ACTIVE')
+                    .limit(4);
+                
+                if (error) throw error;
+                
+                renderEntities('latestShops', data || [], 'shop');
+            } catch (error) {
+                document.getElementById('latestShops').innerHTML = 
+                    '<div class="empty-state"><i class="fas fa-store"></i><p>لا توجد محلات مسجلة</p></div>';
+            }
+        }
+        
+        // ═══ الفنادق ═══
+        async function loadHotels() {
+            try {
+                const { data, error } = await sb
+                    .from('entities')
+                    .select('*, cities(name)')
+                    .eq('type', 'hotel')
+                    .eq('status', 'ACTIVE')
+                    .limit(4);
+                
+                if (error) throw error;
+                
+                renderEntities('latestHotels', data || [], 'hotel');
+            } catch (error) {
+                document.getElementById('latestHotels').innerHTML = 
+                    '<div class="empty-state"><i class="fas fa-hotel"></i><p>لا توجد فنادق مسجلة</p></div>';
+            }
+        }
+        
+        // ═══ محلات الصرافة ═══
+        async function loadExchanges() {
+            try {
+                const { data, error } = await sb
+                    .from('entities')
+                    .select('*, cities(name)')
+                    .eq('type', 'exchange')
+                    .eq('status', 'ACTIVE')
+                    .limit(4);
+                
+                if (error) throw error;
+                
+                renderEntities('latestExchanges', data || [], 'exchange');
+            } catch (error) {
+                document.getElementById('latestExchanges').innerHTML = 
+                    '<div class="empty-state"><i class="fas fa-money-bill-transfer"></i><p>لا توجد محلات صرافة مسجلة</p></div>';
+            }
+        }
+        
+        // ═══ المطاعم ═══
+        async function loadRestaurants() {
+            try {
+                const { data, error } = await sb
+                    .from('entities')
+                    .select('*, cities(name)')
+                    .eq('type', 'restaurant')
+                    .eq('status', 'ACTIVE')
+                    .limit(4);
+                
+                if (error) throw error;
+                
+                renderEntities('latestRestaurants', data || [], 'restaurant');
+            } catch (error) {
+                document.getElementById('latestRestaurants').innerHTML = 
+                    '<div class="empty-state"><i class="fas fa-utensils"></i><p>لا توجد مطاعم مسجلة</p></div>';
+            }
+        }
+        
+        // ═══ عرض الكيانات (دالة موحدة) ═══
+        function renderEntities(containerId, items, type) {
+            const container = document.getElementById(containerId);
+            
+            if (!items || items.length === 0) {
+                const icons = {
+                    company: 'fa-building', bank: 'fa-landmark',
+                    shop: 'fa-store', hotel: 'fa-hotel',
+                    exchange: 'fa-money-bill-transfer', restaurant: 'fa-utensils'
+                };
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas ${icons[type] || 'fa-tag'}"></i>
+                        <p>لا توجد عناصر مسجلة حالياً</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = items.map(item => {
+                const href = getEntityHref(item, type);
+                const badge = item.is_verified 
+                    ? '<span class="badge-verified"><i class="fas fa-check-circle"></i> موثق</span>' 
+                    : '';
+                const packageBadge = item.package === 'gold' 
+                    ? '<span class="badge-gold">⭐ مميز</span>' 
+                    : item.package === 'silver' 
+                        ? '<span class="badge-silver">فضي</span>' 
+                        : item.package === 'bronze' 
+                            ? '<span class="badge-bronze">برونزي</span>' 
+                            : '';
+                
+                const coverStyle = item.cover_url 
+                    ? `<img src="${esc(item.cover_url)}" alt="${esc(item.name)}">`
+                    : `<i class="fas ${getIconForType(type)} placeholder"></i>`;
+                
+                const logoStyle = item.logo_url 
+                    ? `<img src="${esc(item.logo_url)}" alt="${esc(item.name)}">`
+                    : `<i class="fas ${getIconForType(type)}"></i>`;
+                
+                return `
+                    <a href="${href}" class="entity-card" style="text-decoration:none; color:inherit;">
+                        <div class="entity-cover">
+                            ${coverStyle}
+                            <div class="entity-logo">${logoStyle}</div>
+                        </div>
+                        <div class="entity-body">
+                            <div class="entity-name">
+                                ${esc(item.name)}
+                                ${badge}
+                                ${packageBadge}
+                            </div>
+                            <div class="entity-desc">${esc(item.description || '')}</div>
+                            <div class="entity-meta">
+                                ${item.cities ? `<span><i class="fas fa-map-marker-alt"></i> ${esc(item.cities.name)}</span>` : ''}
+                                ${item.stars ? `<span>⭐ ${item.stars}</span>` : ''}
+                            </div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+        }
+        
+        function getEntityHref(item, type) {
+            const map = {
+                company: 'company.html',
+                bank: 'bank.html',
+                shop: 'entity.html?type=shop',
+                hotel: 'entity.html?type=hotel',
+                exchange: 'entity.html?type=exchange',
+                restaurant: 'entity.html?type=restaurant'
+            };
+            const base = map[type] || 'entity.html';
+            return `${base}?id=${item.id}`;
+        }
+        
+        function getIconForType(type) {
+            const icons = {
+                company: 'fa-building', bank: 'fa-landmark',
+                shop: 'fa-store', hotel: 'fa-hotel',
+                exchange: 'fa-money-bill-transfer', restaurant: 'fa-utensils'
+            };
+            return icons[type] || 'fa-tag';
+        }
+        
+        // ═══ الوظائف (مجهولة الهوية تماماً) ═══
+        async function loadJobs() {
+            try {
+                const { data, error } = await sb
+                    .from('jobs')
+                    .select('*')
+                    .eq('status', 'PUBLISHED')  // فقط المنشورة من الإدارة
+                    .order('created_at', { ascending: false })
+                    .limit(6);
+                
+                if (error) throw error;
+                
+                const jobs = data || [];
+                const container = document.getElementById('latestJobs');
+                
+                if (jobs.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-briefcase"></i>
+                            <p>لا توجد وظائف متاحة حالياً</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // ⚠️ مهم جداً: لا نعرض اسم الشركة أو أي معلومات تدل على هويتها
+                container.innerHTML = jobs.map(job => {
+                    const typeClass = job.type === 'full-time' ? 'full' 
+                                    : job.type === 'part-time' ? 'part' 
+                                    : 'remote';
+                    const typeLabel = job.type === 'full-time' ? 'دوام كامل'
+                                    : job.type === 'part-time' ? 'دوام جزئي'
+                                    : job.type === 'remote' ? 'عن بُعد'
+                                    : job.type || 'غير محدد';
+                    
+                    const deadline = job.deadline 
+                        ? `<span><i class="fas fa-calendar"></i> آخر موعد: ${formatDate(job.deadline)}</span>`
+                        : '';
+                    
+                    return `
+                        <a href="job.html?id=${job.id}" class="job-card" style="text-decoration:none; color:inherit;">
+                            <div class="job-header">
+                                <div class="job-title">${esc(job.title)}</div>
+                                <span class="job-type ${typeClass}">${esc(typeLabel)}</span>
+                            </div>
+                            <div class="job-meta">
+                                ${job.city ? `<span><i class="fas fa-map-marker-alt"></i> ${esc(job.city)}</span>` : ''}
+                                ${job.salary ? `<span><i class="fas fa-money-bill-wave"></i> ${esc(job.salary)}</span>` : ''}
+                                ${deadline}
+                            </div>
+                            <div class="job-anonymous">
+                                <i class="fas fa-lock"></i>
+                                <span>التقديم عبر منصة يمن ريتنج • هوية الناشر مخفية</span>
+                            </div>
+                        </a>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                document.getElementById('latestJobs').innerHTML = 
+                    '<div class="empty-state"><i class="fas fa-briefcase"></i><p>لا توجد وظائف حالياً</p></div>';
+            }
+        }
+        
+        // ═══ آخر التقييمات ═══
+        async function loadLatestReviews() {
+            try {
+                const { data, error } = await sb
+                    .from('reviews')
+                    .select('*')
+                    .eq('status', 'APPROVED')  // فقط الموافق عليها
+                    .order('created_at', { ascending: false })
+                    .limit(3);
+                
+                if (error) throw error;
+                
+                const reviews = data || [];
+                const container = document.getElementById('latestReviews');
+                
+                if (reviews.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-star"></i>
+                            <p>لا توجد تقييمات بعد - كن الأول!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = reviews.map(review => {
+                    const stars = '★'.repeat(review.rating || review.stars || 5) + 
+                                 '☆'.repeat(5 - (review.rating || review.stars || 5));
+                    
+                    return `
+                        <div class="review-card">
+                            <div class="review-header">
+                                <div class="review-avatar">
+                                    ${(review.user_name || 'م').charAt(0)}
+                                </div>
+                                <div class="review-meta">
+                                    <div class="review-name">${esc(review.user_name || 'مستخدم')}</div>
+                                    <div class="review-target">على: ${esc(review.entity_name || 'كيان')}</div>
+                                    <div class="review-date">${formatDate(review.created_at)}</div>
+                                </div>
+                            </div>
+                            <div style="color:var(--gold-400); margin-bottom:8px; letter-spacing:2px;">
+                                ${stars}
+                            </div>
+                            <div class="review-comment">
+                                ${esc(review.comment || review.text || '')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                document.getElementById('latestReviews').innerHTML = 
+                    '<div class="empty-state"><i class="fas fa-star"></i><p>لا توجد تقييمات بعد</p></div>';
+            }
+        }
+        
+        // ═══ نظام الإعلانات ═══
+        async function loadAds() {
+            try {
+                const placements = ['homepage_top', 'homepage_middle', 'homepage_bottom'];
+                
+                const { data, error } = await sb
+                    .from('advertisements')
+                    .select('*')
+                    .in('placement', placements)
+                    .eq('status', 'ACTIVE')
+                    .lte('start_date', new Date().toISOString())
+                    .gte('end_date', new Date().toISOString())
+                    .order('priority', { ascending: false });
+                
+                if (error || !data) return;
+                
+                data.forEach(ad => {
+                    const slot = document.getElementById('ad_' + ad.placement);
+                    if (!slot) return;
+                    
+                    // تسجيل ظهور الإعلان
+                    logAdEvent(ad.id, 'impression');
+                    
+                    let content = '';
+                    if (ad.type === 'image' && ad.image_url) {
+                        content = `<a href="${esc(ad.target_url || '#')}" target="_blank" onclick="logAdEvent('${ad.id}', 'click')">
+                            <img src="${esc(ad.image_url)}" alt="${esc(ad.title || 'إعلان')}">
+                        </a>`;
+                    } else if (ad.type === 'html' && ad.html_content) {
+                        content = ad.html_content;
+                    } else {
+                        content = `<a href="${esc(ad.target_url || '#')}" target="_blank" onclick="logAdEvent('${ad.id}', 'click')" style="color:var(--gold-400); font-weight:700;">
+                            ${esc(ad.title || 'إعلان')}
+                        </a>`;
+                    }
+                    
+                    slot.innerHTML = content;
+                    slot.style.border = 'none';
+                    slot.style.background = 'transparent';
+                    slot.style.padding = '0';
+                });
+                
+            } catch (error) {
+                // الإعلانات اختيارية - لا نعرض خطأ
+                console.log('Ads not loaded:', error.message);
+            }
+        }
+        
+        async function logAdEvent(adId, eventType) {
+            try {
+                await sb.from('ad_events').insert({
+                    advertisement_id: adId,
+                    event_type: eventType,
+                    user_agent: navigator.userAgent,
+                    ip_address: null  // سيتم تعبئته من الخادم
+                });
+            } catch (e) { /* تجاهل */ }
+        }
+        
+        // ═══ البحث ═══
+        function setupSearch() {
+            const input = document.getElementById('mainSearch');
+            const btn = document.querySelector('.search-box .btn');
+            
+            if (input) {
+                input.addEventListener('keyup', e => {
+                    if (e.key === 'Enter') doSearch();
+                });
+            }
+        }
+        
+        window.doSearch = function() {
+            const term = (document.getElementById('mainSearch').value || '').trim();
+            if (!term) {
+                showToast('اكتب كلمة للبحث', 'error');
+                return;
+            }
+            window.location.href = 'search.html?q=' + encodeURIComponent(term);
+        };
+        
+        // ═══ زر العودة للأعلى ═══
+        function setupBackToTop() {
+            const btn = document.getElementById('backToTop');
+            if (!btn) return;
+            
+            window.addEventListener('scroll', () => {
+                btn.classList.toggle('visible', window.scrollY > 400);
+            });
+            
+            btn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+        
+        // ═══ إجراءات الهيدر (تسجيل دخول/خروج) ═══
+        async function setupHeaderActions() {
+            const container = document.getElementById('headerActions');
+            if (!container) return;
+            
+            try {
+                const { data: { session } } = await sb.auth.getSession();
+                
+                if (session && session.user) {
+                    // جلب بيانات المستخدم
+                    const { data: profile } = await sb
+                        .from('profiles')
+                        .select('full_name, role')
+                        .eq('id', session.user.id)
+                        .single();
+                    
+                    const name = profile?.full_name || session.user.email.split('@')[0];
+                    
+                    container.innerHTML = `
+                        <span style="color:var(--gold-400); font-weight:700; margin-left:10px;">
+                            <i class="fas fa-user-circle"></i> ${esc(name)}
+                        </span>
+                        <button class="btn btn-outline" onclick="logout()" style="padding:8px 16px;">
+                            <i class="fas fa-sign-out-alt"></i> خروج
+                        </button>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <a href="login.html" class="btn btn-outline" style="padding:8px 16px;">
+                            <i class="fas fa-sign-in-alt"></i> دخول
+                        </a>
+                        <a href="register.html" class="btn btn-gold" style="padding:8px 16px;">
+                            <i class="fas fa-user-plus"></i> حساب جديد
+                        </a>
+                    `;
+                }
+            } catch (error) {
+                // في حالة الفشل، اعرض أزرار الدخول
+                container.innerHTML = `
+                    <a href="login.html" class="btn btn-outline" style="padding:8px 16px;">دخول</a>
+                    <a href="register.html" class="btn btn-gold" style="padding:8px 16px;">حساب جديد</a>
+                `;
+            }
+        }
+        
+        window.logout = async function() {
+            try {
+                await sb.auth.signOut();
+                showToast('تم تسجيل الخروج', 'success');
+                setTimeout(() => location.reload(), 500);
+            } catch (error) {
+                showToast('حدث خطأ', 'error');
+            }
+        };
+        
+        // ═══ دوال مساعدة ═══
+        function esc(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            try {
+                return new Date(dateStr).toLocaleDateString('ar-YE');
+            } catch {
+                return dateStr;
+            }
+        }
+        
+        function showToast(msg, type = 'info') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; top: 20px; left: 20px;
+                background: ${type === 'error' ? 'var(--danger)' : 'var(--navy-700)'};
+                border: 1px solid var(--gold-500);
+                color: #fff;
+                padding: 15px 25px;
+                border-radius: 10px;
+                z-index: 9999;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s;
+                font-family: 'Cairo', sans-serif;
+            `;
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // ═══ بدء التشغيل ═══
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', boot);
+        } else {
+            boot();
+        }
+        
+    })();
+    </script>
+</body>
+</html>
