@@ -82,6 +82,38 @@
     
 
 
+    
+<style id="yr-ads-mobile-fix">
+/* ═══ Bottom Sheet: ارتفاع أقل (40vh بدل 60vh) ═══ */
+.yr-sheet {
+    max-height: 40vh !important;
+}
+
+/* ═══ النافذة المنبثقة: سحب كامل + زر حفظ ثابت ═══ */
+#adFormWrap {
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: 90vh !important;
+}
+
+/* محتوى النموذج قابل للسحب */
+#adFormWrap > *:not(.ad-form-footer) {
+    overflow-y: auto !important;
+    flex: 1 !important;
+}
+
+/* زر الحفظ ثابت بالأسفل */
+.ad-form-footer {
+    position: sticky !important;
+    bottom: 0 !important;
+    background: #0B1F3A !important;
+    padding: 16px 0 0 0 !important;
+    border-top: 1px solid #E5E7EB !important;
+    margin-top: 16px !important;
+    z-index: 10 !important;
+}
+</style>
+
     </head>
 <body>
 
@@ -335,7 +367,7 @@
                         </div>
                         <div style="margin-bottom:14px;"><label>الحالة</label><div id="adStatus" class="yr-sel"></div></div>
 
-                        <div style="display:flex;gap:8px;">
+                        <div class="ad-form-footer" style="display:flex;gap:8px;">
                             <button class="btn btn-gold" style="flex:1" onclick="YRA.saveAd()"><i class="fas fa-save"></i> حفظ الإعلان</button>
                             <button class="btn btn-outline" onclick="YRA.closeAdForm()"><i class="fas fa-xmark"></i></button>
                         </div>
