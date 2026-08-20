@@ -86,6 +86,120 @@
 }
 </style>
 
+    
+<style id="ads-color-identity">
+/* ═══ توحيد الهوية اللونية لنموذج الإعلانات ═══ */
+
+/* كل الحقول: خلفية سوداء داكنة + نص أبيض */
+#panel-ads input,
+#panel-ads textarea,
+#panel-ads .yr-sel {
+    background:#020617 !important;
+    color:#f8fafc !important;
+    border:1px solid #334155 !important;
+    border-radius:10px !important;
+    font-family:inherit !important;
+    direction:rtl !important;
+    -webkit-appearance:none !important;
+    appearance:none !important;
+}
+
+/* Placeholder رمادي فاتح */
+#panel-ads input::placeholder,
+#panel-ads textarea::placeholder {
+    color:#64748b !important;
+}
+
+/* عند التركيز: حدود ذهبية */
+#panel-ads input:focus,
+#panel-ads textarea:focus,
+#panel-ads .yr-sel:focus {
+    border-color:#d4af37 !important;
+    outline:none !important;
+    box-shadow:0 0 0 3px rgba(212,175,55,0.15) !important;
+}
+
+/* الأيقونات داخل الحقول: ذهبية */
+#panel-ads .yr-sel .sel-ico,
+#panel-ads .yr-sel .sel-arrow {
+    color:#d4af37 !important;
+}
+
+/* التسميات (Labels): رمادي فاتح */
+#panel-ads label {
+    color:#94a3b8 !important;
+    font-weight:600 !important;
+    display:block !important;
+}
+
+/* زر اختيار الملف: ذهبي بنص داكن */
+#panel-ads input[type="file"]::-webkit-file-upload-button,
+#panel-ads input[type="file"]::file-selector-button {
+    background:#d4af37 !important;
+    color:#020617 !important;
+    border:none !important;
+    border-radius:8px !important;
+    font-family:inherit !important;
+    font-weight:700 !important;
+    cursor:pointer !important;
+}
+
+/* التقويم: وضع داكن */
+#panel-ads input[type="datetime-local"] {
+    color-scheme:dark !important;
+}
+#panel-ads input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter:invert(0.85) sepia(1) saturate(4) hue-rotate(5deg) brightness(1.1) !important;
+    cursor:pointer !important;
+}
+#panel-ads input[type="datetime-local"]::-webkit-datetime-edit {
+    color:#f8fafc !important;
+}
+
+/* Bottom Sheet و Dropdown: نفس الهوية */
+.yr-sheet,
+.yr-dropdown {
+    background:#0f172a !important;
+    border:1px solid #d4af37 !important;
+    color:#f8fafc !important;
+}
+.yr-sheet-opt,
+.yr-dropdown-opt {
+    color:#f8fafc !important;
+    border-bottom:1px solid rgba(255,255,255,0.05) !important;
+}
+.yr-sheet-opt:hover,
+.yr-sheet-opt.sel,
+.yr-dropdown-opt:hover,
+.yr-dropdown-opt.sel {
+    background:#1e293b !important;
+}
+.yr-sheet-opt i,
+.yr-dropdown-opt i {
+    color:#d4af37 !important;
+}
+.yr-sheet-opt .fa-check,
+.yr-dropdown-opt .fa-check {
+    color:#10b981 !important;
+}
+
+/* بطاقات الإعلانات: نفس الهوية */
+.ad-card {
+    background:#0f172a !important;
+    border:1px solid #334155 !important;
+    color:#f8fafc !important;
+}
+.ad-card h4 {
+    color:#f8fafc !important;
+}
+.ad-card h4 i {
+    color:#d4af37 !important;
+}
+.ad-card .meta {
+    color:#94a3b8 !important;
+}
+</style>
+
     </head>
 <body>
 
