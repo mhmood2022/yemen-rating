@@ -544,10 +544,33 @@
 }
 
 /* ═══ منع تكرار القوائم ═══ */
-.yr-sheet,
+/* (أزيلت قاعدة fixed الخاطئة) */
+</style>
+
+    
+<style id="yr-ads-dropdown-pos">
+/* ═══ إصلاح تموضع القوائم ═══ */
+/* الحقل نفسه: مرجع نسبي للقائمة */
+#panel-ads .yr-sel {
+    position: relative !important;
+}
+/* القائمة المنسدلة: داخل الحقل (لا تخرج من النافذة) */
 .yr-dropdown {
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    left: 0 !important;
+    margin-top: 4px !important;
+    z-index: 10000 !important;
+    max-height: 260px !important;
+    overflow-y: auto !important;
+}
+/* الـ Bottom Sheet فقط يبقى ثابتاً على الشاشة (للجوال) */
+.yr-sheet {
     position: fixed !important;
-    z-index: 10001 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
 }
 </style>
 
