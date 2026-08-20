@@ -511,6 +511,46 @@
 }
 </style>
 
+    
+<style id="yr-ads-header-fix">
+/* ═══ الهيدر: أغمق من الخلفية ═══ */
+#panel-ads .panel-header {
+    background: #07152A !important;
+    border-bottom: 2px solid #F5C400 !important;
+    padding: 16px 20px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+#panel-ads .panel-header h2 {
+    color: #FFFFFF !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+#panel-ads .panel-header h2 i {
+    color: #F5C400 !important;
+}
+
+/* ═══ زر الحالة: نفس حجم باقي الحقول ═══ */
+#panel-ads #adStatus.yr-sel {
+    min-height: 48px !important;
+    height: 48px !important;
+    padding: 12px 14px !important;
+    font-size: 16px !important;
+}
+
+/* ═══ منع تكرار القوائم ═══ */
+.yr-sheet,
+.yr-dropdown {
+    position: fixed !important;
+    z-index: 10001 !important;
+}
+</style>
+
     </head>
 <body>
 
@@ -1159,26 +1199,35 @@ const YRA = {
             const self = this;
             const cur = options.find(o => o.v === defaultVal);
             el.dataset.value = defaultVal || '';
+            
             const paint = (o) => {
                 el.innerHTML = '<i class="fas ' + (o ? o.i : 'fa-bars') + ' sel-ico"></i><span class="sel-txt">' + (o ? o.t : 'اختر...') + '</span><i class="fas fa-chevron-down sel-arrow"></i>';
             };
             paint(cur);
             
-            el.onclick = function(e) {
+            // ═══ منع تكرار الحدث ═══
+            el.onclick = null;
+            el.addEventListener('click', function(e) {
                 e.stopPropagation();
+                e.preventDefault();
+                
+                // إغلاق أي قائمة مفتوحة أولاً
                 self.closeSheet();
                 
-                // ═══ ذكي: Bottom Sheet للهاتف، Dropdown لسطح المكتب ═══
                 const isMobile = window.innerWidth <= 768;
                 
                 if (isMobile) {
-                    // Bottom Sheet (الهاتف)
+                    // Bottom Sheet (الهاتف) — يُضاف مرة واحدة فقط
+                    if (document.querySelector('.yr-sheet')) return;
+                    
                     const ov = document.createElement('div');
                     ov.className = 'yr-sheet-overlay';
                     ov.onclick = () => self.closeSheet();
+                    
                     const sheet = document.createElement('div');
                     sheet.className = 'yr-sheet';
                     sheet.innerHTML = '<div class="yr-sheet-handle"></div><div class="yr-sheet-title">اختر من القائمة</div>';
+                    
                     options.forEach(o => {
                         const d = document.createElement('div');
                         d.className = 'yr-sheet-opt' + (o.v === el.dataset.value ? ' sel' : '');
@@ -1192,13 +1241,17 @@ const YRA = {
                         };
                         sheet.appendChild(d);
                     });
+                    
                     document.body.appendChild(ov);
                     document.body.appendChild(sheet);
                 } else {
-                    // Dropdown عادي (سطح المكتب)
+                    // Dropdown (سطح المكتب) — يُضاف مرة واحدة فقط
+                    if (el.querySelector('.yr-dropdown')) return;
+                    
                     el.style.position = 'relative';
                     const dropdown = document.createElement('div');
                     dropdown.className = 'yr-dropdown';
+                    
                     options.forEach(o => {
                         const d = document.createElement('div');
                         d.className = 'yr-dropdown-opt' + (o.v === el.dataset.value ? ' sel' : '');
@@ -1212,9 +1265,9 @@ const YRA = {
                         };
                         dropdown.appendChild(d);
                     });
+                    
                     el.appendChild(dropdown);
                     
-                    // إغلاق عند النقر خارج الـ dropdown
                     setTimeout(() => {
                         document.addEventListener('click', function closeDropdown(ev) {
                             if (!el.contains(ev.target)) {
@@ -1224,7 +1277,7 @@ const YRA = {
                         });
                     }, 10);
                 }
-            };
+            }, { once: false });
         },
 
         async renderAds() {
