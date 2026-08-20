@@ -245,47 +245,38 @@
 
             bindLogin() {
                 const self = this;
-                document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+                const form = document.getElementById('adminLoginForm');
+                if (!form) { alert('❌ form غير موجود!'); return; }
+                form.addEventListener('submit', async function(e) {
                     e.preventDefault();
                     const email = e.target.email.value;
                     const password = e.target.password.value;
-                    
-                    // محاولة تسجيل الدخول من Supabase أولاً
+                    const log = ['🔐 بدء الدخول: ' + email];
+
                     try {
+                        log.push('1. تحميل Supabase...');
                         const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
                         const sb = module.createClient('https://wkdqeghotlipciqiytuj.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE');
+                        log.push('2. signIn...');
                         const { data, error } = await sb.auth.signInWithPassword({ email, password });
-                        
-                        if (!error && data.user) {
+                        if (error) { log.push('❌ signIn: ' + error.message); }
+                        else {
+                            log.push('✅ signIn نجح');
                             const { data: profile } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
+                            log.push('3. role=' + (profile ? profile.role : 'null'));
                             if (profile && (profile.role === 'admin' || profile.role === 'super_admin')) {
-                                YR_DB.setSession({
-                                    id: profile.id,
-                                    name: profile.full_name || 'الإدارة',
-                                    email: profile.email,
-                                    role: profile.role
-                                });
+                                YR_DB.setSession({ id: profile.id, name: profile.full_name || 'الإدارة', email: profile.email, role: profile.role });
                                 location.reload();
                                 return;
-                            }
+                            } else { log.push('⚠️ role مرفوض'); }
                         }
-                    } catch (err) {
-                        console.warn('Supabase login failed:', err.message);
-                    }
-                    
-                    // fallback إلى localStorage
+                    } catch (err) { log.push('💥 ' + err.message); }
+
+                    log.push('4. fallback localStorage...');
                     const users = YR_DB.get('users');
-                    const user = users.find(u =>
-                        u.email === email &&
-                        u.password === YR_DB.hash(password) &&
-                        u.role === 'admin'
-                    );
-                    if (user) {
-                        YR_DB.setSession(user);
-                        location.reload();
-                    } else {
-                        self.showToast('بيانات الدخول غير صحيحة', 'error');
-                    }
+                    const user = users.find(u => u.email === email && u.password === YR_DB.hash(password) && u.role === 'admin');
+                    if (user) { YR_DB.setSession(user); location.reload(); }
+                    else { alert('🔍 تشخيص:\n' + log.join('\n')); self.showToast('بيانات غير صحيحة', 'error'); }
                 });
             },
 
