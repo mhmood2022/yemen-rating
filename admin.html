@@ -207,8 +207,57 @@
                     </div>
                     
                     <!-- نموذج الإعلان -->
+                    
+<style>
+/* ستايل موحد لكل عناصر النموذج */
+#panel-ads .form-control,
+#panel-ads select,
+#panel-ads input,
+#panel-ads textarea {
+    background:#020617 !important;
+    color:#fbbf24 !important;
+    border:1px solid #d4af37 !important;
+    border-radius:8px !important;
+    padding:10px 12px !important;
+    font-family:inherit !important;
+    font-size:0.9rem !important;
+    width:100% !important;
+    direction:rtl !important;
+}
+#panel-ads select:focus,
+#panel-ads input:focus,
+#panel-ads textarea:focus {
+    border-color:#fbbf24 !important;
+    outline:none !important;
+    box-shadow:0 0 0 2px rgba(251,191,36,0.2) !important;
+}
+#panel-ads select option {
+    background:#020617 !important;
+    color:#fbbf24 !important;
+    padding:10px !important;
+    font-size:0.9rem !important;
+}
+#panel-ads input[type="datetime-local"] {
+    color-scheme:dark !important;
+    -webkit-appearance:none !important;
+    font-size:0.85rem !important;
+}
+#panel-ads input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter:invert(0.7) sepia(1) saturate(5) hue-rotate(10deg);
+    cursor:pointer;
+}
+#panel-ads label {
+    color:#94a3b8 !important;
+    font-size:0.82rem !important;
+    font-weight:600;
+}
+#panel-ads h3 {
+    color:#fbbf24 !important;
+}
+</style>
+
                     <div id="adOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9998;" onclick="YRA.closeAdForm()"></div>
-<div id="adFormWrap" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-card);border:2px solid var(--gold-500);border-radius:var(--radius-md);padding:24px;z-index:9999;width:90%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+<div id="adFormWrap" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0f172a;border:2px solid #d4af37;border-radius:14px;padding:24px;z-index:9999;width:95%;max-width:680px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.7);color:#f8fafc;font-family:Cairo,sans-serif;">
                         <h3 id="adFormTitle" style="color:var(--gold-500);margin-bottom:16px;">➕ إضافة إعلان جديد</h3>
                         <input type="hidden" id="adEditId">
                         
@@ -668,7 +717,23 @@ select.form-control option { background:var(--navy-800); color:var(--text-main);
             try {
                 const sb = window.yrSupabase || (await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm')).createClient('https://wkdqeghotlipciqiytuj.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE');
                 const { data } = await sb.from('ad_slots').select('*').eq('status', 'ACTIVE');
-                this.adSlotsCache = data || [];
+                var translations = {
+                    'HOME_TOP':'🏠 أعلى الرئيسية',
+                    'HOME_MIDDLE':'🏠 وسط الرئيسية',
+                    'HOME_BOTTOM':'🏠 أسفل الرئيسية',
+                    'COMPANY_TOP':'🏢 أعلى الشركات',
+                    'COMPANY_MIDDLE':'🏢 وسط الشركات',
+                    'COMPANY_BOTTOM':'🏢 أسفل الشركات',
+                    'JOBS_TOP':'💼 أعلى الوظائف',
+                    'JOBS_MIDDLE':'💼 وسط الوظائف',
+                    'JOBS_BOTTOM':'💼 أسفل الوظائف',
+                    'BANKS_TOP':'🏦 أعلى البنوك',
+                    'ENTITIES_TOP':'📋 أعلى الكيانات',
+                    'ENTITY_TOP':'📄 أعلى الكيان'
+                };
+                this.adSlotsCache = (data || []).map(function(s){
+                    return Object.assign({}, s, { name_ar: translations[s.name] || s.name });
+                });
             } catch(e) { this.adSlotsCache = []; }
             return this.adSlotsCache;
         },
