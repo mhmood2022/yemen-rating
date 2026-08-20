@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- مكتبة الأيقونات Font Awesome 6 المحدثة -->
+    <!-- مكتبة الأيقونات Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
     
@@ -45,7 +45,7 @@
         * { box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--navy-950); color: var(--text-main); overflow-x: hidden; min-height: 100vh; }
 
-        /* ═══ تخصيص القوائم المنسدلة والحقول بلون الهوية ═══ */
+        /* تخصيص القوائم والحقول */
         select.form-control, .yr-select {
             background-color: #07152A !important;
             color: #FFFFFF !important;
@@ -65,17 +65,13 @@
             outline: none;
             transition: var(--transition);
         }
-        select.form-control option {
-            background-color: #07152A !important;
-            color: #FFFFFF !important;
-            padding: 12px;
-        }
+        select.form-control option { background-color: #07152A !important; color: #FFFFFF !important; padding: 12px; }
         select.form-control:focus, .yr-select:focus, input.form-control:focus, textarea.form-control:focus {
             border-color: var(--gold-500) !important;
             box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.2) !important;
         }
 
-        /* ═══ الهيكل العام والقائمة الجانبية ═══ */
+        /* الهيكل العام والقائمة الجانبية */
         .admin-wrapper { display: flex; min-height: 100vh; position: relative; }
         .admin-sidebar { 
             width: 270px; 
@@ -133,7 +129,7 @@
 
         .admin-content { padding: 26px; flex: 1; }
 
-        /* ═══ بطاقات الإحصائيات ═══ */
+        /* بطاقات الإحصائيات */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card-real { 
             background: var(--bg-card); 
@@ -202,7 +198,7 @@
         .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ═══ النوافذ المنبثقة الذكية ═══ */
+        /* النوافذ المنبثقة */
         .yr-modal-overlay { position: fixed; inset: 0; background: rgba(4, 13, 26, 0.85); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 16px; }
         .yr-modal { background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: var(--radius-lg); width: 100%; max-width: 560px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 45px rgba(0,0,0,0.7); }
         .yr-modal-header { padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--navy-950); }
@@ -210,7 +206,7 @@
         .yr-modal-body { padding: 22px; overflow-y: auto; flex: 1; }
         .yr-modal-footer { position: sticky; bottom: 0; padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--navy-950); z-index: 10; }
 
-        /* ═══ بطاقات قسم الإعلانات ═══ */
+        /* بطاقات الإعلانات */
         .ads-dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 22px; }
         .ad-stat-box { background: var(--navy-900); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; display: flex; align-items: center; gap: 14px; }
         .ad-stat-box i { font-size: 1.6rem; color: var(--gold-500); }
@@ -237,11 +233,7 @@
         .hidden { display: none !important; }
 
         @media (max-width: 900px) {
-            .admin-sidebar { 
-                transform: translateX(100%); 
-                width: 280px; 
-                box-shadow: -10px 0 30px rgba(0,0,0,0.6); 
-            }
+            .admin-sidebar { transform: translateX(100%); width: 280px; box-shadow: -10px 0 30px rgba(0,0,0,0.6); }
             .admin-sidebar.open { transform: translateX(0); }
             .sidebar-backdrop.active { display: block; }
             .admin-main { margin-right: 0; width: 100%; }
@@ -273,7 +265,7 @@
                     <label><i class="fa-solid fa-lock"></i> كلمة المرور</label>
                     <input type="password" class="form-control" name="password" required placeholder="••••••••">
                 </div>
-                <button type="submit" class="btn btn-gold btn-block" style="margin-top:12px;"><i class="fa-solid fa-right-to-bracket"></i> دخول النظام</button>
+                <button type="submit" class="btn btn-gold btn-block" style="margin-top:12px;width:100%;"><i class="fa-solid fa-right-to-bracket"></i> دخول النظام</button>
             </form>
         </div>
     </div>
@@ -306,7 +298,7 @@
         <!-- غطاء القائمة للجوال -->
         <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="YRA.closeSidebar()"></div>
 
-        <!-- المنطقة الرئيسية للمحتوى -->
+        <!-- المنطقة الرئيسية -->
         <main class="admin-main">
             <header class="admin-header">
                 <button class="sidebar-toggle-btn" onclick="YRA.toggleSidebar()" aria-label="فتح القائمة">
@@ -434,14 +426,13 @@
         </main>
     </div>
 
-    <!-- حاوية المودال العامة -->
+    <!-- حاوية المودال العامة (تبدأ فارغة تماماً) -->
     <div id="modalRoot"></div>
 
-    <!-- ═══ أدوات الربط الرسمية ═══ -->
+    <!-- مكتبات الربط المباشرة -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/db.js"></script>
     <script src="js/sb-sync.js"></script>
-    <script src="js/admin-sb.js?v=1787244067"></script>
 
     <script>
         const SB_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
@@ -452,6 +443,10 @@
             adSlotsCache: null,
 
             init() {
+                // إفراغ حاوية المودال لضمان عدم ظهور أي كود قديم
+                const mr = document.getElementById('modalRoot');
+                if (mr) mr.innerHTML = '';
+
                 if (window.YR_DB) {
                     YR_DB.init().then(() => this.checkAuth());
                 } else {
@@ -514,7 +509,7 @@
 
                     if (window.YR_DB) {
                         const users = YR_DB.get('users') || [];
-                        const user = users.find(u => u.email === email && u.role === 'admin');
+                        const user = users.find(u => u.email === email && (u.role === 'admin' || u.role === 'super_admin'));
                         if (user) {
                             YR_DB.setSession(user);
                             location.reload();
@@ -1080,15 +1075,18 @@
                 });
             },
 
-            openModal(html) {
-                document.getElementById('modalRoot').innerHTML = 
+            openModal(contentHtml) {
+                const root = document.getElementById('modalRoot');
+                if (!root) return;
+                root.innerHTML = 
                     '<div class="yr-modal-overlay" onclick="if(event.target===this) YRA.closeModal()">' +
-                    '<div class="yr-modal">' + html + '</div>' +
+                    '<div class="yr-modal">' + contentHtml + '</div>' +
                     '</div>';
             },
 
             closeModal() {
-                document.getElementById('modalRoot').innerHTML = '';
+                const root = document.getElementById('modalRoot');
+                if (root) root.innerHTML = '';
             },
 
             statusLabel(s) {
