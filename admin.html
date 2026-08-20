@@ -203,9 +203,80 @@
                 <section class="tab-panel" id="panel-ads">
                     <div class="panel-header">
                         <h2><i class="fas fa-bullhorn"></i> إدارة الإعلانات</h2>
-                        <button class="btn btn-gold" onclick="YRA.openAdModal()"><i class="fas fa-plus"></i> إعلان جديد</button>
+                        <button class="btn btn-gold" onclick="YRA.openAdForm()"><i class="fas fa-plus"></i> إعلان جديد</button>
                     </div>
-                    <div id="adsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px;"></div>
+                    
+                    <!-- نموذج الإعلان -->
+                    <div id="adFormWrap" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;margin:20px;">
+                        <h3 id="adFormTitle" style="color:var(--gold-500);margin-bottom:16px;">➕ إضافة إعلان جديد</h3>
+                        <input type="hidden" id="adEditId">
+                        
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                            <div>
+                                <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">اسم الإعلان *</label>
+                                <input id="adName" class="form-control" placeholder="مثال: عروض رمضان">
+                            </div>
+                            <div>
+                                <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">النوع *</label>
+                                <select id="adType" class="form-control" onchange="YRA.onAdTypeChange()">
+                                    <option value="banner">🖼️ بانر (صورة)</option>
+                                    <option value="adsense">💰 AdSense</option>
+                                    <option value="html">💻 كود HTML</option>
+                                    <option value="image">📷 صورة فقط</option>
+                                    <option value="video">🎥 فيديو</option>
+                                    <option value="popup">🔔 بوب أب</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                            <div>
+                                <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">المكان *</label>
+                                <select id="adSlot" class="form-control"></select>
+                            </div>
+                            <div>
+                                <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">الرابط</label>
+                                <input id="adLink" class="form-control" placeholder="https://...">
+                            </div>
+                        </div>
+                        
+                        <div id="adFileWrap" style="margin-bottom:12px;">
+                            <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">تحميل ملف (صورة/فيديو)</label>
+                            <input type="file" id="adFile" accept="image/*,video/*" class="form-control" onchange="YRA.previewAdFile(this)">
+                            <div id="adPreview" style="margin-top:8px;"></div>
+                        </div>
+                        
+                        <div id="adCodeWrap" style="display:none;margin-bottom:12px;">
+                            <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">كود AdSense / HTML</label>
+                            <textarea id="adCode" class="form-control" rows="4" placeholder="<script>...</script>"></textarea>
+                        </div>
+                        
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+                            <div>
+                                <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">وقت البدء</label>
+                                <input type="datetime-local" id="adStart" class="form-control">
+                            </div>
+                            <div>
+                                <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">وقت الانتهاء</label>
+                                <input type="datetime-local" id="adEnd" class="form-control">
+                            </div>
+                            <div>
+                                <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">الحالة</label>
+                                <select id="adStatus" class="form-control">
+                                    <option value="ACTIVE">🟢 نشط</option>
+                                    <option value="PAUSED">⏸️ متوقف</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-gold" onclick="YRA.saveAd()"><i class="fas fa-save"></i> حفظ الإعلان</button>
+                            <button class="btn btn-outline" onclick="YRA.closeAdForm()">إلغاء</button>
+                        </div>
+                    </div>
+                    
+                    <!-- قائمة الإعلانات -->
+                    <div id="adsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;padding:20px;"></div>
                 </section>
 
                 <section class="tab-panel" id="panel-notifications">
@@ -585,61 +656,175 @@
         },
 
         // ═══ الإعلانات ═══
-        renderAds() {
+        async loadAdSlots() {
+            if (this.adSlotsCache) return this.adSlotsCache;
+            try {
+                const sb = window.yrSupabase || (await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm')).createClient('https://wkdqeghotlipciqiytuj.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE');
+                const { data } = await sb.from('ad_slots').select('*').eq('status', 'ACTIVE');
+                this.adSlotsCache = data || [];
+            } catch(e) { this.adSlotsCache = []; }
+            return this.adSlotsCache;
+        },
+        
+        async renderAds() {
             const list = document.getElementById('adsList');
-            const ads = YR_DB.get('ads');
+            const ads = YR_DB.get('advertisements');
             if (ads.length === 0) {
                 list.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-bullhorn"></i><p>لا توجد إعلانات بعد</p></div>';
                 return;
             }
-            list.innerHTML = ads.map(a =>
-                '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;position:relative;">' +
-                (a.active ? '' : '<div style="position:absolute;top:8px;left:8px;background:var(--danger);color:#fff;padding:2px 8px;border-radius:12px;font-size:0.75rem;">مخفي</div>') +
-                '<h4 style="color:var(--gold-500);margin-bottom:8px;">' + this.esc(a.title) + '</h4>' +
-                '<p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:12px;">' + this.esc(a.subtitle || '') + '</p>' +
-                '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
-                '<button class="btn btn-sm btn-outline" onclick="YRA.editAd(\'' + a.id + '\')"><i class="fas fa-edit"></i></button>' +
-                '<button class="btn btn-sm btn-gold" onclick="YRA.toggleAd(\'' + a.id + '\')"><i class="fas fa-' + (a.active ? 'eye-slash' : 'eye') + '"></i></button>' +
-                '<button class="btn btn-sm btn-danger" onclick="YRA.deleteAd(\'' + a.id + '\')"><i class="fas fa-trash"></i></button>' +
-                '</div></div>'
-            ).join('');
+            const slots = await this.loadAdSlots();
+            const slotMap = {};
+            slots.forEach(s => slotMap[s.id] = s.name);
+            
+            list.innerHTML = ads.map(a => {
+                const slotName = slotMap[a.slot_id] || 'بدون مكان';
+                const statusBadge = a.status === 'ACTIVE' 
+                    ? '<span style="background:#10b981;color:#fff;padding:2px 8px;border-radius:12px;font-size:0.75rem;">🟢 نشط</span>'
+                    : '<span style="background:#f59e0b;color:#fff;padding:2px 8px;border-radius:12px;font-size:0.75rem;">⏸️ متوقف</span>';
+                const typeIcon = {banner:'🖼️',adsense:'💰',html:'💻',image:'📷',video:'🎥',popup:'🔔'}[a.ad_type] || '📢';
+                
+                return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;position:relative;">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">' +
+                    '<h4 style="color:var(--gold-500);margin:0;">' + typeIcon + ' ' + this.esc(a.title) + '</h4>' +
+                    statusBadge +
+                    '</div>' +
+                    '<p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:8px;">📍 ' + slotName + ' • 👁️ ' + (a.clicks||0) + ' نقرة</p>' +
+                    (a.start_date || a.end_date ? '<p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:8px;">🕐 ' + (a.start_date ? new Date(a.start_date).toLocaleDateString('ar') : '') + ' → ' + (a.end_date ? new Date(a.end_date).toLocaleDateString('ar') : '∞') + '</p>' : '') +
+                    '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+                    '<button class="btn btn-sm btn-outline" onclick="YRA.editAd(\'' + a.id + '\')"><i class="fas fa-edit"></i> تعديل</button>' +
+                    '<button class="btn btn-sm btn-gold" onclick="YRA.toggleAd(\'' + a.id + '\')"><i class="fas fa-' + (a.status === 'ACTIVE' ? 'pause' : 'play') + '"></i> ' + (a.status === 'ACTIVE' ? 'إيقاف' : 'تنشيط') + '</button>' +
+                    '<button class="btn btn-sm btn-danger" onclick="YRA.deleteAd(\'' + a.id + '\')"><i class="fas fa-trash"></i> حذف</button>' +
+                    '</div></div>';
+            }).join('');
         },
-
-        openAdModal() {
-            const title = prompt('عنوان الإعلان:');
-            if (!title) return;
-            const subtitle = prompt('النص الفرعي:') || '';
-            const link = prompt('الرابط (اختياري):') || '#';
-            YR_DB.add('ads', { title, subtitle, link, priority: 1, active: true });
-            this.notify('إعلان جديد', 'تم إضافة: ' + title);
+        
+        async openAdForm(ad) {
+            const slots = await this.loadAdSlots();
+            const slotSelect = document.getElementById('adSlot');
+            slotSelect.innerHTML = slots.map(s => '<option value="' + s.id + '">' + s.name + ' (' + s.placement + ')</option>').join('');
+            
+            if (ad) {
+                document.getElementById('adFormTitle').textContent = '✏️ تعديل الإعلان';
+                document.getElementById('adEditId').value = ad.id;
+                document.getElementById('adName').value = ad.title || '';
+                document.getElementById('adType').value = ad.ad_type || 'banner';
+                document.getElementById('adSlot').value = ad.slot_id || '';
+                document.getElementById('adLink').value = ad.link_url || '';
+                document.getElementById('adCode').value = ad.content_html || '';
+                document.getElementById('adStart').value = ad.start_date ? ad.start_date.slice(0,16) : '';
+                document.getElementById('adEnd').value = ad.end_date ? ad.end_date.slice(0,16) : '';
+                document.getElementById('adStatus').value = ad.status || 'ACTIVE';
+                if (ad.media_url) {
+                    document.getElementById('adPreview').innerHTML = ad.media_url.startsWith('data:video') 
+                        ? '<video src="' + ad.media_url + '" controls style="max-width:200px;border-radius:8px;"></video>'
+                        : '<img src="' + ad.media_url + '" style="max-width:200px;border-radius:8px;">';
+                }
+                this.onAdTypeChange();
+            } else {
+                document.getElementById('adFormTitle').textContent = '➕ إضافة إعلان جديد';
+                document.getElementById('adEditId').value = '';
+                document.getElementById('adName').value = '';
+                document.getElementById('adType').value = 'banner';
+                document.getElementById('adLink').value = '';
+                document.getElementById('adCode').value = '';
+                document.getElementById('adStart').value = '';
+                document.getElementById('adEnd').value = '';
+                document.getElementById('adStatus').value = 'ACTIVE';
+                document.getElementById('adFile').value = '';
+                document.getElementById('adPreview').innerHTML = '';
+                this.onAdTypeChange();
+            }
+            document.getElementById('adFormWrap').style.display = 'block';
+            document.getElementById('adFormWrap').scrollIntoView({behavior:'smooth'});
+        },
+        
+        closeAdForm() {
+            document.getElementById('adFormWrap').style.display = 'none';
+        },
+        
+        onAdTypeChange() {
+            const type = document.getElementById('adType').value;
+            const showCode = (type === 'adsense' || type === 'html');
+            const showFile = (type === 'banner' || type === 'image' || type === 'video');
+            document.getElementById('adCodeWrap').style.display = showCode ? 'block' : 'none';
+            document.getElementById('adFileWrap').style.display = showFile ? 'block' : 'none';
+        },
+        
+        previewAdFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const isVideo = file.type.startsWith('video/');
+                document.getElementById('adPreview').innerHTML = isVideo
+                    ? '<video src="' + e.target.result + '" controls style="max-width:200px;border-radius:8px;"></video>'
+                    : '<img src="' + e.target.result + '" style="max-width:200px;border-radius:8px;">';
+            };
+            reader.readAsDataURL(file);
+        },
+        
+        async saveAd() {
+            const editId = document.getElementById('adEditId').value;
+            const title = document.getElementById('adName').value.trim();
+            const ad_type = document.getElementById('adType').value;
+            const slot_id = document.getElementById('adSlot').value;
+            const link_url = document.getElementById('adLink').value.trim();
+            const content_html = document.getElementById('adCode').value.trim();
+            const start_date = document.getElementById('adStart').value || null;
+            const end_date = document.getElementById('adEnd').value || null;
+            const status = document.getElementById('adStatus').value;
+            
+            if (!title) { this.showToast('❌ أدخل اسم الإعلان', 'error'); return; }
+            if (!slot_id) { this.showToast('❌ اختر المكان', 'error'); return; }
+            
+            let media_url = null;
+            const fileInput = document.getElementById('adFile');
+            if (fileInput.files[0]) {
+                media_url = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(fileInput.files[0]);
+                });
+            } else if (editId) {
+                const existing = YR_DB.findById('advertisements', editId);
+                media_url = existing ? existing.media_url : null;
+            }
+            
+            const adData = { title, ad_type, slot_id, link_url, content_html, media_url, start_date, end_date, status };
+            
+            if (editId) {
+                await YR_DB.update('advertisements', editId, adData);
+                this.showToast('✅ تم تعديل الإعلان', 'success');
+            } else {
+                await YR_DB.add('advertisements', adData);
+                this.showToast('✅ تم إضافة الإعلان', 'success');
+            }
+            
+            this.closeAdForm();
             this.renderAds();
-            this.showToast('✅ تم إضافة الإعلان', 'success');
         },
-
+        
         async editAd(id) {
-            const a = YR_DB.findById('ads', id);
-            if (!a) return;
-            const title = prompt('العنوان:', a.title) ?? a.title;
-            const subtitle = prompt('النص:', a.subtitle || '') ?? a.subtitle;
-            const link = prompt('الرابط:', a.link || '#') ?? a.link;
-            await YR_DB.update('ads', id, { title, subtitle, link });
-            this.renderAds();
-            this.showToast('✅ تم التعديل', 'success');
+            const ad = YR_DB.findById('advertisements', id);
+            if (!ad) return;
+            await this.openAdForm(ad);
         },
-
+        
         async toggleAd(id) {
-            const a = YR_DB.findById('ads', id);
-            if (!a) return;
-            await YR_DB.update('ads', id, { active: !a.active });
+            const ad = YR_DB.findById('advertisements', id);
+            if (!ad) return;
+            const newStatus = ad.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
+            await YR_DB.update('advertisements', id, { status: newStatus });
             this.renderAds();
-            this.showToast(a.active ? 'تم إخفاء الإعلان' : 'تم تفعيل الإعلان', 'success');
+            this.showToast(newStatus === 'ACTIVE' ? '▶️ تم تنشيط الإعلان' : '⏸️ تم إيقاف الإعلان', 'success');
         },
-
+        
         async deleteAd(id) {
-            if (!confirm('حذف هذا الإعلان؟')) return;
-            await YR_DB.delete('ads', id);
+            if (!confirm('حذف هذا الإعلان نهائياً؟')) return;
+            await YR_DB.remove('advertisements', id);
             this.renderAds();
-            this.showToast('تم الحذف', 'success');
+            this.showToast('🗑️ تم حذف الإعلان', 'success');
         },
 
         // ═══ الإشعارات ═══
