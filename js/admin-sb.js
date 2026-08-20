@@ -81,7 +81,17 @@
             if (t==='companies'||t==='banks') { var res=await sb.from('entities').insert(entPayload(t,r)).select().single(); if(res.error) throw res.error; console.log('[SB] ✅ حفظ في entities: '+r.name); return res.data.id; }
             if (t==='jobs') { var r2=await sb.from('jobs').insert({ title:r.title, city:cityIdToName(r.city), salary:r.salary, description:r.description, requirements:r.skills||[], type:r.type, status:r.status==='active'?'PUBLISHED':'PENDING', entity_id:r.companyId&&r.companyId.indexOf('sb_')===0?r.companyId.replace('sb_',''):null, owner_id:sbUid }).select().single(); if(r2.error) throw r2.error; console.log('[SB] ✅ حفظ في jobs: '+r.title); return r2.data.id; }
             if (t==='reviews') { var r3=await sb.from('reviews').insert({ user_name:r.userName, stars:r.stars, text:r.comment, status:'PUBLISHED', entity_id:r.entityId&&r.entityId.indexOf('sb_')===0?r.entityId.replace('sb_',''):null }).select().single(); if(r3.error) throw r3.error; return r3.data.id; }
-            if (t==='advertisements') { var r4=await sb.from('advertisements').insert({ title:r.title, link_url:r.link, image_url:r.img, status:r.status||'PENDING' }).select().single(); if(r4.error) throw r4.error; return r4.data.id; }
+            if (t==='advertisements') {
+                var slotId = null;
+                if (r.place) {
+                    var sr = await sb.from('ad_slots').select('id').eq('placement', r.place).limit(1);
+                    if (!sr.error && sr.data && sr.data[0]) slotId = sr.data[0].id;
+                }
+                var r4 = await sb.from('advertisements').insert({ title:r.title, link_url:r.link, image_url:r.img, status:(r.status==='PUBLISHED'||r.status==='ACTIVE')?'ACTIVE':'PENDING', slot_id:slotId }).select().single();
+                if(r4.error) throw r4.error;
+                console.log('[SB] ✅ حفظ إعلان في مكان: ' + (r.place || 'بدون مكان'));
+                return r4.data.id;
+            }
         } catch(e){ console.warn('[SB] mirrorAdd '+t+': '+e.message); }
         return null;
     }
