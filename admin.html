@@ -45,7 +45,6 @@
         * { box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--navy-950); color: var(--text-main); overflow-x: hidden; min-height: 100vh; }
 
-        /* تخصيص القوائم والحقول */
         select.form-control, .yr-select {
             background-color: #07152A !important;
             color: #FFFFFF !important;
@@ -71,7 +70,6 @@
             box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.2) !important;
         }
 
-        /* الهيكل العام والقائمة الجانبية */
         .admin-wrapper { display: flex; min-height: 100vh; position: relative; }
         .admin-sidebar { 
             width: 270px; 
@@ -129,7 +127,6 @@
 
         .admin-content { padding: 26px; flex: 1; }
 
-        /* بطاقات الإحصائيات */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px; }
         .stat-card-real { 
             background: var(--bg-card); 
@@ -160,14 +157,12 @@
         .stat-card-real .lbl-wrap { color: var(--text-muted); font-size: 0.84rem; margin-top: 4px; }
         .stat-card-real .sub-status { font-size: 0.75rem; margin-top: 4px; display: block; }
 
-        /* الجداول */
         .table-wrapper { background: var(--bg-card); border-radius: var(--radius-md); overflow-x: auto; border: 1px solid var(--border); -webkit-overflow-scrolling: touch; }
         .admin-table { width: 100%; border-collapse: collapse; min-width: 680px; text-align: right; }
         .admin-table th { background: var(--navy-900); color: var(--gold-400); padding: 14px 16px; font-size: 0.88rem; font-weight: 700; border-bottom: 1px solid var(--border); white-space: nowrap; }
         .admin-table td { padding: 13px 16px; border-bottom: 1px solid var(--border); font-size: 0.9rem; color: var(--text-main); vertical-align: middle; }
         .admin-table tbody tr:hover { background: rgba(245, 196, 0, 0.04); }
 
-        /* الشارات والأزرار */
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
         .status-active { background: rgba(16, 185, 129, 0.15); color: var(--success); }
         .status-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
@@ -198,7 +193,6 @@
         .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* النوافذ المنبثقة */
         .yr-modal-overlay { position: fixed; inset: 0; background: rgba(4, 13, 26, 0.85); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 16px; }
         .yr-modal { background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: var(--radius-lg); width: 100%; max-width: 560px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 45px rgba(0,0,0,0.7); }
         .yr-modal-header { padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--navy-950); }
@@ -206,7 +200,6 @@
         .yr-modal-body { padding: 22px; overflow-y: auto; flex: 1; }
         .yr-modal-footer { position: sticky; bottom: 0; padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--navy-950); z-index: 10; }
 
-        /* بطاقات الإعلانات */
         .ads-dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 22px; }
         .ad-stat-box { background: var(--navy-900); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; display: flex; align-items: center; gap: 14px; }
         .ad-stat-box i { font-size: 1.6rem; color: var(--gold-500); }
@@ -222,7 +215,6 @@
         .ad-card-pill { background: var(--navy-800); border: 1px solid var(--border); padding: 3px 10px; border-radius: 12px; display: inline-flex; align-items: center; gap: 5px; }
         .ad-card-actions { padding: 12px 16px; background: var(--navy-950); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 6px; }
 
-        /* شاشة الدخول */
         .admin-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at center, var(--navy-800), var(--navy-950)); padding: 20px; }
         .login-card { background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: var(--radius-lg); padding: 38px 30px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 12px 35px rgba(0,0,0,0.6); }
         .login-logo { width: 68px; height: 68px; background: var(--gold-gradient); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--navy-950); margin: 0 auto 16px; }
@@ -250,7 +242,6 @@
 </head>
 <body>
 
-    <!-- شاشة تسجيل الدخول -->
     <div class="admin-login" id="adminLogin">
         <div class="login-card">
             <div class="login-logo"><i class="fa-solid fa-star"></i></div>
@@ -270,10 +261,8 @@
         </div>
     </div>
 
-    <!-- لوحة التحكم الرئيسية -->
     <div class="admin-wrapper hidden" id="adminWrapper">
         
-        <!-- القائمة الجانبية -->
         <aside class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-brand">
                 <div class="brand-mark"><i class="fa-solid fa-shield-halved"></i></div>
@@ -295,10 +284,8 @@
             </nav>
         </aside>
         
-        <!-- غطاء القائمة للجوال -->
         <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="YRA.closeSidebar()"></div>
 
-        <!-- المنطقة الرئيسية -->
         <main class="admin-main">
             <header class="admin-header">
                 <button class="sidebar-toggle-btn" onclick="YRA.toggleSidebar()" aria-label="فتح القائمة">
@@ -313,7 +300,6 @@
 
             <div class="admin-content">
 
-                <!-- 1. الرئيسية -->
                 <section class="tab-panel active" id="panel-dashboard">
                     <div class="panel-header">
                         <h2><i class="fa-solid fa-chart-pie"></i> ملخص المنظومة المباشر</h2>
@@ -323,7 +309,6 @@
                     <div id="recentNotifications" style="margin-top:24px;"></div>
                 </section>
 
-                <!-- 2. الشركات -->
                 <section class="tab-panel" id="panel-companies">
                     <div class="panel-header">
                         <h2><i class="fa-solid fa-building"></i> إدارة الشركات</h2>
@@ -339,7 +324,6 @@
                     </div>
                 </section>
 
-                <!-- 3. البنوك -->
                 <section class="tab-panel" id="panel-banks">
                     <div class="panel-header">
                         <h2><i class="fa-solid fa-landmark"></i> إدارة البنوك والمصارف</h2>
@@ -353,7 +337,6 @@
                     </div>
                 </section>
 
-                <!-- 4. الوظائف -->
                 <section class="tab-panel" id="panel-jobs">
                     <div class="panel-header"><h2><i class="fa-solid fa-briefcase"></i> إدارة الوظائف الشاغرة</h2></div>
                     <div class="table-wrapper">
@@ -364,13 +347,11 @@
                     </div>
                 </section>
 
-                <!-- 5. طلبات التوثيق -->
                 <section class="tab-panel" id="panel-verification">
                     <div class="panel-header"><h2><i class="fa-solid fa-circle-check"></i> طلبات التوثيق الرسمية</h2></div>
                     <div id="verificationList"></div>
                 </section>
 
-                <!-- 6. طلبات التوظيف -->
                 <section class="tab-panel" id="panel-applications">
                     <div class="panel-header"><h2><i class="fa-solid fa-file-lines"></i> طلبات التوظيف المقدمة</h2></div>
                     <div class="table-wrapper">
@@ -381,7 +362,6 @@
                     </div>
                 </section>
 
-                <!-- 7. التقييمات -->
                 <section class="tab-panel" id="panel-reviews">
                     <div class="panel-header"><h2><i class="fa-solid fa-star"></i> مراجعات وتقييمات الأعضاء</h2></div>
                     <div class="table-wrapper">
@@ -392,7 +372,6 @@
                     </div>
                 </section>
 
-                <!-- 8. المستخدمون -->
                 <section class="tab-panel" id="panel-users">
                     <div class="panel-header"><h2><i class="fa-solid fa-users"></i> إدارة المستخدمين والأدوار</h2></div>
                     <div class="table-wrapper">
@@ -403,7 +382,6 @@
                     </div>
                 </section>
 
-                <!-- 9. الإعلانات -->
                 <section class="tab-panel" id="panel-ads">
                     <div class="panel-header">
                         <h2><i class="fa-solid fa-bullhorn"></i> منظومة الإعلانات والحملات</h2>
@@ -413,7 +391,6 @@
                     <div class="ads-cards-grid" id="adsList"></div>
                 </section>
 
-                <!-- 10. الإشعارات -->
                 <section class="tab-panel" id="panel-notifications">
                     <div class="panel-header">
                         <h2><i class="fa-solid fa-bell"></i> مركز التنبيهات</h2>
@@ -426,10 +403,8 @@
         </main>
     </div>
 
-    <!-- حاوية المودال العامة (تبدأ فارغة تماماً) -->
     <div id="modalRoot"></div>
 
-    <!-- مكتبات الربط المباشرة -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/db.js"></script>
     <script src="js/sb-sync.js"></script>
@@ -443,7 +418,6 @@
             adSlotsCache: null,
 
             init() {
-                // إفراغ حاوية المودال لضمان عدم ظهور أي كود قديم
                 const mr = document.getElementById('modalRoot');
                 if (mr) mr.innerHTML = '';
 
