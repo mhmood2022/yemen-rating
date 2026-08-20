@@ -68,19 +68,511 @@
 
 
     
+<style id="yr-ads-identity">
+/* ═══ هوية يمن ريتغ الرسمية — نموذج الإعلانات ═══ */
 
+/* المتغيرات المحلية (احتياطي إذا لم تكن معرّفة في :root) */
+#panel-ads {
+    --yr-navy: #0B1F3A;
+    --yr-navy-dark: #07152A;
+    --yr-yellow: #F5C400;
+    --yr-yellow-light: #FFD84D;
+    --yr-white: #FFFFFF;
+    --yr-text-gray: #64748B;
+    --yr-dark-text: #172033;
+    --yr-green: #16A34A;
+    --yr-orange: #F59E0B;
+    --yr-red: #DC2626;
+    --yr-border: #E5E7EB;
+}
+
+/* ═══ الحقول: كحلي داكن + نص أبيض + حدود رمادية ═══ */
+#panel-ads input,
+#panel-ads textarea,
+#panel-ads .yr-sel {
+    background: var(--yr-navy-dark) !important;
+    color: var(--yr-white) !important;
+    border: 1px solid var(--yr-border) !important;
+    border-radius: 10px !important;
+    padding: 12px 14px !important;
+    font-family: 'Cairo', inherit !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    min-height: 48px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    direction: rtl !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+}
+
+/* Placeholder رمادي */
+#panel-ads input::placeholder,
+#panel-ads textarea::placeholder {
+    color: var(--yr-text-gray) !important;
+    font-size: 14px !important;
+}
+
+/* عند التركيز: حدود صفراء */
+#panel-ads input:focus,
+#panel-ads textarea:focus,
+#panel-ads .yr-sel:focus {
+    border-color: var(--yr-yellow) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.2) !important;
+}
+
+/* الأيقونات: صفراء */
+#panel-ads .yr-sel .sel-ico,
+#panel-ads .yr-sel .sel-arrow {
+    color: var(--yr-yellow) !important;
+}
+
+/* التسميات: رمادي للنص */
+#panel-ads label {
+    color: var(--yr-text-gray) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    margin-bottom: 6px !important;
+    display: block !important;
+    font-family: 'Cairo', inherit !important;
+}
+
+/* ═══ زر اختيار الملف: أصفر مع نص كحلي ═══ */
+#panel-ads input[type="file"] {
+    padding: 10px !important;
+    cursor: pointer !important;
+}
+#panel-ads input[type="file"]::-webkit-file-upload-button,
+#panel-ads input[type="file"]::file-selector-button {
+    background: var(--yr-yellow) !important;
+    color: var(--yr-navy) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    font-family: 'Cairo', inherit !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    margin-left: 12px !important;
+    cursor: pointer !important;
+    height: 44px !important;
+}
+
+/* ═══ التقويم: داكن مع أيقونة صفراء ═══ */
+#panel-ads input[type="datetime-local"] {
+    color-scheme: dark !important;
+    font-size: 14px !important;
+}
+#panel-ads input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.9) sepia(1) saturate(5) hue-rotate(5deg) brightness(1.2) !important;
+    cursor: pointer !important;
+}
+#panel-ads input[type="datetime-local"]::-webkit-datetime-edit {
+    color: var(--yr-white) !important;
+}
+
+/* ═══ Dropdown (سطح المكتب): كحلي + حدود صفراء ═══ */
+.yr-dropdown {
+    background: var(--yr-navy) !important;
+    border: 2px solid var(--yr-yellow) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+    max-height: 280px !important;
+    overflow-y: auto !important;
+}
+.yr-dropdown-opt {
+    color: var(--yr-white) !important;
+    padding: 12px 14px !important;
+    font-size: 16px !important;
+    font-family: 'Cairo', inherit !important;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.1) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    cursor: pointer !important;
+}
+.yr-dropdown-opt:last-child {
+    border-bottom: none !important;
+}
+.yr-dropdown-opt:hover,
+.yr-dropdown-opt.sel {
+    background: var(--yr-navy-dark) !important;
+}
+.yr-dropdown-opt i {
+    color: var(--yr-yellow) !important;
+    width: 18px !important;
+    text-align: center !important;
+}
+.yr-dropdown-opt .fa-check {
+    color: var(--yr-green) !important;
+    margin-inline-start: auto !important;
+}
+
+/* ═══ Bottom Sheet (الهاتف): نفس الهوية ═══ */
+.yr-sheet {
+    background: var(--yr-navy) !important;
+    border-top: 2px solid var(--yr-yellow) !important;
+    border-radius: 16px 16px 0 0 !important;
+}
+.yr-sheet-title {
+    color: var(--yr-text-gray) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    padding: 12px 20px !important;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.1) !important;
+    font-family: 'Cairo', inherit !important;
+}
+.yr-sheet-opt {
+    color: var(--yr-white) !important;
+    padding: 15px 20px !important;
+    font-size: 16px !important;
+    font-family: 'Cairo', inherit !important;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.05) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    cursor: pointer !important;
+}
+.yr-sheet-opt:hover,
+.yr-sheet-opt.sel {
+    background: var(--yr-navy-dark) !important;
+}
+.yr-sheet-opt i {
+    color: var(--yr-yellow) !important;
+    width: 20px !important;
+    text-align: center !important;
+}
+.yr-sheet-opt .fa-check {
+    color: var(--yr-green) !important;
+    margin-inline-start: auto !important;
+}
+
+/* ═══ بطاقات الإعلانات: كحلي + حدود رمادية ═══ */
+.ad-card {
+    background: var(--yr-navy) !important;
+    border: 1px solid var(--yr-border) !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+.ad-card h4 {
+    color: var(--yr-white) !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    font-family: 'Cairo', inherit !important;
+    margin: 0 0 8px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+.ad-card h4 i {
+    color: var(--yr-yellow) !important;
+}
+.ad-card .meta {
+    color: var(--yr-text-gray) !important;
+    font-size: 13px !important;
+    font-family: 'Cairo', inherit !important;
+    margin: 10px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+.ad-card .badge {
+    padding: 4px 12px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    font-family: 'Cairo', inherit !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+}
+.ad-card .badge-active {
+    background: rgba(22, 163, 74, 0.15) !important;
+    color: var(--yr-green) !important;
+}
+.ad-card .badge-paused {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: var(--yr-orange) !important;
+}
+
+/* ═══ النافذة المنبثقة (Modal): حسب المواصفات ═══ */
+#adOverlay {
+    background: rgba(0, 0, 0, 0.7) !important;
+}
+#adFormWrap {
+    background: var(--yr-navy) !important;
+    border: 2px solid var(--yr-yellow) !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    font-family: 'Cairo', inherit !important;
+}
+/* الهاتف: عرض calc(100% - 24px)، أقصى 420px */
+@media (max-width: 767px) {
+    #adFormWrap {
+        width: calc(100% - 24px) !important;
+        max-width: 420px !important;
+    }
+}
+/* Desktop: Medium Modal 560px */
+@media (min-width: 768px) {
+    #adFormWrap {
+        width: 560px !important;
+        max-width: 560px !important;
+    }
+}
+#adFormWrap h3 {
+    color: var(--yr-white) !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    font-family: 'Cairo', inherit !important;
+    margin: 0 0 16px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+#adFormWrap h3 i {
+    color: var(--yr-yellow) !important;
+}
+
+/* ═══ الشبكة والمسافات ═══ */
+#panel-ads .ad-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 14px !important;
+    margin-bottom: 14px !important;
+}
+@media (max-width: 600px) {
+    #panel-ads .ad-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ═══ الأزرار: ارتفاع 44-48px ═══ */
+#panel-ads .btn {
+    height: 48px !important;
+    min-height: 48px !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    font-family: 'Cairo', inherit !important;
+    border-radius: 10px !important;
+    padding: 0 20px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+}
+</style>
 
     
+<style id="yr-ads-page-bg">
+/* ═══ خلفية صفحة الإعلانات: كحلي #0B1F3A ═══ */
+#panel-ads {
+    background: #0B1F3A !important;
+    min-height: 100vh !important;
+    padding: 0 !important;
+}
 
+/* الهيدر: كحلي داكن */
+#panel-ads .panel-header {
+    background: #07152A !important;
+    border-bottom: 1px solid #E5E7EB !important;
+    padding: 16px 20px !important;
+}
+#panel-ads .panel-header h2 {
+    color: #FFFFFF !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    font-family: 'Cairo', inherit !important;
+    margin: 0 !important;
+}
+#panel-ads .panel-header h2 i {
+    color: #F5C400 !important;
+    margin-left: 8px !important;
+}
+
+/* زر "إعلان جديد": أصفر مع نص كحلي */
+#panel-ads .panel-header .btn-gold {
+    background: #F5C400 !important;
+    color: #0B1F3A !important;
+    border: none !important;
+    font-weight: 700 !important;
+    height: 44px !important;
+    padding: 0 20px !important;
+    border-radius: 10px !important;
+    font-family: 'Cairo', inherit !important;
+}
+
+/* قائمة الإعلانات: خلفية كحلية */
+#panel-ads #adsList {
+    background: #0B1F3A !important;
+    padding: 20px !important;
+}
+
+/* الحالة الفارغة: نص رمادي على كحلي */
+#panel-ads .empty-state {
+    background: #0B1F3A !important;
+    color: #64748B !important;
+    text-align: center !important;
+    padding: 40px 20px !important;
+    font-family: 'Cairo', inherit !important;
+}
+#panel-ads .empty-state i {
+    color: #F5C400 !important;
+    font-size: 48px !important;
+    margin-bottom: 16px !important;
+    display: block !important;
+}
+#panel-ads .empty-state p {
+    font-size: 16px !important;
+    margin: 0 !important;
+}
+
+/* النافذة المنبثقة: كحلية */
+#adFormWrap {
+    background: #0B1F3A !important;
+}
+
+/* الـ Overlay: أسود شفاف */
+#adOverlay {
+    background: rgba(0, 0, 0, 0.75) !important;
+}
+</style>
 
     
+<style id="yr-ads-fix-colors">
+/* ═══ إصلاح القائمة المنبثقة (Modal) ═══ */
+#adFormWrap {
+    background: #0B1F3A !important;
+    border: 2px solid #F5C400 !important;
+    color: #FFFFFF !important;
+}
+#adFormWrap h3 {
+    color: #FFFFFF !important;
+}
+#adFormWrap h3 i {
+    color: #F5C400 !important;
+}
+#adFormWrap label {
+    color: #64748B !important;
+}
 
+/* ═══ إصلاح الخلفية الكاملة ═══ */
+#panel-ads {
+    background: #0B1F3A !important;
+}
+#panel-ads .panel-header {
+    background: #07152A !important;
+}
+
+/* ═══ إصلاح Dropdown و Bottom Sheet ═══ */
+.yr-dropdown,
+.yr-sheet {
+    background: #0B1F3A !important;
+    border-color: #F5C400 !important;
+}
+.yr-dropdown-opt,
+.yr-sheet-opt {
+    color: #FFFFFF !important;
+    background: #0B1F3A !important;
+}
+.yr-dropdown-opt:hover,
+.yr-dropdown-opt.sel,
+.yr-sheet-opt:hover,
+.yr-sheet-opt.sel {
+    background: #07152A !important;
+}
+.yr-dropdown-opt i,
+.yr-sheet-opt i {
+    color: #F5C400 !important;
+}
+
+/* ═══ إصلاح الحقول ═══ */
+#panel-ads input,
+#panel-ads textarea,
+#panel-ads .yr-sel {
+    background: #07152A !important;
+    color: #FFFFFF !important;
+    border-color: #E5E7EB !important;
+}
+#panel-ads input:focus,
+#panel-ads textarea:focus,
+#panel-ads .yr-sel:focus {
+    border-color: #F5C400 !important;
+}
+
+/* ═══ إصلاح البطاقات ═══ */
+.ad-card {
+    background: #0B1F3A !important;
+    border-color: #E5E7EB !important;
+}
+.ad-card h4 {
+    color: #FFFFFF !important;
+}
+</style>
 
     
+<style id="yr-ads-header-fix">
+/* ═══ الهيدر: أغمق من الخلفية ═══ */
+#panel-ads .panel-header {
+    background: #07152A !important;
+    border-bottom: 2px solid #F5C400 !important;
+    padding: 16px 20px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+#panel-ads .panel-header h2 {
+    color: #FFFFFF !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+#panel-ads .panel-header h2 i {
+    color: #F5C400 !important;
+}
 
+/* ═══ زر الحالة: نفس حجم باقي الحقول ═══ */
+#panel-ads #adStatus.yr-sel {
+    min-height: 48px !important;
+    height: 48px !important;
+    padding: 12px 14px !important;
+    font-size: 16px !important;
+}
+
+/* ═══ منع تكرار القوائم ═══ */
+/* (أزيلت قاعدة fixed الخاطئة) */
+</style>
 
     
-
+<style id="yr-ads-dropdown-pos">
+/* ═══ إصلاح تموضع القوائم ═══ */
+/* الحقل نفسه: مرجع نسبي للقائمة */
+#panel-ads .yr-sel {
+    position: relative !important;
+}
+/* القائمة المنسدلة: داخل الحقل (لا تخرج من النافذة) */
+.yr-dropdown {
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    left: 0 !important;
+    margin-top: 4px !important;
+    z-index: 10000 !important;
+    max-height: 260px !important;
+    overflow-y: auto !important;
+}
+/* الـ Bottom Sheet فقط يبقى ثابتاً على الشاشة (للجوال) */
+.yr-sheet {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+}
+</style>
 
     </head>
 <body>
@@ -221,81 +713,50 @@
                     </div>
                 </section>
 
-
-                                <section class="tab-panel" id="panel-ads">
+                <section class="tab-panel" id="panel-ads">
                     <style>
-                        /* ═══ هوية يمن ريتغ — نظام الإعلانات ═══ */
-                        #panel-ads { background: #0B1F3A; min-height: 100vh; padding: 0; font-family: 'Cairo', sans-serif; }
-                        #panel-ads .panel-header { background: #07152A; border-bottom: 2px solid #F5C400; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
-                        #panel-ads .panel-header h2 { color: #FFFFFF; font-size: 20px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 10px; }
-                        #panel-ads .panel-header h2 i { color: #F5C400; }
-                        #panel-ads .panel-header .btn-gold { background: #F5C400; color: #0B1F3A; border: none; font-weight: 700; height: 44px; padding: 0 20px; border-radius: 10px; font-family: 'Cairo', sans-serif; }
+                        #panel-ads .panel-header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--border); }
+                        #panel-ads .panel-header h2 { color:var(--text-main); font-size:1.25rem; margin:0; }
+                        #panel-ads .panel-header h2 i { color:var(--gold-400); margin-left:8px; }
 
-                        /* الحقول */
-                        #panel-ads input, #panel-ads textarea, #panel-ads .yr-sel { background: #07152A; color: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 10px; padding: 12px 14px; font-size: 16px; min-height: 48px; box-sizing: border-box; width: 100%; direction: rtl; -webkit-appearance: none; appearance: none; font-family: 'Cairo', sans-serif; }
-                        #panel-ads input::placeholder, #panel-ads textarea::placeholder { color: #64748B; font-size: 14px; }
-                        #panel-ads input:focus, #panel-ads textarea:focus, #panel-ads .yr-sel:focus { border-color: #F5C400; outline: none; box-shadow: 0 0 0 3px rgba(245,196,0,0.2); }
-                        #panel-ads .yr-sel { position: relative; display: flex; align-items: center; gap: 10px; cursor: pointer; }
-                        #panel-ads .yr-sel .sel-ico { color: #F5C400; width: 18px; text-align: center; }
-                        #panel-ads .yr-sel .sel-txt { flex: 1; color: #FFFFFF; font-size: 16px; }
-                        #panel-ads .yr-sel .sel-arrow { color: #F5C400; font-size: 12px; }
+                        /* الحقول: نص أبيض، حدود هادئة */
+                        .ad-input { background:var(--navy-900); color:var(--text-main); border:1px solid var(--navy-600); border-radius:8px; padding:11px 12px; width:100%; font-family:inherit; font-size:0.92rem; direction:rtl; box-sizing:border-box; }
+                        .ad-input::placeholder { color:var(--text-muted); }
+                        .ad-input:focus { border-color:var(--gold-400); outline:none; }
+                        input[type="datetime-local"].ad-input { color-scheme:dark; }
+                        #panel-ads label { display:block; color:var(--text-muted); font-size:0.8rem; margin-bottom:6px; font-weight:600; }
 
-                        /* التسميات */
-                        #panel-ads label { color: #64748B; font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
+                        /* زر الاختيار (يفتح Bottom Sheet) */
+                        .yr-sel { background:var(--navy-900); border:1px solid var(--navy-600); border-radius:8px; padding:11px 12px; display:flex; align-items:center; gap:10px; cursor:pointer; min-height:44px; box-sizing:border-box; }
+                        .yr-sel .sel-txt { flex:1; color:var(--text-main); font-size:0.92rem; }
+                        .yr-sel .sel-ico { color:var(--gold-400); width:18px; text-align:center; }
+                        .yr-sel .sel-arrow { color:var(--text-muted); font-size:0.75rem; }
 
-                        /* زر الملف */
-                        #panel-ads input[type="file"] { padding: 10px; cursor: pointer; }
-                        #panel-ads input[type="file"]::-webkit-file-upload-button, #panel-ads input[type="file"]::file-selector-button { background: #F5C400; color: #0B1F3A; border: none; border-radius: 8px; padding: 8px 16px; font-weight: 700; font-size: 14px; margin-left: 12px; cursor: pointer; height: 44px; }
-
-                        /* التقويم */
-                        #panel-ads input[type="datetime-local"] { color-scheme: dark; font-size: 14px; }
-                        #panel-ads input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(0.9) sepia(1) saturate(5) hue-rotate(5deg) brightness(1.2); cursor: pointer; }
-                        #panel-ads input[type="datetime-local"]::-webkit-datetime-edit { color: #FFFFFF; }
-
-                        /* القائمة المنسدلة (Dropdown) - داخل الحقل */
-                        .yr-dropdown { position: absolute; top: 100%; right: 0; left: 0; margin-top: 4px; background: #0B1F3A; border: 2px solid #F5C400; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); max-height: 260px; overflow-y: auto; z-index: 10000; }
-                        .yr-dropdown-opt { color: #FFFFFF; padding: 12px 14px; font-size: 16px; border-bottom: 1px solid rgba(229,231,235,0.1); display: flex; align-items: center; gap: 12px; cursor: pointer; }
-                        .yr-dropdown-opt:last-child { border-bottom: none; }
-                        .yr-dropdown-opt:hover, .yr-dropdown-opt.sel { background: #07152A; }
-                        .yr-dropdown-opt i { color: #F5C400; width: 18px; text-align: center; }
-                        .yr-dropdown-opt .fa-check { color: #16A34A; margin-inline-start: auto; }
-
-                        /* Bottom Sheet (للجوال) */
-                        .yr-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 10000; }
-                        .yr-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #0B1F3A; border-top: 2px solid #F5C400; border-radius: 16px 16px 0 0; max-height: 60vh; overflow-y: auto; z-index: 10001; padding-bottom: 20px; }
-                        .yr-sheet-handle { width: 44px; height: 4px; background: #E5E7EB; border-radius: 2px; margin: 10px auto; }
-                        .yr-sheet-title { color: #64748B; font-size: 13px; font-weight: 600; padding: 12px 20px; border-bottom: 1px solid rgba(229,231,235,0.1); }
-                        .yr-sheet-opt { color: #FFFFFF; padding: 15px 20px; font-size: 16px; border-bottom: 1px solid rgba(229,231,235,0.05); display: flex; align-items: center; gap: 14px; cursor: pointer; }
-                        .yr-sheet-opt:hover, .yr-sheet-opt.sel { background: #07152A; }
-                        .yr-sheet-opt i { color: #F5C400; width: 20px; text-align: center; }
-                        .yr-sheet-opt .fa-check { color: #16A34A; margin-inline-start: auto; }
-
-                        /* النافذة المنبثقة */
-                        #adOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9998; }
-                        #adFormWrap { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #0B1F3A; border: 2px solid #F5C400; border-radius: 16px; padding: 20px; z-index: 9999; max-height: 90vh; overflow-y: auto; }
-                        @media (max-width: 767px) { #adFormWrap { width: calc(100% - 24px); max-width: 420px; } }
-                        @media (min-width: 768px) { #adFormWrap { width: 560px; } }
-                        #adFormWrap h3 { color: #FFFFFF; font-size: 20px; font-weight: 700; margin: 0 0 16px 0; display: flex; align-items: center; gap: 10px; }
-                        #adFormWrap h3 i { color: #F5C400; }
-
-                        /* الشبكة */
-                        .ad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-                        @media (max-width: 600px) { .ad-grid { grid-template-columns: 1fr; } }
+                        /* Bottom Sheet — معيار الهواتف */
+                        .yr-sheet-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:10000; }
+                        .yr-sheet { position:fixed; bottom:0; left:0; right:0; background:var(--navy-800); border-radius:16px 16px 0 0; border-top:2px solid var(--gold-400); max-height:60vh; overflow-y:auto; z-index:10001; padding-bottom:20px; }
+                        .yr-sheet-handle { width:44px; height:4px; background:var(--navy-600); border-radius:2px; margin:10px auto; }
+                        .yr-sheet-title { color:var(--text-muted); font-size:0.8rem; padding:4px 20px 10px; border-bottom:1px solid var(--navy-600); }
+                        .yr-sheet-opt { display:flex; align-items:center; gap:14px; padding:15px 20px; color:var(--text-main); font-size:0.95rem; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.04); }
+                        .yr-sheet-opt i { color:var(--gold-400); width:20px; text-align:center; }
+                        .yr-sheet-opt:active, .yr-sheet-opt.sel { background:var(--navy-900); }
+                        .yr-sheet-opt .fa-check { color:#10b981; margin-inline-start:auto; }
 
                         /* بطاقات الإعلانات */
-                        #adsList { background: #0B1F3A; padding: 20px; }
-                        .ad-card { background: #0B1F3A; border: 1px solid #E5E7EB; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-                        .ad-card h4 { color: #FFFFFF; font-size: 18px; font-weight: 700; margin: 0 0 8px 0; display: flex; align-items: center; gap: 8px; }
-                        .ad-card h4 i { color: #F5C400; }
-                        .ad-card .meta { color: #64748B; font-size: 13px; margin: 10px 0; display: flex; align-items: center; gap: 6px; }
-                        .ad-card .badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
-                        .ad-card .badge-active { background: rgba(22,163,74,0.15); color: #16A34A; }
-                        .ad-card .badge-paused { background: rgba(245,158,11,0.15); color: #F59E0B; }
+                        .ad-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px; }
+                        .ad-card h4 { color:var(--text-main); margin:0; font-size:0.98rem; display:flex; align-items:center; gap:8px; }
+                        .ad-card h4 i { color:var(--gold-400); }
+                        .ad-card .badge { padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:5px; }
+                        .ad-card .badge-active { background:rgba(16,185,129,0.15); color:#10b981; }
+                        .ad-card .badge-paused { background:rgba(245,158,11,0.15); color:#f59e0b; }
+                        .ad-card .meta { color:var(--text-muted); font-size:0.82rem; margin:10px 0; display:flex; align-items:center; gap:6px; }
 
-                        .empty-state { background: #0B1F3A; color: #64748B; text-align: center; padding: 40px 20px; }
-                        .empty-state i { color: #F5C400; font-size: 48px; margin-bottom: 16px; display: block; }
-
-                        .btn { height: 48px; font-size: 16px; font-weight: 700; border-radius: 10px; padding: 0 20px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+                        .ad-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+                        #adOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9998; }
+                        #adFormWrap { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--bg-card); border:1px solid var(--gold-400); border-radius:14px; padding:20px; z-index:9999; width:94%; max-width:640px; max-height:90vh; overflow-y:auto; }
+                        #adFormWrap h3 { color:var(--text-main); margin:0 0 16px; font-size:1.1rem; display:flex; align-items:center; gap:10px; }
+                        #adFormWrap h3 i { color:var(--gold-400); }
+                        @media (max-width:600px) { .ad-grid { grid-template-columns:1fr; } }
                     </style>
 
                     <div class="panel-header">
@@ -309,29 +770,29 @@
                         <input type="hidden" id="adEditId">
 
                         <div class="ad-grid">
-                            <div><label>اسم الإعلان *</label><input id="adName" placeholder="مثال: عروض رمضان"></div>
+                            <div><label>اسم الإعلان *</label><input id="adName" class="ad-input" placeholder="مثال: عروض رمضان"></div>
                             <div><label>النوع *</label><div id="adType" class="yr-sel"></div></div>
                         </div>
 
                         <div class="ad-grid">
                             <div><label>مكان العرض *</label><div id="adSlot" class="yr-sel"></div></div>
-                            <div><label>الرابط</label><input id="adLink" placeholder="https://..." dir="ltr"></div>
+                            <div><label>الرابط</label><input id="adLink" class="ad-input" placeholder="https://..." dir="ltr"></div>
                         </div>
 
                         <div style="margin-bottom:14px;">
                             <label>ملف الإعلان (صورة / فيديو)</label>
-                            <input type="file" id="adFile" accept="image/*,video/*" onchange="YRA.previewAdFile(this)">
+                            <input type="file" id="adFile" accept="image/*,video/*" class="ad-input" onchange="YRA.previewAdFile(this)">
                             <div id="adPreview" style="margin-top:8px;"></div>
                         </div>
 
                         <div id="adCodeWrap" style="display:none;margin-bottom:14px;">
                             <label>كود AdSense / HTML</label>
-                            <textarea id="adCode" rows="4" dir="ltr" placeholder="<script>...</script>"></textarea>
+                            <textarea id="adCode" class="ad-input" rows="4" dir="ltr" placeholder="<script>...</script>"></textarea>
                         </div>
 
                         <div class="ad-grid">
-                            <div><label>وقت البدء</label><input type="datetime-local" id="adStart"></div>
-                            <div><label>وقت الانتهاء</label><input type="datetime-local" id="adEnd"></div>
+                            <div><label>وقت البدء</label><input type="datetime-local" id="adStart" class="ad-input"></div>
+                            <div><label>وقت الانتهاء</label><input type="datetime-local" id="adEnd" class="ad-input"></div>
                         </div>
                         <div style="margin-bottom:14px;"><label>الحالة</label><div id="adStatus" class="yr-sel"></div></div>
 
@@ -740,10 +1201,10 @@ const YRA = {
                 const sb = module.createClient('https://wkdqeghotlipciqiytuj.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE');
                 const { data } = await sb.from('ad_slots').select('*').eq('status', 'ACTIVE');
                 const trans = {
-                    'HOME_TOP': ['أعلى الرئيسية', 'fa-house'], 'HOME_MIDDLE': ['وسط الرئيسية', 'fa-house'], 'HOME_BOTTOM': ['أسفل الرئيسية', 'fa-house'],
-                    'COMPANY_TOP': ['أعلى الشركات', 'fa-building'], 'COMPANY_MIDDLE': ['وسط الشركات', 'fa-building'], 'COMPANY_BOTTOM': ['أسفل الشركات', 'fa-building'],
-                    'JOBS_TOP': ['أعلى الوظائف', 'fa-briefcase'], 'JOBS_MIDDLE': ['وسط الوظائف', 'fa-briefcase'], 'JOBS_BOTTOM': ['أسفل الوظائف', 'fa-briefcase'],
-                    'BANKS_TOP': ['أعلى البنوك', 'fa-landmark'], 'ENTITIES_TOP': ['أعلى الكيانات', 'fa-list'], 'ENTITY_TOP': ['أعلى الكيان', 'fa-file']
+                    'HOME_TOP':['أعلى الرئيسية','fa-house'], 'HOME_MIDDLE':['وسط الرئيسية','fa-house'], 'HOME_BOTTOM':['أسفل الرئيسية','fa-house'],
+                    'COMPANY_TOP':['أعلى الشركات','fa-building'], 'COMPANY_MIDDLE':['وسط الشركات','fa-building'], 'COMPANY_BOTTOM':['أسفل الشركات','fa-building'],
+                    'JOBS_TOP':['أعلى الوظائف','fa-briefcase'], 'JOBS_MIDDLE':['وسط الوظائف','fa-briefcase'], 'JOBS_BOTTOM':['أسفل الوظائف','fa-briefcase'],
+                    'BANKS_TOP':['أعلى البنوك','fa-landmark'], 'ENTITIES_TOP':['أعلى الكيانات','fa-list'], 'ENTITY_TOP':['أعلى الكيان','fa-file']
                 };
                 this.adSlotsCache = (data || []).map(s => {
                     const tr = trans[s.name] || [s.name, 'fa-rectangle-ad'];
@@ -753,38 +1214,44 @@ const YRA = {
             return this.adSlotsCache;
         },
 
-        closeAllDropdowns() {
-            document.querySelectorAll('.yr-sheet, .yr-sheet-overlay, .yr-dropdown').forEach(x => x.remove());
+        closeSheet() {
+            document.querySelectorAll('.yr-sheet, .yr-sheet-overlay').forEach(x => x.remove());
         },
 
-        buildDropdown(el, options, defaultVal, onChange) {
+        buildSheet(el, options, defaultVal, onChange) {
             const self = this;
             const cur = options.find(o => o.v === defaultVal);
             el.dataset.value = defaultVal || '';
-
+            
             const paint = (o) => {
                 el.innerHTML = '<i class="fas ' + (o ? o.i : 'fa-bars') + ' sel-ico"></i><span class="sel-txt">' + (o ? o.t : 'اختر...') + '</span><i class="fas fa-chevron-down sel-arrow"></i>';
             };
             paint(cur);
-
+            
+            // ═══ منع تكرار الحدث ═══
             el.onclick = null;
             el.addEventListener('click', function(e) {
                 e.stopPropagation();
                 e.preventDefault();
-                self.closeAllDropdowns();
-
+                
+                // ═══ إغلاق كل القوائم المفتوحة أولاً (الأهم!) ═══
+                document.querySelectorAll('.yr-sheet, .yr-sheet-overlay, .yr-dropdown').forEach(x => x.remove());
+                document.querySelectorAll('.yr-sel.open').forEach(x => x.classList.remove('open'));
+                
                 const isMobile = window.innerWidth <= 768;
-
+                
                 if (isMobile) {
+                    // Bottom Sheet (الهاتف) — يُضاف مرة واحدة فقط
                     if (document.querySelector('.yr-sheet')) return;
+                    
                     const ov = document.createElement('div');
                     ov.className = 'yr-sheet-overlay';
-                    ov.onclick = () => self.closeAllDropdowns();
-
+                    ov.onclick = () => self.closeSheet();
+                    
                     const sheet = document.createElement('div');
                     sheet.className = 'yr-sheet';
                     sheet.innerHTML = '<div class="yr-sheet-handle"></div><div class="yr-sheet-title">اختر من القائمة</div>';
-
+                    
                     options.forEach(o => {
                         const d = document.createElement('div');
                         d.className = 'yr-sheet-opt' + (o.v === el.dataset.value ? ' sel' : '');
@@ -793,20 +1260,22 @@ const YRA = {
                             ev.stopPropagation();
                             el.dataset.value = o.v;
                             paint(o);
-                            self.closeAllDropdowns();
+                            self.closeSheet();
                             if (onChange) onChange(o.v);
                         };
                         sheet.appendChild(d);
                     });
-
+                    
                     document.body.appendChild(ov);
                     document.body.appendChild(sheet);
                 } else {
+                    // Dropdown (سطح المكتب) — يُضاف مرة واحدة فقط
                     if (el.querySelector('.yr-dropdown')) return;
+                    
                     el.style.position = 'relative';
                     const dropdown = document.createElement('div');
                     dropdown.className = 'yr-dropdown';
-
+                    
                     options.forEach(o => {
                         const d = document.createElement('div');
                         d.className = 'yr-dropdown-opt' + (o.v === el.dataset.value ? ' sel' : '');
@@ -820,9 +1289,9 @@ const YRA = {
                         };
                         dropdown.appendChild(d);
                     });
-
+                    
                     el.appendChild(dropdown);
-
+                    
                     setTimeout(() => {
                         document.addEventListener('click', function closeDropdown(ev) {
                             if (!el.contains(ev.target)) {
@@ -832,7 +1301,7 @@ const YRA = {
                         });
                     }, 10);
                 }
-            });
+            }, { once: false });
         },
 
         async renderAds() {
@@ -845,7 +1314,7 @@ const YRA = {
             const slots = await this.loadAdSlots();
             const slotMap = {};
             slots.forEach(s => slotMap[s.id] = s.name_ar || s.name);
-            const typeIcons = { banner: 'fa-rectangle-ad', adsense: 'fa-dollar-sign', html: 'fa-code', image: 'fa-image', video: 'fa-video', popup: 'fa-window-restore' };
+            const typeIcons = {banner:'fa-rectangle-ad', adsense:'fa-dollar-sign', html:'fa-code', image:'fa-image', video:'fa-video', popup:'fa-window-restore'};
 
             list.innerHTML = ads.map(a => {
                 const active = a.status === 'ACTIVE';
@@ -866,26 +1335,26 @@ const YRA = {
         async openAdForm(ad) {
             const slots = await this.loadAdSlots();
             const typeOpts = [
-                { v: 'banner', t: 'بانر إعلاني', i: 'fa-rectangle-ad' }, { v: 'adsense', t: 'Google AdSense', i: 'fa-dollar-sign' },
-                { v: 'html', t: 'كود HTML', i: 'fa-code' }, { v: 'image', t: 'صورة', i: 'fa-image' },
-                { v: 'video', t: 'فيديو', i: 'fa-video' }, { v: 'popup', t: 'نافذة منبثقة', i: 'fa-window-restore' }
+                {v:'banner', t:'بانر إعلاني', i:'fa-rectangle-ad'}, {v:'adsense', t:'Google AdSense', i:'fa-dollar-sign'},
+                {v:'html', t:'كود HTML', i:'fa-code'}, {v:'image', t:'صورة', i:'fa-image'},
+                {v:'video', t:'فيديو', i:'fa-video'}, {v:'popup', t:'نافذة منبثقة', i:'fa-window-restore'}
             ];
-            const statusOpts = [{ v: 'ACTIVE', t: 'نشط', i: 'fa-circle-check' }, { v: 'PAUSED', t: 'متوقف', i: 'fa-circle-pause' }];
-            const slotOpts = slots.map(s => ({ v: s.id, t: s.name_ar || s.name, i: s.icon || 'fa-rectangle-ad' }));
+            const statusOpts = [{v:'ACTIVE', t:'نشط', i:'fa-circle-check'}, {v:'PAUSED', t:'متوقف', i:'fa-circle-pause'}];
+            const slotOpts = slots.map(s => ({v: s.id, t: s.name_ar || s.name, i: s.icon || 'fa-rectangle-ad'}));
 
-            this.buildDropdown(document.getElementById('adType'), typeOpts, ad ? ad.ad_type : 'banner', v => {
+            this.buildSheet(document.getElementById('adType'), typeOpts, ad ? ad.ad_type : 'banner', v => {
                 document.getElementById('adCodeWrap').style.display = (v === 'adsense' || v === 'html') ? 'block' : 'none';
             });
-            this.buildDropdown(document.getElementById('adSlot'), slotOpts, ad ? ad.slot_id : '');
-            this.buildDropdown(document.getElementById('adStatus'), statusOpts, ad ? ad.status : 'ACTIVE');
+            this.buildSheet(document.getElementById('adSlot'), slotOpts, ad ? ad.slot_id : '');
+            this.buildSheet(document.getElementById('adStatus'), statusOpts, ad ? ad.status : 'ACTIVE');
 
             document.getElementById('adFormTitle').innerHTML = ad ? '<i class="fas fa-pen"></i> تعديل الإعلان' : '<i class="fas fa-bullhorn"></i> إضافة إعلان جديد';
             document.getElementById('adEditId').value = ad ? ad.id : '';
             document.getElementById('adName').value = ad ? (ad.title || '') : '';
             document.getElementById('adLink').value = ad ? (ad.link_url || '') : '';
             document.getElementById('adCode').value = ad ? (ad.content_html || '') : '';
-            document.getElementById('adStart').value = ad && ad.start_date ? ad.start_date.slice(0, 16) : '';
-            document.getElementById('adEnd').value = ad && ad.end_date ? ad.end_date.slice(0, 16) : '';
+            document.getElementById('adStart').value = ad && ad.start_date ? ad.start_date.slice(0,16) : '';
+            document.getElementById('adEnd').value = ad && ad.end_date ? ad.end_date.slice(0,16) : '';
             document.getElementById('adFile').value = '';
             document.getElementById('adPreview').innerHTML = ad && ad.media_url
                 ? (ad.media_url.startsWith('data:video') ? '<video src="' + ad.media_url + '" controls style="max-width:200px;border-radius:8px;"></video>' : '<img src="' + ad.media_url + '" style="max-width:200px;border-radius:8px;">')
@@ -897,7 +1366,7 @@ const YRA = {
         },
 
         closeAdForm() {
-            this.closeAllDropdowns();
+            this.closeSheet();
             document.getElementById('adFormWrap').style.display = 'none';
             document.getElementById('adOverlay').style.display = 'none';
         },
@@ -973,8 +1442,6 @@ const YRA = {
             this.renderAds();
             this.showToast('تم الحذف', 'success');
         },
-
-
         // ═══ الإشعارات ═══
         notify(title, message) {
             YR_DB.add('notifications', { title, message, read: false });
