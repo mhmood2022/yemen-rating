@@ -202,118 +202,94 @@
 
                 <section class="tab-panel" id="panel-ads">
                     <style>
-                        /* ═══ ستايل لوحة الإعلانات ═══ */
-                        #panel-ads .panel-header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid rgba(212,175,55,0.2); }
-                        #panel-ads .panel-header h2 { color:#fbbf24; font-size:1.3rem; margin:0; }
-                        
-                        /* ═══ Custom Dropdown ═══ */
-                        .yr-sel { position:relative; background:#020617; border:1px solid #d4af37; border-radius:8px; padding:10px 12px; color:#fbbf24; font-size:0.9rem; cursor:pointer; user-select:none; direction:rtl; font-family:inherit; min-height:42px; display:flex; align-items:center; }
-                        .yr-sel:after { content:"\f107"; font-family:"Font Awesome 6 Free"; font-weight:900; position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#d4af37; font-size:0.8rem; }
-                        .yr-sel.open { border-color:#fbbf24; }
-                        .yr-sel-options { position:absolute; top:100%; right:0; left:0; margin-top:4px; background:#020617; border:1px solid #d4af37; border-radius:8px; max-height:240px; overflow-y:auto; z-index:10000; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
-                        .yr-sel-opt { padding:10px 12px; color:#fbbf24; cursor:pointer; font-size:0.9rem; direction:rtl; font-family:inherit; }
-                        .yr-sel-opt:hover, .yr-sel-opt.sel { background:#1e293b; color:#fff; }
-                        
-                        /* ═══ حقول النموذج ═══ */
-                        .ad-input { background:#020617 !important; color:#fbbf24 !important; border:1px solid #d4af37 !important; border-radius:8px !important; padding:10px 12px !important; width:100% !important; font-family:inherit !important; font-size:0.9rem !important; direction:rtl !important; box-sizing:border-box; }
-                        .ad-input:focus { border-color:#fbbf24 !important; outline:none !important; box-shadow:0 0 0 2px rgba(251,191,36,0.2) !important; }
+                        #panel-ads .panel-header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--border); }
+                        #panel-ads .panel-header h2 { color:var(--text-main); font-size:1.25rem; margin:0; }
+                        #panel-ads .panel-header h2 i { color:var(--gold-400); margin-left:8px; }
+
+                        /* الحقول: نص أبيض، حدود هادئة */
+                        .ad-input { background:var(--navy-900); color:var(--text-main); border:1px solid var(--navy-600); border-radius:8px; padding:11px 12px; width:100%; font-family:inherit; font-size:0.92rem; direction:rtl; box-sizing:border-box; }
+                        .ad-input::placeholder { color:var(--text-muted); }
+                        .ad-input:focus { border-color:var(--gold-400); outline:none; }
                         input[type="datetime-local"].ad-input { color-scheme:dark; }
-                        input[type="datetime-local"].ad-input::-webkit-calendar-picker-indicator { filter:invert(0.8) sepia(1) saturate(3) hue-rotate(10deg); cursor:pointer; }
-                        
-                        /* ═══ Overlay + Modal ═══ */
-                        #adOverlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.75); z-index:9998; }
-                        #adFormWrap { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#0f172a; border:2px solid #d4af37; border-radius:14px; padding:24px; z-index:9999; width:95%; max-width:680px; max-height:92vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.7); }
-                        #adFormWrap h3 { color:#fbbf24; margin:0 0 16px 0; font-size:1.2rem; }
-                        #adFormWrap label { display:block; color:#94a3b8; font-size:0.82rem; margin-bottom:6px; font-weight:600; }
-                        .ad-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
-                        .ad-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px; }
-                        .ad-btns { display:flex; gap:8px; margin-top:16px; }
-                        .ad-btns .btn { flex:1; }
-                        
-                        /* ═══ قائمة الإعلانات ═══ */
-                        .ad-card { background:#0f172a; border:1px solid rgba(212,175,55,0.3); border-radius:12px; padding:16px; position:relative; }
-                        .ad-card h4 { color:#fbbf24; margin:0 0 8px 0; font-size:1rem; }
-                        .ad-card .badge { display:inline-block; padding:2px 10px; border-radius:12px; font-size:0.72rem; font-weight:700; }
-                        .ad-card .badge-active { background:#10b981; color:#fff; }
-                        .ad-card .badge-paused { background:#f59e0b; color:#fff; }
-                        .ad-card .meta { color:#94a3b8; font-size:0.82rem; margin-bottom:12px; }
-                        .ad-card .actions { display:flex; gap:6px; flex-wrap:wrap; }
-                        .ad-card .actions .btn { padding:6px 10px; font-size:0.78rem; }
-                        
-                        @media (max-width:600px) {
-                            .ad-grid, .ad-grid-3 { grid-template-columns:1fr; }
-                            #adFormWrap { padding:16px; }
-                        }
+                        #panel-ads label { display:block; color:var(--text-muted); font-size:0.8rem; margin-bottom:6px; font-weight:600; }
+
+                        /* زر الاختيار (يفتح Bottom Sheet) */
+                        .yr-sel { background:var(--navy-900); border:1px solid var(--navy-600); border-radius:8px; padding:11px 12px; display:flex; align-items:center; gap:10px; cursor:pointer; min-height:44px; box-sizing:border-box; }
+                        .yr-sel .sel-txt { flex:1; color:var(--text-main); font-size:0.92rem; }
+                        .yr-sel .sel-ico { color:var(--gold-400); width:18px; text-align:center; }
+                        .yr-sel .sel-arrow { color:var(--text-muted); font-size:0.75rem; }
+
+                        /* Bottom Sheet — معيار الهواتف */
+                        .yr-sheet-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:10000; }
+                        .yr-sheet { position:fixed; bottom:0; left:0; right:0; background:var(--navy-800); border-radius:16px 16px 0 0; border-top:2px solid var(--gold-400); max-height:60vh; overflow-y:auto; z-index:10001; padding-bottom:20px; }
+                        .yr-sheet-handle { width:44px; height:4px; background:var(--navy-600); border-radius:2px; margin:10px auto; }
+                        .yr-sheet-title { color:var(--text-muted); font-size:0.8rem; padding:4px 20px 10px; border-bottom:1px solid var(--navy-600); }
+                        .yr-sheet-opt { display:flex; align-items:center; gap:14px; padding:15px 20px; color:var(--text-main); font-size:0.95rem; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.04); }
+                        .yr-sheet-opt i { color:var(--gold-400); width:20px; text-align:center; }
+                        .yr-sheet-opt:active, .yr-sheet-opt.sel { background:var(--navy-900); }
+                        .yr-sheet-opt .fa-check { color:#10b981; margin-inline-start:auto; }
+
+                        /* بطاقات الإعلانات */
+                        .ad-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px; }
+                        .ad-card h4 { color:var(--text-main); margin:0; font-size:0.98rem; display:flex; align-items:center; gap:8px; }
+                        .ad-card h4 i { color:var(--gold-400); }
+                        .ad-card .badge { padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:5px; }
+                        .ad-card .badge-active { background:rgba(16,185,129,0.15); color:#10b981; }
+                        .ad-card .badge-paused { background:rgba(245,158,11,0.15); color:#f59e0b; }
+                        .ad-card .meta { color:var(--text-muted); font-size:0.82rem; margin:10px 0; display:flex; align-items:center; gap:6px; }
+
+                        .ad-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+                        #adOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9998; }
+                        #adFormWrap { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--bg-card); border:1px solid var(--gold-400); border-radius:14px; padding:20px; z-index:9999; width:94%; max-width:640px; max-height:90vh; overflow-y:auto; }
+                        #adFormWrap h3 { color:var(--text-main); margin:0 0 16px; font-size:1.1rem; display:flex; align-items:center; gap:10px; }
+                        #adFormWrap h3 i { color:var(--gold-400); }
+                        @media (max-width:600px) { .ad-grid { grid-template-columns:1fr; } }
                     </style>
-                    
+
                     <div class="panel-header">
                         <h2><i class="fas fa-bullhorn"></i> إدارة الإعلانات</h2>
                         <button class="btn btn-gold" onclick="YRA.openAdForm()"><i class="fas fa-plus"></i> إعلان جديد</button>
                     </div>
-                    
+
                     <div id="adOverlay" onclick="YRA.closeAdForm()"></div>
                     <div id="adFormWrap">
-                        <h3 id="adFormTitle">➕ إضافة إعلان جديد</h3>
+                        <h3 id="adFormTitle"><i class="fas fa-bullhorn"></i> إضافة إعلان جديد</h3>
                         <input type="hidden" id="adEditId">
-                        
+
                         <div class="ad-grid">
-                            <div>
-                                <label>اسم الإعلان *</label>
-                                <input id="adName" class="ad-input" placeholder="مثال: عروض رمضان">
-                            </div>
-                            <div>
-                                <label>النوع *</label>
-                                <div id="adType" class="yr-sel"></div>
-                                <input type="hidden" id="adTypeVal">
-                            </div>
+                            <div><label>اسم الإعلان *</label><input id="adName" class="ad-input" placeholder="مثال: عروض رمضان"></div>
+                            <div><label>النوع *</label><div id="adType" class="yr-sel"></div></div>
                         </div>
-                        
+
                         <div class="ad-grid">
-                            <div>
-                                <label>المكان *</label>
-                                <div id="adSlot" class="yr-sel"></div>
-                                <input type="hidden" id="adSlotVal">
-                            </div>
-                            <div>
-                                <label>الرابط</label>
-                                <input id="adLink" class="ad-input" placeholder="https://...">
-                            </div>
+                            <div><label>مكان العرض *</label><div id="adSlot" class="yr-sel"></div></div>
+                            <div><label>الرابط</label><input id="adLink" class="ad-input" placeholder="https://..." dir="ltr"></div>
                         </div>
-                        
-                        <div style="margin-bottom:12px;">
-                            <label>تحميل ملف (صورة/فيديو)</label>
+
+                        <div style="margin-bottom:14px;">
+                            <label>ملف الإعلان (صورة / فيديو)</label>
                             <input type="file" id="adFile" accept="image/*,video/*" class="ad-input" onchange="YRA.previewAdFile(this)">
                             <div id="adPreview" style="margin-top:8px;"></div>
                         </div>
-                        
-                        <div id="adCodeWrap" style="display:none;margin-bottom:12px;">
+
+                        <div id="adCodeWrap" style="display:none;margin-bottom:14px;">
                             <label>كود AdSense / HTML</label>
-                            <textarea id="adCode" class="ad-input" rows="4" placeholder="الصق الكود هنا"></textarea>
+                            <textarea id="adCode" class="ad-input" rows="4" dir="ltr" placeholder="<script>...</script>"></textarea>
                         </div>
-                        
-                        <div class="ad-grid-3">
-                            <div>
-                                <label>وقت البدء</label>
-                                <input type="datetime-local" id="adStart" class="ad-input">
-                            </div>
-                            <div>
-                                <label>وقت الانتهاء</label>
-                                <input type="datetime-local" id="adEnd" class="ad-input">
-                            </div>
-                            <div>
-                                <label>الحالة</label>
-                                <div id="adStatus" class="yr-sel"></div>
-                                <input type="hidden" id="adStatusVal">
-                            </div>
+
+                        <div class="ad-grid">
+                            <div><label>وقت البدء</label><input type="datetime-local" id="adStart" class="ad-input"></div>
+                            <div><label>وقت الانتهاء</label><input type="datetime-local" id="adEnd" class="ad-input"></div>
                         </div>
-                        
-                        <div class="ad-btns">
-                            <button class="btn btn-gold" onclick="YRA.saveAd()"><i class="fas fa-save"></i> حفظ</button>
-                            <button class="btn btn-outline" onclick="YRA.closeAdForm()">إلغاء</button>
+                        <div style="margin-bottom:14px;"><label>الحالة</label><div id="adStatus" class="yr-sel"></div></div>
+
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-gold" style="flex:1" onclick="YRA.saveAd()"><i class="fas fa-save"></i> حفظ الإعلان</button>
+                            <button class="btn btn-outline" onclick="YRA.closeAdForm()"><i class="fas fa-xmark"></i></button>
                         </div>
                     </div>
-                    
-                    <div id="adsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;padding:20px;"></div>
+
+                    <div id="adsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;padding:20px;"></div>
                 </section>
 
                 <section class="tab-panel" id="panel-notifications">
@@ -704,7 +680,7 @@ const YRA = {
 
         // ═══ الإعلانات ═══
         adSlotsCache: null,
-        
+
         async loadAdSlots() {
             if (this.adSlotsCache) return this.adSlotsCache;
             try {
@@ -712,52 +688,58 @@ const YRA = {
                 const sb = module.createClient('https://wkdqeghotlipciqiytuj.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE');
                 const { data } = await sb.from('ad_slots').select('*').eq('status', 'ACTIVE');
                 const trans = {
-                    'HOME_TOP':'🏠 أعلى الرئيسية', 'HOME_MIDDLE':'🏠 وسط الرئيسية', 'HOME_BOTTOM':'🏠 أسفل الرئيسية',
-                    'COMPANY_TOP':'🏢 أعلى الشركات', 'COMPANY_MIDDLE':'🏢 وسط الشركات', 'COMPANY_BOTTOM':'🏢 أسفل الشركات',
-                    'JOBS_TOP':'💼 أعلى الوظائف', 'JOBS_MIDDLE':'💼 وسط الوظائف', 'JOBS_BOTTOM':'💼 أسفل الوظائف',
-                    'BANKS_TOP':'🏦 أعلى البنوك', 'ENTITIES_TOP':'📋 أعلى الكيانات', 'ENTITY_TOP':'📄 أعلى الكيان'
+                    'HOME_TOP':['أعلى الرئيسية','fa-house'], 'HOME_MIDDLE':['وسط الرئيسية','fa-house'], 'HOME_BOTTOM':['أسفل الرئيسية','fa-house'],
+                    'COMPANY_TOP':['أعلى الشركات','fa-building'], 'COMPANY_MIDDLE':['وسط الشركات','fa-building'], 'COMPANY_BOTTOM':['أسفل الشركات','fa-building'],
+                    'JOBS_TOP':['أعلى الوظائف','fa-briefcase'], 'JOBS_MIDDLE':['وسط الوظائف','fa-briefcase'], 'JOBS_BOTTOM':['أسفل الوظائف','fa-briefcase'],
+                    'BANKS_TOP':['أعلى البنوك','fa-landmark'], 'ENTITIES_TOP':['أعلى الكيانات','fa-list'], 'ENTITY_TOP':['أعلى الكيان','fa-file']
                 };
-                this.adSlotsCache = (data || []).map(s => ({ ...s, name_ar: trans[s.name] || s.name }));
+                this.adSlotsCache = (data || []).map(s => {
+                    const tr = trans[s.name] || [s.name, 'fa-rectangle-ad'];
+                    return { ...s, name_ar: tr[0], icon: tr[1] };
+                });
             } catch(e) { this.adSlotsCache = []; }
             return this.adSlotsCache;
         },
-        
-        buildDropdown(el, options, defaultVal, onChange) {
-            options = options || [];
-            defaultVal = defaultVal || '';
-            el.innerHTML = '<div class="yr-sel-label" style="flex:1;">— اختر —</div>';
-            el.dataset.value = defaultVal;
-            
-            // عرض القيمة الافتراضية
-            var defOpt = options.find(o => o.v === defaultVal);
-            if (defOpt) el.querySelector('.yr-sel-label').textContent = defOpt.t;
-            
+
+        closeSheet() {
+            document.querySelectorAll('.yr-sheet, .yr-sheet-overlay').forEach(x => x.remove());
+        },
+
+        buildSheet(el, options, defaultVal, onChange) {
+            const self = this;
+            const cur = options.find(o => o.v === defaultVal);
+            el.dataset.value = defaultVal || '';
+            const paint = (o) => {
+                el.innerHTML = '<i class="fas ' + (o ? o.i : 'fa-bars') + ' sel-ico"></i><span class="sel-txt">' + (o ? o.t : 'اختر...') + '</span><i class="fas fa-chevron-down sel-arrow"></i>';
+            };
+            paint(cur);
             el.onclick = function(e) {
                 e.stopPropagation();
-                document.querySelectorAll('.yr-sel-options').forEach(o => o.remove());
-                document.querySelectorAll('.yr-sel.open').forEach(o => o.classList.remove('open'));
-                
-                var opts = document.createElement('div');
-                opts.className = 'yr-sel-options';
+                self.closeSheet();
+                const ov = document.createElement('div');
+                ov.className = 'yr-sheet-overlay';
+                ov.onclick = () => self.closeSheet();
+                const sheet = document.createElement('div');
+                sheet.className = 'yr-sheet';
+                sheet.innerHTML = '<div class="yr-sheet-handle"></div><div class="yr-sheet-title">اختر من القائمة</div>';
                 options.forEach(o => {
-                    var d = document.createElement('div');
-                    d.className = 'yr-sel-opt' + (o.v === el.dataset.value ? ' sel' : '');
-                    d.textContent = o.t;
+                    const d = document.createElement('div');
+                    d.className = 'yr-sheet-opt' + (o.v === el.dataset.value ? ' sel' : '');
+                    d.innerHTML = '<i class="fas ' + o.i + '"></i><span style="flex:1">' + o.t + '</span>' + (o.v === el.dataset.value ? '<i class="fas fa-check"></i>' : '');
                     d.onclick = function(ev) {
                         ev.stopPropagation();
                         el.dataset.value = o.v;
-                        el.querySelector('.yr-sel-label').textContent = o.t;
-                        opts.remove();
-                        el.classList.remove('open');
+                        paint(o);
+                        self.closeSheet();
                         if (onChange) onChange(o.v);
                     };
-                    opts.appendChild(d);
+                    sheet.appendChild(d);
                 });
-                el.appendChild(opts);
-                el.classList.add('open');
+                document.body.appendChild(ov);
+                document.body.appendChild(sheet);
             };
         },
-        
+
         async renderAds() {
             const list = document.getElementById('adsList');
             const ads = YR_DB.get('advertisements');
@@ -768,91 +750,75 @@ const YRA = {
             const slots = await this.loadAdSlots();
             const slotMap = {};
             slots.forEach(s => slotMap[s.id] = s.name_ar || s.name);
-            
+            const typeIcons = {banner:'fa-rectangle-ad', adsense:'fa-dollar-sign', html:'fa-code', image:'fa-image', video:'fa-video', popup:'fa-window-restore'};
+
             list.innerHTML = ads.map(a => {
-                const slotName = slotMap[a.slot_id] || 'بدون مكان';
-                const badgeClass = a.status === 'ACTIVE' ? 'badge-active' : 'badge-paused';
-                const badgeText = a.status === 'ACTIVE' ? '🟢 نشط' : '⏸️ متوقف';
-                const typeIcon = {banner:'🖼️',adsense:'💰',html:'💻',image:'📷',video:'🎥',popup:'🔔'}[a.ad_type] || '📢';
-                
+                const active = a.status === 'ACTIVE';
                 return '<div class="ad-card">' +
-                    '<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">' +
-                    '<h4>' + typeIcon + ' ' + this.esc(a.title) + '</h4>' +
-                    '<span class="badge ' + badgeClass + '">' + badgeText + '</span>' +
+                    '<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">' +
+                    '<h4><i class="fas ' + (typeIcons[a.ad_type] || 'fa-bullhorn') + '"></i> ' + this.esc(a.title) + '</h4>' +
+                    '<span class="badge ' + (active ? 'badge-active' : 'badge-paused') + '"><i class="fas ' + (active ? 'fa-circle-check' : 'fa-circle-pause') + '"></i> ' + (active ? 'نشط' : 'متوقف') + '</span>' +
                     '</div>' +
-                    '<div class="meta">📍 ' + slotName + ' • 👁️ ' + (a.clicks||0) + ' نقرة</div>' +
-                    '<div class="actions">' +
-                    '<button class="btn btn-outline" onclick="YRA.editAd(\'' + a.id + '\')"><i class="fas fa-edit"></i> تعديل</button>' +
-                    '<button class="btn btn-gold" onclick="YRA.toggleAd(\'' + a.id + '\')"><i class="fas fa-' + (a.status === 'ACTIVE' ? 'pause' : 'play') + '"></i></button>' +
-                    '<button class="btn btn-danger" onclick="YRA.deleteAd(\'' + a.id + '\')"><i class="fas fa-trash"></i></button>' +
+                    '<div class="meta"><i class="fas fa-location-dot"></i> ' + (slotMap[a.slot_id] || 'بدون مكان') + ' &nbsp;•&nbsp; <i class="fas fa-hand-pointer"></i> ' + (a.clicks || 0) + ' نقرة</div>' +
+                    '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+                    '<button class="btn btn-sm btn-outline" onclick="YRA.editAd(\'' + a.id + '\')"><i class="fas fa-pen"></i> تعديل</button>' +
+                    '<button class="btn btn-sm btn-gold" onclick="YRA.toggleAd(\'' + a.id + '\')"><i class="fas ' + (active ? 'fa-pause' : 'fa-play') + '"></i> ' + (active ? 'إيقاف' : 'تنشيط') + '</button>' +
+                    '<button class="btn btn-sm btn-danger" onclick="YRA.deleteAd(\'' + a.id + '\')"><i class="fas fa-trash"></i> حذف</button>' +
                     '</div></div>';
             }).join('');
         },
-        
+
         async openAdForm(ad) {
             const slots = await this.loadAdSlots();
             const typeOpts = [
-                {v:'banner', t:'🖼️ بانر (صورة)'}, {v:'adsense', t:'💰 AdSense'}, {v:'html', t:'💻 كود HTML'},
-                {v:'image', t:'📷 صورة فقط'}, {v:'video', t:'🎥 فيديو'}, {v:'popup', t:'🔔 بوب أب'}
+                {v:'banner', t:'بانر إعلاني', i:'fa-rectangle-ad'}, {v:'adsense', t:'Google AdSense', i:'fa-dollar-sign'},
+                {v:'html', t:'كود HTML', i:'fa-code'}, {v:'image', t:'صورة', i:'fa-image'},
+                {v:'video', t:'فيديو', i:'fa-video'}, {v:'popup', t:'نافذة منبثقة', i:'fa-window-restore'}
             ];
-            const statusOpts = [{v:'ACTIVE', t:'🟢 نشط'}, {v:'PAUSED', t:'⏸️ متوقف'}];
-            const slotOpts = slots.map(s => ({v: s.id, t: s.name_ar || s.name}));
-            
-            this.buildDropdown(document.getElementById('adType'), typeOpts, ad ? ad.ad_type : 'banner', (v) => {
+            const statusOpts = [{v:'ACTIVE', t:'نشط', i:'fa-circle-check'}, {v:'PAUSED', t:'متوقف', i:'fa-circle-pause'}];
+            const slotOpts = slots.map(s => ({v: s.id, t: s.name_ar || s.name, i: s.icon || 'fa-rectangle-ad'}));
+
+            this.buildSheet(document.getElementById('adType'), typeOpts, ad ? ad.ad_type : 'banner', v => {
                 document.getElementById('adCodeWrap').style.display = (v === 'adsense' || v === 'html') ? 'block' : 'none';
             });
-            this.buildDropdown(document.getElementById('adSlot'), slotOpts, ad ? ad.slot_id : '');
-            this.buildDropdown(document.getElementById('adStatus'), statusOpts, ad ? ad.status : 'ACTIVE');
-            
-            if (ad) {
-                document.getElementById('adFormTitle').textContent = '✏️ تعديل الإعلان';
-                document.getElementById('adEditId').value = ad.id;
-                document.getElementById('adName').value = ad.title || '';
-                document.getElementById('adLink').value = ad.link_url || '';
-                document.getElementById('adCode').value = ad.content_html || '';
-                document.getElementById('adStart').value = ad.start_date ? ad.start_date.slice(0,16) : '';
-                document.getElementById('adEnd').value = ad.end_date ? ad.end_date.slice(0,16) : '';
-                if (ad.media_url) {
-                    const isVideo = ad.media_url.startsWith('data:video');
-                    document.getElementById('adPreview').innerHTML = isVideo
-                        ? '<video src="' + ad.media_url + '" controls style="max-width:200px;border-radius:8px;"></video>'
-                        : '<img src="' + ad.media_url + '" style="max-width:200px;border-radius:8px;">';
-                }
-            } else {
-                document.getElementById('adFormTitle').textContent = '➕ إضافة إعلان جديد';
-                document.getElementById('adEditId').value = '';
-                document.getElementById('adName').value = '';
-                document.getElementById('adLink').value = '';
-                document.getElementById('adCode').value = '';
-                document.getElementById('adStart').value = '';
-                document.getElementById('adEnd').value = '';
-                document.getElementById('adFile').value = '';
-                document.getElementById('adPreview').innerHTML = '';
-            }
-            
+            this.buildSheet(document.getElementById('adSlot'), slotOpts, ad ? ad.slot_id : '');
+            this.buildSheet(document.getElementById('adStatus'), statusOpts, ad ? ad.status : 'ACTIVE');
+
+            document.getElementById('adFormTitle').innerHTML = ad ? '<i class="fas fa-pen"></i> تعديل الإعلان' : '<i class="fas fa-bullhorn"></i> إضافة إعلان جديد';
+            document.getElementById('adEditId').value = ad ? ad.id : '';
+            document.getElementById('adName').value = ad ? (ad.title || '') : '';
+            document.getElementById('adLink').value = ad ? (ad.link_url || '') : '';
+            document.getElementById('adCode').value = ad ? (ad.content_html || '') : '';
+            document.getElementById('adStart').value = ad && ad.start_date ? ad.start_date.slice(0,16) : '';
+            document.getElementById('adEnd').value = ad && ad.end_date ? ad.end_date.slice(0,16) : '';
+            document.getElementById('adFile').value = '';
+            document.getElementById('adPreview').innerHTML = ad && ad.media_url
+                ? (ad.media_url.startsWith('data:video') ? '<video src="' + ad.media_url + '" controls style="max-width:200px;border-radius:8px;"></video>' : '<img src="' + ad.media_url + '" style="max-width:200px;border-radius:8px;">')
+                : '';
+            document.getElementById('adCodeWrap').style.display = (ad && (ad.ad_type === 'adsense' || ad.ad_type === 'html')) ? 'block' : 'none';
+
             document.getElementById('adFormWrap').style.display = 'block';
             document.getElementById('adOverlay').style.display = 'block';
         },
-        
+
         closeAdForm() {
+            this.closeSheet();
             document.getElementById('adFormWrap').style.display = 'none';
             document.getElementById('adOverlay').style.display = 'none';
-            document.querySelectorAll('.yr-sel-options').forEach(o => o.remove());
         },
-        
+
         previewAdFile(input) {
             const file = input.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
-                const isVideo = file.type.startsWith('video/');
-                document.getElementById('adPreview').innerHTML = isVideo
+            reader.onload = e => {
+                document.getElementById('adPreview').innerHTML = file.type.startsWith('video/')
                     ? '<video src="' + e.target.result + '" controls style="max-width:200px;border-radius:8px;"></video>'
                     : '<img src="' + e.target.result + '" style="max-width:200px;border-radius:8px;">';
             };
             reader.readAsDataURL(file);
         },
-        
+
         async saveAd() {
             const editId = document.getElementById('adEditId').value;
             const title = document.getElementById('adName').value.trim();
@@ -863,57 +829,54 @@ const YRA = {
             const start_date = document.getElementById('adStart').value || null;
             const end_date = document.getElementById('adEnd').value || null;
             const status = document.getElementById('adStatus').dataset.value || 'ACTIVE';
-            
-            if (!title) { this.showToast('❌ أدخل اسم الإعلان', 'error'); return; }
-            if (!slot_id) { this.showToast('❌ اختر المكان', 'error'); return; }
-            
+
+            if (!title) { this.showToast('أدخل اسم الإعلان', 'error'); return; }
+            if (!slot_id) { this.showToast('اختر مكان العرض', 'error'); return; }
+
             let media_url = null;
             const fileInput = document.getElementById('adFile');
             if (fileInput.files[0]) {
-                media_url = await new Promise(resolve => {
-                    const reader = new FileReader();
-                    reader.onload = e => resolve(e.target.result);
-                    reader.readAsDataURL(fileInput.files[0]);
+                media_url = await new Promise(res => {
+                    const r = new FileReader();
+                    r.onload = e => res(e.target.result);
+                    r.readAsDataURL(fileInput.files[0]);
                 });
             } else if (editId) {
-                const existing = YR_DB.findById('advertisements', editId);
-                media_url = existing ? existing.media_url : null;
+                const ex = YR_DB.findById('advertisements', editId);
+                media_url = ex ? ex.media_url : null;
             }
-            
+
             const adData = { title, ad_type, slot_id, link_url, content_html, media_url, start_date, end_date, status, clicks: 0 };
-            
             if (editId) {
                 await YR_DB.update('advertisements', editId, adData);
-                this.showToast('✅ تم تعديل الإعلان', 'success');
+                this.showToast('تم تعديل الإعلان', 'success');
             } else {
                 await YR_DB.add('advertisements', adData);
-                this.showToast('✅ تم إضافة الإعلان', 'success');
+                this.showToast('تم إضافة الإعلان', 'success');
             }
-            
             this.closeAdForm();
             this.renderAds();
         },
-        
+
         async editAd(id) {
             const ad = YR_DB.findById('advertisements', id);
-            if (!ad) return;
-            await this.openAdForm(ad);
+            if (ad) await this.openAdForm(ad);
         },
-        
+
         async toggleAd(id) {
             const ad = YR_DB.findById('advertisements', id);
             if (!ad) return;
-            const newStatus = ad.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
-            await YR_DB.update('advertisements', id, { status: newStatus });
+            const ns = ad.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
+            await YR_DB.update('advertisements', id, { status: ns });
             this.renderAds();
-            this.showToast(newStatus === 'ACTIVE' ? '▶️ تم التنشيط' : '⏸️ تم الإيقاف', 'success');
+            this.showToast(ns === 'ACTIVE' ? 'تم التنشيط' : 'تم الإيقاف', 'success');
         },
-        
+
         async deleteAd(id) {
             if (!confirm('حذف هذا الإعلان نهائياً؟')) return;
             await YR_DB.remove('advertisements', id);
             this.renderAds();
-            this.showToast('🗑️ تم الحذف', 'success');
+            this.showToast('تم الحذف', 'success');
         },
         // ═══ الإشعارات ═══
         notify(title, message) {
