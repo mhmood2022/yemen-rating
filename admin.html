@@ -256,6 +256,74 @@
 }
 </style>
 
+                    
+<style>
+/* Custom Select — نفس ستايل الموقع */
+.yr-sel {
+    position:relative; width:100%; background:#020617;
+    border:1px solid #d4af37; border-radius:8px;
+    padding:10px 12px; color:#fbbf24; font-size:0.9rem;
+    cursor:pointer; user-select:none; direction:rtl;
+    font-family:inherit; min-height:42px; display:flex; align-items:center;
+}
+.yr-sel:after {
+    content:"\f107"; font-family:"Font Awesome 6 Free"; font-weight:900;
+    position:absolute; left:12px; top:50%; transform:translateY(-50%);
+    color:#d4af37; font-size:0.8rem;
+}
+.yr-sel.open { border-color:#fbbf24; }
+.yr-sel-options {
+    position:absolute; top:100%; right:0; left:0; margin-top:4px;
+    background:#020617; border:1px solid #d4af37; border-radius:8px;
+    max-height:240px; overflow-y:auto; z-index:10000;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);
+}
+.yr-sel-opt {
+    padding:10px 12px; color:#fbbf24; cursor:pointer; font-size:0.9rem;
+    direction:rtl; font-family:inherit;
+}
+.yr-sel-opt:hover, .yr-sel-opt.sel {
+    background:#1e293b; color:#fff;
+}
+
+/* Date inputs — ستايل موحد */
+#panel-ads input[type="datetime-local"] {
+    color-scheme:dark;
+    background:#020617 !important;
+    color:#fbbf24 !important;
+    border:1px solid #d4af37 !important;
+    border-radius:8px !important;
+    padding:10px 12px !important;
+    width:100% !important;
+    font-size:0.88rem !important;
+    font-family:inherit !important;
+}
+#panel-ads input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter:invert(0.8) sepia(1) saturate(3) hue-rotate(10deg);
+    cursor:pointer;
+}
+
+/* باقي حقول النموذج */
+#panel-ads input[type="text"],
+#panel-ads input[type="url"],
+#panel-ads input[type="file"],
+#panel-ads textarea {
+    background:#020617 !important;
+    color:#fbbf24 !important;
+    border:1px solid #d4af37 !important;
+    border-radius:8px !important;
+    padding:10px 12px !important;
+    width:100% !important;
+    font-family:inherit !important;
+    font-size:0.9rem !important;
+}
+#panel-ads input:focus, #panel-ads textarea:focus {
+    border-color:#fbbf24 !important;
+    outline:none !important;
+    box-shadow:0 0 0 2px rgba(251,191,36,0.2) !important;
+}
+</style>
+
                     <div id="adOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9998;" onclick="YRA.closeAdForm()"></div>
 <div id="adFormWrap" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0f172a;border:2px solid #d4af37;border-radius:14px;padding:24px;z-index:9999;width:95%;max-width:680px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.7);color:#f8fafc;font-family:Cairo,sans-serif;">
                         <h3 id="adFormTitle" style="color:var(--gold-500);margin-bottom:16px;">➕ إضافة إعلان جديد</h3>
@@ -274,7 +342,7 @@ select.form-control option { background:var(--navy-800); color:var(--text-main);
                             </div>
                             <div>
                                 <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">النوع *</label>
-                                <select id="adType" class="form-control" onchange="YRA.onAdTypeChange()">
+                                <div id="adType" class="yr-sel" data-hidden="adTypeVal" data-onchange="YRA.onAdTypeChange()"></div><input type="hidden" id="adTypeVal" name="adTypeVal">
                                     <option value="banner">🖼️ بانر (صورة)</option>
                                     <option value="adsense">💰 AdSense</option>
                                     <option value="html">💻 كود HTML</option>
@@ -288,7 +356,7 @@ select.form-control option { background:var(--navy-800); color:var(--text-main);
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
                             <div>
                                 <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">المكان *</label>
-                                <select id="adSlot" class="form-control"></select>
+                                <div id="adSlot" class="yr-sel" data-hidden="adSlotVal"></div><input type="hidden" id="adSlotVal" name="adSlotVal">
                             </div>
                             <div>
                                 <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">الرابط</label>
@@ -318,10 +386,7 @@ select.form-control option { background:var(--navy-800); color:var(--text-main);
                             </div>
                             <div>
                                 <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">الحالة</label>
-                                <select id="adStatus" class="form-control">
-                                    <option value="ACTIVE">🟢 نشط</option>
-                                    <option value="PAUSED">⏸️ متوقف</option>
-                                </select>
+                                <div id="adStatus" class="yr-sel" data-hidden="adStatusVal" data-options='[{"v":"ACTIVE","t":"🟢 نشط"},{"v":"PAUSED","t":"⏸️ متوقف"}]'></div><input type="hidden" id="adStatusVal" name="adStatusVal">
                             </div>
                         </div>
                         
@@ -352,7 +417,17 @@ select.form-control option { background:var(--navy-800); color:var(--text-main);
 
     <script src="js/db.js"></script>
     <script>
-        const YRA = {
+        
+    // إغلاق أي dropdown عند النقر خارجها
+    if (!window._yrSelGlobalHandler) {
+        window._yrSelGlobalHandler = true;
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.yr-sel-options').forEach(function(o){ o.remove(); });
+            document.querySelectorAll('.yr-sel.open').forEach(function(o){ o.classList.remove('open'); });
+        });
+    }
+
+const YRA = {
             init() {
                 YR_DB.init().then(() => {
                     this.checkAuth();
@@ -738,6 +813,77 @@ select.form-control option { background:var(--navy-800); color:var(--text-main);
             return this.adSlotsCache;
         },
         
+
+        // ═══ Custom Dropdown Builder ═══
+        buildCustomDropdown(el, options, defaultValue) {
+            options = options || [];
+            defaultValue = defaultValue || '';
+            el.innerHTML = '<div class="yr-sel-label" style="flex:1;"></div>';
+            el.dataset.value = defaultValue;
+            
+            var hiddenId = el.dataset.hidden;
+            var hiddenInput = hiddenId ? document.getElementById(hiddenId) : null;
+            if (hiddenInput) hiddenInput.value = defaultValue;
+            
+            // عرض القيمة الافتراضية
+            var defOpt = options.find(function(o){ return o.v === defaultValue; });
+            el.querySelector('.yr-sel-label').textContent = defOpt ? defOpt.t : '— اختر —';
+            
+            el.onclick = function(e) {
+                e.stopPropagation();
+                // إغلاق أي dropdown مفتوح
+                document.querySelectorAll('.yr-sel-options').forEach(function(o){ o.remove(); });
+                document.querySelectorAll('.yr-sel.open').forEach(function(o){ o.classList.remove('open'); });
+                
+                var opts = document.createElement('div');
+                opts.className = 'yr-sel-options';
+                options.forEach(function(o){
+                    var d = document.createElement('div');
+                    d.className = 'yr-sel-opt' + (o.v === el.dataset.value ? ' sel' : '');
+                    d.textContent = o.t;
+                    d.onclick = function(ev) {
+                        ev.stopPropagation();
+                        el.dataset.value = o.v;
+                        el.querySelector('.yr-sel-label').textContent = o.t;
+                        if (hiddenInput) hiddenInput.value = o.v;
+                        opts.remove();
+                        el.classList.remove('open');
+                        if (el.dataset.onchange && window.YRA && typeof window.YRA[el.dataset.onchange.replace('YRA.','')] === 'function') {
+                            window.YRA[el.dataset.onchange.replace('YRA.','')]();
+                        }
+                    };
+                    opts.appendChild(d);
+                });
+                el.appendChild(opts);
+                el.classList.add('open');
+            };
+        },
+        
+        initAdDropdowns() {
+            // 1. dropdown النوع
+            var typeOpts = [
+                {v:'banner', t:'🖼️ بانر (صورة)'},
+                {v:'adsense', t:'💰 AdSense'},
+                {v:'html', t:'💻 كود HTML'},
+                {v:'image', t:'📷 صورة فقط'},
+                {v:'video', t:'🎥 فيديو'},
+                {v:'popup', t:'🔔 بوب أب'}
+            ];
+            var typeEl = document.getElementById('adType');
+            if (typeEl && typeEl.classList.contains('yr-sel')) {
+                this.buildCustomDropdown(typeEl, typeOpts, 'banner');
+            }
+            
+            // 2. dropdown الحالة
+            var statusEl = document.getElementById('adStatus');
+            if (statusEl && statusEl.dataset.options) {
+                try {
+                    var statusOpts = JSON.parse(statusEl.dataset.options);
+                    this.buildCustomDropdown(statusEl, statusOpts, 'ACTIVE');
+                } catch(e) {}
+            }
+        },
+
         async renderAds() {
             const list = document.getElementById('adsList');
             const ads = YR_DB.get('advertisements');
@@ -807,6 +953,7 @@ select.form-control option { background:var(--navy-800); color:var(--text-main);
                 document.getElementById('adPreview').innerHTML = '';
                 this.onAdTypeChange();
             }
+            this.initAdDropdowns();
             document.getElementById('adFormWrap').style.display = 'block';
             document.getElementById('adOverlay').style.display = 'block';
         },
@@ -840,13 +987,13 @@ select.form-control option { background:var(--navy-800); color:var(--text-main);
         async saveAd() {
             const editId = document.getElementById('adEditId').value;
             const title = document.getElementById('adName').value.trim();
-            const ad_type = document.getElementById('adType').value;
-            const slot_id = document.getElementById('adSlot').value;
+            const ad_type = document.getElementById('adTypeVal').value || document.getElementById('adType').dataset.value;
+            const slot_id = document.getElementById('adSlotVal').value || document.getElementById('adSlot').dataset.value;
             const link_url = document.getElementById('adLink').value.trim();
             const content_html = document.getElementById('adCode').value.trim();
             const start_date = document.getElementById('adStart').value || null;
             const end_date = document.getElementById('adEnd').value || null;
-            const status = document.getElementById('adStatus').value;
+            const status = document.getElementById('adStatusVal').value || document.getElementById('adStatus').dataset.value || 'ACTIVE';
             
             if (!title) { this.showToast('❌ أدخل اسم الإعلان', 'error'); return; }
             if (!slot_id) { this.showToast('❌ اختر المكان', 'error'); return; }
