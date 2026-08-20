@@ -85,22 +85,49 @@
         } catch(e){ console.warn('[SB] mirrorAdd '+t+': '+e.message); }
         return null;
     }
+    
+    function extractSbId(id, row) {
+        if (!id) return null;
+        if (row && row._sbId) return row._sbId;
+        if (String(id).indexOf('sb_') === 0) return String(id).replace('sb_', '');
+        // UUID مباشرة (من Supabase)
+        if (String(id).length === 36 && String(id).indexOf('-') === 8) return String(id);
+        return null;
+    }
+
     async function mirrorUpdate(t,id,u){
-        if (!authed) return;
-        var map = {companies:'entities',banks:'entities',jobs:'jobs',reviews:'reviews',advertisements:'advertisements'};
-        var table = map[t]; if (!table || !id || id.indexOf('sb_')!==0) return;
-        var sbId = id.replace('sb_','');
+        if (!authed) { console.warn('[SB] mirrorUpdate: غير موثق'); return; }
+        var map = {companies:'entities',banks:'entities',jobs:'jobs',reviews:'reviews',ads:'advertisements',advertisements:'advertisements'};
+        var table = map[t];
+        if (!table) { console.warn('[SB] mirrorUpdate: جدول غير معروف '+t); return; }
+        var row = null;
+        try { row = YR_DB.findById(t, id); } catch(e){}
+        var sbId = extractSbId(id, row);
+        if (!sbId) { console.warn('[SB] mirrorUpdate: لا يوجد ID صالح لـ '+id); return; }
         var payload = {};
         if (u.status) payload.status = (u.status==='active'||u.status==='PUBLISHED')?'PUBLISHED':u.status;
         if (u.verified!==undefined) payload.status = u.verified?'PUBLISHED':'PENDING';
-        if (u.name) payload.name = u.name; if (u.title) payload.title = u.title;
-        try { await sb.from(table).update(payload).eq('id',sbId); console.log('[SB] ✅ تحديث '+table); } catch(e){ console.warn('[SB] mirrorUpdate: '+e.message); }
+        if (u.name) payload.name = u.name;
+        if (u.title) payload.title = u.title;
+        if (u.description) payload.description = u.description;
+        if (u.phone) payload.phone = u.phone;
+        if (u.city) payload.city = u.city;
+        console.log('[SB] 🔄 تحديث '+table+' ID='+sbId+' payload='+JSON.stringify(payload));
+        try {
+            var r = await sb.from(table).update(payload).eq('id', sbId).select();
+            if (r.error) { console.warn('[SB] mirrorUpdate error: '+r.error.message); return; }
+            console.log('[SB] ✅ تحديث '+table+' نجح ('+r.data.length+' صفوف)');
+        } catch(e){ console.warn('[SB] mirrorUpdate: '+e.message); }
     }
     async function mirrorRemove(t,id){
-        if (!authed || !id || id.indexOf('sb_')!==0) return;
-        var map = {companies:'entities',banks:'entities',jobs:'jobs',reviews:'reviews',advertisements:'advertisements'};
+        if (!authed) return;
+        var map = {companies:'entities',banks:'entities',jobs:'jobs',reviews:'reviews',ads:'advertisements',advertisements:'advertisements'};
         var table = map[t]; if (!table) return;
-        try { await sb.from(table).delete().eq('id', id.replace('sb_','')); console.log('[SB] ✅ حذف من '+table); } catch(e){ console.warn('[SB] mirrorRemove: '+e.message); }
+        var row = null;
+        try { row = YR_DB.findById(t, id); } catch(e){}
+        var sbId = extractSbId(id, row);
+        if (!sbId) return;
+        try { await sb.from(table).delete().eq('id', sbId); console.log('[SB] ✅ حذف من '+table); } catch(e){ console.warn('[SB] mirrorRemove: '+e.message); }
     }
     function hookWrites(){
         var oa=YR_DB.add, ou=YR_DB.update, orm=YR_DB.remove;
