@@ -96,7 +96,9 @@
     }
 
     async function mirrorUpdate(t,id,u){
-        if (!authed) { console.warn('[SB] mirrorUpdate: غير موثق'); return; }
+        console.log('[SB] 🎯 mirrorUpdate: t='+t+', id='+id+', u='+JSON.stringify(u));
+        console.log('[SB] 🎯 authed='+authed+', sbUid='+sbUid);
+        if (!authed) { console.warn('[SB] ❌ غير موثق'); alert('❌ لم يتم ربط Supabase بعد'); return; }
         var map = {companies:'entities',banks:'entities',jobs:'jobs',reviews:'reviews',ads:'advertisements',advertisements:'advertisements'};
         var table = map[t];
         if (!table) { console.warn('[SB] mirrorUpdate: جدول غير معروف '+t); return; }
@@ -115,9 +117,17 @@
         console.log('[SB] 🔄 تحديث '+table+' ID='+sbId+' payload='+JSON.stringify(payload));
         try {
             var r = await sb.from(table).update(payload).eq('id', sbId).select();
-            if (r.error) { console.warn('[SB] mirrorUpdate error: '+r.error.message); return; }
+            if (r.error) {
+                console.warn('[SB] ❌ خطأ: '+r.error.message);
+                alert('❌ فشل التعديل: '+r.error.message);
+                return;
+            }
             console.log('[SB] ✅ تحديث '+table+' نجح ('+r.data.length+' صفوف)');
-        } catch(e){ console.warn('[SB] mirrorUpdate: '+e.message); }
+            alert('✅ تم التعديل بنجاح! ID='+sbId);
+        } catch(e){
+            console.warn('[SB] ❌ exception: '+e.message);
+            alert('❌ exception: '+e.message);
+        }
     }
     async function mirrorRemove(t,id){
         if (!authed) return;
