@@ -62,141 +62,305 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-<style id="ads-dropdown-style">
-/* Dropdown عادي لسطح المكتب */
-.yr-dropdown {
-    position:absolute; top:100%; right:0; left:0; margin-top:4px;
-    background:#0f172a; border:1px solid #d4af37; border-radius:10px;
-    max-height:280px; overflow-y:auto; z-index:10000;
-    box-shadow:0 8px 24px rgba(0,0,0,0.6);
-}
-.yr-dropdown-opt {
-    display:flex; align-items:center; gap:12px; padding:12px 14px;
-    color:#f8fafc; font-size:0.92rem; cursor:pointer;
-    border-bottom:1px solid rgba(255,255,255,0.05);
-}
-.yr-dropdown-opt:last-child { border-bottom:none; }
-.yr-dropdown-opt:hover, .yr-dropdown-opt.sel { background:#1e293b; }
-.yr-dropdown-opt i { color:#d4af37; width:18px; text-align:center; }
-.yr-dropdown-opt .fa-check { color:#10b981; margin-inline-start:auto; }
 
-/* إخفاء الـ Bottom Sheet على الشاشات الكبيرة */
-@media (min-width:769px) {
-    .yr-sheet, .yr-sheet-overlay { display:none !important; }
-}
-</style>
 
     
-<style id="ads-color-identity">
-/* ═══ توحيد الهوية اللونية لنموذج الإعلانات ═══ */
 
-/* كل الحقول: خلفية سوداء داكنة + نص أبيض */
+
+    
+<style id="yr-ads-identity">
+/* ═══ هوية يمن ريتغ الرسمية — نموذج الإعلانات ═══ */
+
+/* المتغيرات المحلية (احتياطي إذا لم تكن معرّفة في :root) */
+#panel-ads {
+    --yr-navy: #0B1F3A;
+    --yr-navy-dark: #07152A;
+    --yr-yellow: #F5C400;
+    --yr-yellow-light: #FFD84D;
+    --yr-white: #FFFFFF;
+    --yr-text-gray: #64748B;
+    --yr-dark-text: #172033;
+    --yr-green: #16A34A;
+    --yr-orange: #F59E0B;
+    --yr-red: #DC2626;
+    --yr-border: #E5E7EB;
+}
+
+/* ═══ الحقول: كحلي داكن + نص أبيض + حدود رمادية ═══ */
 #panel-ads input,
 #panel-ads textarea,
 #panel-ads .yr-sel {
-    background:#020617 !important;
-    color:#f8fafc !important;
-    border:1px solid #334155 !important;
-    border-radius:10px !important;
-    font-family:inherit !important;
-    direction:rtl !important;
-    -webkit-appearance:none !important;
-    appearance:none !important;
+    background: var(--yr-navy-dark) !important;
+    color: var(--yr-white) !important;
+    border: 1px solid var(--yr-border) !important;
+    border-radius: 10px !important;
+    padding: 12px 14px !important;
+    font-family: 'Cairo', inherit !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    min-height: 48px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    direction: rtl !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
 }
 
-/* Placeholder رمادي فاتح */
+/* Placeholder رمادي */
 #panel-ads input::placeholder,
 #panel-ads textarea::placeholder {
-    color:#64748b !important;
+    color: var(--yr-text-gray) !important;
+    font-size: 14px !important;
 }
 
-/* عند التركيز: حدود ذهبية */
+/* عند التركيز: حدود صفراء */
 #panel-ads input:focus,
 #panel-ads textarea:focus,
 #panel-ads .yr-sel:focus {
-    border-color:#d4af37 !important;
-    outline:none !important;
-    box-shadow:0 0 0 3px rgba(212,175,55,0.15) !important;
+    border-color: var(--yr-yellow) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.2) !important;
 }
 
-/* الأيقونات داخل الحقول: ذهبية */
+/* الأيقونات: صفراء */
 #panel-ads .yr-sel .sel-ico,
 #panel-ads .yr-sel .sel-arrow {
-    color:#d4af37 !important;
+    color: var(--yr-yellow) !important;
 }
 
-/* التسميات (Labels): رمادي فاتح */
+/* التسميات: رمادي للنص */
 #panel-ads label {
-    color:#94a3b8 !important;
-    font-weight:600 !important;
-    display:block !important;
+    color: var(--yr-text-gray) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    margin-bottom: 6px !important;
+    display: block !important;
+    font-family: 'Cairo', inherit !important;
 }
 
-/* زر اختيار الملف: ذهبي بنص داكن */
+/* ═══ زر اختيار الملف: أصفر مع نص كحلي ═══ */
+#panel-ads input[type="file"] {
+    padding: 10px !important;
+    cursor: pointer !important;
+}
 #panel-ads input[type="file"]::-webkit-file-upload-button,
 #panel-ads input[type="file"]::file-selector-button {
-    background:#d4af37 !important;
-    color:#020617 !important;
-    border:none !important;
-    border-radius:8px !important;
-    font-family:inherit !important;
-    font-weight:700 !important;
-    cursor:pointer !important;
+    background: var(--yr-yellow) !important;
+    color: var(--yr-navy) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    font-family: 'Cairo', inherit !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    margin-left: 12px !important;
+    cursor: pointer !important;
+    height: 44px !important;
 }
 
-/* التقويم: وضع داكن */
+/* ═══ التقويم: داكن مع أيقونة صفراء ═══ */
 #panel-ads input[type="datetime-local"] {
-    color-scheme:dark !important;
+    color-scheme: dark !important;
+    font-size: 14px !important;
 }
 #panel-ads input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    filter:invert(0.85) sepia(1) saturate(4) hue-rotate(5deg) brightness(1.1) !important;
-    cursor:pointer !important;
+    filter: invert(0.9) sepia(1) saturate(5) hue-rotate(5deg) brightness(1.2) !important;
+    cursor: pointer !important;
 }
 #panel-ads input[type="datetime-local"]::-webkit-datetime-edit {
-    color:#f8fafc !important;
+    color: var(--yr-white) !important;
 }
 
-/* Bottom Sheet و Dropdown: نفس الهوية */
-.yr-sheet,
+/* ═══ Dropdown (سطح المكتب): كحلي + حدود صفراء ═══ */
 .yr-dropdown {
-    background:#0f172a !important;
-    border:1px solid #d4af37 !important;
-    color:#f8fafc !important;
+    background: var(--yr-navy) !important;
+    border: 2px solid var(--yr-yellow) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+    max-height: 280px !important;
+    overflow-y: auto !important;
 }
-.yr-sheet-opt,
 .yr-dropdown-opt {
-    color:#f8fafc !important;
-    border-bottom:1px solid rgba(255,255,255,0.05) !important;
+    color: var(--yr-white) !important;
+    padding: 12px 14px !important;
+    font-size: 16px !important;
+    font-family: 'Cairo', inherit !important;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.1) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    cursor: pointer !important;
 }
-.yr-sheet-opt:hover,
-.yr-sheet-opt.sel,
+.yr-dropdown-opt:last-child {
+    border-bottom: none !important;
+}
 .yr-dropdown-opt:hover,
 .yr-dropdown-opt.sel {
-    background:#1e293b !important;
+    background: var(--yr-navy-dark) !important;
 }
-.yr-sheet-opt i,
 .yr-dropdown-opt i {
-    color:#d4af37 !important;
+    color: var(--yr-yellow) !important;
+    width: 18px !important;
+    text-align: center !important;
 }
-.yr-sheet-opt .fa-check,
 .yr-dropdown-opt .fa-check {
-    color:#10b981 !important;
+    color: var(--yr-green) !important;
+    margin-inline-start: auto !important;
 }
 
-/* بطاقات الإعلانات: نفس الهوية */
+/* ═══ Bottom Sheet (الهاتف): نفس الهوية ═══ */
+.yr-sheet {
+    background: var(--yr-navy) !important;
+    border-top: 2px solid var(--yr-yellow) !important;
+    border-radius: 16px 16px 0 0 !important;
+}
+.yr-sheet-title {
+    color: var(--yr-text-gray) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    padding: 12px 20px !important;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.1) !important;
+    font-family: 'Cairo', inherit !important;
+}
+.yr-sheet-opt {
+    color: var(--yr-white) !important;
+    padding: 15px 20px !important;
+    font-size: 16px !important;
+    font-family: 'Cairo', inherit !important;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.05) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+    cursor: pointer !important;
+}
+.yr-sheet-opt:hover,
+.yr-sheet-opt.sel {
+    background: var(--yr-navy-dark) !important;
+}
+.yr-sheet-opt i {
+    color: var(--yr-yellow) !important;
+    width: 20px !important;
+    text-align: center !important;
+}
+.yr-sheet-opt .fa-check {
+    color: var(--yr-green) !important;
+    margin-inline-start: auto !important;
+}
+
+/* ═══ بطاقات الإعلانات: كحلي + حدود رمادية ═══ */
 .ad-card {
-    background:#0f172a !important;
-    border:1px solid #334155 !important;
-    color:#f8fafc !important;
+    background: var(--yr-navy) !important;
+    border: 1px solid var(--yr-border) !important;
+    border-radius: 12px !important;
+    padding: 16px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 .ad-card h4 {
-    color:#f8fafc !important;
+    color: var(--yr-white) !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    font-family: 'Cairo', inherit !important;
+    margin: 0 0 8px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
 }
 .ad-card h4 i {
-    color:#d4af37 !important;
+    color: var(--yr-yellow) !important;
 }
 .ad-card .meta {
-    color:#94a3b8 !important;
+    color: var(--yr-text-gray) !important;
+    font-size: 13px !important;
+    font-family: 'Cairo', inherit !important;
+    margin: 10px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+.ad-card .badge {
+    padding: 4px 12px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    font-family: 'Cairo', inherit !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+}
+.ad-card .badge-active {
+    background: rgba(22, 163, 74, 0.15) !important;
+    color: var(--yr-green) !important;
+}
+.ad-card .badge-paused {
+    background: rgba(245, 158, 11, 0.15) !important;
+    color: var(--yr-orange) !important;
+}
+
+/* ═══ النافذة المنبثقة (Modal): حسب المواصفات ═══ */
+#adOverlay {
+    background: rgba(0, 0, 0, 0.7) !important;
+}
+#adFormWrap {
+    background: var(--yr-navy) !important;
+    border: 2px solid var(--yr-yellow) !important;
+    border-radius: 16px !important;
+    padding: 20px !important;
+    font-family: 'Cairo', inherit !important;
+}
+/* الهاتف: عرض calc(100% - 24px)، أقصى 420px */
+@media (max-width: 767px) {
+    #adFormWrap {
+        width: calc(100% - 24px) !important;
+        max-width: 420px !important;
+    }
+}
+/* Desktop: Medium Modal 560px */
+@media (min-width: 768px) {
+    #adFormWrap {
+        width: 560px !important;
+        max-width: 560px !important;
+    }
+}
+#adFormWrap h3 {
+    color: var(--yr-white) !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    font-family: 'Cairo', inherit !important;
+    margin: 0 0 16px 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+#adFormWrap h3 i {
+    color: var(--yr-yellow) !important;
+}
+
+/* ═══ الشبكة والمسافات ═══ */
+#panel-ads .ad-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 14px !important;
+    margin-bottom: 14px !important;
+}
+@media (max-width: 600px) {
+    #panel-ads .ad-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ═══ الأزرار: ارتفاع 44-48px ═══ */
+#panel-ads .btn {
+    height: 48px !important;
+    min-height: 48px !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    font-family: 'Cairo', inherit !important;
+    border-radius: 10px !important;
+    padding: 0 20px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
 }
 </style>
 
