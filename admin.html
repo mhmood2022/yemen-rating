@@ -858,10 +858,7 @@
                 try {
                     if (sbClient) {
                         const { data } = await sbClient.from('ad_slots').select('*').eq('status', 'ACTIVE');
-                        if (data && data.length > 0) {
-                            this.adSlotsCache = data;
-                            return data;
-                        }
+                        { const trans = { 'HOME_TOP': 'أعلى الرئيسية', 'HOME_MIDDLE': 'وسط الرئيسية', 'HOME_BOTTOM': 'أسفل الرئيسية', 'COMPANY_TOP': 'أعلى الشركات', 'COMPANY_MIDDLE': 'وسط الشركات', 'COMPANY_BOTTOM': 'أسفل الشركات', 'JOBS_TOP': 'أعلى الوظائف', 'JOBS_MIDDLE': 'وسط الوظائف', 'JOBS_BOTTOM': 'أسفل الوظائف', 'BANKS_TOP': 'أعلى البنوك', 'ENTITIES_TOP': 'أعلى الكيانات', 'ENTITY_TOP': 'أعلى الكيان' }; this.adSlotsCache = data.map(s => Object.assign({}, s, { name_ar: trans[s.name] || s.name })); return this.adSlotsCache; }
                     }
                 } catch(e) {}
                 this.adSlotsCache = [
