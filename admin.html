@@ -229,12 +229,39 @@
 
             bindLogin() {
                 const self = this;
-                document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+                document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
                     e.preventDefault();
+                    const email = e.target.email.value;
+                    const password = e.target.password.value;
+                    
+                    // محاولة تسجيل الدخول من Supabase أولاً
+                    try {
+                        const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+                        const sb = module.createClient('https://wkdqeghotlipciqiytuj.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE');
+                        const { data, error } = await sb.auth.signInWithPassword({ email, password });
+                        
+                        if (!error && data.user) {
+                            const { data: profile } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
+                            if (profile && (profile.role === 'admin' || profile.role === 'super_admin')) {
+                                YR_DB.setSession({
+                                    id: profile.id,
+                                    name: profile.full_name || 'الإدارة',
+                                    email: profile.email,
+                                    role: profile.role
+                                });
+                                location.reload();
+                                return;
+                            }
+                        }
+                    } catch (err) {
+                        console.warn('Supabase login failed:', err.message);
+                    }
+                    
+                    // fallback إلى localStorage
                     const users = YR_DB.get('users');
                     const user = users.find(u =>
-                        u.email === e.target.email.value &&
-                        u.password === YR_DB.hash(e.target.password.value) &&
+                        u.email === email &&
+                        u.password === YR_DB.hash(password) &&
                         u.role === 'admin'
                     );
                     if (user) {
