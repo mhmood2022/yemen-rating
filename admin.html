@@ -1211,8 +1211,9 @@ const YRA = {
                 e.stopPropagation();
                 e.preventDefault();
                 
-                // إغلاق أي قائمة مفتوحة أولاً
-                self.closeSheet();
+                // ═══ إغلاق كل القوائم المفتوحة أولاً (الأهم!) ═══
+                document.querySelectorAll('.yr-sheet, .yr-sheet-overlay, .yr-dropdown').forEach(x => x.remove());
+                document.querySelectorAll('.yr-sel.open').forEach(x => x.classList.remove('open'));
                 
                 const isMobile = window.innerWidth <= 768;
                 
