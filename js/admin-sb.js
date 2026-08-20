@@ -139,7 +139,7 @@
     function init(){
         console.log('[SB] admin-sb.js جاهز');
         var s = null; try { s = JSON.parse(localStorage.getItem('yr_session')||'null'); } catch(e){}
-        if (s && s.role === 'admin') {
+        if (s && (s.role === 'admin' || s.role === 'super_admin')) {
             waitDB(function(){
                 hookWrites();
                 ensureAuth().then(function(){ setTimeout(syncAll, 800); setInterval(syncAll, 30000); });
