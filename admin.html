@@ -934,7 +934,7 @@
                     '<div class="form-group"><label>مكان العرض *</label><select class="form-control" name="slot_id" required>' + slotOptions + '</select></div></div>' +
                     '<div class="form-group" id="adLinkWrap"><label>رابط التوجيه (URL)</label><input class="form-control" name="link_url" dir="ltr" value="' + (ad ? this.esc(ad.link_url || '') : '') + '" placeholder="https://example.com/offer"></div>' +
                     '<div class="form-group" id="adFileWrap"><label>ملف البانر</label><input type="file" class="form-control" id="adFileInput" accept="image/*,video/*" onchange="YRA.previewAd(this)"><div id="adPreviewBox" style="margin-top:8px;">' + (ad && ad.media_url ? '<img src="' + ad.media_url + '" style="max-height:90px;border-radius:6px;">' : '') + '</div></div>' +
-                    '<div class="form-group" id="adCodeWrap" style="display:none;"><label>كود الإعلان</label><textarea class="form-control" name="content_html" rows="3" dir="ltr" placeholder="<script>...</script>">' + (ad ? this.esc(ad.content_html || '') : '') + '</textarea></div>' +
+                    '<div class="form-group" id="adCodeWrap" style="display:none;"><label>كود الإعلان</label><textarea class="form-control" name="content_html" rows="3" dir="ltr" placeholder="الصق كود الإعلان هنا">' + (ad ? this.esc(ad.content_html || '') : '') + '</textarea></div>' +
                     '</div><div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRA.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold"><i class="fa-solid fa-save"></i> حفظ الإعلان</button></div></form>'
                 );
 
