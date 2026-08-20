@@ -50,8 +50,9 @@
 
     // ═══ حقن داخل YR_DB ═══
     function mergeInto(table, sbRows){
-        var local = YR_DB.get(table).filter(function(x){ return !x._sbId; });
-        YR_DB._cache[table] = sbRows.concat(local);
+        if (sbRows && sbRows.length) {
+            YR_DB._cache[table] = sbRows;
+        }
         YR_DB._save(table);
     }
     function rerender(){ try { if (window.YRA) { if (YRA.renderDashboard) YRA.renderDashboard(); if (YRA.updateBadges) YRA.updateBadges(); } } catch(e){} }
