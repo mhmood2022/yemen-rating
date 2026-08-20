@@ -16,15 +16,21 @@ async function yrGetSB() {
     return null;
 }
 
+function adToast(msg) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:12px;left:50%;transform:translateX(-50%);background:#10b981;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;z-index:99999;font-family:sans-serif';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.remove(); }, 2000);
+}
+
 window.trackAdClick = async function(adId) {
     if (!adId) return;
     var sb = await yrGetSB();
     if (sb) {
         try {
-            var res = await sb.from('advertisements').select('clicks').eq('id', adId).single();
-            if (!res.error && res.data) {
-                await sb.from('advertisements').update({ clicks: (res.data.clicks || 0) + 1 }).eq('id', adId);
-            }
+            var res = await sb.rpc('increment_ad_clicks', { ad_id: adId });
+            if (!res.error) adToast('✅ تم تسجيل النقرة');
         } catch(e) {}
     }
 };
@@ -56,14 +62,13 @@ window.trackAdClick = async function(adId) {
         allAds.forEach(function(ad){
             if (!ad.place) return;
             document.querySelectorAll('[data-placement="' + ad.place + '"]').forEach(function(slot){
+                var href = ad.link || 'javascript:void(0)';
+                var tgt = ad.link ? ' target="_blank"' : '';
+                var clk = ' onclick="trackAdClick(\'' + ad.id + '\')"';
                 if (ad.img) {
-                    slot.innerHTML = ad.link
-                        ? '<a href="' + ad.link + '" target="_blank" onclick="trackAdClick(\'' + ad.id + '\')"><img src="' + ad.img + '" style="width:100%;height:100%;object-fit:contain;border-radius:4px"></a>'
-                        : '<img src="' + ad.img + '" style="width:100%;height:100%;object-fit:contain;border-radius:4px">';
-                } else if (ad.link) {
-                    slot.innerHTML = '<a href="' + ad.link + '" target="_blank" onclick="trackAdClick(\'' + ad.id + '\')" style="color:var(--gold-400);font-weight:700;font-size:.85rem">📢 ' + ad.title + '</a>';
+                    slot.innerHTML = '<a href="' + href + '"' + tgt + clk + '><img src="' + ad.img + '" style="width:100%;height:100%;object-fit:contain;border-radius:4px"></a>';
                 } else {
-                    slot.innerHTML = '<span style="color:var(--gold-400);font-weight:700;font-size:.85rem">📢 ' + ad.title + '</span>';
+                    slot.innerHTML = '<a href="' + href + '"' + tgt + clk + ' style="color:var(--gold-400);font-weight:700;font-size:.85rem">📢 ' + ad.title + '</a>';
                 }
                 slot.style.border = 'none'; slot.style.background = 'transparent'; slot.style.padding = '0';
             });
