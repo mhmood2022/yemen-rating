@@ -183,6 +183,46 @@
         showLinkBar();
     }
 
+
+    // ═══ التقاط أي حفظ للإعلانات (أي دالة، أي مسار) ═══
+    var mirroredAdIds = {};
+    function mirrorAdsList(list) {
+        if (!authed || !list || !list.length) return;
+        list.forEach(function(a) {
+            if (!a || mirroredAdIds[a.id] || a._sbId) return;
+            if (String(a.id).indexOf('sb_') === 0) return;
+            mirroredAdIds[a.id] = true;
+            (async function() {
+                try {
+                    var slotId = null;
+                    if (a.place) {
+                        var sr = await sb.from('ad_slots').select('id').eq('placement', a.place).limit(1);
+                        if (!sr.error && sr.data && sr.data[0]) slotId = sr.data[0].id;
+                    }
+                    var res = await sb.from('advertisements').insert({
+                        title: a.title,
+                        link_url: a.link || a.link_url || null,
+                        image_url: a.img || a.image_url || null,
+                        status: (a.status === 'PUBLISHED' || a.status === 'ACTIVE') ? 'ACTIVE' : 'PENDING',
+                        slot_id: slotId
+                    }).select().single();
+                    if (res.error) throw res.error;
+                    console.log('[SB] ✅ إعلان جديد → Supabase: ' + a.title);
+                } catch(e) { console.warn('[SB] mirror ad failed: ' + e.message); }
+            })();
+        });
+    }
+    function installAdsStorageHook() {
+        var origSet = Storage.prototype.setItem;
+        Storage.prototype.setItem = function(k, v) {
+            origSet.call(this, k, v);
+            if (k === 'yr_ads' || k === 'yr_advertisements') {
+                try { mirrorAdsList(JSON.parse(v)); } catch(e) {}
+            }
+        };
+        console.log('[SB] ✅ التقاط حفظ الإعلانات جاهز');
+    }
+
     // ═══ التشغيل ═══
     function init(){
         console.log('[SB] admin-sb.js جاهز');
@@ -190,6 +230,7 @@
         if (s && (s.role === 'admin' || s.role === 'super_admin')) {
             waitDB(function(){
                 hookWrites();
+                installAdsStorageHook();
                 ensureAuth().then(function(){ setTimeout(syncAll, 800); setInterval(syncAll, 30000); });
             });
         }
