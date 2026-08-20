@@ -6,7 +6,7 @@ const YR_DB = {
     _cache: {},
     _initialized: false,
 
-    TABLES = [
+    TABLES: [
         'companies', 'banks', 'jobs', 'job_applications',
         'candidate_profiles', 'reviews', 'verification_requests',
         'advertisements', 'messages', 'notifications',
