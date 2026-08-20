@@ -207,14 +207,21 @@
                     </div>
                     
                     <!-- نموذج الإعلان -->
-                    <div id="adFormWrap" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px;margin:20px;">
+                    <div id="adOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9998;" onclick="YRA.closeAdForm()"></div>
+<div id="adFormWrap" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-card);border:2px solid var(--gold-500);border-radius:var(--radius-md);padding:24px;z-index:9999;width:90%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
                         <h3 id="adFormTitle" style="color:var(--gold-500);margin-bottom:16px;">➕ إضافة إعلان جديد</h3>
                         <input type="hidden" id="adEditId">
                         
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
                             <div>
                                 <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">اسم الإعلان *</label>
-                                <input id="adName" class="form-control" placeholder="مثال: عروض رمضان">
+                                <style>
+.form-control, select.form-control { background:var(--navy-900); color:var(--text-main); border:1px solid var(--border); border-radius:8px; padding:10px; font-family:inherit; font-size:0.95rem; width:100%; }
+.form-control:focus, select.form-control:focus { border-color:var(--gold-500); outline:none; }
+select.form-control option { background:var(--navy-800); color:var(--text-main); padding:8px; }
+</style>
+
+                        <input id="adName" class="form-control" placeholder="مثال: عروض رمضان">
                             </div>
                             <div>
                                 <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:4px;">النوع *</label>
@@ -675,7 +682,7 @@
             }
             const slots = await this.loadAdSlots();
             const slotMap = {};
-            slots.forEach(s => slotMap[s.id] = s.name);
+            slots.forEach(s => slotMap[s.id] = s.name_ar || s.name);
             
             list.innerHTML = ads.map(a => {
                 const slotName = slotMap[a.slot_id] || 'بدون مكان';
@@ -702,7 +709,7 @@
         async openAdForm(ad) {
             const slots = await this.loadAdSlots();
             const slotSelect = document.getElementById('adSlot');
-            slotSelect.innerHTML = slots.map(s => '<option value="' + s.id + '">' + s.name + ' (' + s.placement + ')</option>').join('');
+            slotSelect.innerHTML = slots.map(s => '<option value="' + s.id + '">' + s.name_ar + '</option>').join('');
             
             if (ad) {
                 document.getElementById('adFormTitle').textContent = '✏️ تعديل الإعلان';
@@ -736,11 +743,12 @@
                 this.onAdTypeChange();
             }
             document.getElementById('adFormWrap').style.display = 'block';
-            document.getElementById('adFormWrap').scrollIntoView({behavior:'smooth'});
+            document.getElementById('adOverlay').style.display = 'block';
         },
         
         closeAdForm() {
             document.getElementById('adFormWrap').style.display = 'none';
+            document.getElementById('adOverlay').style.display = 'none';
         },
         
         onAdTypeChange() {
