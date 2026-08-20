@@ -4,19 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>لوحة الإدارة | يمن ريتنغ</title>
-    
-    <!-- خط كايرو العربي -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- مكتبة الأيقونات Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
-    
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/yemen-rating.css">
-
     <style>
         :root {
             --navy-950: #040d1a;
@@ -41,10 +35,8 @@
             --radius-lg: 16px;
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
         * { box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--navy-950); color: var(--text-main); overflow-x: hidden; min-height: 100vh; }
-
         select.form-control, .yr-select {
             background-color: #07152A !important;
             color: #FFFFFF !important;
@@ -69,25 +61,11 @@
             border-color: var(--gold-500) !important;
             box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.2) !important;
         }
-
         .admin-wrapper { display: flex; min-height: 100vh; position: relative; }
-        .admin-sidebar { 
-            width: 270px; 
-            background: var(--navy-900); 
-            color: #fff; 
-            position: fixed; 
-            top: 0; 
-            right: 0; 
-            height: 100vh; 
-            overflow-y: auto; 
-            z-index: 1050; 
-            border-left: 1px solid var(--border); 
-            transition: var(--transition); 
-        }
+        .admin-sidebar { width: 270px; background: var(--navy-900); color: #fff; position: fixed; top: 0; right: 0; height: 100vh; overflow-y: auto; z-index: 1050; border-left: 1px solid var(--border); transition: var(--transition); }
         .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 22px 20px; border-bottom: 1px solid var(--border); }
         .sidebar-brand .brand-mark { width: 44px; height: 44px; background: var(--gold-gradient); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--navy-950); font-size: 1.3rem; font-weight: 900; }
         .sidebar-brand span { font-weight: 800; color: var(--gold-400); font-size: 1.15rem; }
-        
         .sidebar-nav { padding: 16px 12px; }
         .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--text-muted); border-radius: var(--radius-sm); margin-bottom: 4px; transition: var(--transition); text-decoration: none; font-weight: 600; cursor: pointer; }
         .nav-item i { width: 22px; text-align: center; font-size: 1.1rem; }
@@ -95,79 +73,29 @@
         .nav-item.active { background: var(--gold-gradient); color: var(--navy-950); font-weight: 800; }
         .nav-item.active i { color: var(--navy-950); }
         .nav-badge { margin-right: auto; background: var(--danger); color: #fff; font-size: 0.72rem; padding: 2px 8px; border-radius: 20px; font-weight: 700; }
-
-        .sidebar-backdrop { 
-            display: none; 
-            position: fixed; 
-            inset: 0; 
-            background: rgba(4, 13, 26, 0.8); 
-            backdrop-filter: blur(4px); 
-            z-index: 1040; 
-        }
-
+        .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(4, 13, 26, 0.8); backdrop-filter: blur(4px); z-index: 1040; }
         .admin-main { flex: 1; margin-right: 270px; min-height: 100vh; display: flex; flex-direction: column; width: calc(100% - 270px); }
         .admin-header { background: var(--navy-900); padding: 14px 28px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
         .admin-header h1 { font-size: 1.25rem; color: var(--text-main); flex: 1; margin: 0; font-weight: 800; }
-        
-        .sidebar-toggle-btn { 
-            display: none; 
-            background: var(--navy-800); 
-            border: 1px solid var(--border); 
-            color: var(--gold-400); 
-            width: 40px; 
-            height: 40px; 
-            border-radius: var(--radius-sm); 
-            cursor: pointer; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 1.2rem;
-            transition: var(--transition);
-        }
+        .sidebar-toggle-btn { display: none; background: var(--navy-800); border: 1px solid var(--border); color: var(--gold-400); width: 40px; height: 40px; border-radius: var(--radius-sm); cursor: pointer; align-items: center; justify-content: center; font-size: 1.2rem; transition: var(--transition); }
         .sidebar-toggle-btn:hover { background: var(--navy-700); border-color: var(--gold-500); }
-
         .admin-content { padding: 26px; flex: 1; }
-
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-bottom: 24px; }
-        .stat-card-real { 
-            background: var(--bg-card); 
-            border-radius: var(--radius-md); 
-            padding: 20px; 
-            display: flex; 
-            align-items: center; 
-            gap: 16px; 
-            border: 1px solid var(--border); 
-            border-right: 4px solid var(--gold-500); 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: var(--transition);
-        }
+        .stat-card-real { background: var(--bg-card); border-radius: var(--radius-md); padding: 20px; display: flex; align-items: center; gap: 16px; border: 1px solid var(--border); border-right: 4px solid var(--gold-500); box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: var(--transition); }
         .stat-card-real:hover { transform: translateY(-3px); border-color: var(--gold-500); }
-        .stat-card-real .icon-wrap { 
-            width: 52px; 
-            height: 52px; 
-            background: var(--navy-700); 
-            color: var(--gold-400); 
-            border-radius: var(--radius-md); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 1.4rem; 
-            flex-shrink: 0; 
-        }
+        .stat-card-real .icon-wrap { width: 52px; height: 52px; background: var(--navy-700); color: var(--gold-400); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
         .stat-card-real .num-wrap { font-size: 1.7rem; font-weight: 900; color: #fff; line-height: 1.1; }
         .stat-card-real .lbl-wrap { color: var(--text-muted); font-size: 0.84rem; margin-top: 4px; }
         .stat-card-real .sub-status { font-size: 0.75rem; margin-top: 4px; display: block; }
-
         .table-wrapper { background: var(--bg-card); border-radius: var(--radius-md); overflow-x: auto; border: 1px solid var(--border); -webkit-overflow-scrolling: touch; }
         .admin-table { width: 100%; border-collapse: collapse; min-width: 680px; text-align: right; }
         .admin-table th { background: var(--navy-900); color: var(--gold-400); padding: 14px 16px; font-size: 0.88rem; font-weight: 700; border-bottom: 1px solid var(--border); white-space: nowrap; }
         .admin-table td { padding: 13px 16px; border-bottom: 1px solid var(--border); font-size: 0.9rem; color: var(--text-main); vertical-align: middle; }
         .admin-table tbody tr:hover { background: rgba(245, 196, 0, 0.04); }
-
         .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
         .status-active { background: rgba(16, 185, 129, 0.15); color: var(--success); }
         .status-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
         .status-rejected, .status-blocked { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
-
         .btn { height: 42px; padding: 0 16px; border-radius: var(--radius-sm); border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: var(--transition); text-decoration: none; }
         .btn-gold { background: var(--gold-gradient); color: var(--navy-950); }
         .btn-gold:hover { opacity: 0.95; transform: translateY(-1px); }
@@ -178,32 +106,27 @@
         .btn-success { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
         .btn-success:hover { background: var(--success); color: #fff; }
         .btn-sm { height: 34px; padding: 0 12px; font-size: 0.82rem; border-radius: 6px; }
-
+        .btn-block { width: 100%; }
         .form-group { margin-bottom: 16px; }
         .form-group label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
         .form-control { width: 100%; background: #07152A; border: 1px solid var(--border); color: #fff; border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.92rem; outline: none; transition: var(--transition); }
         .form-control::placeholder { color: #64748b; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; flex-wrap: wrap; gap: 14px; }
         .panel-header h2 { color: #fff; font-size: 1.3rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 10px; }
         .panel-header h2 i { color: var(--gold-500); }
-
         .tab-panel { display: none; }
         .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-
         .yr-modal-overlay { position: fixed; inset: 0; background: rgba(4, 13, 26, 0.85); backdrop-filter: blur(5px); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 16px; }
         .yr-modal { background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: var(--radius-lg); width: 100%; max-width: 560px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 45px rgba(0,0,0,0.7); }
         .yr-modal-header { padding: 16px 22px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--navy-950); }
         .yr-modal-header h3 { margin: 0; color: var(--gold-400); font-size: 1.15rem; display: flex; align-items: center; gap: 8px; }
         .yr-modal-body { padding: 22px; overflow-y: auto; flex: 1; }
         .yr-modal-footer { position: sticky; bottom: 0; padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--navy-950); z-index: 10; }
-
         .ads-dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 22px; }
         .ad-stat-box { background: var(--navy-900); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; display: flex; align-items: center; gap: 14px; }
         .ad-stat-box i { font-size: 1.6rem; color: var(--gold-500); }
-        
         .ads-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
         .ad-card-pro { background: var(--navy-900); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; display: flex; flex-direction: column; transition: var(--transition); }
         .ad-card-pro:hover { border-color: var(--gold-500); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.35); }
@@ -214,16 +137,12 @@
         .ad-card-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.78rem; color: var(--text-muted); }
         .ad-card-pill { background: var(--navy-800); border: 1px solid var(--border); padding: 3px 10px; border-radius: 12px; display: inline-flex; align-items: center; gap: 5px; }
         .ad-card-actions { padding: 12px 16px; background: var(--navy-950); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-
         .admin-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at center, var(--navy-800), var(--navy-950)); padding: 20px; }
         .login-card { background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: var(--radius-lg); padding: 38px 30px; width: 100%; max-width: 420px; text-align: center; box-shadow: 0 12px 35px rgba(0,0,0,0.6); }
         .login-logo { width: 68px; height: 68px; background: var(--gold-gradient); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: var(--navy-950); margin: 0 auto 16px; }
-
         .toast-container { position: fixed; bottom: 24px; left: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
         .toast { background: var(--navy-900); border: 1px solid var(--gold-500); color: #fff; padding: 12px 18px; border-radius: var(--radius-sm); box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
-
         .hidden { display: none !important; }
-
         @media (max-width: 900px) {
             .admin-sidebar { transform: translateX(100%); width: 280px; box-shadow: -10px 0 30px rgba(0,0,0,0.6); }
             .admin-sidebar.open { transform: translateX(0); }
@@ -235,13 +154,10 @@
             .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
             .yr-modal { max-height: 94vh; width: 100%; border-radius: 12px; }
         }
-        @media (max-width: 500px) {
-            .stats-grid { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 500px) { .stats-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-
     <div class="admin-login" id="adminLogin">
         <div class="login-card">
             <div class="login-logo"><i class="fa-solid fa-star"></i></div>
@@ -256,13 +172,11 @@
                     <label><i class="fa-solid fa-lock"></i> كلمة المرور</label>
                     <input type="password" class="form-control" name="password" required placeholder="••••••••">
                 </div>
-                <button type="submit" class="btn btn-gold btn-block" style="margin-top:12px;width:100%;"><i class="fa-solid fa-right-to-bracket"></i> دخول النظام</button>
+                <button type="submit" class="btn btn-gold btn-block" style="margin-top:12px;"><i class="fa-solid fa-right-to-bracket"></i> دخول النظام</button>
             </form>
         </div>
     </div>
-
     <div class="admin-wrapper hidden" id="adminWrapper">
-        
         <aside class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-brand">
                 <div class="brand-mark"><i class="fa-solid fa-shield-halved"></i></div>
@@ -283,9 +197,7 @@
                 <a class="nav-item" onclick="YRA.logout()" style="color:var(--danger);margin-top:12px;"><i class="fa-solid fa-right-from-bracket"></i><span>تسجيل الخروج</span></a>
             </nav>
         </aside>
-        
         <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="YRA.closeSidebar()"></div>
-
         <main class="admin-main">
             <header class="admin-header">
                 <button class="sidebar-toggle-btn" onclick="YRA.toggleSidebar()" aria-label="فتح القائمة">
@@ -297,91 +209,49 @@
                     <i class="fa-solid fa-circle-user" style="font-size:1.4rem;color:var(--gold-400);"></i>
                 </div>
             </header>
-
             <div class="admin-content">
-
                 <section class="tab-panel active" id="panel-dashboard">
                     <div class="panel-header">
                         <h2><i class="fa-solid fa-chart-pie"></i> ملخص المنظومة المباشر</h2>
-                        <button class="btn btn-outline btn-sm" onclick="YRA.renderDashboard()"><i class="fa-solid fa-arrows-rotate"></i> تحديث الإحصائيات</button>
+                        <button class="btn btn-outline btn-sm" onclick="YRA.renderDashboard()"><i class="fa-solid fa-arrows-rotate"></i> تحديث</button>
                     </div>
                     <div class="stats-grid" id="dashStats"></div>
                     <div id="recentNotifications" style="margin-top:24px;"></div>
                 </section>
-
                 <section class="tab-panel" id="panel-companies">
                     <div class="panel-header">
                         <h2><i class="fa-solid fa-building"></i> إدارة الشركات</h2>
                         <button class="btn btn-gold btn-sm" onclick="YRA.openAddCompany()"><i class="fa-solid fa-plus"></i> إضافة شركة</button>
                     </div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead>
-                                <tr><th>الاسم</th><th>المدينة</th><th>الحالة</th><th>التوثيق</th><th>الباقة</th><th>الإجراءات</th></tr>
-                            </thead>
-                            <tbody id="companiesBody"></tbody>
-                        </table>
-                    </div>
+                    <div class="table-wrapper"><table class="admin-table"><thead><tr><th>الاسم</th><th>المدينة</th><th>الحالة</th><th>التوثيق</th><th>الباقة</th><th>الإجراءات</th></tr></thead><tbody id="companiesBody"></tbody></table></div>
                 </section>
-
                 <section class="tab-panel" id="panel-banks">
                     <div class="panel-header">
                         <h2><i class="fa-solid fa-landmark"></i> إدارة البنوك والمصارف</h2>
                         <button class="btn btn-gold btn-sm" onclick="YRA.openAddBank()"><i class="fa-solid fa-plus"></i> إضافة بنك</button>
                     </div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead><tr><th>الاسم</th><th>المدينة</th><th>التوثيق</th><th>الإجراءات</th></tr></thead>
-                            <tbody id="banksBody"></tbody>
-                        </table>
-                    </div>
+                    <div class="table-wrapper"><table class="admin-table"><thead><tr><th>الاسم</th><th>المدينة</th><th>التوثيق</th><th>الإجراءات</th></tr></thead><tbody id="banksBody"></tbody></table></div>
                 </section>
-
                 <section class="tab-panel" id="panel-jobs">
                     <div class="panel-header"><h2><i class="fa-solid fa-briefcase"></i> إدارة الوظائف الشاغرة</h2></div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead><tr><th>المسمى</th><th>الشركة</th><th>الراتب</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
-                            <tbody id="jobsBody"></tbody>
-                        </table>
-                    </div>
+                    <div class="table-wrapper"><table class="admin-table"><thead><tr><th>المسمى</th><th>الشركة</th><th>الراتب</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="jobsBody"></tbody></table></div>
                 </section>
-
                 <section class="tab-panel" id="panel-verification">
                     <div class="panel-header"><h2><i class="fa-solid fa-circle-check"></i> طلبات التوثيق الرسمية</h2></div>
                     <div id="verificationList"></div>
                 </section>
-
                 <section class="tab-panel" id="panel-applications">
                     <div class="panel-header"><h2><i class="fa-solid fa-file-lines"></i> طلبات التوظيف المقدمة</h2></div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead><tr><th>المتقدم</th><th>الهاتف</th><th>السيرة الذاتية</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
-                            <tbody id="appsBody"></tbody>
-                        </table>
-                    </div>
+                    <div class="table-wrapper"><table class="admin-table"><thead><tr><th>المتقدم</th><th>الهاتف</th><th>السيرة الذاتية</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="appsBody"></tbody></table></div>
                 </section>
-
                 <section class="tab-panel" id="panel-reviews">
                     <div class="panel-header"><h2><i class="fa-solid fa-star"></i> مراجعات وتقييمات الأعضاء</h2></div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead><tr><th>المستخدم</th><th>التقييم</th><th>التعليق</th><th>الإجراءات</th></tr></thead>
-                            <tbody id="reviewsBody"></tbody>
-                        </table>
-                    </div>
+                    <div class="table-wrapper"><table class="admin-table"><thead><tr><th>المستخدم</th><th>التقييم</th><th>التعليق</th><th>الإجراءات</th></tr></thead><tbody id="reviewsBody"></tbody></table></div>
                 </section>
-
                 <section class="tab-panel" id="panel-users">
                     <div class="panel-header"><h2><i class="fa-solid fa-users"></i> إدارة المستخدمين والأدوار</h2></div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>الحالة</th><th>الإجراءات</th></tr></thead>
-                            <tbody id="usersBody"></tbody>
-                        </table>
-                    </div>
+                    <div class="table-wrapper"><table class="admin-table"><thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="usersBody"></tbody></table></div>
                 </section>
-
                 <section class="tab-panel" id="panel-ads">
                     <div class="panel-header">
                         <h2><i class="fa-solid fa-bullhorn"></i> منظومة الإعلانات والحملات</h2>
@@ -390,7 +260,6 @@
                     <div class="ads-dashboard-stats" id="adsStatsRow"></div>
                     <div class="ads-cards-grid" id="adsList"></div>
                 </section>
-
                 <section class="tab-panel" id="panel-notifications">
                     <div class="panel-header">
                         <h2><i class="fa-solid fa-bell"></i> مركز التنبيهات</h2>
@@ -398,73 +267,40 @@
                     </div>
                     <div id="notifList"></div>
                 </section>
-
             </div>
         </main>
     </div>
-
     <div id="modalRoot"></div>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/db.js"></script>
     <script src="js/sb-sync.js"></script>
-
+    <script src="js/admin-sb.js?v=1787244067"></script>
     <script>
         const SB_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
         const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
         const sbClient = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
-
         const YRA = {
             adSlotsCache: null,
-
-            init() {
-                const mr = document.getElementById('modalRoot');
-                if (mr) mr.innerHTML = '';
-
-                if (window.YR_DB) {
-                    YR_DB.init().then(() => this.checkAuth());
-                } else {
-                    this.checkAuth();
-                }
-            },
-
-            toggleSidebar() {
-                const sb = document.getElementById('adminSidebar');
-                const bd = document.getElementById('sidebarBackdrop');
-                if (sb) sb.classList.toggle('open');
-                if (bd) bd.classList.toggle('active');
-            },
-
-            closeSidebar() {
-                const sb = document.getElementById('adminSidebar');
-                const bd = document.getElementById('sidebarBackdrop');
-                if (sb) sb.classList.remove('open');
-                if (bd) bd.classList.remove('active');
-            },
-
+            init() { if (window.YR_DB) { YR_DB.init().then(() => this.checkAuth()); } else { this.checkAuth(); } },
+            toggleSidebar() { const sb = document.getElementById('adminSidebar'); const bd = document.getElementById('sidebarBackdrop'); if (sb) sb.classList.toggle('open'); if (bd) bd.classList.toggle('active'); },
+            closeSidebar() { const sb = document.getElementById('adminSidebar'); const bd = document.getElementById('sidebarBackdrop'); if (sb) sb.classList.remove('open'); if (bd) bd.classList.remove('active'); },
             checkAuth() {
                 const session = (window.YR_DB && YR_DB.getSession()) || JSON.parse(localStorage.getItem('yr_session') || 'null');
                 if (!session || (session.role !== 'admin' && session.role !== 'super_admin')) {
                     document.getElementById('adminLogin').classList.remove('hidden');
                     document.getElementById('adminWrapper').classList.add('hidden');
-                    this.bindLogin();
-                    return;
+                    this.bindLogin(); return;
                 }
                 document.getElementById('adminLogin').classList.add('hidden');
                 document.getElementById('adminWrapper').classList.remove('hidden');
                 document.getElementById('adminName').textContent = session.name || 'المدير العام';
-                this.renderDashboard();
-                this.updateBadges();
+                this.renderDashboard(); this.updateBadges();
             },
-
             bindLogin() {
-                const form = document.getElementById('adminLoginForm');
-                if (!form) return;
+                const form = document.getElementById('adminLoginForm'); if (!form) return;
                 form.onsubmit = async (e) => {
                     e.preventDefault();
-                    const email = form.email.value.trim();
-                    const password = form.password.value;
-
+                    const email = form.email.value.trim(); const password = form.password.value;
                     try {
                         if (sbClient) {
                             const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
@@ -472,45 +308,29 @@
                                 const { data: profile } = await sbClient.from('profiles').select('*').eq('id', data.user.id).single();
                                 if (profile && (profile.role === 'admin' || profile.role === 'super_admin')) {
                                     const s = { id: profile.id, name: profile.full_name || 'الإدارة', email: profile.email, role: profile.role };
-                                    if (window.YR_DB) YR_DB.setSession(s);
-                                    else localStorage.setItem('yr_session', JSON.stringify(s));
-                                    location.reload();
-                                    return;
+                                    if (window.YR_DB) YR_DB.setSession(s); else localStorage.setItem('yr_session', JSON.stringify(s));
+                                    location.reload(); return;
                                 }
                             }
                         }
                     } catch (err) { console.warn('Supabase Auth error', err); }
-
                     if (window.YR_DB) {
                         const users = YR_DB.get('users') || [];
-                        const user = users.find(u => u.email === email && (u.role === 'admin' || u.role === 'super_admin'));
-                        if (user) {
-                            YR_DB.setSession(user);
-                            location.reload();
-                            return;
-                        }
+                        const user = users.find(u => u.email === email && u.role === 'admin');
+                        if (user) { YR_DB.setSession(user); location.reload(); return; }
                     }
                     this.showToast('بيانات الدخول غير صحيحة أو غير مصرح لك', 'error');
                 };
             },
-
             switchTab(tab, el) {
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 if (el) el.classList.add('active');
                 document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                
                 const target = document.getElementById('panel-' + tab);
                 if (target) target.classList.add('active');
                 this.closeSidebar();
-
-                const titles = {
-                    dashboard: 'الرئيسية', companies: 'الشركات', banks: 'البنوك',
-                    jobs: 'الوظائف', verification: 'طلبات التوثيق',
-                    applications: 'طلبات التوظيف', reviews: 'التقييمات', users: 'المستخدمون',
-                    ads: 'إدارة الإعلانات', notifications: 'الإشعارات'
-                };
+                const titles = { dashboard:'الرئيسية', companies:'الشركات', banks:'البنوك', jobs:'الوظائف', verification:'طلبات التوثيق', applications:'طلبات التوظيف', reviews:'التقييمات', users:'المستخدمون', ads:'إدارة الإعلانات', notifications:'الإشعارات' };
                 document.getElementById('pageTitle').textContent = titles[tab] || '';
-
                 if (tab === 'dashboard') this.renderDashboard();
                 if (tab === 'companies') this.renderCompanies();
                 if (tab === 'banks') this.renderBanks();
@@ -522,7 +342,6 @@
                 if (tab === 'notifications') this.renderNotifications();
                 if (tab === 'users') this.renderUsers();
             },
-
             async renderDashboard() {
                 const companies = (window.YR_DB && YR_DB.get('companies')) || [];
                 const banks = (window.YR_DB && YR_DB.get('banks')) || [];
@@ -530,208 +349,105 @@
                 const reviews = (window.YR_DB && YR_DB.get('reviews')) || [];
                 const ads = (window.YR_DB && YR_DB.get('advertisements')) || [];
                 const verifRequests = (window.YR_DB && YR_DB.where('verification_requests', 'status', 'pending')) || [];
-                
                 const verifiedCompanies = companies.filter(c => c.verified).length;
                 const activeJobs = jobs.filter(j => j.status === 'active').length;
                 const pendingJobs = jobs.filter(j => j.status === 'pending').length;
                 const activeAds = ads.filter(a => a.status === 'ACTIVE').length;
                 const totalClicks = ads.reduce((acc, a) => acc + (Number(a.clicks) || 0), 0);
-                
                 let totalUsersCount = (window.YR_DB && YR_DB.get('users')?.length) || 0;
-                if (sbClient) {
-                    try {
-                        const { count } = await sbClient.from('profiles').select('*', { count: 'exact', head: true });
-                        if (count !== null) totalUsersCount = count;
-                    } catch(e) {}
-                }
-
+                if (sbClient) { try { const { count } = await sbClient.from('profiles').select('*', { count: 'exact', head: true }); if (count !== null) totalUsersCount = count; } catch(e) {} }
                 const avgRating = reviews.length > 0 ? (reviews.reduce((acc, r) => acc + (Number(r.stars) || 0), 0) / reviews.length).toFixed(1) : '5.0';
-
-                document.getElementById('dashStats').innerHTML = 
-                    '<div class="stat-card-real"><div class="icon-wrap"><i class="fa-solid fa-building"></i></div><div><div class="num-wrap">' + companies.length + '</div><div class="lbl-wrap">إجمالي الشركات</div><span class="sub-status" style="color:var(--success);">✓ ' + verifiedCompanies + ' شركة موثقة</span></div></div>' +
-                    '<div class="stat-card-real"><div class="icon-wrap"><i class="fa-solid fa-landmark"></i></div><div><div class="num-wrap">' + banks.length + '</div><div class="lbl-wrap">البنوك والمصارف</div><span class="sub-status" style="color:var(--gold-400);">خدمات مصرفية نشطة</span></div></div>' +
-                    '<div class="stat-card-real"><div class="icon-wrap"><i class="fa-solid fa-briefcase"></i></div><div><div class="num-wrap">' + jobs.length + '</div><div class="lbl-wrap">الوظائف المعروضة</div><span class="sub-status" style="color:' + (pendingJobs > 0 ? 'var(--warning)' : 'var(--success)') + ';">' + activeJobs + ' نشطة ' + (pendingJobs > 0 ? '• (' + pendingJobs + ' معلقة)' : '') + '</span></div></div>' +
-                    '<div class="stat-card-real"><div class="icon-wrap"><i class="fa-solid fa-users"></i></div><div><div class="num-wrap">' + totalUsersCount + '</div><div class="lbl-wrap">المستخدمون المسجلون</div><span class="sub-status" style="color:var(--info);">حسابات موثقة</span></div></div>' +
-                    '<div class="stat-card-real"><div class="icon-wrap"><i class="fa-solid fa-bullhorn"></i></div><div><div class="num-wrap">' + ads.length + '</div><div class="lbl-wrap">الحملات الإعلانية</div><span class="sub-status" style="color:var(--gold-400);">' + activeAds + ' نشط • ' + totalClicks + ' نقرة</span></div></div>' +
-                    '<div class="stat-card-real"><div class="icon-wrap"><i class="fa-solid fa-star"></i></div><div><div class="num-wrap">' + reviews.length + '</div><div class="lbl-wrap">إجمالي المراجعات</div><span class="sub-status" style="color:var(--gold-400);">متوسط التقييم: ★ ' + avgRating + '</span></div></div>' +
-                    (verifRequests.length > 0 ? '<div class="stat-card-real" style="border-right-color:var(--danger);"><div class="icon-wrap" style="color:var(--danger);"><i class="fa-solid fa-shield-check"></i></div><div><div class="num-wrap" style="color:var(--danger);">' + verifRequests.length + '</div><div class="lbl-wrap">طلبات توثيق جديدة</div><span class="sub-status" style="color:var(--warning);">تحتاج لمراجعة المستندات</span></div></div>' : '');
-
+                const el = document.getElementById('dashStats');
+                let h = '';
+                h += '<div class="stat-card-real"><div class="icon-wrap"><i class="fa-solid fa-building"></i></div><div><div class="num-wrap">' + companies.length + '</div><div class="lbl-wrap">إجمالي الشركات</div><span class="sub-status" style="color:var(--success);">✓ ' + verifiedCompanies + ' شركة موثقة</span></div></div>';
+                h += '<div class="stat-card-real"><div class="icon-wrap"><i class="fa-solid fa-landmark"></i></div><div><div class="num-wrap">' + banks.length + '</div><div class="lbl-wrap">البنوك والمصارف</div><span class="sub-status" style="color:var(--gold-400);">خدمات مصرفية نشطة</span></div></div>';
+                h += '<div class="stat-card-real"><div class="icon-wrap"><i class="fa-solid fa-briefcase"></i></div><div><div class="num-wrap">' + jobs.length + '</div><div class="lbl-wrap">الوظائف المعروضة</div><span class="sub-status" style="color:' + (pendingJobs > 0 ? 'var(--warning)' : 'var(--success)') + ';">' + activeJobs + ' نشطة ' + (pendingJobs > 0 ? '• (' + pendingJobs + ' معلقة)' : '') + '</span></div></div>';
+                h += '<div class="stat-card-real"><div class="icon-wrap"><i class="fa-solid fa-users"></i></div><div><div class="num-wrap">' + totalUsersCount + '</div><div class="lbl-wrap">المستخدمون المسجلون</div><span class="sub-status" style="color:var(--info);">حسابات موثقة</span></div></div>';
+                h += '<div class="stat-card-real"><div class="icon-wrap"><i class="fa-solid fa-bullhorn"></i></div><div><div class="num-wrap">' + ads.length + '</div><div class="lbl-wrap">الحملات الإعلانية</div><span class="sub-status" style="color:var(--gold-400);">' + activeAds + ' نشط • ' + totalClicks + ' نقرة</span></div></div>';
+                h += '<div class="stat-card-real"><div class="icon-wrap"><i class="fa-solid fa-star"></i></div><div><div class="num-wrap">' + reviews.length + '</div><div class="lbl-wrap">إجمالي المراجعات</div><span class="sub-status" style="color:var(--gold-400);">متوسط التقييم: ★ ' + avgRating + '</span></div></div>';
+                if (verifRequests.length > 0) h += '<div class="stat-card-real" style="border-right-color:var(--danger);"><div class="icon-wrap" style="color:var(--danger);"><i class="fa-solid fa-shield-check"></i></div><div><div class="num-wrap" style="color:var(--danger);">' + verifRequests.length + '</div><div class="lbl-wrap">طلبات توثيق جديدة</div><span class="sub-status" style="color:var(--warning);">تحتاج لمراجعة المستندات</span></div></div>';
+                el.innerHTML = h;
                 const recentNotifs = document.getElementById('recentNotifications');
                 const notifs = (window.YR_DB && YR_DB.get('notifications'))?.slice(0, 5) || [];
                 if (recentNotifs) {
                     if (notifs.length === 0) {
-                        recentNotifs.innerHTML = '<div style="background:var(--bg-card);padding:18px;border-radius:12px;border:1px solid var(--border);color:var(--text-muted);text-align:center;font-size:0.9rem;"><i class="fa-solid fa-bell-slash" style="margin-left:8px;"></i> لا توجد تنبيهات جديدة في الوقت الحالي</div>';
+                        recentNotifs.innerHTML = '<div style="background:var(--bg-card);padding:18px;border-radius:12px;border:1px solid var(--border);color:var(--text-muted);text-align:center;font-size:0.9rem;"><i class="fa-solid fa-bell-slash" style="margin-left:8px;"></i> لا توجد تنبيهات جديدة</div>';
                     } else {
-                        recentNotifs.innerHTML = '<h3 style="margin:0 0 12px 0;color:var(--gold-400);font-size:1.05rem;"><i class="fa-solid fa-bell"></i> آخر التنبيهات المباشرة</h3>' +
-                        notifs.map(n => 
-                            '<div style="padding:12px 16px;border-right:3px solid var(--gold-500);margin-bottom:8px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border);border-right-width:3px;">' +
-                            '<strong>' + this.esc(n.title) + '</strong><br>' +
-                            '<small style="color:var(--text-muted);">' + this.esc(n.message) + ' • ' + new Date(n.createdAt || Date.now()).toLocaleDateString('ar-YE') + '</small></div>'
-                        ).join('');
+                        let h2 = '<h3 style="margin:0 0 12px 0;color:var(--gold-400);font-size:1.05rem;"><i class="fa-solid fa-bell"></i> آخر التنبيهات المباشرة</h3>';
+                        notifs.forEach(n => {
+                            h2 += '<div style="padding:12px 16px;border-right:3px solid var(--gold-500);margin-bottom:8px;background:var(--bg-card);border-radius:8px;border:1px solid var(--border);border-right-width:3px;"><strong>' + this.esc(n.title) + '</strong><br><small style="color:var(--text-muted);">' + this.esc(n.message) + ' • ' + new Date(n.createdAt || Date.now()).toLocaleDateString('ar-YE') + '</small></div>';
+                        });
+                        recentNotifs.innerHTML = h2;
                     }
                 }
             },
-
             updateBadges() {
                 if (!window.YR_DB) return;
                 const verifCount = YR_DB.where('verification_requests', 'status', 'pending').length;
                 document.getElementById('verifBadge').textContent = verifCount;
-
                 const notifs = YR_DB.get('notifications') || [];
                 const notifCount = notifs.filter(n => !n.read).length;
                 const notifBadge = document.getElementById('notifBadge');
-                if (notifBadge) {
-                    notifBadge.style.display = notifCount > 0 ? 'inline-block' : 'none';
-                    notifBadge.textContent = notifCount;
-                }
+                if (notifBadge) { notifBadge.style.display = notifCount > 0 ? 'inline-block' : 'none'; notifBadge.textContent = notifCount; }
             },
-
             renderCompanies() {
                 const body = document.getElementById('companiesBody');
                 const companies = YR_DB.get('companies') || [];
                 body.innerHTML = companies.map(c => {
                     const status = c.status || (c.verified ? 'active' : 'pending');
-                    return '<tr>' +
-                        '<td><strong>' + this.esc(c.name) + '</strong><br><small style="color:var(--text-muted);">' + this.esc(c.email || '') + '</small></td>' +
-                        '<td>' + this.esc(this.getCityName(c.city)) + '</td>' +
-                        '<td><span class="status-badge status-' + status + '">' + this.statusLabel(status) + '</span></td>' +
-                        '<td>' + (c.verified ? '<span style="color:var(--success);font-weight:700;"><i class="fa-solid fa-circle-check"></i> موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>') + '</td>' +
-                        '<td><span class="status-badge" style="background:var(--navy-700);">' + this.esc(c.package || 'free') + '</span></td>' +
-                        '<td style="white-space:nowrap;">' +
-                            (status === 'pending' ? '<button class="btn btn-sm btn-success" onclick="YRA.approveCompany(\'' + c.id + '\')"><i class="fa-solid fa-check"></i></button> ' : '') +
-                            '<button class="btn btn-sm btn-outline" onclick="YRA.editCompanyModal(\'' + c.id + '\')"><i class="fa-solid fa-pen"></i></button> ' +
-                            '<button class="btn btn-sm btn-gold" onclick="YRA.toggleVerify(\'' + c.id + '\',\'companies\')"><i class="fa-solid fa-certificate"></i></button> ' +
-                            '<button class="btn btn-sm btn-danger" onclick="YRA.deleteItem(\'companies\',\'' + c.id + '\')"><i class="fa-solid fa-trash"></i></button>' +
-                        '</td></tr>';
+                    return '<tr><td><strong>' + this.esc(c.name) + '</strong><br><small style="color:var(--text-muted);">' + this.esc(c.email || '') + '</small></td><td>' + this.esc(this.getCityName(c.city)) + '</td><td><span class="status-badge status-' + status + '">' + this.statusLabel(status) + '</span></td><td>' + (c.verified ? '<span style="color:var(--success);font-weight:700;"><i class="fa-solid fa-circle-check"></i> موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>') + '</td><td><span class="status-badge" style="background:var(--navy-700);">' + this.esc(c.package || 'free') + '</span></td><td style="white-space:nowrap;">' + (status === 'pending' ? '<button class="btn btn-sm btn-success" onclick="YRA.approveCompany(\'' + c.id + '\')"><i class="fa-solid fa-check"></i></button> ' : '') + '<button class="btn btn-sm btn-outline" onclick="YRA.editCompanyModal(\'' + c.id + '\')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-sm btn-gold" onclick="YRA.toggleVerify(\'' + c.id + '\',\'companies\')"><i class="fa-solid fa-certificate"></i></button> <button class="btn btn-sm btn-danger" onclick="YRA.deleteItem(\'companies\',\'' + c.id + '\')"><i class="fa-solid fa-trash"></i></button></td></tr>';
                 }).join('');
             },
-
             openAddCompany() {
-                this.openModal(
-                    '<div class="yr-modal-header"><h3><i class="fa-solid fa-plus"></i> إضافة شركة جديدة</h3><button class="btn btn-sm btn-outline" onclick="YRA.closeModal()"><i class="fa-solid fa-times"></i></button></div>' +
-                    '<form id="addCompanyForm"><div class="yr-modal-body">' +
-                    '<div class="form-group"><label>اسم الشركة *</label><input class="form-control" name="name" required placeholder="اسم المنشأة التجاري"></div>' +
-                    '<div class="form-row"><div class="form-group"><label>المدينة</label><select class="form-control" name="city" id="compCitySel"></select></div><div class="form-group"><label>التصنيف</label><select class="form-control" name="category" id="compCatSel"></select></div></div>' +
-                    '<div class="form-row"><div class="form-group"><label>الهاتف</label><input class="form-control" name="phone" placeholder="770000000"></div><div class="form-group"><label>البريد الإلكتروني</label><input class="form-control" name="email" placeholder="info@company.ye"></div></div>' +
-                    '<div class="form-group"><label>وصف الشركة</label><textarea class="form-control" name="description" rows="2" placeholder="نبذة عن نشاط الشركة..."></textarea></div>' +
-                    '</div><div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRA.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold"><i class="fa-solid fa-check"></i> حفظ الشركة</button></div></form>'
-                );
-
+                this.openModal('<div class="yr-modal-header"><h3><i class="fa-solid fa-plus"></i> إضافة شركة جديدة</h3><button class="btn btn-sm btn-outline" onclick="YRA.closeModal()"><i class="fa-solid fa-times"></i></button></div><form id="addCompanyForm"><div class="yr-modal-body"><div class="form-group"><label>اسم الشركة *</label><input class="form-control" name="name" required placeholder="اسم المنشأة التجاري"></div><div class="form-row"><div class="form-group"><label>المدينة</label><select class="form-control" name="city" id="compCitySel"></select></div><div class="form-group"><label>التصنيف</label><select class="form-control" name="category" id="compCatSel"></select></div></div><div class="form-row"><div class="form-group"><label>الهاتف</label><input class="form-control" name="phone" placeholder="770000000"></div><div class="form-group"><label>البريد الإلكتروني</label><input class="form-control" name="email" placeholder="info@company.ye"></div></div><div class="form-group"><label>وصف الشركة</label><textarea class="form-control" name="description" rows="2" placeholder="نبذة عن نشاط الشركة..."></textarea></div></div><div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRA.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold"><i class="fa-solid fa-check"></i> حفظ الشركة</button></div></form>');
                 const citySel = document.getElementById('compCitySel');
                 const catSel = document.getElementById('compCatSel');
                 (YR_DB.get('cities') || []).forEach(c => citySel.innerHTML += '<option value="' + c.id + '">' + c.name + '</option>');
                 (YR_DB.get('categories') || []).forEach(c => catSel.innerHTML += '<option value="' + c.id + '">' + c.name + '</option>');
-
                 document.getElementById('addCompanyForm').onsubmit = async (e) => {
                     e.preventDefault();
                     const fd = new FormData(e.target);
-                    await YR_DB.add('companies', {
-                        name: fd.get('name'), city: fd.get('city'), category: fd.get('category'),
-                        phone: fd.get('phone'), email: fd.get('email'), description: fd.get('description'),
-                        verified: false, package: 'free', status: 'active'
-                    });
-                    this.closeModal();
-                    this.renderCompanies();
-                    this.showToast('تمت إضافة الشركة بنجاح', 'success');
+                    await YR_DB.add('companies', { name: fd.get('name'), city: fd.get('city'), category: fd.get('category'), phone: fd.get('phone'), email: fd.get('email'), description: fd.get('description'), verified: false, package: 'free', status: 'active' });
+                    this.closeModal(); this.renderCompanies(); this.showToast('تمت إضافة الشركة بنجاح', 'success');
                 };
             },
-
             editCompanyModal(id) {
-                const c = YR_DB.findById('companies', id);
-                if (!c) return;
-                this.openModal(
-                    '<div class="yr-modal-header"><h3><i class="fa-solid fa-pen"></i> تعديل بيانات الشركة</h3><button class="btn btn-sm btn-outline" onclick="YRA.closeModal()"><i class="fa-solid fa-times"></i></button></div>' +
-                    '<form id="editCompForm"><div class="yr-modal-body">' +
-                    '<div class="form-group"><label>اسم الشركة</label><input class="form-control" name="name" value="' + this.esc(c.name) + '" required></div>' +
-                    '<div class="form-row"><div class="form-group"><label>الهاتف</label><input class="form-control" name="phone" value="' + this.esc(c.phone || '') + '"></div><div class="form-group"><label>البريد</label><input class="form-control" name="email" value="' + this.esc(c.email || '') + '"></div></div>' +
-                    '<div class="form-group"><label>الباقة الحالية</label><select class="form-control" name="package"><option value="free" ' + (c.package==='free'?'selected':'') + '>باقة مجانية (Free)</option><option value="silver" ' + (c.package==='silver'?'selected':'') + '>باقة فضية (Silver)</option><option value="gold" ' + (c.package==='gold'?'selected':'') + '>باقة ذهبية (Gold)</option></select></div>' +
-                    '<div class="form-group"><label>الوصف</label><textarea class="form-control" name="description" rows="2">' + this.esc(c.description || '') + '</textarea></div>' +
-                    '</div><div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRA.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold">حفظ التغييرات</button></div></form>'
-                );
-
+                const c = YR_DB.findById('companies', id); if (!c) return;
+                this.openModal('<div class="yr-modal-header"><h3><i class="fa-solid fa-pen"></i> تعديل بيانات الشركة</h3><button class="btn btn-sm btn-outline" onclick="YRA.closeModal()"><i class="fa-solid fa-times"></i></button></div><form id="editCompForm"><div class="yr-modal-body"><div class="form-group"><label>اسم الشركة</label><input class="form-control" name="name" value="' + this.esc(c.name) + '" required></div><div class="form-row"><div class="form-group"><label>الهاتف</label><input class="form-control" name="phone" value="' + this.esc(c.phone || '') + '"></div><div class="form-group"><label>البريد</label><input class="form-control" name="email" value="' + this.esc(c.email || '') + '"></div></div><div class="form-group"><label>الباقة الحالية</label><select class="form-control" name="package"><option value="free" ' + (c.package==='free'?'selected':'') + '>باقة مجانية (Free)</option><option value="silver" ' + (c.package==='silver'?'selected':'') + '>باقة فضية (Silver)</option><option value="gold" ' + (c.package==='gold'?'selected':'') + '>باقة ذهبية (Gold)</option></select></div><div class="form-group"><label>الوصف</label><textarea class="form-control" name="description" rows="2">' + this.esc(c.description || '') + '</textarea></div></div><div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRA.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold">حفظ التغييرات</button></div></form>');
                 document.getElementById('editCompForm').onsubmit = async (e) => {
                     e.preventDefault();
                     const fd = new FormData(e.target);
-                    await YR_DB.update('companies', id, {
-                        name: fd.get('name'), phone: fd.get('phone'),
-                        email: fd.get('email'), package: fd.get('package'),
-                        description: fd.get('description')
-                    });
-                    this.closeModal();
-                    this.renderCompanies();
-                    this.showToast('تم تحديث البيانات', 'success');
+                    await YR_DB.update('companies', id, { name: fd.get('name'), phone: fd.get('phone'), email: fd.get('email'), package: fd.get('package'), description: fd.get('description') });
+                    this.closeModal(); this.renderCompanies(); this.showToast('تم تحديث البيانات', 'success');
                 };
             },
-
-            async approveCompany(id) {
-                await YR_DB.update('companies', id, { status: 'active', verified: true });
-                this.renderCompanies();
-                this.showToast('تم قبول وتوثيق المنشأة بنجاح', 'success');
-            },
-
+            async approveCompany(id) { await YR_DB.update('companies', id, { status: 'active', verified: true }); this.renderCompanies(); this.showToast('تم قبول وتوثيق المنشأة بنجاح', 'success'); },
             renderBanks() {
                 const body = document.getElementById('banksBody');
                 const banks = YR_DB.get('banks') || [];
-                body.innerHTML = banks.map(b => 
-                    '<tr><td><strong>' + this.esc(b.name) + '</strong></td>' +
-                    '<td>' + this.esc(this.getCityName(b.city)) + '</td>' +
-                    '<td>' + (b.verified ? '<span style="color:var(--success);font-weight:700;"><i class="fa-solid fa-circle-check"></i> موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>') + '</td>' +
-                    '<td style="white-space:nowrap;">' +
-                    '<button class="btn btn-sm btn-gold" onclick="YRA.toggleVerify(\'' + b.id + '\',\'banks\')"><i class="fa-solid fa-certificate"></i></button> ' +
-                    '<button class="btn btn-sm btn-danger" onclick="YRA.deleteItem(\'banks\',\'' + b.id + '\')"><i class="fa-solid fa-trash"></i></button>' +
-                    '</td></tr>'
-                ).join('');
+                body.innerHTML = banks.map(b => '<tr><td><strong>' + this.esc(b.name) + '</strong></td><td>' + this.esc(this.getCityName(b.city)) + '</td><td>' + (b.verified ? '<span style="color:var(--success);font-weight:700;"><i class="fa-solid fa-circle-check"></i> موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>') + '</td><td style="white-space:nowrap;"><button class="btn btn-sm btn-gold" onclick="YRA.toggleVerify(\'' + b.id + '\',\'banks\')"><i class="fa-solid fa-certificate"></i></button> <button class="btn btn-sm btn-danger" onclick="YRA.deleteItem(\'banks\',\'' + b.id + '\')"><i class="fa-solid fa-trash"></i></button></td></tr>').join('');
             },
-
             openAddBank() {
-                this.openModal(
-                    '<div class="yr-modal-header"><h3><i class="fa-solid fa-plus"></i> إضافة بنك ومصرف</h3><button class="btn btn-sm btn-outline" onclick="YRA.closeModal()"><i class="fa-solid fa-times"></i></button></div>' +
-                    '<form id="addBankForm"><div class="yr-modal-body">' +
-                    '<div class="form-group"><label>اسم البنك / المصرف *</label><input class="form-control" name="name" required placeholder="مثال: بنك اليمن الدولي"></div>' +
-                    '<div class="form-group"><label>المدينة الرئيسية</label><select class="form-control" name="city" id="bankCitySel"></select></div>' +
-                    '<div class="form-group"><label>رقم خدمة العملاء</label><input class="form-control" name="phone" placeholder="8000000"></div>' +
-                    '</div><div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRA.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold">إضافة البنك</button></div></form>'
-                );
-
+                this.openModal('<div class="yr-modal-header"><h3><i class="fa-solid fa-plus"></i> إضافة بنك ومصرف</h3><button class="btn btn-sm btn-outline" onclick="YRA.closeModal()"><i class="fa-solid fa-times"></i></button></div><form id="addBankForm"><div class="yr-modal-body"><div class="form-group"><label>اسم البنك / المصرف *</label><input class="form-control" name="name" required placeholder="مثال: بنك اليمن الدولي"></div><div class="form-group"><label>المدينة الرئيسية</label><select class="form-control" name="city" id="bankCitySel"></select></div><div class="form-group"><label>رقم خدمة العملاء</label><input class="form-control" name="phone" placeholder="8000000"></div></div><div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRA.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold">إضافة البنك</button></div></form>');
                 const citySel = document.getElementById('bankCitySel');
                 (YR_DB.get('cities') || []).forEach(c => citySel.innerHTML += '<option value="' + c.id + '">' + c.name + '</option>');
-
                 document.getElementById('addBankForm').onsubmit = async (e) => {
                     e.preventDefault();
                     const fd = new FormData(e.target);
-                    await YR_DB.add('banks', {
-                        name: fd.get('name'), city: fd.get('city'), phone: fd.get('phone'), verified: true
-                    });
-                    this.closeModal();
-                    this.renderBanks();
-                    this.showToast('تمت إضافة البنك بنجاح', 'success');
+                    await YR_DB.add('banks', { name: fd.get('name'), city: fd.get('city'), phone: fd.get('phone'), verified: true });
+                    this.closeModal(); this.renderBanks(); this.showToast('تمت إضافة البنك بنجاح', 'success');
                 };
             },
-
             renderJobs() {
                 const body = document.getElementById('jobsBody');
                 const jobs = YR_DB.get('jobs') || [];
                 body.innerHTML = jobs.map(j => {
                     const comp = YR_DB.findById('companies', j.companyId);
                     const status = j.status || 'pending';
-                    return '<tr>' +
-                        '<td><strong>' + this.esc(j.title) + '</strong><br><small style="color:var(--text-muted);">' + this.esc(j.type || '') + '</small></td>' +
-                        '<td>' + (comp ? this.esc(comp.name) : '-') + '</td>' +
-                        '<td>' + this.esc(j.salary || '-') + '</td>' +
-                        '<td><span class="status-badge status-' + status + '">' + this.statusLabel(status) + '</span></td>' +
-                        '<td style="white-space:nowrap;">' +
-                            (status === 'pending' ? '<button class="btn btn-sm btn-success" onclick="YRA.approveJob(\'' + j.id + '\')"><i class="fa-solid fa-check"></i></button> ' : '') +
-                            '<button class="btn btn-sm btn-danger" onclick="YRA.deleteItem(\'jobs\',\'' + j.id + '\')"><i class="fa-solid fa-trash"></i></button>' +
-                        '</td></tr>';
+                    return '<tr><td><strong>' + this.esc(j.title) + '</strong><br><small style="color:var(--text-muted);">' + this.esc(j.type || '') + '</small></td><td>' + (comp ? this.esc(comp.name) : '-') + '</td><td>' + this.esc(j.salary || '-') + '</td><td><span class="status-badge status-' + status + '">' + this.statusLabel(status) + '</span></td><td style="white-space:nowrap;">' + (status === 'pending' ? '<button class="btn btn-sm btn-success" onclick="YRA.approveJob(\'' + j.id + '\')"><i class="fa-solid fa-check"></i></button> ' : '') + '<button class="btn btn-sm btn-danger" onclick="YRA.deleteItem(\'jobs\',\'' + j.id + '\')"><i class="fa-solid fa-trash"></i></button></td></tr>';
                 }).join('');
             },
-
-            async approveJob(id) {
-                await YR_DB.update('jobs', id, { status: 'active' });
-                this.renderJobs();
-                this.showToast('تم اعتماد ونشر الوظيفة', 'success');
-            },
-
+            async approveJob(id) { await YR_DB.update('jobs', id, { status: 'active' }); this.renderJobs(); this.showToast('تم اعتماد ونشر الوظيفة', 'success'); },
             renderVerification() {
                 const list = document.getElementById('verificationList');
                 const requests = YR_DB.get('verification_requests') || [];
@@ -739,63 +455,32 @@
                     list.innerHTML = '<div style="text-align:center;padding:30px;background:var(--bg-card);border-radius:10px;color:var(--text-muted);border:1px solid var(--border);"><i class="fa-solid fa-circle-check" style="font-size:2rem;color:var(--gold-500);margin-bottom:8px;display:block;"></i>لا توجد طلبات توثيق معلقة</div>';
                     return;
                 }
-                list.innerHTML = requests.map(r => 
-                    '<div style="background:var(--bg-card);border-radius:10px;padding:16px;margin-bottom:10px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">' +
-                    '<div><strong style="color:#fff;font-size:1.05rem;">' + this.esc(r.companyName) + '</strong>' +
-                    '<div style="color:var(--text-muted);font-size:0.82rem;margin-top:4px;">' + this.esc(r.phone || '') + ' • ' + this.esc(this.getCityName(r.city)) + '</div></div>' +
-                    '<div style="display:flex;gap:6px;align-items:center;">' +
-                    '<span class="status-badge status-' + r.status + '">' + this.statusLabel(r.status) + '</span>' +
-                    (r.status === 'pending' ? '<button class="btn btn-sm btn-gold" onclick="YRA.approveVerif(\'' + r.id + '\')"><i class="fa-solid fa-check"></i> قبول</button><button class="btn btn-sm btn-outline" onclick="YRA.rejectVerif(\'' + r.id + '\')"><i class="fa-solid fa-times"></i> رفض</button>' : '') +
-                    '</div></div>'
-                ).join('');
+                list.innerHTML = requests.map(r => '<div style="background:var(--bg-card);border-radius:10px;padding:16px;margin-bottom:10px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;"><div><strong style="color:#fff;font-size:1.05rem;">' + this.esc(r.companyName) + '</strong><div style="color:var(--text-muted);font-size:0.82rem;margin-top:4px;">' + this.esc(r.phone || '') + ' • ' + this.esc(this.getCityName(r.city)) + '</div></div><div style="display:flex;gap:6px;align-items:center;"><span class="status-badge status-' + r.status + '">' + this.statusLabel(r.status) + '</span>' + (r.status === 'pending' ? '<button class="btn btn-sm btn-gold" onclick="YRA.approveVerif(\'' + r.id + '\')"><i class="fa-solid fa-check"></i> قبول</button><button class="btn btn-sm btn-outline" onclick="YRA.rejectVerif(\'' + r.id + '\')"><i class="fa-solid fa-times"></i> رفض</button>' : '') + '</div></div>').join('');
             },
-
             async approveVerif(id) {
                 const req = YR_DB.findById('verification_requests', id);
                 await YR_DB.update('verification_requests', id, { status: 'approved' });
                 const comp = (YR_DB.get('companies') || []).find(c => c.name === req.companyName);
                 if (comp) await YR_DB.update('companies', comp.id, { verified: true });
-                this.renderVerification();
-                this.updateBadges();
-                this.showToast('تم قبول وتوثيق المنشأة', 'success');
+                this.renderVerification(); this.updateBadges(); this.showToast('تم قبول وتوثيق المنشأة', 'success');
             },
-
-            async rejectVerif(id) {
-                await YR_DB.update('verification_requests', id, { status: 'rejected' });
-                this.renderVerification();
-                this.updateBadges();
-                this.showToast('تم رفض التوثيق', 'info');
-            },
-
+            async rejectVerif(id) { await YR_DB.update('verification_requests', id, { status: 'rejected' }); this.renderVerification(); this.updateBadges(); this.showToast('تم رفض التوثيق', 'info'); },
             renderApplications() {
                 const body = document.getElementById('appsBody');
                 const apps = YR_DB.get('job_applications') || [];
                 body.innerHTML = apps.map(a => {
                     const job = YR_DB.findById('jobs', a.jobId);
-                    return '<tr>' +
-                        '<td><strong>' + this.esc(a.name) + '</strong><br><small style="color:var(--text-muted);">' + (job ? this.esc(job.title) : '-') + '</small></td>' +
-                        '<td>' + this.esc(a.phone || '-') + '</td>' +
-                        '<td>' + (a.cvUrl ? '<a href="' + this.esc(a.cvUrl) + '" target="_blank" style="color:var(--gold-500);font-weight:700;"><i class="fa-solid fa-file-pdf"></i> السيرة الذاتية</a>' : '-') + '</td>' +
-                        '<td><span class="status-badge status-' + a.status + '">' + this.statusLabel(a.status) + '</span></td>' +
-                        '<td><button class="btn btn-sm btn-outline" onclick="alert(\'بيانات المتقدم:\\nالهاتف: ' + this.esc(a.phone) + '\\nالبريد: ' + this.esc(a.email) + '\')"><i class="fa-solid fa-eye"></i></button></td>' +
-                    '</tr>';
+                    return '<tr><td><strong>' + this.esc(a.name) + '</strong><br><small style="color:var(--text-muted);">' + (job ? this.esc(job.title) : '-') + '</small></td><td>' + this.esc(a.phone || '-') + '</td><td>' + (a.cvUrl ? '<a href="' + this.esc(a.cvUrl) + '" target="_blank" style="color:var(--gold-500);font-weight:700;"><i class="fa-solid fa-file-pdf"></i> السيرة الذاتية</a>' : '-') + '</td><td><span class="status-badge status-' + a.status + '">' + this.statusLabel(a.status) + '</span></td><td><button class="btn btn-sm btn-outline" onclick="alert(\'بيانات المتقدم: ' + this.esc(a.phone || '-') + '\')"><i class="fa-solid fa-eye"></i></button></td></tr>';
                 }).join('');
             },
-
             renderReviews() {
                 const body = document.getElementById('reviewsBody');
                 const reviews = YR_DB.get('reviews') || [];
                 body.innerHTML = reviews.map(r => {
                     const stars = Math.max(0, Math.min(5, Number(r.stars) || 0));
-                    return '<tr>' +
-                        '<td><strong>' + this.esc(r.userName || 'مستخدم') + '</strong></td>' +
-                        '<td style="color:var(--gold-400);">' + '★'.repeat(stars) + '</td>' +
-                        '<td>' + this.esc((r.comment || '').substring(0, 60)) + '</td>' +
-                        '<td><button class="btn btn-sm btn-danger" onclick="YRA.deleteItem(\'reviews\',\'' + r.id + '\')"><i class="fa-solid fa-trash"></i></button></td>' +
-                    '</tr>';
+                    return '<tr><td><strong>' + this.esc(r.userName || 'مستخدم') + '</strong></td><td style="color:var(--gold-400);">' + '★'.repeat(stars) + '</td><td>' + this.esc((r.comment || '').substring(0, 60)) + '</td><td><button class="btn btn-sm btn-danger" onclick="YRA.deleteItem(\'reviews\',\'' + r.id + '\')"><i class="fa-solid fa-trash"></i></button></td></tr>';
                 }).join('');
             },
-
             async renderUsers() {
                 const body = document.getElementById('usersBody');
                 body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">جاري جلب البيانات من السيرفر...</td></tr>';
@@ -803,64 +488,29 @@
                     if (!sbClient) throw new Error('Supabase client uninitialized');
                     const { data: profiles, error } = await sbClient.from('profiles').select('*').order('created_at', { ascending: false });
                     if (error) throw error;
-
                     const roles = { super_admin: 'إدارة عليا', admin: 'إدارة', user: 'مستخدم', company_owner: 'مالك شركة', bank_owner: 'مالك بنك' };
                     const statusLabels = { ACTIVE: '✅ نشط', PENDING: '⏳ معلق', SUSPENDED: '⛔ موقوف', BLOCKED: '🚫 محظور' };
-
-                    body.innerHTML = profiles.map(u => 
-                        '<tr>' +
-                        '<td><strong>' + this.esc(u.full_name || 'بدون اسم') + '</strong>' + (u.phone ? '<br><small style="color:var(--text-muted);">' + this.esc(u.phone) + '</small>' : '') + '</td>' +
-                        '<td>' + this.esc(u.email || '-') + '</td>' +
-                        '<td><span class="ad-card-pill">' + this.esc(roles[u.role] || u.role) + '</span></td>' +
-                        '<td><span class="status-badge status-' + (u.status || '').toLowerCase() + '">' + this.esc(statusLabels[u.status] || u.status) + '</span></td>' +
-                        '<td>' +
-                            (u.role !== 'super_admin' ? '<button class="btn btn-sm btn-outline" onclick="YRA.editUserModal(\'' + u.id + '\',\'' + u.status + '\')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-sm btn-danger" onclick="YRA.deleteUser(\'' + u.id + '\')"><i class="fa-solid fa-trash"></i></button>' : '<small style="color:var(--text-muted);">حساب رئيسي</small>') +
-                        '</td></tr>'
-                    ).join('');
+                    body.innerHTML = profiles.map(u => '<tr><td><strong>' + this.esc(u.full_name || 'بدون اسم') + '</strong>' + (u.phone ? '<br><small style="color:var(--text-muted);">' + this.esc(u.phone) + '</small>' : '') + '</td><td>' + this.esc(u.email || '-') + '</td><td><span class="ad-card-pill">' + this.esc(roles[u.role] || u.role) + '</span></td><td><span class="status-badge status-' + (u.status || '').toLowerCase() + '">' + this.esc(statusLabels[u.status] || u.status) + '</span></td><td>' + (u.role !== 'super_admin' ? '<button class="btn btn-sm btn-outline" onclick="YRA.editUserModal(\'' + u.id + '\',\'' + u.status + '\')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-sm btn-danger" onclick="YRA.deleteUser(\'' + u.id + '\')"><i class="fa-solid fa-trash"></i></button>' : '<small style="color:var(--text-muted);">حساب رئيسي</small>') + '</td></tr>').join('');
                 } catch (e) {
                     body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--danger);padding:20px;">تعذر التحميل: ' + this.esc(e.message) + '</td></tr>';
                 }
             },
-
             editUserModal(id, currentStatus) {
-                this.openModal(
-                    '<div class="yr-modal-header"><h3><i class="fa-solid fa-user-gear"></i> تغيير حالة الحساب</h3><button class="btn btn-sm btn-outline" onclick="YRA.closeModal()"><i class="fa-solid fa-times"></i></button></div>' +
-                    '<form id="editUserForm"><div class="yr-modal-body"><div class="form-group"><label>اختر الحالة الجديدة</label>' +
-                    '<select class="form-control" name="status">' +
-                    '<option value="ACTIVE" ' + (currentStatus==='ACTIVE'?'selected':'') + '>نشط (ACTIVE)</option>' +
-                    '<option value="PENDING" ' + (currentStatus==='PENDING'?'selected':'') + '>معلق (PENDING)</option>' +
-                    '<option value="SUSPENDED" ' + (currentStatus==='SUSPENDED'?'selected':'') + '>موقوف (SUSPENDED)</option>' +
-                    '<option value="BLOCKED" ' + (currentStatus==='BLOCKED'?'selected':'') + '>محظور (BLOCKED)</option>' +
-                    '</select></div></div>' +
-                    '<div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRA.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold">تحديث الحالة</button></div></form>'
-                );
-
+                this.openModal('<div class="yr-modal-header"><h3><i class="fa-solid fa-user-gear"></i> تغيير حالة الحساب</h3><button class="btn btn-sm btn-outline" onclick="YRA.closeModal()"><i class="fa-solid fa-times"></i></button></div><form id="editUserForm"><div class="yr-modal-body"><div class="form-group"><label>اختر الحالة الجديدة</label><select class="form-control" name="status"><option value="ACTIVE" ' + (currentStatus==='ACTIVE'?'selected':'') + '>نشط (ACTIVE)</option><option value="PENDING" ' + (currentStatus==='PENDING'?'selected':'') + '>معلق (PENDING)</option><option value="SUSPENDED" ' + (currentStatus==='SUSPENDED'?'selected':'') + '>موقوف (SUSPENDED)</option><option value="BLOCKED" ' + (currentStatus==='BLOCKED'?'selected':'') + '>محظور (BLOCKED)</option></select></div></div><div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRA.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold">تحديث الحالة</button></div></form>');
                 document.getElementById('editUserForm').onsubmit = async (e) => {
                     e.preventDefault();
                     const status = new FormData(e.target).get('status');
                     await sbClient.from('profiles').update({ status }).eq('id', id);
-                    this.closeModal();
-                    this.renderUsers();
-                    this.showToast('تم تحديث حالة المستخدم', 'success');
+                    this.closeModal(); this.renderUsers(); this.showToast('تم تحديث حالة المستخدم', 'success');
                 };
             },
-
-            async deleteUser(id) {
-                if (!confirm('هل تريد حذف هذا الحساب نهائياً؟')) return;
-                await sbClient.from('profiles').delete().eq('id', id);
-                this.renderUsers();
-                this.showToast('تم الحذف', 'success');
-            },
-
+            async deleteUser(id) { if (!confirm('هل تريد حذف هذا الحساب نهائياً؟')) return; await sbClient.from('profiles').delete().eq('id', id); this.renderUsers(); this.showToast('تم الحذف', 'success'); },
             async loadAdSlots() {
                 if (this.adSlotsCache) return this.adSlotsCache;
                 try {
                     if (sbClient) {
                         const { data } = await sbClient.from('ad_slots').select('*').eq('status', 'ACTIVE');
-                        if (data && data.length > 0) {
-                            this.adSlotsCache = data;
-                            return data;
-                        }
+                        if (data && data.length > 0) { this.adSlotsCache = data; return data; }
                     }
                 } catch(e) {}
                 this.adSlotsCache = [
@@ -871,7 +521,6 @@
                 ];
                 return this.adSlotsCache;
             },
-
             async renderAds() {
                 const ads = (window.YR_DB && YR_DB.get('advertisements')) || [];
                 const list = document.getElementById('adsList');
@@ -879,104 +528,47 @@
                 const slots = await this.loadAdSlots();
                 const slotMap = {};
                 slots.forEach(s => slotMap[s.id] = s.name_ar || s.name);
-
                 const activeAds = ads.filter(a => a.status === 'ACTIVE').length;
                 const totalClicks = ads.reduce((acc, cur) => acc + (Number(cur.clicks) || 0), 0);
-
-                statsRow.innerHTML = 
-                    '<div class="ad-stat-box"><i class="fa-solid fa-bullhorn"></i><div><strong style="font-size:1.3rem;">' + ads.length + '</strong><div style="color:var(--text-muted);font-size:0.8rem;">إجمالي الإعلانات</div></div></div>' +
-                    '<div class="ad-stat-box"><i class="fa-solid fa-circle-check" style="color:var(--success);"></i><div><strong style="font-size:1.3rem;">' + activeAds + '</strong><div style="color:var(--text-muted);font-size:0.8rem;">الإعلانات النشطة</div></div></div>' +
-                    '<div class="ad-stat-box"><i class="fa-solid fa-hand-pointer" style="color:var(--info);"></i><div><strong style="font-size:1.3rem;">' + totalClicks + '</strong><div style="color:var(--text-muted);font-size:0.8rem;">مجموع النقرات</div></div></div>';
-
+                statsRow.innerHTML = '<div class="ad-stat-box"><i class="fa-solid fa-bullhorn"></i><div><strong style="font-size:1.3rem;">' + ads.length + '</strong><div style="color:var(--text-muted);font-size:0.8rem;">إجمالي الإعلانات</div></div></div><div class="ad-stat-box"><i class="fa-solid fa-circle-check" style="color:var(--success);"></i><div><strong style="font-size:1.3rem;">' + activeAds + '</strong><div style="color:var(--text-muted);font-size:0.8rem;">الإعلانات النشطة</div></div></div><div class="ad-stat-box"><i class="fa-solid fa-hand-pointer" style="color:var(--info);"></i><div><strong style="font-size:1.3rem;">' + totalClicks + '</strong><div style="color:var(--text-muted);font-size:0.8rem;">مجموع النقرات</div></div></div>';
                 if (ads.length === 0) {
                     list.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:34px;background:var(--bg-card);border-radius:12px;border:1px solid var(--border);color:var(--text-muted);"><i class="fa-solid fa-rectangle-ad" style="font-size:2.5rem;color:var(--gold-500);margin-bottom:10px;display:block;"></i>لا توجد حملات إعلانية منشأة حالياً</div>';
                     return;
                 }
-
                 list.innerHTML = ads.map(a => {
                     const isActive = a.status === 'ACTIVE';
                     const hasMedia = a.media_url && a.media_url.trim() !== '';
                     const isVideo = hasMedia && (a.media_url.startsWith('data:video') || a.media_url.endsWith('.mp4'));
-
-                    return '<div class="ad-card-pro">' +
-                        '<div class="ad-card-media">' +
-                        (hasMedia ? 
-                            (isVideo ? '<video src="' + a.media_url + '" muted></video>' : '<img src="' + a.media_url + '" alt="' + this.esc(a.title) + '">') 
-                            : '<div style="font-size:2.5rem;color:var(--text-muted);"><i class="fa-solid fa-code"></i></div>'
-                        ) +
-                        '<span class="status-badge ' + (isActive ? 'status-active' : 'status-pending') + '" style="position:absolute;top:10px;left:10px;">' + (isActive ? '● نشط' : '○ متوقف') + '</span>' +
-                        '</div>' +
-                        '<div class="ad-card-body">' +
-                        '<h4 class="ad-card-title">' + this.esc(a.title) + '</h4>' +
-                        '<div class="ad-card-meta">' +
-                        '<span class="ad-card-pill"><i class="fa-solid fa-location-dot" style="color:var(--gold-500);"></i> ' + this.esc(slotMap[a.slot_id] || a.slot_id || 'عام') + '</span>' +
-                        '<span class="ad-card-pill"><i class="fa-solid fa-layer-group"></i> ' + this.esc(a.ad_type || 'بانر') + '</span>' +
-                        '<span class="ad-card-pill"><i class="fa-solid fa-hand-pointer" style="color:var(--info);"></i> ' + (a.clicks || 0) + ' نقرة</span>' +
-                        '</div></div>' +
-                        '<div class="ad-card-actions">' +
-                        '<button class="btn btn-sm btn-outline" onclick="YRA.openAdModal(\'' + a.id + '\')"><i class="fa-solid fa-pen"></i></button> ' +
-                        '<button class="btn btn-sm ' + (isActive ? 'btn-outline' : 'btn-success') + '" onclick="YRA.toggleAd(\'' + a.id + '\')"><i class="fa-solid ' + (isActive ? 'fa-pause' : 'fa-play') + '"></i> ' + (isActive ? 'إيقاف' : 'تنشيط') + '</button> ' +
-                        '<button class="btn btn-sm btn-danger" onclick="YRA.deleteAd(\'' + a.id + '\')"><i class="fa-solid fa-trash"></i></button>' +
-                        '</div></div>';
+                    return '<div class="ad-card-pro"><div class="ad-card-media">' + (hasMedia ? (isVideo ? '<video src="' + a.media_url + '" muted></video>' : '<img src="' + a.media_url + '" alt="' + this.esc(a.title) + '">') : '<div style="font-size:2.5rem;color:var(--text-muted);"><i class="fa-solid fa-code"></i></div>') + '<span class="status-badge ' + (isActive ? 'status-active' : 'status-pending') + '" style="position:absolute;top:10px;left:10px;">' + (isActive ? '● نشط' : '○ متوقف') + '</span></div><div class="ad-card-body"><h4 class="ad-card-title">' + this.esc(a.title) + '</h4><div class="ad-card-meta"><span class="ad-card-pill"><i class="fa-solid fa-location-dot" style="color:var(--gold-500);"></i> ' + this.esc(slotMap[a.slot_id] || a.slot_id || 'عام') + '</span><span class="ad-card-pill"><i class="fa-solid fa-layer-group"></i> ' + this.esc(a.ad_type || 'بانر') + '</span><span class="ad-card-pill"><i class="fa-solid fa-hand-pointer" style="color:var(--info);"></i> ' + (a.clicks || 0) + ' نقرة</span></div></div><div class="ad-card-actions"><button class="btn btn-sm btn-outline" onclick="YRA.openAdModal(\'' + a.id + '\')"><i class="fa-solid fa-pen"></i></button> <button class="btn btn-sm ' + (isActive ? 'btn-outline' : 'btn-success') + '" onclick="YRA.toggleAd(\'' + a.id + '\')"><i class="fa-solid ' + (isActive ? 'fa-pause' : 'fa-play') + '"></i> ' + (isActive ? 'إيقاف' : 'تنشيط') + '</button> <button class="btn btn-sm btn-danger" onclick="YRA.deleteAd(\'' + a.id + '\')"><i class="fa-solid fa-trash"></i></button></div></div>';
                 }).join('');
             },
-
             async openAdModal(editId = null) {
                 const slots = await this.loadAdSlots();
                 const ad = editId ? YR_DB.findById('advertisements', editId) : null;
-                const slotOptions = slots.map(s => '<option value="' + s.id + '" ' + (ad && ad.slot_id === s.id ? 'selected' : '') + '>' + (s.name_ar || s.name) + '</option>').join('');
-
-                this.openModal(
-                    '<div class="yr-modal-header"><h3><i class="fa-solid fa-bullhorn"></i> ' + (ad ? 'تعديل الإعلان' : 'إضافة إعلان جديد') + '</h3><button class="btn btn-sm btn-outline" onclick="YRA.closeModal()"><i class="fa-solid fa-times"></i></button></div>' +
-                    '<form id="adForm"><div class="yr-modal-body">' +
-                    '<div class="form-group"><label>عنوان الحملة الإعلانية *</label><input class="form-control" name="title" value="' + (ad ? this.esc(ad.title) : '') + '" required placeholder="مثال: عروض التخفيضات الكبرى"></div>' +
-                    '<div class="form-row"><div class="form-group"><label>نوع الإعلان</label><select class="form-control" name="ad_type" onchange="YRA.toggleAdType(this.value)"><option value="banner" ' + (ad && ad.ad_type==='banner'?'selected':'') + '>بانر مصور (صورة/فيديو)</option><option value="adsense" ' + (ad && ad.ad_type==='adsense'?'selected':'') + '>AdSense / كود HTML</option></select></div>' +
-                    '<div class="form-group"><label>مكان العرض *</label><select class="form-control" name="slot_id" required>' + slotOptions + '</select></div></div>' +
-                    '<div class="form-group" id="adLinkWrap"><label>رابط التوجيه (URL)</label><input class="form-control" name="link_url" dir="ltr" value="' + (ad ? this.esc(ad.link_url || '') : '') + '" placeholder="https://example.com/offer"></div>' +
-                    '<div class="form-group" id="adFileWrap"><label>ملف البانر</label><input type="file" class="form-control" id="adFileInput" accept="image/*,video/*" onchange="YRA.previewAd(this)"><div id="adPreviewBox" style="margin-top:8px;">' + (ad && ad.media_url ? '<img src="' + ad.media_url + '" style="max-height:90px;border-radius:6px;">' : '') + '</div></div>' +
-                    '<div class="form-group" id="adCodeWrap" style="display:none;"><label>كود الإعلان</label><textarea class="form-control" name="content_html" rows="3" dir="ltr" placeholder="<script>...</script>">' + (ad ? this.esc(ad.content_html || '') : '') + '</textarea></div>' +
-                    '</div><div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRA.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold"><i class="fa-solid fa-save"></i> حفظ الإعلان</button></div></form>'
-                );
-
+                let slotOptions = '';
+                slots.forEach(s => { slotOptions += '<option value="' + s.id + '" ' + (ad && ad.slot_id === s.id ? 'selected' : '') + '>' + (s.name_ar || s.name) + '</option>'; });
+                this.openModal('<div class="yr-modal-header"><h3><i class="fa-solid fa-bullhorn"></i> ' + (ad ? 'تعديل الإعلان' : 'إضافة إعلان جديد') + '</h3><button class="btn btn-sm btn-outline" onclick="YRA.closeModal()"><i class="fa-solid fa-times"></i></button></div><form id="adForm"><div class="yr-modal-body"><div class="form-group"><label>عنوان الحملة الإعلانية *</label><input class="form-control" name="title" value="' + (ad ? this.esc(ad.title) : '') + '" required placeholder="مثال: عروض التخفيضات الكبرى"></div><div class="form-row"><div class="form-group"><label>نوع الإعلان</label><select class="form-control" name="ad_type" onchange="YRA.toggleAdType(this.value)"><option value="banner" ' + (ad && ad.ad_type==='banner'?'selected':'') + '>بانر مصور (صورة/فيديو)</option><option value="adsense" ' + (ad && ad.ad_type==='adsense'?'selected':'') + '>AdSense / كود HTML</option></select></div><div class="form-group"><label>مكان العرض *</label><select class="form-control" name="slot_id" required>' + slotOptions + '</select></div></div><div class="form-group" id="adLinkWrap"><label>رابط التوجيه (URL)</label><input class="form-control" name="link_url" dir="ltr" value="' + (ad ? this.esc(ad.link_url || '') : '') + '" placeholder="https://example.com/offer"></div><div class="form-group" id="adFileWrap"><label>ملف البانر</label><input type="file" class="form-control" id="adFileInput" accept="image/*,video/*" onchange="YRA.previewAd(this)"><div id="adPreviewBox" style="margin-top:8px;">' + (ad && ad.media_url ? '<img src="' + ad.media_url + '" style="max-height:90px;border-radius:6px;">' : '') + '</div></div><div class="form-group" id="adCodeWrap" style="display:none;"><label>كود الإعلان</label><textarea class="form-control" name="content_html" rows="3" dir="ltr" placeholder="<script>...</script>">' + (ad ? this.esc(ad.content_html || '') : '') + '</textarea></div></div><div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRA.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold"><i class="fa-solid fa-save"></i> حفظ الإعلان</button></div></form>');
                 if (ad && ad.ad_type === 'adsense') this.toggleAdType('adsense');
-
                 document.getElementById('adForm').onsubmit = async (e) => {
                     e.preventDefault();
                     const fd = new FormData(e.target);
                     const fileInput = document.getElementById('adFileInput');
                     let media_url = ad ? ad.media_url : null;
-
                     if (fileInput.files && fileInput.files[0]) {
-                        media_url = await new Promise(res => {
-                            const r = new FileReader();
-                            r.onload = ev => res(ev.target.result);
-                            r.readAsDataURL(fileInput.files[0]);
-                        });
+                        media_url = await new Promise(res => { const r = new FileReader(); r.onload = ev => res(ev.target.result); r.readAsDataURL(fileInput.files[0]); });
                     }
-
-                    const payload = {
-                        title: fd.get('title'), ad_type: fd.get('ad_type'),
-                        slot_id: fd.get('slot_id'), link_url: fd.get('link_url'),
-                        content_html: fd.get('content_html'), media_url: media_url,
-                        status: ad ? ad.status : 'ACTIVE', clicks: ad ? (ad.clicks || 0) : 0
-                    };
-
+                    const payload = { title: fd.get('title'), ad_type: fd.get('ad_type'), slot_id: fd.get('slot_id'), link_url: fd.get('link_url'), content_html: fd.get('content_html'), media_url: media_url, status: ad ? ad.status : 'ACTIVE', clicks: ad ? (ad.clicks || 0) : 0 };
                     if (editId) await YR_DB.update('advertisements', editId, payload);
                     else await YR_DB.add('advertisements', payload);
-
-                    this.closeModal();
-                    this.renderAds();
-                    this.showToast('تم حفظ الحملة الإعلانية', 'success');
+                    this.closeModal(); this.renderAds(); this.showToast('تم حفظ الحملة الإعلانية', 'success');
                 };
             },
-
             toggleAdType(type) {
                 const isCode = type === 'adsense';
                 document.getElementById('adCodeWrap').style.display = isCode ? 'block' : 'none';
                 document.getElementById('adFileWrap').style.display = isCode ? 'none' : 'block';
                 document.getElementById('adLinkWrap').style.display = isCode ? 'none' : 'block';
             },
-
             previewAd(input) {
                 const box = document.getElementById('adPreviewBox');
                 if (!input.files || !input.files[0]) return;
@@ -984,23 +576,13 @@
                 r.onload = e => box.innerHTML = '<img src="' + e.target.result + '" style="max-height:90px;border-radius:6px;">';
                 r.readAsDataURL(input.files[0]);
             },
-
             async toggleAd(id) {
-                const ad = YR_DB.findById('advertisements', id);
-                if (!ad) return;
+                const ad = YR_DB.findById('advertisements', id); if (!ad) return;
                 const next = ad.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
                 await YR_DB.update('advertisements', id, { status: next });
-                this.renderAds();
-                this.showToast(next === 'ACTIVE' ? 'تم تنشيط الإعلان' : 'تم إيقاف الإعلان', 'info');
+                this.renderAds(); this.showToast(next === 'ACTIVE' ? 'تم تنشيط الإعلان' : 'تم إيقاف الإعلان', 'info');
             },
-
-            async deleteAd(id) {
-                if (!confirm('هل أنت متأكد من حذف هذا الإعلان؟')) return;
-                await (YR_DB.remove ? YR_DB.remove('advertisements', id) : YR_DB.delete('advertisements', id));
-                this.renderAds();
-                this.showToast('تم حذف الإعلان', 'success');
-            },
-
+            async deleteAd(id) { if (!confirm('هل أنت متأكد من حذف هذا الإعلان؟')) return; await (YR_DB.remove ? YR_DB.remove('advertisements', id) : YR_DB.delete('advertisements', id)); this.renderAds(); this.showToast('تم حذف الإعلان', 'success'); },
             renderNotifications() {
                 const list = document.getElementById('notifList');
                 const notifs = YR_DB.get('notifications') || [];
@@ -1010,36 +592,22 @@
                 }
                 notifs.forEach(n => { if (!n.read) YR_DB.update('notifications', n.id, { read: true }); });
                 this.updateBadges();
-
-                list.innerHTML = notifs.map(n => 
-                    '<div style="background:var(--bg-card);border-right:3px solid var(--gold-500);padding:14px;margin-bottom:8px;border-radius:8px;border:1px solid var(--border);border-right-width:3px;display:flex;justify-content:space-between;align-items:center;">' +
-                    '<div><strong>' + this.esc(n.title) + '</strong>' +
-                    '<p style="margin:4px 0;color:var(--text-muted);font-size:0.85rem;">' + this.esc(n.message) + '</p>' +
-                    '<small style="color:var(--text-muted);">' + new Date(n.createdAt || Date.now()).toLocaleDateString('ar-YE') + '</small></div>' +
-                    '<button class="btn btn-sm btn-danger" onclick="YRA.deleteItem(\'notifications\',\'' + n.id + '\')"><i class="fa-solid fa-times"></i></button>' +
-                    '</div>'
-                ).join('');
+                list.innerHTML = notifs.map(n => '<div style="background:var(--bg-card);border-right:3px solid var(--gold-500);padding:14px;margin-bottom:8px;border-radius:8px;border:1px solid var(--border);border-right-width:3px;display:flex;justify-content:space-between;align-items:center;"><div><strong>' + this.esc(n.title) + '</strong><p style="margin:4px 0;color:var(--text-muted);font-size:0.85rem;">' + this.esc(n.message) + '</p><small style="color:var(--text-muted);">' + new Date(n.createdAt || Date.now()).toLocaleDateString('ar-YE') + '</small></div><button class="btn btn-sm btn-danger" onclick="YRA.deleteItem(\'notifications\',\'' + n.id + '\')"><i class="fa-solid fa-times"></i></button></div>').join('');
             },
-
             clearNotifications() {
                 if (!confirm('مسح جميع الإشعارات؟')) return;
                 if (YR_DB._cache) YR_DB._cache.notifications = [];
                 YR_DB._save('notifications');
-                this.renderNotifications();
-                this.updateBadges();
-                this.showToast('تم مسح الإشعارات', 'success');
+                this.renderNotifications(); this.updateBadges(); this.showToast('تم مسح الإشعارات', 'success');
             },
-
             toggleVerify(id, table) {
-                const item = YR_DB.findById(table, id);
-                if (!item) return;
+                const item = YR_DB.findById(table, id); if (!item) return;
                 YR_DB.update(table, id, { verified: !item.verified }).then(() => {
                     if (table === 'companies') this.renderCompanies();
                     if (table === 'banks') this.renderBanks();
                     this.showToast(item.verified ? 'تم إلغاء التوثيق' : '✓ تم التوثيق', 'success');
                 });
             },
-
             deleteItem(table, id) {
                 if (!confirm('تأكيد عملية الحذف؟')) return;
                 const fn = YR_DB.remove ? YR_DB.remove : YR_DB.delete;
@@ -1048,59 +616,23 @@
                     this.showToast('تم الحذف بنجاح', 'success');
                 });
             },
-
-            openModal(contentHtml) {
-                const root = document.getElementById('modalRoot');
-                if (!root) return;
-                root.innerHTML = 
-                    '<div class="yr-modal-overlay" onclick="if(event.target===this) YRA.closeModal()">' +
-                    '<div class="yr-modal">' + contentHtml + '</div>' +
-                    '</div>';
-            },
-
-            closeModal() {
-                const root = document.getElementById('modalRoot');
-                if (root) root.innerHTML = '';
-            },
-
-            statusLabel(s) {
-                const labels = { pending: 'معلق', approved: 'مقبول', rejected: 'مرفوض', active: 'نشط' };
-                return labels[s] || s;
-            },
-
-            getCityName(cityId) {
-                if (!window.YR_DB) return '-';
-                const city = YR_DB.findById('cities', cityId);
-                return city ? city.name : (cityId || '-');
-            },
-
-            esc(text) {
-                if (text === undefined || text === null) return '';
-                return String(text).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-            },
-
+            openModal(html) { document.getElementById('modalRoot').innerHTML = '<div class="yr-modal-overlay" onclick="if(event.target===this) YRA.closeModal()"><div class="yr-modal">' + html + '</div></div>'; },
+            closeModal() { document.getElementById('modalRoot').innerHTML = ''; },
+            statusLabel(s) { const labels = { pending: 'معلق', approved: 'مقبول', rejected: 'مرفوض', active: 'نشط' }; return labels[s] || s; },
+            getCityName(cityId) { if (!window.YR_DB) return '-'; const city = YR_DB.findById('cities', cityId); return city ? city.name : (cityId || '-'); },
+            esc(text) { if (text === undefined || text === null) return ''; return String(text).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])); },
             showToast(msg, type) {
                 type = type || 'info';
                 let container = document.querySelector('.toast-container');
-                if (!container) {
-                    container = document.createElement('div');
-                    container.className = 'toast-container';
-                    document.body.appendChild(container);
-                }
+                if (!container) { container = document.createElement('div'); container.className = 'toast-container'; document.body.appendChild(container); }
                 const toast = document.createElement('div');
                 toast.className = 'toast';
                 toast.innerHTML = '<i class="fa-solid fa-circle-info" style="color:var(--gold-400);"></i><span>' + this.esc(msg) + '</span>';
                 container.appendChild(toast);
                 setTimeout(() => toast.remove(), 3500);
             },
-
-            logout() {
-                if (window.YR_DB) YR_DB.clearSession();
-                localStorage.removeItem('yr_session');
-                location.href = 'index.html';
-            }
+            logout() { if (window.YR_DB) YR_DB.clearSession(); localStorage.removeItem('yr_session'); location.href = 'index.html'; }
         };
-
         document.addEventListener('DOMContentLoaded', () => YRA.init());
     </script>
 </body>
