@@ -196,6 +196,22 @@
                     </div>
                 </section>
 
+                <section class="tab-panel" id="panel-ads">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-bullhorn"></i> إدارة الإعلانات</h2>
+                        <button class="btn btn-gold" onclick="YRA.openAdModal()"><i class="fas fa-plus"></i> إعلان جديد</button>
+                    </div>
+                    <div id="adsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px;"></div>
+                </section>
+
+                <section class="tab-panel" id="panel-notifications">
+                    <div class="panel-header">
+                        <h2><i class="fas fa-bell"></i> الإشعارات</h2>
+                        <button class="btn btn-outline" onclick="YRA.clearNotifications()"><i class="fas fa-trash"></i> مسح الكل</button>
+                    </div>
+                    <div id="notifList" style="padding:20px;"></div>
+                </section>
+
             </div>
         </main>
     </div>
@@ -293,39 +309,76 @@
                 if (tab === 'verification') this.renderVerification();
                 if (tab === 'applications') this.renderApplications();
                 if (tab === 'reviews') this.renderReviews();
+                if (tab === 'ads') this.renderAds();
+                if (tab === 'notifications') this.renderNotifications();
                 if (tab === 'users') this.renderUsers();
             },
 
             renderDashboard() {
                 const stats = YR_DB.getStats();
                 const verifCount = YR_DB.where('verification_requests', 'status', 'pending').length;
+                const pendingJobs = YR_DB.get('jobs').filter(j => j.status === 'pending').length;
+                const pendingUsers = YR_DB.where('profiles', 'status', 'PENDING')?.length || 0;
+                const notifs = YR_DB.get('notifications').slice(0, 5);
+                
                 document.getElementById('dashStats').innerHTML =
-                    '<div class="stat-card"><div class="icon"><i class="fas fa-building"></i></div><div><div class="num">' + stats.companies + '</div><div class="lbl">شركة</div></div></div>' +
-                    '<div class="stat-card"><div class="icon"><i class="fas fa-landmark"></i></div><div><div class="num">' + stats.banks + '</div><div class="lbl">بنك</div></div></div>' +
-                    '<div class="stat-card"><div class="icon"><i class="fas fa-briefcase"></i></div><div><div class="num">' + stats.jobs + '</div><div class="lbl">وظيفة</div></div></div>' +
-                    '<div class="stat-card"><div class="icon"><i class="fas fa-users"></i></div><div><div class="num">' + stats.users + '</div><div class="lbl">مستخدم</div></div></div>' +
-                    '<div class="stat-card"><div class="icon"><i class="fas fa-star"></i></div><div><div class="num">' + stats.reviews + '</div><div class="lbl">تقييم</div></div></div>' +
-                    '<div class="stat-card"><div class="icon"><i class="fas fa-circle-check"></i></div><div><div class="num">' + verifCount + '</div><div class="lbl">طلب توثيق معلق</div></div></div>';
+                    '<div class="stat-card"><div class="icon" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;"><i class="fas fa-building"></i></div><div><div class="num">' + stats.companies + '</div><div class="lbl">شركة</div></div></div>' +
+                    '<div class="stat-card"><div class="icon" style="background:linear-gradient(135deg,#f093fb,#f5576c);color:#fff;"><i class="fas fa-landmark"></i></div><div><div class="num">' + stats.banks + '</div><div class="lbl">بنك</div></div></div>' +
+                    '<div class="stat-card"><div class="icon" style="background:linear-gradient(135deg,#4facfe,#00f2fe);color:#fff;"><i class="fas fa-briefcase"></i></div><div><div class="num">' + stats.jobs + '</div><div class="lbl">وظيفة</div></div></div>' +
+                    '<div class="stat-card"><div class="icon" style="background:linear-gradient(135deg,#43e97b,#38f9d7);color:#fff;"><i class="fas fa-users"></i></div><div><div class="num">' + stats.users + '</div><div class="lbl">مستخدم</div></div></div>' +
+                    '<div class="stat-card"><div class="icon" style="background:linear-gradient(135deg,#fa709a,#fee140);color:#fff;"><i class="fas fa-star"></i></div><div><div class="num">' + stats.reviews + '</div><div class="lbl">تقييم</div></div></div>' +
+                    '<div class="stat-card"><div class="icon" style="background:linear-gradient(135deg,#30cfd0,#330867);color:#fff;"><i class="fas fa-bullhorn"></i></div><div><div class="num">' + stats.ads + '</div><div class="lbl">إعلان نشط</div></div></div>' +
+                    (pendingJobs > 0 ? '<div class="stat-card" style="border:2px solid var(--warning);"><div class="icon" style="background:var(--warning);color:#fff;"><i class="fas fa-hourglass-half"></i></div><div><div class="num">' + pendingJobs + '</div><div class="lbl">وظيفة بانتظار القبول</div></div></div>' : '') +
+                    (verifCount > 0 ? '<div class="stat-card" style="border:2px solid var(--info);"><div class="icon" style="background:var(--info);color:#fff;"><i class="fas fa-circle-check"></i></div><div><div class="num">' + verifCount + '</div><div class="lbl">طلب توثيق معلق</div></div></div>' : '');
+                
+                // آخر الإشعارات
+                const recentNotifs = document.getElementById('recentNotifications');
+                if (recentNotifs) {
+                    if (notifs.length === 0) {
+                        recentNotifs.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px;">لا توجد إشعارات جديدة</p>';
+                    } else {
+                        recentNotifs.innerHTML = '<h3 style="margin-bottom:12px;">آخر الإشعارات</h3>' + notifs.map(n => 
+                            '<div style="padding:12px;border-right:3px solid var(--gold-500);margin-bottom:8px;background:var(--bg-card);border-radius:6px;">' +
+                            '<strong>' + this.esc(n.title) + '</strong><br>' +
+                            '<small style="color:var(--text-muted);">' + this.esc(n.message) + ' • ' + new Date(n.createdAt).toLocaleString('ar-YE') + '</small></div>'
+                        ).join('');
+                    }
+                }
             },
 
             updateBadges() {
                 const verifCount = YR_DB.where('verification_requests', 'status', 'pending').length;
                 document.getElementById('verifBadge').textContent = verifCount;
+                const notifCount = YR_DB.get('notifications').filter(n => !n.read).length;
+                const notifBadge = document.getElementById('notifBadge');
+                if (notifBadge) {
+                    if (notifCount > 0) {
+                        notifBadge.textContent = notifCount;
+                        notifBadge.style.display = 'inline-block';
+                    } else {
+                        notifBadge.style.display = 'none';
+                    }
+                }
             },
 
             renderCompanies() {
                 const body = document.getElementById('companiesBody');
                 const companies = YR_DB.get('companies');
-                body.innerHTML = companies.map(c =>
-                    '<tr><td><strong>' + this.esc(c.name) + '</strong></td>' +
+                body.innerHTML = companies.map(c => {
+                    const status = c.status || (c.verified ? 'active' : 'pending');
+                    return '<tr>' +
+                    '<td><strong>' + this.esc(c.name) + '</strong><br><small style="color:var(--text-muted);">' + this.esc(c.email || '') + '</small></td>' +
                     '<td>' + this.esc(this.getCityName(c.city)) + '</td>' +
+                    '<td><span class="status-badge status-' + status + '">' + this.statusLabel(status) + '</span></td>' +
                     '<td>' + (c.verified ? '<span style="color:var(--success);">✓ موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>') + '</td>' +
                     '<td>' + (c.package || 'free') + '</td>' +
-                    '<td>' +
-                    '<button class="icon-btn edit" onclick="YRA.toggleVerify(\'' + c.id + '\',\'companies\')"><i class="fas fa-circle-check"></i></button>' +
-                    '<button class="icon-btn delete" onclick="YRA.deleteItem(\'companies\',\'' + c.id + '\')"><i class="fas fa-trash"></i></button>' +
-                    '</td></tr>'
-                ).join('');
+                    '<td style="white-space:nowrap;">' +
+                    (status === 'pending' ? '<button class="btn btn-sm btn-success" onclick="YRA.approveCompany(\'' + c.id + '\')" title="قبول"><i class="fas fa-check"></i></button> ' : '') +
+                    '<button class="btn btn-sm btn-outline" onclick="YRA.editCompany(\'' + c.id + '\')" title="تعديل"><i class="fas fa-edit"></i></button> ' +
+                    '<button class="btn btn-sm btn-gold" onclick="YRA.toggleVerify(\'' + c.id + '\',\'companies\')" title="توثيق"><i class="fas fa-certificate"></i></button> ' +
+                    '<button class="btn btn-sm btn-danger" onclick="YRA.deleteItem(\'companies\',\'' + c.id + '\')" title="حذف"><i class="fas fa-trash"></i></button>' +
+                    '</td></tr>';
+                }).join('');
             },
 
             renderBanks() {
@@ -335,9 +388,10 @@
                     '<tr><td><strong>' + this.esc(b.name) + '</strong></td>' +
                     '<td>' + this.esc(this.getCityName(b.city)) + '</td>' +
                     '<td>' + (b.verified ? '<span style="color:var(--success);">✓ موثق</span>' : '<span style="color:var(--text-muted);">غير موثق</span>') + '</td>' +
-                    '<td>' +
-                    '<button class="icon-btn edit" onclick="YRA.toggleVerify(\'' + b.id + '\',\'banks\')"><i class="fas fa-circle-check"></i></button>' +
-                    '<button class="icon-btn delete" onclick="YRA.deleteItem(\'banks\',\'' + b.id + '\')"><i class="fas fa-trash"></i></button>' +
+                    '<td style="white-space:nowrap;">' +
+                    '<button class="btn btn-sm btn-outline" onclick="YRA.editBank(\'' + b.id + '\')" title="تعديل"><i class="fas fa-edit"></i></button> ' +
+                    '<button class="btn btn-sm btn-gold" onclick="YRA.toggleVerify(\'' + b.id + '\',\'banks\')" title="توثيق"><i class="fas fa-certificate"></i></button> ' +
+                    '<button class="btn btn-sm btn-danger" onclick="YRA.deleteItem(\'banks\',\'' + b.id + '\')" title="حذف"><i class="fas fa-trash"></i></button>' +
                     '</td></tr>'
                 ).join('');
             },
@@ -347,11 +401,19 @@
                 const jobs = YR_DB.get('jobs');
                 body.innerHTML = jobs.map(j => {
                     const company = YR_DB.findById('companies', j.companyId);
-                    return '<tr><td><strong>' + this.esc(j.title) + '</strong></td>' +
+                    const status = j.status || 'pending';
+                    const statusAr = {active:'نشطة',pending:'بانتظار القبول',rejected:'مرفوضة',closed:'مغلقة'}[status] || status;
+                    return '<tr>' +
+                    '<td><strong>' + this.esc(j.title) + '</strong><br><small style="color:var(--text-muted);">' + this.esc(j.type || '') + '</small></td>' +
                     '<td>' + (company ? this.esc(company.name) : '-') + '</td>' +
                     '<td>' + this.esc(j.salary || '-') + '</td>' +
-                    '<td><span class="status-badge status-' + (j.status === 'active' ? 'active' : 'rejected') + '">' + (j.status === 'active' ? 'نشطة' : 'مغلقة') + '</span></td>' +
-                    '<td><button class="icon-btn delete" onclick="YRA.deleteItem(\'jobs\',\'' + j.id + '\')"><i class="fas fa-trash"></i></button></td></tr>';
+                    '<td><span class="status-badge status-' + status + '">' + statusAr + '</span></td>' +
+                    '<td style="white-space:nowrap;">' +
+                    (status === 'pending' ? '<button class="btn btn-sm btn-success" onclick="YRA.approveJob(\'' + j.id + '\')" title="قبول"><i class="fas fa-check"></i></button> ' +
+                    '<button class="btn btn-sm btn-danger" onclick="YRA.rejectJob(\'' + j.id + '\')" title="رفض"><i class="fas fa-times"></i></button> ' : '') +
+                    '<button class="btn btn-sm btn-outline" onclick="YRA.editJob(\'' + j.id + '\')" title="تعديل"><i class="fas fa-edit"></i></button> ' +
+                    '<button class="btn btn-sm btn-danger" onclick="YRA.deleteItem(\'jobs\',\'' + j.id + '\')" title="حذف"><i class="fas fa-trash"></i></button>' +
+                    '</td></tr>';
                 }).join('');
             },
 
@@ -441,7 +503,193 @@
         },
 
 
-            rejectVerif(id) {
+            
+        // ═══ قبول الشركة ═══
+        async approveCompany(id) {
+            if (!confirm('قبول هذه الشركة وتفعيلها؟')) return;
+            await YR_DB.update('companies', id, { status: 'active', verified: true });
+            this.notify('تم قبول شركة', 'تم تفعيل شركة جديدة بنجاح');
+            this.renderCompanies();
+            this.showToast('✅ تم قبول الشركة', 'success');
+        },
+
+        // ═══ تعديل شركة ═══
+        async editCompany(id) {
+            const c = YR_DB.findById('companies', id);
+            if (!c) return;
+            const name = prompt('اسم الشركة:', c.name) ?? c.name;
+            const desc = prompt('الوصف:', c.description || '') ?? c.description;
+            const phone = prompt('الهاتف:', c.phone || '') ?? c.phone;
+            const email = prompt('البريد:', c.email || '') ?? c.email;
+            const pkg = prompt('الباقة (free/silver/gold):', c.package || 'free') ?? c.package;
+            await YR_DB.update('companies', id, { name, description: desc, phone, email, package: pkg });
+            this.renderCompanies();
+            this.showToast('✅ تم تعديل الشركة', 'success');
+        },
+
+        // ═══ تعديل بنك ═══
+        async editBank(id) {
+            const b = YR_DB.findById('banks', id);
+            if (!b) return;
+            const name = prompt('اسم البنك:', b.name) ?? b.name;
+            const desc = prompt('الوصف:', b.description || '') ?? b.description;
+            const phone = prompt('الهاتف:', b.phone || '') ?? b.phone;
+            await YR_DB.update('banks', id, { name, description: desc, phone });
+            this.renderBanks();
+            this.showToast('✅ تم تعديل البنك', 'success');
+        },
+
+        // ═══ قبول/رفض وظيفة ═══
+        async approveJob(id) {
+            if (!confirm('قبول هذه الوظيفة ونشرها؟')) return;
+            await YR_DB.update('jobs', id, { status: 'active' });
+            this.notify('تم قبول وظيفة', 'تم نشر وظيفة جديدة');
+            this.renderJobs();
+            this.showToast('✅ تم قبول الوظيفة', 'success');
+        },
+
+        async rejectJob(id) {
+            if (!confirm('رفض هذه الوظيفة؟')) return;
+            await YR_DB.update('jobs', id, { status: 'rejected' });
+            this.renderJobs();
+            this.showToast('تم رفض الوظيفة', 'success');
+        },
+
+        // ═══ تعديل وظيفة ═══
+        async editJob(id) {
+            const j = YR_DB.findById('jobs', id);
+            if (!j) return;
+            const title = prompt('عنوان الوظيفة:', j.title) ?? j.title;
+            const salary = prompt('الراتب:', j.salary || '') ?? j.salary;
+            const type = prompt('نوع الدوام:', j.type || '') ?? j.type;
+            const desc = prompt('الوصف:', j.description || '') ?? j.description;
+            await YR_DB.update('jobs', id, { title, salary, type, description: desc });
+            this.renderJobs();
+            this.showToast('✅ تم تعديل الوظيفة', 'success');
+        },
+
+        // ═══ طلبات التوظيف ═══
+        async approveApp(id) {
+            if (!confirm('قبول هذا الطلب؟')) return;
+            await YR_DB.update('job_applications', id, { status: 'approved' });
+            this.renderApplications();
+            this.showToast('✅ تم قبول الطلب', 'success');
+        },
+
+        async rejectApp(id) {
+            if (!confirm('رفض هذا الطلب؟')) return;
+            await YR_DB.update('job_applications', id, { status: 'rejected' });
+            this.renderApplications();
+            this.showToast('تم رفض الطلب', 'success');
+        },
+
+        async viewApp(id) {
+            const a = YR_DB.findById('job_applications', id);
+            if (!a) return;
+            alert('👤 ' + a.name + '\n📞 ' + (a.phone || '-') + '\n📧 ' + (a.email || '-') + '\n\n📝 ' + (a.coverLetter || 'لا يوجد رسالة'));
+        },
+
+        // ═══ الإعلانات ═══
+        renderAds() {
+            const list = document.getElementById('adsList');
+            const ads = YR_DB.get('ads');
+            if (ads.length === 0) {
+                list.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-bullhorn"></i><p>لا توجد إعلانات بعد</p></div>';
+                return;
+            }
+            list.innerHTML = ads.map(a =>
+                '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;position:relative;">' +
+                (a.active ? '' : '<div style="position:absolute;top:8px;left:8px;background:var(--danger);color:#fff;padding:2px 8px;border-radius:12px;font-size:0.75rem;">مخفي</div>') +
+                '<h4 style="color:var(--gold-500);margin-bottom:8px;">' + this.esc(a.title) + '</h4>' +
+                '<p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:12px;">' + this.esc(a.subtitle || '') + '</p>' +
+                '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+                '<button class="btn btn-sm btn-outline" onclick="YRA.editAd(\'' + a.id + '\')"><i class="fas fa-edit"></i></button>' +
+                '<button class="btn btn-sm btn-gold" onclick="YRA.toggleAd(\'' + a.id + '\')"><i class="fas fa-' + (a.active ? 'eye-slash' : 'eye') + '"></i></button>' +
+                '<button class="btn btn-sm btn-danger" onclick="YRA.deleteAd(\'' + a.id + '\')"><i class="fas fa-trash"></i></button>' +
+                '</div></div>'
+            ).join('');
+        },
+
+        openAdModal() {
+            const title = prompt('عنوان الإعلان:');
+            if (!title) return;
+            const subtitle = prompt('النص الفرعي:') || '';
+            const link = prompt('الرابط (اختياري):') || '#';
+            YR_DB.add('ads', { title, subtitle, link, priority: 1, active: true });
+            this.notify('إعلان جديد', 'تم إضافة: ' + title);
+            this.renderAds();
+            this.showToast('✅ تم إضافة الإعلان', 'success');
+        },
+
+        async editAd(id) {
+            const a = YR_DB.findById('ads', id);
+            if (!a) return;
+            const title = prompt('العنوان:', a.title) ?? a.title;
+            const subtitle = prompt('النص:', a.subtitle || '') ?? a.subtitle;
+            const link = prompt('الرابط:', a.link || '#') ?? a.link;
+            await YR_DB.update('ads', id, { title, subtitle, link });
+            this.renderAds();
+            this.showToast('✅ تم التعديل', 'success');
+        },
+
+        async toggleAd(id) {
+            const a = YR_DB.findById('ads', id);
+            if (!a) return;
+            await YR_DB.update('ads', id, { active: !a.active });
+            this.renderAds();
+            this.showToast(a.active ? 'تم إخفاء الإعلان' : 'تم تفعيل الإعلان', 'success');
+        },
+
+        async deleteAd(id) {
+            if (!confirm('حذف هذا الإعلان؟')) return;
+            await YR_DB.delete('ads', id);
+            this.renderAds();
+            this.showToast('تم الحذف', 'success');
+        },
+
+        // ═══ الإشعارات ═══
+        notify(title, message) {
+            YR_DB.add('notifications', { title, message, read: false });
+            this.updateBadges();
+        },
+
+        renderNotifications() {
+            const list = document.getElementById('notifList');
+            const notifs = YR_DB.get('notifications');
+            if (notifs.length === 0) {
+                list.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><p>لا توجد إشعارات</p></div>';
+                return;
+            }
+            // تعليم الكل كمقروء
+            notifs.forEach(n => { if (!n.read) YR_DB.update('notifications', n.id, { read: true }); });
+            this.updateBadges();
+            
+            list.innerHTML = notifs.map(n =>
+                '<div style="background:var(--bg-card);border-right:4px solid ' + (n.read ? 'var(--border)' : 'var(--gold-500)') + ';padding:16px;margin-bottom:10px;border-radius:8px;">' +
+                '<div style="display:flex;justify-content:space-between;align-items:start;">' +
+                '<div><strong style="color:var(--text-main);">' + this.esc(n.title) + '</strong>' +
+                '<p style="color:var(--text-muted);margin:6px 0;">' + this.esc(n.message) + '</p>' +
+                '<small style="color:var(--text-muted);font-size:0.8rem;">' + new Date(n.createdAt).toLocaleString('ar-YE') + '</small></div>' +
+                '<button class="btn btn-sm btn-danger" onclick="YRA.deleteNotif(\'' + n.id + '\')"><i class="fas fa-times"></i></button>' +
+                '</div></div>'
+            ).join('');
+        },
+
+        async deleteNotif(id) {
+            await YR_DB.delete('notifications', id);
+            this.renderNotifications();
+        },
+
+        clearNotifications() {
+            if (!confirm('مسح جميع الإشعارات؟')) return;
+            YR_DB._cache.notifications = [];
+            YR_DB._save('notifications');
+            this.renderNotifications();
+            this.updateBadges();
+            this.showToast('تم مسح الإشعارات', 'success');
+        },
+
+rejectVerif(id) {
                 YR_DB.update('verification_requests', id, { status: 'rejected' }).then(() => {
                     this.renderVerification();
                     this.updateBadges();
@@ -452,12 +700,19 @@
             renderApplications() {
                 const body = document.getElementById('appsBody');
                 const apps = YR_DB.get('job_applications');
-                body.innerHTML = apps.map(a =>
-                    '<tr><td><strong>' + this.esc(a.name) + '</strong></td>' +
+                body.innerHTML = apps.map(a => {
+                    const job = YR_DB.findById('jobs', a.jobId);
+                    return '<tr>' +
+                    '<td><strong>' + this.esc(a.name) + '</strong><br><small style="color:var(--text-muted);">' + (job ? this.esc(job.title) : '-') + '</small></td>' +
                     '<td>' + this.esc(a.phone || '-') + '</td>' +
-                    '<td>' + (a.cvFileName ? '<span style="color:var(--success);"><i class="fas fa-file-pdf"></i> ' + this.esc(a.cvFileName) + '</span>' : '-') + '</td>' +
-                    '<td><span class="status-badge status-' + a.status + '">' + this.statusLabel(a.status) + '</span></td></tr>'
-                ).join('');
+                    '<td>' + (a.cvFileName ? '<a href="' + (a.cvUrl || '#') + '" target="_blank" style="color:var(--gold-500);"><i class="fas fa-file-pdf"></i> ' + this.esc(a.cvFileName) + '</a>' : '-') + '</td>' +
+                    '<td><span class="status-badge status-' + a.status + '">' + this.statusLabel(a.status) + '</span></td>' +
+                    '<td style="white-space:nowrap;">' +
+                    (a.status === 'pending' ? '<button class="btn btn-sm btn-success" onclick="YRA.approveApp(\'' + a.id + '\')" title="قبول"><i class="fas fa-check"></i></button> ' +
+                    '<button class="btn btn-sm btn-danger" onclick="YRA.rejectApp(\'' + a.id + '\')" title="رفض"><i class="fas fa-times"></i></button> ' : '') +
+                    '<button class="btn btn-sm btn-outline" onclick="YRA.viewApp(\'' + a.id + '\')" title="عرض"><i class="fas fa-eye"></i></button>' +
+                    '</td></tr>';
+                }).join('');
             },
 
             renderReviews() {

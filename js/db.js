@@ -6,13 +6,13 @@ const YR_DB = {
     _cache: {},
     _initialized: false,
 
-    TABLES: [
+    TABLES = [
         'companies', 'banks', 'jobs', 'job_applications',
         'candidate_profiles', 'reviews', 'verification_requests',
         'advertisements', 'messages', 'notifications',
         'subscriptions', 'payments', 'exchange_rates',
         'gold_prices', 'users', 'cities', 'categories'
-    ],
+    , 'ads', 'notifications'],
 
     async init() {
         if (this._initialized) return;
@@ -56,6 +56,18 @@ const YR_DB = {
              services:'بناء، ترميم، ديكورات',
              createdAt:new Date().toISOString()}
         ];
+
+        this._cache.ads = [
+            {id:'ad1',title:'عروض رمضان الكبرى',subtitle:'خصومات تصل إلى 50% على جميع الخدمات',
+             image:'',link:'#',priority:1,active:true,
+             createdAt:new Date().toISOString()},
+            {id:'ad2',title:'سجّل شركتك الآن',subtitle:'احصل على توثيق مجاني للشركات الجديدة',
+             image:'',link:'#',priority:2,active:true,
+             createdAt:new Date().toISOString()}
+        ];
+
+        this._cache.notifications = [];
+
 
         this._cache.banks = [
             {id:'bank1',name:'البنك اليمني للإنشاء والتعمير',city:'c1',
