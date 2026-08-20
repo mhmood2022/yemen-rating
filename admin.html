@@ -9,242 +9,99 @@
     
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/yemen-rating.css">
-    <style>
-        .admin-wrapper { display:flex; min-height:100vh; }
-        .admin-sidebar { width:260px; background:var(--navy-900); color:#fff; position:fixed; top:0; right:0; height:100vh; overflow-y:auto; z-index:100; border-left:1px solid var(--navy-600); transition:transform 0.3s; }
-        .sidebar-brand { display:flex; align-items:center; gap:12px; padding:22px 20px; border-bottom:1px solid var(--navy-700); }
-        .sidebar-brand .brand-mark { width:42px; height:42px; background:var(--gold-gradient); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:var(--navy-800); font-size:1.2rem; }
-        .sidebar-brand span { font-weight:800; color:var(--gold-400); font-size:1.05rem; }
-        .sidebar-nav { padding:16px 12px; }
-        .nav-item { display:flex; align-items:center; gap:12px; padding:12px 16px; color:#94a3b8; border-radius:var(--radius-sm); margin-bottom:4px; transition:var(--transition); text-decoration:none; font-weight:600; cursor:pointer; }
-        .nav-item i { width:20px; text-align:center; }
-        .nav-item:hover { background:var(--navy-700); color:#fff; }
-        .nav-item.active { background:var(--gold-gradient); color:var(--navy-800); font-weight:800; }
-        .nav-badge { margin-right:auto; background:var(--danger); color:#fff; font-size:0.7rem; padding:2px 8px; border-radius:20px; font-weight:700; }
-        .admin-main { flex:1; margin-right:260px; min-height:100vh; }
-        .admin-header { background:var(--bg-section); padding:16px 28px; display:flex; align-items:center; gap:18px; box-shadow:var(--shadow-sm); position:sticky; top:0; z-index:50; border-bottom:1px solid var(--border); }
-        .admin-header h1 { font-size:1.3rem; color:var(--text-main); flex:1; font-weight:800; }
-        .admin-content { padding:28px; }
-        .admin-login { min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--navy-900),var(--navy-700)); padding:20px; }
-        .login-card { background:var(--bg-card); border:1px solid var(--gold-500); border-radius:var(--radius-lg); padding:44px 40px; width:100%; max-width:420px; text-align:center; box-shadow:var(--shadow-gold); }
-        .login-logo { width:70px; height:70px; background:var(--gold-gradient); border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:2rem; color:var(--navy-800); margin:0 auto 20px; }
-        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:18px; margin-bottom:28px; }
-        .stat-card { background:var(--bg-card); border-radius:var(--radius-md); padding:22px; box-shadow:var(--shadow-sm); display:flex; align-items:center; gap:16px; border:1px solid var(--border); border-right:4px solid var(--gold-500); }
-        .stat-card .icon { width:52px; height:52px; background:var(--gold-gradient); color:var(--navy-800); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:1.3rem; }
-        .stat-card .num { font-size:1.7rem; font-weight:900; color:var(--gold-400); }
-        .stat-card .lbl { color:var(--text-muted); font-size:0.85rem; }
-        .table-wrapper { background:var(--bg-card); border-radius:var(--radius-md); box-shadow:var(--shadow-sm); overflow-x:auto; border:1px solid var(--border); }
-        .admin-table { width:100%; border-collapse:collapse; min-width:700px; }
-        .admin-table th { background:var(--navy-800); color:var(--gold-400); padding:14px 16px; text-align:right; font-size:0.88rem; font-weight:700; }
-        .admin-table td { padding:14px 16px; border-bottom:1px solid var(--border); font-size:0.9rem; color:var(--text-main); }
-        .admin-table tbody tr:hover { background:rgba(212,175,55,0.05); }
-        .status-badge { padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700; display:inline-block; }
-        .status-active { background:rgba(16,185,129,0.15); color:var(--success); }
-        .status-pending { background:rgba(245,158,11,0.15); color:var(--warning); }
-        .status-rejected { background:rgba(239,68,68,0.15); color:var(--danger); }
-        .icon-btn { width:34px; height:34px; border-radius:var(--radius-sm); display:inline-flex; align-items:center; justify-content:center; border:none; cursor:pointer; transition:var(--transition); font-size:0.85rem; margin:0 2px; }
-        .icon-btn.edit { background:rgba(59,130,246,0.15); color:var(--info); }
-        .icon-btn.delete { background:rgba(239,68,68,0.15); color:var(--danger); }
-        .icon-btn.view { background:rgba(16,185,129,0.15); color:var(--success); }
-        .panel-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:14px; }
-        .panel-header h2 { color:var(--text-main); font-size:1.4rem; font-weight:800; }
-        .tab-panel { display:none; }
-        .tab-panel.active { display:block; }
-        @media (max-width:900px) {
-            .admin-sidebar { transform:translateX(100%); width:280px; }
-            .admin-sidebar.open { transform:translateX(0); }
-            .admin-main { margin-right:0; }
-            .admin-content { padding:16px; }
-            .sidebar-toggle { display:block !important; }
-        }
-        .sidebar-toggle { display:none; background:none; border:none; color:var(--gold-400); font-size:1.3rem; cursor:pointer; }
-    </style>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-</head>
-<body>
+    
+<style id="ads-unified-style">
+/* ═══ توحيد الهوية: كل عناصر نموذج الإعلانات ═══ */
+#panel-ads input,
+#panel-ads textarea,
+#panel-ads .yr-sel {
+    background:#020617 !important;
+    color:#f8fafc !important;
+    border:1px solid #334155 !important;
+    border-radius:10px !important;
+    padding:12px 14px !important;
+    font-family:inherit !important;
+    font-size:0.95rem !important;
+    min-height:48px !important;
+    box-sizing:border-box !important;
+    width:100% !important;
+    direction:rtl !important;
+    -webkit-appearance:none !important;
+    appearance:none !important;
+}
+#panel-ads input::placeholder,
+#panel-ads textarea::placeholder { color:#64748b !important; }
+#panel-ads input:focus,
+#panel-ads textarea:focus,
+#panel-ads .yr-sel:focus {
+    border-color:#d4af37 !important;
+    outline:none !important;
+    box-shadow:0 0 0 3px rgba(212,175,55,0.15) !important;
+}
 
-    <!-- شاشة الدخول -->
-    <div class="admin-login" id="adminLogin">
-        <div class="login-card">
-            <div class="login-logo"><i class="fas fa-star"></i></div>
-            <h1 style="color:var(--gold-400);margin-bottom:6px;">لوحة إدارة يمن ريتغ</h1>
-            <p style="color:var(--text-muted);margin-bottom:26px;">دخول الإدارة فقط</p>
-            <form id="adminLoginForm">
-                <div class="form-group" style="text-align:right;">
-                    <label>البريد الإلكتروني</label>
-                    <input type="email" class="form-control" name="email" required placeholder="admin@yemenrating.ye">
-                </div>
-                <div class="form-group" style="text-align:right;">
-                    <label>كلمة المرور</label>
-                    <input type="password" class="form-control" name="password" required placeholder="••••••••">
-                </div>
-                <button type="submit" class="btn btn-gold btn-block"><i class="fas fa-right-to-bracket"></i> دخول</button>
-            </form>
-        </div>
-    </div>
+/* ═══ زر اختيار الملف: نفس الهوية ═══ */
+#panel-ads input[type="file"] {
+    padding:10px !important;
+    cursor:pointer !important;
+}
+#panel-ads input[type="file"]::-webkit-file-upload-button {
+    background:#d4af37 !important;
+    color:#020617 !important;
+    border:none !important;
+    border-radius:8px !important;
+    padding:8px 16px !important;
+    font-family:inherit !important;
+    font-weight:700 !important;
+    font-size:0.85rem !important;
+    margin-left:12px !important;
+    cursor:pointer !important;
+    -webkit-appearance:none !important;
+}
+#panel-ads input[type="file"]::file-selector-button {
+    background:#d4af37 !important;
+    color:#020617 !important;
+    border:none !important;
+    border-radius:8px !important;
+    padding:8px 16px !important;
+    font-family:inherit !important;
+    font-weight:700 !important;
+    cursor:pointer !important;
+}
 
-    <!-- لوحة الإدارة -->
-    <div class="admin-wrapper hidden" id="adminWrapper">
-        <aside class="admin-sidebar" id="adminSidebar">
-            <div class="sidebar-brand">
-                <div class="brand-mark"><i class="fas fa-star"></i></div>
-                <span>YR Admin</span>
-            </div>
-            <nav class="sidebar-nav">
-                <a class="nav-item active" onclick="YRA.switchTab('dashboard',this)"><i class="fas fa-gauge-high"></i><span>الرئيسية</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('companies',this)"><i class="fas fa-building"></i><span>الشركات</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('banks',this)"><i class="fas fa-landmark"></i><span>البنوك</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('jobs',this)"><i class="fas fa-briefcase"></i><span>الوظائف</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('verification',this)"><i class="fas fa-circle-check"></i><span>طلبات التوثيق</span><span class="nav-badge" id="verifBadge">0</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('applications',this)"><i class="fas fa-file-lines"></i><span>طلبات التوظيف</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('reviews',this)"><i class="fas fa-star"></i><span>التقييمات</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('users',this)"><i class="fas fa-users"></i><span>المستخدمون</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('ads',this)"><i class="fas fa-bullhorn"></i><span>الإعلانات</span></a>
-                <a class="nav-item" onclick="YRA.switchTab('notifications',this)"><i class="fas fa-bell"></i><span>الإشعارات</span><span class="nav-badge" id="notifBadge" style="display:none;background:var(--danger);">0</span></a>
-                <a href="index.html" class="nav-item"><i class="fas fa-globe"></i><span>عرض الموقع</span></a>
-                <a class="nav-item" onclick="YRA.logout()" style="color:var(--danger);"><i class="fas fa-right-from-bracket"></i><span>خروج</span></a>
-            </nav>
-        </aside>
+/* ═══ التقويم: إجبار الوضع الداكن + إخفاء السهم الافتراضي ═══ */
+#panel-ads input[type="datetime-local"] {
+    color-scheme:dark !important;
+    position:relative !important;
+}
+#panel-ads input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter:invert(0.85) sepia(1) saturate(4) hue-rotate(5deg) brightness(1.1) !important;
+    cursor:pointer !important;
+    opacity:0.9 !important;
+}
+#panel-ads input[type="datetime-local"]::-webkit-datetime-edit {
+    color:#f8fafc !important;
+}
 
-        <main class="admin-main">
-            <header class="admin-header">
-                <button class="sidebar-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
-                <h1 id="pageTitle">الرئيسية</h1>
-                <span style="color:var(--gold-400);font-weight:700;" id="adminName">المدير</span>
-            </header>
+/* ═══ التسميات ═══ */
+#panel-ads label {
+    color:#94a3b8 !important;
+    font-size:0.82rem !important;
+    font-weight:600 !important;
+    margin-bottom:6px !important;
+    display:block !important;
+}
 
-            <div class="admin-content">
-
-                <!-- الرئيسية -->
-                <section class="tab-panel active" id="panel-dashboard">
-                    <div class="stats-grid" id="dashStats"></div>
-                </section>
-
-                <!-- الشركات -->
-                <section class="tab-panel" id="panel-companies">
-                    <div class="panel-header">
-                        <h2>إدارة الشركات</h2>
-                        <button class="btn btn-gold" onclick="YRA.openAddCompany()"><i class="fas fa-plus"></i> إضافة شركة</button>
-                    </div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead><tr><th>الاسم</th><th>المدينة</th><th>التوثيق</th><th>الباقة</th><th>إجراءات</th></tr></thead>
-                            <tbody id="companiesBody"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- البنوك -->
-                <section class="tab-panel" id="panel-banks">
-                    <div class="panel-header">
-                        <h2>إدارة البنوك</h2>
-                        <button class="btn btn-gold" onclick="YRA.openAddBank()"><i class="fas fa-plus"></i> إضافة بنك</button>
-                    </div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead><tr><th>الاسم</th><th>المدينة</th><th>التوثيق</th><th>إجراءات</th></tr></thead>
-                            <tbody id="banksBody"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- الوظائف -->
-                <section class="tab-panel" id="panel-jobs">
-                    <div class="panel-header"><h2>إدارة الوظائف</h2></div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead><tr><th>المسمى</th><th>الشركة</th><th>الراتب</th><th>الحالة</th><th>إجراءات</th></tr></thead>
-                            <tbody id="jobsBody"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- طلبات التوثيق -->
-                <section class="tab-panel" id="panel-verification">
-                    <div class="panel-header"><h2>طلبات التوثيق</h2></div>
-                    <div id="verificationList"></div>
-                </section>
-
-                <!-- طلبات التوظيف -->
-                <section class="tab-panel" id="panel-applications">
-                    <div class="panel-header"><h2>طلبات التوظيف</h2></div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead><tr><th>المتقدم</th><th>الهاتف</th><th>السيرة</th><th>الحالة</th></tr></thead>
-                            <tbody id="appsBody"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- التقييمات -->
-                <section class="tab-panel" id="panel-reviews">
-                    <div class="panel-header"><h2>إدارة التقييمات</h2></div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead><tr><th>المستخدم</th><th>النجوم</th><th>التعليق</th><th>إجراءات</th></tr></thead>
-                            <tbody id="reviewsBody"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- المستخدمون -->
-                <section class="tab-panel" id="panel-users">
-                    <div class="panel-header"><h2>إدارة المستخدمين</h2></div>
-                    <div class="table-wrapper">
-                        <table class="admin-table">
-                            <thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th>
-                                <th>الحالة</th><th>إجراءات</th></tr></thead>
-                            <tbody id="usersBody"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <section class="tab-panel" id="panel-ads">
-                    <style>
-                        #panel-ads .panel-header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--border); }
-                        #panel-ads .panel-header h2 { color:var(--text-main); font-size:1.25rem; margin:0; }
-                        #panel-ads .panel-header h2 i { color:var(--gold-400); margin-left:8px; }
-
-                        /* الحقول: نص أبيض، حدود هادئة */
-                        .ad-input { background:var(--navy-900); color:var(--text-main); border:1px solid var(--navy-600); border-radius:8px; padding:11px 12px; width:100%; font-family:inherit; font-size:0.92rem; direction:rtl; box-sizing:border-box; }
-                        .ad-input::placeholder { color:var(--text-muted); }
-                        .ad-input:focus { border-color:var(--gold-400); outline:none; }
-                        input[type="datetime-local"].ad-input { color-scheme:dark; }
-                        #panel-ads label { display:block; color:var(--text-muted); font-size:0.8rem; margin-bottom:6px; font-weight:600; }
-
-                        /* زر الاختيار (يفتح Bottom Sheet) */
-                        .yr-sel { background:var(--navy-900); border:1px solid var(--navy-600); border-radius:8px; padding:11px 12px; display:flex; align-items:center; gap:10px; cursor:pointer; min-height:44px; box-sizing:border-box; }
-                        .yr-sel .sel-txt { flex:1; color:var(--text-main); font-size:0.92rem; }
-                        .yr-sel .sel-ico { color:var(--gold-400); width:18px; text-align:center; }
-                        .yr-sel .sel-arrow { color:var(--text-muted); font-size:0.75rem; }
-
-                        /* Bottom Sheet — معيار الهواتف */
-                        .yr-sheet-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:10000; }
-                        .yr-sheet { position:fixed; bottom:0; left:0; right:0; background:var(--navy-800); border-radius:16px 16px 0 0; border-top:2px solid var(--gold-400); max-height:60vh; overflow-y:auto; z-index:10001; padding-bottom:20px; }
-                        .yr-sheet-handle { width:44px; height:4px; background:var(--navy-600); border-radius:2px; margin:10px auto; }
-                        .yr-sheet-title { color:var(--text-muted); font-size:0.8rem; padding:4px 20px 10px; border-bottom:1px solid var(--navy-600); }
-                        .yr-sheet-opt { display:flex; align-items:center; gap:14px; padding:15px 20px; color:var(--text-main); font-size:0.95rem; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.04); }
-                        .yr-sheet-opt i { color:var(--gold-400); width:20px; text-align:center; }
-                        .yr-sheet-opt:active, .yr-sheet-opt.sel { background:var(--navy-900); }
-                        .yr-sheet-opt .fa-check { color:#10b981; margin-inline-start:auto; }
-
-                        /* بطاقات الإعلانات */
-                        .ad-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px; }
-                        .ad-card h4 { color:var(--text-main); margin:0; font-size:0.98rem; display:flex; align-items:center; gap:8px; }
-                        .ad-card h4 i { color:var(--gold-400); }
-                        .ad-card .badge { padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:700; display:inline-flex; align-items:center; gap:5px; }
-                        .ad-card .badge-active { background:rgba(16,185,129,0.15); color:#10b981; }
-                        .ad-card .badge-paused { background:rgba(245,158,11,0.15); color:#f59e0b; }
-                        .ad-card .meta { color:var(--text-muted); font-size:0.82rem; margin:10px 0; display:flex; align-items:center; gap:6px; }
-
-                        .ad-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
-                        #adOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9998; }
-                        #adFormWrap { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:var(--bg-card); border:1px solid var(--gold-400); border-radius:14px; padding:20px; z-index:9999; width:94%; max-width:640px; max-height:90vh; overflow-y:auto; }
-                        #adFormWrap h3 { color:var(--text-main); margin:0 0 16px; font-size:1.1rem; display:flex; align-items:center; gap:10px; }
-                        #adFormWrap h3 i { color:var(--gold-400); }
-                        @media (max-width:600px) { .ad-grid { grid-template-columns:1fr; } }
-                    </style>
+/* ═══ الشبكة الموحدة ═══ */
+#panel-ads .ad-grid {
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:14px !important;
+    margin-bottom:14px !important;
+}
+@media (max-width:600px) {
+    #panel-ads .ad-grid { grid-template-columns:1fr !important; }
+}
+</style>
 
                     <div class="panel-header">
                         <h2><i class="fas fa-bullhorn"></i> إدارة الإعلانات</h2>
@@ -740,6 +597,15 @@ const YRA = {
             };
         },
 
+
+        // ═══ إصلاح التقويم برمجياً (احتياطي) ═══
+        fixDateInputs() {
+            document.querySelectorAll('#panel-ads input[type="datetime-local"]').forEach(inp => {
+                inp.style.colorScheme = 'dark';
+                inp.style.webkitAppearance = 'none';
+            });
+        },
+
         async renderAds() {
             const list = document.getElementById('adsList');
             const ads = YR_DB.get('advertisements');
@@ -797,6 +663,7 @@ const YRA = {
                 : '';
             document.getElementById('adCodeWrap').style.display = (ad && (ad.ad_type === 'adsense' || ad.ad_type === 'html')) ? 'block' : 'none';
 
+            this.fixDateInputs();
             document.getElementById('adFormWrap').style.display = 'block';
             document.getElementById('adOverlay').style.display = 'block';
         },
