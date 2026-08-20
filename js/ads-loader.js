@@ -1,18 +1,77 @@
-// ═══ نظام حقن الإعلانات (داخلي + AdSense تجريبي) ═══
-(function(){
-    var ads = JSON.parse(localStorage.getItem('yr_ads') || '[]');
-    var published = ads.filter(function(a){ return a.status === 'PUBLISHED' });
-
-    // 1. حقن الإعلانات الداخلية الموافَق عليها
-    published.forEach(function(ad){
+// ═══ نظام حقن الإعلانات (Supabase + localStorage fallback) ═══
+(async function(){
+    var SB_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
+    var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
+    
+    var sb = window.yrSupabase || (typeof window.supabase !== 'undefined' ? window.supabase.createClient(SB_URL, SB_KEY) : null);
+    if (!window.yrSupabase && sb) window.yrSupabase = sb;
+    
+    // 1. جلب الإعلانات من Supabase
+    var supabaseAds = [];
+    if (sb) {
+        try {
+            var res = await sb.from('advertisements')
+                .select('id, title, image_url, link_url, slot_id, status, clicks')
+                .eq('status', 'ACTIVE')
+                .order('created_at', { ascending: false });
+            if (!res.error && res.data) {
+                supabaseAds = res.data.map(function(a) {
+                    // جلب slot_id لمعرفة place
+                    return {
+                        id: a.id,
+                        title: a.title,
+                        img: a.image_url,
+                        link: a.link_url,
+                        place: a.slot_id, // سيتم استبداله باسم المكان لاحقاً
+                        status: 'ACTIVE',
+                        clicks: a.clicks || 0,
+                        source: 'supabase'
+                    };
+                });
+            }
+        } catch(e) {
+            console.warn('[Ads] Supabase fetch failed:', e);
+        }
+    }
+    
+    // 2. جلب أسماء الأماكن من ad_slots
+    if (sb && supabaseAds.length > 0) {
+        try {
+            var slotsRes = await sb.from('ad_slots').select('id, placement');
+            if (!slotsRes.error && slotsRes.data) {
+                var slotMap = {};
+                slotsRes.data.forEach(function(s) { slotMap[s.id] = s.placement; });
+                supabaseAds.forEach(function(a) {
+                    if (a.place && slotMap[a.place]) {
+                        a.place = slotMap[a.place];
+                    }
+                });
+            }
+        } catch(e) {
+            console.warn('[Ads] Slots fetch failed:', e);
+        }
+    }
+    
+    // 3. دمج مع localStorage (fallback)
+    var localAds = JSON.parse(localStorage.getItem('yr_ads') || '[]');
+    var localPublished = localAds.filter(function(a){ return a.status === 'PUBLISHED' || a.status === 'ACTIVE'; });
+    
+    // الإعلانات من Supabase لها الأولوية
+    var allAds = supabaseAds.concat(localPublished);
+    
+    console.log('[Ads] تحميل: ' + supabaseAds.length + ' من Supabase, ' + localPublished.length + ' من localStorage');
+    
+    // 4. حقن الإعلانات الداخلية الموافَق عليها
+    allAds.forEach(function(ad){
+        if (!ad.place) return;
         var slots = document.querySelectorAll('[data-placement="' + ad.place + '"]');
         slots.forEach(function(slot){
             if (ad.img) {
                 slot.innerHTML = ad.link
-                    ? '<a href="' + ad.link + '" target="_blank" onclick="trackAdClick(' + ad.id + ')"><img src="' + ad.img + '" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:4px"></a>'
+                    ? '<a href="' + ad.link + '" target="_blank" onclick="trackAdClick(\'' + ad.id + '\')"><img src="' + ad.img + '" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:4px"></a>'
                     : '<img src="' + ad.img + '" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:4px">';
             } else if (ad.link) {
-                slot.innerHTML = '<a href="' + ad.link + '" target="_blank" onclick="trackAdClick(' + ad.id + ')" style="color:var(--gold-400);font-weight:700;font-size:.8rem">' + ad.title + '</a>';
+                slot.innerHTML = '<a href="' + ad.link + '" target="_blank" onclick="trackAdClick(\'' + ad.id + '\')" style="color:var(--gold-400);font-weight:700;font-size:.8rem">' + ad.title + '</a>';
             } else {
                 slot.innerHTML = '<span style="color:var(--gold-400);font-weight:700;font-size:.8rem">' + ad.title + '</span>';
             }
@@ -23,7 +82,7 @@
         });
     });
 
-    // 2. AdSense: حقيقي إذا وُجد الكود، وإلا تجريبي ملون
+    // 5. AdSense: حقيقي إذا وُجد الكود، وإلا تجريبي ملون
     var code = localStorage.getItem('yr_adsense') || '';
     var testMode = (!code) || code.indexOf('googlesyndication') !== -1 || code.indexOf('TEST') !== -1;
     if (testMode) {
@@ -42,6 +101,32 @@
         });
     }
 })();
+
+// ═══ دالة عدّ النقرات (Supabase) ═══
+window.trackAdClick = async function(adId) {
+    if (!adId) return;
+    if (window.yrSupabase) {
+        try {
+            // جلب العدد الحالي
+            var res = await window.yrSupabase.from('advertisements').select('clicks').eq('id', adId).single();
+            if (!res.error && res.data) {
+                var newClicks = (res.data.clicks || 0) + 1;
+                await window.yrSupabase.from('advertisements').update({ clicks: newClicks }).eq('id', adId);
+                console.log('[Ads] نقرة مسجلة للإعلان:', adId, '→', newClicks);
+            }
+        } catch(e) {
+            console.warn('[Ads] Click tracking failed:', e);
+        }
+    } else {
+        // Fallback: localStorage
+        var ads = JSON.parse(localStorage.getItem('yr_ads') || '[]');
+        var ad = ads.find(function(a){ return a.id == adId; });
+        if (ad) {
+            ad.clicks = (ad.clicks || 0) + 1;
+            localStorage.setItem('yr_ads', JSON.stringify(ads));
+        }
+    }
+};
 
 // ═══ شريط الأسعار الملون (أخضر شراء / أحمر بيع / ذهبي ذهب) ═══
 (function(){
