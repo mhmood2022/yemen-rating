@@ -49,7 +49,19 @@
         .footer-links { display: flex; justify-content: center; gap: 20px; margin-bottom: 16px; flex-wrap: wrap; }
         .footer-links a { color: var(--gold-400); text-decoration: none; font-weight: 700; font-size: 0.85rem; }
         @media (max-width: 850px) { .yr-nav-links { display: none; } .calc-grid-3 { grid-template-columns: 1fr; } }
-    </style>
+    
+/* ═══ شبكة المحافظ الاحترافية ═══ */
+.wallets-arena-grid{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(310px,1fr)) !important;gap:18px !important;align-items:stretch;}
+.wallet-card{background:var(--navy-900) !important;border:1px solid var(--border) !important;border-radius:14px !important;padding:18px !important;display:flex !important;flex-direction:column !important;gap:12px !important;transition:all .25s ease;position:relative;overflow:hidden;}
+.wallet-card:hover{transform:translateY(-3px);border-color:var(--gold-500) !important;box-shadow:0 10px 25px rgba(0,0,0,.35);}
+.wallet-card strong{color:#fff !important;}
+.wallet-card small{color:var(--text-muted) !important;}
+.wallet-rank{position:absolute !important;top:0;right:0;background:linear-gradient(135deg,#F5C400,#FFD53D);color:#040d1a !important;padding:5px 14px;border-radius:0 0 0 12px;font-size:.72rem;font-weight:800;z-index:2;}
+.wallet-features-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
+.wallet-features-list li{color:var(--text-muted) !important;font-size:.8rem;display:flex;align-items:flex-start;gap:6px;}
+.wallet-features-list li i{color:var(--success) !important;margin-top:2px;}
+@media (max-width:640px){.wallets-arena-grid{grid-template-columns:1fr !important;}}
+</style>
 </head>
 <body>
 
@@ -444,6 +456,7 @@
                             <div>
                                 <strong style="color:#fff;font-size:0.98rem;display:block;">${w.name}</strong>
                                 <small style="color:var(--text-muted);font-size:0.75rem;">${w.bank}</small>
+                                    ${YRI.adminLogoBtn(w.id)}
                             </div>
                         </div>
 
@@ -465,7 +478,40 @@
                 `).join('');
             },
 
-            trackWalletDownload(walletId, walletName) {
+            walletLogoHtml(w) {
+            try {
+                const logos = JSON.parse(localStorage.getItem('yr_wallet_logos') || '{}');
+                if (logos[w.id]) return '<img src="' + logos[w.id] + '" alt="' + w.name + '" style="width:100%;height:100%;object-fit:contain;background:#fff;border-radius:12px;padding:4px;">';
+            } catch(e) {}
+            return '<i class="fa-solid ' + w.icon + '"></i>';
+        },
+
+        adminLogoBtn(id) {
+            let s = null;
+            try { s = (window.YR_DB && YR_DB.getSession()) || JSON.parse(localStorage.getItem('yr_session') || 'null'); } catch(e) {}
+            if (!s || (s.role !== 'admin' && s.role !== 'super_admin')) return '';
+            return '<button onclick="YRI.setWalletLogo(\'' + id + '\')" style="background:transparent;border:1px solid var(--border);color:var(--gold-400);border-radius:6px;padding:2px 8px;font-size:0.68rem;cursor:pointer;margin-top:4px;"><i class="fa-solid fa-camera"></i> تغيير الشعار</button>';
+        },
+
+        setWalletLogo(id) {
+            const inp = document.createElement('input');
+            inp.type = 'file'; inp.accept = 'image/*';
+            inp.onchange = e => {
+                const f = e.target.files[0]; if (!f) return;
+                const r = new FileReader();
+                r.onload = ev => {
+                    const logos = JSON.parse(localStorage.getItem('yr_wallet_logos') || '{}');
+                    logos[id] = ev.target.result;
+                    localStorage.setItem('yr_wallet_logos', JSON.stringify(logos));
+                    this.renderWalletsArena();
+                    this.showToast('تم تحديث شعار المحفظة', 'success');
+                };
+                r.readAsDataURL(f);
+            };
+            inp.click();
+        },
+
+        trackWalletDownload(walletId, walletName) {
                 if (window.YR_DB) {
                     const downloads = YR_DB.get('wallet_downloads') || [];
                     downloads.unshift({
