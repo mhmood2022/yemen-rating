@@ -123,7 +123,24 @@
         .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ═══ نظام الإعلانات الاحترافي الكامل ═══ */
+        /* ═══ بطاقات الإعلانات المرئية الفاخرة (معاينة الصورة/الفيديو) ═══ */
+        .ads-dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 22px; }
+        .ad-stat-box { background: var(--navy-900); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; display: flex; align-items: center; gap: 14px; }
+        .ad-stat-box i, .ad-stat-box svg { font-size: 1.6rem; color: var(--gold-500); }
+        
+        .ads-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; margin-top: 16px; }
+        .ad-card-pro { background: var(--navy-900); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; display: flex; flex-direction: column; transition: var(--transition); }
+        .ad-card-pro:hover { border-color: var(--gold-500); transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.35); }
+        .ad-card-media { height: 155px; background: #040d1a; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border); }
+        .ad-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .ad-card-media video { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .ad-card-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .ad-card-title { font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0; }
+        .ad-card-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.78rem; color: var(--text-muted); }
+        .ad-card-pill { background: var(--navy-800); border: 1px solid var(--border); padding: 3px 10px; border-radius: 12px; display: inline-flex; align-items: center; gap: 5px; }
+        .ad-card-actions { padding: 12px 16px; background: var(--navy-950); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+
+        /* حقول ونموذج الإعلانات */
         #panel-ads input, #panel-ads textarea, #panel-ads .yr-sel {
             background: #07152A !important;
             color: #FFFFFF !important;
@@ -142,110 +159,32 @@
             box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.2) !important;
         }
 
-        .yr-sel {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            position: relative;
-        }
+        .yr-sel { display: flex; align-items: center; justify-content: space-between; cursor: pointer; position: relative; }
         .yr-sel .sel-txt { flex: 1; text-align: right; color: #fff; }
         .yr-sel .sel-ico { color: var(--gold-500); margin-left: 8px; width: 18px; text-align: center; }
         .yr-sel .sel-arrow { color: var(--text-muted); font-size: 0.8rem; }
 
-        /* Dropdown للحواسيب */
-        .yr-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            left: 0;
-            background: var(--navy-900);
-            border: 1px solid var(--gold-500);
-            border-radius: 10px;
-            z-index: 10000;
-            max-height: 250px;
-            overflow-y: auto;
-            margin-top: 4px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-        .yr-dropdown-opt {
-            padding: 11px 14px;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            border-bottom: 1px solid rgba(27, 60, 104, 0.4);
-            font-size: 0.9rem;
-        }
+        .yr-dropdown { position: absolute; top: 100%; right: 0; left: 0; background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: 10px; z-index: 10000; max-height: 250px; overflow-y: auto; margin-top: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .yr-dropdown-opt { padding: 11px 14px; color: #fff; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(27, 60, 104, 0.4); font-size: 0.9rem; }
         .yr-dropdown-opt:hover, .yr-dropdown-opt.sel { background: var(--navy-800); color: var(--gold-400); }
         .yr-dropdown-opt i, .yr-dropdown-opt svg { color: var(--gold-500); width: 18px; }
         .yr-dropdown-opt .fa-check { margin-inline-start: auto; color: var(--success); }
 
-        /* Bottom Sheet للهواتف */
         .yr-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; }
-        .yr-sheet {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--navy-900);
-            border-top: 2px solid var(--gold-500);
-            border-radius: 16px 16px 0 0;
-            max-height: 65vh;
-            overflow-y: auto;
-            z-index: 10001;
-            padding-bottom: 24px;
-        }
+        .yr-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--navy-900); border-top: 2px solid var(--gold-500); border-radius: 16px 16px 0 0; max-height: 65vh; overflow-y: auto; z-index: 10001; padding-bottom: 24px; }
         .yr-sheet-handle { width: 42px; height: 4px; background: var(--navy-600); border-radius: 2px; margin: 10px auto; }
         .yr-sheet-title { color: var(--text-muted); font-size: 0.85rem; padding: 6px 18px 12px; border-bottom: 1px solid var(--border); font-weight: 700; }
-        .yr-sheet-opt {
-            padding: 14px 18px;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            border-bottom: 1px solid rgba(27, 60, 104, 0.4);
-            font-size: 0.92rem;
-        }
+        .yr-sheet-opt { padding: 14px 18px; color: #fff; display: flex; align-items: center; gap: 12px; cursor: pointer; border-bottom: 1px solid rgba(27, 60, 104, 0.4); font-size: 0.92rem; }
         .yr-sheet-opt:active, .yr-sheet-opt.sel { background: var(--navy-800); color: var(--gold-400); }
         .yr-sheet-opt i, .yr-sheet-opt svg { color: var(--gold-500); width: 20px; }
         .yr-sheet-opt .fa-check { margin-inline-start: auto; color: var(--success); }
 
-        /* بطاقات ونموذج الإعلانات */
-        .ad-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 10px; transition: var(--transition); }
-        .ad-card:hover { border-color: var(--gold-500); transform: translateY(-2px); }
-        .ad-card h4 { color: #fff; margin: 0; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
-        .ad-card h4 i, .ad-card h4 svg { color: var(--gold-500); }
-        .ad-card .badge { padding: 3px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
-        .ad-card .badge-active { background: rgba(16,185,129,0.15); color: var(--success); }
-        .ad-card .badge-paused { background: rgba(245,158,11,0.15); color: var(--warning); }
-        .ad-card .meta { color: var(--text-muted); font-size: 0.8rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-
         .ad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
         #adOverlay { display: none; position: fixed; inset: 0; background: rgba(4, 13, 26, 0.88); backdrop-filter: blur(5px); z-index: 9998; }
-        #adFormWrap { 
-            display: none; 
-            position: fixed; 
-            top: 50%; 
-            left: 50%; 
-            transform: translate(-50%, -50%); 
-            background: var(--navy-900); 
-            border: 1px solid var(--gold-500); 
-            border-radius: var(--radius-lg); 
-            padding: 22px; 
-            z-index: 9999; 
-            width: 94%; 
-            max-width: 580px; 
-            max-height: 90vh; 
-            overflow-y: auto; 
-            box-shadow: 0 20px 45px rgba(0,0,0,0.7);
-        }
+        #adFormWrap { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: var(--radius-lg); padding: 22px; z-index: 9999; width: 94%; max-width: 580px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 45px rgba(0,0,0,0.7); }
         #adFormWrap h3 { color: var(--gold-400); margin: 0 0 16px 0; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; }
         #adFormWrap label { color: var(--text-muted); font-size: 0.82rem; font-weight: 600; margin-bottom: 5px; display: block; }
 
-        /* شاشة الدخول */
         .admin-login { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at center, var(--navy-800), var(--navy-950)); padding: 16px; }
         .login-card { background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: var(--radius-lg); padding: clamp(24px, 5vw, 36px) clamp(18px, 4vw, 30px); width: 100%; max-width: 410px; text-align: center; box-shadow: 0 12px 35px rgba(0,0,0,0.6); }
         .login-logo { width: 64px; height: 64px; background: var(--gold-gradient); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.7rem; color: var(--navy-950); margin: 0 auto 14px; }
@@ -260,13 +199,12 @@
             .admin-main { margin-right: 0; width: 100%; }
             .sidebar-toggle-btn { display: flex !important; }
             .ad-grid { grid-template-columns: 1fr; gap: 8px; }
+            .ads-cards-grid { grid-template-columns: 1fr; }
         }
     </style>
-<style id="yr-dark-pickers">html{color-scheme:dark}select.form-control,input.form-control,textarea.form-control{color-scheme:dark}select.form-control option{background-color:#07152A;color:#FFFFFF}</style>
 </head>
 <body>
 
-    <!-- شاشة تسجيل الدخول -->
     <div class="admin-login" id="adminLogin">
         <div class="login-card">
             <div class="login-logo"><i class="fa-solid fa-star"></i></div>
@@ -286,7 +224,6 @@
         </div>
     </div>
 
-    <!-- لوحة التحكم الرئيسية -->
     <div class="admin-wrapper hidden" id="adminWrapper">
         <aside class="admin-sidebar" id="adminSidebar">
             <div class="sidebar-brand">
@@ -331,14 +268,11 @@
                         <button class="btn btn-outline btn-sm" onclick="YRA.renderDashboard()"><i class="fa-solid fa-arrows-rotate"></i> تحديث</button>
                     </div>
                     <div class="stats-grid" id="dashStats"></div>
-                    <div id="recentNotifications" style="margin-top:24px;"></div>
                 </section>
 
                 <!-- 2. الشركات -->
                 <section class="tab-panel" id="panel-companies">
-                    <div class="panel-header">
-                        <h2><i class="fa-solid fa-building"></i> إدارة الشركات</h2>
-                    </div>
+                    <div class="panel-header"><h2><i class="fa-solid fa-building"></i> إدارة الشركات</h2></div>
                     <div class="table-wrapper">
                         <table class="admin-table">
                             <thead><tr><th>الاسم</th><th>المدينة</th><th>الحالة</th><th>التوثيق</th><th>الباقة</th><th>الإجراءات</th></tr></thead>
@@ -349,9 +283,7 @@
 
                 <!-- 3. البنوك -->
                 <section class="tab-panel" id="panel-banks">
-                    <div class="panel-header">
-                        <h2><i class="fa-solid fa-landmark"></i> إدارة البنوك والمصارف</h2>
-                    </div>
+                    <div class="panel-header"><h2><i class="fa-solid fa-landmark"></i> إدارة البنوك والمصارف</h2></div>
                     <div class="table-wrapper">
                         <table class="admin-table">
                             <thead><tr><th>الاسم</th><th>المدينة</th><th>التوثيق</th><th>الإجراءات</th></tr></thead>
@@ -410,13 +342,16 @@
                     </div>
                 </section>
 
-                <!-- 9. قسم الإعلانات المتقدم الكامل المستعاد -->
+                <!-- 9. قسم الإعلانات الكامل مع البطاقات المرئية الحية (صور/فيديو) -->
                 <section class="tab-panel" id="panel-ads">
                     <div class="panel-header">
                         <h2><i class="fa-solid fa-bullhorn"></i> منظومة إدارة الإعلانات والحملات</h2>
                         <button class="btn btn-gold" onclick="YRA.openAdForm()"><i class="fa-solid fa-plus"></i> إعلان جديد</button>
                     </div>
 
+                    <div class="ads-dashboard-stats" id="adsStatsRow"></div>
+
+                    <!-- نافذة نموذج الإعلان -->
                     <div id="adOverlay" onclick="YRA.closeAdForm()"></div>
                     <div id="adFormWrap">
                         <h3 id="adFormTitle"><i class="fa-solid fa-bullhorn"></i> إضافة إعلان جديد</h3>
@@ -433,7 +368,7 @@
                         </div>
 
                         <div style="margin-bottom:12px;">
-                            <label><i class="fa-solid fa-photo-film"></i> ملف الإعلان (صورة / فيديو من الجهاز)</label>
+                            <label><i class="fa-solid fa-photo-film"></i> ملف الإعلان (صورة أو فيديو من الهاتف/الجهاز)</label>
                             <input type="file" id="adFile" accept="image/*,video/*" onchange="YRA.previewAdFile(this)">
                             <div id="adPreview" style="margin-top:8px;"></div>
                         </div>
@@ -455,7 +390,8 @@
                         </div>
                     </div>
 
-                    <div id="adsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;margin-top:20px;"></div>
+                    <!-- شبكة بطاقات الإعلانات الحية -->
+                    <div class="ads-cards-grid" id="adsList"></div>
                 </section>
 
                 <!-- 10. الإشعارات -->
@@ -667,7 +603,7 @@
                 this.showToast('تم الحذف', 'success');
             },
 
-            // ═══ استعادة دوال الإعلانات المتقدمة بالكامل ═══
+            // ═══ استعادة قسم وبطاقات الإعلانات المرئية الحية (صور/فيديو) ═══
             async loadAdSlots() {
                 if (this.adSlotsCache) return this.adSlotsCache;
                 try {
@@ -784,27 +720,50 @@
 
             async renderAds() {
                 const list = document.getElementById('adsList');
+                const statsRow = document.getElementById('adsStatsRow');
                 const ads = (window.YR_DB && YR_DB.get('advertisements')) || [];
-                if (!ads || ads.length === 0) {
-                    list.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:34px;background:var(--bg-card);border-radius:12px;color:var(--text-muted);"><i class="fa-solid fa-bullhorn" style="font-size:2.5rem;color:var(--gold-500);display:block;margin-bottom:10px;"></i>لا توجد إعلانات منشأة حالياً</div>';
-                    return;
-                }
                 const slots = await this.loadAdSlots();
                 const slotMap = {};
                 slots.forEach(s => slotMap[s.id] = s.name_ar || s.name);
-                const typeIcons = {banner:'fa-rectangle-ad', adsense:'fa-dollar-sign', html:'fa-code', image:'fa-image', video:'fa-video', popup:'fa-window-restore'};
+
+                const activeAds = ads.filter(a => a.status === 'ACTIVE').length;
+                const totalClicks = ads.reduce((acc, a) => acc + (Number(a.clicks) || 0), 0);
+
+                statsRow.innerHTML = 
+                    '<div class="ad-stat-box"><i class="fa-solid fa-bullhorn"></i><div><strong style="font-size:1.3rem;">' + ads.length + '</strong><div style="color:var(--text-muted);font-size:0.8rem;">إجمالي الإعلانات</div></div></div>' +
+                    '<div class="ad-stat-box"><i class="fa-solid fa-circle-check" style="color:var(--success);"></i><div><strong style="font-size:1.3rem;">' + activeAds + '</strong><div style="color:var(--text-muted);font-size:0.8rem;">الإعلانات النشطة</div></div></div>' +
+                    '<div class="ad-stat-box"><i class="fa-solid fa-hand-pointer" style="color:var(--info);"></i><div><strong style="font-size:1.3rem;">' + totalClicks + '</strong><div style="color:var(--text-muted);font-size:0.8rem;">مجموع النقرات</div></div></div>';
+
+                if (!ads || ads.length === 0) {
+                    list.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:34px;background:var(--bg-card);border-radius:12px;color:var(--text-muted);"><i class="fa-solid fa-bullhorn" style="font-size:2.5rem;color:var(--gold-500);display:block;margin-bottom:10px;"></i>لا توجد حملات إعلانية منشأة حالياً</div>';
+                    return;
+                }
 
                 list.innerHTML = ads.map(a => {
-                    const active = a.status === 'ACTIVE';
-                    return '<div class="ad-card">' +
-                        '<div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">' +
-                        '<h4><i class="fa-solid ' + (typeIcons[a.ad_type] || 'fa-bullhorn') + '"></i> ' + this.esc(a.title) + '</h4>' +
-                        '<span class="badge ' + (active ? 'badge-active' : 'badge-paused') + '"><i class="fa-solid ' + (active ? 'fa-circle-check' : 'fa-circle-pause') + '"></i> ' + (active ? 'نشط' : 'متوقف') + '</span>' +
+                    const isActive = a.status === 'ACTIVE';
+                    const mediaUrl = a.media_url || a.img || a.image_url;
+                    const isVideo = mediaUrl && (mediaUrl.startsWith('data:video') || mediaUrl.endsWith('.mp4') || mediaUrl.endsWith('.webm'));
+
+                    return '<div class="ad-card-pro">' +
+                        '<div class="ad-card-media">' +
+                        (mediaUrl ? 
+                            (isVideo ? '<video src="' + mediaUrl + '" autoplay muted loop playsinline></video>' : '<img src="' + mediaUrl + '" alt="' + this.esc(a.title) + '">')
+                            : '<div style="font-size:2.5rem;color:var(--gold-500);"><i class="fa-solid fa-code"></i></div>'
+                        ) +
+                        '<span class="status-badge ' + (isActive ? 'status-active' : 'status-pending') + '" style="position:absolute;top:10px;left:10px;z-index:2;">' +
+                        (isActive ? '● نشط' : '○ متوقف') +
+                        '</span>' +
                         '</div>' +
-                        '<div class="meta"><i class="fa-solid fa-location-dot" style="color:var(--gold-500);"></i> ' + (slotMap[a.slot_id] || 'عام') + ' &nbsp;•&nbsp; <i class="fa-solid fa-hand-pointer" style="color:var(--info);"></i> ' + (a.clicks || 0) + ' نقرة</div>' +
-                        '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">' +
+                        '<div class="ad-card-body">' +
+                        '<h4 class="ad-card-title">' + this.esc(a.title) + '</h4>' +
+                        '<div class="ad-card-meta">' +
+                        '<span class="ad-card-pill"><i class="fa-solid fa-location-dot" style="color:var(--gold-500);"></i> ' + (slotMap[a.slot_id] || 'عام') + '</span>' +
+                        '<span class="ad-card-pill"><i class="fa-solid fa-layer-group"></i> ' + (a.ad_type || 'بانر') + '</span>' +
+                        '<span class="ad-card-pill"><i class="fa-solid fa-hand-pointer" style="color:var(--info);"></i> ' + (a.clicks || 0) + ' نقرة</span>' +
+                        '</div></div>' +
+                        '<div class="ad-card-actions">' +
                         '<button class="btn btn-sm btn-outline" onclick="YRA.editAd(\'' + a.id + '\')"><i class="fa-solid fa-pen"></i> تعديل</button>' +
-                        '<button class="btn btn-sm btn-gold" onclick="YRA.toggleAd(\'' + a.id + '\')"><i class="fa-solid ' + (active ? 'fa-pause' : 'fa-play') + '"></i> ' + (active ? 'إيقاف' : 'تنشيط') + '</button>' +
+                        '<button class="btn btn-sm ' + (isActive ? 'btn-outline' : 'btn-success') + '" onclick="YRA.toggleAd(\'' + a.id + '\')"><i class="fa-solid ' + (isActive ? 'fa-pause' : 'fa-play') + '"></i> ' + (isActive ? 'إيقاف' : 'تنشيط') + '</button>' +
                         '<button class="btn btn-sm btn-danger" onclick="YRA.deleteAd(\'' + a.id + '\')"><i class="fa-solid fa-trash"></i> حذف</button>' +
                         '</div></div>';
                 }).join('');
@@ -840,8 +799,11 @@
                 document.getElementById('adStart').value = ad && ad.start_date ? ad.start_date.slice(0,16) : '';
                 document.getElementById('adEnd').value = ad && ad.end_date ? ad.end_date.slice(0,16) : '';
                 document.getElementById('adFile').value = '';
-                document.getElementById('adPreview').innerHTML = ad && ad.media_url
-                    ? (ad.media_url.startsWith('data:video') ? '<video src="' + ad.media_url + '" controls style="max-width:180px;border-radius:8px;"></video>' : '<img src="' + ad.media_url + '" style="max-width:180px;border-radius:8px;">')
+                
+                const curMedia = ad ? (ad.media_url || ad.img || ad.image_url) : null;
+                const isVid = curMedia && (curMedia.startsWith('data:video') || curMedia.endsWith('.mp4'));
+                document.getElementById('adPreview').innerHTML = curMedia
+                    ? (isVid ? '<video src="' + curMedia + '" controls style="max-width:180px;border-radius:8px;"></video>' : '<img src="' + curMedia + '" style="max-width:180px;border-radius:8px;">')
                     : '';
                 document.getElementById('adCodeWrap').style.display = (ad && (ad.ad_type === 'adsense' || ad.ad_type === 'html')) ? 'block' : 'none';
 
@@ -861,7 +823,7 @@
                 const reader = new FileReader();
                 reader.onload = e => {
                     document.getElementById('adPreview').innerHTML = file.type.startsWith('video/')
-                        ? '<video src="' + e.target.result + '" controls style="max-width:180px;border-radius:8px;"></video>'
+                        ? '<video src="' + e.target.result + '" autoplay muted loop controls style="max-width:180px;border-radius:8px;"></video>'
                         : '<img src="' + e.target.result + '" style="max-width:180px;border-radius:8px;">';
                 };
                 reader.readAsDataURL(file);
@@ -890,17 +852,17 @@
                     });
                 } else if (editId) {
                     const ex = YR_DB.findById('advertisements', editId);
-                    media_url = ex ? ex.media_url : null;
+                    media_url = ex ? (ex.media_url || ex.img || ex.image_url) : null;
                 }
 
                 const adData = { title, ad_type, slot_id, link_url, content_html, media_url, start_date, end_date, status, clicks: 0 };
                 
                 if (editId) {
                     await YR_DB.update('advertisements', editId, adData);
-                    this.showToast('تم تعديل الحملة الإعلانية', 'success');
+                    this.showToast('تم تعديل الحملة الإعلانية بنجاح', 'success');
                 } else {
                     await YR_DB.add('advertisements', adData);
-                    this.showToast('تمت إضافة الإعلان بنجاح', 'success');
+                    this.showToast('تم حفظ ونشر الإعلان بنجاح', 'success');
                 }
 
                 this.closeAdForm();
@@ -963,7 +925,7 @@
             },
 
             esc(text) {
-                if (!text) return '';
+                if (text === undefined || text === null) return '';
                 return String(text).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
             },
 
