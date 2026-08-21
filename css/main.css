@@ -4,6 +4,7 @@
     --navy-800: #0B1F3A;
     --navy-700: #122B4E;
     --navy-600: #1B3C68;
+    --navy-500: #1E3A5F;
     --gold-500: #F5C400;
     --gold-400: #FFD53D;
     --gold-gradient: linear-gradient(135deg, #F5C400 0%, #D4AF37 100%);
@@ -41,8 +42,28 @@ body {
     overflow-x: hidden;
 }
 
-/* ═══ تخصيص القوائم المنسدلة والحقول بلون الهوية الكحلي والذهبي ═══ */
-select, select.form-control, select.search-select, .yr-select {
+/* ═══ نظام الإعلانات الذكي: مخفي تماماً عند عدم وجود إعلان ═══ */
+.ad-banner-slot, .ad-slot, [data-placement] {
+    display: none; /* يظل مخفياً ولا يشغل أي حيز إطلاقاً */
+    width: 100%;
+    max-width: 1240px;
+    margin: 20px auto;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.35);
+    transition: var(--transition);
+}
+
+/* يظهر فقط عند حقن إعلان نشط برمجياً */
+.ad-banner-slot.has-ad, .ad-slot.has-ad, [data-placement].has-ad {
+    display: block !important;
+    animation: adFadeIn 0.35s ease-in-out;
+}
+@keyframes adFadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ═══ تخصيص القوائم والحقول الملكية (بدون أي ألوان رمادية باهتة) ═══ */
+select, select.form-control, .yr-select {
     background-color: #07152A !important;
     color: #FFFFFF !important;
     border: 1px solid var(--border) !important;
@@ -59,7 +80,6 @@ select, select.form-control, select.search-select, .yr-select {
     width: 100% !important;
     min-height: 46px !important;
     outline: none !important;
-    transition: var(--transition) !important;
     color-scheme: dark !important;
 }
 
@@ -75,7 +95,7 @@ input.form-control, textarea.form-control {
     border: 1px solid var(--border) !important;
     color: #FFFFFF !important;
     border-radius: var(--radius-sm);
-    padding: 10px 14px;
+    padding: 11px 14px;
     font-size: 0.92rem;
     min-height: 46px;
     outline: none;
@@ -88,7 +108,6 @@ input.form-control:focus, select.form-control:focus, textarea.form-control:focus
     box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.2) !important;
 }
 
-/* رفع الملفات من الهاتف بلمسة أنيقة */
 input[type="file"] {
     background: #07152A !important;
     border: 1px dashed var(--gold-500) !important;
@@ -108,39 +127,10 @@ input[type="file"]::-webkit-file-upload-button {
     cursor: pointer !important;
 }
 
-/* تصميم مساحات الإعلانات الموحد والراقي */
-.ad-banner-slot {
-    margin: 24px auto;
-    background: var(--navy-900);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    position: relative;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    min-height: 90px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.ad-badge {
-    position: absolute;
-    top: 6px;
-    left: 6px;
-    background: rgba(4, 13, 26, 0.85);
-    color: var(--gold-400);
-    font-size: 0.68rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-    border: 1px solid var(--border-light);
-    z-index: 5;
-    font-weight: 800;
-}
-
-/* أيقونات Font Awesome SVG */
+/* ظهور الأيقونات الشعاعية SVG */
 svg.svg-inline--fa, .svg-inline--fa, i.fa-solid, i.fa-brands, i.fa-regular, i.fas, i.fab, i.fa {
     display: inline-block !important;
     vertical-align: -0.125em !important;
     height: 1em !important;
     width: auto !important;
-    overflow: visible !important;
 }

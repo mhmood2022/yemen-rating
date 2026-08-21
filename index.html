@@ -6,14 +6,18 @@
     <title>يمن ريتنغ | الدليل الشامل لتقييم الشركات والوظائف في اليمن</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#F5C400">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js" crossorigin="anonymous" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/js/all.min.js" defer></script>
+    
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/yemen-rating.css">
+
     <style>
         .yr-navbar { background: var(--navy-900); border-bottom: 1px solid var(--border); padding: 12px clamp(14px, 4vw, 32px); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
         .yr-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
@@ -35,7 +39,7 @@
         .section-title i { color: var(--gold-500); font-size: 1.15rem; }
         .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: clamp(14px, 2.5vw, 20px); margin-bottom: 30px; }
         .yr-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 12px; transition: var(--transition); }
-        .yr-card:hover { transform: translateY(-3px); border-color: var(--gold-500); }
+        .yr-card:hover { transform: translateY(-3px); border-color: var(--gold-500); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .yr-card-header { display: flex; align-items: center; gap: 12px; }
         .yr-card-logo { width: 48px; height: 48px; background: var(--navy-700); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--gold-400); font-size: 1.3rem; flex-shrink: 0; }
         .btn { min-height: 42px; padding: 0 16px; border-radius: var(--radius-sm); border: none; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: var(--transition); text-decoration: none; white-space: nowrap; }
@@ -76,10 +80,8 @@
         </div>
     </section>
 
-    <!-- موضع الإعلان 1: أعلى الرئيسية -->
-    <div class="container">
-        <div class="ad-banner-slot" data-placement="HOME_TOP"><span class="ad-badge">إعلان مميز</span><div id="adTopContent"></div></div>
-    </div>
+    <!-- موضع الإعلان 1 (مخفي نظيف افتراضياً) -->
+    <div class="container"><div class="ad-banner-slot" data-placement="HOME_TOP"></div></div>
 
     <main class="container">
         <section id="companies">
@@ -90,8 +92,8 @@
             <div class="items-grid" id="companiesGrid"></div>
         </section>
 
-        <!-- موضع الإعلان 2: وسط الرئيسية -->
-        <div class="ad-banner-slot" data-placement="HOME_MIDDLE"><span class="ad-badge">إعلان مميز</span><div id="adMiddleContent"></div></div>
+        <!-- موضع الإعلان 2 (مخفي نظيف افتراضياً) -->
+        <div class="ad-banner-slot" data-placement="HOME_MIDDLE"></div>
 
         <section id="banks">
             <div class="section-header">
@@ -109,8 +111,8 @@
             <div class="items-grid" id="jobsGrid"></div>
         </section>
 
-        <!-- موضع الإعلان 3: أسفل الرئيسية -->
-        <div class="ad-banner-slot" data-placement="HOME_BOTTOM"><span class="ad-badge">إعلان مميز</span><div id="adBottomContent"></div></div>
+        <!-- موضع الإعلان 3 (مخفي نظيف افتراضياً) -->
+        <div class="ad-banner-slot" data-placement="HOME_BOTTOM"></div>
     </main>
 
     <footer class="yr-footer">
