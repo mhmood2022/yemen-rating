@@ -1116,5 +1116,59 @@
 
         document.addEventListener('DOMContentLoaded', () => YRA.init());
     </script>
+
+<script id="yr-custom-selects">
+(function(){
+    function enhance(root){
+        root.querySelectorAll('select.form-control').forEach(function(sel){
+            if (sel.dataset.enhanced) return;
+            sel.dataset.enhanced = '1';
+            var hidden = document.createElement('input');
+            hidden.type = 'hidden'; hidden.name = sel.name; hidden.value = sel.value;
+            sel.parentNode.insertBefore(hidden, sel);
+            var btn = document.createElement('div');
+            btn.style.cssText = 'background:#07152A;border:1px solid #1B3C68;border-radius:8px;padding:10px 14px;color:#FFFFFF;display:flex;align-items:center;gap:8px;cursor:pointer;min-height:44px;box-sizing:border-box;';
+            function label(){ var o = sel.options[sel.selectedIndex]; return o ? o.textContent : '—'; }
+            btn.innerHTML = '<span style="flex:1">' + label() + '</span><i class="fa-solid fa-chevron-down" style="color:#F5C400;font-size:12px;"></i>';
+            sel.parentNode.insertBefore(btn, sel);
+            sel.style.display = 'none';
+            btn.onclick = function(e){
+                e.stopPropagation();
+                closeMenus();
+                var ov = document.createElement('div');
+                ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10001;';
+                ov.onclick = closeMenus;
+                var menu = document.createElement('div');
+                menu.className = 'yr-csel-menu';
+                menu.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#0B1F3A;border-top:2px solid #F5C400;border-radius:16px 16px 0 0;max-height:50vh;overflow-y:auto;z-index:10002;padding-bottom:16px;';
+                Array.prototype.forEach.call(sel.options, function(o){
+                    var d = document.createElement('div');
+                    d.style.cssText = 'padding:14px 20px;color:#FFFFFF;font-size:15px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;font-family:Cairo,sans-serif;';
+                    d.innerHTML = '<span style="flex:1">' + o.textContent + '</span>' + (o.selected ? '<i class="fa-solid fa-check" style="color:#16A34A;"></i>' : '');
+                    d.onclick = function(ev){
+                        ev.stopPropagation();
+                        sel.value = o.value; hidden.value = o.value;
+                        btn.querySelector('span').textContent = o.textContent;
+                        closeMenus();
+                    };
+                    menu.appendChild(d);
+                });
+                document.body.appendChild(ov);
+                document.body.appendChild(menu);
+            };
+        });
+    }
+    function closeMenus(){
+        document.querySelectorAll('.yr-csel-menu').forEach(function(m){ m.remove(); });
+        document.querySelectorAll('div[style*="z-index:10001"]').forEach(function(o){ o.remove(); });
+    }
+    var origOpen = YRA.openModal.bind(YRA);
+    YRA.openModal = function(html){
+        origOpen(html);
+        setTimeout(function(){ enhance(document.getElementById('modalRoot')); }, 60);
+    };
+    document.addEventListener('click', function(){ closeMenus(); });
+})();
+</script>
 </body>
 </html>
