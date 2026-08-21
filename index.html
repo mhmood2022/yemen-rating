@@ -52,7 +52,7 @@
     
 /* ═══ شبكة المحافظ الاحترافية ═══ */
 .wallets-arena-grid{display:grid !important;grid-template-columns:repeat(auto-fill,minmax(310px,1fr)) !important;gap:18px !important;align-items:stretch;}
-.wallet-card{background:var(--navy-900) !important;border:1px solid var(--border) !important;border-radius:14px !important;padding:18px !important;display:flex !important;flex-direction:column !important;gap:12px !important;transition:all .25s ease;position:relative;overflow:hidden;}
+.wallet-card{background:#010912 !important;border:1px solid var(--border) !important;border-radius:14px !important;padding:18px !important;display:flex !important;flex-direction:column !important;gap:12px !important;transition:all .25s ease;position:relative;overflow:hidden;}
 .wallet-card:hover{transform:translateY(-3px);border-color:var(--gold-500) !important;box-shadow:0 10px 25px rgba(0,0,0,.35);}
 .wallet-card strong{color:#fff !important;}
 .wallet-card small{color:var(--text-muted) !important;}
@@ -201,7 +201,7 @@
                 </div>
                 <div style="display:flex;gap:8px;align-items:center;">
                     <button class="btn btn-outline btn-sm" onclick="YRI.openSuggestWalletModal()"><i class="fa-solid fa-plus"></i> ترشيح / إضافة محفظة</button>
-                    <span class="badge" style="background:var(--navy-900);color:var(--gold-400);border:1px solid var(--gold-500);padding:6px 12px;border-radius:20px;">🔥 نزال وتصويت الأسبوع</span>
+                    <span class="badge" style="background:#010912;color:var(--gold-400);border:1px solid var(--gold-500);padding:6px 12px;border-radius:20px;">🔥 نزال وتصويت الأسبوع</span>
                 </div>
             </div>
 
@@ -542,7 +542,7 @@
             openSuggestWalletModal() {
                 document.getElementById('modalRoot').innerHTML = `
                     <div class="yr-modal-overlay" onclick="if(event.target===this) document.getElementById('modalRoot').innerHTML=''">
-                        <div class="yr-modal" style="background:var(--navy-900);border:1px solid var(--gold-500);border-radius:12px;padding:22px;max-width:480px;width:100%;">
+                        <div class="yr-modal" style="background:#010912;border:1px solid var(--gold-500);border-radius:12px;padding:22px;max-width:480px;width:100%;">
                             <h3 style="color:var(--gold-400);margin:0 0 10px 0;"><i class="fa-solid fa-wallet"></i> ترشيح / إدراج محفظة إلكترونية</h3>
                             <p style="color:var(--text-muted);font-size:0.84rem;">أدخل اسم المحفظة والبنك التابع لها وسيتم مراجعتها وإدراجها في حلبة النزال والتصويت المالي.</p>
                             <form onsubmit="YRI.submitWalletSuggestion(event)">
