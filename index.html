@@ -4,450 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>يمن ريتنغ | الدليل الشامل لتقييم الشركات والوظائف في اليمن</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#F5C400">
     
-    <!-- خط كايرو العربي -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- مكتبة الأيقونات Font Awesome 6 -->
+    <!-- مكتبة Font Awesome 6 المحدثة -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/yemen-rating.css">
 
     <style>
-        :root {
-            --navy-950: #040d1a;
-            --navy-900: #07152A;
-            --navy-800: #0B1F3A;
-            --navy-700: #122B4E;
-            --navy-600: #1B3C68;
-            --gold-500: #F5C400;
-            --gold-400: #FFD53D;
-            --gold-gradient: linear-gradient(135deg, #F5C400 0%, #D4AF37 100%);
-            --bg-card: #0B1F3A;
-            --border: #1B3C68;
-            --border-light: rgba(245, 196, 0, 0.25);
-            --text-main: #FFFFFF;
-            --text-muted: #94a3b8;
-            --danger: #EF4444;
-            --success: #10B981;
-            --warning: #F59E0B;
-            --info: #3B82F6;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * { box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
-        html, body { margin: 0; padding: 0; background: var(--navy-950); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
-
-        /* شريط التنقل العلوي (Navbar) */
-        .yr-navbar {
-            background: var(--navy-900);
-            border-bottom: 1px solid var(--border);
-            padding: 12px clamp(14px, 4vw, 32px);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        .yr-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-        .yr-brand-logo {
-            width: 38px;
-            height: 38px;
-            background: var(--gold-gradient);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--navy-950);
-            font-size: 1.2rem;
-            font-weight: 900;
-        }
-        .yr-brand-text {
-            font-size: clamp(1.05rem, 2.5vw, 1.25rem);
-            font-weight: 900;
-            color: var(--gold-400);
-        }
-
-        .yr-nav-links {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-        .yr-nav-link {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.92rem;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .yr-nav-link:hover, .yr-nav-link.active {
-            color: var(--gold-400);
-        }
-
-        .yr-nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .mobile-menu-btn {
-            display: none;
-            background: var(--navy-800);
-            border: 1px solid var(--border);
-            color: var(--gold-400);
-            width: 38px;
-            height: 38px;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-        }
-
-        /* الحاوية العامة */
-        .container {
-            width: 100%;
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 clamp(14px, 3vw, 24px);
-        }
-
-        /* قسم البطل (Hero Section) والبحث */
-        .hero-section {
-            padding: clamp(30px, 6vw, 60px) 0 clamp(20px, 4vw, 40px);
-            text-align: center;
-            background: radial-gradient(circle at center top, var(--navy-800), var(--navy-950));
-            border-bottom: 1px solid var(--border);
-        }
-        .hero-title {
-            font-size: clamp(1.4rem, 4.5vw, 2.3rem);
-            font-weight: 900;
-            margin: 0 0 10px 0;
-            color: #fff;
-            line-height: 1.3;
-        }
+        .yr-navbar { background: var(--navy-900); border-bottom: 1px solid var(--border); padding: 12px clamp(14px, 4vw, 32px); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
+        .yr-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .yr-brand-logo { width: 38px; height: 38px; background: var(--gold-gradient); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--navy-950); font-size: 1.2rem; font-weight: 900; }
+        .yr-brand-text { font-size: clamp(1.05rem, 2.5vw, 1.25rem); font-weight: 900; color: var(--gold-400); }
+        .yr-nav-links { display: flex; align-items: center; gap: 18px; list-style: none; margin: 0; padding: 0; }
+        .yr-nav-link { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.92rem; transition: var(--transition); display: flex; align-items: center; gap: 6px; }
+        .yr-nav-link:hover, .yr-nav-link.active { color: var(--gold-400); }
+        .yr-nav-actions { display: flex; align-items: center; gap: 10px; }
+        .container { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 clamp(14px, 3vw, 24px); }
+        
+        .hero-section { padding: clamp(30px, 6vw, 60px) 0 clamp(20px, 4vw, 40px); text-align: center; background: radial-gradient(circle at center top, var(--navy-800), var(--navy-950)); border-bottom: 1px solid var(--border); }
+        .hero-title { font-size: clamp(1.4rem, 4.5vw, 2.3rem); font-weight: 900; margin: 0 0 10px 0; color: #fff; line-height: 1.3; }
         .hero-title span { color: var(--gold-400); }
-        .hero-subtitle {
-            font-size: clamp(0.88rem, 2vw, 1.05rem);
-            color: var(--text-muted);
-            max-width: 620px;
-            margin: 0 auto 26px;
-            line-height: 1.5;
-        }
+        .hero-subtitle { font-size: clamp(0.88rem, 2vw, 1.05rem); color: var(--text-muted); max-width: 620px; margin: 0 auto 26px; }
 
-        /* شريط البحث المتقدم */
-        .search-box-wrap {
-            background: var(--navy-900);
-            border: 1px solid var(--gold-500);
-            border-radius: var(--radius-md);
-            padding: 8px;
-            max-width: 780px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 2fr 1.2fr auto;
-            gap: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-        }
+        .search-box-wrap { background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: var(--radius-md); padding: 8px; max-width: 780px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1.2fr auto; gap: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
         .search-input-wrap { position: relative; display: flex; align-items: center; }
         .search-input-wrap i { position: absolute; right: 14px; color: var(--gold-500); font-size: 0.95rem; }
-        .search-input-wrap input {
-            width: 100%;
-            background: #040d1a;
-            border: 1px solid var(--border);
-            color: #fff;
-            padding: 11px 40px 11px 14px;
-            border-radius: var(--radius-sm);
-            font-size: 0.9rem;
-            outline: none;
-            min-height: 44px;
-        }
-        select.search-select {
-            background: #040d1a;
-            border: 1px solid var(--border);
-            color: #fff;
-            padding: 10px 32px 10px 12px;
-            border-radius: var(--radius-sm);
-            font-size: 0.88rem;
-            outline: none;
-            min-height: 44px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23F5C400' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: left 10px center;
-            background-size: 16px;
-            -webkit-appearance: none;
-            appearance: none;
-        }
+        .search-input-wrap input { width: 100%; background: #040d1a; border: 1px solid var(--border); color: #fff; padding: 11px 40px 11px 14px; border-radius: var(--radius-sm); font-size: 0.9rem; outline: none; min-height: 44px; }
+        select.search-select { background: #040d1a; border: 1px solid var(--border); color: #fff; padding: 10px 32px 10px 12px; border-radius: var(--radius-sm); font-size: 0.88rem; outline: none; min-height: 44px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23F5C400' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 10px center; background-size: 16px; -webkit-appearance: none; appearance: none; }
 
-        /* مساحات الإعلانات المتجاوبة (Ad Slots) */
-        .ad-banner-slot {
-            margin: clamp(18px, 3.5vw, 30px) auto;
-            background: var(--navy-900);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            text-align: center;
-            position: relative;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
-            transition: var(--transition);
-        }
-        .ad-banner-slot:hover { border-color: var(--gold-500); }
-        .ad-badge {
-            position: absolute;
-            top: 6px;
-            left: 6px;
-            background: rgba(4, 13, 26, 0.8);
-            color: var(--gold-400);
-            font-size: 0.68rem;
-            padding: 2px 7px;
-            border-radius: 4px;
-            border: 1px solid var(--border-light);
-            z-index: 5;
-            font-weight: 700;
-        }
-        .ad-banner-slot a { display: block; width: 100%; height: 100%; text-decoration: none; }
-        .ad-banner-slot img, .ad-banner-slot video {
-            width: 100%;
-            max-height: clamp(100px, 18vw, 180px);
-            object-fit: cover;
-            display: block;
-        }
-
-        /* العناوين والتبويبات */
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin: clamp(24px, 4vw, 40px) 0 clamp(14px, 2.5vw, 20px);
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .section-title {
-            font-size: clamp(1.15rem, 2.5vw, 1.45rem);
-            font-weight: 800;
-            color: #fff;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .ad-banner-slot { margin: clamp(18px, 3.5vw, 30px) auto; background: var(--navy-900); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; text-align: center; position: relative; }
+        .ad-banner-slot img, .ad-banner-slot video { width: 100%; max-height: clamp(100px, 18vw, 180px); object-fit: cover; display: block; }
+        
+        .section-header { display: flex; align-items: center; justify-content: space-between; margin: clamp(24px, 4vw, 40px) 0 clamp(14px, 2.5vw, 20px); flex-wrap: wrap; gap: 12px; }
+        .section-title { font-size: clamp(1.15rem, 2.5vw, 1.45rem); font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px; }
         .section-title i { color: var(--gold-500); font-size: 1.15rem; }
 
-        /* شبكات البطاقات (Grid Layout) */
-        .items-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: clamp(14px, 2.5vw, 20px);
-            margin-bottom: 30px;
-        }
-        
-        .yr-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: clamp(14px, 2.5vw, 18px);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            transition: var(--transition);
-            position: relative;
-        }
-        .yr-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--gold-500);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.35);
-        }
-        .yr-card-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .yr-card-logo {
-            width: 48px;
-            height: 48px;
-            background: var(--navy-700);
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--gold-400);
-            font-size: 1.3rem;
-            flex-shrink: 0;
-        }
-        .yr-card-title {
-            font-size: 1.05rem;
-            font-weight: 800;
-            margin: 0 0 3px 0;
-            color: #fff;
-        }
-        .yr-card-meta {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .yr-card-desc {
-            font-size: 0.84rem;
-            color: var(--text-muted);
-            line-height: 1.45;
-            margin: 0;
-            flex: 1;
-        }
-        .yr-card-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-top: 1px solid rgba(27, 60, 104, 0.5);
-            padding-top: 10px;
-            margin-top: 4px;
-        }
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: clamp(14px, 2.5vw, 20px); margin-bottom: 30px; }
+        .yr-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 12px; transition: var(--transition); }
+        .yr-card:hover { transform: translateY(-3px); border-color: var(--gold-500); }
+        .yr-card-header { display: flex; align-items: center; gap: 12px; }
+        .yr-card-logo { width: 48px; height: 48px; background: var(--navy-700); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--gold-400); font-size: 1.3rem; flex-shrink: 0; }
+        .yr-card-title { font-size: 1.05rem; font-weight: 800; margin: 0 0 3px 0; color: #fff; }
+        .yr-card-meta { font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+        .yr-card-desc { font-size: 0.84rem; color: var(--text-muted); line-height: 1.45; margin: 0; flex: 1; }
+        .yr-card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(27, 60, 104, 0.5); padding-top: 10px; }
 
-        /* الأزرار والشارات */
-        .btn {
-            min-height: 42px;
-            padding: 0 16px;
-            border-radius: var(--radius-sm);
-            border: none;
-            font-weight: 700;
-            font-size: 0.88rem;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: var(--transition);
-            text-decoration: none;
-            white-space: nowrap;
-        }
+        .btn { min-height: 42px; padding: 0 16px; border-radius: var(--radius-sm); border: none; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: var(--transition); text-decoration: none; white-space: nowrap; }
         .btn-gold { background: var(--gold-gradient); color: var(--navy-950); }
         .btn-gold:hover { opacity: 0.95; transform: translateY(-1px); }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; }
         .btn-outline:hover { background: var(--navy-700); border-color: var(--gold-500); }
         .btn-sm { min-height: 34px; padding: 0 12px; font-size: 0.8rem; border-radius: 6px; }
+        .verified-badge { color: var(--success); font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px; font-weight: 700; }
 
-        .verified-badge {
-            color: var(--success);
-            font-size: 0.8rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-weight: 700;
-        }
-
-        /* النوافذ المنبثقة الذكية (Modals) */
-        .yr-modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(4, 13, 26, 0.88);
-            backdrop-filter: blur(5px);
-            z-index: 2000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 14px;
-        }
-        .yr-modal {
-            background: var(--navy-900);
-            border: 1px solid var(--gold-500);
-            border-radius: var(--radius-lg);
-            width: 100%;
-            max-width: 520px;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 20px 45px rgba(0,0,0,0.6);
-            animation: modalPop 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        @keyframes modalPop { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
-        .yr-modal-header {
-            padding: 14px 18px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--navy-950);
-        }
-        .yr-modal-header h3 { margin: 0; color: var(--gold-400); font-size: 1.05rem; display: flex; align-items: center; gap: 8px; }
-        .yr-modal-body { padding: 18px; overflow-y: auto; flex: 1; overscroll-behavior: contain; }
-        .yr-modal-footer { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: var(--navy-950); }
-
-        .form-group { margin-bottom: 14px; text-align: right; }
-        .form-group label { display: block; margin-bottom: 5px; font-size: 0.82rem; color: var(--text-muted); font-weight: 600; }
-        .form-control { width: 100%; background: #040d1a; border: 1px solid var(--border); color: #fff; border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.9rem; min-height: 44px; outline: none; }
-        .form-control:focus { border-color: var(--gold-500); box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.2); }
-
-        /* التذييل (Footer) */
-        .yr-footer {
-            background: var(--navy-900);
-            border-top: 1px solid var(--border);
-            padding: 30px 0 20px;
-            margin-top: 40px;
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        /* التجاوب مع مختلف الشاشات */
+        .yr-footer { background: var(--navy-900); border-top: 1px solid var(--border); padding: 30px 0 20px; margin-top: 40px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
         @media (max-width: 850px) {
             .yr-nav-links { display: none; }
-            .mobile-menu-btn { display: flex; }
-            .search-box-wrap { grid-template-columns: 1fr; gap: 8px; padding: 12px; }
+            .search-box-wrap { grid-template-columns: 1fr; }
             .items-grid { grid-template-columns: 1fr; }
-            .yr-modal { max-height: 94vh; border-radius: 12px; }
-        }
-        @media (min-width: 600px) and (max-width: 900px) {
-            .items-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
 
-    <!-- شريط التنقل العلوي -->
     <header class="yr-navbar">
         <a href="index.html" class="yr-brand">
             <div class="yr-brand-logo"><i class="fa-solid fa-star"></i></div>
             <span class="yr-brand-text">يمن ريتنغ</span>
         </a>
-
         <ul class="yr-nav-links">
-            <li><a href="#companies" class="yr-nav-link active"><i class="fa-solid fa-building"></i> الشركات</a></li>
-            <li><a href="#banks" class="yr-nav-link"><i class="fa-solid fa-landmark"></i> البنوك</a></li>
-            <li><a href="#jobs" class="yr-nav-link"><i class="fa-solid fa-briefcase"></i> الوظائف</a></li>
+            <li><a href="companies.html" class="yr-nav-link"><i class="fa-solid fa-building"></i> الشركات</a></li>
+            <li><a href="banks.html" class="yr-nav-link"><i class="fa-solid fa-landmark"></i> البنوك</a></li>
+            <li><a href="jobs.html" class="yr-nav-link"><i class="fa-solid fa-briefcase"></i> الوظائف</a></li>
             <li><a href="admin.html" class="yr-nav-link"><i class="fa-solid fa-shield-halved"></i> لوحة الإدارة</a></li>
         </ul>
-
         <div class="yr-nav-actions">
-            <button class="btn btn-gold btn-sm" onclick="YRI.openAddModal()"><i class="fa-solid fa-plus"></i> إضافة منشأة</button>
-            <button class="mobile-menu-btn" onclick="YRI.toggleMobileMenu()" aria-label="القائمة"><i class="fa-solid fa-bars"></i></button>
+            <a href="register.html" class="btn btn-gold btn-sm"><i class="fa-solid fa-user"></i> دخول</a>
         </div>
     </header>
 
-    <!-- قسم البطل والبحث -->
     <section class="hero-section">
         <div class="container">
             <h1 class="hero-title">دليلك الموثوق <span>للشركات والوظائف</span> في اليمن</h1>
-            <p class="hero-subtitle">استكشف أفضل الشركات، قارن الخدمات المصرفية، وقدم على أحدث الوظائف الشاغرة بكل موثوقية.</p>
-
+            <p class="hero-subtitle">استكشف أفضل الشركات، وقارن الخدمات، وقدم على أحدث الوظائف بكل ثقة.</p>
             <div class="search-box-wrap">
                 <div class="search-input-wrap">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -461,51 +107,38 @@
         </div>
     </section>
 
-    <!-- المساحة الإعلانية العلوية (HOME_TOP) -->
     <div class="container">
-        <div class="ad-banner-slot" id="adSlotTop">
-            <span class="ad-badge">إعلان مميز</span>
-            <div id="adTopContent"></div>
-        </div>
+        <div class="ad-banner-slot" data-placement="HOME_TOP" id="adTopContent"></div>
     </div>
 
-    <!-- المحتوى الرئيسي -->
     <main class="container">
-        
-        <!-- قسم الشركات -->
         <section id="companies">
             <div class="section-header">
                 <h2 class="section-title"><i class="fa-solid fa-building"></i> كبرى الشركات والمؤسسات</h2>
-                <span style="color:var(--gold-400);font-weight:700;font-size:0.85rem;" id="compCount">0 منشأة</span>
+                <a href="companies.html" class="btn btn-outline btn-sm">عرض الكل <i class="fa-solid fa-arrow-left"></i></a>
             </div>
             <div class="items-grid" id="companiesGrid"></div>
         </section>
 
-        <!-- المساحة الإعلانية الوسطى (HOME_MIDDLE) -->
-        <div class="ad-banner-slot" id="adSlotMiddle">
-            <span class="ad-badge">إعلان مميز</span>
-            <div id="adMiddleContent"></div>
-        </div>
+        <div class="ad-banner-slot" data-placement="HOME_MIDDLE" id="adMiddleContent"></div>
 
-        <!-- قسم البنوك والمصارف -->
         <section id="banks">
             <div class="section-header">
-                <h2 class="section-title"><i class="fa-solid fa-landmark"></i> البنوك وشركات الصرافة</h2>
+                <h2 class="section-title"><i class="fa-solid fa-landmark"></i> البنوك والمصارف</h2>
+                <a href="banks.html" class="btn btn-outline btn-sm">عرض الكل <i class="fa-solid fa-arrow-left"></i></a>
             </div>
             <div class="items-grid" id="banksGrid"></div>
         </section>
 
-        <!-- قسم الوظائف الشاغرة -->
         <section id="jobs">
             <div class="section-header">
-                <h2 class="section-title"><i class="fa-solid fa-briefcase"></i> أحدث الوظائف المتاحة</h2>
+                <h2 class="section-title"><i class="fa-solid fa-briefcase"></i> أحدث الوظائف</h2>
+                <a href="jobs.html" class="btn btn-outline btn-sm">عرض الكل <i class="fa-solid fa-arrow-left"></i></a>
             </div>
             <div class="items-grid" id="jobsGrid"></div>
         </section>
-
     </main>
 
-    <!-- التذييل -->
     <footer class="yr-footer">
         <div class="container">
             <p style="margin:0 0 6px 0;font-weight:700;color:#fff;">منصة يمن ريتنغ © 2026 - جميع الحقوق محفوظة</p>
@@ -513,19 +146,12 @@
         </div>
     </footer>
 
-    <!-- حاوية النوافذ المنبثقة -->
-    <div id="modalRoot"></div>
-
-    <!-- مكتبات الربط المباشرة -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/db.js"></script>
     <script src="js/sb-sync.js"></script>
+    <script src="js/ads-loader.js"></script>
 
     <script>
-        const SB_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
-        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
-        const sbClient = window.supabase ? window.supabase.createClient(SB_URL, SB_KEY) : null;
-
         const YRI = {
             init() {
                 if (window.YR_DB) {
@@ -534,239 +160,79 @@
                     this.renderAll();
                 }
             },
-
             renderAll() {
                 this.populateCities();
                 this.renderCompanies();
                 this.renderBanks();
                 this.renderJobs();
-                this.renderAds();
             },
-
             populateCities() {
                 const sel = document.getElementById('cityFilter');
                 if (!sel || !window.YR_DB) return;
                 const cities = YR_DB.get('cities') || [];
                 sel.innerHTML = '<option value="">جميع المحافظات</option>' + cities.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
             },
-
             renderCompanies(filterText = '', cityVal = '') {
                 const grid = document.getElementById('companiesGrid');
                 if (!grid || !window.YR_DB) return;
                 let list = YR_DB.get('companies') || [];
-
                 if (filterText) list = list.filter(c => (c.name || '').includes(filterText) || (c.description || '').includes(filterText));
                 if (cityVal) list = list.filter(c => c.city === cityVal);
-
-                document.getElementById('compCount').textContent = list.length + ' منشأة';
-
-                if (list.length === 0) {
-                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:26px;color:var(--text-muted);background:var(--bg-card);border-radius:10px;"><i class="fa-solid fa-magnifying-glass" style="font-size:1.8rem;color:var(--gold-500);margin-bottom:6px;display:block;"></i>لا توجد نتائج مطابقة</div>';
-                    return;
-                }
-
-                grid.innerHTML = list.map(c => 
+                grid.innerHTML = list.slice(0, 6).map(c => 
                     '<div class="yr-card">' +
                     '<div class="yr-card-header">' +
                     '<div class="yr-card-logo"><i class="fa-solid fa-building"></i></div>' +
-                    '<div><h3 class="yr-card-title">' + this.esc(c.name) + '</h3>' +
-                    '<div class="yr-card-meta"><i class="fa-solid fa-location-dot" style="color:var(--gold-500);"></i> ' + this.esc(this.getCityName(c.city)) + '</div></div>' +
+                    '<div><h3 class="yr-card-title">' + c.name + '</h3>' +
+                    '<div class="yr-card-meta"><i class="fa-solid fa-location-dot" style="color:var(--gold-500);"></i> ' + (c.city || 'اليمن') + '</div></div>' +
                     '</div>' +
-                    '<p class="yr-card-desc">' + this.esc(c.description || 'منشأة تجارية معتمدة لدى منصة يمن ريتنغ.') + '</p>' +
+                    '<p class="yr-card-desc">' + (c.description || 'منشأة معتمدة لدى يمن ريتنغ') + '</p>' +
                     '<div class="yr-card-footer">' +
-                    (c.verified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i> موثقة</span>' : '<span style="font-size:0.75rem;color:var(--text-muted);">قيد التوثيق</span>') +
-                    '<button class="btn btn-outline btn-sm" onclick="YRI.openReviewModal(\'' + c.id + '\',\'' + this.esc(c.name) + '\')"><i class="fa-solid fa-star"></i> تقييم</button>' +
+                    (c.verified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i> موثقة</span>' : '<span></span>') +
+                    '<a href="company.html?id=' + c.id + '" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> التفاصيل</a>' +
                     '</div></div>'
                 ).join('');
             },
-
             renderBanks() {
                 const grid = document.getElementById('banksGrid');
                 if (!grid || !window.YR_DB) return;
                 const list = YR_DB.get('banks') || [];
-
-                grid.innerHTML = list.map(b => 
+                grid.innerHTML = list.slice(0, 3).map(b => 
                     '<div class="yr-card">' +
                     '<div class="yr-card-header">' +
                     '<div class="yr-card-logo" style="color:var(--gold-400);"><i class="fa-solid fa-landmark"></i></div>' +
-                    '<div><h3 class="yr-card-title">' + this.esc(b.name) + '</h3>' +
-                    '<div class="yr-card-meta"><i class="fa-solid fa-phone" style="color:var(--gold-500);"></i> ' + this.esc(b.phone || 'خدمة العملاء') + '</div></div>' +
+                    '<div><h3 class="yr-card-title">' + b.name + '</h3>' +
+                    '<div class="yr-card-meta"><i class="fa-solid fa-phone" style="color:var(--gold-500);"></i> ' + (b.phone || 'خدمة العملاء') + '</div></div>' +
                     '</div>' +
                     '<div class="yr-card-footer">' +
                     '<span class="verified-badge"><i class="fa-solid fa-shield-halved"></i> خدمات مصرفية</span>' +
-                    '<button class="btn btn-outline btn-sm" onclick="alert(\'رقم البنك المباشر: ' + this.esc(b.phone || '-') + '\')"><i class="fa-solid fa-phone"></i> تواصل</button>' +
+                    '<a href="bank.html?id=' + b.id + '" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> الملف</a>' +
                     '</div></div>'
                 ).join('');
             },
-
             renderJobs() {
                 const grid = document.getElementById('jobsGrid');
                 if (!grid || !window.YR_DB) return;
                 const jobs = (YR_DB.get('jobs') || []).filter(j => j.status === 'active' || !j.status);
-
-                if (jobs.length === 0) {
-                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:26px;color:var(--text-muted);background:var(--bg-card);border-radius:10px;">لا توجد شواغر معلنة حالياً</div>';
-                    return;
-                }
-
-                grid.innerHTML = jobs.map(j => {
-                    const comp = YR_DB.findById('companies', j.companyId);
-                    return '<div class="yr-card">' +
-                        '<div class="yr-card-header">' +
-                        '<div class="yr-card-logo" style="color:var(--info);"><i class="fa-solid fa-briefcase"></i></div>' +
-                        '<div><h3 class="yr-card-title">' + this.esc(j.title) + '</h3>' +
-                        '<div class="yr-card-meta">' + (comp ? this.esc(comp.name) : 'جهة معتمدة') + ' • ' + this.esc(j.type || 'دوام كامل') + '</div></div>' +
-                        '</div>' +
-                        '<p class="yr-card-desc">' + this.esc(j.description || 'فرصة وظيفية مميزة برواتب وبدلات تنافسية.') + '</p>' +
-                        '<div class="yr-card-footer">' +
-                        '<span style="color:var(--gold-400);font-weight:700;font-size:0.82rem;">' + this.esc(j.salary || 'راتب مجزي') + '</span>' +
-                        '<button class="btn btn-gold btn-sm" onclick="YRI.openApplyModal(\'' + j.id + '\',\'' + this.esc(j.title) + '\')"><i class="fa-solid fa-paper-plane"></i> تقديم</button>' +
-                        '</div></div>';
-                }).join('');
+                grid.innerHTML = jobs.slice(0, 3).map(j => 
+                    '<div class="yr-card">' +
+                    '<div class="yr-card-header">' +
+                    '<div class="yr-card-logo" style="color:var(--info);"><i class="fa-solid fa-briefcase"></i></div>' +
+                    '<div><h3 class="yr-card-title">' + j.title + '</h3>' +
+                    '<div class="yr-card-meta">' + (j.type || 'دوام كامل') + ' • ' + (j.city || 'اليمن') + '</div></div>' +
+                    '</div>' +
+                    '<p class="yr-card-desc">' + (j.description || 'فرصة وظيفية مميزة') + '</p>' +
+                    '<div class="yr-card-footer">' +
+                    '<span style="color:var(--gold-400);font-weight:700;font-size:0.82rem;">' + (j.salary || 'راتب مجزي') + '</span>' +
+                    '<a href="jobs.html" class="btn btn-gold btn-sm"><i class="fa-solid fa-paper-plane"></i> تقديم</a>' +
+                    '</div></div>'
+                ).join('');
             },
-
-            renderAds() {
-                if (!window.YR_DB) return;
-                const ads = (YR_DB.get('advertisements') || []).filter(a => a.status === 'ACTIVE');
-                
-                const topAd = ads.find(a => a.slot_id === 'HOME_TOP') || ads[0];
-                const middleAd = ads.find(a => a.slot_id === 'HOME_MIDDLE') || ads[1] || topAd;
-
-                const renderBox = (elId, ad) => {
-                    const el = document.getElementById(elId);
-                    if (!el) return;
-                    if (!ad) {
-                        el.innerHTML = '<div style="padding:24px;color:var(--text-muted);font-size:0.85rem;"><i class="fa-solid fa-bullhorn" style="color:var(--gold-500);margin-left:6px;"></i> مساحة إعلانية شاغرة - احجز حملتك الآن عبر المنصة</div>';
-                        return;
-                    }
-                    if (ad.ad_type === 'adsense' && ad.content_html) {
-                        el.innerHTML = ad.content_html;
-                    } else if (ad.media_url) {
-                        el.innerHTML = '<a href="' + (ad.link_url || '#') + '" target="_blank" onclick="YRI.trackAdClick(\'' + ad.id + '\')"><img src="' + ad.media_url + '" alt="' + this.esc(ad.title) + '"></a>';
-                    }
-                };
-
-                renderBox('adTopContent', topAd);
-                renderBox('adMiddleContent', middleAd);
-            },
-
-            trackAdClick(id) {
-                if (!window.YR_DB) return;
-                const ad = YR_DB.findById('advertisements', id);
-                if (ad) YR_DB.update('advertisements', id, { clicks: (Number(ad.clicks) || 0) + 1 });
-            },
-
             handleSearch() {
                 const text = document.getElementById('mainSearchInput').value.trim();
                 const city = document.getElementById('cityFilter').value;
                 this.renderCompanies(text, city);
-            },
-
-            openAddModal() {
-                this.openModal(
-                    '<div class="yr-modal-header"><h3><i class="fa-solid fa-building-circle-check"></i> إضافة منشأة جديدة</h3><button class="btn btn-sm btn-outline" onclick="YRI.closeModal()"><i class="fa-solid fa-times"></i></button></div>' +
-                    '<form id="pubAddCompForm"><div class="yr-modal-body">' +
-                    '<div class="form-group"><label>اسم الشركة أو المنشأة *</label><input class="form-control" name="name" required placeholder="مثال: شركة النجم للتجارة"></div>' +
-                    '<div class="form-group"><label>المحافظة *</label><select class="form-control" name="city" id="modalCitySel"></select></div>' +
-                    '<div class="form-group"><label>رقم الهاتف للتواصل *</label><input class="form-control" name="phone" required placeholder="770000000"></div>' +
-                    '<div class="form-group"><label>نبذة عن النشاط</label><textarea class="form-control" name="description" rows="2" placeholder="اكتب نبذة مختصرة..."></textarea></div>' +
-                    '</div><div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRI.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold">إرسال الطلب</button></div></form>'
-                );
-
-                const cSel = document.getElementById('modalCitySel');
-                (YR_DB.get('cities') || []).forEach(c => cSel.innerHTML += '<option value="' + c.id + '">' + c.name + '</option>');
-
-                document.getElementById('pubAddCompForm').onsubmit = async (e) => {
-                    e.preventDefault();
-                    const fd = new FormData(e.target);
-                    await YR_DB.add('verification_requests', {
-                        companyName: fd.get('name'), city: fd.get('city'), phone: fd.get('phone'),
-                        status: 'pending', createdAt: Date.now()
-                    });
-                    this.closeModal();
-                    alert('تم استلام طلبك بنجاح وسيتم مراجعته من قبل الإدارة.');
-                };
-            },
-
-            openReviewModal(compId, compName) {
-                this.openModal(
-                    '<div class="yr-modal-header"><h3><i class="fa-solid fa-star"></i> تقييم: ' + this.esc(compName) + '</h3><button class="btn btn-sm btn-outline" onclick="YRI.closeModal()"><i class="fa-solid fa-times"></i></button></div>' +
-                    '<form id="addRevForm"><div class="yr-modal-body">' +
-                    '<div class="form-group"><label>اسمك الكريم *</label><input class="form-control" name="userName" required placeholder="الاسم الكامل"></div>' +
-                    '<div class="form-group"><label>التقييم العام (من 1 إلى 5 نجوم)</label><select class="form-control" name="stars"><option value="5">★★★★★ (ممتاز - 5)</option><option value="4">★★★★☆ (جيد جداً - 4)</option><option value="3">★★★☆☆ (متوسط - 3)</option></select></div>' +
-                    '<div class="form-group"><label>تجربتك ورأيك</label><textarea class="form-control" name="comment" required rows="3" placeholder="اكتب تفاصيل تجربتك بكل شفافية..."></textarea></div>' +
-                    '</div><div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRI.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold">إرسال التقييم</button></div></form>'
-                );
-
-                document.getElementById('addRevForm').onsubmit = async (e) => {
-                    e.preventDefault();
-                    const fd = new FormData(e.target);
-                    await YR_DB.add('reviews', {
-                        companyId: compId, userName: fd.get('userName'), stars: Number(fd.get('stars')),
-                        comment: fd.get('comment'), createdAt: Date.now()
-                    });
-                    this.closeModal();
-                    alert('شكراً لك! تم تسجيل تقييمك بنجاح.');
-                };
-            },
-
-            openApplyModal(jobId, jobTitle) {
-                this.openModal(
-                    '<div class="yr-modal-header"><h3><i class="fa-solid fa-file-arrow-up"></i> التقديم على: ' + this.esc(jobTitle) + '</h3><button class="btn btn-sm btn-outline" onclick="YRI.closeModal()"><i class="fa-solid fa-times"></i></button></div>' +
-                    '<form id="applyJobForm"><div class="yr-modal-body">' +
-                    '<div class="form-group"><label>الاسم الكامل *</label><input class="form-control" name="name" required placeholder="اسم مقدم الطلب"></div>' +
-                    '<div class="form-group"><label>رقم الواتساب / الهاتف *</label><input class="form-control" name="phone" required placeholder="770000000"></div>' +
-                    '<div class="form-group"><label>رابط السيرة الذاتية (Google Drive / LinkedIn)</label><input class="form-control" name="cvUrl" dir="ltr" placeholder="https://..."></div>' +
-                    '</div><div class="yr-modal-footer"><button type="button" class="btn btn-outline" onclick="YRI.closeModal()">إلغاء</button><button type="submit" class="btn btn-gold">إرسال الطلب</button></div></form>'
-                );
-
-                document.getElementById('applyJobForm').onsubmit = async (e) => {
-                    e.preventDefault();
-                    const fd = new FormData(e.target);
-                    await YR_DB.add('job_applications', {
-                        jobId: jobId, name: fd.get('name'), phone: fd.get('phone'), cvUrl: fd.get('cvUrl'),
-                        status: 'pending', createdAt: Date.now()
-                    });
-                    this.closeModal();
-                    alert('تم إرسال طلب التوظيف بنجاح.');
-                };
-            },
-
-            openModal(contentHtml) {
-                const root = document.getElementById('modalRoot');
-                if (!root) return;
-                root.innerHTML = '';
-                const overlay = document.createElement('div');
-                overlay.className = 'yr-modal-overlay';
-                overlay.onclick = (e) => { if (e.target === overlay) YRI.closeModal(); };
-                const modal = document.createElement('div');
-                modal.className = 'yr-modal';
-                modal.innerHTML = contentHtml;
-                overlay.appendChild(modal);
-                root.appendChild(overlay);
-            },
-
-            closeModal() {
-                const root = document.getElementById('modalRoot');
-                if (root) root.innerHTML = '';
-            },
-
-            getCityName(id) {
-                if (!window.YR_DB) return 'اليمن';
-                const city = YR_DB.findById('cities', id);
-                return city ? city.name : 'اليمن';
-            },
-
-            esc(text) {
-                if (!text) return '';
-                return String(text).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-            },
-
-            toggleMobileMenu() {
-                alert('استخدم أزرار التنقل السريعة للوصول إلى الشركات، البنوك، أو الوظائف.');
             }
         };
-
         document.addEventListener('DOMContentLoaded', () => YRI.init());
     </script>
 </body>
