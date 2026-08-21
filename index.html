@@ -56,7 +56,7 @@
 .wallet-card:hover{transform:translateY(-3px);border-color:var(--gold-500) !important;box-shadow:0 10px 25px rgba(0,0,0,.35);}
 .wallet-card strong{color:#fff !important;}
 .wallet-card small{color:var(--text-muted) !important;}
-.wallet-rank{position:absolute !important;top:0;right:0;background:linear-gradient(135deg,#F5C400,#FFD53D);color:#020814 !important;padding:5px 14px;border-radius:0 0 0 12px;font-size:.72rem;font-weight:800;z-index:2;}
+.wallet-rank{position:absolute !important;top:0;right:0;background:linear-gradient(135deg,#F5C400,#FFD53D);color:#010912 !important;padding:5px 14px;border-radius:0 0 0 12px;font-size:.72rem;font-weight:800;z-index:2;}
 .wallet-features-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
 .wallet-features-list li{color:var(--text-muted) !important;font-size:.8rem;display:flex;align-items:flex-start;gap:6px;}
 .wallet-features-list li i{color:var(--success) !important;margin-top:2px;}
@@ -138,7 +138,7 @@
                     </div>
                 </div>
 
-                <div style="background:#020814;border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                <div style="background:#010912;border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
                     <div>
                         <small id="rateInfoTxt" style="color:var(--text-muted);font-size:0.8rem;">سعر الصرف المعتمد: 1 ريال سعودي = 140.5 ريال يمني</small>
                         <div style="font-size:1.4rem;font-weight:900;color:var(--gold-400);margin-top:4px;" id="calcResultDisplay">14,050 ريال يمني</div>
@@ -452,7 +452,7 @@
 
                 grid.innerHTML = allWallets.map(w => `
                     <div class="wallet-card">
-                        <span class="wallet-rank" style="position:absolute;top:0;right:0;background:${w.color};color:#020814;padding:4px 14px;border-radius:0 0 0 12px;font-size:0.75rem;">${w.rank}</span>
+                        <span class="wallet-rank" style="position:absolute;top:0;right:0;background:${w.color};color:#010912;padding:4px 14px;border-radius:0 0 0 12px;font-size:0.75rem;">${w.rank}</span>
                         <div style="display:flex;align-items:center;gap:12px;margin-top:14px;">
                             <div style="width:54px;height:54px;border-radius:12px;box-shadow:0 0 12px ${w.color}40;background:var(--navy-800);display:flex;align-items:center;justify-content:center;color:${w.color};font-size:1.4rem;border:1px solid var(--border);">
                                 <i class="fa-solid ${w.icon}"></i>
@@ -464,7 +464,7 @@
                             </div>
                         </div>
 
-                        <div style="display:flex;justify-content:space-between;align-items:center;background:#020814;padding:8px 12px;border-radius:8px;border:1px solid var(--border);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;background:#010912;padding:8px 12px;border-radius:8px;border:1px solid var(--border);">
                             <span style="font-size:0.78rem;color:var(--gold-400);font-weight:700;">⭐ مؤشر الثقة: ${w.trend}</span>
                             <button onclick="YRI.voteWallet('${w.id}')" style="background:transparent;border:none;color:var(--info);font-size:0.78rem;font-weight:700;cursor:pointer;">
                                 <i class="fa-solid fa-thumbs-up"></i> تصويت (${w.votes})
