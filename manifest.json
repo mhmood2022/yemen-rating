@@ -1,0 +1,18 @@
+{
+  "name": "يمن ريتنغ | Yemen Rating",
+  "short_name": "يمن ريتنغ",
+  "description": "المنصة الأولى المعتمدة لتقييم الشركات والبنوك والوظائف في اليمن",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#040d1a",
+  "theme_color": "#F5C400",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23F5C400' d='M256 32l67.8 137.4 151.6 22-109.7 107 25.9 151-135.6-71.3-135.6 71.3 25.9-151-109.7-107 151.6-22z'/%3E%3C/svg%3E",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
