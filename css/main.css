@@ -1,16 +1,11 @@
-/* ═══════════════════════════════════════════════════════════
-   YEMEN RATING - التصميم الرئيسي الموحد
-═══════════════════════════════════════════════════════════ */
 :root {
     --navy-950: #040d1a;
     --navy-900: #07152A;
     --navy-800: #0B1F3A;
     --navy-700: #122B4E;
     --navy-600: #1B3C68;
-    --navy-500: #1E3A5F;
     --gold-500: #F5C400;
     --gold-400: #FFD53D;
-    --gold-600: #D4AF37;
     --gold-gradient: linear-gradient(135deg, #F5C400 0%, #D4AF37 100%);
     --bg-body: #040d1a;
     --bg-card: #0B1F3A;
@@ -46,15 +41,11 @@ body {
     overflow-x: hidden;
 }
 
-/* ═══ حماية خط الأيقونات Font Awesome من التداخل ═══ */
-i, .fa, .fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands {
-    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Font Awesome 5 Free", "FontAwesome" !important;
-    font-style: normal !important;
-    font-variant: normal !important;
-    text-rendering: auto !important;
-    line-height: 1 !important;
+/* ضبط ظهور ومقاسات الأيقونات SVG والخطية */
+svg.svg-inline--fa, .svg-inline--fa, i.fa-solid, i.fa-brands, i.fa-regular, i.fas, i.fab, i.fa {
     display: inline-block !important;
+    vertical-align: -0.125em !important;
+    height: 1em !important;
+    width: auto !important;
+    overflow: visible !important;
 }
-.fa-solid, .fas { font-weight: 900 !important; }
-.fa-regular, .far { font-weight: 400 !important; }
-.fa-brands, .fab { font-family: "Font Awesome 6 Brands" !important; font-weight: 400 !important; }
