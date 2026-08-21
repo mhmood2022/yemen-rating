@@ -1,17 +1,17 @@
 :root {
     --navy-950: #0B1F3A;
-    --navy-900: #0F2744;
-    --navy-800: #020814;
-    --navy-700: #0a1a33;
-    --navy-600: #102544;
+    --navy-900: #0B1F3A;
+    --navy-800: #040d1a;
+    --navy-700: #122B4E;
+    --navy-600: #1B3C68;
     --gold-500: #F5C400;
     --gold-400: #FFD53D;
     --gold-gradient: linear-gradient(135deg, #F5C400 0%, #D4AF37 100%);
-    --bg-body: #010912;
-    --bg-card: #010912;
+    --bg-body: #040d1a;
+    --bg-card: #040d1a;
     --text-main: #FFFFFF;
     --text-muted: #94a3b8;
-    --border: #102544;
+    --border: #1B3C68;
     --border-light: rgba(245, 196, 0, 0.25);
     --trend-up: #10B981;
     --trend-down: #EF4444;
@@ -129,7 +129,7 @@ body {
 
 /* ═══ القوائم والحقول الاحترافية ═══ */
 select, select.form-control, .yr-select {
-    background-color: #030c17 !important;
+    background-color: #07152A !important;
     color: #FFFFFF !important;
     border: 1px solid var(--border) !important;
     border-radius: var(--radius-sm) !important;
@@ -150,7 +150,7 @@ select, select.form-control, .yr-select {
 
 input.form-control, textarea.form-control {
     width: 100%;
-    background: #030c17 !important;
+    background: #07152A !important;
     border: 1px solid var(--border) !important;
     color: #FFFFFF !important;
     border-radius: var(--radius-sm);
