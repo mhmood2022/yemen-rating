@@ -28,21 +28,51 @@
         .hero-section { padding: clamp(26px, 5vw, 45px) 0 clamp(20px, 4vw, 30px); text-align: center; background: radial-gradient(circle at center top, var(--navy-800), var(--navy-950)); border-bottom: 1px solid var(--border); }
         .hero-title { font-size: clamp(1.4rem, 4.5vw, 2.2rem); font-weight: 900; margin: 0 0 10px 0; color: #fff; }
         .hero-title span { color: var(--gold-400); }
-        .search-box-wrap { background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: var(--radius-md); padding: 8px; max-width: 780px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1.2fr auto; gap: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+        
+        /* شريط البحث بالتحديد الأزرق المتناسق */
+        .search-box-wrap { 
+            background: var(--navy-900); 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius-md); 
+            padding: 8px; 
+            max-width: 780px; 
+            margin: 0 auto; 
+            display: grid; 
+            grid-template-columns: 2fr 1.2fr auto; 
+            gap: 8px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
+            transition: var(--transition);
+        }
+        .search-box-wrap:focus-within {
+            border-color: var(--info);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
         .search-input-wrap { position: relative; display: flex; align-items: center; }
-        .search-input-wrap i { position: absolute; right: 14px; color: var(--gold-500); font-size: 0.95rem; }
+        .search-input-wrap i { position: absolute; right: 14px; color: var(--info); font-size: 0.95rem; }
         .search-input-wrap input { width: 100%; background: #040d1a; border: 1px solid var(--border); color: #fff; padding: 11px 40px 11px 14px; border-radius: var(--radius-sm); font-size: 0.9rem; outline: none; min-height: 44px; }
         
-        /* أداة مقارنة أسعار الصرف ورسوم الحوالات */
-        .calculator-card { background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: 14px; padding: 20px; margin: 24px auto; max-width: 900px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+        /* حاسبة الصرف بالتحديد الأزرق المتناسق */
+        .calculator-card { 
+            background: var(--navy-900); 
+            border: 1px solid var(--border); 
+            border-radius: 14px; 
+            padding: 20px; 
+            margin: 24px auto; 
+            max-width: 900px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4); 
+            transition: var(--transition);
+        }
+        .calculator-card:hover {
+            border-color: var(--info);
+        }
         .calc-tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .calc-tab-btn { background: transparent; border: none; color: var(--text-muted); font-weight: 700; font-size: 0.88rem; padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: var(--transition); }
-        .calc-tab-btn.active { background: var(--gold-gradient); color: var(--navy-950); }
+        .calc-tab-btn.active { background: var(--info); color: #FFFFFF; }
         .calc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 
         .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: clamp(14px, 2.5vw, 20px); margin-bottom: 30px; }
         .yr-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 12px; transition: var(--transition); }
-        .yr-card:hover { transform: translateY(-3px); border-color: var(--gold-500); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .yr-card:hover { transform: translateY(-3px); border-color: var(--info); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
         .btn { min-height: 40px; padding: 0 16px; border-radius: var(--radius-sm); border: none; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; white-space: nowrap; }
         .btn-gold { background: var(--gold-gradient); color: var(--navy-950); }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; }
@@ -93,7 +123,7 @@
         </div>
     </section>
 
-    <!-- ═══ حاسبة أسعار الصرف ومقارن الحوالات اليومي (مغناطيس الزيارات) ═══ -->
+    <!-- حاسبة أسعار الصرف ومقارن الحوالات بالتحديد الأزرق المتناسق -->
     <div class="container">
         <div class="calculator-card">
             <div class="calc-tabs">
@@ -120,7 +150,7 @@
                 <div class="calc-grid">
                     <div><label style="font-size:0.8rem;color:var(--text-muted);">المبلغ المراد تحويله (ريال يمني)</label><input id="transferAmount" class="form-control" placeholder="100,000" oninput="YRI.calculateFees()"></div>
                     <div><label style="font-size:0.8rem;color:var(--text-muted);">شبكة الصرافة</label><select id="transferNetwork" class="form-control" onchange="YRI.calculateFees()"><option value="kuraimi">الكريمي إكسبرس</option><option value="najm">النجم للتحويلات</option><option value="busairi">البسيري للصرافة</option><option value="omqi">العمقي للصرافة</option></select></div>
-                    <div style="background:#040d1a;padding:10px 14px;border-radius:8px;display:flex;flex-direction:column;justify-content:center;">
+                    <div style="background:#040d1a;padding:10px 14px;border-radius:8px;display:flex;flex-direction:column;justify-content:center;border:1px solid var(--border);">
                         <small style="color:var(--text-muted);">الرسوم التقديرية للتحويل:</small>
                         <strong id="feeResult" style="color:var(--success);font-size:1.1rem;">أدخل المبلغ للحساب</strong>
                     </div>
@@ -129,11 +159,11 @@
         </div>
     </div>
 
-    <!-- موضع الإعلان 1 (مخفي ذكي) -->
+    <!-- موضع الإعلان 1 -->
     <div class="container"><div class="ad-banner-slot" data-placement="HOME_TOP"></div></div>
 
     <main class="container">
-        <!-- قسم حركة السوق وصعود وهبوط الشركات -->
+        <!-- قسم حركة السوق -->
         <section style="margin: 24px 0;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
                 <h2 style="color:#fff;margin:0;font-size:1.2rem;display:flex;align-items:center;gap:8px;">
@@ -144,7 +174,7 @@
             <div class="market-movers-grid" id="marketMoversGrid"></div>
         </section>
 
-        <!-- قسم الشركات المعتمدة -->
+        <!-- قسم الشركات -->
         <section id="companies">
             <div style="display:flex;justify-content:space-between;align-items:center;margin:28px 0 14px;">
                 <h2 style="color:#fff;margin:0;font-size:1.25rem;"><i class="fa-solid fa-building" style="color:var(--gold-500);"></i> كبرى الشركات والمؤسسات المعتمدة</h2>
@@ -178,7 +208,7 @@
         <div class="ad-banner-slot" data-placement="HOME_BOTTOM"></div>
     </main>
 
-    <!-- التذييل الكامل بالروابط الرسمية -->
+    <!-- التذييل -->
     <footer class="yr-footer">
         <div class="container">
             <div class="footer-links">
@@ -224,7 +254,7 @@
             calculateFees() {
                 const amount = parseFloat(document.getElementById('transferAmount').value) || 0;
                 const net = document.getElementById('transferNetwork').value;
-                let feePercent = 0.012; // 1.2%
+                let feePercent = 0.012;
                 if (net === 'kuraimi') feePercent = 0.01;
                 if (net === 'najm') feePercent = 0.015;
                 const fee = Math.max(500, Math.round(amount * feePercent));
