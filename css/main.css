@@ -4,7 +4,6 @@
     --navy-800: #0B1F3A;
     --navy-700: #122B4E;
     --navy-600: #1B3C68;
-    --navy-500: #1E3A5F;
     --gold-500: #F5C400;
     --gold-400: #FFD53D;
     --gold-gradient: linear-gradient(135deg, #F5C400 0%, #D4AF37 100%);
@@ -14,6 +13,8 @@
     --text-muted: #94a3b8;
     --border: #1B3C68;
     --border-light: rgba(245, 196, 0, 0.25);
+    --trend-up: #10B981;
+    --trend-down: #EF4444;
     --success: #10B981;
     --danger: #EF4444;
     --warning: #F59E0B;
@@ -43,24 +44,90 @@ body {
     overflow-x: hidden;
 }
 
-/* ═══ نظام إخفاء الإعلانات التلقائي ═══ */
-.ad-banner-slot, .ad-slot, [data-placement] {
-    display: none;
-    width: 100%;
-    max-width: 1240px;
-    margin: 20px auto;
-    border-radius: var(--radius-md);
+/* ═══ شريط تداول المنشآت الحي (Trading Ticker Bar) ═══ */
+.market-ticker-wrap {
+    background: #020813;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
     overflow: hidden;
+    height: 38px;
     position: relative;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 999;
 }
-.ad-banner-slot.has-ad, .ad-slot.has-ad, [data-placement].has-ad {
-    display: block !important;
-    animation: fadeIn 0.3s ease;
+.market-ticker-label {
+    background: var(--gold-gradient);
+    color: var(--navy-950);
+    padding: 0 14px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 900;
+    white-space: nowrap;
+    z-index: 2;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.5);
 }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.market-ticker-track {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    white-space: nowrap;
+    animation: tickerScroll 35s linear infinite;
+    padding-left: 20px;
+}
+.market-ticker-track:hover { animation-play-state: paused; }
+@keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
 
-/* ═══ القوائم والحقول الاحترافية باللون الكحلي ═══ */
+.ticker-stock-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    text-decoration: none;
+    color: #fff;
+    cursor: pointer;
+}
+.ticker-stock-item .name { font-weight: 700; color: #fff; }
+.ticker-stock-item .points { color: var(--gold-400); font-family: monospace; font-size: 0.85rem; }
+.ticker-stock-item .change-up { color: var(--trend-up); font-weight: 800; font-family: monospace; display: inline-flex; align-items: center; gap: 2px; }
+.ticker-stock-item .change-down { color: var(--trend-down); font-weight: 800; font-family: monospace; display: inline-flex; align-items: center; gap: 2px; }
+
+/* ═══ لوحة المتصدرين وتداول الأداء (Market Movers Grid) ═══ */
+.market-movers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+}
+.mover-card {
+    background: var(--navy-900);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: var(--transition);
+    text-decoration: none;
+    color: inherit;
+}
+.mover-card:hover {
+    border-color: var(--gold-500);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+.mover-info { display: flex; align-items: center; gap: 12px; }
+.mover-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--navy-800); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+.mover-stats { text-align: left; }
+.mover-badge-up { background: rgba(16, 185, 129, 0.15); color: var(--trend-up); padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 0.82rem; font-family: monospace; }
+.mover-badge-down { background: rgba(239, 68, 68, 0.15); color: var(--trend-down); padding: 4px 8px; border-radius: 6px; font-weight: 800; font-size: 0.82rem; font-family: monospace; }
+
+/* ═══ القوائم والحقول الاحترافية ═══ */
 select, select.form-control, .yr-select {
     background-color: #07152A !important;
     color: #FFFFFF !important;
@@ -79,12 +146,6 @@ select, select.form-control, .yr-select {
     min-height: 46px !important;
     outline: none !important;
     color-scheme: dark !important;
-}
-
-select option {
-    background-color: #07152A !important;
-    color: #FFFFFF !important;
-    padding: 12px !important;
 }
 
 input.form-control, textarea.form-control {
@@ -106,28 +167,20 @@ input.form-control:focus, select.form-control:focus, textarea.form-control:focus
     box-shadow: 0 0 0 3px rgba(245, 196, 0, 0.2) !important;
 }
 
-input[type="file"] {
-    background: #07152A !important;
-    border: 1px dashed var(--border) !important;
-    padding: 10px !important;
-    cursor: pointer !important;
-    color: #fff !important;
-    border-radius: var(--radius-sm);
+/* نظام الإعلانات الذكي المخفي */
+.ad-banner-slot, .ad-slot, [data-placement] {
+    display: none;
+    width: 100%;
+    max-width: 1240px;
+    margin: 20px auto;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
-input[type="file"]::-webkit-file-upload-button {
-    background: var(--gold-gradient) !important;
-    color: var(--navy-950) !important;
-    border: none !important;
-    padding: 8px 16px !important;
-    border-radius: 6px !important;
-    font-weight: 700 !important;
-    margin-left: 12px !important;
-    cursor: pointer !important;
+.ad-banner-slot.has-ad, .ad-slot.has-ad, [data-placement].has-ad {
+    display: block !important;
 }
-
-/* شارات التوثيق الرسمية */
-.badge-verified-gold { color: #F5C400 !important; font-size: 0.95em; }
-.badge-verified-blue { color: #38BDF8 !important; font-size: 0.95em; }
 
 svg.svg-inline--fa, .svg-inline--fa, i.fa-solid, i.fa-brands, i.fa-regular, i.fas, i.fab, i.fa {
     display: inline-block !important;

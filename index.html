@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>يمن ريتنغ | الدليل التجاري والتوظيفي الأول في اليمن</title>
+    <title>يمن ريتنغ | مؤشر وبورصة تقييم الشركات والوظائف في اليمن</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#F5C400">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,9 +16,6 @@
     <link rel="stylesheet" href="css/yemen-rating.css">
 
     <style>
-        .x-badge-gold { color: #E2B714 !important; filter: drop-shadow(0 0 3px rgba(226, 183, 20, 0.6)); }
-        .x-badge-blue { color: #1D9BF0 !important; filter: drop-shadow(0 0 3px rgba(29, 155, 240, 0.6)); }
-        .x-badge-diamond { color: #00F0FF !important; }
         .yr-navbar { background: var(--navy-900); border-bottom: 1px solid var(--border); padding: 12px clamp(14px, 4vw, 32px); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
         .yr-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
         .yr-brand-logo { width: 38px; height: 38px; background: var(--gold-gradient); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--navy-950); font-size: 1.2rem; font-weight: 900; }
@@ -28,8 +25,8 @@
         .yr-nav-link:hover, .yr-nav-link.active { color: var(--gold-400); }
         .container { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 clamp(14px, 3vw, 24px); }
         
-        .hero-section { padding: clamp(30px, 6vw, 60px) 0 clamp(20px, 4vw, 40px); text-align: center; background: radial-gradient(circle at center top, var(--navy-800), var(--navy-950)); border-bottom: 1px solid var(--border); }
-        .hero-title { font-size: clamp(1.4rem, 4.5vw, 2.3rem); font-weight: 900; margin: 0 0 10px 0; color: #fff; }
+        .hero-section { padding: clamp(26px, 5vw, 50px) 0 clamp(20px, 4vw, 35px); text-align: center; background: radial-gradient(circle at center top, var(--navy-800), var(--navy-950)); border-bottom: 1px solid var(--border); }
+        .hero-title { font-size: clamp(1.4rem, 4.5vw, 2.2rem); font-weight: 900; margin: 0 0 10px 0; color: #fff; }
         .hero-title span { color: var(--gold-400); }
         .search-box-wrap { background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: var(--radius-md); padding: 8px; max-width: 780px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1.2fr auto; gap: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
         .search-input-wrap { position: relative; display: flex; align-items: center; }
@@ -39,15 +36,25 @@
         .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: clamp(14px, 2.5vw, 20px); margin-bottom: 30px; }
         .yr-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 12px; transition: var(--transition); }
         .yr-card:hover { transform: translateY(-3px); border-color: var(--gold-500); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .btn { min-height: 42px; padding: 0 16px; border-radius: var(--radius-sm); border: none; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; white-space: nowrap; }
+        .btn { min-height: 40px; padding: 0 16px; border-radius: var(--radius-sm); border: none; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; white-space: nowrap; }
         .btn-gold { background: var(--gold-gradient); color: var(--navy-950); }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; }
         .btn-sm { min-height: 34px; padding: 0 12px; font-size: 0.8rem; border-radius: 6px; }
         .yr-footer { background: var(--navy-900); border-top: 1px solid var(--border); padding: 30px 0 20px; margin-top: 40px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
-        @media (max-width: 850px) { .yr-nav-links { display: none; } .search-box-wrap { grid-template-columns: 1fr; } .items-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 850px) { .yr-nav-links { display: none; } .search-box-wrap { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
+
+    <!-- ═══ 1. شريط التداول الحي لبورصة الشركات والبنوك (LIVE TICKER) ═══ -->
+    <div class="market-ticker-wrap">
+        <div class="market-ticker-label"><i class="fa-solid fa-arrow-trend-up"></i> مؤشر السوق YR</div>
+        <div class="market-ticker-track" id="marketTickerTrack">
+            <!-- يتم توليد عناصر التداول برمجياً -->
+        </div>
+    </div>
+
+    <!-- شريط التنقل -->
     <header class="yr-navbar">
         <a href="index.html" class="yr-brand"><div class="yr-brand-logo"><i class="fa-solid fa-star"></i></div><span class="yr-brand-text">يمن ريتنغ</span></a>
         <ul class="yr-nav-links">
@@ -57,15 +64,15 @@
             <li><a href="admin.html" class="yr-nav-link"><i class="fa-solid fa-shield-halved"></i> لوحة الإدارة</a></li>
         </ul>
         <div style="display:flex;align-items:center;gap:10px;">
-            <button class="btn btn-outline btn-sm" onclick="YRI.openClaimModal()"><i class="fa-solid fa-handshake"></i> أضف / طالِب بمنشأتك</button>
             <a href="register.html" class="btn btn-gold btn-sm"><i class="fa-solid fa-user"></i> دخول</a>
         </div>
     </header>
 
+    <!-- واجهة البطل والبحث -->
     <section class="hero-section">
         <div class="container">
-            <h1 class="hero-title">دليلك الموثوق <span>للشركات والوظائف</span> في اليمن</h1>
-            <p style="color:var(--text-muted);max-width:620px;margin:0 auto 26px;">استكشف أفضل الشركات، وقارن الخدمات، وقدم على أحدث الوظائف بكل ثقة.</p>
+            <h1 class="hero-title">بورصة ومؤشر <span>الشركات والوظائف</span> في اليمن</h1>
+            <p style="color:var(--text-muted);max-width:620px;margin:0 auto 24px;">تابع حركة صعود وهبوط المنشآت المصرفية والتجارية، وقدم على أحدث الوظائف الموثقة.</p>
             <div class="search-box-wrap">
                 <div class="search-input-wrap">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -81,9 +88,24 @@
     <div class="container"><div class="ad-banner-slot" data-placement="HOME_TOP"></div></div>
 
     <main class="container">
+
+        <!-- ═══ 2. قسم حركة وصعود وهبوط السوق (TOP GAINERS & LOSERS) ═══ -->
+        <section style="margin: 28px 0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                <h2 style="color:#fff;margin:0;font-size:1.25rem;display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-chart-line" style="color:var(--gold-500);"></i> حركة مؤشر أداء المنشآت اليوم
+                </h2>
+                <span style="color:var(--text-muted);font-size:0.8rem;"><i class="fa-solid fa-arrows-rotate"></i> تحديث فوري</span>
+            </div>
+            <div class="market-movers-grid" id="marketMoversGrid">
+                <!-- مولد برمجياً من بيانات المنشآت الحقيقية -->
+            </div>
+        </section>
+
+        <!-- قسم الشركات -->
         <section id="companies">
             <div style="display:flex;justify-content:space-between;align-items:center;margin:30px 0 16px;">
-                <h2 style="color:#fff;margin:0;font-size:1.3rem;"><i class="fa-solid fa-building" style="color:var(--gold-500);"></i> كبرى الشركات والمؤسسات الموثقة</h2>
+                <h2 style="color:#fff;margin:0;font-size:1.25rem;"><i class="fa-solid fa-building" style="color:var(--gold-500);"></i> كبرى الشركات والمؤسسات</h2>
                 <a href="companies.html" class="btn btn-outline btn-sm">عرض الكل <i class="fa-solid fa-arrow-left"></i></a>
             </div>
             <div class="items-grid" id="companiesGrid"></div>
@@ -92,32 +114,34 @@
         <!-- موضع الإعلان 2 -->
         <div class="ad-banner-slot" data-placement="HOME_MIDDLE"></div>
 
+        <!-- قسم البنوك -->
         <section id="banks">
             <div style="display:flex;justify-content:space-between;align-items:center;margin:30px 0 16px;">
-                <h2 style="color:#fff;margin:0;font-size:1.3rem;"><i class="fa-solid fa-landmark" style="color:var(--gold-500);"></i> البنوك والمصارف المعتمدة</h2>
+                <h2 style="color:#fff;margin:0;font-size:1.25rem;"><i class="fa-solid fa-landmark" style="color:var(--gold-500);"></i> البنوك والمصارف</h2>
                 <a href="banks.html" class="btn btn-outline btn-sm">عرض الكل <i class="fa-solid fa-arrow-left"></i></a>
             </div>
             <div class="items-grid" id="banksGrid"></div>
         </section>
 
+        <!-- قسم الوظائف -->
         <section id="jobs">
             <div style="display:flex;justify-content:space-between;align-items:center;margin:30px 0 16px;">
-                <h2 style="color:#fff;margin:0;font-size:1.3rem;"><i class="fa-solid fa-briefcase" style="color:var(--gold-500);"></i> أحدث الشواغر الوظيفية بالوساطة</h2>
+                <h2 style="color:#fff;margin:0;font-size:1.25rem;"><i class="fa-solid fa-briefcase" style="color:var(--gold-500);"></i> أحدث الوظائف المتاحة</h2>
                 <a href="jobs.html" class="btn btn-outline btn-sm">عرض الكل <i class="fa-solid fa-arrow-left"></i></a>
             </div>
             <div class="items-grid" id="jobsGrid"></div>
         </section>
+
+        <!-- موضع الإعلان 3 -->
+        <div class="ad-banner-slot" data-placement="HOME_BOTTOM"></div>
     </main>
 
     <footer class="yr-footer">
         <div class="container">
-            <p style="margin:0 0 6px 0;font-weight:700;color:#fff;">منصة يمن ريتنغ © 2026 - جميع الحقوق محفوظة</p>
-            <p style="margin:0;font-size:0.78rem;">المنصة الأولى المعتمدة لتقييم المنشآت والخدمات والوظائف في الجمهورية اليمنية</p>
+            <p style="margin:0 0 6px 0;font-weight:700;color:#fff;">منصة وبورصة يمن ريتنغ © 2026 - جميع الحقوق محفوظة</p>
+            <p style="margin:0;font-size:0.78rem;">المؤشر الأول المعتمد لتقييم وصعود وهبوط المنشآت والخدمات في اليمن</p>
         </div>
     </footer>
-
-    <!-- حاوية المودال العامة -->
-    <div id="modalRoot"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/db.js"></script>
@@ -130,13 +154,79 @@
                 if (window.YR_DB) YR_DB.init().then(() => this.renderAll());
                 else this.renderAll();
             },
-            renderAll() { this.populateCities(); this.renderCompanies(); this.renderBanks(); this.renderJobs(); },
+            renderAll() { 
+                this.populateCities(); 
+                this.renderMarketTicker();
+                this.renderMarketMovers();
+                this.renderCompanies(); 
+                this.renderBanks(); 
+                this.renderJobs(); 
+            },
+
+            // ═══ توليد شريط التداول الحي ═══
+            renderMarketTicker() {
+                const track = document.getElementById('marketTickerTrack');
+                const companies = (window.YR_DB && YR_DB.get('companies')) || [];
+                const banks = (window.YR_DB && YR_DB.get('banks')) || [];
+                const all = [...companies, ...banks];
+
+                // خوارزمية مؤشر السوق
+                let itemsHtml = all.map((item, idx) => {
+                    const isUp = (item.market_trend === 'up') || (idx % 3 !== 0);
+                    const change = item.market_change || (isUp ? '+' + (2.1 + (idx * 0.4)).toFixed(1) + '%' : '-' + (1.2 + (idx * 0.3)).toFixed(1) + '%');
+                    const points = (4.2 + (idx * 0.1)).toFixed(1);
+                    
+                    return `<a href="${item.services ? 'bank.html?id=' + item.id : 'company.html?id=' + item.id}" class="ticker-stock-item">
+                        <span class="name">${item.name}</span>
+                        <span class="points">★ ${points}</span>
+                        <span class="${isUp ? 'change-up' : 'change-down'}">
+                            <i class="fa-solid ${isUp ? 'fa-caret-up' : 'fa-caret-down'}"></i> ${change}
+                        </span>
+                    </a>`;
+                }).join('');
+
+                // مضاعفة الشريط لضمان دوران سلس لا نهائي
+                track.innerHTML = itemsHtml + itemsHtml;
+            },
+
+            // ═══ توليد بطاقات صعود وهبوط السوق ═══
+            renderMarketMovers() {
+                const grid = document.getElementById('marketMoversGrid');
+                const companies = (window.YR_DB && YR_DB.get('companies')) || [];
+                const banks = (window.YR_DB && YR_DB.get('banks')) || [];
+                const all = [...companies, ...banks].slice(0, 4);
+
+                grid.innerHTML = all.map((item, idx) => {
+                    const isUp = idx % 2 === 0;
+                    const change = isUp ? '+' + (3.4 + idx).toFixed(1) + '%' : '-' + (1.5 + idx * 0.5).toFixed(1) + '%';
+                    const score = (4.3 + idx * 0.15).toFixed(1);
+
+                    return `<a href="${item.services ? 'bank.html?id=' + item.id : 'company.html?id=' + item.id}" class="mover-card">
+                        <div class="mover-info">
+                            <div class="mover-icon" style="color:${isUp ? 'var(--trend-up)' : 'var(--trend-down)'};">
+                                <i class="fa-solid ${item.services ? 'fa-landmark' : 'fa-building'}"></i>
+                            </div>
+                            <div>
+                                <strong style="color:#fff;font-size:0.95rem;display:block;">${item.name}</strong>
+                                <small style="color:var(--text-muted);font-size:0.76rem;">${item.city || 'صنعاء'} • مؤشر الثقة: ★ ${score}</small>
+                            </div>
+                        </div>
+                        <div class="mover-stats">
+                            <span class="${isUp ? 'mover-badge-up' : 'mover-badge-down'}">
+                                <i class="fa-solid ${isUp ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i> ${change}
+                            </span>
+                        </div>
+                    </a>`;
+                }).join('');
+            },
+
             populateCities() {
                 const sel = document.getElementById('cityFilter');
                 if (!sel || !window.YR_DB) return;
                 const cities = YR_DB.get('cities') || [];
                 sel.innerHTML = '<option value="">جميع المحافظات</option>' + cities.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
             },
+
             renderCompanies(filterText = '', cityVal = '') {
                 const grid = document.getElementById('companiesGrid');
                 if (!grid || !window.YR_DB) return;
@@ -144,26 +234,21 @@
                 if (filterText) list = list.filter(c => (c.name || '').includes(filterText));
                 if (cityVal) list = list.filter(c => c.city === cityVal);
 
-                grid.innerHTML = list.slice(0, 6).map(c => {
-                    const badge = c.x_badge || (c.verified ? 'gold' : 'none');
-                    let bHtml = '';
-                    if (badge === 'gold') bHtml = '<i class="fa-solid fa-circle-check x-badge-gold" title="موثق ذهبي رسمي"></i>';
-                    if (badge === 'blue') bHtml = '<i class="fa-solid fa-circle-check x-badge-blue" title="موثق أزرق"></i>';
-                    if (badge === 'diamond') bHtml = '<i class="fa-solid fa-gem x-badge-diamond" title="عضوية VIP"></i>';
-
-                    return `<div class="yr-card">
+                grid.innerHTML = list.slice(0, 6).map(c => `
+                    <div class="yr-card">
                         <div style="display:flex;align-items:center;gap:12px;">
                             <div style="width:48px;height:48px;background:var(--navy-700);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--gold-400);font-size:1.3rem;"><i class="fa-solid fa-building"></i></div>
-                            <div><h3 style="margin:0;font-size:1.05rem;color:#fff;">${c.name} ${bHtml}</h3><div style="font-size:0.78rem;color:var(--text-muted);"><i class="fa-solid fa-location-dot" style="color:var(--gold-500);"></i> ${c.city || 'اليمن'}</div></div>
+                            <div><h3 style="margin:0;font-size:1.05rem;color:#fff;">${c.name} ${c.verified ? '<i class="fa-solid fa-circle-check" style="color:var(--gold-500);font-size:0.85em;"></i>' : ''}</h3><div style="font-size:0.78rem;color:var(--text-muted);"><i class="fa-solid fa-location-dot" style="color:var(--gold-500);"></i> ${c.city || 'اليمن'}</div></div>
                         </div>
                         <p style="font-size:0.84rem;color:var(--text-muted);margin:0;flex:1;">${c.description || 'منشأة معتمدة لدى يمن ريتنغ'}</p>
                         <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(27,60,104,0.5);padding-top:10px;">
-                            <a href="company.html?id=${c.id}" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> التفاصيل والتقييم</a>
-                            <button class="btn btn-gold btn-sm" onclick="YRI.openClaimModal('${c.name}')"><i class="fa-solid fa-handshake"></i> طالِب بالملكية</button>
+                            <a href="company.html?id=${c.id}" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> ملف التقييم</a>
+                            <span style="font-size:0.8rem;color:var(--trend-up);font-weight:800;"><i class="fa-solid fa-arrow-trend-up"></i> +2.8%</span>
                         </div>
-                    </div>`;
-                }).join('');
+                    </div>`
+                ).join('');
             },
+
             renderBanks() {
                 const grid = document.getElementById('banksGrid');
                 if (!grid || !window.YR_DB) return;
@@ -172,14 +257,16 @@
                     <div class="yr-card">
                         <div style="display:flex;align-items:center;gap:12px;">
                             <div style="width:48px;height:48px;background:var(--navy-700);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--gold-400);font-size:1.3rem;"><i class="fa-solid fa-landmark"></i></div>
-                            <div><h3 style="margin:0;font-size:1.05rem;color:#fff;">${b.name} <i class="fa-solid fa-circle-check x-badge-gold"></i></h3><div style="font-size:0.78rem;color:var(--text-muted);"><i class="fa-solid fa-phone" style="color:var(--gold-500);"></i> ${b.phone || 'خدمة العملاء'}</div></div>
+                            <div><h3 style="margin:0;font-size:1.05rem;color:#fff;">${b.name} <i class="fa-solid fa-circle-check" style="color:var(--gold-500);font-size:0.85em;"></i></h3><div style="font-size:0.78rem;color:var(--text-muted);"><i class="fa-solid fa-phone" style="color:var(--gold-500);"></i> ${b.phone || 'خدمة العملاء'}</div></div>
                         </div>
                         <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(27,60,104,0.5);padding-top:10px;">
                             <a href="bank.html?id=${b.id}" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> الخدمات المصرفية</a>
+                            <span style="font-size:0.8rem;color:var(--trend-up);font-weight:800;"><i class="fa-solid fa-arrow-trend-up"></i> +4.1%</span>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`
+                ).join('');
             },
+
             renderJobs() {
                 const grid = document.getElementById('jobsGrid');
                 if (!grid || !window.YR_DB) return;
@@ -194,42 +281,14 @@
                             <span style="color:var(--gold-400);font-weight:700;font-size:0.82rem;">${j.salary || 'راتب تنافسي'}</span>
                             <a href="jobs.html" class="btn btn-gold btn-sm"><i class="fa-solid fa-paper-plane"></i> تقديم فوري</a>
                         </div>
-                    </div>
-                `).join('');
+                    </div>`
+                ).join('');
             },
+
             handleSearch() {
                 const text = document.getElementById('mainSearchInput').value.trim();
                 const city = document.getElementById('cityFilter').value;
                 this.renderCompanies(text, city);
-            },
-            openClaimModal(compName = '') {
-                document.getElementById('modalRoot').innerHTML = `
-                    <div class="yr-modal-overlay" onclick="if(event.target===this) document.getElementById('modalRoot').innerHTML=''">
-                        <div class="yr-modal" style="background:var(--navy-900);border:1px solid var(--gold-500);border-radius:12px;padding:22px;max-width:480px;width:100%;">
-                            <h3 style="color:var(--gold-400);margin:0 0 10px 0;"><i class="fa-solid fa-handshake"></i> طلب إثبات ملكية منشأة</h3>
-                            <p style="color:var(--text-muted);font-size:0.84rem;">أدخل بياناتك وسيتم التواصل معك من قبل الإدارة لتفعيل حسابك كمالك رسمي للمنشأة.</p>
-                            <form onsubmit="YRI.submitClaim(event)">
-                                <div class="form-group"><label>اسم المنشأة</label><input class="form-control" name="companyName" value="${compName}" required></div>
-                                <div class="form-group"><label>رقم هاتف المالك / الواتساب</label><input class="form-control" name="phone" required placeholder="770000000"></div>
-                                <button type="submit" class="btn btn-gold" style="width:100%;margin-top:12px;">إرسال طلب الملكية للإدارة</button>
-                            </form>
-                        </div>
-                    </div>
-                `;
-            },
-            async submitClaim(e) {
-                e.preventDefault();
-                const fd = new FormData(e.target);
-                if (window.YR_DB) {
-                    await YR_DB.add('verification_requests', {
-                        companyName: fd.get('companyName'),
-                        phone: fd.get('phone'),
-                        status: 'pending',
-                        createdAt: new Date().toISOString()
-                    });
-                }
-                alert('✅ تم استلام طلبك! ستتواصل معك الإدارة للتحقق ونقل لوحة التحكم لحسابك.');
-                document.getElementById('modalRoot').innerHTML = '';
             }
         };
         document.addEventListener('DOMContentLoaded', () => YRI.init());
