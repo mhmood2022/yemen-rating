@@ -52,11 +52,13 @@ body{margin:0;background:radial-gradient(circle at center,var(--navy-800),var(--
     <div class="auth-card">
         <div class="auth-title"><h1><i class="fa-solid fa-shield-halved"></i> بوابة يمن ريتنغ</h1><p>سجل دخولك أو أنشئ حساباً جديداً</p></div>
         <div class="tabs"><button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">تسجيل الدخول</button><button class="tab-btn" id="tabReg" onclick="switchTab('reg')">حساب جديد</button></div>
+        
         <form id="loginForm" onsubmit="doLogin(event)">
             <div class="form-group"><label><i class="fa-solid fa-envelope"></i> البريد الإلكتروني أو الهاتف</label><input type="text" class="form-control" id="loginId" required placeholder="name@domain.com أو 770000000"></div>
             <div class="form-group"><label><i class="fa-solid fa-lock"></i> كلمة المرور</label><input type="password" class="form-control" id="loginPass" required placeholder="••••••••"></div>
             <button type="submit" class="btn btn-gold"><i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول</button>
         </form>
+
         <form id="regForm" style="display:none" onsubmit="doRegister(event)">
             <div class="role-cards">
                 <div class="role-card active" id="roleUser" onclick="setRole('user')"><i class="fa-solid fa-user"></i><span>مستخدم / مقيّم</span></div>
@@ -75,6 +77,7 @@ body{margin:0;background:radial-gradient(circle at center,var(--navy-800),var(--
         </form>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = "https://wkdqeghotlipciqiytuj.supabase.co";
@@ -108,7 +111,7 @@ async function doRegister(e){
     const etype = document.getElementById('etypeSelect').value;
 
     try {
-        if (!sb) throw new Error('تعذر الاتصال بـ Supabase');
+        if (!sb) throw new Error('تعذر الاتصال بقاعدة البيانات');
         const { data, error } = await sb.auth.signUp({ email, password, options: { data: { full_name: name, phone } } });
         if (error) throw error;
 
@@ -116,7 +119,7 @@ async function doRegister(e){
             const status = (curRole === 'owner') ? 'PENDING' : 'ACTIVE';
             await sb.from('profiles').upsert({ id: data.user.id, full_name: name, email, phone, role: curRole === 'owner' ? 'company_owner' : 'user', etype: curRole === 'owner' ? etype : null, status }, { onConflict: 'id' });
         }
-        showToast(curRole === 'owner' ? '✅ تم استلام طلبك! سيتم التفعيل بعد المراجعة' : '✅ تم إنشاء الحساب بنجاح');
+        showToast(curRole === 'owner' ? '✅ تم استلام طلبك! سيتم التفعيل بعد مراجعة الإدارة' : '✅ تم إنشاء الحساب بنجاح');
         e.target.reset();
         switchTab('login');
     } catch(err) {

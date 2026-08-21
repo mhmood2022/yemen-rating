@@ -1,16 +1,22 @@
-const CACHE_NAME = 'yr-cache-v1';
+const CACHE_NAME = 'yr-cache-v2';
 const ASSETS = [
   './',
   'index.html',
   'companies.html',
+  'company.html',
   'banks.html',
+  'bank.html',
+  'entities.html',
+  'entity.html',
   'jobs.html',
   'register.html',
   'admin.html',
+  'owner.html',
   'css/main.css',
   'css/yemen-rating.css',
   'js/db.js',
-  'js/sb-sync.js'
+  'js/sb-sync.js',
+  'js/ads-loader.js'
 ];
 
 self.addEventListener('install', e => {
