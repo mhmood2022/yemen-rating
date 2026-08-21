@@ -1,14 +1,14 @@
 :root {
-    --navy-950: #010912;
+    --navy-950: #0B1F3A;
     --navy-900: #0F2744;
-    --navy-800: #061224;
+    --navy-800: #020814;
     --navy-700: #0a1a33;
     --navy-600: #102544;
     --gold-500: #F5C400;
     --gold-400: #FFD53D;
     --gold-gradient: linear-gradient(135deg, #F5C400 0%, #D4AF37 100%);
     --bg-body: #010912;
-    --bg-card: #061224;
+    --bg-card: #010912;
     --text-main: #FFFFFF;
     --text-muted: #94a3b8;
     --border: #102544;
