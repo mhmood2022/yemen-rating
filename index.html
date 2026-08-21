@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>يمن ريتنغ | الدليل الشامل لتقييم الشركات والوظائف في اليمن</title>
+    <title>يمن ريتنغ | الدليل التجاري والتوظيفي الأول في اليمن</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#F5C400">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js" crossorigin="anonymous" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/js/all.min.js" defer></script>
-    
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/yemen-rating.css">
 
     <style>
+        .x-badge-gold { color: #E2B714 !important; filter: drop-shadow(0 0 3px rgba(226, 183, 20, 0.6)); }
+        .x-badge-blue { color: #1D9BF0 !important; filter: drop-shadow(0 0 3px rgba(29, 155, 240, 0.6)); }
+        .x-badge-diamond { color: #00F0FF !important; }
         .yr-navbar { background: var(--navy-900); border-bottom: 1px solid var(--border); padding: 12px clamp(14px, 4vw, 32px); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
         .yr-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
         .yr-brand-logo { width: 38px; height: 38px; background: var(--gold-gradient); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--navy-950); font-size: 1.2rem; font-weight: 900; }
@@ -27,26 +27,22 @@
         .yr-nav-link { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.92rem; transition: var(--transition); display: flex; align-items: center; gap: 6px; }
         .yr-nav-link:hover, .yr-nav-link.active { color: var(--gold-400); }
         .container { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 clamp(14px, 3vw, 24px); }
+        
         .hero-section { padding: clamp(30px, 6vw, 60px) 0 clamp(20px, 4vw, 40px); text-align: center; background: radial-gradient(circle at center top, var(--navy-800), var(--navy-950)); border-bottom: 1px solid var(--border); }
-        .hero-title { font-size: clamp(1.4rem, 4.5vw, 2.3rem); font-weight: 900; margin: 0 0 10px 0; color: #fff; line-height: 1.3; }
+        .hero-title { font-size: clamp(1.4rem, 4.5vw, 2.3rem); font-weight: 900; margin: 0 0 10px 0; color: #fff; }
         .hero-title span { color: var(--gold-400); }
         .search-box-wrap { background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: var(--radius-md); padding: 8px; max-width: 780px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1.2fr auto; gap: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
         .search-input-wrap { position: relative; display: flex; align-items: center; }
         .search-input-wrap i { position: absolute; right: 14px; color: var(--gold-500); font-size: 0.95rem; }
         .search-input-wrap input { width: 100%; background: #040d1a; border: 1px solid var(--border); color: #fff; padding: 11px 40px 11px 14px; border-radius: var(--radius-sm); font-size: 0.9rem; outline: none; min-height: 44px; }
-        .section-header { display: flex; align-items: center; justify-content: space-between; margin: clamp(24px, 4vw, 40px) 0 clamp(14px, 2.5vw, 20px); flex-wrap: wrap; gap: 12px; }
-        .section-title { font-size: clamp(1.15rem, 2.5vw, 1.45rem); font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px; }
-        .section-title i { color: var(--gold-500); font-size: 1.15rem; }
+        
         .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: clamp(14px, 2.5vw, 20px); margin-bottom: 30px; }
         .yr-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 12px; transition: var(--transition); }
         .yr-card:hover { transform: translateY(-3px); border-color: var(--gold-500); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        .yr-card-header { display: flex; align-items: center; gap: 12px; }
-        .yr-card-logo { width: 48px; height: 48px; background: var(--navy-700); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--gold-400); font-size: 1.3rem; flex-shrink: 0; }
-        .btn { min-height: 42px; padding: 0 16px; border-radius: var(--radius-sm); border: none; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: var(--transition); text-decoration: none; white-space: nowrap; }
+        .btn { min-height: 42px; padding: 0 16px; border-radius: var(--radius-sm); border: none; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; white-space: nowrap; }
         .btn-gold { background: var(--gold-gradient); color: var(--navy-950); }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; }
         .btn-sm { min-height: 34px; padding: 0 12px; font-size: 0.8rem; border-radius: 6px; }
-        .verified-badge { color: var(--success); font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px; font-weight: 700; }
         .yr-footer { background: var(--navy-900); border-top: 1px solid var(--border); padding: 30px 0 20px; margin-top: 40px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
         @media (max-width: 850px) { .yr-nav-links { display: none; } .search-box-wrap { grid-template-columns: 1fr; } .items-grid { grid-template-columns: 1fr; } }
     </style>
@@ -61,6 +57,7 @@
             <li><a href="admin.html" class="yr-nav-link"><i class="fa-solid fa-shield-halved"></i> لوحة الإدارة</a></li>
         </ul>
         <div style="display:flex;align-items:center;gap:10px;">
+            <button class="btn btn-outline btn-sm" onclick="YRI.openClaimModal()"><i class="fa-solid fa-handshake"></i> أضف / طالِب بمنشأتك</button>
             <a href="register.html" class="btn btn-gold btn-sm"><i class="fa-solid fa-user"></i> دخول</a>
         </div>
     </header>
@@ -80,39 +77,36 @@
         </div>
     </section>
 
-    <!-- موضع الإعلان 1 (مخفي نظيف افتراضياً) -->
+    <!-- موضع الإعلان 1 (مخفي ذكي) -->
     <div class="container"><div class="ad-banner-slot" data-placement="HOME_TOP"></div></div>
 
     <main class="container">
         <section id="companies">
-            <div class="section-header">
-                <h2 class="section-title"><i class="fa-solid fa-building"></i> كبرى الشركات والمؤسسات</h2>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin:30px 0 16px;">
+                <h2 style="color:#fff;margin:0;font-size:1.3rem;"><i class="fa-solid fa-building" style="color:var(--gold-500);"></i> كبرى الشركات والمؤسسات الموثقة</h2>
                 <a href="companies.html" class="btn btn-outline btn-sm">عرض الكل <i class="fa-solid fa-arrow-left"></i></a>
             </div>
             <div class="items-grid" id="companiesGrid"></div>
         </section>
 
-        <!-- موضع الإعلان 2 (مخفي نظيف افتراضياً) -->
+        <!-- موضع الإعلان 2 -->
         <div class="ad-banner-slot" data-placement="HOME_MIDDLE"></div>
 
         <section id="banks">
-            <div class="section-header">
-                <h2 class="section-title"><i class="fa-solid fa-landmark"></i> البنوك والمصارف</h2>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin:30px 0 16px;">
+                <h2 style="color:#fff;margin:0;font-size:1.3rem;"><i class="fa-solid fa-landmark" style="color:var(--gold-500);"></i> البنوك والمصارف المعتمدة</h2>
                 <a href="banks.html" class="btn btn-outline btn-sm">عرض الكل <i class="fa-solid fa-arrow-left"></i></a>
             </div>
             <div class="items-grid" id="banksGrid"></div>
         </section>
 
         <section id="jobs">
-            <div class="section-header">
-                <h2 class="section-title"><i class="fa-solid fa-briefcase"></i> أحدث الوظائف المتاحة</h2>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin:30px 0 16px;">
+                <h2 style="color:#fff;margin:0;font-size:1.3rem;"><i class="fa-solid fa-briefcase" style="color:var(--gold-500);"></i> أحدث الشواغر الوظيفية بالوساطة</h2>
                 <a href="jobs.html" class="btn btn-outline btn-sm">عرض الكل <i class="fa-solid fa-arrow-left"></i></a>
             </div>
             <div class="items-grid" id="jobsGrid"></div>
         </section>
-
-        <!-- موضع الإعلان 3 (مخفي نظيف افتراضياً) -->
-        <div class="ad-banner-slot" data-placement="HOME_BOTTOM"></div>
     </main>
 
     <footer class="yr-footer">
@@ -122,10 +116,14 @@
         </div>
     </footer>
 
+    <!-- حاوية المودال العامة -->
+    <div id="modalRoot"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/db.js"></script>
     <script src="js/sb-sync.js"></script>
     <script src="js/ads-loader.js"></script>
+
     <script>
         const YRI = {
             init() {
@@ -143,48 +141,95 @@
                 const grid = document.getElementById('companiesGrid');
                 if (!grid || !window.YR_DB) return;
                 let list = YR_DB.get('companies') || [];
-                if (filterText) list = list.filter(c => (c.name || '').includes(filterText) || (c.description || '').includes(filterText));
+                if (filterText) list = list.filter(c => (c.name || '').includes(filterText));
                 if (cityVal) list = list.filter(c => c.city === cityVal);
-                grid.innerHTML = list.slice(0, 6).map(c => 
-                    '<div class="yr-card">' +
-                    '<div class="yr-card-header"><div class="yr-card-logo"><i class="fa-solid fa-building"></i></div><div><h3 style="margin:0;font-size:1.05rem;color:#fff;">' + c.name + '</h3><div style="font-size:0.78rem;color:var(--text-muted);"><i class="fa-solid fa-location-dot" style="color:var(--gold-500);"></i> ' + (c.city || 'اليمن') + '</div></div></div>' +
-                    '<p style="font-size:0.84rem;color:var(--text-muted);margin:0;flex:1;">' + (c.description || 'منشأة معتمدة لدى يمن ريتنغ') + '</p>' +
-                    '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(27,60,104,0.5);padding-top:10px;">' +
-                    (c.verified ? '<span class="verified-badge"><i class="fa-solid fa-circle-check"></i> موثقة</span>' : '<span></span>') +
-                    '<a href="company.html?id=' + c.id + '" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> التفاصيل</a></div>' +
-                    '</div>'
-                ).join('');
+
+                grid.innerHTML = list.slice(0, 6).map(c => {
+                    const badge = c.x_badge || (c.verified ? 'gold' : 'none');
+                    let bHtml = '';
+                    if (badge === 'gold') bHtml = '<i class="fa-solid fa-circle-check x-badge-gold" title="موثق ذهبي رسمي"></i>';
+                    if (badge === 'blue') bHtml = '<i class="fa-solid fa-circle-check x-badge-blue" title="موثق أزرق"></i>';
+                    if (badge === 'diamond') bHtml = '<i class="fa-solid fa-gem x-badge-diamond" title="عضوية VIP"></i>';
+
+                    return `<div class="yr-card">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:48px;height:48px;background:var(--navy-700);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--gold-400);font-size:1.3rem;"><i class="fa-solid fa-building"></i></div>
+                            <div><h3 style="margin:0;font-size:1.05rem;color:#fff;">${c.name} ${bHtml}</h3><div style="font-size:0.78rem;color:var(--text-muted);"><i class="fa-solid fa-location-dot" style="color:var(--gold-500);"></i> ${c.city || 'اليمن'}</div></div>
+                        </div>
+                        <p style="font-size:0.84rem;color:var(--text-muted);margin:0;flex:1;">${c.description || 'منشأة معتمدة لدى يمن ريتنغ'}</p>
+                        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(27,60,104,0.5);padding-top:10px;">
+                            <a href="company.html?id=${c.id}" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> التفاصيل والتقييم</a>
+                            <button class="btn btn-gold btn-sm" onclick="YRI.openClaimModal('${c.name}')"><i class="fa-solid fa-handshake"></i> طالِب بالملكية</button>
+                        </div>
+                    </div>`;
+                }).join('');
             },
             renderBanks() {
                 const grid = document.getElementById('banksGrid');
                 if (!grid || !window.YR_DB) return;
                 const list = YR_DB.get('banks') || [];
-                grid.innerHTML = list.slice(0, 3).map(b => 
-                    '<div class="yr-card">' +
-                    '<div class="yr-card-header"><div class="yr-card-logo" style="color:var(--gold-400);"><i class="fa-solid fa-landmark"></i></div><div><h3 style="margin:0;font-size:1.05rem;color:#fff;">' + b.name + '</h3><div style="font-size:0.78rem;color:var(--text-muted);"><i class="fa-solid fa-phone" style="color:var(--gold-500);"></i> ' + (b.phone || 'خدمة العملاء') + '</div></div></div>' +
-                    '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(27,60,104,0.5);padding-top:10px;">' +
-                    '<span class="verified-badge"><i class="fa-solid fa-shield-halved"></i> خدمات مصرفية</span>' +
-                    '<a href="bank.html?id=' + b.id + '" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> الملف</a></div>' +
-                    '</div>'
-                ).join('');
+                grid.innerHTML = list.slice(0, 3).map(b => `
+                    <div class="yr-card">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:48px;height:48px;background:var(--navy-700);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--gold-400);font-size:1.3rem;"><i class="fa-solid fa-landmark"></i></div>
+                            <div><h3 style="margin:0;font-size:1.05rem;color:#fff;">${b.name} <i class="fa-solid fa-circle-check x-badge-gold"></i></h3><div style="font-size:0.78rem;color:var(--text-muted);"><i class="fa-solid fa-phone" style="color:var(--gold-500);"></i> ${b.phone || 'خدمة العملاء'}</div></div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(27,60,104,0.5);padding-top:10px;">
+                            <a href="bank.html?id=${b.id}" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye"></i> الخدمات المصرفية</a>
+                        </div>
+                    </div>
+                `).join('');
             },
             renderJobs() {
                 const grid = document.getElementById('jobsGrid');
                 if (!grid || !window.YR_DB) return;
                 const jobs = (YR_DB.get('jobs') || []).filter(j => j.status === 'active' || !j.status);
-                grid.innerHTML = jobs.slice(0, 3).map(j => 
-                    '<div class="yr-card">' +
-                    '<div class="yr-card-header"><div class="yr-card-logo" style="color:var(--info);"><i class="fa-solid fa-briefcase"></i></div><div><h3 style="margin:0;font-size:1.05rem;color:#fff;">' + j.title + '</h3><div style="font-size:0.78rem;color:var(--text-muted);">' + (j.type || 'دوام كامل') + '</div></div></div>' +
-                    '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(27,60,104,0.5);padding-top:10px;">' +
-                    '<span style="color:var(--gold-400);font-weight:700;font-size:0.82rem;">' + (j.salary || 'راتب مجزي') + '</span>' +
-                    '<a href="jobs.html" class="btn btn-gold btn-sm"><i class="fa-solid fa-paper-plane"></i> تقديم فوري</a></div>' +
-                    '</div>'
-                ).join('');
+                grid.innerHTML = jobs.slice(0, 3).map(j => `
+                    <div class="yr-card">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="width:48px;height:48px;background:var(--navy-700);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--info);font-size:1.3rem;"><i class="fa-solid fa-briefcase"></i></div>
+                            <div><h3 style="margin:0;font-size:1.05rem;color:#fff;">${j.title}</h3><div style="font-size:0.78rem;color:var(--text-muted);">${j.type || 'دوام كامل'}</div></div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(27,60,104,0.5);padding-top:10px;">
+                            <span style="color:var(--gold-400);font-weight:700;font-size:0.82rem;">${j.salary || 'راتب تنافسي'}</span>
+                            <a href="jobs.html" class="btn btn-gold btn-sm"><i class="fa-solid fa-paper-plane"></i> تقديم فوري</a>
+                        </div>
+                    </div>
+                `).join('');
             },
             handleSearch() {
                 const text = document.getElementById('mainSearchInput').value.trim();
                 const city = document.getElementById('cityFilter').value;
                 this.renderCompanies(text, city);
+            },
+            openClaimModal(compName = '') {
+                document.getElementById('modalRoot').innerHTML = `
+                    <div class="yr-modal-overlay" onclick="if(event.target===this) document.getElementById('modalRoot').innerHTML=''">
+                        <div class="yr-modal" style="background:var(--navy-900);border:1px solid var(--gold-500);border-radius:12px;padding:22px;max-width:480px;width:100%;">
+                            <h3 style="color:var(--gold-400);margin:0 0 10px 0;"><i class="fa-solid fa-handshake"></i> طلب إثبات ملكية منشأة</h3>
+                            <p style="color:var(--text-muted);font-size:0.84rem;">أدخل بياناتك وسيتم التواصل معك من قبل الإدارة لتفعيل حسابك كمالك رسمي للمنشأة.</p>
+                            <form onsubmit="YRI.submitClaim(event)">
+                                <div class="form-group"><label>اسم المنشأة</label><input class="form-control" name="companyName" value="${compName}" required></div>
+                                <div class="form-group"><label>رقم هاتف المالك / الواتساب</label><input class="form-control" name="phone" required placeholder="770000000"></div>
+                                <button type="submit" class="btn btn-gold" style="width:100%;margin-top:12px;">إرسال طلب الملكية للإدارة</button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            },
+            async submitClaim(e) {
+                e.preventDefault();
+                const fd = new FormData(e.target);
+                if (window.YR_DB) {
+                    await YR_DB.add('verification_requests', {
+                        companyName: fd.get('companyName'),
+                        phone: fd.get('phone'),
+                        status: 'pending',
+                        createdAt: new Date().toISOString()
+                    });
+                }
+                alert('✅ تم استلام طلبك! ستتواصل معك الإدارة للتحقق ونقل لوحة التحكم لحسابك.');
+                document.getElementById('modalRoot').innerHTML = '';
             }
         };
         document.addEventListener('DOMContentLoaded', () => YRI.init());
