@@ -275,7 +275,7 @@
                     id: 'mahfathati',
                     name: 'محفظة محفظتي (Mahfathati)',
                     bank: 'بنك التضامن الإسلامي الدولي',
-                    icon: 'fa-building-columns',
+                    icon: 'fa-vault',
                     color: '#10B981',
                     rank: '#2 الأقوى مصرفياً',
                     votes: 1620,
@@ -311,7 +311,7 @@
                     id: 'cash_ykb',
                     name: 'محفظة كاش (Cash)',
                     bank: 'بنك اليمن والكويت',
-                    icon: 'fa-credit-card',
+                    icon: 'fa-qrcode',
                     color: '#34D399',
                     rank: '#5 مدفوعات QR الذكية',
                     votes: 750,
@@ -323,7 +323,7 @@
                     id: 'onecash',
                     name: 'محفظة ون كاش (OneCash)',
                     bank: 'شركة ون كاش للدفع الإلكتروني',
-                    icon: 'fa-coins',
+                    icon: 'fa-user-plus',
                     color: '#A855F7',
                     rank: '#6 فتح حساب ذاتي فوري',
                     votes: 620,
@@ -436,9 +436,9 @@
 
                 grid.innerHTML = allWallets.map(w => `
                     <div class="wallet-card">
-                        <span class="wallet-rank">${w.rank}</span>
+                        <span class="wallet-rank" style="position:absolute;top:0;right:0;background:${w.color};color:#040d1a;padding:4px 14px;border-radius:0 0 0 12px;font-size:0.75rem;">${w.rank}</span>
                         <div style="display:flex;align-items:center;gap:12px;margin-top:14px;">
-                            <div style="width:46px;height:46px;border-radius:10px;background:var(--navy-800);display:flex;align-items:center;justify-content:center;color:${w.color};font-size:1.4rem;border:1px solid var(--border);">
+                            <div style="width:54px;height:54px;border-radius:12px;box-shadow:0 0 12px ${w.color}40;background:var(--navy-800);display:flex;align-items:center;justify-content:center;color:${w.color};font-size:1.4rem;border:1px solid var(--border);">
                                 <i class="fa-solid ${w.icon}"></i>
                             </div>
                             <div>
