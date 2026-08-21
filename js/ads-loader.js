@@ -1,33 +1,5 @@
-var YR_ADS_SB_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
-var YR_ADS_SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
-
-async function yrGetSB() {
-    if (window.yrSupabase) return window.yrSupabase;
-    if (window.supabase && window.supabase.createClient) {
-        window.yrSupabase = window.supabase.createClient(YR_ADS_SB_URL, YR_ADS_SB_KEY);
-        return window.yrSupabase;
-    }
-    try {
-        var mod = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-        var create = mod.createClient || (mod.default && mod.default.createClient);
-        if (create) { window.yrSupabase = create(YR_ADS_SB_URL, YR_ADS_SB_KEY); return window.yrSupabase; }
-    } catch(e) {}
-    return null;
-}
-
-window.trackAdClick = async function(adId) {
-    if (!adId) return;
-    if (window.YR_DB) {
-        var ad = YR_DB.findById('advertisements', adId);
-        if (ad) YR_DB.update('advertisements', adId, { clicks: (Number(ad.clicks) || 0) + 1 });
-    }
-    var sb = await yrGetSB();
-    if (sb) {
-        try { await sb.rpc('increment_ad_clicks', { ad_id: adId }); } catch(e) {}
-    }
-};
-
-(async function(){
+// ═══ محرك حقن الإعلانات الشامل ═══
+(function(){
     function injectAds() {
         var localAds = (window.YR_DB && YR_DB.get('advertisements')) || JSON.parse(localStorage.getItem('yr_advertisements') || '[]');
         var activeAds = localAds.filter(function(a){ return a.status === 'ACTIVE' || a.status === 'PUBLISHED'; });
@@ -54,6 +26,12 @@ window.trackAdClick = async function(adId) {
             }
         });
     }
+
+    window.trackAdClick = function(adId) {
+        if (!adId || !window.YR_DB) return;
+        var ad = YR_DB.findById('advertisements', adId);
+        if (ad) YR_DB.update('advertisements', adId, { clicks: (Number(ad.clicks) || 0) + 1 });
+    };
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectAds);
     else injectAds();
