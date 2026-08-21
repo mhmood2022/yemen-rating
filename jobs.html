@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>الوظائف الشاغرة | يمن ريتنغ</title>
+<title>بوابة الوظائف الشاغرة | يمن ريتنغ</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#F5C400">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,66 +24,112 @@
 .jobs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px;margin:24px 0 30px}
 .job-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px;transition:var(--transition)}
 .job-card:hover{border-color:var(--gold-500);transform:translateY(-3px)}
-.btn{min-height:40px;padding:0 14px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:0.85rem;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+.btn{min-height:42px;padding:0 16px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:0.88rem;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
 .btn-gold{background:var(--gold-gradient);color:var(--navy-950);width:100%}
-.modal-overlay{position:fixed;inset:0;background:rgba(4,13,26,0.85);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:3000;padding:16px}
-.modal-card{background:var(--navy-900);border:1px solid var(--gold-500);border-radius:12px;padding:22px;width:100%;max-width:480px}
-.form-control{width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--navy-950);color:#fff;font-size:0.9rem;outline:none;margin-bottom:10px}
+.btn-outline{background:transparent;border:1px solid var(--border);color:#fff}
+.modal-overlay{position:fixed;inset:0;background:rgba(4,13,26,0.88);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:3000;padding:16px}
+.modal-card{background:var(--navy-900);border:1px solid var(--gold-500);border-radius:12px;padding:22px;width:100%;max-width:500px;box-shadow:0 20px 45px rgba(0,0,0,0.7)}
+.form-group{margin-bottom:14px;text-align:right}
+.form-group label{display:block;font-size:0.84rem;color:var(--text-muted);margin-bottom:6px;font-weight:600}
+.form-control{width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--navy-950);color:#fff;font-size:0.9rem;outline:none}
 </style>
 </head>
 <body>
 <header class="site-header">
     <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
         <a href="index.html" class="brand"><div class="brand-mark"><i class="fa-solid fa-star"></i></div><strong>YEMEN RATING</strong></a>
-        <a href="index.html" class="btn btn-gold" style="width:auto;min-height:36px;padding:0 12px;font-size:0.8rem;"><i class="fa-solid fa-house"></i> الرئيسية</a>
+        <a href="index.html" class="btn btn-outline" style="width:auto;min-height:36px;"><i class="fa-solid fa-house"></i> الرئيسية</a>
     </div>
 </header>
 <section class="page-hero">
     <div class="container">
-        <h1><i class="fa-solid fa-briefcase"></i> أحدث الوظائف الشاغرة</h1>
-        <p>تصفح الفرص الوظيفية وقدّم سيرتك الذاتية بأمان وموثوقية</p>
+        <h1><i class="fa-solid fa-briefcase"></i> بوابة الوظائف الشاغرة</h1>
+        <p style="color:var(--text-muted);font-size:0.88rem;margin:0;">تصفح الفرص الوظيفية المعتمدة وقدّم سيرتك الذاتية مباشرة من هاتفك</p>
     </div>
 </section>
+
 <div class="container">
+    <!-- موضع الإعلان: أعلى الوظائف -->
+    <div class="ad-banner-slot" data-placement="JOBS_TOP"><span class="ad-badge">إعلان مميز</span><div></div></div>
     <div class="jobs-grid" id="jobsGrid"></div>
+    <!-- موضع الإعلان: وسط الوظائف -->
+    <div class="ad-banner-slot" data-placement="JOBS_MIDDLE"><span class="ad-badge">إعلان مميز</span><div></div></div>
 </div>
+
+<!-- نافذة التقديم المباشر برفع السيرة الذاتية من الهاتف -->
 <div class="modal-overlay" id="applyModal">
     <div class="modal-card">
-        <h3 style="color:var(--gold-400);margin:0 0 14px 0;"><i class="fa-solid fa-paper-plane"></i> التقديم على الوظيفة</h3>
-        <input class="form-control" id="appName" placeholder="الاسم الكامل">
-        <input class="form-control" id="appPhone" placeholder="رقم الهاتف">
-        <input class="form-control" id="appCv" placeholder="رابط السيرة الذاتية (Google Drive / LinkedIn)">
-        <button class="btn btn-gold" onclick="submitApp()"><i class="fa-solid fa-check"></i> إرسال الطلب</button>
-        <button class="btn btn-outline" style="margin-top:8px;width:100%;" onclick="closeModal()">إلغاء</button>
+        <h3 style="color:var(--gold-400);margin:0 0 14px 0;font-size:1.15rem;"><i class="fa-solid fa-file-arrow-up"></i> تقديم طلب التوظيف</h3>
+        <form id="jobApplyForm" onsubmit="submitJobApp(event)">
+            <div class="form-group"><label>الاسم الكامل *</label><input class="form-control" id="appName" required placeholder="اسم مقدم الطلب الرباعي"></div>
+            <div class="form-group"><label>رقم الهاتف / الواتساب *</label><input class="form-control" id="appPhone" required placeholder="770000000"></div>
+            <div class="form-group">
+                <label><i class="fa-solid fa-file-pdf"></i> اختر ملف السيرة الذاتية (CV) من هاتفك *</label>
+                <input type="file" id="appCvFile" accept=".pdf,.doc,.docx,image/*" required style="width:100%;">
+                <small style="color:var(--text-muted);display:block;margin-top:4px;">يدعم ملفات PDF و Word والصور المباشرة</small>
+            </div>
+            <div class="form-group"><label>ملاحظة أو رسالة إضافية</label><textarea class="form-control" id="appNote" rows="2" placeholder="اكتب نبذة مختصرة عن مؤهلاتك..."></textarea></div>
+            <button type="submit" class="btn btn-gold"><i class="fa-solid fa-check"></i> إرسال السيرة الذاتية</button>
+            <button type="button" class="btn btn-outline" style="margin-top:8px;width:100%;" onclick="closeModal()">إلغاء</button>
+        </form>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/db.js"></script>
 <script src="js/sb-sync.js"></script>
+<script src="js/ads-loader.js"></script>
 <script>
+let curJobId = null;
 const DEMO_JOBS=[
-{id:'job1',title:'مطور تطبيقات Flutter',city:'صنعاء',salary:'400,000 ريال',type:'دوام كامل',desc:'مطلوب مطور تطبيقات خبير للعمل على مشاريع تجارية.'},
-{id:'job2',title:'محاسب مالي معتمد',city:'عدن',salary:'250,000 ريال',type:'دوام كامل',desc:'إعداد التقارير والقوائم المالية ومراجعة القيود.'},
-{id:'job3',title:'مصمم جرافيك وتجربة مستخدم',city:'عن بُعد',salary:'محدد حسب الخبرة',type:'عن بُعد',desc:'تصميم واجهات وتطبيقات احترافية بهوية متناسقة.'}
+{id:'job1',title:'مطور تطبيقات ومواقع',city:'صنعاء',salary:'400,000 ريال',type:'دوام كامل',desc:'مطلوب مطور متمرس في بناء التطبيقات والحلول الرقمية.'},
+{id:'job2',title:'محاسب مالي معتمد',city:'عدن',salary:'280,000 ريال',type:'دوام كامل',desc:'إعداد القوائم والتقارير المالية الدورية ومتابعة الحسابات.'},
+{id:'job3',title:'أخصائي تسويق إلكتروني',city:'عن بُعد',salary:'يحدد بعد المقابلة',type:'عن بُعد',desc:'إدارة الحملات الإعلانية وصناعة المحتوى الرقمي.'}
 ];
+
 function renderJobs(){
     const list=(window.YR_DB&&YR_DB.get('jobs'))||DEMO_JOBS;
     document.getElementById('jobsGrid').innerHTML=list.map(j=>`
     <div class="job-card">
         <strong style="font-size:1.05rem;color:#fff;">${j.title}</strong>
         <div style="font-size:0.8rem;color:var(--text-muted);"><i class="fa-solid fa-location-dot" style="color:var(--gold-500);"></i> ${j.city||'اليمن'} • ${j.type||'دوام كامل'}</div>
-        <p style="font-size:0.84rem;color:var(--text-muted);margin:0;line-height:1.4;">${j.description||j.desc||'فرصة وظيفية مميزة برواتب وبدلات مجزية.'}</p>
-        <div style="font-size:0.85rem;color:var(--gold-400);font-weight:700;">${j.salary||'راتب تنافسي'}</div>
-        <button class="btn btn-gold" onclick="openApply('${j.id}')"><i class="fa-solid fa-paper-plane"></i> تقديم طلب فوري</button>
+        <p style="font-size:0.84rem;color:var(--text-muted);margin:0;line-height:1.4;">${j.description||j.desc||'فرصة وظيفية مميزة لدى جهة معتمدة.'}</p>
+        <div style="font-size:0.88rem;color:var(--gold-400);font-weight:700;">${j.salary||'راتب تنافسي'}</div>
+        <button class="btn btn-gold" onclick="openApply('${j.id}')"><i class="fa-solid fa-paper-plane"></i> تقديم السيرة الذاتية</button>
     </div>`).join('');
 }
-function openApply(id){document.getElementById('applyModal').style.display='flex'}
-function closeModal(){document.getElementById('applyModal').style.display='none'}
-function submitApp(){
-    const name=document.getElementById('appName').value.trim();
-    if(!name){alert('الرجاء إدخال اسمك الكريم');return;}
-    alert('شكراً لك! تم إرسال طلب التوظيف بنجاح.');
+
+function openApply(id){ curJobId = id; document.getElementById('applyModal').style.display='flex'; }
+function closeModal(){ document.getElementById('applyModal').style.display='none'; }
+
+async function submitJobApp(e){
+    e.preventDefault();
+    const name = document.getElementById('appName').value.trim();
+    const phone = document.getElementById('appPhone').value.trim();
+    const fileInput = document.getElementById('appCvFile');
+    
+    let cvDataUrl = null;
+    if(fileInput.files[0]) {
+        cvDataUrl = await new Promise(res => {
+            const r = new FileReader();
+            r.onload = ev => res(ev.target.result);
+            r.readAsDataURL(fileInput.files[0]);
+        });
+    }
+
+    if(window.YR_DB) {
+        await YR_DB.add('job_applications', {
+            jobId: curJobId,
+            name: name,
+            phone: phone,
+            cvUrl: cvDataUrl,
+            status: 'pending',
+            createdAt: new Date().toISOString()
+        });
+    }
+    alert('✅ تم استلام طلبك وسيرتك الذاتية بنجاح! سيتم مراجعتها من قبل جهة التوظيف.');
     closeModal();
+    e.target.reset();
 }
 document.addEventListener('DOMContentLoaded',renderJobs);
 </script>
