@@ -50,7 +50,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
 
   return (
     <div className="relative bg-white dark:bg-[#000000]">
-      {/* 1. Cover Image - Completely Borderless */}
+      {/* Cover Image */}
       <div className="relative h-[160px] sm:h-[220px] md:h-[260px] w-full overflow-hidden bg-[#0A0A0A]">
         <img
           src={defaultCover}
@@ -81,10 +81,10 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
         </div>
       </div>
 
-      {/* 2. Overlapping Logo - Borderless with Soft Shadow */}
+      {/* Logo & Identity Info */}
       <div className="relative px-4 pb-5 -mt-12 sm:-mt-14 max-w-5xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3.5 text-center sm:text-right">
-          {/* Borderless Logo Frame */}
+          {/* Logo Frame */}
           <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[18px] bg-white dark:bg-[#111111] shadow-2xl overflow-hidden shrink-0 z-10 border-0">
             {business.logoUrl ? (
               <img
@@ -99,24 +99,23 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
             )}
           </div>
 
-          {/* Name & Badges */}
+          {/* Business Name with Verified Badge directly beside it */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+            <div>
               <span className="text-[11px] font-bold px-2 py-0.5 rounded-[6px] bg-[#0B1F3A]/10 text-[#0B1F3A] dark:bg-[#181818] dark:text-[#A1A1AA]">
                 {business.category}
               </span>
-
-              {business.isVerified && (
-                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#111111]">
-                  <VerifiedBadge variant="gold" size={16} />
-                  <span className="text-[11px] font-bold text-white">موثّق</span>
-                </div>
-              )}
             </div>
 
-            <h1 className="text-lg sm:text-2xl font-black text-[#0B1F3A] dark:text-white leading-tight flex items-center justify-center sm:justify-start gap-1.5">
+            {/* Name + Badge in the Exact Natural Inline Position */}
+            <h1 className="text-lg sm:text-2xl font-black text-[#0B1F3A] dark:text-white leading-tight flex items-center justify-center sm:justify-start gap-1.5 flex-wrap">
               <span>{business.name}</span>
-              {business.isVerified && <VerifiedBadge variant="gold" size={20} />}
+              {business.isVerified && (
+                <VerifiedBadge
+                  variant={business.verifiedBadgeType || 'gold'}
+                  size={20}
+                />
+              )}
             </h1>
 
             <div className="flex items-center justify-center sm:justify-start gap-3 text-xs text-[#64748B] dark:text-[#A1A1AA] pt-0.5">
@@ -133,7 +132,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
           </div>
         </div>
 
-        {/* 3. Action Buttons */}
+        {/* Action Buttons */}
         <div className="flex items-center justify-center gap-2 w-full sm:w-auto pt-1">
           {business.phone && (
             <button
