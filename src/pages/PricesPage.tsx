@@ -1,220 +1,197 @@
-import React, { useState, useMemo } from 'react';
-import { DEMO_CURRENCIES, DEMO_GOLD, DEMO_COMMODITIES } from '../data/demoPrices';
-import { PriceCategoryType, PriceMarket } from '../types/prices';
-import { PriceCard } from '../components/prices/PriceCard';
-import { SearchInput } from '../components/ui/SearchInput';
-import { Select } from '../ui/Select';
-import { EmptyState } from '../components/ui/EmptyState';
-import { Coins, Sparkles, Utensils, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { DEMO_CURRENCIES, DEMO_GOLD } from '../data/demoPrices';
+import { Clock, ArrowRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Card } from '../components/ui/Card';
 import { cn } from '../lib/utils';
-import { yrToast } from '../components/ui/Toast';
 
-export const PricesPage: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState<PriceCategoryType>('currencies');
-  const [selectedMarket, setSelectedMarket] = useState<'all' | PriceMarket>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+export const PricesPage: React.FC<{ onNavigate?: (path: string) => void }> = ({ onNavigate }) => {
+  const [activeTab, setActiveTab] = useState<'currencies' | 'gold'>('currencies');
+  const [selectedMarket, setSelectedMarket] = useState<'sanaa' | 'aden'>('sanaa');
 
-  const categoryTabs = [
-    { id: 'currencies' as const, label: 'صرف العملات', icon: Coins, count: DEMO_CURRENCIES.length },
-    { id: 'gold' as const, label: 'أسعار الذهب', icon: Sparkles, count: DEMO_GOLD.length },
-    { id: 'commodities' as const, label: 'السلع والمشتقات', icon: Utensils, count: DEMO_COMMODITIES.length },
-  ];
+  const currenciesList = DEMO_CURRENCIES.filter((c) => c.market === selectedMarket);
+  const goldList = DEMO_GOLD.filter((g) => g.market === selectedMarket);
 
-  const marketOptions = [
-    { label: 'جميع الأسواق (صنعاء وعدن)', value: 'all' },
-    { label: 'سوق صنعاء فقط', value: 'sanaa' },
-    { label: 'سوق عدن فقط', value: 'aden' },
-  ];
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-      yrToast.success('تم تحديث الأسعار بنجاح وفق آخر التداولات');
-    }, 500);
-  };
-
-  // Filter Logic
-  const filteredCurrencies = useMemo(() => {
-    return DEMO_CURRENCIES.filter((c) => {
-      if (selectedMarket !== 'all' && c.market !== selectedMarket) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        return c.currencyName.toLowerCase().includes(q) || c.currencyCode.toLowerCase().includes(q);
-      }
-      return true;
-    });
-  }, [selectedMarket, searchQuery]);
-
-  const filteredGold = useMemo(() => {
-    return DEMO_GOLD.filter((g) => {
-      if (selectedMarket !== 'all' && g.market !== selectedMarket) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        return g.karatName.toLowerCase().includes(q);
-      }
-      return true;
-    });
-  }, [selectedMarket, searchQuery]);
-
-  const filteredCommodities = useMemo(() => {
-    return DEMO_COMMODITIES.filter((cmd) => {
-      if (selectedMarket !== 'all' && cmd.market !== selectedMarket) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        return cmd.commodityName.toLowerCase().includes(q);
-      }
-      return true;
-    });
-  }, [selectedMarket, searchQuery]);
+  // Sparkline mini SVG visual curve
+  const renderSparkline = (isPositive: boolean) => (
+    <svg className="w-16 h-6 shrink-0 opacity-80" viewBox="0 0 64 24" fill="none">
+      <path
+        d={isPositive ? 'M2 18 L18 14 L34 16 L50 8 L62 4' : 'M2 6 L18 10 L34 8 L50 16 L62 20'}
+        stroke={isPositive ? '#22C55E' : '#EF4444'}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 
   return (
-    <div className="space-y-6 pb-8">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#0B1F3A] dark:text-white">
+    <div className="space-y-4 pb-8 max-w-lg mx-auto">
+      {/* Header with Back Navigation */}
+      <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0] dark:border-[#222222]">
+        <div className="flex items-center gap-2">
+          {onNavigate && (
+            <button
+              type="button"
+              onClick={() => onNavigate('/')}
+              className="p-1 rounded-lg text-[#64748B] dark:text-[#A1A1AA] hover:text-[#0B1F3A] dark:hover:text-white"
+              aria-label="الرجوع"
+            >
+              <ArrowRight size={18} strokeWidth={2} />
+            </button>
+          )}
+          <h1 className="text-base sm:text-lg font-black text-[#0B1F3A] dark:text-white">
             الأسعار
           </h1>
-          <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">
-            النشرة الاقتصادية اليومية المحدثة لأسعار صرف العملات والذهب والسلع الأساسية في سوقي صنعاء وعدن
-          </p>
         </div>
+
+        {/* Market Selector Tag */}
+        <div className="flex items-center gap-1 p-0.5 bg-[#F1F5F9] dark:bg-[#161616] rounded-[8px] border border-[#E2E8F0] dark:border-[#222222] text-[11px] font-bold">
+          <button
+            type="button"
+            onClick={() => setSelectedMarket('sanaa')}
+            className={cn(
+              'px-2.5 py-1 rounded-[6px] transition-all',
+              selectedMarket === 'sanaa'
+                ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-black'
+                : 'text-[#64748B] dark:text-[#71717A]'
+            )}
+          >
+            صنعاء
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedMarket('aden')}
+            className={cn(
+              'px-2.5 py-1 rounded-[6px] transition-all',
+              selectedMarket === 'aden'
+                ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-black'
+                : 'text-[#64748B] dark:text-[#71717A]'
+            )}
+          >
+            عدن
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs (العملات / الذهب) */}
+      <div className="flex items-center justify-around border-b border-[#E2E8F0] dark:border-[#222222] pb-1">
+        <button
+          type="button"
+          onClick={() => setActiveTab('currencies')}
+          className={cn(
+            'py-2 px-6 text-xs sm:text-sm font-bold transition-all relative select-none',
+            activeTab === 'currencies'
+              ? 'text-[#0B1F3A] dark:text-[#F5C400]'
+              : 'text-[#64748B] dark:text-[#71717A] hover:text-[#0B1F3A] dark:hover:text-white'
+          )}
+        >
+          <span>العملات</span>
+          {activeTab === 'currencies' && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0B1F3A] dark:bg-[#F5C400] rounded-full" />
+          )}
+        </button>
 
         <button
           type="button"
-          onClick={handleRefresh}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[9px] border border-[#E2E8F0] dark:border-[#222222] bg-white dark:bg-[#0E0E0E] text-xs font-bold text-[#0B1F3A] dark:text-[#F5C400] hover:bg-[#F1F5F9] dark:hover:bg-[#1A1A1A] transition-colors self-start sm:self-auto"
+          onClick={() => setActiveTab('gold')}
+          className={cn(
+            'py-2 px-6 text-xs sm:text-sm font-bold transition-all relative select-none',
+            activeTab === 'gold'
+              ? 'text-[#0B1F3A] dark:text-[#F5C400]'
+              : 'text-[#64748B] dark:text-[#71717A] hover:text-[#0B1F3A] dark:hover:text-white'
+          )}
         >
-          <RefreshCw size={13} strokeWidth={2} className={cn(isRefreshing && 'animate-spin')} />
-          <span>تحديث الأسعار</span>
+          <span>الذهب</span>
+          {activeTab === 'gold' && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0B1F3A] dark:bg-[#F5C400] rounded-full" />
+          )}
         </button>
       </div>
 
-      {/* Category Tabs */}
-      <div className="flex items-center gap-2 p-1 bg-white dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] rounded-[12px]">
-        {categoryTabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeCategory === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveCategory(tab.id)}
-              className={cn(
-                'flex-1 py-2 px-3 rounded-[9px] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all select-none',
-                isActive
-                  ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-[#000000] shadow-sm'
-                  : 'text-[#475569] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414] hover:text-[#0B1F3A] dark:hover:text-white'
-              )}
+      {/* List Rendering */}
+      {activeTab === 'currencies' && (
+        <div className="space-y-2.5">
+          {currenciesList.map((c) => (
+            <Card
+              key={c.id}
+              className="p-3.5 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[12px] flex items-center justify-between gap-3"
             >
-              <Icon size={16} strokeWidth={1.75} />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
+              {/* Currency Info */}
+              <div className="space-y-0.5 min-w-[100px]">
+                <h3 className="font-bold text-xs sm:text-sm text-[#0B1F3A] dark:text-white">
+                  {c.currencyName}
+                </h3>
+                <span className="text-[10px] text-[#64748B] dark:text-[#71717A] font-semibold">
+                  {c.currencyCode}
+                </span>
+              </div>
 
-      {/* Toolbar: Market Filter & Search */}
-      <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-        <div className="sm:col-span-8">
-          <SearchInput
-            placeholder="ابحث بالاسم، العملة، السلعة..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onClear={() => setSearchQuery('')}
-          />
+              {/* Sparkline Curve */}
+              {renderSparkline(c.change !== 'down')}
+
+              {/* Buy & Sell Prices */}
+              <div className="flex items-center gap-4 text-left">
+                <div>
+                  <span className="text-[9px] text-[#64748B] dark:text-[#71717A] block font-semibold">شراء</span>
+                  <span className="text-xs sm:text-sm font-black text-[#16A34A] dark:text-[#22C55E]">
+                    {c.buyPrice.toLocaleString()}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[9px] text-[#64748B] dark:text-[#71717A] block font-semibold">بيع</span>
+                  <span className="text-xs sm:text-sm font-black text-[#0B1F3A] dark:text-white">
+                    {c.sellPrice.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </Card>
+          ))}
         </div>
+      )}
 
-        <div className="sm:col-span-4">
-          <Select
-            value={selectedMarket}
-            options={marketOptions}
-            onChange={(val) => setSelectedMarket(val as any)}
-          />
+      {activeTab === 'gold' && (
+        <div className="space-y-2.5">
+          {goldList.map((g) => (
+            <Card
+              key={g.id}
+              className="p-3.5 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[12px] flex items-center justify-between gap-3"
+            >
+              <div className="space-y-0.5 min-w-[120px]">
+                <h3 className="font-bold text-xs sm:text-sm text-[#0B1F3A] dark:text-white">
+                  {g.karatName}
+                </h3>
+                <span className="text-[10px] text-[#64748B] dark:text-[#71717A] font-semibold">
+                  ريال يمني / {g.unit}
+                </span>
+              </div>
+
+              {renderSparkline(g.change !== 'down')}
+
+              <div className="flex items-center gap-4 text-left">
+                <div>
+                  <span className="text-[9px] text-[#64748B] dark:text-[#71717A] block font-semibold">شراء</span>
+                  <span className="text-xs sm:text-sm font-black text-[#16A34A] dark:text-[#22C55E]">
+                    {g.buyPrice.toLocaleString()}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[9px] text-[#64748B] dark:text-[#71717A] block font-semibold">بيع</span>
+                  <span className="text-xs sm:text-sm font-black text-[#0B1F3A] dark:text-[#F5C400]">
+                    {g.sellPrice.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </Card>
+          ))}
         </div>
-      </div>
+      )}
 
-      {/* Content Rendering */}
-      <div>
-        {activeCategory === 'currencies' && (
-          <div>
-            {filteredCurrencies.length === 0 ? (
-              <EmptyState title="لم يتم العثور على نتائج للعملات" description="جرب البحث بكلمة أخرى أو تغيير السوق المحدد." />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3.5">
-                {filteredCurrencies.map((c) => (
-                  <PriceCard
-                    key={c.id}
-                    title={c.currencyName}
-                    subtitle={`${c.currencyCode} (${c.symbol})`}
-                    market={c.market}
-                    buyPrice={c.buyPrice}
-                    sellPrice={c.sellPrice}
-                    change={c.change}
-                    changeAmount={c.changeAmount}
-                    source={c.source}
-                    lastUpdated={c.lastUpdated}
-                    type="currency"
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeCategory === 'gold' && (
-          <div>
-            {filteredGold.length === 0 ? (
-              <EmptyState title="لم يتم العثور على نتائج للذهب" description="جرب البحث بكلمة أخرى أو تغيير السوق المحدد." />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3.5">
-                {filteredGold.map((g) => (
-                  <PriceCard
-                    key={g.id}
-                    title={g.karatName}
-                    subtitle={`سعر الـ ${g.unit}`}
-                    market={g.market}
-                    buyPrice={g.buyPrice}
-                    sellPrice={g.sellPrice}
-                    change={g.change}
-                    changeAmount={g.changeAmount}
-                    source={g.source}
-                    lastUpdated={g.lastUpdated}
-                    type="gold"
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeCategory === 'commodities' && (
-          <div>
-            {filteredCommodities.length === 0 ? (
-              <EmptyState title="لم يتم العثور على نتائج للسلع" description="جرب البحث بكلمة أخرى أو تغيير السوق المحدد." />
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3.5">
-                {filteredCommodities.map((cmd) => (
-                  <PriceCard
-                    key={cmd.id}
-                    title={cmd.commodityName}
-                    subtitle={cmd.category === 'fuel' ? 'مشتقات نفطية' : 'مواد غذائية أساسية'}
-                    market={cmd.market}
-                    unitPrice={cmd.price}
-                    unit={cmd.unit}
-                    change={cmd.change}
-                    changeAmount={cmd.changeAmount}
-                    source={cmd.source}
-                    lastUpdated={cmd.lastUpdated}
-                    type="commodity"
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+      {/* Footer Timestamp */}
+      <div className="pt-2 text-center text-[11px] text-[#64748B] dark:text-[#71717A] flex items-center justify-center gap-1.5">
+        <Clock size={12} strokeWidth={1.75} />
+        <span>آخر تحديث: منذ 5 دقائق ({selectedMarket === 'sanaa' ? 'سوق صنعاء' : 'سوق عدن'})</span>
       </div>
     </div>
   );

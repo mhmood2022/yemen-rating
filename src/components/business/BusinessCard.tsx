@@ -1,18 +1,22 @@
 import React from 'react';
-import { Building2, MapPin, Star, CheckCircle2, Flame, ArrowLeft } from 'lucide-react';
+import { MapPin, Star, Flame, Building2 } from 'lucide-react';
 import { BusinessItem } from '../../types/business';
 import { Card } from '../ui/Card';
-import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
-import { BusinessScore } from './BusinessScore';
 
 interface BusinessCardProps {
   business: BusinessItem;
+  variant?: 'topRated' | 'trending' | 'compact' | 'standard';
+  trendCount?: number;
   onNavigate?: (id: string) => void;
 }
 
-export const BusinessCard: React.FC<BusinessCardProps> = ({ business, onNavigate }) => {
-  const handleCardClick = () => {
+export const BusinessCard: React.FC<BusinessCardProps> = ({
+  business,
+  variant = 'standard',
+  trendCount = 98,
+  onNavigate,
+}) => {
+  const handleClick = () => {
     if (onNavigate) {
       onNavigate(business.id);
     } else {
@@ -23,82 +27,52 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, onNavigate
   return (
     <Card
       hoverable
-      className="flex flex-col justify-between p-4 sm:p-5 transition-all duration-200 cursor-pointer group"
-      onClick={handleCardClick}
+      onClick={handleClick}
+      noPadding
+      className="overflow-hidden rounded-[14px] bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] cursor-pointer flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5 shadow-sm"
     >
-      <div>
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <Badge variant="neutral" size="sm">
-              {business.category}
-            </Badge>
-            {business.isTrending && (
-              <Badge variant="yellow" size="sm" className="gap-1">
-                <Flame size={12} strokeWidth={2} className="text-[#0B1F3A] dark:text-[#F5C400]" />
-                ترند
-              </Badge>
-            )}
+      {/* Top Media Cover with Badges */}
+      <div className="relative h-[110px] sm:h-[130px] w-full overflow-hidden bg-[#F7F8FA] dark:bg-[#1A1A1A]">
+        {business.logoUrl ? (
+          <img
+            src={business.logoUrl}
+            alt={business.name}
+            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-[#94A3B8]">
+            <Building2 size={32} strokeWidth={1.5} />
           </div>
-          <BusinessScore score={business.yrScore} size="sm" showLabel={false} />
+        )}
+
+        {/* Rating Badge on Top Right */}
+        <div className="absolute top-2 right-2 px-2 py-0.5 rounded-[6px] bg-black/60 backdrop-blur-[2px] text-white flex items-center gap-1 text-[11px] font-extrabold border border-white/10">
+          <Star size={11} strokeWidth={2} className="text-[#F5C400] fill-[#F5C400]" />
+          <span>{business.rating.toFixed(1)}</span>
         </div>
 
-        <div className="flex items-start gap-3 mb-2.5">
-          <div className="w-11 h-11 rounded-[10px] bg-[#0B1F3A]/5 dark:bg-[#0F2138] border border-[#E2E8F0] dark:border-[#263A52] flex items-center justify-center text-[#0B1F3A] dark:text-[#F8FAFC] font-bold shrink-0 group-hover:border-[#0B1F3A]/30 dark:group-hover:border-[#F5C400]/40 transition-colors">
-            {business.logoUrl ? (
-              <img src={business.logoUrl} alt={business.name} className="w-full h-full object-cover rounded-[10px]" />
-            ) : (
-              <Building2 size={22} strokeWidth={1.75} />
-            )}
+        {/* Trend Flame Badge on Bottom Left if trending */}
+        {variant === 'trending' && (
+          <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-[6px] bg-black/70 backdrop-blur-[2px] text-white flex items-center gap-1 text-[11px] font-extrabold border border-[#F59E0B]/30">
+            <Flame size={12} strokeWidth={2} className="text-[#F59E0B]" />
+            <span>{trendCount}</span>
           </div>
-
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-sm sm:text-base text-[#0B1F3A] dark:text-[#F8FAFC] leading-snug line-clamp-1 group-hover:text-[#162F52] dark:group-hover:text-[#F5C400] transition-colors flex items-center gap-1.5">
-              <span className="truncate">{business.name}</span>
-              {business.isVerified && (
-                <CheckCircle2
-                  size={16}
-                  className="text-[#16A34A] dark:text-[#4ADE80] shrink-0"
-                  strokeWidth={2}
-                  title="نشاط موثق رسمياً"
-                />
-              )}
-            </h3>
-            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] flex items-center gap-1 mt-1">
-              <MapPin size={13} strokeWidth={1.75} className="shrink-0 text-[#94A3B8] dark:text-[#64748B]" />
-              <span>{business.city}</span>
-              {business.address && <span className="truncate opacity-75">· {business.address}</span>}
-            </p>
-          </div>
-        </div>
-
-        {business.description && (
-          <p className="text-xs text-[#475569] dark:text-[#94A3B8] line-clamp-2 leading-relaxed mb-3">
-            {business.description}
-          </p>
         )}
       </div>
 
-      <div className="pt-3 border-t border-[#F1F5F9] dark:border-[#1B2F47] flex items-center justify-between gap-2 mt-auto">
-        <div className="flex items-center gap-1.5">
-          <div className="flex items-center gap-1 text-xs font-bold text-[#0B1F3A] dark:text-[#F8FAFC]">
-            <Star size={14} strokeWidth={1.75} className="text-[#F5C400] fill-[#F5C400]" />
-            <span>{business.rating.toFixed(1)}</span>
-          </div>
-          <span className="text-[11px] text-[#94A3B8] dark:text-[#64748B]">({business.reviewCount} تقييم)</span>
-        </div>
+      {/* Info Body */}
+      <div className="p-3 space-y-1">
+        <h3 className="font-bold text-xs sm:text-sm text-[#0B1F3A] dark:text-white leading-snug line-clamp-1">
+          {business.name}
+        </h3>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-xs text-[#0B1F3A] dark:text-[#F8FAFC] group-hover:bg-[#0B1F3A] group-hover:text-white dark:group-hover:bg-[#F5C400] dark:group-hover:text-[#0B1F3A] transition-all h-[32px] px-2.5"
-          onClick={(e) => {
-            e.stopPropagation();
-            handleCardClick();
-          }}
-        >
-          <span>عرض النشاط</span>
-          <ArrowLeft size={13} strokeWidth={1.75} />
-        </Button>
+        <div className="flex items-center justify-between text-[11px] text-[#64748B] dark:text-[#A1A1AA]">
+          <span className="truncate">{business.category}</span>
+          <span className="flex items-center gap-0.5 text-[#94A3B8] dark:text-[#71717A] shrink-0">
+            <MapPin size={11} strokeWidth={1.75} />
+            <span>{business.city}</span>
+          </span>
+        </div>
       </div>
     </Card>
   );

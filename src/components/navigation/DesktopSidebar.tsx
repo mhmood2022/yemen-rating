@@ -3,11 +3,11 @@ import {
   Home,
   Building2,
   Landmark,
-  Briefcase,
-  Star,
-  TrendingUp,
   Coins,
+  TrendingUp,
+  Briefcase,
   Smartphone,
+  Star,
   Megaphone,
   BarChart3,
   UserCircle2,
@@ -18,22 +18,22 @@ import { cn } from '../../lib/utils';
 export const sidebarItems: NavItem[] = [
   { id: 'home', label: 'الرئيسية', href: '/', icon: Home },
   { id: 'directory', label: 'دليل الأنشطة', href: '/directory', icon: Building2 },
-  { id: 'banks-wallets', label: 'البنوك والمحافظ', href: '/banks-wallets', icon: Landmark },
+  { id: 'trend', label: 'الترند', href: '/trend', icon: TrendingUp },
   { id: 'prices', label: 'الأسعار', href: '/prices', icon: Coins },
+  { id: 'banks-wallets', label: 'البنوك والمحافظ', href: '/banks-wallets', icon: Landmark },
+  { id: 'phones', label: 'سوق الجوالات', href: '/directory?category=محلات الجوالات والإلكترونيات', icon: Smartphone },
   { id: 'jobs', label: 'الوظائف', href: '/directory', icon: Briefcase },
   { id: 'rating', label: 'التقييم والتصنيف', href: '/directory', icon: Star },
-  { id: 'trend', label: 'الترند', href: '/directory', icon: TrendingUp },
-  { id: 'phones', label: 'سوق الجوالات', href: '/directory?category=محلات الجوالات والإلكترونيات', icon: Smartphone },
   { id: 'ads', label: 'الإعلانات', href: '/directory', icon: Megaphone },
   { id: 'stats', label: 'الإحصائيات', href: '/directory', icon: BarChart3 },
-  { id: 'account', label: 'الحساب', href: '/directory', icon: UserCircle2 },
+  { id: 'account', label: 'الحساب', href: '/more', icon: UserCircle2 },
 ];
 
 export const DesktopSidebar: React.FC<{ onNavigate?: (path: string) => void }> = ({ onNavigate }) => {
   const currentPath = window.location.pathname;
 
   return (
-    <aside className="hidden lg:flex flex-col w-[260px] bg-white dark:bg-[#0A0A0A] border-l border-[#E2E8F0] dark:border-[#222222] min-h-[calc(100vh-64px)] p-4 shrink-0 transition-colors">
+    <aside className="hidden lg:flex flex-col w-[260px] bg-white dark:bg-[#000000] border-l border-[#E2E8F0] dark:border-[#222222] min-h-[calc(100vh-64px)] p-4 shrink-0 transition-colors">
       <nav className="flex-1 space-y-1">
         {sidebarItems.map((item) => {
           const Icon = item.icon;
@@ -52,7 +52,7 @@ export const DesktopSidebar: React.FC<{ onNavigate?: (path: string) => void }> =
                 'flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-sm font-semibold transition-all',
                 isActive
                   ? 'bg-[#0B1F3A] text-white dark:bg-[#111111] dark:text-[#F5C400] dark:border dark:border-[#F5C400]/40'
-                  : 'text-[#475569] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#161616] hover:text-[#0B1F3A] dark:hover:text-white'
+                  : 'text-[#475569] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414] hover:text-[#0B1F3A] dark:hover:text-white'
               )}
             >
               <Icon size={18} strokeWidth={1.75} className={isActive ? 'text-current' : 'text-[#64748B] dark:text-[#71717A]'} />

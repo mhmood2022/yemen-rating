@@ -11,6 +11,8 @@ import { DirectoryPage } from './pages/DirectoryPage';
 import { BusinessProfilePage } from './pages/BusinessProfilePage';
 import { BanksAndWalletsPage } from './pages/BanksAndWalletsPage';
 import { PricesPage } from './pages/PricesPage';
+import { TrendPage } from './pages/TrendPage';
+import { MoreMenuPage } from './pages/MoreMenuPage';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname + window.location.search);
@@ -65,6 +67,30 @@ export const App: React.FC = () => {
       );
     }
 
+    if (pathname === '/trend') {
+      return (
+        <AppLayout onNavigate={navigate}>
+          <TrendPage onNavigate={navigate} />
+        </AppLayout>
+      );
+    }
+
+    if (pathname === '/prices') {
+      return (
+        <AppLayout onNavigate={navigate}>
+          <PricesPage onNavigate={navigate} />
+        </AppLayout>
+      );
+    }
+
+    if (pathname === '/more') {
+      return (
+        <AppLayout onNavigate={navigate}>
+          <MoreMenuPage onNavigate={navigate} />
+        </AppLayout>
+      );
+    }
+
     if (pathname === '/banks-wallets' || pathname === '/banks' || pathname === '/wallets') {
       const initialType = pathname === '/banks' ? 'bank' : pathname === '/wallets' ? 'wallet' : 'all';
       return (
@@ -74,14 +100,7 @@ export const App: React.FC = () => {
       );
     }
 
-    if (pathname === '/prices') {
-      return (
-        <AppLayout onNavigate={navigate}>
-          <PricesPage />
-        </AppLayout>
-      );
-    }
-
+    // Default: Home Page
     return (
       <AppLayout onNavigate={navigate}>
         <HomePage onNavigate={navigate} />

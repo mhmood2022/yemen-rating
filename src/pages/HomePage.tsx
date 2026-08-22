@@ -1,46 +1,11 @@
 import React, { useState } from 'react';
-import {
-  Search,
-  Building2,
-  Store,
-  Utensils,
-  Hotel,
-  HeartPulse,
-  Home as HomeIcon,
-  Car,
-  Truck,
-  Laptop,
-  GraduationCap,
-  Sparkles,
-  Radio,
-  Coins,
-  Smartphone,
-  Flame,
-  Star,
-  Briefcase,
-  ArrowLeft,
-} from 'lucide-react';
-import { CATEGORIES_LIST, DEMO_BUSINESSES } from '../data/demoBusinesses';
+import { DEMO_BUSINESSES } from '../data/demoBusinesses';
+import { HeroBanner } from '../components/home/HeroBanner';
+import { CategorySlider } from '../components/home/CategorySlider';
+import { HomePricesWidget } from '../components/home/HomePricesWidget';
+import { HomeReviewsWidget } from '../components/home/HomeReviewsWidget';
 import { BusinessCard } from '../components/business/BusinessCard';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-
-const categoryIconMap: Record<string, React.ReactNode> = {
-  'الشركات': <Building2 size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
-  'المحلات': <Store size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
-  'المطاعم': <Utensils size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
-  'الفنادق': <Hotel size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
-  'الصحة': <HeartPulse size={20} strokeWidth={1.75} className="text-[#16A34A] dark:text-[#22C55E]" />,
-  'العقارات': <HomeIcon size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
-  'السيارات': <Car size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
-  'النقل': <Truck size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
-  'التقنية': <Laptop size={20} strokeWidth={1.75} className="text-[#2563EB] dark:text-[#F59E0B]" />,
-  'التعليم': <GraduationCap size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
-  'الخدمات': <Sparkles size={20} strokeWidth={1.75} className="text-[#F59E0B]" />,
-  'الاتصالات': <Radio size={20} strokeWidth={1.75} className="text-[#2563EB] dark:text-[#F59E0B]" />,
-  'الصرافة': <Coins size={20} strokeWidth={1.75} className="text-[#F5C400]" />,
-  'محلات الجوالات والإلكترونيات': <Smartphone size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
-};
+import { Search, MapPin, ArrowLeft } from 'lucide-react';
 
 export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,202 +19,115 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
     }
   };
 
-  const trendingBusinesses = DEMO_BUSINESSES.filter((b) => b.isTrending).slice(0, 3);
-  const topRatedBusinesses = [...DEMO_BUSINESSES].sort((a, b) => b.yrScore - a.yrScore).slice(0, 3);
-  const phoneMarketPreview = DEMO_BUSINESSES.filter((b) => b.category === 'محلات الجوالات والإلكترونيات');
+  // Top rated items (مطعم حضرموت، هايبر بلس، خدمات الخليج)
+  const topRatedItems = [
+    DEMO_BUSINESSES.find((b) => b.id === 't4') || DEMO_BUSINESSES[0],
+    DEMO_BUSINESSES.find((b) => b.id === 't2') || DEMO_BUSINESSES[1],
+    DEMO_BUSINESSES.find((b) => b.id === 't3') || DEMO_BUSINESSES[2],
+  ];
+
+  // Trending items with flame counts (مطعم البيت اليمني 125، متجر العصرية 98، غسيل حريري 76)
+  const trendingItems = [
+    { business: DEMO_BUSINESSES.find((b) => b.id === 't1') || DEMO_BUSINESSES[0], flame: 125 },
+    { business: DEMO_BUSINESSES.find((b) => b.id === 't5') || DEMO_BUSINESSES[1], flame: 98 },
+    { business: DEMO_BUSINESSES.find((b) => b.id === 't6') || DEMO_BUSINESSES[2], flame: 76 },
+  ];
 
   return (
-    <div className="space-y-8 pb-6">
-      {/* 1. HERO SECTION - Pure Dark in Dark Mode */}
-      <section className="relative rounded-[16px] bg-[#0B1F3A] dark:bg-[#0A0A0A] text-white p-5 sm:p-8 shadow-lg border border-transparent dark:border-[#222222]">
-        <div className="max-w-2xl space-y-3.5">
-          <span className="inline-block px-3 py-0.5 rounded-full bg-[#F5C400]/20 text-[#F5C400] text-[11px] font-extrabold border border-[#F5C400]/30">
-            دليل الأنشطة والخدمات في اليمن
-          </span>
+    <div className="space-y-6 pb-6 max-w-2xl mx-auto">
+      {/* 1. Search Bar & Location Header */}
+      <div className="space-y-2.5">
+        {/* Pill Search Input */}
+        <form onSubmit={handleSearchSubmit} className="relative">
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="ابحث عن نشاط أو شركة أو خدمة..."
+            className="w-full h-[44px] pr-10 pl-4 rounded-[12px] bg-white dark:bg-[#111111] text-[#0B1F3A] dark:text-white placeholder:text-[#94A3B8] dark:placeholder:text-[#71717A] text-xs sm:text-sm outline-none border border-[#E2E8F0] dark:border-[#222222] focus:border-[#F5C400] transition-colors shadow-sm"
+          />
+          <Search
+            size={18}
+            strokeWidth={1.75}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] dark:text-[#71717A]"
+          />
+        </form>
 
-          <h1 className="text-xl sm:text-3xl font-black leading-tight tracking-tight text-white">
-            اكتشف الأفضل في اليمن
-          </h1>
-
-          <p className="text-xs sm:text-sm text-[#CBD5E1] dark:text-[#A1A1AA] leading-relaxed max-w-xl">
-            منصة يمن ريتغ (YR) للبحث عن الشركات والمحلات والخدمات والبنوك والوظائف، مع تقييمات موثوقة ومؤشرات YR Score المعتمدة.
-          </p>
-
-          <form onSubmit={handleSearchSubmit} className="pt-2 flex items-center gap-2 max-w-lg">
-            <div className="relative flex-1">
-              <Search size={17} strokeWidth={1.75} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] dark:text-[#71717A]" />
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث عن شركة، محل، خدمة، بنك..."
-                className="w-full h-[44px] pr-10 pl-4 rounded-[10px] bg-white dark:bg-[#000000] text-[#0B1F3A] dark:text-white placeholder:text-[#94A3B8] dark:placeholder:text-[#71717A] text-xs sm:text-sm outline-none border border-transparent dark:border-[#222222] focus:border-[#F5C400] shadow-sm"
-              />
-            </div>
-            <Button type="submit" variant="secondary" size="md" className="h-[44px] px-5 font-bold shrink-0">
-              بحث
-            </Button>
-          </form>
-
-          <div className="flex items-center gap-2.5 pt-1">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => onNavigate('/directory')}
-              className="text-xs font-bold"
-            >
-              استكشف الأنشطة
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNavigate('/directory')}
-              className="text-xs text-white border-white/30 hover:bg-white/10 dark:border-[#222222] dark:hover:bg-[#141414]"
-            >
-              الوظائف
-            </Button>
-          </div>
+        {/* Location Picker Badge */}
+        <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-[#A1A1AA] px-1">
+          <MapPin size={14} strokeWidth={2} className="text-[#F5C400] shrink-0" />
+          <span className="font-semibold text-[#0B1F3A] dark:text-white">اليمن، صنعاء</span>
         </div>
-      </section>
+      </div>
 
-      {/* 2. CATEGORIES GRID */}
-      <section className="space-y-3.5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-base sm:text-lg font-black text-[#0B1F3A] dark:text-white">دليل الأنشطة</h2>
-            <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">تصفح الأنشطة والخدمات حسب التصنيف الاقتصادي</p>
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => onNavigate('/directory')} className="text-xs text-[#0B1F3A] dark:text-white">
-            <span>عرض الكل</span>
-            <ArrowLeft size={13} strokeWidth={1.75} />
-          </Button>
-        </div>
+      {/* 2. Hero Banner Slider */}
+      <HeroBanner onNavigate={onNavigate} />
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3">
-          {CATEGORIES_LIST.map((cat) => (
-            <Card
-              key={cat}
-              hoverable
-              onClick={() => onNavigate(`/directory?category=${encodeURIComponent(cat)}`)}
-              className="p-3 text-center flex flex-col items-center justify-center gap-2 cursor-pointer group"
-            >
-              <div className="w-10 h-10 rounded-[10px] bg-[#0B1F3A]/5 dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#222222] flex items-center justify-center group-hover:bg-[#0B1F3A] group-hover:text-[#F5C400] dark:group-hover:bg-[#1F1F1F] transition-colors">
-                {categoryIconMap[cat] || <Building2 size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />}
-              </div>
-              <span className="text-xs font-bold text-[#0B1F3A] dark:text-white leading-tight line-clamp-1">{cat}</span>
-            </Card>
-          ))}
-        </div>
-      </section>
+      {/* 3. Main Categories Grid (5 Cards) */}
+      <CategorySlider onNavigate={onNavigate} />
 
-      {/* 3. TRENDING PREVIEW (YR Trend) */}
-      <section className="space-y-3.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-[8px] bg-[#F59E0B]/20 text-[#F59E0B]">
-              <Flame size={17} strokeWidth={1.75} />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-black text-[#0B1F3A] dark:text-white">YR Trend</h2>
-              <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">الأنشطة الأكثر تفاعلاً وظهوراً في السوق اليمني</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-          {trendingBusinesses.map((biz) => (
-            <BusinessCard
-              key={biz.id}
-              business={biz}
-              onNavigate={(id) => onNavigate(`/business/${id}`)}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* 4. TOP RATED SECTION */}
-      <section className="space-y-3.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-[8px] bg-[#F5C400]/20 text-[#F5C400]">
-              <Star size={17} strokeWidth={1.75} className="fill-[#F5C400]" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-black text-[#0B1F3A] dark:text-white">الأعلى تقييمًا</h2>
-              <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">الأنشطة الحاصلة على أعلى مؤشرات YR Score الموثقة</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-          {topRatedBusinesses.map((biz) => (
-            <BusinessCard
-              key={biz.id}
-              business={biz}
-              onNavigate={(id) => onNavigate(`/business/${id}`)}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* 5. MOBILE PHONE MARKET PREVIEW */}
-      <section className="space-y-3.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-[8px] bg-[#0B1F3A]/5 dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#222222]">
-              <Smartphone size={17} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-black text-[#0B1F3A] dark:text-white">سوق الجوالات</h2>
-              <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">معاينة لمحلات ومراكز صيانة الهواتف الذكية</p>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onNavigate('/directory?category=محلات الجوالات والإلكترونيات')}
-            className="text-xs text-[#0B1F3A] dark:text-white"
+      {/* 4. Top Rated Section (الأعلى تقييماً) */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between px-0.5">
+          <h2 className="text-sm sm:text-base font-bold text-[#0B1F3A] dark:text-white">
+            الأعلى تقييماً
+          </h2>
+          <button
+            type="button"
+            onClick={() => onNavigate('/directory')}
+            className="text-xs font-semibold text-[#64748B] dark:text-[#A1A1AA] hover:text-[#0B1F3A] dark:hover:text-[#F5C400] transition-colors flex items-center gap-1"
           >
-            <span>استكشاف المحلات</span>
-            <ArrowLeft size={13} strokeWidth={1.75} />
-          </Button>
+            <span>عرض الكل</span>
+            <ArrowLeft size={12} strokeWidth={1.75} />
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {phoneMarketPreview.map((biz) => (
+        <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+          {topRatedItems.map((biz) => (
             <BusinessCard
               key={biz.id}
               business={biz}
+              variant="topRated"
               onNavigate={(id) => onNavigate(`/business/${id}`)}
             />
           ))}
         </div>
       </section>
 
-      {/* 6. JOBS PREVIEW */}
-      <section className="space-y-3.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-[8px] bg-[#2563EB]/10 text-[#2563EB] dark:text-[#F59E0B]">
-              <Briefcase size={17} strokeWidth={1.75} />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-black text-[#0B1F3A] dark:text-white">الوظائف</h2>
-              <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">فرص التوظيف المتاحة لدى الشركات المعتمدة</p>
-            </div>
-          </div>
+      {/* 5. Trending Section (الترند الآن) */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between px-0.5">
+          <h2 className="text-sm sm:text-base font-bold text-[#0B1F3A] dark:text-white">
+            الترند الآن
+          </h2>
+          <button
+            type="button"
+            onClick={() => onNavigate('/trend')}
+            className="text-xs font-semibold text-[#64748B] dark:text-[#A1A1AA] hover:text-[#0B1F3A] dark:hover:text-[#F5C400] transition-colors flex items-center gap-1"
+          >
+            <span>عرض الكل</span>
+            <ArrowLeft size={12} strokeWidth={1.75} />
+          </button>
         </div>
 
-        <Card className="p-5 sm:p-6 text-center">
-          <h3 className="font-bold text-sm text-[#0B1F3A] dark:text-white mb-1">نظام مطابقة الوظائف الذكي قادم قريباً</h3>
-          <p className="text-xs text-[#64748B] dark:text-[#A1A1AA] max-w-md mx-auto mb-3.5">
-            يتم التجهيز لربط طلبات التوظيف وعروض الشركات مباشرة بعد اكتمال المراحل المخصصة.
-          </p>
-          <Button variant="outline" size="sm" onClick={() => onNavigate('/directory')} className="text-[#0B1F3A] dark:text-white">
-            استكشاف الشركات الموثقة
-          </Button>
-        </Card>
+        <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+          {trendingItems.map(({ business, flame }) => (
+            <BusinessCard
+              key={business.id}
+              business={business}
+              variant="trending"
+              trendCount={flame}
+              onNavigate={(id) => onNavigate(`/business/${id}`)}
+            />
+          ))}
+        </div>
       </section>
+
+      {/* 6. Prices Financial Board Widget */}
+      <HomePricesWidget onNavigate={onNavigate} />
+
+      {/* 7. Latest Reviews Widget */}
+      <HomeReviewsWidget onNavigate={onNavigate} />
     </div>
   );
 };
