@@ -27,17 +27,17 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const sizeClasses = {
-      sm: 'h-[36px] px-3 text-sm font-semibold rounded-[10px]',
-      md: 'h-[40px] px-4 text-base font-semibold rounded-[10px]',
-      lg: 'h-[44px] px-6 text-base font-bold rounded-[10px]',
+      sm: 'h-[36px] px-3 text-xs sm:text-sm font-semibold rounded-[9px]',
+      md: 'h-[40px] px-4 text-sm font-semibold rounded-[10px]',
+      lg: 'h-[44px] px-6 text-sm sm:text-base font-bold rounded-[10px]',
     };
 
     const variantClasses = {
-      primary: 'bg-[#0B1F3A] text-white hover:bg-[#162F52] active:bg-[#071527] dark:bg-[#F5C400] dark:text-[#0B1F3A] dark:hover:bg-[#DDAF00] dark:active:bg-[#C29A00]',
-      secondary: 'bg-[#F5C400] text-[#0B1F3A] hover:bg-[#DDAF00] active:bg-[#C29A00] dark:bg-[#162F52] dark:text-white dark:hover:bg-[#20406E]',
-      outline: 'border border-[#E2E8F0] dark:border-[#263A52] bg-transparent text-[#0B1F3A] dark:text-[#F8FAFC] hover:bg-[#F1F5F9] dark:hover:bg-[#162F52]',
-      danger: 'bg-[#DC2626] text-white hover:bg-[#B91C1C] active:bg-[#991B1B] dark:bg-[#DC2626]/90 dark:hover:bg-[#DC2626]',
-      ghost: 'bg-transparent text-[#475569] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#162F52] hover:text-[#0B1F3A] dark:hover:text-[#F8FAFC]',
+      primary: 'bg-[#0B1F3A] text-white hover:bg-[#162F52] dark:bg-[#F5C400] dark:text-[#000000] dark:hover:bg-[#DDAF00] dark:font-bold',
+      secondary: 'bg-[#F5C400] text-[#0B1F3A] hover:bg-[#DDAF00] dark:bg-[#1A1A1A] dark:text-[#F5C400] dark:hover:bg-[#262626] dark:border dark:border-[#F5C400]/30',
+      outline: 'border border-[#E2E8F0] dark:border-[#222222] bg-transparent text-[#0B1F3A] dark:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#141414]',
+      danger: 'bg-[#DC2626] text-white hover:bg-[#B91C1C] dark:bg-[#DC2626]/90 dark:hover:bg-[#DC2626]',
+      ghost: 'bg-transparent text-[#475569] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414] hover:text-[#0B1F3A] dark:hover:text-white',
     };
 
     return (
@@ -54,7 +54,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {...props}
       >
-        {isLoading ? <LoadingSpinner size={size === 'sm' ? 16 : 18} /> : icon}
+        {isLoading ? <LoadingSpinner size={size === 'sm' ? 14 : 16} /> : icon}
         <span>{children}</span>
       </button>
     );

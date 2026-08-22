@@ -1,5 +1,5 @@
 :root {
-  /* Light Mode (100% Intact) */
+  /* Light Mode (Original Navy & Yellow) */
   --yr-navy: #0B1F3A;
   --yr-navy-light: #162F52;
   --yr-navy-dark: #071527;
@@ -33,11 +33,11 @@
   --yr-font: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Pure Black + Yellow + Orange Dark Mode */
+/* 100% Pure Black Dark Mode - Zero Blue */
 .dark {
   --yr-bg: #000000;
   --yr-surface: #0A0A0A;
-  --yr-card: #111111;
+  --yr-card: #0E0E0E;
   --yr-border: #222222;
   --yr-border-subtle: #181818;
 
@@ -45,7 +45,7 @@
   --yr-text-secondary: #A1A1AA;
   --yr-text-muted: #71717A;
 
-  --yr-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.8);
-  --yr-shadow-card: 0 2px 8px -2px rgba(0, 0, 0, 0.9);
+  --yr-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.9);
+  --yr-shadow-card: 0 2px 8px -2px rgba(0, 0, 0, 0.95);
   --yr-shadow-modal: 0 16px 40px -4px rgba(0, 0, 0, 1);
 }

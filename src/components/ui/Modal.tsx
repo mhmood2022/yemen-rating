@@ -57,10 +57,10 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Overlay - Pure Black with blur */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+      {/* Overlay - Pure Black */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-[3px] transition-opacity"
+        className="fixed inset-0 bg-black/85 backdrop-blur-[2px] transition-opacity"
         onClick={handleAttemptClose}
         aria-hidden="true"
       />
@@ -74,24 +74,24 @@ export const Modal: React.FC<ModalProps> = ({
         )}
       >
         {/* Header - Pure Black */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E2E8F0] dark:border-[#222222] bg-white dark:bg-[#000000] sticky top-0">
-          <h3 className="text-base sm:text-lg font-bold text-[#0B1F3A] dark:text-white">{title}</h3>
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-[#E2E8F0] dark:border-[#222222] bg-white dark:bg-[#000000] sticky top-0 z-10">
+          <h3 className="text-sm sm:text-base font-bold text-[#0B1F3A] dark:text-white">{title}</h3>
           <button
             type="button"
             onClick={handleAttemptClose}
-            className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#0B1F3A] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#161616] transition-colors"
+            className="p-1 rounded-lg text-[#94A3B8] hover:text-[#0B1F3A] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#1A1A1A] transition-colors"
             aria-label="إغلاق"
           >
-            <X size={20} strokeWidth={1.75} />
+            <X size={18} strokeWidth={1.75} />
           </button>
         </div>
 
         {/* Content Body - Pure Black */}
         <div className="p-4 sm:p-5 overflow-y-auto bg-white dark:bg-[#000000]">{children}</div>
 
-        {/* Optional Footer - Black */}
+        {/* Optional Footer */}
         {footer && (
-          <div className="px-5 py-3.5 bg-[#F7F8FA] dark:bg-[#000000] border-t border-[#E2E8F0] dark:border-[#222222] flex items-center justify-end gap-2.5">
+          <div className="px-4 sm:px-5 py-3 bg-[#F7F8FA] dark:bg-[#000000] border-t border-[#E2E8F0] dark:border-[#222222] flex items-center justify-end gap-2.5">
             {footer}
           </div>
         )}
