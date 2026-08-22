@@ -10,6 +10,7 @@ export interface HomeHeroSlide {
 export interface HomeCategoryItem {
   id: string;
   name: string;
+  categoryValue: string;
   iconName: string;
   href: string;
 }
@@ -35,20 +36,31 @@ export const HERO_SLIDES: HomeHeroSlide[] = [
   },
   {
     id: 'slide_2',
-    title: 'أقوى العروض والتخفيضات',
-    subtitle: 'استعرض أفضل محلات الجوالات والإلكترونيات الموثقة مع أسعار حصرية',
+    title: 'سوق الجوالات والإلكترونيات',
+    subtitle: 'استعرض أفضل محلات الجوالات الموثقة مع أسعار حصرية وضمانات معتمدة',
     ctaText: 'سوق الجوالات',
-    ctaLink: '/directory?category=محلات الجوالات والإلكترونيات',
+    ctaLink: '/phones',
     imageUrl: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&auto=format&fit=crop&q=80'
   }
 ];
 
-export const MAIN_CATEGORIES: HomeCategoryItem[] = [
-  { id: 'cat_food', name: 'مطاعم ومقاهي', iconName: 'Utensils', href: '/directory?category=المطاعم' },
-  { id: 'cat_cars', name: 'سيارات', iconName: 'Car', href: '/directory?category=السيارات' },
-  { id: 'cat_services', name: 'خدمات', iconName: 'Briefcase', href: '/directory?category=الخدمات' },
-  { id: 'cat_stores', name: 'متاجر', iconName: 'Store', href: '/directory?category=المحلات' },
-  { id: 'cat_health', name: 'صحة وجمال', iconName: 'HeartPulse', href: '/directory?category=الصحة' },
+export const ALL_OFFICIAL_CATEGORIES: HomeCategoryItem[] = [
+  { id: 'c1', name: 'مطاعم ومقاهي', categoryValue: 'المطاعم', iconName: 'Utensils', href: '/directory?category=المطاعم' },
+  { id: 'c2', name: 'متاجر ومحلات', categoryValue: 'المحلات', iconName: 'Store', href: '/directory?category=المحلات' },
+  { id: 'c3', name: 'سوق الجوالات', categoryValue: 'محلات الجوالات والإلكترونيات', iconName: 'Smartphone', href: '/phones' },
+  { id: 'c4', name: 'سيارات ونقل', categoryValue: 'السيارات', iconName: 'Car', href: '/directory?category=السيارات' },
+  { id: 'c5', name: 'خدمات وأعمال', categoryValue: 'الخدمات', iconName: 'Sparkles', href: '/directory?category=الخدمات' },
+  { id: 'c6', name: 'صحة ومستشفيات', categoryValue: 'الصحة', iconName: 'HeartPulse', href: '/directory?category=الصحة' },
+  { id: 'c7', name: 'شركات ومؤسسات', categoryValue: 'الشركات', iconName: 'Building2', href: '/directory?category=الشركات' },
+  { id: 'c8', name: 'بنوك مصرفية', categoryValue: 'البنوك', iconName: 'Landmark', href: '/banks-wallets' },
+  { id: 'c9', name: 'محافظ إلكترونية', categoryValue: 'المحافظ الإلكترونية', iconName: 'Wallet', href: '/banks-wallets' },
+  { id: 'c10', name: 'صرافة وتحويلات', categoryValue: 'الصرافة', iconName: 'Coins', href: '/prices' },
+  { id: 'c11', name: 'فنادق وسياحة', categoryValue: 'الفنادق', iconName: 'Hotel', href: '/directory?category=الفنادق' },
+  { id: 'c12', name: 'عقارات وأملاك', categoryValue: 'العقارات', iconName: 'Home', href: '/directory?category=العقارات' },
+  { id: 'c13', name: 'نقل وشحن', categoryValue: 'النقل', iconName: 'Truck', href: '/directory?category=النقل' },
+  { id: 'c14', name: 'تقنية وبرمجيات', categoryValue: 'التقنية', iconName: 'Laptop', href: '/directory?category=التقنية' },
+  { id: 'c15', name: 'تعليم وجامعات', categoryValue: 'التعليم', iconName: 'GraduationCap', href: '/directory?category=التعليم' },
+  { id: 'c16', name: 'اتصالات وشبكات', categoryValue: 'الاتصالات', iconName: 'Radio', href: '/directory?category=الاتصالات' },
 ];
 
 export const LATEST_REVIEWS: HomeReviewItem[] = [
