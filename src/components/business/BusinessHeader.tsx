@@ -1,127 +1,162 @@
 import React from 'react';
-import { Building2, MapPin, CheckCircle2, Phone, Mail, Globe, Share2, Bookmark, Flame } from 'lucide-react';
+import {
+  ArrowRight,
+  MoreVertical,
+  MapPin,
+  CheckCircle2,
+  Phone,
+  MessageCircle,
+  Navigation,
+  Star,
+  Building2,
+} from 'lucide-react';
 import { BusinessItem } from '../../types/business';
-import { Card } from '../ui/Card';
-import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
-import { BusinessScore } from './BusinessScore';
 import { yrToast } from '../ui/Toast';
 
-export const BusinessHeader: React.FC<{ business: BusinessItem }> = ({ business }) => {
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: business.name,
-        text: `اكتشف ${business.name} على منصة يمن ريتغ (YR)`,
-        url: window.location.href,
-      }).catch(() => {});
+interface BusinessHeaderProps {
+  business: BusinessItem;
+  onNavigate?: (path: string) => void;
+}
+
+export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavigate }) => {
+  const handleCall = () => {
+    if (business.phone) {
+      window.location.href = `tel:${business.phone}`;
     } else {
-      navigator.clipboard.writeText(window.location.href);
-      yrToast.success('تم نسخ الرابط بنجاح');
+      yrToast.info('رقم الهاتف غير مسجل حاليًا');
     }
   };
 
-  const handleFavorite = () => {
-    yrToast.info('تمت الإضافة إلى المفضلة');
+  const handleWhatsapp = () => {
+    if (business.whatsapp || business.phone) {
+      const num = (business.whatsapp || business.phone || '').replace(/[^0-9]/g, '');
+      window.open(`https://wa.me/${num}`, '_blank');
+    } else {
+      yrToast.info('رقم التواصل غير متوفر حاليًا');
+    }
   };
 
+  const handleMap = () => {
+    if (business.mapUrl) {
+      window.open(business.mapUrl, '_blank');
+    } else {
+      yrToast.info(`موقع النشاط: ${business.city} - ${business.address || 'اليمن'}`);
+    }
+  };
+
+  const defaultCover =
+    business.coverUrl ||
+    'https://images.unsplash.com/photo-1578895210405-907db486c111?w=1000&auto=format&fit=crop&q=80';
+
   return (
-    <Card className="p-5 sm:p-6 mb-6">
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-5">
-        <div className="flex items-start gap-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[14px] bg-[#0B1F3A]/5 dark:bg-[#0F2138] border border-[#E2E8F0] dark:border-[#263A52] flex items-center justify-center text-[#0B1F3A] dark:text-[#F8FAFC] font-bold shrink-0 shadow-sm">
-            {business.logoUrl ? (
-              <img src={business.logoUrl} alt={business.name} className="w-full h-full object-cover rounded-[14px]" />
-            ) : (
-              <Building2 size={36} strokeWidth={1.75} />
-            )}
-          </div>
+    <div className="relative bg-white dark:bg-[#000000] border-b border-[#E2E8F0] dark:border-[#222222]">
+      {/* 1. Top Cover Section with Action Buttons (Arrow & Options) */}
+      <div className="relative h-[160px] sm:h-[200px] w-full overflow-hidden bg-[#0A0A0A]">
+        <img
+          src={defaultCover}
+          alt={business.name}
+          className="w-full h-full object-cover opacity-50 dark:opacity-40"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/60" />
 
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="neutral" size="sm">{business.category}</Badge>
-              {business.isTrending && (
-                <Badge variant="yellow" size="sm" className="gap-1">
-                  <Flame size={12} strokeWidth={2} />
-                  YR Trend
-                </Badge>
-              )}
-            </div>
+        {/* Top Floating Actions: Back Arrow + Options Dots */}
+        <div className="absolute top-3 left-0 right-0 px-4 flex items-center justify-between z-20">
+          <button
+            type="button"
+            onClick={() => onNavigate && onNavigate('/directory')}
+            className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-[4px] text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+            aria-label="الرجوع"
+          >
+            <ArrowRight size={18} strokeWidth={2} />
+          </button>
 
-            <h1 className="text-lg sm:text-2xl font-black text-[#0B1F3A] dark:text-[#F8FAFC] flex items-center gap-2">
-              <span>{business.name}</span>
-              {business.isVerified && (
-                <CheckCircle2 size={20} className="text-[#16A34A] dark:text-[#4ADE80] shrink-0" strokeWidth={2} title="موثق رسمياً" />
-              )}
-            </h1>
-
-            <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] flex items-center gap-1.5">
-              <MapPin size={15} strokeWidth={1.75} className="text-[#94A3B8] dark:text-[#64748B] shrink-0" />
-              <span>{business.city}</span>
-              {business.address && <span>— {business.address}</span>}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-row md:flex-col items-center md:items-end justify-between gap-3 border-t md:border-t-0 pt-3 md:pt-0 border-[#F1F5F9] dark:border-[#1B2F47]">
-          <BusinessScore score={business.yrScore} size="lg" showLabel={true} />
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShare}
-              icon={<Share2 size={15} strokeWidth={1.75} />}
-              title="مشاركة"
-            >
-              مشاركة
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleFavorite}
-              icon={<Bookmark size={15} strokeWidth={1.75} />}
-              title="حفظ"
-            >
-              حفظ
-            </Button>
-          </div>
+          <button
+            type="button"
+            onClick={() => yrToast.info('خيارات المشاركة والحفظ متاحة')}
+            className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-[4px] text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+            aria-label="المزيد من الخيارات"
+          >
+            <MoreVertical size={18} strokeWidth={2} />
+          </button>
         </div>
       </div>
 
-      {(business.phone || business.email || business.website) && (
-        <div className="flex flex-wrap items-center gap-3 pt-4 mt-5 border-t border-[#F1F5F9] dark:border-[#1B2F47] text-xs">
-          {business.phone && (
-            <a
-              href={`tel:${business.phone}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0F2138] border border-[#E2E8F0] dark:border-[#263A52] text-[#0B1F3A] dark:text-[#F8FAFC] font-semibold hover:bg-[#E2E8F0] dark:hover:bg-[#162F52] transition-colors"
-            >
-              <Phone size={14} strokeWidth={1.75} className="text-[#16A34A] dark:text-[#4ADE80]" />
-              <span dir="ltr">{business.phone}</span>
-            </a>
-          )}
-          {business.email && (
-            <a
-              href={`mailto:${business.email}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0F2138] border border-[#E2E8F0] dark:border-[#263A52] text-[#0B1F3A] dark:text-[#F8FAFC] font-semibold hover:bg-[#E2E8F0] dark:hover:bg-[#162F52] transition-colors"
-            >
-              <Mail size={14} strokeWidth={1.75} className="text-[#2563EB] dark:text-[#60A5FA]" />
-              <span>{business.email}</span>
-            </a>
-          )}
-          {business.website && (
-            <a
-              href={business.website}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0F2138] border border-[#E2E8F0] dark:border-[#263A52] text-[#0B1F3A] dark:text-[#F8FAFC] font-semibold hover:bg-[#E2E8F0] dark:hover:bg-[#162F52] transition-colors"
-            >
-              <Globe size={14} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />
-              <span>الموقع الإلكتروني</span>
-            </a>
+      {/* 2. Overlapping Centered Logo Box */}
+      <div className="relative px-4 pb-4 -mt-12 text-center flex flex-col items-center">
+        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[16px] bg-white dark:bg-[#111111] p-1 border-2 border-white dark:border-[#222222] shadow-2xl overflow-hidden shrink-0 z-10">
+          {business.logoUrl ? (
+            <img
+              src={business.logoUrl}
+              alt={business.name}
+              className="w-full h-full object-cover rounded-[13px]"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-[#F7F8FA] dark:bg-[#1A1A1A] text-[#F5C400]">
+              <Building2 size={36} strokeWidth={1.75} />
+            </div>
           )}
         </div>
-      )}
-    </Card>
+
+        {/* Name & Title */}
+        <div className="mt-2.5 space-y-1">
+          <h1 className="text-lg sm:text-2xl font-black text-[#0B1F3A] dark:text-white leading-tight">
+            {business.name}
+          </h1>
+
+          {/* Badges Strip (Verified + YR Score + Location) */}
+          <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap pt-1 text-xs">
+            {/* Verified Badge */}
+            {business.isVerified && (
+              <span className="inline-flex items-center gap-1 font-bold text-[#F5C400] bg-[#F5C400]/10 px-2.5 py-0.5 rounded-full border border-[#F5C400]/30">
+                <span>موثّق</span>
+                <CheckCircle2 size={13} strokeWidth={2.5} />
+              </span>
+            )}
+
+            {/* YR Score */}
+            <span className="inline-flex items-center gap-1 font-black text-white bg-[#0B1F3A] dark:bg-[#161616] px-2.5 py-0.5 rounded-full border border-[#E2E8F0] dark:border-[#262626]">
+              <Star size={12} strokeWidth={2.5} className="text-[#F5C400] fill-[#F5C400]" />
+              <span>{business.yrScore} YR Score</span>
+            </span>
+
+            {/* Location */}
+            <span className="inline-flex items-center gap-1 text-[#64748B] dark:text-[#A1A1AA] font-semibold">
+              <MapPin size={13} className="text-[#F5C400] shrink-0" />
+              <span>{business.city}، اليمن</span>
+            </span>
+          </div>
+        </div>
+
+        {/* 3. Three Main Quick Action Buttons [اتصال] [تواصل] [موقع] */}
+        <div className="grid grid-cols-3 gap-2.5 w-full max-w-sm mt-4 pt-3 border-t border-[#F1F5F9] dark:border-[#1E1E1E]">
+          <button
+            type="button"
+            onClick={handleCall}
+            className="h-[38px] rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:border-[#F5C400]/50 active:scale-95 transition-all"
+          >
+            <Phone size={14} strokeWidth={2} className="text-[#16A34A] dark:text-[#22C55E]" />
+            <span>اتصال</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleWhatsapp}
+            className="h-[38px] rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:border-[#F5C400]/50 active:scale-95 transition-all"
+          >
+            <MessageCircle size={14} strokeWidth={2} className="text-[#2563EB] dark:text-[#60A5FA]" />
+            <span>تواصل</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleMap}
+            className="h-[38px] rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:border-[#F5C400]/50 active:scale-95 transition-all"
+          >
+            <Navigation size={14} strokeWidth={2} className="text-[#F5C400]" />
+            <span>موقع</span>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };

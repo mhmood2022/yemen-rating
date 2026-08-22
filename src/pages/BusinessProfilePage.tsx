@@ -14,7 +14,7 @@ export const BusinessProfilePage: React.FC<{
 
   if (!business) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 p-4 max-w-lg mx-auto">
         <Button variant="ghost" size="sm" onClick={() => onNavigate('/directory')} icon={<ArrowRight size={14} strokeWidth={1.75} />}>
           العودة لدليل الأنشطة
         </Button>
@@ -29,22 +29,12 @@ export const BusinessProfilePage: React.FC<{
   }
 
   return (
-    <div className="space-y-6 pb-12">
-      <div className="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onNavigate('/directory')}
-          className="text-xs text-[#64748B] dark:text-[#94A3B8] hover:text-[#0B1F3A] dark:hover:text-[#F8FAFC]"
-          icon={<ArrowRight size={14} strokeWidth={1.75} />}
-        >
-          العودة لدليل الأنشطة
-        </Button>
-        <span className="text-xs text-[#94A3B8] dark:text-[#64748B]">معرف النشاط: #{business.id}</span>
-      </div>
+    <div className="space-y-3 pb-12">
+      {/* Top Profile Header (Cover, Centered Logo, Action Buttons) */}
+      <BusinessHeader business={business} onNavigate={onNavigate} />
 
-      <BusinessHeader business={business} />
-      <BusinessTabs business={business} />
+      {/* Tabs & Detailed Sections matching the Wireframe */}
+      <BusinessTabs business={business} onNavigate={onNavigate} />
     </div>
   );
 };

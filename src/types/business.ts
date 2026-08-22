@@ -12,6 +12,8 @@ export type BusinessCategory =
   | 'الخدمات'
   | 'الاتصالات'
   | 'الصرافة'
+  | 'البنوك'
+  | 'المحافظ الإلكترونية'
   | 'محلات الجوالات والإلكترونيات';
 
 export type YemenCity =
@@ -33,6 +35,12 @@ export interface BusinessReview {
   isVerifiedReviewer?: boolean;
 }
 
+export interface BusinessBranch {
+  city: string;
+  address: string;
+  phone?: string;
+}
+
 export interface BusinessItem {
   id: string;
   name: string;
@@ -48,10 +56,14 @@ export interface BusinessItem {
   isVerified: boolean;
   isTrending?: boolean;
   phone?: string;
+  whatsapp?: string;
+  mapUrl?: string;
   email?: string;
   website?: string;
   services?: string[];
   products?: { id: string; name: string; price?: string; description?: string }[];
+  branches?: BusinessBranch[];
+  exchangeRates?: { currency: string; code: string; buy: number; sell: number }[];
   reviews?: BusinessReview[];
   stats?: {
     views7d: number;

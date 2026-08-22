@@ -1,25 +1,51 @@
 import React, { useState } from 'react';
 import { BusinessItem } from '../../types/business';
 import { Card } from '../ui/Card';
-import { EmptyState } from '../ui/EmptyState';
-import { BusinessReviews } from './BusinessReviews';
-import { BarChart3, Package, Wrench, FileText, Star } from 'lucide-react';
+import { Button } from '../ui/Button';
+import {
+  Building2,
+  Coins,
+  Wrench,
+  MapPin,
+  Star,
+  MoreHorizontal,
+  ArrowLeftRight,
+  CheckCircle2,
+  User,
+  Plus,
+} from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { yrToast } from '../ui/Toast';
 
-export const BusinessTabs: React.FC<{ business: BusinessItem }> = ({ business }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'services' | 'products' | 'reviews' | 'stats'>('overview');
+interface BusinessTabsProps {
+  business: BusinessItem;
+  onNavigate?: (path: string) => void;
+}
+
+export const BusinessTabs: React.FC<BusinessTabsProps> = ({ business, onNavigate }) => {
+  const [activeTab, setActiveTab] = useState<string>('overview');
+
+  const isFinancial =
+    business.category === 'البنوك' ||
+    business.category === 'المحافظ الإلكترونية' ||
+    business.category === 'الصرافة';
 
   const tabs = [
-    { id: 'overview' as const, label: 'نظرة عامة', icon: FileText },
-    { id: 'services' as const, label: 'الخدمات', icon: Wrench, count: business.services?.length },
-    { id: 'products' as const, label: 'المنتجات', icon: Package, count: business.products?.length },
-    { id: 'reviews' as const, label: 'التقييمات', icon: Star, count: business.reviews?.length },
-    { id: 'stats' as const, label: 'الإحصائيات', icon: BarChart3 },
+    { id: 'overview', label: 'نظرة عامة', icon: Building2 },
+    { id: 'services', label: 'الخدمات', icon: Wrench },
+    ...(business.branches && business.branches.length > 0 ? [{ id: 'branches', label: 'الفروع', icon: MapPin }] : []),
+    ...(isFinancial ? [{ id: 'rates', label: 'الأسعار', icon: Coins }] : []),
+    { id: 'reviews', label: 'التقييمات', icon: Star },
   ];
 
+  const handleAddReview = () => {
+    yrToast.info('تم فتح نموذج التقييم المعتمد');
+  };
+
   return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-2 border-b border-[#E2E8F0] dark:border-[#263A52] pb-2 overflow-x-auto no-scrollbar">
+    <div className="space-y-4 max-w-2xl mx-auto px-3 sm:px-4">
+      {/* Tab Navigation Strip */}
+      <div className="flex items-center gap-1.5 border-b border-[#E2E8F0] dark:border-[#222222] pb-2 overflow-x-auto no-scrollbar pt-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -29,123 +55,195 @@ export const BusinessTabs: React.FC<{ business: BusinessItem }> = ({ business })
               type="button"
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                'flex items-center gap-2 px-3.5 py-2 rounded-[10px] text-xs sm:text-sm font-bold transition-all whitespace-nowrap',
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-[9px] text-xs font-extrabold transition-all whitespace-nowrap select-none',
                 isActive
-                  ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-[#0B1F3A]'
-                  : 'text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#162F52] hover:text-[#0B1F3A] dark:hover:text-[#F8FAFC]'
+                  ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-black shadow-sm'
+                  : 'text-[#64748B] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414] hover:text-[#0B1F3A] dark:hover:text-white'
               )}
             >
-              <Icon size={16} strokeWidth={1.75} />
+              <Icon size={14} strokeWidth={2} />
               <span>{tab.label}</span>
-              {tab.count !== undefined && (
-                <span
-                  className={cn(
-                    'text-[10px] px-1.5 py-0.2 rounded-full font-extrabold',
-                    isActive
-                      ? 'bg-[#F5C400] text-[#0B1F3A] dark:bg-[#0B1F3A] dark:text-[#F5C400]'
-                      : 'bg-[#E2E8F0] dark:bg-[#263A52] text-[#475569] dark:text-[#94A3B8]'
-                  )}
-                >
-                  {tab.count}
-                </span>
-              )}
             </button>
           );
         })}
       </div>
 
-      <div className="pt-1">
-        {activeTab === 'overview' && (
+      {/* Tab Content Display */}
+      <div className="space-y-4 pt-1">
+        {/* 1. نظرة عامة (Overview) */}
+        {(activeTab === 'overview' || activeTab === 'all') && (
           <div className="space-y-4">
-            <Card className="p-5">
-              <h3 className="text-sm font-bold text-[#0B1F3A] dark:text-[#F8FAFC] mb-2">عن النشاط</h3>
-              <p className="text-xs sm:text-sm text-[#475569] dark:text-[#94A3B8] leading-relaxed">
-                {business.description || 'لا توجد بيانات متاحة حاليًا.'}
+            {/* عن النشاط / البنك */}
+            <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-2">
+              <div className="flex items-center gap-2 text-[#0B1F3A] dark:text-[#F5C400] font-black text-xs sm:text-sm">
+                <Building2 size={16} strokeWidth={2} />
+                <span>عن {business.name}</span>
+              </div>
+              <p className="text-xs sm:text-sm text-[#475569] dark:text-[#A1A1AA] leading-relaxed">
+                {business.description || 'المؤسسة تقدم خدماتها المعتمدة في عموم الجمهورية اليمنية.'}
               </p>
             </Card>
 
-            <Card className="p-5">
-              <h3 className="text-sm font-bold text-[#0B1F3A] dark:text-[#F8FAFC] mb-3">بيانات التوثيق والتصنيف</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-                <div className="p-3 bg-[#F7F8FA] dark:bg-[#0F2138] border border-[#E2E8F0] dark:border-[#263A52] rounded-[8px]">
-                  <span className="text-[#94A3B8] dark:text-[#64748B] block mb-1">المدينة</span>
-                  <span className="font-bold text-[#0B1F3A] dark:text-[#F8FAFC]">{business.city}</span>
+            {/* أسعار الصرف إذا كان بنكاً أو صرافة */}
+            {isFinancial && business.exchangeRates && (
+              <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
+                  <div className="flex items-center gap-2 text-[#0B1F3A] dark:text-[#F5C400] font-black text-xs sm:text-sm">
+                    <Coins size={16} strokeWidth={2} />
+                    <span>أسعار الصرف المعتمدة</span>
+                  </div>
+                  <span className="text-[10px] text-[#64748B] dark:text-[#71717A]">سوق صنعاء</span>
                 </div>
-                <div className="p-3 bg-[#F7F8FA] dark:bg-[#0F2138] border border-[#E2E8F0] dark:border-[#263A52] rounded-[8px]">
-                  <span className="text-[#94A3B8] dark:text-[#64748B] block mb-1">التصنيف الرسمي</span>
-                  <span className="font-bold text-[#0B1F3A] dark:text-[#F8FAFC]">{business.category}</span>
-                </div>
-                <div className="p-3 bg-[#F7F8FA] dark:bg-[#0F2138] border border-[#E2E8F0] dark:border-[#263A52] rounded-[8px]">
-                  <span className="text-[#94A3B8] dark:text-[#64748B] block mb-1">حالة التوثيق</span>
-                  <span className={business.isVerified ? 'font-bold text-[#16A34A] dark:text-[#4ADE80]' : 'font-bold text-[#64748B] dark:text-[#94A3B8]'}>
-                    {business.isVerified ? 'موثق رسمياً' : 'غير موثق'}
-                  </span>
-                </div>
-              </div>
-            </Card>
-          </div>
-        )}
 
-        {activeTab === 'services' && (
-          <div>
-            {!business.services || business.services.length === 0 ? (
-              <EmptyState title="لا توجد بيانات متاحة حاليًا" description="لم يتم تسجيل قائمة الخدمات لهذا النشاط بعد." />
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {business.services.map((srv, idx) => (
-                  <Card key={idx} className="p-4 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-[8px] bg-[#0B1F3A]/5 dark:bg-[#0F2138] border border-[#E2E8F0] dark:border-[#263A52] text-[#0B1F3A] dark:text-[#F5C400] flex items-center justify-center font-bold text-xs shrink-0">
-                      {idx + 1}
+                <div className="space-y-2">
+                  <div className="grid grid-cols-3 text-center text-[10px] font-bold text-[#64748B] dark:text-[#71717A] px-2">
+                    <span className="text-right">العملة</span>
+                    <span>شراء</span>
+                    <span>بيع</span>
+                  </div>
+
+                  {business.exchangeRates.map((r, idx) => (
+                    <div
+                      key={idx}
+                      className="grid grid-cols-3 items-center text-center p-2 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#1E1E1E] text-xs"
+                    >
+                      <span className="text-right font-bold text-[#0B1F3A] dark:text-white">
+                        {r.code}
+                      </span>
+                      <span className="font-black text-[#16A34A] dark:text-[#22C55E]">
+                        {r.buy.toLocaleString()}
+                      </span>
+                      <span className="font-black text-[#0B1F3A] dark:text-white">
+                        {r.sell.toLocaleString()}
+                      </span>
                     </div>
-                    <span className="text-xs sm:text-sm font-semibold text-[#0B1F3A] dark:text-[#F8FAFC]">{srv}</span>
-                  </Card>
-                ))}
-              </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate && onNavigate('/prices')}
+                  className="w-full py-2 rounded-[9px] border border-[#E2E8F0] dark:border-[#222222] bg-[#F7F8FA] dark:bg-[#141414] text-[#0B1F3A] dark:text-[#F5C400] text-xs font-bold flex items-center justify-center gap-1.5 hover:border-[#F5C400]/50 transition-colors"
+                >
+                  <ArrowLeftRight size={13} strokeWidth={2} />
+                  <span>مقارنة الأسعار بين صنعاء وعدن</span>
+                </button>
+              </Card>
             )}
           </div>
         )}
 
-        {activeTab === 'products' && (
-          <div>
-            {!business.products || business.products.length === 0 ? (
-              <EmptyState title="لا توجد بيانات متاحة حاليًا" description="لم يتم إدراج أي منتجات لهذا النشاط حاليًا." />
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {business.products.map((prd) => (
-                  <Card key={prd.id} className="p-4">
-                    <h4 className="font-bold text-sm text-[#0B1F3A] dark:text-[#F8FAFC] mb-1">{prd.name}</h4>
-                    {prd.description && <p className="text-xs text-[#64748B] dark:text-[#94A3B8] mb-2">{prd.description}</p>}
-                    {prd.price && <span className="text-xs font-bold text-[#16A34A] dark:text-[#4ADE80]">{prd.price}</span>}
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+        {/* 2. الخدمات (Services) */}
+        {(activeTab === 'services' || activeTab === 'overview') && business.services && (
+          <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-3">
+            <div className="flex items-center gap-2 text-[#0B1F3A] dark:text-[#F5C400] font-black text-xs sm:text-sm pb-1 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
+              <Wrench size={16} strokeWidth={2} />
+              <span>الخدمات والمنتجات المقدمة</span>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {business.services.map((srv, idx) => (
+                <span
+                  key={idx}
+                  className="px-3 py-1.5 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] text-xs font-bold text-[#0B1F3A] dark:text-white flex items-center gap-1.5"
+                >
+                  <CheckCircle2 size={13} className="text-[#16A34A] dark:text-[#22C55E]" />
+                  <span>{srv}</span>
+                </span>
+              ))}
+            </div>
+          </Card>
         )}
 
-        {activeTab === 'reviews' && (
-          <BusinessReviews reviews={business.reviews} />
-        )}
-
-        {activeTab === 'stats' && (
-          <Card className="p-5">
-            <h3 className="text-sm font-bold text-[#0B1F3A] dark:text-[#F8FAFC] mb-1">تقرير تفاعل المنصة (YR Report Preview)</h3>
-            <p className="text-xs text-[#94A3B8] dark:text-[#64748B] mb-4">يعرض فقط قياسات الزيارات والظهور المحسوبة داخل منصة يمن ريتغ</p>
-
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="p-3 bg-[#F7F8FA] dark:bg-[#0F2138] rounded-[10px] border border-[#E2E8F0] dark:border-[#263A52]">
-                <span className="block text-lg font-black text-[#0B1F3A] dark:text-[#F8FAFC]">{business.stats?.views7d || 0}</span>
-                <span className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">زيارات (7 أيام)</span>
-              </div>
-              <div className="p-3 bg-[#F7F8FA] dark:bg-[#0F2138] rounded-[10px] border border-[#E2E8F0] dark:border-[#263A52]">
-                <span className="block text-lg font-black text-[#0B1F3A] dark:text-[#F8FAFC]">{business.stats?.views30d || 0}</span>
-                <span className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">ظهور (30 يومًا)</span>
-              </div>
-              <div className="p-3 bg-[#F7F8FA] dark:bg-[#0F2138] rounded-[10px] border border-[#E2E8F0] dark:border-[#263A52]">
-                <span className="block text-lg font-black text-[#0B1F3A] dark:text-[#F8FAFC]">{business.stats?.searches30d || 0}</span>
-                <span className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">بحث (30 يومًا)</span>
+        {/* 3. الفروع والانتشار (Branches) */}
+        {(activeTab === 'branches' || activeTab === 'overview') && business.branches && (
+          <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-3">
+            <div className="flex items-center justify-between pb-1 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
+              <div className="flex items-center gap-2 text-[#0B1F3A] dark:text-[#F5C400] font-black text-xs sm:text-sm">
+                <MapPin size={16} strokeWidth={2} />
+                <span>الفروع والانتشار</span>
               </div>
             </div>
+
+            <div className="space-y-2">
+              {business.branches.map((b, idx) => (
+                <div
+                  key={idx}
+                  className="p-2.5 rounded-[9px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#1E1E1E] flex items-start gap-2 text-xs"
+                >
+                  <span className="font-extrabold text-[#F5C400] shrink-0">{b.city}:</span>
+                  <span className="text-[#475569] dark:text-[#A1A1AA] leading-relaxed">{b.address}</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => yrToast.info('شبكة الفروع معتمدة في كافة المحافظات')}
+              className="w-full py-2 rounded-[9px] border border-[#E2E8F0] dark:border-[#222222] bg-[#F7F8FA] dark:bg-[#141414] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1 hover:border-[#F5C400]/50 transition-colors"
+            >
+              <span>عرض جميع الفروع ونقاط الخدمة</span>
+            </button>
+          </Card>
+        )}
+
+        {/* 4. تقييمات العملاء (Reviews) */}
+        {(activeTab === 'reviews' || activeTab === 'overview') && (
+          <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
+              <div className="flex items-center gap-2 text-[#0B1F3A] dark:text-[#F5C400] font-black text-xs sm:text-sm">
+                <Star size={16} strokeWidth={2} className="fill-[#F5C400]" />
+                <span>تقييمات العملاء</span>
+              </div>
+
+              {/* Stars Score summary */}
+              <div className="flex items-center gap-1 text-xs font-extrabold text-[#0B1F3A] dark:text-white">
+                <div className="flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} size={11} className="text-[#F5C400] fill-[#F5C400]" />
+                  ))}
+                </div>
+                <span>{business.rating.toFixed(1)} / 5</span>
+              </div>
+            </div>
+
+            {/* Reviews List */}
+            {business.reviews && business.reviews.length > 0 && (
+              <div className="space-y-2.5">
+                {business.reviews.map((rev) => (
+                  <div
+                    key={rev.id}
+                    className="p-3 rounded-[10px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#1E1E1E] space-y-1.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-[#0B1F3A]/5 dark:bg-[#1A1A1A] flex items-center justify-center text-[#71717A]">
+                          <User size={12} />
+                        </div>
+                        <span className="font-bold text-xs text-[#0B1F3A] dark:text-white">
+                          {rev.authorName}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-[#94A3B8] dark:text-[#71717A]">{rev.date}</span>
+                    </div>
+
+                    <p className="text-xs text-[#475569] dark:text-[#A1A1AA] leading-relaxed">
+                      {rev.comment}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Write Review Button */}
+            <button
+              type="button"
+              onClick={handleAddReview}
+              className="w-full py-2.5 rounded-[10px] bg-[#F5C400] text-black font-black text-xs flex items-center justify-center gap-1.5 hover:bg-[#DDAF00] active:scale-95 transition-all shadow-sm"
+            >
+              <Plus size={15} strokeWidth={2.5} />
+              <span>كتابة تقييم جديد</span>
+            </button>
           </Card>
         )}
       </div>
