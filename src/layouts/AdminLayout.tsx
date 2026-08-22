@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
-import { LogOut, ShieldAlert } from 'lucide-react';
+import { LogOut, ShieldAlert, Star } from 'lucide-react';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 
 export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -9,25 +9,26 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
+      <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="flex flex-col items-center gap-3">
-          <LoadingSpinner size={32} className="text-[#0B1F3A]" />
-          <p className="text-sm font-bold text-[#0B1F3A]">جارٍ التحقق من الصلاحيات...</p>
+          <LoadingSpinner size={32} className="text-[#F5C400]" />
+          <p className="text-sm font-bold text-white">جارٍ التحقق من الصلاحيات الإدارية...</p>
         </div>
       </div>
     );
   }
 
+  // Strict Protection (Must be logged in & Role Admin)
   if (!user || !isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-[#F7F8FA]">
-        <div className="bg-white p-6 rounded-[14px] border border-[#DC2626]/30 shadow-xl max-w-md w-full text-center space-y-4">
-          <div className="p-3 bg-[#DC2626]/10 text-[#DC2626] rounded-full inline-flex">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-black">
+        <div className="bg-[#111111] p-6 rounded-[14px] border border-[#222222] shadow-2xl max-w-md w-full text-center space-y-4">
+          <div className="p-3 bg-[#EF4444]/15 text-[#EF4444] rounded-full inline-flex">
             <ShieldAlert size={36} strokeWidth={2} />
           </div>
-          <h2 className="text-lg font-bold text-[#0B1F3A]">وصول محظور — غير مصرح لك</h2>
-          <p className="text-xs text-[#64748B] leading-relaxed">
-            هذه المنطقة مخصصة لإدارة منصة يمن ريتغ فقط، وتتطلب صلاحيات عليا موثقة في قاعدة البيانات.
+          <h2 className="text-lg font-bold text-white">وصول محظور — لوحة المشرفين</h2>
+          <p className="text-xs text-[#A1A1AA] leading-relaxed">
+            هذه المنطقة مخصصة لإدارة منصة يمن ريتغ (YR Admin Console). تتطلب صلاحيات مشفرة وموثقة في قاعدة البيانات.
           </p>
           <div className="pt-2">
             <Button variant="primary" fullWidth onClick={() => (window.location.href = '/')}>
@@ -40,36 +41,38 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F8FA]">
-      <header className="h-[64px] bg-[#0B1F3A] text-white px-6 flex items-center justify-between shadow-md">
+    <div className="min-h-screen flex flex-col bg-black text-white transition-colors">
+      {/* Top Admin Header Bar */}
+      <header className="h-[60px] bg-[#0A0A0A] border-b border-[#222222] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-md">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-[8px] bg-[#F5C400] text-[#0B1F3A] font-black flex items-center justify-center text-base">
-            YR
+          <div className="w-8 h-8 rounded-[8px] bg-[#111111] border border-[#F5C400]/40 flex items-center justify-center text-[#F5C400] font-black">
+            <Star size={16} className="fill-[#F5C400]" />
           </div>
           <div>
-            <h1 className="text-sm font-bold leading-tight">لوحة الإدارة — يمن ريتغ</h1>
-            <p className="text-[10px] text-[#94A3B8]">Yemen Rating Admin Console</p>
+            <h1 className="text-sm font-black leading-tight text-white">لوحة الإدارة — يمن ريتغ</h1>
+            <p className="text-[9px] text-[#A1A1AA]">Yemen Rating Admin Console · YR Ads</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-xs text-[#E2E8F0] hidden sm:inline-block">{user.email}</span>
+          <span className="text-xs text-[#A1A1AA] hidden sm:inline-block font-mono">{user.email}</span>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="text-white hover:bg-white/10 hover:text-white"
+            className="text-xs h-8 border-[#222222] text-[#A1A1AA] hover:text-white"
             onClick={async () => {
               await logout();
               window.location.href = '/';
             }}
-            icon={<LogOut size={16} />}
+            icon={<LogOut size={14} />}
           >
             خروج
           </Button>
         </div>
       </header>
 
-      <main className="flex-1 p-6 max-w-7xl mx-auto w-full">{children}</main>
+      {/* Main Content Area */}
+      <main className="flex-1 p-4 sm:p-6 max-w-6xl mx-auto w-full">{children}</main>
     </div>
   );
 };

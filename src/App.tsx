@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { ModalProvider } from './context/ModalContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { AdminProvider } from './context/AdminContext';
 import { ToastProvider } from './components/ui/Toast';
 import { AppLayout } from './layouts/AppLayout';
 import { AdminLayout } from './layouts/AdminLayout';
@@ -128,10 +129,12 @@ export const App: React.FC = () => {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <ModalProvider>
-          <ToastProvider />
-          {renderContent()}
-        </ModalProvider>
+        <AdminProvider>
+          <ModalProvider>
+            <ToastProvider />
+            {renderContent()}
+          </ModalProvider>
+        </AdminProvider>
       </AuthProvider>
     </ThemeProvider>
   );
