@@ -3,14 +3,16 @@ import {
   ArrowRight,
   MoreVertical,
   MapPin,
-  CheckCircle2,
   Phone,
   MessageCircle,
   Navigation,
   Star,
   Building2,
+  Globe,
+  Clock,
 } from 'lucide-react';
 import { BusinessItem } from '../../types/business';
+import { YrVerifiedBadge } from './YrVerifiedBadge';
 import { yrToast } from '../ui/Toast';
 
 interface BusinessHeaderProps {
@@ -23,7 +25,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
     if (business.phone) {
       window.location.href = `tel:${business.phone}`;
     } else {
-      yrToast.info('رقم الهاتف غير مسجل حاليًا');
+      yrToast.info('رقم الهاتف غير مسجل');
     }
   };
 
@@ -32,7 +34,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
       const num = (business.whatsapp || business.phone || '').replace(/[^0-9]/g, '');
       window.open(`https://wa.me/${num}`, '_blank');
     } else {
-      yrToast.info('رقم التواصل غير متوفر حاليًا');
+      yrToast.info('رقم الواتساب غير متوفر');
     }
   };
 
@@ -40,7 +42,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
     if (business.mapUrl) {
       window.open(business.mapUrl, '_blank');
     } else {
-      yrToast.info(`موقع النشاط: ${business.city} - ${business.address || 'اليمن'}`);
+      yrToast.info(`الموقع: ${business.city} - ${business.address || 'اليمن'}`);
     }
   };
 
@@ -50,21 +52,22 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
 
   return (
     <div className="relative bg-white dark:bg-[#000000] border-b border-[#E2E8F0] dark:border-[#222222]">
-      {/* 1. Top Cover Section with Action Buttons (Arrow & Options) */}
-      <div className="relative h-[160px] sm:h-[200px] w-full overflow-hidden bg-[#0A0A0A]">
+      {/* 1. Clear Cover Image (No Heavy Dark Layer) */}
+      <div className="relative h-[160px] sm:h-[220px] md:h-[260px] w-full overflow-hidden bg-[#0A0A0A]">
         <img
           src={defaultCover}
           alt={business.name}
-          className="w-full h-full object-cover opacity-50 dark:opacity-40"
+          className="w-full h-full object-cover opacity-75 dark:opacity-65"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/60" />
+        {/* Subtle Gradient only for top text contrast */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50" />
 
-        {/* Top Floating Actions: Back Arrow + Options Dots */}
-        <div className="absolute top-3 left-0 right-0 px-4 flex items-center justify-between z-20">
+        {/* Top Actions: Back & Options */}
+        <div className="absolute top-3.5 left-0 right-0 px-4 flex items-center justify-between z-20">
           <button
             type="button"
             onClick={() => onNavigate && onNavigate('/directory')}
-            className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-[4px] text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+            className="w-9 h-9 rounded-full bg-black/65 backdrop-blur-[3px] text-white flex items-center justify-center hover:bg-black/90 transition-colors shadow-md"
             aria-label="الرجوع"
           >
             <ArrowRight size={18} strokeWidth={2} />
@@ -72,89 +75,97 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
 
           <button
             type="button"
-            onClick={() => yrToast.info('خيارات المشاركة والحفظ متاحة')}
-            className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-[4px] text-white flex items-center justify-center hover:bg-black/80 transition-colors"
-            aria-label="المزيد من الخيارات"
+            onClick={() => yrToast.info('تم حفظ ومشاركة النشاط')}
+            className="w-9 h-9 rounded-full bg-black/65 backdrop-blur-[3px] text-white flex items-center justify-center hover:bg-black/90 transition-colors shadow-md"
+            aria-label="خيارات إضافية"
           >
             <MoreVertical size={18} strokeWidth={2} />
           </button>
         </div>
       </div>
 
-      {/* 2. Overlapping Centered Logo Box */}
-      <div className="relative px-4 pb-4 -mt-12 text-center flex flex-col items-center">
-        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[16px] bg-white dark:bg-[#111111] p-1 border-2 border-white dark:border-[#222222] shadow-2xl overflow-hidden shrink-0 z-10">
-          {business.logoUrl ? (
-            <img
-              src={business.logoUrl}
-              alt={business.name}
-              className="w-full h-full object-cover rounded-[13px]"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-[#F7F8FA] dark:bg-[#1A1A1A] text-[#F5C400]">
-              <Building2 size={36} strokeWidth={1.75} />
-            </div>
-          )}
-        </div>
-
-        {/* Name & Title */}
-        <div className="mt-2.5 space-y-1">
-          <h1 className="text-lg sm:text-2xl font-black text-[#0B1F3A] dark:text-white leading-tight">
-            {business.name}
-          </h1>
-
-          {/* Badges Strip (Verified + YR Score + Location) */}
-          <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap pt-1 text-xs">
-            {/* Verified Badge */}
-            {business.isVerified && (
-              <span className="inline-flex items-center gap-1 font-bold text-[#F5C400] bg-[#F5C400]/10 px-2.5 py-0.5 rounded-full border border-[#F5C400]/30">
-                <span>موثّق</span>
-                <CheckCircle2 size={13} strokeWidth={2.5} />
-              </span>
+      {/* 2. Overlapping Logo & Identity Info */}
+      <div className="relative px-4 pb-5 -mt-12 sm:-mt-14 max-w-5xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3.5 text-center sm:text-right">
+          {/* Logo Frame with Object-Fit Cover */}
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[16px] bg-white dark:bg-[#111111] p-1.5 border-2 border-white dark:border-[#222222] shadow-2xl overflow-hidden shrink-0 z-10">
+            {business.logoUrl ? (
+              <img
+                src={business.logoUrl}
+                alt={business.name}
+                className="w-full h-full object-cover rounded-[12px]"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-[#0B1F3A]/5 dark:bg-[#1A1A1A] text-[#F5C400]">
+                <Building2 size={40} strokeWidth={1.5} />
+              </div>
             )}
+          </div>
 
-            {/* YR Score */}
-            <span className="inline-flex items-center gap-1 font-black text-white bg-[#0B1F3A] dark:bg-[#161616] px-2.5 py-0.5 rounded-full border border-[#E2E8F0] dark:border-[#262626]">
-              <Star size={12} strokeWidth={2.5} className="text-[#F5C400] fill-[#F5C400]" />
-              <span>{business.yrScore} YR Score</span>
-            </span>
+          {/* Name & Badges */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-[6px] bg-[#0B1F3A]/10 text-[#0B1F3A] dark:bg-[#181818] dark:text-[#A1A1AA] border border-[#0B1F3A]/20 dark:border-[#262626]">
+                {business.category}
+              </span>
 
-            {/* Location */}
-            <span className="inline-flex items-center gap-1 text-[#64748B] dark:text-[#A1A1AA] font-semibold">
-              <MapPin size={13} className="text-[#F5C400] shrink-0" />
-              <span>{business.city}، اليمن</span>
-            </span>
+              {business.isVerified && (
+                <YrVerifiedBadge text={business.verifiedBadgeText || 'موثّق ✓'} size="sm" />
+              )}
+            </div>
+
+            <h1 className="text-lg sm:text-2xl font-black text-[#0B1F3A] dark:text-white leading-tight">
+              {business.name}
+            </h1>
+
+            <div className="flex items-center justify-center sm:justify-start gap-3 text-xs text-[#64748B] dark:text-[#A1A1AA] pt-0.5">
+              <span className="flex items-center gap-1 font-semibold">
+                <MapPin size={13} className="text-[#F5C400] shrink-0" />
+                <span>{business.city}{business.address ? ` · ${business.address}` : ''}</span>
+              </span>
+
+              <span className="inline-flex items-center gap-1 font-black text-[#0B1F3A] dark:text-white bg-[#F7F8FA] dark:bg-[#141414] px-2 py-0.5 rounded-[6px] border border-[#E2E8F0] dark:border-[#222222]">
+                <Star size={11} className="text-[#F5C400] fill-[#F5C400]" />
+                <span>{business.yrScore} YR Score</span>
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* 3. Three Main Quick Action Buttons [اتصال] [تواصل] [موقع] */}
-        <div className="grid grid-cols-3 gap-2.5 w-full max-w-sm mt-4 pt-3 border-t border-[#F1F5F9] dark:border-[#1E1E1E]">
-          <button
-            type="button"
-            onClick={handleCall}
-            className="h-[38px] rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:border-[#F5C400]/50 active:scale-95 transition-all"
-          >
-            <Phone size={14} strokeWidth={2} className="text-[#16A34A] dark:text-[#22C55E]" />
-            <span>اتصال</span>
-          </button>
+        {/* 3. Action Buttons [اتصال] [واتساب] [موقع] */}
+        <div className="flex items-center justify-center gap-2 w-full sm:w-auto pt-1">
+          {business.phone && (
+            <button
+              type="button"
+              onClick={handleCall}
+              className="h-[38px] px-4 rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:border-[#F5C400]/50 active:scale-95 transition-all shadow-sm"
+            >
+              <Phone size={14} className="text-[#16A34A] dark:text-[#22C55E]" />
+              <span>اتصال</span>
+            </button>
+          )}
 
-          <button
-            type="button"
-            onClick={handleWhatsapp}
-            className="h-[38px] rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:border-[#F5C400]/50 active:scale-95 transition-all"
-          >
-            <MessageCircle size={14} strokeWidth={2} className="text-[#2563EB] dark:text-[#60A5FA]" />
-            <span>تواصل</span>
-          </button>
+          {(business.whatsapp || business.phone) && (
+            <button
+              type="button"
+              onClick={handleWhatsapp}
+              className="h-[38px] px-4 rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:border-[#F5C400]/50 active:scale-95 transition-all shadow-sm"
+            >
+              <MessageCircle size={14} className="text-[#2563EB] dark:text-[#60A5FA]" />
+              <span>تواصل</span>
+            </button>
+          )}
 
-          <button
-            type="button"
-            onClick={handleMap}
-            className="h-[38px] rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:border-[#F5C400]/50 active:scale-95 transition-all"
-          >
-            <Navigation size={14} strokeWidth={2} className="text-[#F5C400]" />
-            <span>موقع</span>
-          </button>
+          {business.businessType !== 'WALLET' && (
+            <button
+              type="button"
+              onClick={handleMap}
+              className="h-[38px] px-4 rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 hover:border-[#F5C400]/50 active:scale-95 transition-all shadow-sm"
+            >
+              <Navigation size={14} className="text-[#F5C400]" />
+              <span>موقع</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

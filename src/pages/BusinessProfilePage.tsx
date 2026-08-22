@@ -1,7 +1,7 @@
 import React from 'react';
 import { DEMO_BUSINESSES } from '../data/demoBusinesses';
 import { BusinessHeader } from '../components/business/BusinessHeader';
-import { BusinessTabs } from '../components/business/BusinessTabs';
+import { BusinessProfileEngine } from '../components/business/BusinessProfileEngine';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Button } from '../components/ui/Button';
 import { ArrowRight } from 'lucide-react';
@@ -29,12 +29,12 @@ export const BusinessProfilePage: React.FC<{
   }
 
   return (
-    <div className="space-y-3 pb-12">
-      {/* Top Profile Header (Cover, Centered Logo, Action Buttons) */}
+    <div className="space-y-0 pb-12 w-full">
+      {/* 1. Header Cover & Identity Box */}
       <BusinessHeader business={business} onNavigate={onNavigate} />
 
-      {/* Tabs & Detailed Sections matching the Wireframe */}
-      <BusinessTabs business={business} onNavigate={onNavigate} />
+      {/* 2. Business Profile Engine (Dynamic Layout by Type) */}
+      <BusinessProfileEngine business={business} onNavigate={onNavigate} />
     </div>
   );
 };
