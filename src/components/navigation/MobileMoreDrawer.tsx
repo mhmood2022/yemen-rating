@@ -19,8 +19,8 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
 
   const moreItems = [
     { id: 'directory', label: 'دليل الأنشطة', icon: Building2, href: '/directory' },
-    { id: 'banks', label: 'البنوك', icon: Landmark, href: '/directory?category=الصرافة' },
-    { id: 'wallets', label: 'المحافظ الإلكترونية', icon: Wallet, href: '/directory?category=الصرافة' },
+    { id: 'banks', label: 'البنوك', icon: Landmark, href: '/banks' },
+    { id: 'wallets', label: 'المحافظ الإلكترونية', icon: Wallet, href: '/wallets' },
     { id: 'prices', label: 'الأسعار', icon: Coins, href: '/directory' },
     { id: 'phones', label: 'سوق الجوالات', icon: Smartphone, href: '/directory?category=محلات الجوالات والإلكترونيات' },
     { id: 'rating', label: 'التقييم', icon: Star, href: '/directory' },
@@ -31,7 +31,7 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
       <div
-        className="fixed inset-0 bg-[#0B1F3A]/70 dark:bg-black/85 backdrop-blur-[2px]"
+        className="fixed inset-0 bg-black/80 backdrop-blur-[2px]"
         onClick={closeMoreDrawer}
       />
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#0A0A0A] border-t border-[#E2E8F0] dark:border-[#222222] rounded-t-[16px] p-5 shadow-2xl z-10 max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom duration-200">

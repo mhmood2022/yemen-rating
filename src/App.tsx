@@ -9,6 +9,7 @@ import { AdminDashboardShell } from './pages/AdminDashboardShell';
 import { HomePage } from './pages/HomePage';
 import { DirectoryPage } from './pages/DirectoryPage';
 import { BusinessProfilePage } from './pages/BusinessProfilePage';
+import { BanksAndWalletsPage } from './pages/BanksAndWalletsPage';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname + window.location.search);
@@ -59,6 +60,15 @@ export const App: React.FC = () => {
             initialQuery={queryParam}
             onNavigate={navigate}
           />
+        </AppLayout>
+      );
+    }
+
+    if (pathname === '/banks-wallets' || pathname === '/banks' || pathname === '/wallets') {
+      const initialType = pathname === '/banks' ? 'bank' : pathname === '/wallets' ? 'wallet' : 'all';
+      return (
+        <AppLayout onNavigate={navigate}>
+          <BanksAndWalletsPage initialType={initialType} onNavigate={navigate} />
         </AppLayout>
       );
     }

@@ -18,7 +18,7 @@ import { cn } from '../../lib/utils';
 export const sidebarItems: NavItem[] = [
   { id: 'home', label: 'الرئيسية', href: '/', icon: Home },
   { id: 'directory', label: 'دليل الأنشطة', href: '/directory', icon: Building2 },
-  { id: 'banks-wallets', label: 'البنوك والمحافظ', href: '/directory?category=الصرافة', icon: Landmark },
+  { id: 'banks-wallets', label: 'البنوك والمحافظ', href: '/banks-wallets', icon: Landmark },
   { id: 'jobs', label: 'الوظائف', href: '/directory', icon: Briefcase },
   { id: 'rating', label: 'التقييم والتصنيف', href: '/directory', icon: Star },
   { id: 'trend', label: 'الترند', href: '/directory', icon: TrendingUp },
