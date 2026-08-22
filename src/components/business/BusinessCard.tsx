@@ -33,7 +33,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
       className="overflow-hidden rounded-[14px] bg-[#111111] border border-[#222222] cursor-pointer flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 shadow-sm text-right"
     >
       {/* Top Cover Media */}
-      <div className="relative h-[105px] sm:h-[125px] w-full overflow-hidden bg-[#181818]">
+      <div className="relative h-[105px] sm:h-[125px] w-full overflow-hidden bg-[#181818] border-0">
         {business.logoUrl ? (
           <img
             src={business.logoUrl}
@@ -63,11 +63,16 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
         )}
       </div>
 
-      {/* Info Body with Verified Badge */}
+      {/* Info Body with Exact Inline Verified Badge Beside Name */}
       <div className="p-2.5 space-y-0.5">
         <h3 className="font-bold text-xs text-white leading-snug truncate flex items-center gap-1">
           <span className="truncate">{business.name}</span>
-          {business.isVerified && <VerifiedBadge variant="gold" size={13} />}
+          {business.isVerified && (
+            <VerifiedBadge
+              variant={business.verifiedBadgeType || 'gold'}
+              size={13}
+            />
+          )}
         </h3>
 
         <div className="space-y-0.5 text-[10px] text-[#A1A1AA]">

@@ -18,11 +18,11 @@ import { cn } from '../../lib/utils';
 export const sidebarItems: NavItem[] = [
   { id: 'home', label: 'الرئيسية', href: '/', icon: Home },
   { id: 'directory', label: 'دليل الأنشطة', href: '/directory', icon: Building2 },
+  { id: 'jobs', label: 'الوظائف', href: '/jobs', icon: Briefcase },
   { id: 'phones', label: 'سوق الجوالات', href: '/phones', icon: Smartphone },
   { id: 'prices', label: 'الأسعار', href: '/prices', icon: Coins },
   { id: 'banks-wallets', label: 'البنوك والمحافظ', href: '/banks-wallets', icon: Landmark },
   { id: 'trend', label: 'الترند', href: '/trend', icon: TrendingUp },
-  { id: 'jobs', label: 'الوظائف', href: '/directory', icon: Briefcase },
   { id: 'rating', label: 'التقييم والتصنيف', href: '/directory', icon: Star },
   { id: 'ads', label: 'الإعلانات', href: '/directory', icon: Megaphone },
   { id: 'stats', label: 'الإحصائيات', href: '/directory', icon: BarChart3 },

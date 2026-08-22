@@ -14,6 +14,7 @@ import { PricesPage } from './pages/PricesPage';
 import { TrendPage } from './pages/TrendPage';
 import { MoreMenuPage } from './pages/MoreMenuPage';
 import { PhoneMarketPage } from './pages/PhoneMarketPage';
+import { JobsPage } from './pages/JobsPage';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname + window.location.search);
@@ -64,6 +65,14 @@ export const App: React.FC = () => {
             initialQuery={queryParam}
             onNavigate={navigate}
           />
+        </AppLayout>
+      );
+    }
+
+    if (pathname === '/jobs') {
+      return (
+        <AppLayout onNavigate={navigate}>
+          <JobsPage onNavigate={navigate} />
         </AppLayout>
       );
     }
