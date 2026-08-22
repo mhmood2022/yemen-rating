@@ -17,29 +17,37 @@ import { cn } from '../../lib/utils';
 
 export const sidebarItems: NavItem[] = [
   { id: 'home', label: 'الرئيسية', href: '/', icon: Home },
-  { id: 'directory', label: 'دليل الأنشطة', href: '#directory', icon: Building2 },
-  { id: 'banks-wallets', label: 'البنوك والمحافظ', href: '#banks-wallets', icon: Landmark },
-  { id: 'jobs', label: 'الوظائف', href: '#jobs', icon: Briefcase },
-  { id: 'rating', label: 'التقييم والتصنيف', href: '#rating', icon: Star },
-  { id: 'trend', label: 'الترند', href: '#trend', icon: TrendingUp },
-  { id: 'prices', label: 'الأسعار', href: '#prices', icon: Coins },
-  { id: 'phones', label: 'سوق الجوالات', href: '#phones', icon: Smartphone },
-  { id: 'ads', label: 'الإعلانات', href: '#ads', icon: Megaphone },
-  { id: 'stats', label: 'الإحصائيات', href: '#stats', icon: BarChart3 },
-  { id: 'account', label: 'الحساب', href: '#account', icon: UserCircle2 },
+  { id: 'directory', label: 'دليل الأنشطة', href: '/directory', icon: Building2 },
+  { id: 'banks-wallets', label: 'البنوك والمحافظ', href: '/directory?category=الصرافة', icon: Landmark },
+  { id: 'jobs', label: 'الوظائف', href: '/directory', icon: Briefcase },
+  { id: 'rating', label: 'التقييم والتصنيف', href: '/directory', icon: Star },
+  { id: 'trend', label: 'الترند', href: '/directory', icon: TrendingUp },
+  { id: 'prices', label: 'الأسعار', href: '/directory', icon: Coins },
+  { id: 'phones', label: 'سوق الجوالات', href: '/directory?category=محلات الجوالات والإلكترونيات', icon: Smartphone },
+  { id: 'ads', label: 'الإعلانات', href: '/directory', icon: Megaphone },
+  { id: 'stats', label: 'الإحصائيات', href: '/directory', icon: BarChart3 },
+  { id: 'account', label: 'الحساب', href: '/directory', icon: UserCircle2 },
 ];
 
-export const DesktopSidebar: React.FC<{ activeId?: string }> = ({ activeId = 'home' }) => {
+export const DesktopSidebar: React.FC<{ onNavigate?: (path: string) => void }> = ({ onNavigate }) => {
+  const currentPath = window.location.pathname;
+
   return (
     <aside className="hidden lg:flex flex-col w-[260px] bg-white border-l border-[#E2E8F0] min-h-[calc(100vh-64px)] p-4 shrink-0">
       <nav className="flex-1 space-y-1">
         {sidebarItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeId === item.id;
+          const isActive = currentPath === item.href;
           return (
             <a
               key={item.id}
               href={item.href}
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault();
+                  onNavigate(item.href);
+                }
+              }}
               className={cn(
                 'flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-sm font-semibold transition-all',
                 isActive
@@ -49,11 +57,6 @@ export const DesktopSidebar: React.FC<{ activeId?: string }> = ({ activeId = 'ho
             >
               <Icon size={18} strokeWidth={1.75} />
               <span className="flex-1">{item.label}</span>
-              {item.badge && (
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#F5C400] text-[#0B1F3A] font-bold">
-                  {item.badge}
-                </span>
-              )}
             </a>
           );
         })}

@@ -3,14 +3,15 @@ import { Home, Search, TrendingUp, Briefcase, Menu } from 'lucide-react';
 import { useModal } from '../../context/ModalContext';
 import { cn } from '../../lib/utils';
 
-export const MobileBottomNav: React.FC<{ activeTab?: string }> = ({ activeTab = 'home' }) => {
+export const MobileBottomNav: React.FC<{ onNavigate?: (path: string) => void }> = ({ onNavigate }) => {
   const { openMoreDrawer } = useModal();
+  const currentPath = window.location.pathname;
 
   const navItems = [
     { id: 'home', label: 'الرئيسية', icon: Home, href: '/' },
-    { id: 'search', label: 'البحث', icon: Search, href: '#search' },
-    { id: 'trend', label: 'الترند', icon: TrendingUp, href: '#trend' },
-    { id: 'jobs', label: 'الوظائف', icon: Briefcase, href: '#jobs' },
+    { id: 'search', label: 'البحث', icon: Search, href: '/directory' },
+    { id: 'trend', label: 'الترند', icon: TrendingUp, href: '/directory' },
+    { id: 'jobs', label: 'الوظائف', icon: Briefcase, href: '/directory' },
   ];
 
   return (
@@ -18,11 +19,17 @@ export const MobileBottomNav: React.FC<{ activeTab?: string }> = ({ activeTab = 
       <div className="grid grid-cols-5 h-[60px] items-center">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
+          const isActive = currentPath === item.href;
           return (
             <a
               key={item.id}
               href={item.href}
+              onClick={(e) => {
+                if (onNavigate) {
+                  e.preventDefault();
+                  onNavigate(item.href);
+                }
+              }}
               className={cn(
                 'flex flex-col items-center justify-center gap-1 h-full text-xs font-semibold transition-colors',
                 isActive ? 'text-[#0B1F3A]' : 'text-[#94A3B8] hover:text-[#475569]'

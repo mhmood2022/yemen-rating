@@ -6,19 +6,24 @@ import { MobileMoreDrawer } from '../components/navigation/MobileMoreDrawer';
 import { Footer } from '../components/navigation/Footer';
 import { AdminLoginModal } from '../components/modals/AdminLoginModal';
 
-export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface AppLayoutProps {
+  children: React.ReactNode;
+  onNavigate?: (path: string) => void;
+}
+
+export const AppLayout: React.FC<AppLayoutProps> = ({ children, onNavigate }) => {
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F8FA] text-[#0F172A]">
-      <Header />
+      <Header onNavigate={onNavigate} />
       <div className="flex-1 flex w-full max-w-7xl mx-auto">
-        <DesktopSidebar activeId="home" />
+        <DesktopSidebar onNavigate={onNavigate} />
         <main className="flex-1 p-4 lg:p-6 pb-20 lg:pb-8 w-full max-w-full overflow-hidden">
           {children}
         </main>
       </div>
       <Footer />
-      <MobileBottomNav activeTab="home" />
-      <MobileMoreDrawer />
+      <MobileBottomNav onNavigate={onNavigate} />
+      <MobileMoreDrawer onNavigate={onNavigate} />
       <AdminLoginModal />
     </div>
   );

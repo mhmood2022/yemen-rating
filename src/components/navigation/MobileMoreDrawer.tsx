@@ -12,20 +12,20 @@ import {
 } from 'lucide-react';
 import { useModal } from '../../context/ModalContext';
 
-export const MobileMoreDrawer: React.FC = () => {
+export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }> = ({ onNavigate }) => {
   const { isMoreDrawerOpen, closeMoreDrawer } = useModal();
 
   if (!isMoreDrawerOpen) return null;
 
   const moreItems = [
-    { id: 'directory', label: 'دليل الأنشطة', icon: Building2, href: '#directory' },
-    { id: 'banks', label: 'البنوك', icon: Landmark, href: '#banks' },
-    { id: 'wallets', label: 'المحافظ الإلكترونية', icon: Wallet, href: '#wallets' },
-    { id: 'prices', label: 'الأسعار', icon: Coins, href: '#prices' },
-    { id: 'phones', label: 'سوق الجوالات', icon: Smartphone, href: '#phones' },
-    { id: 'rating', label: 'التقييم', icon: Star, href: '#rating' },
-    { id: 'ads', label: 'الإعلانات', icon: Megaphone, href: '#ads' },
-    { id: 'account', label: 'الحساب', icon: UserCircle2, href: '#account' },
+    { id: 'directory', label: 'دليل الأنشطة', icon: Building2, href: '/directory' },
+    { id: 'banks', label: 'البنوك', icon: Landmark, href: '/directory?category=الصرافة' },
+    { id: 'wallets', label: 'المحافظ الإلكترونية', icon: Wallet, href: '/directory?category=الصرافة' },
+    { id: 'prices', label: 'الأسعار', icon: Coins, href: '/directory' },
+    { id: 'phones', label: 'سوق الجوالات', icon: Smartphone, href: '/directory?category=محلات الجوالات والإلكترونيات' },
+    { id: 'rating', label: 'التقييم', icon: Star, href: '/directory' },
+    { id: 'ads', label: 'الإعلانات', icon: Megaphone, href: '/directory' },
+    { id: 'account', label: 'الحساب', icon: UserCircle2, href: '/directory' },
   ];
 
   return (
@@ -53,7 +53,13 @@ export const MobileMoreDrawer: React.FC = () => {
               <a
                 key={item.id}
                 href={item.href}
-                onClick={closeMoreDrawer}
+                onClick={(e) => {
+                  if (onNavigate) {
+                    e.preventDefault();
+                    onNavigate(item.href);
+                  }
+                  closeMoreDrawer();
+                }}
                 className="flex items-center gap-3 p-3 rounded-[10px] bg-[#F7F8FA] border border-[#E2E8F0] text-sm font-semibold text-[#0B1F3A] hover:bg-[#F1F5F9] transition-colors"
               >
                 <Icon size={18} strokeWidth={1.75} className="text-[#0B1F3A]" />
