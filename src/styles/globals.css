@@ -28,7 +28,6 @@ html, body {
   text-align: right;
   min-height: 100vh;
   overflow-x: hidden;
-  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 ::-webkit-scrollbar {
@@ -41,14 +40,10 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #94A3B8;
+  background: #CBD5E1;
   border-radius: var(--yr-radius-full);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #263A52;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #64748B;
+  background: #222222;
 }

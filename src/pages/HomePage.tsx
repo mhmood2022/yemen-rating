@@ -26,20 +26,20 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 
 const categoryIconMap: Record<string, React.ReactNode> = {
-  'الشركات': <Building2 size={20} strokeWidth={1.75} />,
-  'المحلات': <Store size={20} strokeWidth={1.75} />,
-  'المطاعم': <Utensils size={20} strokeWidth={1.75} />,
-  'الفنادق': <Hotel size={20} strokeWidth={1.75} />,
-  'الصحة': <HeartPulse size={20} strokeWidth={1.75} />,
-  'العقارات': <HomeIcon size={20} strokeWidth={1.75} />,
-  'السيارات': <Car size={20} strokeWidth={1.75} />,
-  'النقل': <Truck size={20} strokeWidth={1.75} />,
-  'التقنية': <Laptop size={20} strokeWidth={1.75} />,
-  'التعليم': <GraduationCap size={20} strokeWidth={1.75} />,
-  'الخدمات': <Sparkles size={20} strokeWidth={1.75} />,
-  'الاتصالات': <Radio size={20} strokeWidth={1.75} />,
-  'الصرافة': <Coins size={20} strokeWidth={1.75} />,
-  'محلات الجوالات والإلكترونيات': <Smartphone size={20} strokeWidth={1.75} />,
+  'الشركات': <Building2 size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
+  'المحلات': <Store size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
+  'المطاعم': <Utensils size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
+  'الفنادق': <Hotel size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
+  'الصحة': <HeartPulse size={20} strokeWidth={1.75} className="text-[#16A34A] dark:text-[#22C55E]" />,
+  'العقارات': <HomeIcon size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
+  'السيارات': <Car size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
+  'النقل': <Truck size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
+  'التقنية': <Laptop size={20} strokeWidth={1.75} className="text-[#2563EB] dark:text-[#F59E0B]" />,
+  'التعليم': <GraduationCap size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
+  'الخدمات': <Sparkles size={20} strokeWidth={1.75} className="text-[#F59E0B]" />,
+  'الاتصالات': <Radio size={20} strokeWidth={1.75} className="text-[#2563EB] dark:text-[#F59E0B]" />,
+  'الصرافة': <Coins size={20} strokeWidth={1.75} className="text-[#F5C400]" />,
+  'محلات الجوالات والإلكترونيات': <Smartphone size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />,
 };
 
 export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
@@ -61,7 +61,7 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
   return (
     <div className="space-y-10 pb-6">
       {/* 1. HERO SECTION */}
-      <section className="relative rounded-[16px] bg-gradient-to-br from-[#0B1F3A] to-[#162F52] dark:from-[#0F2138] dark:to-[#162F52] text-white p-6 sm:p-10 shadow-lg overflow-hidden border border-transparent dark:border-[#263A52]">
+      <section className="relative rounded-[16px] bg-gradient-to-br from-[#0B1F3A] to-[#162F52] dark:from-[#0A0A0A] dark:to-[#111111] text-white p-6 sm:p-10 shadow-lg overflow-hidden border border-transparent dark:border-[#222222]">
         <div className="max-w-2xl space-y-4">
           <span className="inline-block px-3 py-1 rounded-full bg-[#F5C400]/20 text-[#F5C400] text-xs font-extrabold border border-[#F5C400]/30">
             دليل الأنشطة والخدمات في اليمن
@@ -71,19 +71,19 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
             اكتشف الأفضل في اليمن
           </h1>
 
-          <p className="text-xs sm:text-sm text-[#CBD5E1] leading-relaxed max-w-xl">
+          <p className="text-xs sm:text-sm text-[#CBD5E1] dark:text-[#A1A1AA] leading-relaxed max-w-xl">
             منصة يمن ريتغ (YR) للبحث عن الشركات والمحلات والخدمات والبنوك والوظائف، مع تقييمات موثوقة ومؤشرات YR Score المعتمدة.
           </p>
 
           <form onSubmit={handleSearchSubmit} className="pt-2 flex items-center gap-2 max-w-lg">
             <div className="relative flex-1">
-              <Search size={18} strokeWidth={1.75} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+              <Search size={18} strokeWidth={1.75} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] dark:text-[#71717A]" />
               <input
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="ابحث عن شركة، محل، خدمة، بنك..."
-                className="w-full h-[46px] pr-10 pl-4 rounded-[10px] bg-white dark:bg-[#0F2138] text-[#0B1F3A] dark:text-[#F8FAFC] placeholder:text-[#94A3B8] text-xs sm:text-sm outline-none border border-transparent focus:border-[#F5C400] shadow-sm"
+                className="w-full h-[46px] pr-10 pl-4 rounded-[10px] bg-white dark:bg-[#000000] text-[#0B1F3A] dark:text-white placeholder:text-[#94A3B8] dark:placeholder:text-[#71717A] text-xs sm:text-sm outline-none border border-transparent dark:border-[#222222] focus:border-[#F5C400] shadow-sm"
               />
             </div>
             <Button type="submit" variant="secondary" size="md" className="h-[46px] px-5 font-bold shrink-0">
@@ -96,7 +96,7 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
               variant="secondary"
               size="sm"
               onClick={() => onNavigate('/directory')}
-              className="text-xs"
+              className="text-xs font-bold"
             >
               استكشف الأنشطة
             </Button>
@@ -104,7 +104,7 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
               variant="outline"
               size="sm"
               onClick={() => onNavigate('/directory')}
-              className="text-xs text-white border-white/30 hover:bg-white/10"
+              className="text-xs text-white border-white/30 hover:bg-white/10 dark:border-[#222222] dark:hover:bg-[#1A1A1A]"
             >
               الوظائف
             </Button>
@@ -116,10 +116,10 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-black text-[#0B1F3A] dark:text-[#F8FAFC]">دليل الأنشطة</h2>
-            <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">تصفح الأنشطة والخدمات حسب التصنيف الاقتصادي</p>
+            <h2 className="text-lg font-black text-[#0B1F3A] dark:text-white">دليل الأنشطة</h2>
+            <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">تصفح الأنشطة والخدمات حسب التصنيف الاقتصادي</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => onNavigate('/directory')} className="text-xs">
+          <Button variant="ghost" size="sm" onClick={() => onNavigate('/directory')} className="text-xs text-[#0B1F3A] dark:text-white">
             <span>عرض الكل</span>
             <ArrowLeft size={13} strokeWidth={1.75} />
           </Button>
@@ -133,25 +133,25 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
               onClick={() => onNavigate(`/directory?category=${encodeURIComponent(cat)}`)}
               className="p-3 text-center flex flex-col items-center justify-center gap-2 cursor-pointer group"
             >
-              <div className="w-10 h-10 rounded-[10px] bg-[#0B1F3A]/5 dark:bg-[#0F2138] text-[#0B1F3A] dark:text-[#F8FAFC] border border-[#E2E8F0] dark:border-[#263A52] flex items-center justify-center group-hover:bg-[#0B1F3A] group-hover:text-[#F5C400] dark:group-hover:bg-[#162F52] dark:group-hover:text-[#F5C400] transition-colors">
-                {categoryIconMap[cat] || <Building2 size={20} strokeWidth={1.75} />}
+              <div className="w-10 h-10 rounded-[10px] bg-[#0B1F3A]/5 dark:bg-[#1A1A1A] border border-[#E2E8F0] dark:border-[#222222] flex items-center justify-center group-hover:bg-[#0B1F3A] group-hover:text-[#F5C400] dark:group-hover:bg-[#252525] transition-colors">
+                {categoryIconMap[cat] || <Building2 size={20} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />}
               </div>
-              <span className="text-xs font-bold text-[#0B1F3A] dark:text-[#F8FAFC] leading-tight line-clamp-1">{cat}</span>
+              <span className="text-xs font-bold text-[#0B1F3A] dark:text-white leading-tight line-clamp-1">{cat}</span>
             </Card>
           ))}
         </div>
       </section>
 
-      {/* 3. TRENDING PREVIEW (YR TREND - No Emoji) */}
+      {/* 3. TRENDING PREVIEW (YR Trend) */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-[8px] bg-[#F5C400]/20 text-[#0B1F3A] dark:text-[#F5C400]">
+            <div className="p-1.5 rounded-[8px] bg-[#F59E0B]/20 text-[#F59E0B]">
               <Flame size={18} strokeWidth={1.75} />
             </div>
             <div>
-              <h2 className="text-lg font-black text-[#0B1F3A] dark:text-[#F8FAFC]">YR Trend</h2>
-              <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">الأنشطة الأكثر تفاعلاً وظهوراً في السوق اليمني</p>
+              <h2 className="text-lg font-black text-[#0B1F3A] dark:text-white">YR Trend</h2>
+              <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">الأنشطة الأكثر تفاعلاً وظهوراً في السوق اليمني</p>
             </div>
           </div>
         </div>
@@ -167,16 +167,16 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
         </div>
       </section>
 
-      {/* 4. TOP RATED SECTION (No Emoji) */}
+      {/* 4. TOP RATED SECTION */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-[8px] bg-[#16A34A]/10 text-[#16A34A] dark:text-[#4ADE80]">
-              <Star size={18} strokeWidth={1.75} />
+            <div className="p-1.5 rounded-[8px] bg-[#F5C400]/20 text-[#F5C400]">
+              <Star size={18} strokeWidth={1.75} className="fill-[#F5C400]" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-[#0B1F3A] dark:text-[#F8FAFC]">الأعلى تقييمًا</h2>
-              <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">الأنشطة الحاصلة على أعلى مؤشرات YR Score الموثقة</p>
+              <h2 className="text-lg font-black text-[#0B1F3A] dark:text-white">الأعلى تقييمًا</h2>
+              <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">الأنشطة الحاصلة على أعلى مؤشرات YR Score الموثقة</p>
             </div>
           </div>
         </div>
@@ -192,23 +192,23 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
         </div>
       </section>
 
-      {/* 5. MOBILE PHONE MARKET PREVIEW (No Emoji) */}
+      {/* 5. MOBILE PHONE MARKET PREVIEW */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-[8px] bg-[#0B1F3A]/5 dark:bg-[#0F2138] text-[#0B1F3A] dark:text-[#F5C400] border border-[#E2E8F0] dark:border-[#263A52]">
-              <Smartphone size={18} strokeWidth={1.75} />
+            <div className="p-1.5 rounded-[8px] bg-[#0B1F3A]/5 dark:bg-[#1A1A1A] border border-[#E2E8F0] dark:border-[#222222]">
+              <Smartphone size={18} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />
             </div>
             <div>
-              <h2 className="text-lg font-black text-[#0B1F3A] dark:text-[#F8FAFC]">سوق الجوالات</h2>
-              <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">معاينة لمحلات ومراكز صيانة الهواتف الذكية</p>
+              <h2 className="text-lg font-black text-[#0B1F3A] dark:text-white">سوق الجوالات</h2>
+              <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">معاينة لمحلات ومراكز صيانة الهواتف الذكية</p>
             </div>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onNavigate('/directory?category=محلات الجوالات والإلكترونيات')}
-            className="text-xs"
+            className="text-xs text-[#0B1F3A] dark:text-white"
           >
             <span>استكشاف المحلات</span>
             <ArrowLeft size={13} strokeWidth={1.75} />
@@ -226,26 +226,26 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
         </div>
       </section>
 
-      {/* 6. JOBS PREVIEW (No Emoji) */}
+      {/* 6. JOBS PREVIEW */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-[8px] bg-[#2563EB]/10 text-[#2563EB] dark:text-[#60A5FA]">
+            <div className="p-1.5 rounded-[8px] bg-[#2563EB]/10 text-[#2563EB] dark:text-[#F59E0B]">
               <Briefcase size={18} strokeWidth={1.75} />
             </div>
             <div>
-              <h2 className="text-lg font-black text-[#0B1F3A] dark:text-[#F8FAFC]">الوظائف</h2>
-              <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">فرص التوظيف المتاحة لدى الشركات المعتمدة</p>
+              <h2 className="text-lg font-black text-[#0B1F3A] dark:text-white">الوظائف</h2>
+              <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">فرص التوظيف المتاحة لدى الشركات المعتمدة</p>
             </div>
           </div>
         </div>
 
         <Card className="p-6 text-center">
-          <h3 className="font-bold text-sm text-[#0B1F3A] dark:text-[#F8FAFC] mb-1">نظام مطابقة الوظائف الذكي قادم قريباً</h3>
-          <p className="text-xs text-[#64748B] dark:text-[#94A3B8] max-w-md mx-auto mb-4">
+          <h3 className="font-bold text-sm text-[#0B1F3A] dark:text-white mb-1">نظام مطابقة الوظائف الذكي قادم قريباً</h3>
+          <p className="text-xs text-[#64748B] dark:text-[#A1A1AA] max-w-md mx-auto mb-4">
             يتم التجهيز لربط طلبات التوظيف وعروض الشركات مباشرة بعد اكتمال المراحل المخصصة.
           </p>
-          <Button variant="outline" size="sm" onClick={() => onNavigate('/directory')}>
+          <Button variant="outline" size="sm" onClick={() => onNavigate('/directory')} className="text-[#0B1F3A] dark:text-white">
             استكشاف الشركات الموثقة
           </Button>
         </Card>

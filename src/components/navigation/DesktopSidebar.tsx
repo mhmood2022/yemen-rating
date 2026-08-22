@@ -33,7 +33,7 @@ export const DesktopSidebar: React.FC<{ onNavigate?: (path: string) => void }> =
   const currentPath = window.location.pathname;
 
   return (
-    <aside className="hidden lg:flex flex-col w-[260px] bg-white dark:bg-[#0F2138] border-l border-[#E2E8F0] dark:border-[#263A52] min-h-[calc(100vh-64px)] p-4 shrink-0 transition-colors">
+    <aside className="hidden lg:flex flex-col w-[260px] bg-white dark:bg-[#0A0A0A] border-l border-[#E2E8F0] dark:border-[#222222] min-h-[calc(100vh-64px)] p-4 shrink-0 transition-colors">
       <nav className="flex-1 space-y-1">
         {sidebarItems.map((item) => {
           const Icon = item.icon;
@@ -51,11 +51,11 @@ export const DesktopSidebar: React.FC<{ onNavigate?: (path: string) => void }> =
               className={cn(
                 'flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-sm font-semibold transition-all',
                 isActive
-                  ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-[#0B1F3A]'
-                  : 'text-[#475569] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#162F52] hover:text-[#0B1F3A] dark:hover:text-[#F8FAFC]'
+                  ? 'bg-[#0B1F3A] text-white dark:bg-[#111111] dark:text-[#F5C400] dark:border dark:border-[#F5C400]/40'
+                  : 'text-[#475569] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#161616] hover:text-[#0B1F3A] dark:hover:text-white'
               )}
             >
-              <Icon size={18} strokeWidth={1.75} />
+              <Icon size={18} strokeWidth={1.75} className={isActive ? 'text-current' : 'text-[#64748B] dark:text-[#71717A]'} />
               <span className="flex-1">{item.label}</span>
             </a>
           );
