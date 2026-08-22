@@ -81,6 +81,7 @@ export const AdminLoginModal: React.FC = () => {
             size="lg"
             fullWidth
             isLoading={isLoading}
+            className="h-[44px] font-bold"
           >
             تسجيل الدخول
           </Button>

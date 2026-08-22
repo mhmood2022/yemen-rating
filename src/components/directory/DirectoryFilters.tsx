@@ -1,29 +1,44 @@
 import React from 'react';
 import { CITIES_LIST, CATEGORIES_LIST } from '../../data/demoBusinesses';
 import { DirectoryFilterState } from '../../types/business';
-import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { SlidersHorizontal, RotateCcw } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
 interface DirectoryFiltersProps {
   filters: DirectoryFilterState;
   onChange: (newFilters: DirectoryFilterState) => void;
   onReset: () => void;
+  isInsideModal?: boolean;
 }
 
-export const DirectoryFilters: React.FC<DirectoryFiltersProps> = ({ filters, onChange, onReset }) => {
+export const DirectoryFilters: React.FC<DirectoryFiltersProps> = ({
+  filters,
+  onChange,
+  onReset,
+  isInsideModal = false,
+}) => {
   return (
-    <Card className="p-4 sm:p-5 space-y-4">
-      <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] dark:border-[#222222]">
-        <div className="flex items-center gap-2 font-bold text-sm text-[#0B1F3A] dark:text-white">
-          <SlidersHorizontal size={16} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />
-          <span>تصفية النتائج</span>
+    <div
+      className={cn(
+        'space-y-4 rounded-[14px]',
+        isInsideModal
+          ? 'p-0 bg-transparent'
+          : 'p-4 sm:p-5 bg-white dark:bg-[#000000] border border-[#E2E8F0] dark:border-[#222222]'
+      )}
+    >
+      {!isInsideModal && (
+        <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] dark:border-[#222222]">
+          <div className="flex items-center gap-2 font-bold text-sm text-[#0B1F3A] dark:text-white">
+            <SlidersHorizontal size={16} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />
+            <span>تصفية النتائج</span>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onReset} className="h-[30px] px-2 text-xs text-[#DC2626] dark:text-[#F87171]">
+            <RotateCcw size={12} strokeWidth={1.75} />
+            <span>إعادة ضبط</span>
+          </Button>
         </div>
-        <Button variant="ghost" size="sm" onClick={onReset} className="h-[30px] px-2 text-xs text-[#DC2626] dark:text-[#F87171]">
-          <RotateCcw size={12} strokeWidth={1.75} />
-          <span>إعادة ضبط</span>
-        </Button>
-      </div>
+      )}
 
       {/* City Select */}
       <div className="space-y-1.5">
@@ -77,11 +92,11 @@ export const DirectoryFilters: React.FC<DirectoryFiltersProps> = ({ filters, onC
             type="checkbox"
             checked={filters.verifiedOnly}
             onChange={(e) => onChange({ ...filters, verifiedOnly: e.target.checked })}
-            className="w-4 h-4 rounded text-[#0B1F3A] dark:text-[#F5C400] focus:ring-[#0B1F3A] dark:focus:ring-[#F5C400]"
+            className="w-4 h-4 rounded text-[#0B1F3A] dark:text-[#F5C400] focus:ring-[#0B1F3A] dark:focus:ring-[#F5C400] bg-white dark:bg-[#0A0A0A] border-[#CBD5E1] dark:border-[#222222]"
           />
           <span>الأنشطة الموثقة فقط</span>
         </label>
       </div>
-    </Card>
+    </div>
   );
 };
