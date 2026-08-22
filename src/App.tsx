@@ -13,6 +13,7 @@ import { BanksAndWalletsPage } from './pages/BanksAndWalletsPage';
 import { PricesPage } from './pages/PricesPage';
 import { TrendPage } from './pages/TrendPage';
 import { MoreMenuPage } from './pages/MoreMenuPage';
+import { PhoneMarketPage } from './pages/PhoneMarketPage';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname + window.location.search);
@@ -83,6 +84,14 @@ export const App: React.FC = () => {
       );
     }
 
+    if (pathname === '/phones') {
+      return (
+        <AppLayout onNavigate={navigate}>
+          <PhoneMarketPage onNavigate={navigate} />
+        </AppLayout>
+      );
+    }
+
     if (pathname === '/more') {
       return (
         <AppLayout onNavigate={navigate}>
@@ -100,7 +109,6 @@ export const App: React.FC = () => {
       );
     }
 
-    // Default: Home Page
     return (
       <AppLayout onNavigate={navigate}>
         <HomePage onNavigate={navigate} />
