@@ -1,13 +1,14 @@
 import React from 'react';
 import {
   X,
+  Briefcase,
   Building2,
   Landmark,
   Coins,
   TrendingUp,
+  Smartphone,
   Heart,
   Star,
-  Bell,
   Share2,
   Info,
   User,
@@ -30,7 +31,7 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
     if (navigator.share) {
       navigator.share({
         title: 'يمن ريتغ | Yemen Rating',
-        text: 'دليل الأنشطة والأسعار والترند في اليمن',
+        text: 'دليل الأنشطة والأسعار والترند والوظائف في اليمن',
         url: window.location.origin,
       }).catch(() => {});
     } else {
@@ -47,27 +48,26 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
   };
 
   const menuList = [
+    { id: 'jobs', label: 'الوظائف والتوظيف', icon: Briefcase, action: () => navTo('/jobs') },
     { id: 'directory', label: 'دليل الأنشطة', icon: Building2, action: () => navTo('/directory') },
-    { id: 'prices', label: 'الأسعار', icon: Coins, action: () => navTo('/prices') },
+    { id: 'phones', label: 'سوق الجوالات', icon: Smartphone, action: () => navTo('/phones') },
+    { id: 'prices', label: 'الأسعار والصرف', icon: Coins, action: () => navTo('/prices') },
     { id: 'trend', label: 'الترند', icon: TrendingUp, action: () => navTo('/trend') },
     { id: 'banks', label: 'البنوك والمحافظ', icon: Landmark, action: () => navTo('/banks-wallets') },
     { id: 'favorites', label: 'المفضلة', icon: Heart, action: () => navTo('/directory') },
-    { id: 'reviews', label: 'تقييماتي', icon: Star, action: () => navTo('/directory') },
     { id: 'share', label: 'مشاركة التطبيق', icon: Share2, action: handleShare },
     { id: 'about', label: 'عن يمن ريتغ', icon: Info, action: () => navTo('/') },
   ];
 
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
-      {/* Background Overlay */}
       <div
         className="fixed inset-0 bg-black/75 backdrop-blur-[2px] transition-opacity"
         onClick={closeMoreDrawer}
       />
 
-      {/* Right-Side Drawer (Width strictly less than half of screen: 48vw, max 215px) */}
-      <div className="fixed top-0 bottom-0 right-0 w-[48vw] max-w-[215px] bg-[#0A0A0A] border-l border-[#222222] shadow-2xl z-10 flex flex-col justify-between animate-in slide-in-from-right duration-200 overflow-hidden">
-        {/* Profile / Top Header */}
+      <div className="fixed top-0 bottom-0 right-0 w-[50vw] max-w-[220px] bg-[#0A0A0A] border-l border-[#222222] shadow-2xl z-10 flex flex-col justify-between animate-in slide-in-from-right duration-200 overflow-hidden">
+        {/* Profile Header */}
         <div className="p-3 border-b border-[#222222] bg-[#000000]">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-black text-[#F5C400]">القائمة</span>
@@ -99,7 +99,7 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
           </button>
         </div>
 
-        {/* Scrollable Compact Menu */}
+        {/* Menu Items with Jobs on Top */}
         <div className="flex-1 overflow-y-auto p-1.5 space-y-0.5 divide-y divide-[#181818]">
           {menuList.map((item) => {
             const Icon = item.icon;

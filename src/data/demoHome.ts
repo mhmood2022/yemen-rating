@@ -45,6 +45,7 @@ export const HERO_SLIDES: HomeHeroSlide[] = [
 ];
 
 export const ALL_OFFICIAL_CATEGORIES: HomeCategoryItem[] = [
+  { id: 'c_jobs', name: 'وظائف وتوظيف', categoryValue: 'الوظائف', iconName: 'Briefcase', href: '/jobs' },
   { id: 'c1', name: 'مطاعم ومقاهي', categoryValue: 'المطاعم', iconName: 'Utensils', href: '/directory?category=المطاعم' },
   { id: 'c2', name: 'متاجر ومحلات', categoryValue: 'المحلات', iconName: 'Store', href: '/directory?category=المحلات' },
   { id: 'c3', name: 'سوق الجوالات', categoryValue: 'محلات الجوالات والإلكترونيات', iconName: 'Smartphone', href: '/phones' },

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
+  Briefcase,
   Utensils,
   Car,
-  Briefcase,
   Store,
   ShoppingCart,
   HeartPulse,
@@ -21,31 +21,51 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
+const iconMap: Record<string, React.ReactNode> = {
+  Briefcase: <Briefcase size={18} strokeWidth={2} />,
+  Utensils: <Utensils size={18} strokeWidth={2} />,
+  Car: <Car size={18} strokeWidth={2} />,
+  Store: <Store size={18} strokeWidth={2} />,
+  ShoppingCart: <ShoppingCart size={18} strokeWidth={2} />,
+  HeartPulse: <HeartPulse size={18} strokeWidth={2} />,
+  Building2: <Building2 size={18} strokeWidth={2} />,
+  Landmark: <Landmark size={18} strokeWidth={2} />,
+  Wallet: <Wallet size={18} strokeWidth={2} />,
+  Coins: <Coins size={18} strokeWidth={2} />,
+  Hotel: <Hotel size={18} strokeWidth={2} />,
+  Home: <Home size={18} strokeWidth={2} />,
+  Truck: <Truck size={18} strokeWidth={2} />,
+  Laptop: <Laptop size={18} strokeWidth={2} />,
+  GraduationCap: <GraduationCap size={18} strokeWidth={2} />,
+  Radio: <Radio size={18} strokeWidth={2} />,
+  Smartphone: <Smartphone size={18} strokeWidth={2} />,
+};
+
 export const CategorySlider: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // أول 5 تصنيفات أساسية تظهر مبدئياً في صف واحد
+  // أول 5 تصنيفات في الصف الأول (تشمل الوظائف والمطاعم والسيارات والمتاجر والصحة)
   const mainFive = [
+    { id: 'c_jobs', name: 'وظائف وتوظيف', icon: Briefcase, href: '/jobs' },
     { id: 'c1', name: 'مطاعم ومقاهي', icon: Utensils, href: '/directory?category=المطاعم' },
-    { id: 'c2', name: 'سيارات', icon: Car, href: '/directory?category=السيارات' },
-    { id: 'c3', name: 'خدمات', icon: Briefcase, href: '/directory?category=الخدمات' },
-    { id: 'c4', name: 'متاجر', icon: Store, href: '/directory?category=المحلات' },
-    { id: 'c5', name: 'صحة وجمال', icon: ShoppingCart, href: '/directory?category=الصحة' },
+    { id: 'c2', name: 'سيارات ونقل', icon: Car, href: '/directory?category=السيارات' },
+    { id: 'c3', name: 'متاجر ومحلات', icon: Store, href: '/directory?category=المحلات' },
+    { id: 'c4', name: 'صحة وجمال', icon: ShoppingCart, href: '/directory?category=الصحة' },
   ];
 
-  // باقي التصنيفات الـ 11 التي تفتح تحتها مباشرة عند الضغط على عرض الكل
+  // باقي التصنيفات التي تتمدد تحتها عند الضغط على "عرض الكل"
   const remainingCategories = [
-    { id: 'c6', name: 'سوق الجوالات', icon: Smartphone, href: '/phones' },
-    { id: 'c7', name: 'بنوك مصرفية', icon: Landmark, href: '/banks-wallets' },
-    { id: 'c8', name: 'محافظ إلكترونية', icon: Wallet, href: '/banks-wallets' },
-    { id: 'c9', name: 'صرافة وتحويلات', icon: Coins, href: '/prices' },
-    { id: 'c10', name: 'شركات ومؤسسات', icon: Building2, href: '/directory?category=الشركات' },
-    { id: 'c11', name: 'فنادق وسياحة', icon: Hotel, href: '/directory?category=الفنادق' },
-    { id: 'c12', name: 'عقارات وأملاك', icon: Home, href: '/directory?category=العقارات' },
-    { id: 'c13', name: 'نقل وشحن', icon: Truck, href: '/directory?category=النقل' },
-    { id: 'c14', name: 'تقنية وبرمجيات', icon: Laptop, href: '/directory?category=التقنية' },
-    { id: 'c15', name: 'تعليم وجامعات', icon: GraduationCap, href: '/directory?category=التعليم' },
-    { id: 'c16', name: 'اتصالات وشبكات', icon: Radio, href: '/directory?category=الاتصالات' },
+    { id: 'c5', name: 'سوق الجوالات', icon: Smartphone, href: '/phones' },
+    { id: 'c6', name: 'بنوك مصرفية', icon: Landmark, href: '/banks-wallets' },
+    { id: 'c7', name: 'محافظ إلكترونية', icon: Wallet, href: '/banks-wallets' },
+    { id: 'c8', name: 'صرافة وتحويلات', icon: Coins, href: '/prices' },
+    { id: 'c9', name: 'شركات ومؤسسات', icon: Building2, href: '/directory?category=الشركات' },
+    { id: 'c10', name: 'فنادق وسياحة', icon: Hotel, href: '/directory?category=الفنادق' },
+    { id: 'c11', name: 'عقارات وأملاك', icon: Home, href: '/directory?category=العقارات' },
+    { id: 'c12', name: 'نقل وشحن', icon: Truck, href: '/directory?category=النقل' },
+    { id: 'c13', name: 'تقنية وبرمجيات', icon: Laptop, href: '/directory?category=التقنية' },
+    { id: 'c14', name: 'تعليم وجامعات', icon: GraduationCap, href: '/directory?category=التعليم' },
+    { id: 'c15', name: 'اتصالات وشبكات', icon: Radio, href: '/directory?category=الاتصالات' },
   ];
 
   return (
@@ -60,7 +80,7 @@ export const CategorySlider: React.FC<{ onNavigate: (path: string) => void }> = 
           onClick={() => setIsExpanded(!isExpanded)}
           className="text-xs font-black text-[#F5C400] hover:underline transition-colors flex items-center gap-1 select-none"
         >
-          <span>{isExpanded ? 'عرض أقل' : 'عرض الكل'}</span>
+          <span>{isExpanded ? 'عرض أقل' : 'عرض الكل (16)'}</span>
           <ChevronDown
             size={13}
             strokeWidth={2.5}
@@ -91,7 +111,7 @@ export const CategorySlider: React.FC<{ onNavigate: (path: string) => void }> = 
         })}
       </div>
 
-      {/* Expanded Remaining Categories Grid (Appears directly beneath smoothly) */}
+      {/* Expanded Remaining Categories Grid */}
       {isExpanded && (
         <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 gap-1.5 pt-1 animate-in fade-in slide-in-from-top-2 duration-200">
           {remainingCategories.map((cat) => {
