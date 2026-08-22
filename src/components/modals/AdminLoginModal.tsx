@@ -33,7 +33,9 @@ export const AdminLoginModal: React.FC = () => {
     if (result.success) {
       yrToast.success('تم تسجيل الدخول بنجاح', 'جارٍ الانتقال إلى لوحة الإدارة...');
       closeAdminLogin();
-      window.location.href = '/admin';
+      // SPA Navigation to /admin
+      window.history.pushState({}, '', '/admin');
+      window.location.reload();
     } else {
       setErrorMsg(result.error || 'فشل تسجيل الدخول');
       yrToast.error('فشل الدخول', result.error);
