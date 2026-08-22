@@ -3,71 +3,149 @@ import {
   X,
   Building2,
   Landmark,
-  Wallet,
   Coins,
-  Smartphone,
+  TrendingUp,
+  Heart,
   Star,
-  Megaphone,
-  UserCircle2,
+  Bell,
+  Share2,
+  Info,
+  User,
+  ChevronLeft,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useModal } from '../../context/ModalContext';
+import { useTheme } from '../../context/ThemeContext';
+import { yrToast } from '../ui/Toast';
+import { cn } from '../../lib/utils';
 
 export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }> = ({ onNavigate }) => {
-  const { isMoreDrawerOpen, closeMoreDrawer } = useModal();
+  const { isMoreDrawerOpen, closeMoreDrawer, openAdminLogin } = useModal();
+  const { isDark, toggleTheme } = useTheme();
 
   if (!isMoreDrawerOpen) return null;
 
-  const moreItems = [
-    { id: 'directory', label: 'دليل الأنشطة', icon: Building2, href: '/directory' },
-    { id: 'banks', label: 'البنوك', icon: Landmark, href: '/banks' },
-    { id: 'wallets', label: 'المحافظ الإلكترونية', icon: Wallet, href: '/wallets' },
-    { id: 'prices', label: 'الأسعار', icon: Coins, href: '/prices' },
-    { id: 'phones', label: 'سوق الجوالات', icon: Smartphone, href: '/directory?category=محلات الجوالات والإلكترونيات' },
-    { id: 'rating', label: 'التقييم', icon: Star, href: '/directory' },
-    { id: 'ads', label: 'الإعلانات', icon: Megaphone, href: '/directory' },
-    { id: 'account', label: 'الحساب', icon: UserCircle2, href: '/directory' },
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'يمن ريتغ | Yemen Rating',
+        text: 'دليل الأنشطة والأسعار والترند في اليمن',
+        url: window.location.origin,
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(window.location.origin);
+      yrToast.success('تم نسخ الرابط بنجاح');
+    }
+  };
+
+  const navTo = (href: string) => {
+    if (onNavigate) {
+      onNavigate(href);
+    }
+    closeMoreDrawer();
+  };
+
+  const menuList = [
+    { id: 'directory', label: 'دليل الأنشطة', icon: Building2, action: () => navTo('/directory') },
+    { id: 'prices', label: 'الأسعار', icon: Coins, action: () => navTo('/prices') },
+    { id: 'trend', label: 'الترند', icon: TrendingUp, action: () => navTo('/trend') },
+    { id: 'banks', label: 'البنوك والمحافظ', icon: Landmark, action: () => navTo('/banks-wallets') },
+    { id: 'favorites', label: 'المفضلة', icon: Heart, action: () => navTo('/directory') },
+    { id: 'reviews', label: 'تقييماتي', icon: Star, action: () => navTo('/directory') },
+    { id: 'share', label: 'مشاركة التطبيق', icon: Share2, action: handleShare },
+    { id: 'about', label: 'عن يمن ريتغ', icon: Info, action: () => navTo('/') },
   ];
 
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
+      {/* Background Overlay */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-[2px]"
+        className="fixed inset-0 bg-black/75 backdrop-blur-[2px] transition-opacity"
         onClick={closeMoreDrawer}
       />
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#0A0A0A] border-t border-[#E2E8F0] dark:border-[#222222] rounded-t-[16px] p-5 shadow-2xl z-10 max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
-        <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] dark:border-[#222222] mb-4">
-          <h3 className="font-bold text-[#0B1F3A] dark:text-white text-base">الأقسام الإضافية</h3>
+
+      {/* Right-Side Drawer (Width strictly less than half of screen: 48vw, max 215px) */}
+      <div className="fixed top-0 bottom-0 right-0 w-[48vw] max-w-[215px] bg-[#0A0A0A] border-l border-[#222222] shadow-2xl z-10 flex flex-col justify-between animate-in slide-in-from-right duration-200 overflow-hidden">
+        {/* Profile / Top Header */}
+        <div className="p-3 border-b border-[#222222] bg-[#000000]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-black text-[#F5C400]">القائمة</span>
+            <button
+              type="button"
+              onClick={closeMoreDrawer}
+              className="p-1 rounded-lg text-[#A1A1AA] hover:text-white"
+              aria-label="إغلاق"
+            >
+              <X size={16} strokeWidth={2} />
+            </button>
+          </div>
+
           <button
             type="button"
-            onClick={closeMoreDrawer}
-            className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#0B1F3A] dark:hover:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#161616]"
-            aria-label="إغلاق القائمة"
+            onClick={() => {
+              openAdminLogin();
+              closeMoreDrawer();
+            }}
+            className="w-full flex items-center gap-2 p-1.5 rounded-[8px] bg-[#111111] border border-[#222222] text-right"
           >
-            <X size={20} strokeWidth={1.75} />
+            <div className="w-7 h-7 rounded-full bg-[#1A1A1A] text-[#F5C400] flex items-center justify-center shrink-0">
+              <User size={14} strokeWidth={2} />
+            </div>
+            <div className="min-w-0">
+              <span className="text-[11px] font-bold text-white block leading-tight truncate">الحساب</span>
+              <span className="text-[9px] text-[#F5C400] block leading-none mt-0.5">تسجيل الدخول</span>
+            </div>
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 pb-6">
-          {moreItems.map((item) => {
+        {/* Scrollable Compact Menu */}
+        <div className="flex-1 overflow-y-auto p-1.5 space-y-0.5 divide-y divide-[#181818]">
+          {menuList.map((item) => {
             const Icon = item.icon;
             return (
-              <a
+              <button
                 key={item.id}
-                href={item.href}
-                onClick={(e) => {
-                  if (onNavigate) {
-                    e.preventDefault();
-                    onNavigate(item.href);
-                  }
-                  closeMoreDrawer();
-                }}
-                className="flex items-center gap-3 p-3 rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] text-sm font-semibold text-[#0B1F3A] dark:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#1A1A1A] transition-colors"
+                type="button"
+                onClick={item.action}
+                className="w-full p-2 flex items-center justify-between text-right rounded-[7px] hover:bg-[#141414] transition-colors select-none group"
               >
-                <Icon size={18} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />
-                <span>{item.label}</span>
-              </a>
+                <div className="flex items-center gap-2 min-w-0">
+                  <Icon size={14} strokeWidth={2} className="text-[#F5C400] shrink-0" />
+                  <span className="text-[11px] font-bold text-white truncate">
+                    {item.label}
+                  </span>
+                </div>
+                <ChevronLeft size={12} className="text-[#71717A] group-hover:-translate-x-0.5 transition-transform shrink-0" />
+              </button>
             );
           })}
+        </div>
+
+        {/* Footer Dark Mode Toggle */}
+        <div className="p-2.5 border-t border-[#222222] bg-[#000000]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-white">
+              {isDark ? <Sun size={13} className="text-[#F5C400]" /> : <Moon size={13} className="text-[#A1A1AA]" />}
+              <span>الوضع الليلي</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={cn(
+                'w-8 h-4 rounded-full transition-colors relative flex items-center p-0.5 outline-none',
+                isDark ? 'bg-[#F5C400]' : 'bg-[#333333]'
+              )}
+            >
+              <div
+                className={cn(
+                  'w-3 h-3 rounded-full bg-black transition-transform duration-200 shadow-sm',
+                  isDark ? '-translate-x-4' : 'translate-x-0 bg-white'
+                )}
+              />
+            </button>
+          </div>
         </div>
       </div>
     </div>
