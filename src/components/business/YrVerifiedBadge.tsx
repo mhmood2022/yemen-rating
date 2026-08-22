@@ -1,8 +1,8 @@
 import React from 'react';
-import { Check, ShieldCheck } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { VerifiedBadge, VerifiedBadgeVariant } from '../ui/VerifiedBadge';
 
 interface YrVerifiedBadgeProps {
+  variant?: VerifiedBadgeVariant;
   text?: string;
   size?: 'sm' | 'md' | 'lg';
   showText?: boolean;
@@ -10,37 +10,25 @@ interface YrVerifiedBadgeProps {
 }
 
 export const YrVerifiedBadge: React.FC<YrVerifiedBadgeProps> = ({
+  variant = 'gold',
   text = 'موثّق',
   size = 'md',
-  showText = true,
+  showText = false,
   className,
 }) => {
-  const sizeClasses = {
-    sm: 'text-[10px] px-2 py-0.5 gap-1',
-    md: 'text-xs px-2.5 py-1 gap-1.5',
-    lg: 'text-sm px-3.5 py-1.5 gap-2',
-  };
-
-  const iconSizes = {
-    sm: 11,
-    md: 13,
-    lg: 15,
+  const pixelSizes = {
+    sm: 15,
+    md: 18,
+    lg: 22,
   };
 
   return (
-    <span
-      className={cn(
-        'inline-flex items-center font-black rounded-full select-none shadow-sm transition-transform',
-        'bg-[#F5C400] text-[#000000] border border-[#F5C400]/40',
-        sizeClasses[size],
-        className
-      )}
-      title="نشاط موثق رسمياً على منصة يمن ريتغ (YR Verified)"
-    >
-      <div className="w-3.5 h-3.5 rounded-full bg-black text-[#F5C400] flex items-center justify-center shrink-0">
-        <Check size={iconSizes[size]} strokeWidth={3.5} />
-      </div>
-      {showText && <span className="leading-none">{text}</span>}
-    </span>
+    <VerifiedBadge
+      variant={variant}
+      size={pixelSizes[size]}
+      text={text}
+      showText={showText}
+      className={className}
+    />
   );
 };

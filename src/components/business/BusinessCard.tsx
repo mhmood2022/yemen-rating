@@ -2,6 +2,7 @@ import React from 'react';
 import { MapPin, Star, Flame, Building2 } from 'lucide-react';
 import { BusinessItem } from '../../types/business';
 import { Card } from '../ui/Card';
+import { VerifiedBadge } from '../ui/VerifiedBadge';
 
 interface BusinessCardProps {
   business: BusinessItem;
@@ -62,10 +63,11 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
         )}
       </div>
 
-      {/* Info Body */}
+      {/* Info Body with Verified Badge */}
       <div className="p-2.5 space-y-0.5">
-        <h3 className="font-bold text-xs text-white leading-snug truncate">
-          {business.name}
+        <h3 className="font-bold text-xs text-white leading-snug truncate flex items-center gap-1">
+          <span className="truncate">{business.name}</span>
+          {business.isVerified && <VerifiedBadge variant="gold" size={13} />}
         </h3>
 
         <div className="space-y-0.5 text-[10px] text-[#A1A1AA]">

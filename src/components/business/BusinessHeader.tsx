@@ -8,11 +8,9 @@ import {
   Navigation,
   Star,
   Building2,
-  Globe,
-  Clock,
 } from 'lucide-react';
 import { BusinessItem } from '../../types/business';
-import { YrVerifiedBadge } from './YrVerifiedBadge';
+import { VerifiedBadge } from '../ui/VerifiedBadge';
 import { yrToast } from '../ui/Toast';
 
 interface BusinessHeaderProps {
@@ -52,17 +50,16 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
 
   return (
     <div className="relative bg-white dark:bg-[#000000] border-b border-[#E2E8F0] dark:border-[#222222]">
-      {/* 1. Clear Cover Image (No Heavy Dark Layer) */}
+      {/* 1. Clear Cover Image */}
       <div className="relative h-[160px] sm:h-[220px] md:h-[260px] w-full overflow-hidden bg-[#0A0A0A]">
         <img
           src={defaultCover}
           alt={business.name}
           className="w-full h-full object-cover opacity-75 dark:opacity-65"
         />
-        {/* Subtle Gradient only for top text contrast */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50" />
 
-        {/* Top Actions: Back & Options */}
+        {/* Top Actions */}
         <div className="absolute top-3.5 left-0 right-0 px-4 flex items-center justify-between z-20">
           <button
             type="button"
@@ -87,7 +84,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
       {/* 2. Overlapping Logo & Identity Info */}
       <div className="relative px-4 pb-5 -mt-12 sm:-mt-14 max-w-5xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3.5 text-center sm:text-right">
-          {/* Logo Frame with Object-Fit Cover */}
+          {/* Logo Frame */}
           <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[16px] bg-white dark:bg-[#111111] p-1.5 border-2 border-white dark:border-[#222222] shadow-2xl overflow-hidden shrink-0 z-10">
             {business.logoUrl ? (
               <img
@@ -109,13 +106,18 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
                 {business.category}
               </span>
 
+              {/* Exact Verified Badge matching Reference (Gold / Blue / Gray) */}
               {business.isVerified && (
-                <YrVerifiedBadge text={business.verifiedBadgeText || 'موثّق ✓'} size="sm" />
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#111111] border border-[#222222]">
+                  <VerifiedBadge variant="gold" size={16} />
+                  <span className="text-[11px] font-bold text-white">موثّق</span>
+                </div>
               )}
             </div>
 
-            <h1 className="text-lg sm:text-2xl font-black text-[#0B1F3A] dark:text-white leading-tight">
-              {business.name}
+            <h1 className="text-lg sm:text-2xl font-black text-[#0B1F3A] dark:text-white leading-tight flex items-center justify-center sm:justify-start gap-1.5">
+              <span>{business.name}</span>
+              {business.isVerified && <VerifiedBadge variant="gold" size={20} />}
             </h1>
 
             <div className="flex items-center justify-center sm:justify-start gap-3 text-xs text-[#64748B] dark:text-[#A1A1AA] pt-0.5">
@@ -132,7 +134,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
           </div>
         </div>
 
-        {/* 3. Action Buttons [اتصال] [واتساب] [موقع] */}
+        {/* 3. Action Buttons */}
         <div className="flex items-center justify-center gap-2 w-full sm:w-auto pt-1">
           {business.phone && (
             <button
