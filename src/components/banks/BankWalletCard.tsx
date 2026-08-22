@@ -8,20 +8,20 @@ import { BusinessScore } from '../business/BusinessScore';
 
 interface BankWalletCardProps {
   item: BankWalletItem;
-  onOpenDetails: (item: BankWalletItem) => void;
+  onNavigate: (path: string) => void;
 }
 
-export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onOpenDetails }) => {
+export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onNavigate }) => {
   const isBank = item.type === 'bank';
+  const targetUrl = `/business/${item.id}`;
 
   return (
     <Card
       hoverable
       className="flex flex-col justify-between p-4 sm:p-5 transition-all duration-200 cursor-pointer group"
-      onClick={() => onOpenDetails(item)}
+      onClick={() => onNavigate(targetUrl)}
     >
       <div>
-        {/* Top Badges & Score */}
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-1.5 flex-wrap">
             <Badge variant={isBank ? 'primary' : 'yellow'} size="sm" className="gap-1">
@@ -40,7 +40,6 @@ export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onOpenDeta
           <BusinessScore score={item.yrScore} size="sm" showLabel={false} />
         </div>
 
-        {/* Title and Category */}
         <div className="flex items-start gap-3 mb-3">
           <div className="w-11 h-11 rounded-[10px] bg-[#0B1F3A]/5 dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#222222] flex items-center justify-center text-[#0B1F3A] dark:text-[#F5C400] font-bold shrink-0 group-hover:border-[#0B1F3A]/30 dark:group-hover:border-[#F5C400]/40 transition-colors">
             {isBank ? (
@@ -70,12 +69,10 @@ export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onOpenDeta
           </div>
         </div>
 
-        {/* Description */}
         <p className="text-xs text-[#475569] dark:text-[#A1A1AA] line-clamp-2 leading-relaxed mb-3.5">
           {item.description}
         </p>
 
-        {/* Operational Stats: Branches & Agents */}
         <div className="grid grid-cols-2 gap-2 mb-3 text-xs bg-[#F7F8FA] dark:bg-[#0A0A0A] p-2.5 rounded-[8px] border border-[#E2E8F0] dark:border-[#222222]">
           {item.branchCount !== undefined && (
             <div className="flex items-center gap-1.5 text-[#0B1F3A] dark:text-white font-semibold">
@@ -92,7 +89,6 @@ export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onOpenDeta
         </div>
       </div>
 
-      {/* Footer Details: Rating & Action */}
       <div className="pt-3 border-t border-[#F1F5F9] dark:border-[#222222] flex items-center justify-between gap-2 mt-auto">
         <div className="flex items-center gap-1.5">
           <div className="flex items-center gap-1 text-xs font-bold text-[#0B1F3A] dark:text-white">
@@ -108,10 +104,10 @@ export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onOpenDeta
           className="text-xs text-[#0B1F3A] dark:text-white group-hover:bg-[#0B1F3A] group-hover:text-white dark:group-hover:bg-[#F5C400] dark:group-hover:text-[#000000] transition-all h-[32px] px-2.5"
           onClick={(e) => {
             e.stopPropagation();
-            onOpenDetails(item);
+            onNavigate(targetUrl);
           }}
         >
-          <span>الخدمات والرسوم</span>
+          <span>عرض النشاط والرسوم</span>
           <ArrowLeft size={13} strokeWidth={1.75} />
         </Button>
       </div>

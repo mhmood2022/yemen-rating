@@ -1,11 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { DEMO_BANKS_AND_WALLETS } from '../data/demoBanksWallets';
-import { BankWalletItem, BankWalletFilterState } from '../types/banksWallets';
+import { BankWalletFilterState } from '../types/banksWallets';
 import { BankWalletCard } from '../components/banks/BankWalletCard';
 import { BankWalletFilters } from '../components/banks/BankWalletFilters';
-import { BankWalletModal } from '../components/banks/BankWalletModal';
 import { EmptyState } from '../components/ui/EmptyState';
-import { Landmark, Wallet } from 'lucide-react';
 
 export const BanksAndWalletsPage: React.FC<{
   initialType?: 'all' | 'bank' | 'wallet';
@@ -19,19 +17,6 @@ export const BanksAndWalletsPage: React.FC<{
     verifiedOnly: false,
     sortBy: 'highest_score',
   });
-
-  const [selectedItem, setSelectedItem] = useState<BankWalletItem | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleOpenDetails = (item: BankWalletItem) => {
-    setSelectedItem(item);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseDetails = () => {
-    setIsModalOpen(false);
-    setSelectedItem(null);
-  };
 
   const filteredItems = useMemo(() => {
     return DEMO_BANKS_AND_WALLETS.filter((item) => {
@@ -70,7 +55,6 @@ export const BanksAndWalletsPage: React.FC<{
 
   return (
     <div className="space-y-6 pb-8">
-      {/* Page Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-black text-[#0B1F3A] dark:text-white">
           البنوك والمحافظ الإلكترونية
@@ -80,7 +64,6 @@ export const BanksAndWalletsPage: React.FC<{
         </p>
       </div>
 
-      {/* Filters Toolbar */}
       <BankWalletFilters
         filters={filters}
         onChange={setFilters}
@@ -96,7 +79,6 @@ export const BanksAndWalletsPage: React.FC<{
         }
       />
 
-      {/* Counter */}
       <div className="flex items-center justify-between text-xs text-[#64748B] dark:text-[#A1A1AA] px-1">
         <span>
           عرض <strong>{filteredItems.length}</strong> مؤسسة ومحفظة مالية
@@ -108,7 +90,6 @@ export const BanksAndWalletsPage: React.FC<{
         )}
       </div>
 
-      {/* Cards Grid or Empty State */}
       {filteredItems.length === 0 ? (
         <EmptyState
           title="لم يتم العثور على نتائج تطابق بحثك"
@@ -131,18 +112,11 @@ export const BanksAndWalletsPage: React.FC<{
             <BankWalletCard
               key={item.id}
               item={item}
-              onOpenDetails={handleOpenDetails}
+              onNavigate={onNavigate}
             />
           ))}
         </div>
       )}
-
-      {/* Detail Modal */}
-      <BankWalletModal
-        item={selectedItem}
-        isOpen={isModalOpen}
-        onClose={handleCloseDetails}
-      />
     </div>
   );
 };
