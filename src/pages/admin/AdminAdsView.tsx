@@ -7,15 +7,18 @@ import { Badge } from '../../components/ui/Badge';
 import { SearchInput } from '../../components/ui/SearchInput';
 import { Select } from '../../components/ui/Select';
 import { AdPreviewModal } from '../../components/admin/AdPreviewModal';
+import { AdEditorModal } from '../../components/admin/AdEditorModal';
 import {
   Megaphone,
   Eye,
+  Edit,
   Play,
   Pause,
   Copy,
   Trash2,
   Video,
   FolderOpen,
+  Plus,
 } from 'lucide-react';
 
 export const AdminAdsView: React.FC = () => {
@@ -25,6 +28,8 @@ export const AdminAdsView: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'ads' | 'gallery'>('ads');
   const [previewAd, setPreviewAd] = useState<AdItem | null>(null);
+  const [editingAd, setEditingAd] = useState<AdItem | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const renderStatusBadge = (status: AdStatus) => {
     switch (status) {
@@ -53,39 +58,48 @@ export const AdminAdsView: React.FC = () => {
 
   return (
     <div className="space-y-5 text-right">
-      {/* Header */}
+      {/* Header with Create Ad Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#222222]">
         <div>
           <h2 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
             <Megaphone size={18} strokeWidth={2} className="text-[#F5C400]" />
-            <span>مركز التحكم الكامل بالإعلانات (YR Ads)</span>
+            <span>مركز التحكم الكامل بالإعلانات (YR Ads Control Center)</span>
           </h2>
           <p className="text-xs text-[#A1A1AA]">
-            إدارة كافة الحملات الإعلانية (فيديو، بانرات، متجاوب)، والمعاينة الحية، ومتابعة الأداء.
+            إدارة كافة الحملات الإعلانية (فيديو، بانرات، متجاوب)، المعاينة الحية، والتحكم بأماكن الظهور.
           </p>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex items-center gap-1.5 p-1 rounded-[10px] bg-[#141414] border border-[#222222]">
+        <div className="flex items-center gap-2">
           <Button
-            variant={activeTab === 'ads' ? 'secondary' : 'ghost'}
+            variant="secondary"
             size="sm"
-            onClick={() => setActiveTab('ads')}
-            icon={<Megaphone size={14} />}
-            className="text-xs font-bold"
+            onClick={() => setIsCreateOpen(true)}
+            icon={<Plus size={14} strokeWidth={2.5} />}
+            className="font-bold"
           >
-            جميع الإعلانات ({ads.length})
+            إضافة إعلان جديد
           </Button>
 
-          <Button
-            variant={activeTab === 'gallery' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab('gallery')}
-            icon={<FolderOpen size={14} />}
-            className="text-xs font-bold"
-          >
-            معرض المواد ({adMedia.length})
-          </Button>
+          <div className="flex items-center gap-1 p-0.5 rounded-[8px] bg-[#141414] border border-[#222222]">
+            <Button
+              variant={activeTab === 'ads' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveTab('ads')}
+              className="text-xs font-bold h-7 px-2.5"
+            >
+              الإعلانات ({ads.length})
+            </Button>
+
+            <Button
+              variant={activeTab === 'gallery' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveTab('gallery')}
+              className="text-xs font-bold h-7 px-2.5"
+            >
+              المعرض ({adMedia.length})
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -129,10 +143,11 @@ export const AdminAdsView: React.FC = () => {
             </div>
           </div>
 
-          {/* Ads List */}
+          {/* Ads List Cards */}
           <div className="space-y-3">
             {filteredAds.map((ad) => (
               <Card key={ad.id} className="p-4 bg-[#111111] border border-[#222222] rounded-[12px] flex flex-col md:flex-row md:items-center justify-between gap-4">
+                {/* Media Thumbnail & Meta */}
                 <div className="flex items-start gap-3.5 min-w-0">
                   <div
                     onClick={() => setPreviewAd(ad)}
@@ -157,59 +172,68 @@ export const AdminAdsView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between md:justify-end gap-3 pt-2 md:pt-0 border-t md:border-t-0 border-[#1C1C1C]">
+                {/* Metrics + Complete Control Buttons Suite */}
+                <div className="flex items-center justify-between md:justify-end gap-2.5 pt-2 md:pt-0 border-t md:border-t-0 border-[#1C1C1C]">
                   <div className="text-center px-3 border-l border-[#1E1E1E]">
                     <span className="text-[10px] text-[#71717A] block font-semibold">ظهور / نقرات</span>
                     <span className="text-xs font-black text-white">{ad.impressions.toLocaleString()} / <strong className="text-[#F5C400]">{ad.clicks.toLocaleString()}</strong></span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setPreviewAd(ad)}
-                      icon={<Eye size={14} />}
+                      icon={<Eye size={13} />}
                       title="معاينة الإعلان"
-                    >
-                      معاينة
-                    </Button>
+                      className="h-8 px-2"
+                    />
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingAd(ad)}
+                      icon={<Edit size={13} />}
+                      title="تعديل الحملة"
+                      className="h-8 px-2"
+                    />
 
                     {ad.status === 'published' ? (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => pauseAd(ad.id)}
-                        icon={<Pause size={14} className="text-[#F59E0B]" />}
+                        icon={<Pause size={13} className="text-[#F59E0B]" />}
                         title="إيقاف مؤقت"
-                      >
-                        إيقاف
-                      </Button>
+                        className="h-8 px-2"
+                      />
                     ) : (
                       <Button
                         variant="secondary"
                         size="sm"
                         onClick={() => publishAd(ad.id)}
-                        icon={<Play size={14} />}
+                        icon={<Play size={13} />}
                         title="نشر وتفعيل"
-                      >
-                        نشر
-                      </Button>
+                        className="h-8 px-2"
+                      />
                     )}
 
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => duplicateAd(ad.id)}
-                      icon={<Copy size={14} />}
+                      icon={<Copy size={13} />}
                       title="نسخ"
+                      className="h-8 px-2"
                     />
 
                     <Button
                       variant="danger"
                       size="sm"
                       onClick={() => deleteAd(ad.id)}
-                      icon={<Trash2 size={14} />}
+                      icon={<Trash2 size={13} />}
                       title="حذف"
+                      className="h-8 px-2"
                     />
                   </div>
                 </div>
@@ -236,10 +260,21 @@ export const AdminAdsView: React.FC = () => {
         </div>
       )}
 
+      {/* Live Preview Modal */}
       <AdPreviewModal
         ad={previewAd}
         isOpen={Boolean(previewAd)}
         onClose={() => setPreviewAd(null)}
+      />
+
+      {/* Create / Edit Ad Modal */}
+      <AdEditorModal
+        ad={editingAd}
+        isOpen={isCreateOpen || Boolean(editingAd)}
+        onClose={() => {
+          setIsCreateOpen(false);
+          setEditingAd(null);
+        }}
       />
     </div>
   );

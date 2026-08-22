@@ -1,19 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useAdmin } from '../../context/AdminContext';
 import { cn } from '../../lib/utils';
 
 export const HeroBanner: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
-  const { ads } = useAdmin();
+  const [currentSlide, setCurrentSlide] = useState(0);
 
-  // جلب الإعلانات المنشورة في أعلى الصفحة الرئيسية
-  const publishedHomeAds = ads.filter(
-    (a) => a.status === 'published' && a.placements.includes('home_top')
-  );
-
-  // إذا لم توجد إعلانات نشطة، استخدام البانر الترويجي الافتراضي
-  const defaultSlides = [
+  const slides = [
     {
-      id: 'default_1',
+      id: 's1',
       title: 'اكتشف الأفضل',
       subtitle: 'تقييمات حقيقية من المجتمع لأفضل الشركات والخدمات في اليمن',
       imageUrl: 'https://images.unsplash.com/photo-1578895210405-907db486c111?w=800&auto=format&fit=crop&q=80',
@@ -21,42 +14,26 @@ export const HeroBanner: React.FC<{ onNavigate: (path: string) => void }> = ({ o
       ctaText: 'استكشف الآن',
     },
     {
-      id: 'default_2',
-      title: 'سوق الجوالات المعتمد',
-      subtitle: 'استعرض أفضل عروض الهواتف والإلكترونيات وضمانات الصيانة',
+      id: 's2',
+      title: 'سوق الجوالات والإلكترونيات',
+      subtitle: 'استعرض أفضل عروض الهواتف وضمانات الصيانة المعتمدة',
       imageUrl: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&auto=format&fit=crop&q=80',
       link: '/phones',
       ctaText: 'سوق الجوالات',
     },
   ];
 
-  const activeSlides =
-    publishedHomeAds.length > 0
-      ? publishedHomeAds.map((ad) => ({
-          id: ad.id,
-          title: ad.title,
-          subtitle: `برعاية: ${ad.advertiserName}`,
-          imageUrl: ad.mediaUrl,
-          link: ad.targetUrl,
-          ctaText: 'استكشف العرض',
-        }))
-      : defaultSlides;
-
-  const [currentSlide, setCurrentSlide] = useState(0);
-
   useEffect(() => {
-    if (activeSlides.length <= 1) return;
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % activeSlides.length);
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, [activeSlides.length]);
+  }, [slides.length]);
 
-  const slide = activeSlides[currentSlide] || activeSlides[0];
+  const slide = slides[currentSlide];
 
   return (
     <div className="relative rounded-[14px] overflow-hidden bg-[#0A0A0A] shadow-md border-0">
-      {/* Reduced compact height (145px - 165px) */}
       <div className="relative h-[145px] sm:h-[165px] w-full overflow-hidden">
         <img
           src={slide.imageUrl}
@@ -86,22 +63,20 @@ export const HeroBanner: React.FC<{ onNavigate: (path: string) => void }> = ({ o
             </button>
 
             {/* Pagination Dots */}
-            {activeSlides.length > 1 && (
-              <div className="flex items-center gap-1">
-                {activeSlides.map((s, idx) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => setCurrentSlide(idx)}
-                    className={cn(
-                      'h-1 rounded-full transition-all duration-300',
-                      currentSlide === idx ? 'w-3.5 bg-[#F5C400]' : 'w-1 bg-white/30'
-                    )}
-                    aria-label={`Slide ${idx + 1}`}
-                  />
-                ))}
-              </div>
-            )}
+            <div className="flex items-center gap-1">
+              {slides.map((s, idx) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setCurrentSlide(idx)}
+                  className={cn(
+                    'h-1 rounded-full transition-all duration-300',
+                    currentSlide === idx ? 'w-3.5 bg-[#F5C400]' : 'w-1 bg-white/30'
+                  )}
+                  aria-label={`Slide ${idx + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
