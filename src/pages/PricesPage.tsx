@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DEMO_CURRENCIES, DEMO_GOLD } from '../data/demoPrices';
-import { Clock, ArrowRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Clock, ArrowRight } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { cn } from '../lib/utils';
 
@@ -11,22 +11,16 @@ export const PricesPage: React.FC<{ onNavigate?: (path: string) => void }> = ({ 
   const currenciesList = DEMO_CURRENCIES.filter((c) => c.market === selectedMarket);
   const goldList = DEMO_GOLD.filter((g) => g.market === selectedMarket);
 
-  // Sparkline mini SVG visual curve
-  const renderSparkline = (isPositive: boolean) => (
-    <svg className="w-16 h-6 shrink-0 opacity-80" viewBox="0 0 64 24" fill="none">
-      <path
-        d={isPositive ? 'M2 18 L18 14 L34 16 L50 8 L62 4' : 'M2 6 L18 10 L34 8 L50 16 L62 20'}
-        stroke={isPositive ? '#22C55E' : '#EF4444'}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+  const flagMap: Record<string, string> = {
+    USD: '🇺🇸',
+    SAR: '🇸🇦',
+    AED: '🇦🇪',
+    EUR: '🇪🇺',
+  };
 
   return (
     <div className="space-y-4 pb-8 max-w-lg mx-auto">
-      {/* Header with Back Navigation */}
+      {/* Top Header with Back Navigation & Market Selector */}
       <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0] dark:border-[#222222]">
         <div className="flex items-center gap-2">
           {onNavigate && (
@@ -44,15 +38,15 @@ export const PricesPage: React.FC<{ onNavigate?: (path: string) => void }> = ({ 
           </h1>
         </div>
 
-        {/* Market Selector Tag */}
-        <div className="flex items-center gap-1 p-0.5 bg-[#F1F5F9] dark:bg-[#161616] rounded-[8px] border border-[#E2E8F0] dark:border-[#222222] text-[11px] font-bold">
+        {/* Market Pill */}
+        <div className="flex items-center gap-1 p-0.5 bg-[#F1F5F9] dark:bg-[#141414] rounded-[8px] border border-[#E2E8F0] dark:border-[#222222] text-[11px] font-bold">
           <button
             type="button"
             onClick={() => setSelectedMarket('sanaa')}
             className={cn(
-              'px-2.5 py-1 rounded-[6px] transition-all',
+              'px-3 py-1 rounded-[6px] transition-all',
               selectedMarket === 'sanaa'
-                ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-black'
+                ? 'bg-[#F5C400] text-black font-black'
                 : 'text-[#64748B] dark:text-[#71717A]'
             )}
           >
@@ -62,9 +56,9 @@ export const PricesPage: React.FC<{ onNavigate?: (path: string) => void }> = ({ 
             type="button"
             onClick={() => setSelectedMarket('aden')}
             className={cn(
-              'px-2.5 py-1 rounded-[6px] transition-all',
+              'px-3 py-1 rounded-[6px] transition-all',
               selectedMarket === 'aden'
-                ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-black'
+                ? 'bg-[#F5C400] text-black font-black'
                 : 'text-[#64748B] dark:text-[#71717A]'
             )}
           >
@@ -108,7 +102,7 @@ export const PricesPage: React.FC<{ onNavigate?: (path: string) => void }> = ({ 
         </button>
       </div>
 
-      {/* List Rendering */}
+      {/* Clean Financial Cards (Matching Screenshot 1) */}
       {activeTab === 'currencies' && (
         <div className="space-y-2.5">
           {currenciesList.map((c) => (
@@ -116,21 +110,23 @@ export const PricesPage: React.FC<{ onNavigate?: (path: string) => void }> = ({ 
               key={c.id}
               className="p-3.5 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[12px] flex items-center justify-between gap-3"
             >
-              {/* Currency Info */}
-              <div className="space-y-0.5 min-w-[100px]">
-                <h3 className="font-bold text-xs sm:text-sm text-[#0B1F3A] dark:text-white">
-                  {c.currencyName}
-                </h3>
-                <span className="text-[10px] text-[#64748B] dark:text-[#71717A] font-semibold">
-                  {c.currencyCode}
+              {/* Right: Flag & Currency Title */}
+              <div className="flex items-center gap-2.5">
+                <span className="text-xl" role="img" aria-label={c.currencyCode}>
+                  {flagMap[c.currencyCode] || '💵'}
                 </span>
+                <div>
+                  <h3 className="font-bold text-xs sm:text-sm text-[#0B1F3A] dark:text-white leading-tight">
+                    {c.currencyName}
+                  </h3>
+                  <span className="text-[10px] text-[#64748B] dark:text-[#71717A] font-semibold">
+                    {c.currencyCode}
+                  </span>
+                </div>
               </div>
 
-              {/* Sparkline Curve */}
-              {renderSparkline(c.change !== 'down')}
-
-              {/* Buy & Sell Prices */}
-              <div className="flex items-center gap-4 text-left">
+              {/* Left: Buy (Green) & Sell (White) Prices */}
+              <div className="flex items-center gap-5 text-left">
                 <div>
                   <span className="text-[9px] text-[#64748B] dark:text-[#71717A] block font-semibold">شراء</span>
                   <span className="text-xs sm:text-sm font-black text-[#16A34A] dark:text-[#22C55E]">
@@ -157,7 +153,7 @@ export const PricesPage: React.FC<{ onNavigate?: (path: string) => void }> = ({ 
               key={g.id}
               className="p-3.5 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[12px] flex items-center justify-between gap-3"
             >
-              <div className="space-y-0.5 min-w-[120px]">
+              <div className="space-y-0.5">
                 <h3 className="font-bold text-xs sm:text-sm text-[#0B1F3A] dark:text-white">
                   {g.karatName}
                 </h3>
@@ -166,9 +162,7 @@ export const PricesPage: React.FC<{ onNavigate?: (path: string) => void }> = ({ 
                 </span>
               </div>
 
-              {renderSparkline(g.change !== 'down')}
-
-              <div className="flex items-center gap-4 text-left">
+              <div className="flex items-center gap-5 text-left">
                 <div>
                   <span className="text-[9px] text-[#64748B] dark:text-[#71717A] block font-semibold">شراء</span>
                   <span className="text-xs sm:text-sm font-black text-[#16A34A] dark:text-[#22C55E]">
