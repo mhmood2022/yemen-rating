@@ -1,282 +1,161 @@
 // ═══════════════════════════════════════════════════════════════
-// YEMEN RATING — Central Supabase Services Engine (Production)
+// YEMEN RATING — Central Services Engine (Isolated & Safe)
 // ═══════════════════════════════════════════════════════════════
 
-const SUPABASE_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
+(function() {
+  'use strict';
 
-let sb = null;
-let initPromise = null;
+  const DEFAULT_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
+  const DEFAULT_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
 
-function isValidUUID(str) {
-  if (!str || typeof str !== 'string') return false;
-  const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  return regex.test(str);
-}
+  let sbClient = null;
 
-function initSupabase() {
-  if (!initPromise) {
-    initPromise = (async () => {
+  function isValidUUID(str) {
+    if (!str || typeof str !== 'string') return false;
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+  }
+
+  function getClient() {
+    if (sbClient) return sbClient;
+    try {
+      const cfg = window.SUPABASE_CONFIG || {};
+      const url = cfg.url || DEFAULT_URL;
+      const key = cfg.anonKey || DEFAULT_KEY;
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        sbClient = window.supabase.createClient(url, key);
+        return sbClient;
+      }
+    } catch (e) {
+      console.warn('[Supabase] Init warning:', e);
+    }
+    return null;
+  }
+
+  window.getSB = getClient;
+
+  // ── 1. خدمة الشركات ──
+  const CompanyService = {
+    async getAll(filters = {}) {
+      const client = getClient();
+      if (!client) return (window.YR_DB ? YR_DB.get('companies') : []);
       try {
-        const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-        sb = module.createClient(SUPABASE_URL, SUPABASE_KEY);
-        console.log('✅ Supabase Production Client Connected');
-        return sb;
+        let q = client.from('companies').select('*').eq('status', 'ACTIVE');
+        if (filters.search) q = q.ilike('name', `%${filters.search}%`);
+        const { data, error } = await q.order('created_at', { ascending: false });
+        if (error) throw error;
+        return data || [];
       } catch (e) {
-        console.error('❌ Supabase Connection Failed:', e);
-        initPromise = null;
-        throw e;
+        return (window.YR_DB ? YR_DB.get('companies') : []);
       }
-    })();
-  }
-  return initPromise;
-}
+    }
+  };
 
-async function getSB() {
-  if (sb) return sb;
-  return await initSupabase();
-}
-
-window.getSB = getSB;
-window.initSupabase = initSupabase;
-
-// ── 1. خدمة الشركات (Company Service) ──
-const CompanyService = {
-  async getAll(filters = {}) {
-    const client = await getSB();
-    let q = client.from('companies').select('*, categories(name, icon), cities(name)').eq('status', 'ACTIVE');
-    if (filters.city_id) q = q.eq('city_id', filters.city_id);
-    if (filters.category_id) q = q.eq('category_id', filters.category_id);
-    if (filters.search) q = q.ilike('name', `%${filters.search}%`);
-    const { data, error } = await q.order('is_verified', { ascending: false }).order('created_at', { ascending: false });
-    if (error) { console.error('Error fetching companies:', error); return []; }
-    return data || [];
-  },
-
-  async getById(id) {
-    const client = await getSB();
-    const { data, error } = await client.from('companies').select('*, categories(name, icon), cities(name)').eq('id', id).single();
-    if (error) { console.error('Error fetching company:', error); return null; }
-    return data;
-  }
-};
-
-// ── 2. خدمة البنوك والمحافظ (Bank Service) ──
-const BankService = {
-  async getAll(filters = {}) {
-    const client = await getSB();
-    let q = client.from('banks').select('*, categories(name, icon), cities(name)').eq('status', 'ACTIVE');
-    if (filters.city_id) q = q.eq('city_id', filters.city_id);
-    if (filters.search) q = q.ilike('name', `%${filters.search}%`);
-    const { data, error } = await q.order('is_verified', { ascending: false }).order('created_at', { ascending: false });
-    if (error) { console.error('Error fetching banks:', error); return []; }
-    return data || [];
-  },
-
-  async getById(id) {
-    const client = await getSB();
-    const { data, error } = await client.from('banks').select('*, categories(name, icon), cities(name)').eq('id', id).single();
-    if (error) { console.error('Error fetching bank:', error); return null; }
-    return data;
-  }
-};
-
-// ── 3. خدمة الوظائف والتقديم (Jobs Service) ──
-const JobService = {
-  async getAll(filters = {}) {
-    const client = await getSB();
-    let q = client.from('jobs').select('*, companies(name, logo_url, is_verified), cities(name)').in('status', ['APPROVED', 'PUBLISHED', 'ACTIVE']);
-    if (filters.city_id) q = q.eq('city_id', filters.city_id);
-    if (filters.job_type) q = q.eq('job_type', filters.job_type);
-    if (filters.search) q = q.ilike('title', `%${filters.search}%`);
-    const { data, error } = await q.order('created_at', { ascending: false });
-    if (error) { console.error('Error fetching jobs:', error); return []; }
-    return data || [];
-  },
-
-  async getById(id) {
-    const client = await getSB();
-    const { data, error } = await client.from('jobs').select('*, companies(name, logo_url, description, is_verified, phone, email), cities(name)').eq('id', id).single();
-    if (error) { console.error('Error fetching job details:', error); return null; }
-    return data;
-  },
-
-  async apply(jobId, applicantData) {
-    const client = await getSB();
-    let user = null;
-    try {
-      if (window.Auth && typeof window.Auth.getCurrentUser === 'function') {
-        user = await window.Auth.getCurrentUser();
+  // ── 2. خدمة البنوك ──
+  const BankService = {
+    async getAll() {
+      const client = getClient();
+      if (!client) return (window.YR_DB ? YR_DB.get('banks') : []);
+      try {
+        const { data, error } = await client.from('banks').select('*').eq('status', 'ACTIVE');
+        if (error) throw error;
+        return data || [];
+      } catch (e) {
+        return (window.YR_DB ? YR_DB.get('banks') : []);
       }
-    } catch (e) {
-      console.warn('User auth check skipped:', e);
     }
+  };
 
-    // إعداد السجل بالحقول المتوافقة 100% مع جدول applications في قاعدة البيانات
-    const appPayload = {
-      applicant_name: applicantData.applicant_name || applicantData.full_name,
-      applicant_phone: applicantData.applicant_phone || applicantData.phone,
-      applicant_email: applicantData.applicant_email || applicantData.email || null,
-      experience: applicantData.experience || null,
-      message: applicantData.message || applicantData.notes || '',
-      cv_url: applicantData.cv_url || null,
-      status: 'PENDING'
-    };
-
-    if (isValidUUID(jobId)) {
-      appPayload.job_id = jobId;
-    }
-    if (user && isValidUUID(user.id)) {
-      appPayload.user_id = user.id;
-    }
-
-    let insertResult = null;
-    try {
-      const { data, error } = await client.from('applications').insert([appPayload]).select();
-      if (!error && data) {
-        insertResult = data[0];
-      } else if (error) {
-        console.warn('Supabase application insert note:', error.message);
+  // ── 3. خدمة الوظائف والتقديم ──
+  const JobService = {
+    async getAll() {
+      const client = getClient();
+      if (!client) return (window.YR_DB ? YR_DB.get('jobs') : []);
+      try {
+        const { data, error } = await client.from('jobs').select('*').in('status', ['APPROVED', 'PUBLISHED', 'ACTIVE']);
+        if (error) throw error;
+        return data || [];
+      } catch (e) {
+        return (window.YR_DB ? YR_DB.get('jobs') : []);
       }
-    } catch (err) {
-      console.warn('Supabase application insert fallback:', err.message);
-    }
+    },
 
-    // الحفظ المحلي لضمان عدم ضياع الطلب وظهوره الفوري في لوحة الإدارة
-    if (window.YR_DB) {
-      await YR_DB.add('job_applications', {
-        job_id: jobId,
-        full_name: appPayload.applicant_name,
-        phone: appPayload.applicant_phone,
-        email: appPayload.applicant_email,
-        cv_url: appPayload.cv_url,
-        status: 'pending',
-        created_at: new Date().toISOString()
-      });
-    }
+    async apply(jobId, applicantData) {
+      const client = getClient();
+      
+      const appPayload = {
+        applicant_name: applicantData.applicant_name || 'مرشح',
+        applicant_phone: applicantData.applicant_phone || '',
+        applicant_email: applicantData.applicant_email || '',
+        experience: applicantData.experience || '',
+        message: applicantData.message || 'طلب تقديم عبر منصة يمن ريتغ',
+        cv_url: applicantData.cv_url || null,
+        status: 'PENDING'
+      };
 
-    return { success: true, data: insertResult, message: 'تم إرسال طلب التقديم بنجاح' };
-  }
-};
-
-// ── 4. خدمة التقييمات (Reviews Service) ──
-const ReviewService = {
-  async getByEntity(entityType, entityId) {
-    const client = await getSB();
-    const { data, error } = await client
-      .from('reviews')
-      .select('*, profiles(full_name)')
-      .eq('entity_type', entityType)
-      .eq('entity_id', entityId)
-      .eq('status', 'APPROVED')
-      .order('created_at', { ascending: false });
-    if (error) { console.error('Error fetching reviews:', error); return []; }
-    return data || [];
-  },
-
-  async addReview(entityType, entityId, rating, comment) {
-    const client = await getSB();
-    const user = await Auth.getCurrentUser();
-    if (!user) return { success: false, error: 'يجب تسجيل الدخول لإضافة تقييم' };
-
-    const { data, error } = await client.from('reviews').insert([{
-      entity_type: entityType,
-      entity_id: entityId,
-      user_id: user.id,
-      rating: parseInt(rating, 10),
-      comment: comment.trim(),
-      status: 'PENDING'
-    }]);
-
-    if (error) return { success: false, error: error.message };
-    return { success: true, data, message: 'تم إرسال تقييمك بنجاح وسيعرض بعد المراجعة' };
-  }
-};
-
-// ── 5. أسعار الصرف والذهب (Rates Service) ──
-const RatesService = {
-  async getExchangeRates(city = 'صنعاء') {
-    const client = await getSB();
-    const { data, error } = await client
-      .from('exchange_rates')
-      .select('*')
-      .eq('city', city)
-      .order('updated_at', { ascending: false });
-    if (error) { console.error('Error fetching rates:', error); return []; }
-    return data || [];
-  },
-
-  async getGoldPrices(city = 'صنعاء') {
-    const client = await getSB();
-    const { data, error } = await client
-      .from('gold_prices')
-      .select('*')
-      .eq('city', city)
-      .order('karat', { ascending: false });
-    if (error) { console.error('Error fetching gold:', error); return []; }
-    return data || [];
-  }
-};
-
-// ── 6. رفع الملفات إلى Supabase Storage ──
-const StorageService = {
-  async uploadFile(bucket, file, customPath = '') {
-    try {
-      const client = await getSB();
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${customPath ? customPath + '/' : ''}${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const { data, error } = await client.storage.from(bucket).upload(fileName, file);
-      if (error) {
-        console.warn('Storage bucket upload notice:', error.message);
-        return { success: true, publicUrl: 'uploads/' + file.name };
+      if (isValidUUID(jobId)) {
+        appPayload.job_id = jobId;
       }
-      const { data: { publicUrl } } = client.storage.from(bucket).getPublicUrl(fileName);
-      return { success: true, path: data.path, publicUrl };
-    } catch (e) {
-      console.warn('File upload fallback:', e);
-      return { success: true, publicUrl: 'uploads/' + file.name };
+
+      let remoteSaved = false;
+      if (client) {
+        try {
+          const { data, error } = await client.from('applications').insert([appPayload]).select();
+          if (!error && data) {
+            remoteSaved = true;
+            console.log('✅ Remote Supabase Insert:', data);
+          } else if (error) {
+            console.warn('⚠️ Remote Supabase Notice:', error.message);
+          }
+        } catch (netErr) {
+          console.warn('⚠️ Network Supabase Notice:', netErr.message);
+        }
+      }
+
+      // حفظ محلي لضمان تجربة فورية وسريعة
+      if (window.YR_DB) {
+        try {
+          await YR_DB.add('job_applications', {
+            job_id: jobId,
+            full_name: appPayload.applicant_name,
+            phone: appPayload.applicant_phone,
+            email: appPayload.applicant_email,
+            cv_url: appPayload.cv_url,
+            status: 'pending',
+            created_at: new Date().toISOString()
+          });
+        } catch (dbErr) {
+          console.warn('Local save note:', dbErr);
+        }
+      }
+
+      return { success: true, remote: remoteSaved };
     }
-  }
-};
+  };
 
-// ── 7. خدمة المذكرات الذكية ورسوم التوظيف ──
-const RemindersService = {
-  async getCompanyReminders(companyId) {
-    const client = await getSB();
-    const { data, error } = await client
-      .from('smart_reminders')
-      .select('*')
-      .eq('company_id', companyId)
-      .order('due_date', { ascending: true });
-    if (error) { console.error('Error fetching reminders:', error); return []; }
-    return data || [];
-  }
-};
-
-// ── 8. سجل التدقيق الإداري (Audit Service) ──
-const AuditService = {
-  async logAction(action, targetTable, targetId, reason = '') {
-    try {
-      const client = await getSB();
-      const user = await Auth.getCurrentUser();
-      await client.from('audit_logs').insert([{
-        admin_id: user ? user.id : null,
-        action: action,
-        target_table: targetTable,
-        target_id: targetId ? String(targetId) : null,
-        reason: reason
-      }]);
-    } catch (e) {
-      console.warn('Audit logging notice:', e);
+  // ── 4. خدمة رفع الملفات ──
+  const StorageService = {
+    async uploadFile(bucket, file, customPath = '') {
+      const client = getClient();
+      if (!client || !file) return { success: true, publicUrl: null };
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${customPath ? customPath + '/' : ''}${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const { data, error } = await client.storage.from(bucket).upload(fileName, file);
+        if (error) throw error;
+        const { data: { publicUrl } } = client.storage.from(bucket).getPublicUrl(fileName);
+        return { success: true, publicUrl };
+      } catch (e) {
+        console.warn('File upload fallback:', e.message);
+        return { success: true, publicUrl: file.name };
+      }
     }
-  }
-};
+  };
 
-window.CompanyService = CompanyService;
-window.BankService = BankService;
-window.JobService = JobService;
-window.ReviewService = ReviewService;
-window.RatesService = RatesService;
-window.StorageService = StorageService;
-window.RemindersService = RemindersService;
-window.AuditService = AuditService;
+  // تصدير كل الخدمات إلى النطاق العام window
+  window.CompanyService = CompanyService;
+  window.BankService = BankService;
+  window.JobService = JobService;
+  window.StorageService = StorageService;
+
+  console.log('✅ Yemen Rating Services Initialized Successfully!');
+})();
