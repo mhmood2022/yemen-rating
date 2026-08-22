@@ -10,6 +10,7 @@ import { HomePage } from './pages/HomePage';
 import { DirectoryPage } from './pages/DirectoryPage';
 import { BusinessProfilePage } from './pages/BusinessProfilePage';
 import { BanksAndWalletsPage } from './pages/BanksAndWalletsPage';
+import { PricesPage } from './pages/PricesPage';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname + window.location.search);
@@ -69,6 +70,14 @@ export const App: React.FC = () => {
       return (
         <AppLayout onNavigate={navigate}>
           <BanksAndWalletsPage initialType={initialType} onNavigate={navigate} />
+        </AppLayout>
+      );
+    }
+
+    if (pathname === '/prices') {
+      return (
+        <AppLayout onNavigate={navigate}>
+          <PricesPage />
         </AppLayout>
       );
     }

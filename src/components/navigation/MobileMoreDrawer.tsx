@@ -21,7 +21,7 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
     { id: 'directory', label: 'دليل الأنشطة', icon: Building2, href: '/directory' },
     { id: 'banks', label: 'البنوك', icon: Landmark, href: '/banks' },
     { id: 'wallets', label: 'المحافظ الإلكترونية', icon: Wallet, href: '/wallets' },
-    { id: 'prices', label: 'الأسعار', icon: Coins, href: '/directory' },
+    { id: 'prices', label: 'الأسعار', icon: Coins, href: '/prices' },
     { id: 'phones', label: 'سوق الجوالات', icon: Smartphone, href: '/directory?category=محلات الجوالات والإلكترونيات' },
     { id: 'rating', label: 'التقييم', icon: Star, href: '/directory' },
     { id: 'ads', label: 'الإعلانات', icon: Megaphone, href: '/directory' },
