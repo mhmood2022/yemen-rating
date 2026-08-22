@@ -29,10 +29,10 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
       hoverable
       onClick={handleClick}
       noPadding
-      className="overflow-hidden rounded-[14px] bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] cursor-pointer flex flex-col justify-between transition-transform duration-200 hover:-translate-y-0.5 shadow-sm"
+      className="overflow-hidden rounded-[14px] bg-[#111111] border border-[#222222] cursor-pointer flex flex-col justify-between transition-all duration-200 hover:-translate-y-0.5 shadow-sm text-right"
     >
-      {/* Top Media Cover with Badges */}
-      <div className="relative h-[110px] sm:h-[130px] w-full overflow-hidden bg-[#F7F8FA] dark:bg-[#1A1A1A]">
+      {/* Top Cover Media */}
+      <div className="relative h-[105px] sm:h-[125px] w-full overflow-hidden bg-[#181818]">
         {business.logoUrl ? (
           <img
             src={business.logoUrl}
@@ -40,38 +40,40 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[#94A3B8]">
-            <Building2 size={32} strokeWidth={1.5} />
+          <div className="w-full h-full flex items-center justify-center text-[#71717A]">
+            <Building2 size={28} strokeWidth={1.5} />
           </div>
         )}
 
-        {/* Rating Badge on Top Right */}
-        <div className="absolute top-2 right-2 px-2 py-0.5 rounded-[6px] bg-black/60 backdrop-blur-[2px] text-white flex items-center gap-1 text-[11px] font-extrabold border border-white/10">
-          <Star size={11} strokeWidth={2} className="text-[#F5C400] fill-[#F5C400]" />
-          <span>{business.rating.toFixed(1)}</span>
-        </div>
+        {/* Rating Badge (4.8 ★) on top corner */}
+        {variant === 'topRated' && (
+          <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-[5px] bg-black/75 backdrop-blur-[2px] text-white flex items-center gap-1 text-[10px] font-black border border-white/10">
+            <span>{business.rating.toFixed(1)}</span>
+            <Star size={10} strokeWidth={2.5} className="text-[#F5C400] fill-[#F5C400]" />
+          </div>
+        )}
 
-        {/* Trend Flame Badge on Bottom Left if trending */}
+        {/* Trend Flame Badge (🔥 125) on bottom corner */}
         {variant === 'trending' && (
-          <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-[6px] bg-black/70 backdrop-blur-[2px] text-white flex items-center gap-1 text-[11px] font-extrabold border border-[#F59E0B]/30">
-            <Flame size={12} strokeWidth={2} className="text-[#F59E0B]" />
+          <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-[5px] bg-black/80 backdrop-blur-[2px] text-white flex items-center gap-1 text-[10px] font-black border border-[#F59E0B]/30">
+            <Flame size={11} strokeWidth={2.5} className="text-[#F59E0B]" />
             <span>{trendCount}</span>
           </div>
         )}
       </div>
 
       {/* Info Body */}
-      <div className="p-3 space-y-1">
-        <h3 className="font-bold text-xs sm:text-sm text-[#0B1F3A] dark:text-white leading-snug line-clamp-1">
+      <div className="p-2.5 space-y-0.5">
+        <h3 className="font-bold text-xs text-white leading-snug truncate">
           {business.name}
         </h3>
 
-        <div className="flex items-center justify-between text-[11px] text-[#64748B] dark:text-[#A1A1AA]">
-          <span className="truncate">{business.category}</span>
-          <span className="flex items-center gap-0.5 text-[#94A3B8] dark:text-[#71717A] shrink-0">
-            <MapPin size={11} strokeWidth={1.75} />
+        <div className="space-y-0.5 text-[10px] text-[#A1A1AA]">
+          <span className="block truncate">{business.category}</span>
+          <div className="flex items-center gap-0.5 text-[#71717A]">
+            <MapPin size={10} className="text-[#71717A]" />
             <span>{business.city}</span>
-          </span>
+          </div>
         </div>
       </div>
     </Card>

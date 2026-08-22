@@ -5,7 +5,7 @@ import { CategorySlider } from '../components/home/CategorySlider';
 import { HomePricesWidget } from '../components/home/HomePricesWidget';
 import { HomeReviewsWidget } from '../components/home/HomeReviewsWidget';
 import { BusinessCard } from '../components/business/BusinessCard';
-import { Search, MapPin, ArrowLeft } from 'lucide-react';
+import { Search, MapPin } from 'lucide-react';
 
 export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,21 +19,22 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
     }
   };
 
+  // Exactly matching items from Reference Image 1
   const topRatedItems = [
-    DEMO_BUSINESSES.find((b) => b.id === 't4') || DEMO_BUSINESSES[0],
-    DEMO_BUSINESSES.find((b) => b.id === 't2') || DEMO_BUSINESSES[1],
-    DEMO_BUSINESSES.find((b) => b.id === 't3') || DEMO_BUSINESSES[2],
+    DEMO_BUSINESSES.find((b) => b.id === 't3') || DEMO_BUSINESSES[0], // خدمات الخليج
+    DEMO_BUSINESSES.find((b) => b.id === 't2') || DEMO_BUSINESSES[1], // هايبر بلس
+    DEMO_BUSINESSES.find((b) => b.id === 't4') || DEMO_BUSINESSES[2], // مطعم حضرموت
   ];
 
   const trendingItems = [
-    { business: DEMO_BUSINESSES.find((b) => b.id === 't1') || DEMO_BUSINESSES[0], flame: 125 },
-    { business: DEMO_BUSINESSES.find((b) => b.id === 't5') || DEMO_BUSINESSES[1], flame: 98 },
-    { business: DEMO_BUSINESSES.find((b) => b.id === 't6') || DEMO_BUSINESSES[2], flame: 76 },
+    { business: DEMO_BUSINESSES.find((b) => b.id === 't6') || DEMO_BUSINESSES[0], flame: 76 },  // غسيل حريري
+    { business: DEMO_BUSINESSES.find((b) => b.id === 't5') || DEMO_BUSINESSES[1], flame: 98 },  // متجر العصرية
+    { business: DEMO_BUSINESSES.find((b) => b.id === 't1') || DEMO_BUSINESSES[2], flame: 125 }, // مطعم البيت اليمني
   ];
 
   return (
-    <div className="space-y-5 pb-6 max-w-2xl mx-auto">
-      {/* 1. Search Bar & Location - Clean Dark Style */}
+    <div className="space-y-4 pb-6 max-w-lg mx-auto">
+      {/* Search Bar & Location */}
       <div className="space-y-2">
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
@@ -41,45 +42,43 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="ابحث عن نشاط أو شركة أو خدمة..."
-            className="w-full h-[44px] pr-10 pl-4 rounded-[12px] bg-white dark:bg-[#141414] text-[#0B1F3A] dark:text-white placeholder:text-[#94A3B8] dark:placeholder:text-[#71717A] text-xs sm:text-sm outline-none border border-[#CBD5E1] dark:border-[#222222] focus:border-[#F5C400] transition-colors shadow-sm"
+            className="w-full h-[42px] pr-10 pl-4 rounded-[12px] bg-[#111111] text-white placeholder:text-[#71717A] text-xs outline-none border border-[#222222] focus:border-[#F5C400] transition-colors shadow-sm"
           />
           <Search
-            size={17}
-            strokeWidth={1.75}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] dark:text-[#71717A]"
+            size={16}
+            strokeWidth={2}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#71717A]"
           />
         </form>
 
-        {/* Location Tag */}
-        <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-[#A1A1AA] px-1">
-          <MapPin size={13} strokeWidth={2} className="text-[#F5C400] shrink-0" />
-          <span className="font-bold text-[#0B1F3A] dark:text-white">اليمن، صنعاء</span>
+        <div className="flex items-center justify-end gap-1 text-xs text-[#A1A1AA] px-1">
+          <span className="font-bold text-white">اليمن، صنعاء</span>
+          <MapPin size={13} strokeWidth={2.5} className="text-[#F5C400] shrink-0" />
         </div>
       </div>
 
-      {/* 2. Hero Banner */}
+      {/* Hero Banner */}
       <HeroBanner onNavigate={onNavigate} />
 
-      {/* 3. Main Categories */}
+      {/* Main 5 Categories */}
       <CategorySlider onNavigate={onNavigate} />
 
-      {/* 4. Top Rated (الأعلى تقييماً) */}
-      <section className="space-y-2.5">
+      {/* Top Rated (الأعلى تقييماً) */}
+      <section className="space-y-2">
         <div className="flex items-center justify-between px-0.5">
-          <h2 className="text-sm sm:text-base font-black text-[#0B1F3A] dark:text-white">
+          <h2 className="text-sm sm:text-base font-black text-white">
             الأعلى تقييماً
           </h2>
           <button
             type="button"
             onClick={() => onNavigate('/directory')}
-            className="text-xs font-semibold text-[#64748B] dark:text-[#A1A1AA] hover:text-[#0B1F3A] dark:hover:text-[#F5C400] transition-colors flex items-center gap-1"
+            className="text-xs font-black text-[#F5C400] hover:underline transition-colors"
           >
-            <span>عرض الكل</span>
-            <ArrowLeft size={12} strokeWidth={1.75} />
+            عرض الكل
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="grid grid-cols-3 gap-2">
           {topRatedItems.map((biz) => (
             <BusinessCard
               key={biz.id}
@@ -91,23 +90,22 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
         </div>
       </section>
 
-      {/* 5. Trending (الترند الآن) */}
-      <section className="space-y-2.5">
+      {/* Trending (الترند الآن) */}
+      <section className="space-y-2">
         <div className="flex items-center justify-between px-0.5">
-          <h2 className="text-sm sm:text-base font-black text-[#0B1F3A] dark:text-white">
+          <h2 className="text-sm sm:text-base font-black text-white">
             الترند الآن
           </h2>
           <button
             type="button"
             onClick={() => onNavigate('/trend')}
-            className="text-xs font-semibold text-[#64748B] dark:text-[#A1A1AA] hover:text-[#0B1F3A] dark:hover:text-[#F5C400] transition-colors flex items-center gap-1"
+            className="text-xs font-black text-[#F5C400] hover:underline transition-colors"
           >
-            <span>عرض الكل</span>
-            <ArrowLeft size={12} strokeWidth={1.75} />
+            عرض الكل
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="grid grid-cols-3 gap-2">
           {trendingItems.map(({ business, flame }) => (
             <BusinessCard
               key={business.id}
@@ -120,10 +118,10 @@ export const HomePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onN
         </div>
       </section>
 
-      {/* 6. Prices Financial Board */}
+      {/* Prices Financial Board */}
       <HomePricesWidget onNavigate={onNavigate} />
 
-      {/* 7. Latest Reviews */}
+      {/* Latest Reviews */}
       <HomeReviewsWidget onNavigate={onNavigate} />
     </div>
   );
