@@ -38,37 +38,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const initAuth = async () => {
-      setIsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const adminStatus = await checkAdminRole(session.user);
-        setIsAdmin(adminStatus);
-      } else {
-        setIsAdmin(false);
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        
+        if (isMounted) {
+          setSession(data.session);
+          setUser(data.session?.user ?? null);
+          if (data.session?.user) {
+            const adminStatus = await checkAdminRole(data.session.user);
+            if (isMounted) setIsAdmin(adminStatus);
+          } else {
+            if (isMounted) setIsAdmin(false);
+          }
+        }
+      } catch (err) {
+        console.warn('Supabase Auth Initialization Notice:', err);
+        if (isMounted) {
+          setUser(null);
+          setSession(null);
+          setIsAdmin(false);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-      setIsLoading(false);
     };
 
     initAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const adminStatus = await checkAdminRole(session.user);
-        setIsAdmin(adminStatus);
-      } else {
-        setIsAdmin(false);
-      }
-      setIsLoading(false);
-    });
+    try {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        if (isMounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            const adminStatus = await checkAdminRole(session.user);
+            if (isMounted) setIsAdmin(adminStatus);
+          } else {
+            if (isMounted) setIsAdmin(false);
+          }
+          setIsLoading(false);
+        }
+      });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+      return () => {
+        isMounted = false;
+        subscription.unsubscribe();
+      };
+    } catch (err) {
+      console.warn('Supabase Auth Listener Notice:', err);
+      if (isMounted) setIsLoading(false);
+      return () => {
+        isMounted = false;
+      };
+    }
   }, []);
 
   const loginAdmin = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
@@ -96,7 +124,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('Logout notice:', err);
+    }
     setUser(null);
     setSession(null);
     setIsAdmin(false);
