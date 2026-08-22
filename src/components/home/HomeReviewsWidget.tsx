@@ -23,8 +23,8 @@ export const HomeReviewsWidget: React.FC<{ onNavigate: (path: string) => void }>
 
       <Card className="p-3.5 bg-[#111111] border border-[#222222] rounded-[14px]">
         <div className="flex items-center gap-3">
-          {/* Business Image on right */}
-          <div className="w-16 h-16 rounded-[10px] overflow-hidden shrink-0 border border-[#222222]">
+          {/* Borderless Business Image */}
+          <div className="w-16 h-16 rounded-[10px] overflow-hidden shrink-0 border-0 bg-[#0A0A0A]">
             <img
               src={review.businessImage}
               alt={review.businessName}
@@ -32,13 +32,12 @@ export const HomeReviewsWidget: React.FC<{ onNavigate: (path: string) => void }>
             />
           </div>
 
-          {/* Details on left */}
           <div className="flex-1 min-w-0 space-y-1 text-right">
             <div className="flex items-center justify-end gap-2">
               <span className="text-xs font-bold text-white truncate">
                 {review.authorName}
               </span>
-              <div className="w-5 h-5 rounded-full bg-[#1E1E1E] text-[#A1A1AA] flex items-center justify-center shrink-0">
+              <div className="w-5 h-5 rounded-full bg-[#1E1E1E] text-[#A1A1AA] flex items-center justify-center shrink-0 border-0">
                 <User size={12} strokeWidth={2} />
               </div>
             </div>

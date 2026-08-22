@@ -31,15 +31,14 @@ export const HeroBanner: React.FC<{ onNavigate: (path: string) => void }> = ({ o
   const slide = slides[currentSlide];
 
   return (
-    <div className="relative rounded-[14px] overflow-hidden border border-[#222222] bg-[#0A0A0A] shadow-md">
-      {/* Reduced compact height (145px - 165px) */}
+    <div className="relative rounded-[16px] overflow-hidden bg-[#0A0A0A] shadow-md border-0">
       <div className="relative h-[145px] sm:h-[165px] w-full overflow-hidden">
         <img
           src={slide.imageUrl}
           alt={slide.title}
-          className="w-full h-full object-cover opacity-45 transition-transform duration-700"
+          className="w-full h-full object-cover opacity-50 transition-transform duration-700"
         />
-        <div className="absolute inset-0 bg-gradient-to-l from-black/95 via-black/65 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-l from-black/95 via-black/60 to-transparent" />
 
         {/* Content Box */}
         <div className="absolute inset-0 p-3.5 sm:p-4 flex flex-col justify-between z-10 text-right">
@@ -56,7 +55,7 @@ export const HeroBanner: React.FC<{ onNavigate: (path: string) => void }> = ({ o
             <button
               type="button"
               onClick={() => onNavigate(slide.link)}
-              className="h-[28px] px-3.5 rounded-full bg-[#F5C400] text-black font-black text-[11px] hover:bg-[#DDAF00] active:scale-95 transition-all shadow-sm"
+              className="h-[28px] px-3.5 rounded-full bg-[#F5C400] text-black font-black text-[11px] hover:bg-[#DDAF00] active:scale-95 transition-all shadow-sm border-0"
             >
               استكشف الآن
             </button>

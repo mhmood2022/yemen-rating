@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { DEMO_BUSINESSES } from '../data/demoBusinesses';
-import { Flame, ArrowRight, Star, MapPin, ChevronLeft } from 'lucide-react';
+import { Flame, ArrowRight } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { cn } from '../lib/utils';
@@ -10,7 +10,6 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
 
   const categories = ['الكل', 'مطاعم', 'متاجر', 'خدمات'];
 
-  // Ranked trend list mapping
   const trendScores: Record<string, number> = {
     t1: 125,
     t2: 98,
@@ -38,7 +37,6 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
 
   return (
     <div className="space-y-5 pb-8">
-      {/* Header with Back Navigation */}
       <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0] dark:border-[#222222]">
         <div className="flex items-center gap-2">
           <button
@@ -55,7 +53,6 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
         </div>
       </div>
 
-      {/* Category Tabs with Yellow Active Underline */}
       <div className="flex items-center justify-around border-b border-[#E2E8F0] dark:border-[#222222] pb-1">
         {categories.map((cat) => {
           const isActive = selectedCat === cat;
@@ -80,7 +77,6 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
         })}
       </div>
 
-      {/* Ranked Trend List */}
       <div className="space-y-2.5">
         {filteredItems.map((item, index) => {
           const rank = index + 1;
@@ -93,9 +89,7 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
               onClick={() => onNavigate(`/business/${item.id}`)}
               className="p-3 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] flex items-center justify-between gap-3 cursor-pointer rounded-[12px] group"
             >
-              {/* Right Side: Rank + Image + Name */}
               <div className="flex items-center gap-3 min-w-0">
-                {/* Rank Pill */}
                 <div
                   className={cn(
                     'w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0',
@@ -107,8 +101,8 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                   {rank}
                 </div>
 
-                {/* Thumbnail Image */}
-                <div className="w-12 h-12 rounded-[8px] overflow-hidden shrink-0 border border-[#E2E8F0] dark:border-[#222222] bg-[#0A0A0A]">
+                {/* Borderless Thumbnail Image */}
+                <div className="w-12 h-12 rounded-[9px] overflow-hidden shrink-0 bg-[#0A0A0A] border-0">
                   <img
                     src={item.logoUrl}
                     alt={item.name}
@@ -116,7 +110,6 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                   />
                 </div>
 
-                {/* Info */}
                 <div className="min-w-0">
                   <h3 className="font-bold text-xs sm:text-sm text-[#0B1F3A] dark:text-white truncate">
                     {item.name}
@@ -127,8 +120,7 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                 </div>
               </div>
 
-              {/* Left Side: Flame Count */}
-              <div className="flex items-center gap-1.5 shrink-0 px-2 py-1 rounded-[6px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#1E1E1E]">
+              <div className="flex items-center gap-1.5 shrink-0 px-2 py-1 rounded-[6px] bg-[#F7F8FA] dark:bg-[#0A0A0A]">
                 <Flame size={14} strokeWidth={2} className="text-[#F59E0B]" />
                 <span className="text-xs font-black text-[#0B1F3A] dark:text-white">
                   {item.flameCount}
@@ -139,7 +131,6 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
         })}
       </div>
 
-      {/* Show More Button */}
       <div className="pt-2 text-center">
         <Button
           variant="outline"
