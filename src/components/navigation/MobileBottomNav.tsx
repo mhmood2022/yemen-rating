@@ -15,8 +15,8 @@ export const MobileBottomNav: React.FC<{ onNavigate?: (path: string) => void }> 
   ];
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-[#0A0A0A] border-t border-[#E2E8F0] dark:border-[#222222] shadow-lg pb-[env(safe-area-inset-bottom,0px)] transition-colors">
-      <div className="grid grid-cols-5 h-[62px] items-center">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-[#000000] border-t border-[#E2E8F0] dark:border-[#222222] shadow-lg pb-[env(safe-area-inset-bottom,0px)] transition-colors">
+      <div className="grid grid-cols-5 h-[62px] items-center bg-white dark:bg-[#000000]">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentPath === item.href;

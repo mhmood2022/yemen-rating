@@ -17,7 +17,8 @@ html {
   color-scheme: light dark;
 }
 
-html.dark {
+html.dark, html.dark body {
+  background-color: #000000 !important;
   color-scheme: dark;
 }
 
