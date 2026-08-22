@@ -15,7 +15,7 @@ export const BusinessProfilePage: React.FC<{
   if (!business) {
     return (
       <div className="space-y-4">
-        <Button variant="ghost" size="sm" onClick={() => onNavigate('/directory')} icon={<ArrowRight size={14} />}>
+        <Button variant="ghost" size="sm" onClick={() => onNavigate('/directory')} icon={<ArrowRight size={14} strokeWidth={1.75} />}>
           العودة لدليل الأنشطة
         </Button>
         <EmptyState
@@ -35,12 +35,12 @@ export const BusinessProfilePage: React.FC<{
           variant="ghost"
           size="sm"
           onClick={() => onNavigate('/directory')}
-          className="text-xs text-[#64748B] hover:text-[#0B1F3A]"
-          icon={<ArrowRight size={14} />}
+          className="text-xs text-[#64748B] dark:text-[#94A3B8] hover:text-[#0B1F3A] dark:hover:text-[#F8FAFC]"
+          icon={<ArrowRight size={14} strokeWidth={1.75} />}
         >
           العودة لدليل الأنشطة
         </Button>
-        <span className="text-xs text-[#94A3B8]">معرف النشاط: #{business.id}</span>
+        <span className="text-xs text-[#94A3B8] dark:text-[#64748B]">معرف النشاط: #{business.id}</span>
       </div>
 
       <BusinessHeader business={business} />

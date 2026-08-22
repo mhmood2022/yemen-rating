@@ -15,7 +15,7 @@ export const MobileBottomNav: React.FC<{ onNavigate?: (path: string) => void }> 
   ];
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#E2E8F0] shadow-lg safe-area-pb">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-[#0F2138] border-t border-[#E2E8F0] dark:border-[#263A52] shadow-lg safe-area-pb transition-colors">
       <div className="grid grid-cols-5 h-[60px] items-center">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -32,10 +32,12 @@ export const MobileBottomNav: React.FC<{ onNavigate?: (path: string) => void }> 
               }}
               className={cn(
                 'flex flex-col items-center justify-center gap-1 h-full text-xs font-semibold transition-colors',
-                isActive ? 'text-[#0B1F3A]' : 'text-[#94A3B8] hover:text-[#475569]'
+                isActive
+                  ? 'text-[#0B1F3A] dark:text-[#F5C400]'
+                  : 'text-[#94A3B8] dark:text-[#64748B] hover:text-[#475569] dark:hover:text-[#94A3B8]'
               )}
             >
-              <Icon size={20} strokeWidth={isActive ? 2.2 : 1.75} />
+              <Icon size={20} strokeWidth={isActive ? 2 : 1.75} />
               <span className="text-[11px]">{item.label}</span>
             </a>
           );
@@ -44,7 +46,7 @@ export const MobileBottomNav: React.FC<{ onNavigate?: (path: string) => void }> 
         <button
           type="button"
           onClick={openMoreDrawer}
-          className="flex flex-col items-center justify-center gap-1 h-full text-xs font-semibold text-[#94A3B8] hover:text-[#0B1F3A] transition-colors"
+          className="flex flex-col items-center justify-center gap-1 h-full text-xs font-semibold text-[#94A3B8] dark:text-[#64748B] hover:text-[#0B1F3A] dark:hover:text-[#F8FAFC] transition-colors"
         >
           <Menu size={20} strokeWidth={1.75} />
           <span className="text-[11px]">المزيد</span>

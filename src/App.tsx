@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { ModalProvider } from './context/ModalContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './components/ui/Toast';
 import { AppLayout } from './layouts/AppLayout';
 import { AdminLayout } from './layouts/AdminLayout';
@@ -62,7 +63,6 @@ export const App: React.FC = () => {
       );
     }
 
-    // Default: Home Page
     return (
       <AppLayout onNavigate={navigate}>
         <HomePage onNavigate={navigate} />
@@ -71,12 +71,14 @@ export const App: React.FC = () => {
   };
 
   return (
-    <AuthProvider>
-      <ModalProvider>
-        <ToastProvider />
-        {renderContent()}
-      </ModalProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <ModalProvider>
+          <ToastProvider />
+          {renderContent()}
+        </ModalProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

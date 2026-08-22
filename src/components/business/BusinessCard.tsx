@@ -23,7 +23,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, onNavigate
   return (
     <Card
       hoverable
-      className="flex flex-col justify-between border-[#E2E8F0] p-4 sm:p-5 transition-all duration-200 cursor-pointer group"
+      className="flex flex-col justify-between p-4 sm:p-5 transition-all duration-200 cursor-pointer group"
       onClick={handleCardClick}
     >
       <div>
@@ -34,7 +34,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, onNavigate
             </Badge>
             {business.isTrending && (
               <Badge variant="yellow" size="sm" className="gap-1">
-                <Flame size={12} className="text-[#0B1F3A]" />
+                <Flame size={12} strokeWidth={2} className="text-[#0B1F3A] dark:text-[#F5C400]" />
                 ترند
               </Badge>
             )}
@@ -43,7 +43,7 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, onNavigate
         </div>
 
         <div className="flex items-start gap-3 mb-2.5">
-          <div className="w-11 h-11 rounded-[10px] bg-[#0B1F3A]/5 border border-[#E2E8F0] flex items-center justify-center text-[#0B1F3A] font-bold shrink-0 group-hover:border-[#0B1F3A]/30 transition-colors">
+          <div className="w-11 h-11 rounded-[10px] bg-[#0B1F3A]/5 dark:bg-[#0F2138] border border-[#E2E8F0] dark:border-[#263A52] flex items-center justify-center text-[#0B1F3A] dark:text-[#F8FAFC] font-bold shrink-0 group-hover:border-[#0B1F3A]/30 dark:group-hover:border-[#F5C400]/40 transition-colors">
             {business.logoUrl ? (
               <img src={business.logoUrl} alt={business.name} className="w-full h-full object-cover rounded-[10px]" />
             ) : (
@@ -52,19 +52,19 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, onNavigate
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-sm sm:text-base text-[#0B1F3A] leading-snug line-clamp-1 group-hover:text-[#162F52] transition-colors flex items-center gap-1.5">
+            <h3 className="font-bold text-sm sm:text-base text-[#0B1F3A] dark:text-[#F8FAFC] leading-snug line-clamp-1 group-hover:text-[#162F52] dark:group-hover:text-[#F5C400] transition-colors flex items-center gap-1.5">
               <span className="truncate">{business.name}</span>
               {business.isVerified && (
                 <CheckCircle2
                   size={16}
-                  className="text-[#16A34A] shrink-0"
-                  strokeWidth={2.5}
+                  className="text-[#16A34A] dark:text-[#4ADE80] shrink-0"
+                  strokeWidth={2}
                   title="نشاط موثق رسمياً"
                 />
               )}
             </h3>
-            <p className="text-xs text-[#64748B] flex items-center gap-1 mt-1">
-              <MapPin size={13} strokeWidth={1.75} className="shrink-0 text-[#94A3B8]" />
+            <p className="text-xs text-[#64748B] dark:text-[#94A3B8] flex items-center gap-1 mt-1">
+              <MapPin size={13} strokeWidth={1.75} className="shrink-0 text-[#94A3B8] dark:text-[#64748B]" />
               <span>{business.city}</span>
               {business.address && <span className="truncate opacity-75">· {business.address}</span>}
             </p>
@@ -72,32 +72,32 @@ export const BusinessCard: React.FC<BusinessCardProps> = ({ business, onNavigate
         </div>
 
         {business.description && (
-          <p className="text-xs text-[#475569] line-clamp-2 leading-relaxed mb-3">
+          <p className="text-xs text-[#475569] dark:text-[#94A3B8] line-clamp-2 leading-relaxed mb-3">
             {business.description}
           </p>
         )}
       </div>
 
-      <div className="pt-3 border-t border-[#F1F5F9] flex items-center justify-between gap-2 mt-auto">
+      <div className="pt-3 border-t border-[#F1F5F9] dark:border-[#1B2F47] flex items-center justify-between gap-2 mt-auto">
         <div className="flex items-center gap-1.5">
-          <div className="flex items-center gap-1 text-xs font-bold text-[#0B1F3A]">
-            <Star size={14} className="text-[#F5C400] fill-[#F5C400]" />
+          <div className="flex items-center gap-1 text-xs font-bold text-[#0B1F3A] dark:text-[#F8FAFC]">
+            <Star size={14} strokeWidth={1.75} className="text-[#F5C400] fill-[#F5C400]" />
             <span>{business.rating.toFixed(1)}</span>
           </div>
-          <span className="text-[11px] text-[#94A3B8]">({business.reviewCount} تقييم)</span>
+          <span className="text-[11px] text-[#94A3B8] dark:text-[#64748B]">({business.reviewCount} تقييم)</span>
         </div>
 
         <Button
           variant="ghost"
           size="sm"
-          className="text-xs text-[#0B1F3A] group-hover:bg-[#0B1F3A] group-hover:text-white transition-all h-[32px] px-2.5"
+          className="text-xs text-[#0B1F3A] dark:text-[#F8FAFC] group-hover:bg-[#0B1F3A] group-hover:text-white dark:group-hover:bg-[#F5C400] dark:group-hover:text-[#0B1F3A] transition-all h-[32px] px-2.5"
           onClick={(e) => {
             e.stopPropagation();
             handleCardClick();
           }}
         >
           <span>عرض النشاط</span>
-          <ArrowLeft size={13} />
+          <ArrowLeft size={13} strokeWidth={1.75} />
         </Button>
       </div>
     </Card>

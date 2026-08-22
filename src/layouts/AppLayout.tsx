@@ -13,7 +13,7 @@ interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children, onNavigate }) => {
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F8FA] text-[#0F172A]">
+    <div className="min-h-screen flex flex-col bg-[#F7F8FA] dark:bg-[#071525] text-[#0F172A] dark:text-[#F8FAFC] transition-colors">
       <Header onNavigate={onNavigate} />
       <div className="flex-1 flex w-full max-w-7xl mx-auto">
         <DesktopSidebar onNavigate={onNavigate} />

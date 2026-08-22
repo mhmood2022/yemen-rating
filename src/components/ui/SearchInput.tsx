@@ -18,7 +18,8 @@ export const SearchInput: React.FC<SearchInputProps> = ({ value, onChange, onCle
           <button
             type="button"
             onClick={onClear}
-            className="text-[#94A3B8] hover:text-[#0B1F3A] transition-colors pointer-events-auto"
+            className="text-[#94A3B8] hover:text-[#0B1F3A] dark:hover:text-[#F8FAFC] transition-colors pointer-events-auto"
+            aria-label="مسح البحث"
           >
             <X size={16} strokeWidth={2} />
           </button>

@@ -16,20 +16,20 @@ export const Alert: React.FC<AlertProps> = ({
 }) => {
   const configs = {
     info: {
-      icon: <Info size={20} strokeWidth={2} className="text-[#2563EB] shrink-0" />,
-      classes: 'bg-[#2563EB]/10 border-[#2563EB]/25 text-[#1E40AF]',
+      icon: <Info size={20} strokeWidth={1.75} className="text-[#2563EB] dark:text-[#60A5FA] shrink-0" />,
+      classes: 'bg-[#2563EB]/10 dark:bg-[#2563EB]/15 border-[#2563EB]/25 dark:border-[#2563EB]/40 text-[#1E40AF] dark:text-[#93C5FD]',
     },
     success: {
-      icon: <CheckCircle2 size={20} strokeWidth={2} className="text-[#16A34A] shrink-0" />,
-      classes: 'bg-[#16A34A]/10 border-[#16A34A]/25 text-[#166534]',
+      icon: <CheckCircle2 size={20} strokeWidth={1.75} className="text-[#16A34A] dark:text-[#4ADE80] shrink-0" />,
+      classes: 'bg-[#16A34A]/10 dark:bg-[#16A34A]/15 border-[#16A34A]/25 dark:border-[#16A34A]/40 text-[#166534] dark:text-[#86EFAC]',
     },
     warning: {
-      icon: <AlertTriangle size={20} strokeWidth={2} className="text-[#F59E0B] shrink-0" />,
-      classes: 'bg-[#F59E0B]/10 border-[#F59E0B]/25 text-[#92400E]',
+      icon: <AlertTriangle size={20} strokeWidth={1.75} className="text-[#F59E0B] dark:text-[#FBBF24] shrink-0" />,
+      classes: 'bg-[#F59E0B]/10 dark:bg-[#F59E0B]/15 border-[#F59E0B]/25 dark:border-[#F59E0B]/40 text-[#92400E] dark:text-[#FDE68A]',
     },
     danger: {
-      icon: <AlertCircle size={20} strokeWidth={2} className="text-[#DC2626] shrink-0" />,
-      classes: 'bg-[#DC2626]/10 border-[#DC2626]/25 text-[#991B1B]',
+      icon: <AlertCircle size={20} strokeWidth={1.75} className="text-[#DC2626] dark:text-[#F87171] shrink-0" />,
+      classes: 'bg-[#DC2626]/10 dark:bg-[#DC2626]/15 border-[#DC2626]/25 dark:border-[#DC2626]/40 text-[#991B1B] dark:text-[#FCA5A5]',
     },
   };
 

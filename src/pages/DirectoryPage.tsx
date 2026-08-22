@@ -72,8 +72,8 @@ export const DirectoryPage: React.FC<{
   return (
     <div className="space-y-6 pb-8">
       <div>
-        <h1 className="text-2xl font-black text-[#0B1F3A]">دليل الأنشطة</h1>
-        <p className="text-xs text-[#64748B]">استكشف الشركات والمحلات والخدمات الموثقة في كافة المدن اليمنية</p>
+        <h1 className="text-2xl font-black text-[#0B1F3A] dark:text-[#F8FAFC]">دليل الأنشطة</h1>
+        <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">استكشف الشركات والمحلات والخدمات الموثقة في كافة المدن اليمنية</p>
       </div>
 
       <div className="flex items-center gap-3">
@@ -90,7 +90,7 @@ export const DirectoryPage: React.FC<{
           variant="outline"
           className="lg:hidden h-[44px] shrink-0"
           onClick={() => setIsMobileFilterOpen(true)}
-          icon={<SlidersHorizontal size={16} />}
+          icon={<SlidersHorizontal size={16} strokeWidth={1.75} />}
         >
           تصفية
         </Button>
@@ -106,9 +106,9 @@ export const DirectoryPage: React.FC<{
         </div>
 
         <div className="flex-1 w-full space-y-4">
-          <div className="flex items-center justify-between text-xs text-[#64748B] px-1">
+          <div className="flex items-center justify-between text-xs text-[#64748B] dark:text-[#94A3B8] px-1">
             <span>عرض <strong>{filteredBusinesses.length}</strong> من الأنشطة</span>
-            {filters.category && <span className="font-bold text-[#0B1F3A]">التصنيف: {filters.category}</span>}
+            {filters.category && <span className="font-bold text-[#0B1F3A] dark:text-[#F5C400]">التصنيف: {filters.category}</span>}
           </div>
 
           <DirectoryResults

@@ -31,18 +31,19 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
       <div
-        className="fixed inset-0 bg-[#0B1F3A]/60 backdrop-blur-[2px]"
+        className="fixed inset-0 bg-[#0B1F3A]/70 dark:bg-black/75 backdrop-blur-[2px]"
         onClick={closeMoreDrawer}
       />
-      <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[16px] p-5 shadow-2xl z-10 max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
-        <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] mb-4">
-          <h3 className="font-bold text-[#0B1F3A] text-base">الأقسام الإضافية</h3>
+      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#10263F] border-t border-[#E2E8F0] dark:border-[#263A52] rounded-t-[16px] p-5 shadow-2xl z-10 max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom duration-200">
+        <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] dark:border-[#263A52] mb-4">
+          <h3 className="font-bold text-[#0B1F3A] dark:text-[#F8FAFC] text-base">الأقسام الإضافية</h3>
           <button
             type="button"
             onClick={closeMoreDrawer}
-            className="p-1 rounded-lg text-[#94A3B8] hover:text-[#0B1F3A] hover:bg-[#F1F5F9]"
+            className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#0B1F3A] dark:hover:text-[#F8FAFC] hover:bg-[#F1F5F9] dark:hover:bg-[#162F52]"
+            aria-label="إغلاق القائمة"
           >
-            <X size={20} strokeWidth={2} />
+            <X size={20} strokeWidth={1.75} />
           </button>
         </div>
 
@@ -60,9 +61,9 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
                   }
                   closeMoreDrawer();
                 }}
-                className="flex items-center gap-3 p-3 rounded-[10px] bg-[#F7F8FA] border border-[#E2E8F0] text-sm font-semibold text-[#0B1F3A] hover:bg-[#F1F5F9] transition-colors"
+                className="flex items-center gap-3 p-3 rounded-[10px] bg-[#F7F8FA] dark:bg-[#0F2138] border border-[#E2E8F0] dark:border-[#263A52] text-sm font-semibold text-[#0B1F3A] dark:text-[#F8FAFC] hover:bg-[#F1F5F9] dark:hover:bg-[#162F52] transition-colors"
               >
-                <Icon size={18} strokeWidth={1.75} className="text-[#0B1F3A]" />
+                <Icon size={18} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />
                 <span>{item.label}</span>
               </a>
             );
