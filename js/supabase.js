@@ -1,98 +1,228 @@
-// === YEMEN RATING - Supabase Connection ===
-// ⚠️ ضع مفاتيحك الحقيقية هنا ⚠️
-const SUPABASE_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
+// ═══════════════════════════════════════════════════════════════
+// YEMEN RATING — Central Supabase Services Engine (Production)
+// ═══════════════════════════════════════════════════════════════
 
+const SUPABASE_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
 
 let sb = null;
 let initPromise = null;
 
-// initSupabase() الآن آمنة للاستدعاء عدة مرات: أول استدعاء يبدأ التهيئة
-// وأي استدعاء لاحق (حتى لو متزامن) يعيد استخدام نفس الـ Promise بدل تكرار العملية
 function initSupabase() {
-    if (!initPromise) {
-        initPromise = (async () => {
-            try {
-                const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-                sb = module.createClient(SUPABASE_URL, SUPABASE_KEY);
-                console.log('✅ Supabase connected');
-                return sb;
-            } catch (e) {
-                console.error('❌ Supabase failed:', e);
-                initPromise = null; // نسمح بإعادة المحاولة لاحقًا إن فشلت التهيئة
-                throw e;
-            }
-        })();
-    }
-    return initPromise;
+  if (!initPromise) {
+    initPromise = (async () => {
+      try {
+        const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+        sb = module.createClient(SUPABASE_URL, SUPABASE_KEY);
+        console.log('✅ Supabase Production Client Connected');
+        return sb;
+      } catch (e) {
+        console.error('❌ Supabase Connection Failed:', e);
+        initPromise = null;
+        throw e;
+      }
+    })();
+  }
+  return initPromise;
 }
 
-// getSB() أصبحت async: إن كانت التهيئة جارية أو لم تبدأ بعد، تنتظرها بدل أن ترمي
-// خطأ فوريًا. هذا يحل مشكلة التسابق (race condition) التي كانت تسبب تعليق الشاشة
-// عند "جاري الاتصال بقاعدة البيانات..." إلى الأبد.
 async function getSB() {
-    if (sb) return sb;
-    return await initSupabase();
+  if (sb) return sb;
+  return await initSupabase();
 }
 
-// === Company Service ===
+window.getSB = getSB;
+window.initSupabase = initSupabase;
+
+// ── 1. خدمة الشركات (Company Service) ──
 const CompanyService = {
-    async getAll(filters = {}) {
-        const client = await getSB();
-        let q = client.from('companies').select('*').eq('status', 'ACTIVE');
-        if (filters.city) q = q.eq('city', filters.city);
-        if (filters.search) q = q.ilike('name', `%${filters.search}%`);
-        const { data, error } = await q.order('created_at', { ascending: false });
-        if (error) throw error;
-        return data || [];
-    },
-    async getById(id) {
-        const client = await getSB();
-        const { data, error } = await client.from('companies').select('*').eq('id', id).single();
-        if (error) throw error;
-        return data;
-    },
-    async uploadLogo(file, companyId) {
-        const client = await getSB();
-        const path = `${companyId}/${Date.now()}-${file.name}`;
-        const { error } = await client.storage.from('company-logos').upload(path, file);
-        if (error) throw error;
-        const { data } = client.storage.from('company-logos').getPublicUrl(path);
-        return data.publicUrl;
-    }
+  async getAll(filters = {}) {
+    const client = await getSB();
+    let q = client.from('companies').select('*, categories(name, icon), cities(name)').eq('status', 'ACTIVE');
+    if (filters.city_id) q = q.eq('city_id', filters.city_id);
+    if (filters.category_id) q = q.eq('category_id', filters.category_id);
+    if (filters.search) q = q.ilike('name', `%${filters.search}%`);
+    const { data, error } = await q.order('is_verified', { ascending: false }).order('created_at', { ascending: false });
+    if (error) { console.error('Error fetching companies:', error); return []; }
+    return data || [];
+  },
+
+  async getById(id) {
+    const client = await getSB();
+    const { data, error } = await client.from('companies').select('*, categories(name, icon), cities(name)').eq('id', id).single();
+    if (error) { console.error('Error fetching company:', error); return null; }
+    return data;
+  }
 };
 
-// === Bank Service ===
+// ── 2. خدمة البنوك والمحافظ (Bank Service) ──
 const BankService = {
-    async getAll() {
-        const client = await getSB();
-        const { data, error } = await client.from('banks').select('*').eq('status', 'ACTIVE');
-        if (error) throw error;
-        return data || [];
-    }
+  async getAll(filters = {}) {
+    const client = await getSB();
+    let q = client.from('banks').select('*, categories(name, icon), cities(name)').eq('status', 'ACTIVE');
+    if (filters.city_id) q = q.eq('city_id', filters.city_id);
+    if (filters.search) q = q.ilike('name', `%${filters.search}%`);
+    const { data, error } = await q.order('is_verified', { ascending: false }).order('created_at', { ascending: false });
+    if (error) { console.error('Error fetching banks:', error); return []; }
+    return data || [];
+  },
+
+  async getById(id) {
+    const client = await getSB();
+    const { data, error } = await client.from('banks').select('*, categories(name, icon), cities(name)').eq('id', id).single();
+    if (error) { console.error('Error fetching bank:', error); return null; }
+    return data;
+  }
 };
 
-// === Auth Service ===
-const AuthService = {
-    async login(email, password) {
-        const client = await getSB();
-        const { data, error } = await client.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        return data;
-    },
-    async logout() {
-        const client = await getSB();
-        await client.auth.signOut();
-        window.location.href = 'index.html';
-    },
-    async getSession() {
-        const client = await getSB();
-        const { data } = await client.auth.getSession();
-        return data.session;
-    }
+// ── 3. خدمة الوظائف والتقديم (Jobs Service) ──
+const JobService = {
+  async getAll(filters = {}) {
+    const client = await getSB();
+    let q = client.from('jobs').select('*, companies(name, logo_url, is_verified), cities(name)').in('status', ['APPROVED', 'PUBLISHED', 'ACTIVE']);
+    if (filters.city_id) q = q.eq('city_id', filters.city_id);
+    if (filters.job_type) q = q.eq('job_type', filters.job_type);
+    if (filters.search) q = q.ilike('title', `%${filters.search}%`);
+    const { data, error } = await q.order('created_at', { ascending: false });
+    if (error) { console.error('Error fetching jobs:', error); return []; }
+    return data || [];
+  },
+
+  async getById(id) {
+    const client = await getSB();
+    const { data, error } = await client.from('jobs').select('*, companies(name, logo_url, description, is_verified, phone, email), cities(name)').eq('id', id).single();
+    if (error) { console.error('Error fetching job details:', error); return null; }
+    return data;
+  },
+
+  async apply(jobId, applicantData) {
+    const client = await getSB();
+    const user = await Auth.getCurrentUser();
+    const { data, error } = await client.from('applications').insert([{
+      job_id: jobId,
+      user_id: user ? user.id : null,
+      full_name: applicantData.full_name,
+      phone: applicantData.phone,
+      email: applicantData.email,
+      cv_url: applicantData.cv_url || null,
+      notes: applicantData.notes || '',
+      status: 'pending'
+    }]);
+    if (error) return { success: false, error: error.message };
+    return { success: true, data };
+  }
 };
 
-// === بدء التهيئة فورًا عند تحميل السكربت (لا ننتظر DOMContentLoaded) ===
-// نبدأ التحميل بأسرع وقت ممكن حتى تكون العملية جاهزة (أو قيد التقدم) عندما
-// تستدعيها admin.html عبر await getSB()
-initSupabase();
+// ── 4. خدمة التقييمات (Reviews Service) ──
+const ReviewService = {
+  async getByEntity(entityType, entityId) {
+    const client = await getSB();
+    const { data, error } = await client
+      .from('reviews')
+      .select('*, profiles(full_name)')
+      .eq('entity_type', entityType)
+      .eq('entity_id', entityId)
+      .eq('status', 'APPROVED')
+      .order('created_at', { ascending: false });
+    if (error) { console.error('Error fetching reviews:', error); return []; }
+    return data || [];
+  },
+
+  async addReview(entityType, entityId, rating, comment) {
+    const client = await getSB();
+    const user = await Auth.getCurrentUser();
+    if (!user) return { success: false, error: 'يجب تسجيل الدخول لإضافة تقييم' };
+
+    const { data, error } = await client.from('reviews').insert([{
+      entity_type: entityType,
+      entity_id: entityId,
+      user_id: user.id,
+      rating: parseInt(rating, 10),
+      comment: comment.trim(),
+      status: 'PENDING'
+    }]);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true, data, message: 'تم إرسال تقييمك بنجاح وسيعرض بعد المراجعة' };
+  }
+};
+
+// ── 5. أسعار الصرف والذهب (Rates Service) ──
+const RatesService = {
+  async getExchangeRates(city = 'صنعاء') {
+    const client = await getSB();
+    const { data, error } = await client
+      .from('exchange_rates')
+      .select('*')
+      .eq('city', city)
+      .order('updated_at', { ascending: false });
+    if (error) { console.error('Error fetching rates:', error); return []; }
+    return data || [];
+  },
+
+  async getGoldPrices(city = 'صنعاء') {
+    const client = await getSB();
+    const { data, error } = await client
+      .from('gold_prices')
+      .select('*')
+      .eq('city', city)
+      .order('karat', { ascending: false });
+    if (error) { console.error('Error fetching gold:', error); return []; }
+    return data || [];
+  }
+};
+
+// ── 6. رفع الملفات إلى Supabase Storage ──
+const StorageService = {
+  async uploadFile(bucket, file, customPath = '') {
+    const client = await getSB();
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${customPath ? customPath + '/' : ''}${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const { data, error } = await client.storage.from(bucket).upload(fileName, file);
+    if (error) return { success: false, error: error.message };
+    const { data: { publicUrl } } = client.storage.from(bucket).getPublicUrl(fileName);
+    return { success: true, path: data.path, publicUrl };
+  }
+};
+
+// ── 7. خدمة المذكرات الذكية ورسوم التوظيف ──
+const RemindersService = {
+  async getCompanyReminders(companyId) {
+    const client = await getSB();
+    const { data, error } = await client
+      .from('smart_reminders')
+      .select('*')
+      .eq('company_id', companyId)
+      .order('due_date', { ascending: true });
+    if (error) { console.error('Error fetching reminders:', error); return []; }
+    return data || [];
+  }
+};
+
+// ── 8. سجل التدقيق الإداري (Audit Service) ──
+const AuditService = {
+  async logAction(action, targetTable, targetId, reason = '') {
+    try {
+      const client = await getSB();
+      const user = await Auth.getCurrentUser();
+      await client.from('audit_logs').insert([{
+        admin_id: user ? user.id : null,
+        action: action,
+        target_table: targetTable,
+        target_id: targetId ? String(targetId) : null,
+        reason: reason
+      }]);
+    } catch (e) {
+      console.warn('Audit logging failed:', e);
+    }
+  }
+};
+
+window.CompanyService = CompanyService;
+window.BankService = BankService;
+window.JobService = JobService;
+window.ReviewService = ReviewService;
+window.RatesService = RatesService;
+window.StorageService = StorageService;
+window.RemindersService = RemindersService;
+window.AuditService = AuditService;

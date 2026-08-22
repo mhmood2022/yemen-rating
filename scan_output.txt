@@ -1,0 +1,51 @@
+total 796
+drwxrwx---. 17 root everybody  4096 Aug 22 02:15 .
+drwxrwx---. 52 root everybody 20480 Aug 21 08:57 ..
+drwxrwx---.  7 root everybody  4096 Aug 22 01:30 .git
+-rw-rw----.  1 root everybody   149 Aug 15 23:58 .gitignore
+-rw-rw----.  1 root everybody 13953 Aug 19 06:11 001_schema_admin.sql
+-rw-rw----.  1 root everybody     0 Aug 15 10:44 README.md
+-rw-rw----.  1 root everybody  4342 Aug 20 19:06 _ads-loader-backup.js
+-rw-rw----.  1 root everybody  4423 Aug 19 06:11 _audit_schema.py
+drwxrwx---.  2 root everybody  4096 Aug 19 06:11 _legacy
+drwxrwx---.  2 root everybody  4096 Aug 19 07:46 _migrations
+-rw-rw----.  1 root everybody  3575 Aug 21 09:54 about.html
+drwxrwx---.  2 root everybody  4096 Aug 18 10:03 admin
+-rw-rw----.  1 root everybody 83104 Aug 21 10:22 admin-backup-1787267643.html
+-rw-rw----.  1 root everybody 77258 Aug 21 10:22 admin-backup-before-partner-1787268930.html
+-rw-rw----.  1 root everybody 92717 Aug 21 09:54 admin-before-cleanup.html
+-rw-rw----.  1 root everybody 60247 Aug 21 09:54 admin-broken-1787250122.html
+-rw-rw----.  1 root everybody 83368 Aug 21 10:22 admin.html
+drwxrwx---.  5 root everybody  4096 Aug 18 10:03 assets
+drwxrwx---.  2 root everybody  4096 Aug 18 10:03 bank
+-rw-rw----.  1 root everybody  5221 Aug 21 10:09 bank.html
+-rw-rw----.  1 root everybody  5759 Aug 21 09:54 banks.html
+-rw-rw----.  1 root everybody  9313 Aug 21 09:54 companies.html
+drwxrwx---.  2 root everybody  4096 Aug 18 10:03 company
+-rw-rw----.  1 root everybody  6743 Aug 21 10:09 company.html
+drwxrwx---.  2 root everybody  4096 Aug 18 10:03 components
+drwxrwx---.  2 root everybody  4096 Aug 21 10:22 css
+drwxrwx---.  2 root everybody  4096 Aug 18 10:03 data
+-rw-rw----.  1 root everybody  5440 Aug 21 09:54 entities.html
+-rw-rw----.  1 root everybody  4165 Aug 21 10:09 entity.html
+drwxrwx---.  2 root everybody  4096 Aug 19 06:11 files80
+-rw-rw----.  1 root everybody 26139 Aug 21 10:22 index.html
+-rw-rw----.  1 root everybody 10911 Aug 19 06:11 index.html.backup
+-rw-rw----.  1 root everybody 73390 Aug 19 06:11 index.html.backup2
+-rw-rw----.  1 root everybody  9333 Aug 21 09:54 jobs.html
+-rw-rw----.  1 root everybody 20906 Aug 19 06:11 jobs.html.backup
+drwxrwx---.  2 root everybody  4096 Aug 20 16:00 js
+-rw-rw----.  1 root everybody   748 Aug 21 04:12 manifest.json
+-rw-rw----.  1 root everybody  4836 Aug 21 09:54 owner.html
+-rw-rw----.  1 root everybody  9271 Aug 21 09:54 pricing.html
+-rw-rw----.  1 root everybody 12441 Aug 21 10:22 register.html
+-rw-rw----.  1 root everybody     0 Aug 22 02:15 scan_output.txt
+drwxrwx---.  2 root everybody  4096 Aug 18 10:03 services
+-rw-rw----.  1 root everybody  2546 Aug 20 00:06 supabase.js
+-rw-rw----.  1 root everybody   810 Aug 21 04:12 sw.js
+-rw-rw----.  1 root everybody  2820 Aug 21 09:54 terms.html
+drwxrwx---.  2 root everybody  4096 Aug 20 14:57 tmp_scripts
+-rw-rw----.  1 root everybody 17182 Aug 21 10:15 tore original Yemen Rating identity from 55b9592" && 
+drwxrwx---.  2 root everybody  4096 Aug 18 10:03 utils
+---PACKAGE---
+---SRC---

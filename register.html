@@ -1,168 +1,198 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>بوابة الدخول والتسجيل | يمن ريتنغ</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#F5C400">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<link rel="stylesheet" href="css/main.css">
-<link rel="stylesheet" href="css/yemen-rating.css">
-<style>
-:root{--navy-950:#040d1a;--navy-900:#07152A;--navy-800:#0B1F3A;--navy-700:#122B4E;--navy-600:#1B3C68;--gold-500:#F5C400;--gold-400:#FFD53D;--gold-gradient:linear-gradient(135deg,#F5C400 0%,#D4AF37 100%);--border:#1B3C68;--text-main:#FFFFFF;--text-muted:#94a3b8;--success:#10b981;--danger:#ef4444;--radius-md:12px;--transition:all 0.25s ease}
-*{box-sizing:border-box;font-family:'Cairo',sans-serif;-webkit-tap-highlight-color:transparent}
-body{margin:0;background:radial-gradient(circle at center,var(--navy-800),var(--navy-950));color:var(--text-main);min-height:100vh;display:flex;flex-direction:column}
-.site-header{background:var(--navy-900);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff}
-.brand-mark{width:36px;height:36px;background:var(--gold-gradient);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--navy-950);font-size:1.1rem;font-weight:900}
-.brand-text strong{color:var(--gold-400);font-size:1rem;display:block}
-.auth-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:20px}
-.auth-card{background:var(--navy-900);border:1px solid var(--gold-500);border-radius:var(--radius-md);padding:clamp(20px,4vw,32px);width:100%;max-width:440px;box-shadow:0 12px 35px rgba(0,0,0,0.6)}
-.auth-title{text-align:center;margin-bottom:20px}
-.auth-title h1{color:var(--gold-400);font-size:1.3rem;margin:0 0 4px 0}
-.auth-title p{color:var(--text-muted);font-size:0.84rem;margin:0}
-.tabs{display:flex;background:var(--navy-950);border:1px solid var(--border);border-radius:8px;padding:4px;margin-bottom:20px;gap:4px}
-.tab-btn{flex:1;padding:9px;border:none;border-radius:6px;background:transparent;color:var(--text-muted);font-weight:700;font-size:0.85rem;cursor:pointer;transition:var(--transition)}
-.tab-btn.active{background:var(--gold-gradient);color:var(--navy-950)}
-.form-group{margin-bottom:14px;text-align:right}
-.form-group label{display:block;font-size:0.82rem;color:var(--text-muted);margin-bottom:5px;font-weight:600}
-.form-control{width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--navy-950);color:#fff;font-size:0.9rem;min-height:44px;outline:none;transition:var(--transition)}
-.form-control:focus{border-color:var(--gold-500);box-shadow:0 0 0 3px rgba(245,196,0,0.2)}
-.role-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.role-card{background:var(--navy-950);border:1px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center;cursor:pointer;transition:var(--transition)}
-.role-card.active{border-color:var(--gold-400);background:rgba(245,196,0,0.08)}
-.role-card i{font-size:1.3rem;color:var(--gold-400);display:block;margin-bottom:4px}
-.role-card span{font-size:0.8rem;font-weight:700}
-.btn{padding:12px;border-radius:8px;border:none;cursor:pointer;font-weight:800;font-size:0.9rem;width:100%;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;transition:var(--transition);text-decoration:none}
-.btn-gold{background:var(--gold-gradient);color:var(--navy-950)}
-.btn-gold:hover{opacity:0.95;transform:translateY(-1px)}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy-900);border:1px solid var(--gold-500);color:#fff;padding:10px 20px;border-radius:8px;z-index:9999;font-size:0.86rem;box-shadow:0 8px 25px rgba(0,0,0,0.5)}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>إنشاء حساب جديد | يمن ريتغ</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#F59E0B">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/yemen-rating.css">
+    <style>
+        :root {
+            --navy-950: #040D1A;
+            --navy-900: #0A192F;
+            --navy-800: #112240;
+            --gold-500: #F59E0B;
+            --gold-400: #FBBF24;
+            --border: #1E293B;
+            --text-muted: #94A3B8;
+            --bg-card: #0D1E36;
+            --radius-md: 12px;
+        }
+        body { font-family: 'Cairo', sans-serif; background: var(--navy-950); color: #F8FAFC; margin: 0; padding: 0; direction: rtl; min-height: 100vh; display: flex; flex-direction: column; }
+        .reg-container { width: 100%; max-width: 580px; margin: 40px auto; padding: 0 16px; flex: 1; }
+        .reg-card { background: var(--navy-900); border: 1px solid var(--gold-500); border-radius: 16px; padding: clamp(20px, 5vw, 32px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .reg-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; background: #040d1a; padding: 6px; border-radius: 10px; }
+        .reg-tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 10px; border-radius: 8px; font-weight: 700; font-family: 'Cairo'; cursor: pointer; transition: 0.2s; }
+        .reg-tab-btn.active { background: linear-gradient(135deg, #F59E0B, #D97706); color: var(--navy-950); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.88rem; color: var(--text-muted); margin-bottom: 6px; }
+        .form-control { width: 100%; background: #040d1a; border: 1px solid var(--border); color: #fff; padding: 12px; border-radius: 8px; font-family: 'Cairo'; font-size: 0.92rem; outline: none; box-sizing: border-box; }
+        .form-control:focus { border-color: var(--gold-500); }
+        .btn-submit { width: 100%; background: linear-gradient(135deg, #F59E0B, #D97706); color: var(--navy-950); border: none; padding: 14px; border-radius: 8px; font-weight: 800; font-size: 1rem; font-family: 'Cairo'; cursor: pointer; margin-top: 10px; }
+    </style>
 </head>
 <body>
-<header class="site-header">
-    <a href="index.html" class="brand"><div class="brand-mark"><i class="fa-solid fa-star"></i></div><div class="brand-text"><strong>YEMEN RATING</strong><span>يمن ريتنغ</span></div></a>
-    <a href="index.html" style="color:var(--gold-400);font-size:0.85rem;font-weight:700;text-decoration:none;"><i class="fa-solid fa-house"></i> الرئيسية</a>
-</header>
-<div class="auth-wrap">
-    <div class="auth-card">
-        <div class="auth-title"><h1><i class="fa-solid fa-shield-halved"></i> بوابة يمن ريتنغ</h1><p>سجل دخولك أو أنشئ حساباً جديداً</p></div>
-        <div class="tabs"><button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">تسجيل الدخول</button><button class="tab-btn" id="tabReg" onclick="switchTab('reg')">حساب جديد</button></div>
-        
-        <form id="loginForm" onsubmit="doLogin(event)">
-            <div class="form-group"><label><i class="fa-solid fa-envelope"></i> البريد الإلكتروني أو الهاتف</label><input type="text" class="form-control" id="loginId" required placeholder="name@domain.com أو 770000000"></div>
-            <div class="form-group"><label><i class="fa-solid fa-lock"></i> كلمة المرور</label><input type="password" class="form-control" id="loginPass" required placeholder="••••••••"></div>
-            <button type="submit" class="btn btn-gold"><i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول</button>
-        </form>
 
-        <form id="regForm" style="display:none" onsubmit="doRegister(event)">
-            <div class="role-cards">
-                <div class="role-card active" id="roleUser" onclick="setRole('user')"><i class="fa-solid fa-user"></i><span>مستخدم / مقيّم</span></div>
-                <div class="role-card" id="roleOwner" onclick="setRole('owner')"><i class="fa-solid fa-briefcase"></i><span>مالك منشأة</span></div>
+    <header style="padding: 16px; text-align: center; border-bottom: 1px solid var(--border); background: var(--navy-900);">
+        <a href="index.html" style="color: var(--gold-400); text-decoration: none; font-weight: 900; font-size: 1.3rem;">
+            <i class="fa-solid fa-star"></i> يمن ريتغ | Yemen Rating
+        </a>
+    </header>
+
+    <div class="reg-container">
+        <div class="reg-card">
+            <h2 style="text-align:center;margin:0 0 8px;color:#fff;font-size:1.5rem;">إنشاء حساب جديد</h2>
+            <p style="text-align:center;color:var(--text-muted);font-size:0.88rem;margin:0 0 20px;">انضم إلى شبكة التقييم والوظائف الموثوقة الأولى في اليمن</p>
+
+            <div class="reg-tabs">
+                <button class="reg-tab-btn active" id="tabCandidate" onclick="RegisterApp.switchTab('candidate')"><i class="fa-solid fa-user-graduate"></i> باحث عن عمل</button>
+                <button class="reg-tab-btn" id="tabCompany" onclick="RegisterApp.switchTab('company')"><i class="fa-solid fa-building"></i> منشأة / شركة</button>
             </div>
-            <div class="form-group" id="etypeGroup" style="display:none"><label>نوع المنشأة</label>
-                <select class="form-control" id="etypeSelect">
-                    <option value="company">شركة</option><option value="bank">بنك</option><option value="shop">محل</option><option value="hotel">فندق</option><option value="restaurant">مطعم</option><option value="exchange">صرافة</option><option value="transport">شركة نقل</option><option value="wallet">محفظة إلكترونية</option>
-                </select>
+
+            <form id="regForm" onsubmit="RegisterApp.submit(event)">
+                <input type="hidden" id="accountType" value="user">
+
+                <div class="form-group">
+                    <label id="lblFullName">الاسم الكامل *</label>
+                    <input type="text" id="regName" class="form-control" required placeholder="محمد علي">
+                </div>
+
+                <div class="form-group">
+                    <label>البريد الإلكتروني *</label>
+                    <input type="email" id="regEmail" class="form-control" required placeholder="user@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>كلمة المرور *</label>
+                    <input type="password" id="regPassword" class="form-control" required placeholder="••••••••" minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label>المحافظة / المدينة *</label>
+                    <select id="regCity" class="form-control" required>
+                        <option value="صنعاء">صنعاء</option>
+                        <option value="عدن">عدن</option>
+                        <option value="تعز">تعز</option>
+                        <option value="حضرموت">حضرموت</option>
+                        <option value="إب">إب</option>
+                        <option value="الحديدة">الحديدة</option>
+                    </select>
+                </div>
+
+                <!-- حقول مخصصة للباحث عن عمل -->
+                <div id="candidateFields">
+                    <div class="form-group">
+                        <label>المؤهل والتخصص *</label>
+                        <input type="text" id="regSpecialty" class="form-control" placeholder="بكالوريوس تقنية معلومات / محاسبة...">
+                    </div>
+                    <div class="form-group">
+                        <label>سنوات الخبرة</label>
+                        <input type="number" id="regExp" class="form-control" placeholder="عدد السنوات (مثلاً 3)" min="0" max="40">
+                    </div>
+                </div>
+
+                <!-- حقول مخصصة للشركة -->
+                <div id="companyFields" style="display:none;">
+                    <div class="form-group">
+                        <label>مجال نشاط الشركة *</label>
+                        <input type="text" id="regActivity" class="form-control" placeholder="تقنية معلومات، مقاولات، تجارة...">
+                    </div>
+                    <div class="form-group">
+                        <label>رقم هاتف المنشأة للتواصل</label>
+                        <input type="tel" id="regCompanyPhone" class="form-control" placeholder="77xxxxxxx">
+                    </div>
+                </div>
+
+                <div style="background:#040d1a;padding:12px;border-radius:8px;font-size:0.8rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">
+                    <i class="fa-solid fa-shield-halved" style="color:var(--gold-400);"></i> بياناتك محمية ومشفرة وفق أعلى معايير الخصوصية في يمن ريتغ.
+                </div>
+
+                <button type="submit" class="btn-submit" id="btnSubmitText"><i class="fa-solid fa-user-plus"></i> إتمام التسجيل</button>
+            </form>
+
+            <div style="text-align:center;margin-top:20px;font-size:0.88rem;color:var(--text-muted);">
+                لديك حساب بالفعل؟ <a href="index.html" style="color:var(--gold-400);text-decoration:none;font-weight:700;">العودة للرئيسية</a>
             </div>
-            <div class="form-group"><label>الاسم الكامل *</label><input type="text" class="form-control" id="regName" required placeholder="اسم المستخدم أو المنشأة"></div>
-            <div class="form-group"><label>رقم الهاتف *</label><input type="tel" class="form-control" id="regPhone" required placeholder="770000000"></div>
-            <div class="form-group"><label>البريد الإلكتروني *</label><input type="email" class="form-control" id="regEmail" required placeholder="user@domain.com"></div>
-            <div class="form-group"><label>كلمة المرور *</label><input type="password" class="form-control" id="regPass" required minlength="6" placeholder="••••••••"></div>
-            <button type="submit" class="btn btn-gold"><i class="fa-solid fa-user-plus"></i> إنشاء الحساب</button>
-        </form>
+        </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const SUPABASE_URL = "https://wkdqeghotlipciqiytuj.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE";
-const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+    <!-- السكربتات الموحدة -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/sb-sync.js"></script>
 
-let curRole = 'user';
-function switchTab(t){
-    document.getElementById('tabLogin').classList.toggle('active', t==='login');
-    document.getElementById('tabReg').classList.toggle('active', t==='reg');
-    document.getElementById('loginForm').style.display = t==='login' ? 'block' : 'none';
-    document.getElementById('regForm').style.display = t==='reg' ? 'block' : 'none';
-}
-function setRole(r){
-    curRole = r;
-    document.getElementById('roleUser').classList.toggle('active', r==='user');
-    document.getElementById('roleOwner').classList.toggle('active', r==='owner');
-    document.getElementById('etypeGroup').style.display = r==='owner' ? 'block' : 'none';
-}
-function showToast(m){
-    const t = document.createElement('div'); t.className = 'toast'; t.textContent = m;
-    document.body.appendChild(t); setTimeout(() => t.remove(), 3500);
-}
+    <script>
+    const RegisterApp = {
+        currentRole: 'user',
 
-async function doRegister(e){
-    e.preventDefault();
-    const name = document.getElementById('regName').value.trim();
-    const phone = document.getElementById('regPhone').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
-    const password = document.getElementById('regPass').value;
-    const etype = document.getElementById('etypeSelect').value;
+        switchTab(role) {
+            this.currentRole = role === 'company' ? 'company_owner' : 'user';
+            document.getElementById('accountType').value = this.currentRole;
 
-    try {
-        if (!sb) throw new Error('تعذر الاتصال بقاعدة البيانات');
-        const { data, error } = await sb.auth.signUp({ email, password, options: { data: { full_name: name, phone } } });
-        if (error) throw error;
+            if (role === 'company') {
+                document.getElementById('tabCompany').classList.add('active');
+                document.getElementById('tabCandidate').classList.remove('active');
+                document.getElementById('candidateFields').style.display = 'none';
+                document.getElementById('companyFields').style.display = 'block';
+                document.getElementById('lblFullName').innerText = 'اسم المنشأة / الشركة *';
+                document.getElementById('regName').placeholder = 'شركة البركة للحلول الرقمية';
+            } else {
+                document.getElementById('tabCandidate').classList.add('active');
+                document.getElementById('tabCompany').classList.remove('active');
+                document.getElementById('candidateFields').style.display = 'block';
+                document.getElementById('companyFields').style.display = 'none';
+                document.getElementById('lblFullName').innerText = 'الاسم الكامل *';
+                document.getElementById('regName').placeholder = 'محمد علي';
+            }
+        },
 
-        if (data.user) {
-            const status = (curRole === 'owner') ? 'PENDING' : 'ACTIVE';
-            await sb.from('profiles').upsert({ id: data.user.id, full_name: name, email, phone, role: curRole === 'owner' ? 'company_owner' : 'user', etype: curRole === 'owner' ? etype : null, status }, { onConflict: 'id' });
+        async submit(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('btnSubmitText');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري إنشاء الحساب...';
+
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const city = document.getElementById('regCity').value;
+
+            const res = await Auth.register(name, email, password, this.currentRole);
+
+            if (res.success) {
+                // حفظ البيانات التكميلية في Supabase
+                const client = await getSB();
+                if (this.currentRole === 'company_owner') {
+                    const activity = document.getElementById('regActivity').value;
+                    const phone = document.getElementById('regCompanyPhone').value;
+                    await client.from('companies').insert([{
+                        owner_id: res.user.id,
+                        name: name,
+                        city: city,
+                        activity: activity,
+                        phone: phone,
+                        status: 'PENDING'
+                    }]);
+                }
+
+                alert('🎉 تم إنشاء حسابك بنجاح في يمن ريتغ! سيتم توجيهك الآن.');
+                window.location.href = 'index.html';
+            } else {
+                alert('⚠️ تعذر إنشاء الحساب: ' + (res.error || 'يرجى التحقق من البيانات والمحاولة مجدداً'));
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i> إتمام التسجيل';
+            }
         }
-        showToast(curRole === 'owner' ? '✅ تم استلام طلبك! سيتم التفعيل بعد مراجعة الإدارة' : '✅ تم إنشاء الحساب بنجاح');
-        e.target.reset();
-        switchTab('login');
-    } catch(err) {
-        showToast('⚠️ ' + (err.message || 'حدث خطأ أثناء التسجيل'));
-    }
-}
-
-async function doLogin(e){
-    e.preventDefault();
-    const id = document.getElementById('loginId').value.trim();
-    const pass = document.getElementById('loginPass').value;
-
-    try {
-        if (!sb) throw new Error('تعذر الاتصال بالخادم');
-        let email = id;
-        if (!id.includes('@')) {
-            const { data: users } = await sb.from('profiles').select('email').eq('phone', id).limit(1);
-            if (!users || !users.length) throw new Error('رقم الهاتف غير مسجل');
-            email = users[0].email;
-        }
-
-        const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-        if (error) throw error;
-
-        const { data: profile } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
-        if (profile) {
-            if (profile.status === 'PENDING') { showToast('⏳ حسابك قيد مراجعة الإدارة'); return; }
-            if (profile.status === 'BLOCKED' || profile.status === 'SUSPENDED') { showToast('⛔ هذا الحساب موقوف من قبل الإدارة'); return; }
-            
-            const session = { id: profile.id, name: profile.full_name, email: profile.email, role: profile.role };
-            localStorage.setItem('yr_session', JSON.stringify(session));
-            showToast('✅ مرحباً ' + profile.full_name);
-            
-            setTimeout(() => {
-                if (profile.role === 'admin' || profile.role === 'super_admin') location.href = 'admin.html';
-                else if (profile.role === 'company_owner' || profile.role === 'bank_owner') location.href = 'owner.html';
-                else location.href = 'index.html';
-            }, 700);
-        }
-    } catch(err) {
-        showToast('⚠️ ' + (err.message || 'بيانات الدخول غير صحيحة'));
-    }
-}
-</script>
+    };
+    </script>
 </body>
 </html>

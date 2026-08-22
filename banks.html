@@ -1,78 +1,131 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>البنوك والمصارف | يمن ريتنغ</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#F5C400">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js" crossorigin="anonymous" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/js/all.min.js" defer></script>
-<link rel="stylesheet" href="css/main.css">
-<link rel="stylesheet" href="css/yemen-rating.css">
-<style>
-.container{max-width:1200px;margin:0 auto;padding:0 16px}
-.site-header{background:var(--navy-900);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1000;padding:12px 0}
-.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff}
-.brand-mark{width:38px;height:38px;background:var(--gold-gradient);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--navy-950);font-size:1.1rem;font-weight:900}
-.page-hero{background:radial-gradient(circle at center top,var(--navy-800),var(--navy-950));padding:35px 0 25px;text-align:center;border-bottom:1px solid var(--border)}
-.page-hero h1{color:var(--gold-400);font-size:clamp(1.3rem,3vw,1.8rem);font-weight:800;margin:0 0 6px 0}
-.banks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:24px 0 30px}
-.bank-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;transition:var(--transition);text-decoration:none;color:inherit}
-.bank-card:hover{border-color:var(--gold-400);transform:translateY(-3px)}
-.bank-logo{width:50px;height:50px;border-radius:10px;background:var(--navy-700);display:flex;align-items:center;justify-content:center;color:var(--gold-400);font-size:1.3rem}
-.btn{min-height:40px;padding:0 14px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:0.85rem;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;width:100%}
-.btn-gold{background:var(--gold-gradient);color:var(--navy-950)}
-.ad-slot{background:var(--navy-900);border:1px dashed var(--border);border-radius:8px;margin:20px auto;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.8rem;min-height:80px;width:100%}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>دليل البنوك والمحافظ الإلكترونية | يمن ريتغ</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#F59E0B">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/yemen-rating.css">
+    <style>
+        :root {
+            --navy-950: #040D1A;
+            --navy-900: #0A192F;
+            --navy-800: #112240;
+            --gold-500: #F59E0B;
+            --gold-400: #FBBF24;
+            --border: #1E293B;
+            --text-muted: #94A3B8;
+            --bg-card: #0D1E36;
+            --radius-md: 12px;
+            --transition: all 0.2s ease-in-out;
+        }
+        body { font-family: 'Cairo', sans-serif; background: var(--navy-950); color: #F8FAFC; margin: 0; padding: 0; direction: rtl; }
+        .yr-navbar { background: var(--navy-900); border-bottom: 1px solid var(--border); padding: 12px clamp(14px, 4vw, 32px); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
+        .yr-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .yr-brand-logo { width: 40px; height: 40px; background: linear-gradient(135deg, #F59E0B, #D97706); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--navy-950); font-size: 1.25rem; font-weight: 900; }
+        .yr-brand-text { font-size: 1.2rem; font-weight: 900; color: var(--gold-400); }
+        .container { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 clamp(14px, 3vw, 24px); }
+
+        .bank-header { padding: 32px 0 20px; text-align: center; background: radial-gradient(circle at center top, var(--navy-800), var(--navy-950)); border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+        .bank-title { font-size: clamp(1.4rem, 4vw, 2rem); font-weight: 900; color: #fff; margin: 0 0 8px; }
+        .bank-title span { color: var(--gold-400); }
+
+        .bank-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; gap: 14px; transition: var(--transition); }
+        .bank-card:hover { transform: translateY(-3px); border-color: var(--gold-500); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+
+        .btn { min-height: 40px; padding: 0 16px; border-radius: 6px; border: none; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; font-family: 'Cairo', sans-serif; }
+        .btn-gold { background: linear-gradient(135deg, #F59E0B, #D97706); color: var(--navy-950); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; }
+        .btn-sm { min-height: 34px; padding: 0 12px; font-size: 0.8rem; }
+    </style>
 </head>
 <body>
-<header class="site-header">
-    <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
-        <a href="index.html" class="brand"><div class="brand-mark"><i class="fa-solid fa-star"></i></div><strong>YEMEN RATING</strong></a>
-        <a href="index.html" class="btn btn-gold" style="width:auto;min-height:36px;padding:0 12px;font-size:0.8rem;"><i class="fa-solid fa-house"></i> الرئيسية</a>
-    </div>
-</header>
-<section class="page-hero">
-    <div class="container">
-        <h1><i class="fa-solid fa-landmark"></i> البنوك والمؤسسات المالية</h1>
-        <p>دليل شامل لكافة البنوك وخدمات الصرافة والتمويل في اليمن</p>
-    </div>
-</section>
-<div class="container">
-    <div class="ad-slot" data-placement="BANKS_TOP">📢 مساحة إعلانية - أعلى صفحة البنوك</div>
-    <div class="banks-grid" id="banksGrid"></div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/db.js"></script>
-<script src="js/sb-sync.js"></script>
-<script src="js/ads-loader.js"></script>
-<script>
-const DEMO_BANKS=[
-{id:'bank1',name:'البنك اليمني للإنشاء والتعمير',city:'صنعاء',verified:true,phone:'+9671234567',desc:'بنك رائد في الخدمات المصرفية الشاملة.'},
-{id:'bank2',name:'بنك الكريمي للتمويل الأصغر',city:'صنعاء',verified:true,phone:'+9671345678',desc:'خدمات التمويل الأصغر والمصرفية الإلكترونية.'},
-{id:'bank3',name:'بنك التضامن الإسلامي',city:'صنعاء',verified:true,phone:'+9671567890',desc:'خدمات مصرفية متكاملة وفق الشريعة الإسلامية.'}
-];
-function renderBanks(){
-    const list=(window.YR_DB&&YR_DB.get('banks'))||DEMO_BANKS;
-    document.getElementById('banksGrid').innerHTML=list.map(b=>`
-    <div class="bank-card">
-        <div style="display:flex;align-items:center;gap:12px;">
-            <div class="bank-logo"><i class="fa-solid fa-landmark"></i></div>
-            <div>
-                <strong style="font-size:1rem;color:#fff;">${b.name}</strong>
-                <div style="font-size:0.78rem;color:var(--text-muted);"><i class="fa-solid fa-phone" style="color:var(--gold-500);"></i> ${b.phone||'خدمة العملاء'}</div>
-            </div>
+
+    <header class="yr-navbar">
+        <a href="index.html" class="yr-brand">
+            <div class="yr-brand-logo">YR</div>
+            <span class="yr-brand-text">يمن ريتغ | المؤسسات المالية</span>
+        </a>
+        <div style="display:flex;gap:10px;">
+            <a href="index.html" class="btn btn-outline btn-sm"><i class="fa-solid fa-house"></i> الرئيسية</a>
         </div>
-        <p style="font-size:0.84rem;color:var(--text-muted);margin:0;line-height:1.4;">${b.description||b.desc||'خدمات مصرفية معتمدة وموثوقة.'}</p>
-        <a href="bank.html?id=${b.id}" class="btn btn-gold"><i class="fa-solid fa-eye"></i> عرض التفاصيل والخدمات</a>
-    </div>`).join('');
-}
-document.addEventListener('DOMContentLoaded',renderBanks);
-</script>
+    </header>
+
+    <div class="bank-header">
+        <div class="container">
+            <h1 class="bank-title">البنوك والمحافظ <span>الإلكترونية</span></h1>
+            <p style="color:var(--text-muted);margin:0;font-size:0.92rem;">مقارنة الخدمات والرسوم وتقييمات العملاء للقطاع المصرفي في اليمن</p>
+        </div>
+    </div>
+
+    <main class="container">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));gap:20px;margin-bottom:40px;" id="banksContainer">
+            <!-- تحميل ديناميكي -->
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/sb-sync.js"></script>
+    <script src="js/matching.js"></script>
+    <script src="js/ads-loader.js"></script>
+
+    <script>
+    const BankApp = {
+        init() {
+            this.render();
+        },
+
+        render() {
+            const container = document.getElementById('banksContainer');
+            if (!container || !window.YR_DB) return;
+
+            const banks = (YR_DB.get('banks') || []).filter(b => b.status === 'ACTIVE' || !b.status);
+
+            if (banks.length === 0) {
+                container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);"><i class="fa-solid fa-landmark" style="font-size:2.5rem;margin-bottom:12px;color:var(--gold-500);"></i><br>جاري تحميل المؤسسات المالية...</div>';
+                return;
+            }
+
+            container.innerHTML = banks.map(b => `
+                <div class="bank-card">
+                    <div style="display:flex;align-items:center;gap:14px;">
+                        <div style="width:52px;height:52px;background:var(--navy-700);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--gold-400);font-size:1.4rem;">
+                            <i class="fa-solid fa-landmark"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin:0;font-size:1.1rem;color:#fff;">
+                                ${b.name} <i class="fa-solid fa-circle-check" style="color:var(--gold-500);font-size:0.85em;" title="مؤسسة مالية معتمدة"></i>
+                            </h3>
+                            <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">
+                                <i class="fa-solid fa-phone" style="color:var(--gold-500);"></i> ${b.phone || 'خدمة العملاء'}
+                            </div>
+                        </div>
+                    </div>
+                    <p style="color:var(--text-muted);font-size:0.88rem;margin:0;line-height:1.6;flex:1;">
+                        ${b.description || 'خدمات مصرفية ومحافظ إلكترونية متكاملة وتغطية واسعة في كافة المحافظات.'}
+                    </p>
+                    <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(30,41,59,0.8);padding-top:12px;">
+                        <span style="color:var(--trend-up);font-size:0.85rem;font-weight:700;"><i class="fa-solid fa-shield-check"></i> مرخص ومعتمد</span>
+                        <a href="bank.html?id=${b.id}" class="btn btn-gold btn-sm"><i class="fa-solid fa-eye"></i> تفاصيل الخدمات والتقييم</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => BankApp.init());
+    window.addEventListener('yr-data-synced', () => BankApp.init());
+    window.addEventListener('yr-data-ready', () => BankApp.init());
+    </script>
 </body>
 </html>

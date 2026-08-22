@@ -1,0 +1,86 @@
+/* ═══════════════════════════════════════════════════════════════
+   YEMEN RATING — Admin Styling (Navy / Yellow / Light Gray)
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --admin-navy: #0F172A;
+  --admin-navy-light: #1E293B;
+  --admin-yellow: #F59E0B;
+  --admin-bg: #F8FAFC;
+  --admin-card: #FFFFFF;
+  --admin-text: #0F172A;
+  --admin-muted: #64748B;
+  --admin-border: #E2E8F0;
+  --admin-danger: #EF4444;
+  --admin-success: #10B981;
+}
+
+body.admin-body {
+  background-color: var(--admin-bg);
+  font-family: 'Cairo', sans-serif;
+  color: var(--admin-text);
+  margin: 0;
+  padding: 0;
+  direction: rtl;
+}
+
+.admin-header {
+  background: var(--admin-navy);
+  color: #fff;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid var(--admin-yellow);
+}
+
+.admin-badge-role {
+  background: var(--admin-yellow);
+  color: var(--admin-navy);
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.admin-stat-card {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.admin-stat-number {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--admin-navy);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--admin-card);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.admin-table th, .admin-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--admin-border);
+  text-align: right;
+}
+
+.admin-table th {
+  background: #F1F5F9;
+  font-weight: 700;
+  color: var(--admin-navy);
+}
+
+@media (max-width: 768px) {
+  .admin-table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
