@@ -34,7 +34,7 @@ export const HeroBanner: React.FC<{ onNavigate: (path: string) => void }> = ({ o
 
   return (
     <div className="relative rounded-[16px] overflow-hidden bg-[#0A0A0A] shadow-md border-0">
-      <div className="relative h-[150px] sm:h-[170px] w-full overflow-hidden">
+      <div className="relative h-[145px] sm:h-[165px] w-full overflow-hidden">
         <img
           src={slide.imageUrl}
           alt={slide.title}
@@ -42,7 +42,6 @@ export const HeroBanner: React.FC<{ onNavigate: (path: string) => void }> = ({ o
         />
         <div className="absolute inset-0 bg-gradient-to-l from-black/95 via-black/60 to-transparent" />
 
-        {/* Content Box */}
         <div className="absolute inset-0 p-4 flex flex-col justify-between z-10 text-right">
           <div className="space-y-1 max-w-[240px] sm:max-w-sm">
             <h2 className="text-lg sm:text-xl font-black text-white leading-tight">
@@ -62,7 +61,6 @@ export const HeroBanner: React.FC<{ onNavigate: (path: string) => void }> = ({ o
               {slide.ctaText}
             </button>
 
-            {/* Pagination Dots */}
             <div className="flex items-center gap-1">
               {slides.map((s, idx) => (
                 <button

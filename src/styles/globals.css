@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--yr-font);
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+html.dark, html.dark body {
+  background-color: #000000 !important;
+  color-scheme: dark;
+}
+
+html, body {
+  background-color: var(--yr-bg);
+  color: var(--yr-text-primary);
+  direction: rtl;
+  text-align: right;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Force Dark Mode Inputs & Autofill to Pure Dark (No Blue) */
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: #0A0A0A !important;
+  color: #FFFFFF !important;
+  border-color: #222222 !important;
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: #F5C400 !important;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover, 
+.dark input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #FFFFFF !important;
+  -webkit-box-shadow: 0 0 0px 1000px #0A0A0A inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--yr-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: var(--yr-radius-full);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #222222;
+}

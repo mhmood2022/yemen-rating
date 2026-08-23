@@ -13,12 +13,8 @@ export const Header: React.FC<{ onNavigate?: (path: string) => void }> = ({ onNa
   };
 
   return (
-    <header
-      dir="rtl"
-      style={{ direction: 'rtl' }}
-      className="sticky top-0 z-30 w-full h-[58px] bg-black border-b border-[#1C1C1C] px-3.5 flex items-center justify-between transition-colors shadow-sm"
-    >
-      {/* 1. أقصى اليمين: زر القائمة الجانبية + الشعار مع النجمة المفرغة */}
+    <header className="sticky top-0 z-30 w-full h-[58px] bg-black border-b border-[#1C1C1C] px-3.5 flex items-center justify-between transition-colors shadow-sm">
+      {/* 1. أقصى اليمين: زر القائمة الجانبية + الشعار مع النجمة المفرغة الكبيرة */}
       <div className="flex items-center gap-2.5">
         <button
           type="button"
@@ -31,7 +27,6 @@ export const Header: React.FC<{ onNavigate?: (path: string) => void }> = ({ onNa
 
         <a href="/" onClick={handleHomeClick} className="flex items-center gap-2 text-decoration-none">
           <div className="w-8 h-8 rounded-[9px] bg-[#111111] border border-[#F5C400]/40 flex items-center justify-center text-[#F5C400] shrink-0 shadow-sm">
-            {/* النجمة المفرغة باللون الأصفر وبدون تعبئة */}
             <Star size={20} strokeWidth={2.2} className="text-[#F5C400]" />
           </div>
           <div className="flex flex-col text-right justify-center">
