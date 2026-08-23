@@ -42,17 +42,44 @@
 
     .svg-icon { display: inline-block; width: 1.15em; height: 1.15em; fill: currentColor; vertical-align: -0.15em; flex-shrink: 0; }
 
-    /* الهيدر الرسمي المطابق تماماً للصورة بدون ساعة رقمية */
+    /* الهيدر الرسمي: القائمة يمين + النجمة المفرغة قبل الشعار + الجرس يسار */
     .main-app-header {
       height: 60px; background: #000000; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 1rem;
       position: sticky; top: 0; z-index: 1000;
     }
-    .header-logo-wrap { display: flex; align-items: center; gap: 8px; text-align: center; }
-    .header-logo-text-col { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+    
+    /* الجانب الأيمن: زر القائمة + النجمة المفرغة + اسم المنصة */
+    .header-right-side {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .header-menu-btn {
+      background: none; border: none; cursor: pointer; color: #FFF; display: flex; align-items: center; justify-content: center; padding: 4px;
+    }
+    .header-menu-btn:hover { color: var(--gold); }
+    .header-logo-wrap { display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer; }
+    
+    /* النجمة المفرغة الكبيرة قبل الشعار */
+    .star-logo-hollow {
+      width: 24px; height: 24px; stroke: var(--gold); fill: none; stroke-width: 2;
+      filter: drop-shadow(0 0 4px rgba(255, 184, 0, 0.4)); flex-shrink: 0;
+    }
+    
+    .header-logo-text-col { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
     .header-logo-text-col span.ar-title { font-size: 1.05rem; font-weight: 900; color: #FFF; letter-spacing: 0.5px; }
-    .header-logo-text-col span.en-title { font-size: 0.55rem; font-weight: 800; color: #FFF; letter-spacing: 1px; }
-    .header-logo-wrap svg.star-logo { width: 22px; height: 22px; fill: var(--gold); }
+    .header-logo-text-col span.en-title { font-size: 0.55rem; font-weight: 800; color: var(--text-gray); letter-spacing: 1px; }
+
+    /* الجانب الأيسر: زر جرس التنبيهات */
+    .header-left-side {
+      display: flex; align-items: center;
+    }
+    .header-bell-btn {
+      width: 38px; height: 38px; border-radius: 50%; background: var(--bg-card);
+      border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+      color: var(--gold); cursor: pointer; position: relative; transition: 0.2s;
+    }
+    .header-bell-btn:hover { background: var(--bg-card-inner); border-color: var(--gold); }
+    .header-bell-dot { position: absolute; top: 8px; right: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
 
     /* مساحة المحتوى */
     .page-main-container { padding: 1rem 1.1rem; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; margin-bottom: 75px; }
@@ -78,39 +105,40 @@
 
     /* البانر الترويجي (Hero Banner) */
     .hero-banner-card {
-      height: 160px; border-radius: var(--radius-lg);
-      background: linear-gradient(to left, rgba(0,0,0,0.85), rgba(0,0,0,0.25)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800') center/cover;
-      padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between;
-      border: 1px solid var(--border); margin-bottom: 1.4rem; position: relative;
+      height: 155px; border-radius: var(--radius-lg);
+      background: linear-gradient(to left, rgba(0,0,0,0.88), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800') center/cover;
+      padding: 1.1rem; display: flex; flex-direction: column; justify-content: space-between;
+      border: 1px solid var(--border); margin-bottom: 1.3rem; position: relative;
     }
     .hero-banner-title { font-size: 1.15rem; font-weight: 900; color: #FFF; line-height: 1.2; }
     .hero-banner-sub { font-size: 0.72rem; color: var(--text-gray); max-width: 75%; margin-top: 4px; }
     .btn-hero-cta {
       background: var(--gold); color: #000; font-weight: 900; font-size: 0.75rem;
-      padding: 0.45rem 1.1rem; border-radius: var(--radius-md); border: none; cursor: pointer;
-      width: fit-content; margin-top: 8px; transition: 0.2s;
+      padding: 0.4rem 1.1rem; border-radius: var(--radius-md); border: none; cursor: pointer;
+      width: fit-content; margin-top: 6px; transition: 0.2s;
     }
     .hero-dots-indicator { display: flex; gap: 4px; position: absolute; bottom: 12px; left: 16px; }
     .hero-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.4); }
     .hero-dot.active { width: 14px; border-radius: 4px; background: var(--gold); }
 
-    /* التصنيفات الرئيسية الـ 5 */
+    /* توحيد مربعات التصنيفات الرئيسية الـ 5 */
     .section-title-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
     .section-title-text { font-size: 0.92rem; font-weight: 900; color: #FFF; }
-    .section-view-all { font-size: 0.72rem; color: var(--gold); cursor: pointer; font-weight: 700; }
+    .section-view-all { font-size: 0.75rem; color: var(--gold); cursor: pointer; font-weight: 800; }
 
     .categories-5-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 1.4rem; }
     .category-box-item {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.75rem 0.2rem; text-align: center; cursor: pointer; transition: 0.2s;
+      height: 82px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 0.5rem 0.2rem; text-align: center; cursor: pointer; transition: 0.2s;
     }
     .category-box-item:hover { border-color: var(--gold); transform: translateY(-2px); }
     .category-box-icon {
       width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card-inner);
-      display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; color: var(--gold);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 5px; color: var(--gold); flex-shrink: 0;
     }
     .category-box-icon svg { width: 18px; height: 18px; fill: var(--gold); }
-    .category-box-label { font-size: 0.65rem; font-weight: 700; color: var(--text); white-space: nowrap; }
+    .category-box-label { font-size: 0.65rem; font-weight: 800; color: var(--text); white-space: nowrap; }
 
     /* قسم الأعلى تقييماً */
     .horizontal-cards-scroll { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.4rem; }
@@ -225,21 +253,36 @@
 </head>
 <body>
 
-  <!-- الهيدر الرسمي المطابق للصورة تماماً (بدون ساعة رقمية) -->
+  <!-- الهيدر الرسمي المحدث: القائمة يمين + النجمة المفرغة قبل الشعار + الجرس يسار -->
   <header class="main-app-header">
-    <div style="cursor: pointer;" onclick="alert('الإشعارات')">
-      <svg class="svg-icon" style="color: var(--gold); width: 20px; height: 20px;" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
-    </div>
-    <div class="header-logo-wrap">
-      <div class="header-logo-text-col">
-        <span class="ar-title">يمن ريتغ</span>
-        <span class="en-title">YEMEN RATING</span>
+    
+    <!-- 1. أقصى اليمين: زر القائمة الجانبية + النجمة المفرغة + اسم المنصة -->
+    <div class="header-right-side">
+      <button class="header-menu-btn" onclick="switchAppTab('more', document.querySelectorAll('.bottom-nav-link')[4])" aria-label="القائمة">
+        <svg class="svg-icon" style="width: 22px; height: 22px;" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+      </button>
+
+      <div class="header-logo-wrap" onclick="switchAppTab('home', document.querySelectorAll('.bottom-nav-link')[0])">
+        <!-- النجمة المفرغة الكبيرة باللون الذهبي قبل الشعار -->
+        <svg class="star-logo-hollow" viewBox="0 0 24 24">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+        
+        <div class="header-logo-text-col">
+          <span class="ar-title">يمن ريتغ</span>
+          <span class="en-title">YEMEN RATING</span>
+        </div>
       </div>
-      <svg class="star-logo" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
     </div>
-    <div style="cursor: pointer;" onclick="switchAppTab('more', document.querySelectorAll('.bottom-nav-link')[4])">
-      <svg class="svg-icon" style="color: #FFF; width: 22px; height: 22px;" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+
+    <!-- 2. أقصى اليسار: جرس التنبيهات -->
+    <div class="header-left-side">
+      <div class="header-bell-btn" onclick="alert('الإشعارات')">
+        <svg class="svg-icon" style="width: 18px; height: 18px;" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+        <div class="header-bell-dot"></div>
+      </div>
     </div>
+
   </header>
 
   <!-- مساحة المحتوى -->
@@ -275,7 +318,7 @@
         </div>
       </div>
 
-      <!-- التصنيفات الرئيسية الـ 5 -->
+      <!-- توحيد مربعات التصنيفات الرئيسية الـ 5 -->
       <div class="section-title-line">
         <span class="section-title-text">التصنيفات الرئيسية</span>
         <span class="section-view-all">عرض الكل</span>
