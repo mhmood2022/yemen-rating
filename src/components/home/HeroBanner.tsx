@@ -33,17 +33,17 @@ export const HeroBanner: React.FC<{ onNavigate: (path: string) => void }> = ({ o
   const slide = slides[currentSlide];
 
   return (
-    <div className="relative rounded-[16px] overflow-hidden bg-[#0A0A0A] shadow-md border-0">
-      <div className="relative h-[145px] sm:h-[165px] w-full overflow-hidden">
+    <div className="relative rounded-[14px] overflow-hidden bg-[#0A0A0A] shadow-md border-0">
+      <div className="relative h-[140px] sm:h-[160px] w-full overflow-hidden">
         <img
           src={slide.imageUrl}
           alt={slide.title}
           className="w-full h-full object-cover opacity-45 transition-transform duration-700"
         />
-        <div className="absolute inset-0 bg-gradient-to-l from-black/95 via-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-l from-black/95 via-black/65 to-transparent" />
 
-        <div className="absolute inset-0 p-4 flex flex-col justify-between z-10 text-right">
-          <div className="space-y-1 max-w-[240px] sm:max-w-sm">
+        <div className="absolute inset-0 p-3.5 flex flex-col justify-between z-10 text-right">
+          <div className="space-y-1 max-w-[220px] sm:max-w-sm">
             <h2 className="text-lg sm:text-xl font-black text-white leading-tight">
               {slide.title}
             </h2>
@@ -56,7 +56,7 @@ export const HeroBanner: React.FC<{ onNavigate: (path: string) => void }> = ({ o
             <button
               type="button"
               onClick={() => onNavigate(slide.link)}
-              className="h-[30px] px-4 rounded-full bg-[#F5C400] text-black font-black text-xs hover:bg-[#DDAF00] active:scale-95 transition-all shadow-md border-0"
+              className="h-[28px] px-3.5 rounded-full bg-[#F5C400] text-black font-black text-xs hover:bg-[#DDAF00] active:scale-95 transition-all shadow-md border-0"
             >
               {slide.ctaText}
             </button>
@@ -69,7 +69,7 @@ export const HeroBanner: React.FC<{ onNavigate: (path: string) => void }> = ({ o
                   onClick={() => setCurrentSlide(idx)}
                   className={cn(
                     'h-1 rounded-full transition-all duration-300',
-                    currentSlide === idx ? 'w-4 bg-[#F5C400]' : 'w-1 bg-white/30'
+                    currentSlide === idx ? 'w-3.5 bg-[#F5C400]' : 'w-1 bg-white/30'
                   )}
                   aria-label={`Slide ${idx + 1}`}
                 />
