@@ -3,489 +3,646 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>يمن ريتنج | لوحة الإدارة الرسمية</title>
+  <title>يمن ريتغ | لوحة التحكم والإدارة</title>
   
-  <!-- خط Cairo الرسمي للهوية -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
-    /* ==========================================================================
-       الألوان الرسمية المستخرجة بدقة من دليل الهوية (Brand Tokens)
-       ========================================================================== */
     :root {
-      --gold-primary: #FFC107;
-      --gold-hover: #E0A800;
-      --gold-dim: rgba(255, 193, 7, 0.14);
-      --gold-border: rgba(255, 193, 7, 0.35);
+      --bg-dark: #0B0B0F;
+      --bg-sidebar: #101015;
+      --bg-topbar: #101015;
+      --bg-card: #15151C;
+      --bg-card-inner: #1A1A24;
+      --bg-input: #0E0E14;
       
-      --bg-black: #0D0D0D;
-      --bg-card: #1A1A1A;
-      --bg-card-inner: #141414;
-      --border-dark: #2A2A2A;
+      --gold: #FFB800;
+      --gold-hover: #E5A600;
+      --gold-dim: rgba(255, 184, 0, 0.12);
+      --gold-border: rgba(255, 184, 0, 0.3);
       
-      --text-white: #E6E6E6;
-      --text-gray: #8E8E93;
-      --text-muted: #636366;
+      --text: #FFFFFF;
+      --text-gray: #8E8E98;
+      --text-muted: #5E5E6A;
+      
+      --border: #20202C;
+      --border-light: #282836;
       
       --green: #10B981;
-      --green-dim: rgba(16, 185, 129, 0.16);
-      --blue: #3B82F6;
-      --blue-dim: rgba(59, 130, 246, 0.16);
+      --green-dim: rgba(16, 185, 129, 0.15);
       --red: #EF4444;
-      --red-dim: rgba(239, 68, 68, 0.16);
+      --red-dim: rgba(239, 68, 68, 0.15);
+      --orange: #F59E0B;
+      --orange-dim: rgba(245, 158, 11, 0.15);
       
-      --radius-sm: 8px;
-      --radius-md: 14px;
-      --radius-lg: 20px;
-      --radius-xl: 26px;
+      --sidebar-w: 260px;
+      --topbar-h: 70px;
+      --r-md: 12px;
+      --r-lg: 18px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg-black); color: var(--text-white); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+    body { background-color: var(--bg-dark); color: var(--text); min-height: 100vh; display: flex; overflow-x: hidden; }
 
-    /* أيقونات SVG برمجية مدمجة */
-    .icon { display: inline-flex; align-items: center; justify-content: center; width: 1.15em; height: 1.15em; vertical-align: middle; fill: currentColor; }
+    .svg-icon { display: inline-block; width: 1.15em; height: 1.15em; fill: currentColor; vertical-align: -0.15em; flex-shrink: 0; }
 
-    /* شريط الساعة العلوي 9:41 */
-    .status-bar-top {
-      height: 24px; padding: 0 1.25rem; display: flex; justify-content: space-between; align-items: center;
-      font-size: 0.72rem; font-weight: 700; color: #FFF; background: var(--bg-black);
+    /* القائمة الجانبية الفاخرة */
+    .app-sidebar {
+      width: var(--sidebar-w); background: var(--bg-sidebar); border-left: 1px solid var(--border);
+      height: 100vh; position: fixed; top: 0; right: 0; display: flex; flex-direction: column;
+      justify-content: space-between; z-index: 1000; transition: transform 0.3s ease;
+    }
+    .sidebar-brand {
+      height: var(--topbar-h); display: flex; align-items: center; gap: 12px; padding: 0 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-logo-gem {
+      width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--gold), #D97706);
+      display: flex; align-items: center; justify-content: center; color: #000;
+    }
+    .brand-text-wrap h2 { font-size: 1.05rem; font-weight: 900; color: #FFF; line-height: 1.1; }
+    .brand-text-wrap span { font-size: 0.65rem; color: var(--gold); font-weight: 700; letter-spacing: 0.5px; }
+
+    .sidebar-nav-menu { padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 3px; overflow-y: auto; flex: 1; }
+    .nav-btn-link {
+      display: flex; align-items: center; gap: 12px; padding: 0.7rem 1rem; border-radius: var(--r-md);
+      color: var(--text-gray); background: transparent; border: 1px solid transparent; font-size: 0.84rem;
+      font-weight: 700; cursor: pointer; text-align: right; width: 100%; transition: 0.2s;
+    }
+    .nav-btn-link:hover { color: #FFF; background: rgba(255, 255, 255, 0.04); }
+    .nav-btn-link.active { background: var(--gold); color: #000; font-weight: 900; }
+    .nav-btn-link.active svg { fill: #000; }
+
+    /* بطاقة الترقية أسفل القائمة */
+    .vip-upgrade-card {
+      margin: 0.75rem; background: var(--bg-card); border: 1px solid var(--gold-border);
+      border-radius: var(--r-md); padding: 0.85rem; text-align: center;
+    }
+    .vip-upgrade-card svg { fill: var(--gold); width: 24px; height: 24px; margin-bottom: 4px; }
+    .vip-upgrade-card h4 { font-size: 0.8rem; font-weight: 900; color: #FFF; }
+    .vip-upgrade-card p { font-size: 0.68rem; color: var(--text-gray); margin-bottom: 8px; }
+    .btn-vip-upgrade {
+      background: none; border: 1px solid var(--gold); color: var(--gold);
+      padding: 4px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; cursor: pointer; width: 100%;
+    }
+    .btn-vip-upgrade:hover { background: var(--gold); color: #000; }
+
+    /* بروفايل المستخدم */
+    .user-profile-bottom {
+      padding: 0.85rem 1rem; border-top: 1px solid var(--border); display: flex;
+      align-items: center; justify-content: space-between;
+    }
+    .user-profile-info { display: flex; align-items: center; gap: 10px; }
+    .user-avatar-circle { width: 34px; height: 34px; border-radius: 50%; background: var(--gold-dim); color: var(--gold); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; border: 1px solid var(--gold-border); }
+
+    /* منطقة العمل الرئيسية */
+    .app-main-layout {
+      margin-right: var(--sidebar-w); flex: 1; min-width: 0; display: flex;
+      flex-direction: column; min-height: 100vh; transition: margin 0.3s ease;
     }
 
-    /* الهيدر مع شعار يمن ريتنج الرسمي (النجمة بحرف ي) */
-    .app-header-brand {
-      height: 58px; background: var(--bg-black); border-bottom: 1px solid var(--border-dark);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem;
-      position: sticky; top: 0; z-index: 1000;
+    /* الشريط العلوي */
+    .topbar-header {
+      height: var(--topbar-h); background: var(--bg-topbar); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;
+      position: sticky; top: 0; z-index: 900;
     }
-    .brand-logo-wrap { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 1.05rem; color: var(--text-white); }
-    .brand-star-svg { width: 26px; height: 26px; }
-
-    /* شريط التبديل بين الشاشات */
-    .screen-tabs-bar {
-      background: #111111; border-bottom: 1px solid var(--border-dark); padding: 0.5rem 0.75rem;
-      display: flex; align-items: center; gap: 6px; overflow-x: auto;
+    .topbar-search-wrap { position: relative; width: 360px; }
+    .topbar-search-wrap input {
+      width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 0.6rem 2.4rem 0.6rem 1rem; color: #FFF; font-size: 0.82rem;
     }
-    .screen-tab-btn {
-      padding: 0.35rem 0.85rem; border-radius: 16px; font-size: 0.72rem; font-weight: 800;
-      background: var(--bg-card); color: var(--text-gray); border: 1px solid var(--border-dark);
-      cursor: pointer; white-space: nowrap; transition: 0.2s;
+    .topbar-search-wrap input:focus { outline: none; border-color: var(--gold); }
+    .topbar-search-wrap svg { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-gray); }
+
+    .topbar-actions-group { display: flex; align-items: center; gap: 12px; }
+    .btn-gold-add-entity {
+      background: var(--gold); color: #000; font-weight: 900; font-size: 0.82rem;
+      padding: 0.55rem 1.25rem; border-radius: var(--r-md); border: none; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; transition: 0.2s;
     }
-    .screen-tab-btn.active { background: var(--gold-primary); color: #000; font-weight: 900; border-color: var(--gold-primary); }
+    .btn-gold-add-entity:hover { background: var(--gold-hover); }
+    .notif-bell-btn {
+      position: relative; width: 38px; height: 38px; border-radius: var(--r-md);
+      background: var(--bg-card); border: 1px solid var(--border); display: flex;
+      align-items: center; justify-content: center; color: var(--text-gray); cursor: pointer;
+    }
+    .notif-counter-badge {
+      position: absolute; top: -4px; right: -4px; width: 18px; height: 18px;
+      background: var(--gold); color: #000; border-radius: 50%; font-size: 0.65rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+    }
 
-    /* مساحة العرض المركزية */
-    .main-canvas { padding: 1rem; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; margin-bottom: 75px; }
+    .main-body-content { padding: 2rem; flex: 1; }
 
-    .view-screen { display: none; animation: fadeIn 0.2s ease; }
-    .view-screen.active { display: block; }
+    .dashboard-view-tab { display: none; animation: fadeIn 0.25s ease; }
+    .dashboard-view-tab.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ==========================================================================
-       الشاشة 1: الرئيسية (مرحباً بك، انضم الآن + بطاقة التاج الذهبية)
+       الشاشة 1: الرئيسية (Dashboard Master View)
        ========================================================================== */
-    .dash-header-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .dash-header-title h2 { font-size: 1.1rem; font-weight: 900; color: var(--text-white); }
-    .dash-header-title p { font-size: 0.75rem; color: var(--text-gray); }
+    .page-title-header { font-size: 1.4rem; font-weight: 900; color: #FFF; margin-bottom: 1.5rem; }
+
+    /* كروت المؤشرات الأربعة الرئيسية */
+    .kpi-row-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 1.5rem; }
+    .kpi-main-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg);
+      padding: 1.25rem 1.4rem; display: flex; justify-content: space-between; align-items: center;
+    }
+    .kpi-card-right .kpi-label { font-size: 0.75rem; color: var(--text-gray); font-weight: 700; margin-bottom: 4px; }
+    .kpi-card-right .kpi-val { font-size: 1.8rem; font-weight: 900; color: #FFF; line-height: 1; margin-bottom: 6px; }
+    .kpi-card-right .kpi-sub { font-size: 0.68rem; color: var(--text-muted); }
+    .kpi-card-left { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .kpi-growth-pill { font-size: 0.72rem; font-weight: 800; color: var(--green); background: var(--green-dim); padding: 2px 7px; border-radius: 8px; }
+    .kpi-icon-circle { width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card-inner); display: flex; align-items: center; justify-content: center; color: var(--gold); border: 1px solid var(--border); }
+
+    /* الصف الأوسط: منحنى التقييمات + متوسط التقييم */
+    .middle-chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem; }
+    .chart-panel-box {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg);
+      padding: 1.4rem; display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .chart-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .chart-panel-title { font-size: 0.95rem; font-weight: 800; color: #FFF; }
+    .chart-filter-select { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-gray); font-size: 0.75rem; padding: 4px 10px; border-radius: 8px; }
+
+    /* صندوق متوسط التقييم */
+    .rating-summary-grid { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+    .rating-score-num { font-size: 2.2rem; font-weight: 900; color: #FFF; line-height: 1; }
+    .rating-stars-gold { color: var(--gold); font-size: 0.9rem; margin: 4px 0; }
+    .rating-count-sub { font-size: 0.7rem; color: var(--text-gray); }
     
-    .crown-banner-box {
-      background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-lg);
-      padding: 1.1rem 1.3rem; display: flex; align-items: center; gap: 14px; margin-bottom: 1.25rem;
+    .gauge-circle-wrap {
+      width: 70px; height: 70px; border-radius: 50%; background: conic-gradient(var(--gold) 92%, #22222E 0);
+      display: flex; align-items: center; justify-content: center; position: relative;
     }
-    .crown-gem-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--gold-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #000; }
-    .crown-info-texts h3 { font-size: 0.95rem; font-weight: 900; color: var(--text-white); }
-    .crown-info-texts p { font-size: 0.72rem; color: var(--gold-primary); font-weight: 700; }
+    .gauge-circle-inner { width: 56px; height: 56px; border-radius: 50%; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; font-size: 0.85rem; }
+    .gauge-circle-inner span { font-size: 0.55rem; color: var(--text-muted); }
 
-    /* شبكة الـ 4 كروت إحصائيات المطابقة تماماً للصورة المرجعية */
-    .stats-4-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
-    .stat-box-card {
-      background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-md);
-      padding: 0.9rem 1rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 96px;
+    .rating-breakdown-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.72rem; }
+    .rating-label-name { width: 50px; color: var(--text-gray); }
+    .rating-progress-bar { flex: 1; height: 6px; background: #22222E; border-radius: 3px; overflow: hidden; }
+    .rating-progress-fill { height: 100%; background: var(--gold); border-radius: 3px; }
+    .rating-count-num { width: 40px; text-align: left; color: #FFF; font-weight: 700; }
+
+    /* الصف السفلي: كروت المنشآت المميزة */
+    .featured-businesses-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .featured-cards-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
+    .featured-biz-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg);
+      overflow: hidden; transition: 0.2s; position: relative;
     }
-    .stat-card-top { display: flex; justify-content: space-between; align-items: center; }
-    .stat-icon-square { width: 28px; height: 28px; border-radius: 8px; background: var(--bg-card-inner); display: flex; align-items: center; justify-content: center; }
-    .stat-number-val { font-size: 1.55rem; font-weight: 900; color: var(--text-white); line-height: 1.1; margin: 4px 0; }
-    .stat-card-bottom { display: flex; justify-content: space-between; align-items: center; }
-    .stat-label-text { font-size: 0.72rem; color: var(--text-gray); font-weight: 700; }
-    .stat-growth-pill { font-size: 0.68rem; font-weight: 800; color: var(--green); background: var(--green-dim); padding: 1px 6px; border-radius: 8px; }
-
-    /* الأزرار الذهبية الرسمية بعرض الشاشة */
-    .btn-gold-main {
-      background: var(--gold-primary); color: #000; font-weight: 900; font-size: 0.88rem;
-      padding: 0.8rem; border-radius: var(--radius-md); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: 0.2s;
+    .featured-biz-card:hover { border-color: var(--gold-border); transform: translateY(-2px); }
+    .featured-biz-cover { height: 130px; background-size: cover; background-position: center; position: relative; }
+    .featured-biz-bookmark { position: absolute; top: 10px; right: 10px; color: #FFF; font-size: 1rem; }
+    .featured-biz-badge {
+      position: absolute; bottom: -14px; right: 12px; width: 36px; height: 36px; border-radius: 10px;
+      background: #000; border: 2px solid var(--bg-card); display: flex; align-items: center;
+      justify-content: center; font-weight: 900; font-size: 0.75rem; color: var(--gold);
     }
-    .btn-gold-main:hover { background: var(--gold-hover); }
+    .featured-biz-body { padding: 1.25rem 1rem 1rem; }
+    .featured-biz-title { font-size: 0.88rem; font-weight: 800; color: #FFF; margin-bottom: 2px; }
+    .featured-biz-cat { font-size: 0.7rem; color: var(--text-gray); margin-bottom: 8px; }
+    .featured-biz-footer { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 8px; }
 
-    /* كروت دليل الأنشطة والشارات */
-    .entity-row-card {
-      background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-md);
-      padding: 0.85rem 1rem; margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    /* ==========================================================================
+       الجداول والنوافذ للأقسام الأخرى
+       ========================================================================== */
+    .content-box-container {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1.5rem;
     }
-    .yr-score-tag { background: var(--gold-dim); color: var(--gold-primary); border: 1px solid var(--gold-border); padding: 2px 7px; border-radius: 10px; font-weight: 900; font-size: 0.72rem; }
-    .verified-pill-tag { background: var(--green-dim); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 7px; border-radius: 10px; font-weight: 800; font-size: 0.72rem; }
+    .data-table-custom { width: 100%; border-collapse: collapse; text-align: right; font-size: 0.82rem; }
+    .data-table-custom th { padding: 1rem 1.25rem; background: var(--bg-card-inner); color: var(--text-gray); border-bottom: 1px solid var(--border); }
+    .data-table-custom td { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); color: #FFF; }
+    .data-table-custom tr:hover td { background: rgba(255, 255, 255, 0.02); }
 
-    /* الشاشة 3: بروفايل النشاط (الكريمي الذهبي 4.8 / YR 9.7 موثق) */
-    .hero-profile-banner {
-      height: 150px; border-radius: var(--radius-md);
-      background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800') center/cover;
-      position: relative; margin-bottom: 2.75rem;
+    /* التجاوب */
+    @media (max-width: 1200px) {
+      .kpi-row-grid, .featured-cards-grid { grid-template-columns: repeat(2, 1fr); }
+      .middle-chart-row { grid-template-columns: 1fr; }
     }
-    .hero-logo-center {
-      width: 60px; height: 60px; border-radius: 16px; border: 3px solid var(--bg-card); background: #000;
-      position: absolute; bottom: -20px; right: 18px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--gold-primary); font-size: 1rem;
+    @media (max-width: 992px) {
+      .app-sidebar { transform: translateX(100%); }
+      .app-sidebar.open { transform: translateX(0); }
+      .app-main-layout { margin-right: 0; }
+      .topbar-header { padding: 0 1rem; }
+      .main-body-content { padding: 1rem; }
+      .topbar-search-wrap { display: none; }
+      .mobile-menu-btn { display: block !important; }
     }
-    .subtabs-scroll { display: flex; gap: 8px; overflow-x: auto; border-bottom: 1px solid var(--border-dark); padding-bottom: 0.75rem; margin-bottom: 1.25rem; }
-    .subtab-pill { padding: 0.45rem 1rem; border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border-dark); font-size: 0.8rem; font-weight: 700; color: var(--text-gray); cursor: pointer; }
-    .subtab-pill.active { background: var(--gold-primary); color: #000; font-weight: 900; }
-
-    /* سويتشات الأقسام (Toggles) */
-    .toggle-line-row { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; border-bottom: 1px solid var(--border-dark); }
-    .gold-toggle-switch { position: relative; width: 42px; height: 22px; }
-    .gold-toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .gold-slider-thumb { position: absolute; inset: 0; cursor: pointer; background: #2A2A2A; border-radius: 22px; transition: 0.25s; }
-    .gold-slider-thumb:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.25s; }
-    input:checked + .gold-slider-thumb { background: var(--gold-primary); }
-    input:checked + .gold-slider-thumb:before { transform: translateX(20px); background: #000; }
-
-    /* أسعار الصرف */
-    .market-tabs-pill { display: flex; background: var(--bg-card); padding: 3px; border-radius: 12px; border: 1px solid var(--border-dark); margin-bottom: 1rem; }
-    .market-btn-tab { flex: 1; padding: 6px; border-radius: 10px; font-size: 0.78rem; font-weight: 800; color: var(--text-gray); background: none; border: none; cursor: pointer; text-align: center; }
-    .market-btn-tab.active { background: var(--gold-primary); color: #000; }
-    .rate-box-unit { background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 0.75rem; }
-    .rate-inputs-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.5rem; }
-    .rate-inputs-2col input { width: 100%; background: var(--bg-card-inner); border: 1px solid var(--border-dark); border-radius: 8px; padding: 0.6rem; color: #FFF; font-weight: 900; font-size: 1.05rem; text-align: center; }
-
-    /* شريط التنقل السفلي الأصلي المعتمد في الهوية */
-    .app-bottom-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--bg-black);
-      border-top: 1px solid var(--border-dark); display: flex; justify-content: space-around; align-items: center; z-index: 1000;
-    }
-    .bottom-tab-item { background: none; border: none; color: var(--text-gray); font-size: 0.7rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
-    .bottom-tab-item.active { color: var(--gold-primary); font-weight: 900; }
-    .bottom-tab-item svg { width: 18px; height: 18px; fill: currentColor; }
-    .bottom-center-btn-fab {
-      width: 44px; height: 44px; border-radius: 50%; background: var(--gold-primary); color: #000;
-      display: flex; align-items: center; justify-content: center; margin-top: -22px;
-      box-shadow: 0 4px 16px rgba(255, 193, 7, 0.35); border: 3px solid var(--bg-black); cursor: pointer;
+    @media (max-width: 600px) {
+      .kpi-row-grid, .featured-cards-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <!-- شريط الساعة العلوي 9:41 -->
-  <div class="status-bar-top">
-    <span>9:41</span>
-    <div style="display: flex; gap: 6px; align-items: center;">
-      <svg class="icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 18.25c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l.64-.64C7.93 20.26 9.88 21 12 21s4.07-.74 5.61-1.97l.64.64c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-.64-.64C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
-      <svg class="icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
-    </div>
-  </div>
-
-  <!-- الهيدر الرسمي المعتمد مع شعار يمن ريتنج وجرس التنبيهات -->
-  <header class="app-header-brand">
-    <div style="cursor: pointer;" onclick="alert('الإشعارات')">
-      <svg class="icon" style="width: 20px; height: 20px; fill: none; stroke: var(--gold-primary); stroke-width: 2;" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-    </div>
-    
-    <!-- شعار النجمة الذهبية وبداخله حرف (ي) -->
-    <div class="brand-logo-wrap">
-      <svg class="brand-star-svg" viewBox="0 0 32 32">
-        <path d="M16 2.5L20.2 11.2L29.7 12.6L22.8 19.3L24.5 28.8L16 24.3L7.5 28.8L9.2 19.3L2.3 12.6L11.8 11.2L16 2.5Z" fill="none" stroke="#FFC107" stroke-width="2.5" stroke-linejoin="round"/>
-        <text x="16" y="21" fill="#FFC107" font-size="12" font-weight="900" font-family="Cairo" text-anchor="middle">ي</text>
-      </svg>
-      <span>يمن ريتغ</span>
-    </div>
-
-    <div style="cursor: pointer;" onclick="switchScreenTab('s16', document.querySelectorAll('.screen-tab-btn')[15])">
-      <svg class="icon" style="width: 22px; height: 22px; fill: none; stroke: #FFF; stroke-width: 2;" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-    </div>
-  </header>
-
-  <!-- شريط التبديل بين الشاشات الـ 16 المرجعية -->
-  <div class="screen-tabs-bar">
-    <button class="screen-tab-btn active" onclick="switchScreenTab('s1', this)">1. الرئيسية</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s2', this)">2. الأنشطة</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s3', this)">3. تفاصيل النشاط</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s4', this)">4. الصور</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s5', this)">5. الأقسام</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s6', this)">6. التوثيق</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s7', this)">7. أسعار الصرف</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s8', this)">8. الوظائف</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s9', this)">9. التقييمات</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s10', this)">10. الإعلانات</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s11', this)">11. تحليلات الإعلانات</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s12', this)">12. معرض الإعلانات</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s13', this)">13. التقارير</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s14', this)">14. المستخدمين</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s15', this)">15. سجل النشاطات</button>
-    <button class="screen-tab-btn" onclick="switchScreenTab('s16', this)">16. الإعدادات</button>
-  </div>
-
-  <main class="main-canvas">
-
-    <!-- ==================== الشاشة 1: الرئيسية ==================== -->
-    <div id="view-s1" class="view-screen active">
-      <div class="dash-header-title">
-        <div>
-          <h2>مرحباً بك، انضم الآن</h2>
-          <p>لوحة التحكم الرسمية - يمن ريتنج</p>
+  <!-- 1. القائمة الجانبية -->
+  <aside class="app-sidebar" id="appSidebar">
+    <div>
+      <div class="sidebar-brand">
+        <div class="brand-logo-gem">
+          <svg style="width: 20px; height: 20px; fill: #000;" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
         </div>
-        <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-dark); display: flex; align-items: center; justify-content: center; color: var(--gold-primary);">
-          <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        <div class="brand-text-wrap">
+          <h2>يمن ريتغ</h2>
+          <span>YEMEN RATING</span>
         </div>
       </div>
 
-      <!-- بطاقة صاحب المتجر المميز / صلاحية المدير العام -->
-      <div class="crown-banner-box">
-        <div class="crown-gem-icon">
-          <svg class="icon" style="width: 24px; height: 24px; fill: #000;" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .55-.45 1-1 1H6c-.55 0-1-.45-1-1v-1h14v1z"/></svg>
-        </div>
-        <div class="crown-info-texts">
-          <h3>صاحب المتجر المميز</h3>
-          <p>ارفع علامتك التجارية</p>
-        </div>
+      <nav class="sidebar-nav-menu">
+        <button class="nav-btn-link active" onclick="switchNavTab('dash', this)">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span>الرئيسية</span>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('activity', this)">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+          <span>النشاط</span>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('sections', this)">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M4 11h5V5H4v6zm0 7h5v-6H4v6zm6 0h5v-6h-5v6zm6 0h5v-6h-5v6zm-6-7h5V5h-5v6zm6-6v6h5V5h-5z"/></svg>
+          <span>الأقسام</span>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('users', this)">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          <span>المستخدمين</span>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('entities', this)">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
+          <span>المنشآت</span>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('reviews', this)">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          <span>التقييمات</span>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('reports', this)">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+          <span>البلاغات</span>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('analytics', this)">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+          <span>التقارير</span>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('settings', this)">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          <span>الإعدادات</span>
+        </button>
+      </nav>
+
+      <div class="vip-upgrade-card">
+        <svg viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .55-.45 1-1 1H6c-.55 0-1-.45-1-1v-1h14v1z"/></svg>
+        <h4>صاحب المتجر المميز</h4>
+        <p>الترقية لتميز منشأتك</p>
+        <button class="btn-vip-upgrade">ترقية الآن</button>
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-        <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-white);">إحصائيات عامة</span>
-        <span style="font-size: 0.7rem; color: var(--gold-primary); font-weight: 700;">محدث لحظياً</span>
-      </div>
-
-      <!-- شبكة الـ 4 كروت إحصائيات المطابقة تماماً للشاشة الأولى -->
-      <div class="stats-4-grid">
-        <div class="stat-box-card">
-          <div class="stat-card-top">
-            <div class="stat-icon-square"><svg class="icon" style="color: #3B82F6;" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg></div>
-          </div>
-          <div class="stat-number-val">1,248</div>
-          <div class="stat-card-bottom">
-            <span class="stat-label-text">الأنشطة</span>
-            <span class="stat-growth-pill">+18</span>
-          </div>
-        </div>
-
-        <div class="stat-box-card">
-          <div class="stat-card-top">
-            <div class="stat-icon-square"><svg class="icon" style="color: var(--gold-primary);" viewBox="0 0 24 24"><path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/></svg></div>
-          </div>
-          <div class="stat-number-val">892</div>
-          <div class="stat-card-bottom">
-            <span class="stat-label-text">المتاجر</span>
-            <span class="stat-growth-pill">+24</span>
-          </div>
-        </div>
-
-        <div class="stat-box-card">
-          <div class="stat-card-top">
-            <div class="stat-icon-square"><svg class="icon" style="color: var(--gold-primary);" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
-          </div>
-          <div class="stat-number-val">5,432</div>
-          <div class="stat-card-bottom">
-            <span class="stat-label-text">التقييمات</span>
-            <span class="stat-growth-pill">+116</span>
-          </div>
-        </div>
-
-        <div class="stat-box-card">
-          <div class="stat-card-top">
-            <div class="stat-icon-square"><svg class="icon" style="color: var(--gold-primary);" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg></div>
-          </div>
-          <div class="stat-number-val">326</div>
-          <div class="stat-card-bottom">
-            <span class="stat-label-text">المتاجر</span>
-            <span class="stat-growth-pill">+156</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================== الشاشة 2: الأنشطة ==================== -->
-    <div id="view-s2" class="view-screen">
-      <div style="margin-bottom: 0.75rem; font-size: 0.8rem; font-weight: 800; color: var(--text-gray);">إجمالي الأنشطة: 1,248</div>
-      
-      <div class="entity-row-card" onclick="switchScreenTab('s3', document.querySelectorAll('.screen-tab-btn')[2])">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 36px; height: 36px; border-radius: 8px; background: #000; color: var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem;">الكريمي</div>
+      <div class="user-profile-bottom">
+        <div class="user-profile-info">
+          <div class="user-avatar-circle">أم</div>
           <div>
-            <div style="font-weight: 800; font-size: 0.85rem;">الكريمي الذهبي</div>
-            <div style="font-size: 0.68rem; color: var(--text-gray);">مطعم • كافيه • صنعاء</div>
+            <div style="font-size: 0.8rem; font-weight: 800; color: #FFF;">أحمد محمد</div>
+            <div style="font-size: 0.65rem; color: var(--text-gray);">مشرف عام</div>
           </div>
         </div>
-        <div style="display: flex; gap: 6px;"><span class="yr-score-tag">YR 9.7</span><span class="verified-pill-tag">موثق</span></div>
+        <svg class="svg-icon" style="color: var(--text-gray); cursor: pointer;" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
       </div>
-
-      <div class="entity-row-card">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 36px; height: 36px; border-radius: 8px; background: #000; color: var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem;">مطعم</div>
-          <div><div style="font-weight: 800; font-size: 0.85rem;">مطعم البيت اليمني</div><div style="font-size: 0.68rem; color: var(--text-gray);">مطاعم • صنعاء</div></div>
-        </div>
-        <div style="display: flex; gap: 6px;"><span class="yr-score-tag">YR 9.6</span><span class="verified-pill-tag">موثق</span></div>
-      </div>
-
-      <div class="entity-row-card">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 36px; height: 36px; border-radius: 8px; background: #000; color: var(--blue); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem;">جيب</div>
-          <div><div style="font-weight: 800; font-size: 0.85rem;">محفظة جيب</div><div style="font-size: 0.68rem; color: var(--text-gray);">محفظة إلكترونية</div></div>
-        </div>
-        <div style="display: flex; gap: 6px;"><span class="yr-score-tag">YR 9.5</span><span class="verified-pill-tag">موثق</span></div>
-      </div>
-
-      <button class="btn-gold-main" style="margin-top: 1rem;">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        <span>إضافة نشاط</span>
-      </button>
     </div>
+  </aside>
 
-    <!-- ==================== الشاشة 3: تفاصيل النشاط ==================== -->
-    <div id="view-s3" class="view-screen">
-      <div class="hero-profile-banner">
-        <div class="hero-logo-center">الكريمي</div>
+  <!-- 2. مساحة العمل الرئيسية -->
+  <div class="app-main-layout">
+    
+    <header class="topbar-header">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button class="mobile-menu-btn" style="display: none; background: none; border: none; color: #FFF; font-size: 1.2rem; cursor: pointer;" onclick="document.getElementById('appSidebar').classList.toggle('open')">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </button>
+        <div class="topbar-search-wrap">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="text" placeholder="ابحث عن منشأة، قسم، أو مستخدم...">
+        </div>
       </div>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+
+      <div class="topbar-actions-group">
+        <button class="btn-gold-add-entity" onclick="switchNavTab('entities', document.querySelectorAll('.nav-btn-link')[4])">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          <span>إضافة منشأة</span>
+        </button>
+
+        <div class="notif-bell-btn">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+          <div class="notif-counter-badge">12</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-body-content">
+
+      <!-- ==================== تبويب 1: الرئيسية ==================== -->
+      <section id="tab-dash" class="dashboard-view-tab active">
+        <div class="page-title-header">الرئيسية</div>
+
+        <div class="kpi-row-grid">
+          <div class="kpi-main-card">
+            <div class="kpi-card-right">
+              <div class="kpi-label">إجمالي المنشآت</div>
+              <div class="kpi-val">1,248</div>
+              <div class="kpi-sub">عن الشهر الماضي</div>
+            </div>
+            <div class="kpi-card-left">
+              <div class="kpi-growth-pill">+18%</div>
+              <div class="kpi-icon-circle"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
+            </div>
+          </div>
+
+          <div class="kpi-main-card">
+            <div class="kpi-card-right">
+              <div class="kpi-label">إجمالي التقييمات</div>
+              <div class="kpi-val">5,432</div>
+              <div class="kpi-sub">عن الشهر الماضي</div>
+            </div>
+            <div class="kpi-card-left">
+              <div class="kpi-growth-pill">+16%</div>
+              <div class="kpi-icon-circle"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
+            </div>
+          </div>
+
+          <div class="kpi-main-card">
+            <div class="kpi-card-right">
+              <div class="kpi-label">إجمالي المستخدمين</div>
+              <div class="kpi-val">892</div>
+              <div class="kpi-sub">عن الشهر الماضي</div>
+            </div>
+            <div class="kpi-card-left">
+              <div class="kpi-growth-pill">+24%</div>
+              <div class="kpi-icon-circle"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+            </div>
+          </div>
+
+          <div class="kpi-main-card">
+            <div class="kpi-card-right">
+              <div class="kpi-label">عدد الزيارات</div>
+              <div class="kpi-val">23,456</div>
+              <div class="kpi-sub">عن الشهر الماضي</div>
+            </div>
+            <div class="kpi-card-left">
+              <div class="kpi-growth-pill">+22%</div>
+              <div class="kpi-icon-circle"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- الصف الأوسط: المنحنى الذهبي ومستوى الثقة -->
+        <div class="middle-chart-row">
+          <div class="chart-panel-box">
+            <div class="chart-panel-header">
+              <div class="chart-panel-title">نظرة عامة على التقييمات</div>
+              <select class="chart-filter-select"><option>آخر 7 أيام</option><option>آخر 30 يوم</option></select>
+            </div>
+            <div style="position: relative; width: 100%; height: 180px;">
+              <canvas id="splineCanvas" style="width: 100%; height: 100%;"></canvas>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--text-muted); padding-top: 8px;">
+              <span>9 مايو</span><span>15 مايو</span><span>16 مايو</span><span>17 مايو</span><span>18 مايو</span><span>19 مايو</span><span>20 مايو</span>
+            </div>
+          </div>
+
+          <div class="chart-panel-box">
+            <div class="chart-panel-title" style="margin-bottom: 1rem;">متوسط التقييم العام</div>
+            <div class="rating-summary-grid">
+              <div>
+                <div class="rating-score-num">4.8</div>
+                <div class="rating-stars-gold">★★★★★</div>
+                <div class="rating-count-sub">(2,345 تقييم)</div>
+              </div>
+              <div class="gauge-circle-wrap">
+                <div class="gauge-circle-inner">
+                  <span>92%</span>
+                  <span>مستوى الثقة</span>
+                </div>
+              </div>
+            </div>
+            <div class="rating-breakdown-row"><span class="rating-label-name">ممتاز</span><div class="rating-progress-bar"><div class="rating-progress-fill" style="width: 43%;"></div></div><span class="rating-count-num">2,345</span></div>
+            <div class="rating-breakdown-row"><span class="rating-label-name">جيد جداً</span><div class="rating-progress-bar"><div class="rating-progress-fill" style="width: 35%;"></div></div><span class="rating-count-num">1,876</span></div>
+            <div class="rating-breakdown-row"><span class="rating-label-name">جيد</span><div class="rating-progress-bar"><div class="rating-progress-fill" style="width: 16%; background: var(--orange);"></div></div><span class="rating-count-num">876</span></div>
+            <div class="rating-breakdown-row"><span class="rating-label-name">ضعيف</span><div class="rating-progress-bar"><div class="rating-progress-fill" style="width: 6%; background: var(--red);"></div></div><span class="rating-count-num">248</span></div>
+          </div>
+        </div>
+
+        <!-- المنشآت الأعلى تقييماً -->
         <div>
-          <h2 style="font-size: 1.1rem; font-weight: 900;">الكريمي الذهبي</h2>
-          <div style="font-size: 0.72rem; color: var(--text-gray);">موثق • YR 9.7 • 4.8 ⭐</div>
+          <div class="featured-businesses-header">
+            <span style="font-size: 0.95rem; font-weight: 800; color: #FFF;">المنشآت الأعلى تقييماً</span>
+            <span style="font-size: 0.75rem; color: var(--gold); cursor: pointer;" onclick="switchNavTab('entities', document.querySelectorAll('.nav-btn-link')[4])">عرض الكل</span>
+          </div>
+
+          <div class="featured-cards-grid">
+            <div class="featured-biz-card">
+              <div class="featured-biz-cover" style="background-image: url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=400');">
+                <div class="featured-biz-badge">4.8</div>
+              </div>
+              <div class="featured-biz-body">
+                <div class="featured-biz-title">الكريمي الذهبي</div>
+                <div class="featured-biz-cat">مطعم - مأكولات يمنية</div>
+                <div class="featured-biz-footer"><span>📍 صنعاء - التحرير</span><span>منذ 2 ساعة</span></div>
+              </div>
+            </div>
+
+            <div class="featured-biz-card">
+              <div class="featured-biz-cover" style="background-image: url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400');">
+                <div class="featured-biz-badge">4.6</div>
+              </div>
+              <div class="featured-biz-body">
+                <div class="featured-biz-title">مقهى البن اليمني</div>
+                <div class="featured-biz-cat">مقهى - مشروبات</div>
+                <div class="featured-biz-footer"><span>📍 عدن - خور مكسر</span><span>منذ 5 ساعة</span></div>
+              </div>
+            </div>
+
+            <div class="featured-biz-card">
+              <div class="featured-biz-cover" style="background-image: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400');">
+                <div class="featured-biz-badge">4.7</div>
+              </div>
+              <div class="featured-biz-body">
+                <div class="featured-biz-title">فندق تاج سبأ</div>
+                <div class="featured-biz-cat">فندقة - إقامة</div>
+                <div class="featured-biz-footer"><span>📍 تعز - المدينة</span><span>منذ 1 يوم</span></div>
+              </div>
+            </div>
+
+            <div class="featured-biz-card">
+              <div class="featured-biz-cover" style="background-image: url('https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?w=400');">
+                <div class="featured-biz-badge">4.5</div>
+              </div>
+              <div class="featured-biz-body">
+                <div class="featured-biz-title">مركز إشراقة الطبي</div>
+                <div class="featured-biz-cat">خدمات طبية - عيادات</div>
+                <div class="featured-biz-footer"><span>📍 حضرموت - المكلا</span><span>منذ 1 يوم</span></div>
+              </div>
+            </div>
+          </div>
         </div>
-        <span class="yr-score-tag" style="font-size: 0.85rem;">YR 9.7</span>
-      </div>
+      </section>
 
-      <div class="subtabs-scroll">
-        <div class="subtab-pill active">المعلومات</div>
-        <div class="subtab-pill">العروض</div>
-        <div class="subtab-pill">المعرض</div>
-        <div class="subtab-pill">الصور</div>
-        <div class="subtab-pill">التقييمات</div>
-      </div>
+      <!-- ==================== تبويب 2: النشاط ==================== -->
+      <section id="tab-activity" class="dashboard-view-tab">
+        <div class="page-title-header">النشاط الحي للنظام</div>
+        <div class="content-box-container">
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg-card-inner); border-radius: var(--r-md); border: 1px solid var(--border);">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #000; color: var(--gold); display: flex; align-items: center; justify-content: center; font-weight: 900;">الكريمي</div>
+                <div><div style="font-weight: 800; color: #FFF;">تمت إضافة منشأة جديدة</div><div style="font-size: 0.72rem; color: var(--gold);">الكريمي الذهبي</div></div>
+              </div>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">منذ 5 دقائق</span>
+            </div>
 
-      <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-dark); margin-bottom: 1rem; font-size: 0.78rem; line-height: 1.8;">
-        <div><strong style="color: var(--gold-primary);">اسم النشاط:</strong> الكريمي الذهبي</div>
-        <div><strong style="color: var(--gold-primary);">نوع النشاط:</strong> مطعم - كافيه</div>
-        <div><strong style="color: var(--gold-primary);">الموقع:</strong> صنعاء - شارع الخمسين</div>
-        <div><strong style="color: var(--gold-primary);">مستوى الأسعار:</strong> مرتفع</div>
-      </div>
-
-      <button class="btn-gold-main">تواصل الآن</button>
-    </div>
-
-    <!-- ==================== الشاشة 5: إدارة الأقسام ==================== -->
-    <div id="view-s5" class="view-screen">
-      <div style="background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-dark); margin-bottom: 1rem;">
-        <div class="toggle-line-row"><span>نبذة</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
-        <div class="toggle-line-row"><span>الخدمات</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
-        <div class="toggle-line-row"><span>المنتجات</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
-        <div class="toggle-line-row"><span>الأسعار</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
-        <div class="toggle-line-row"><span>الفروع</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
-        <div class="toggle-line-row"><span>التقييمات</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
-        <div class="toggle-line-row"><span>الوظائف</span> <label class="gold-toggle-switch"><input type="checkbox"><span class="gold-slider-thumb"></span></label></div>
-        <div class="toggle-line-row"><span>الإعلانات</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
-      </div>
-      <button class="btn-gold-main" onclick="alert('تم حفظ التغييرات')">حفظ التغييرات</button>
-    </div>
-
-    <!-- ==================== الشاشة 7: أسعار الصرف ==================== -->
-    <div id="view-s7" class="view-screen">
-      <div class="market-tabs-pill">
-        <button class="market-btn-tab active">صنعاء</button>
-        <button class="market-btn-tab">عدن</button>
-      </div>
-
-      <div class="rate-box-unit">
-        <h4 style="color: var(--gold-primary); font-size: 0.85rem; margin-bottom: 4px;">الدولار الأمريكي</h4>
-        <div class="rate-inputs-2col">
-          <div><span style="font-size: 0.68rem; color: var(--text-gray);">سعر الشراء</span><input type="number" value="1540"></div>
-          <div><span style="font-size: 0.68rem; color: var(--text-gray);">سعر البيع</span><input type="number" value="1530"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg-card-inner); border-radius: var(--r-md); border: 1px solid var(--border);">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #000; color: var(--gold); display: flex; align-items: center; justify-content: center; font-weight: 900;">البن</div>
+                <div><div style="font-weight: 800; color: #FFF;">تم إضافة تقييم جديد ⭐ 5.0</div><div style="font-size: 0.72rem; color: var(--gold);">مقهى البن اليمني</div></div>
+              </div>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">منذ 15 دقيقة</span>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div class="rate-box-unit">
-        <h4 style="color: var(--gold-primary); font-size: 0.85rem; margin-bottom: 4px;">الريال السعودي</h4>
-        <div class="rate-inputs-2col">
-          <div><span style="font-size: 0.68rem; color: var(--text-gray);">سعر الشراء</span><input type="number" value="410"></div>
-          <div><span style="font-size: 0.68rem; color: var(--text-gray);">سعر البيع</span><input type="number" value="408"></div>
+      <!-- ==================== تبويب 3: المنشآت ==================== -->
+      <section id="tab-entities" class="dashboard-view-tab">
+        <div class="page-title-header">دليل المنشآت والشركات</div>
+        <div class="content-box-container" style="padding: 0; overflow-x: auto;">
+          <table class="data-table-custom">
+            <thead>
+              <tr><th>المنشأة</th><th>القسم</th><th>الموقع</th><th>التقييم</th><th>الحالة</th><th>الإجراءات</th></tr>
+            </thead>
+            <tbody>
+              <tr><td style="font-weight: 800; color: #FFF;">الكريمي الذهبي</td><td>مطعم</td><td>صنعاء - التحرير</td><td><span style="color: var(--gold);">★ 4.8</span></td><td><span style="color: var(--green); background: var(--green-dim); padding: 3px 8px; border-radius: 6px; font-weight: 800;">مفعل</span></td><td><button style="background: none; border: none; color: var(--text-gray); font-size: 1rem; cursor: pointer;">•••</button></td></tr>
+              <tr><td style="font-weight: 800; color: #FFF;">مقهى البن اليمني</td><td>مقهى</td><td>عدن - خور مكسر</td><td><span style="color: var(--gold);">★ 4.6</span></td><td><span style="color: var(--green); background: var(--green-dim); padding: 3px 8px; border-radius: 6px; font-weight: 800;">مفعل</span></td><td><button style="background: none; border: none; color: var(--text-gray); font-size: 1rem; cursor: pointer;">•••</button></td></tr>
+              <tr><td style="font-weight: 800; color: #FFF;">فندق تاج سبأ</td><td>فندقة</td><td>تعز - المدينة</td><td><span style="color: var(--gold);">★ 4.7</span></td><td><span style="color: var(--green); background: var(--green-dim); padding: 3px 8px; border-radius: 6px; font-weight: 800;">مفعل</span></td><td><button style="background: none; border: none; color: var(--text-gray); font-size: 1rem; cursor: pointer;">•••</button></td></tr>
+            </tbody>
+          </table>
         </div>
-      </div>
+      </section>
 
-      <button class="btn-gold-main" onclick="alert('تم تحديث الأسعار بنجاح!')">تحديث الأسعار</button>
-    </div>
-
-    <!-- ==================== الشاشة 9: التقييمات ==================== -->
-    <div id="view-s9" class="view-screen">
-      <div style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 8px;">
-        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
-          <strong>أبو محمد</strong>
-          <span style="color: var(--gold-primary);">★★★★★</span>
+      <!-- ==================== تبويب 4: التقارير ==================== -->
+      <section id="tab-analytics" class="dashboard-view-tab">
+        <div class="page-title-header">التقارير وتحليلات التفاعل</div>
+        <div class="kpi-row-grid">
+          <div class="kpi-main-card"><div><div class="kpi-label">إجمالي التقييمات</div><div class="kpi-val">12,345</div></div><span class="kpi-growth-pill">+18%</span></div>
+          <div class="kpi-main-card"><div><div class="kpi-label">متوسط التقييم</div><div class="kpi-val">4.7</div></div><span class="kpi-growth-pill">+0.2</span></div>
+          <div class="kpi-main-card"><div><div class="kpi-label">التقييمات الإيجابية</div><div class="kpi-val">10,245</div></div><span class="kpi-growth-pill">+20%</span></div>
+          <div class="kpi-main-card"><div><div class="kpi-label">التقييمات السلبية</div><div class="kpi-val">2,100</div></div><span class="kpi-growth-pill" style="color: var(--red); background: var(--red-dim);">-8%</span></div>
         </div>
-        <div style="font-size: 0.75rem; color: var(--text-gray);">تجربة ممتازة وتعامل راقي جداً - الكريمي الذهبي</div>
-      </div>
-      <div style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 8px;">
-        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
-          <strong>سالم الشريف</strong>
-          <span style="color: var(--gold-primary);">★★★★★</span>
+      </section>
+
+      <!-- ==================== تبويب 5: البلاغات ==================== -->
+      <section id="tab-reports" class="dashboard-view-tab">
+        <div class="page-title-header">إدارة البلاغات والشكاوى</div>
+        <div class="content-box-container" style="padding: 0; overflow-x: auto;">
+          <table class="data-table-custom">
+            <thead><tr><th>البلاغ</th><th>المنشأة</th><th>النوع</th><th>الحالة</th><th>التاريخ</th></tr></thead>
+            <tbody>
+              <tr><td>محتوى غير لائق</td><td>الكريمي الذهبي</td><td>محتوى</td><td><span style="color: var(--orange); background: var(--orange-dim); padding: 2px 7px; border-radius: 6px; font-weight: 800;">قيد المراجعة</span></td><td>20 مايو 2026</td></tr>
+              <tr><td>بيانات خاطئة</td><td>مقهى البن اليمني</td><td>بيانات</td><td><span style="color: var(--green); background: var(--green-dim); padding: 2px 7px; border-radius: 6px; font-weight: 800;">تم الحل</span></td><td>20 مايو 2026</td></tr>
+            </tbody>
+          </table>
         </div>
-        <div style="font-size: 0.75rem; color: var(--text-gray);">أفضل مطعم في صنعاء وخدمة سريعة</div>
-      </div>
-    </div>
+      </section>
 
-    <!-- ==================== الشاشة 13: التقارير والنمو ==================== -->
-    <div id="view-s13" class="view-screen">
-      <div style="background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-dark);">
-        <div style="display: flex; justify-content: space-between; padding: 0.9rem; border-bottom: 1px solid var(--border-dark);"><span>الزيارات</span> <span style="font-weight: 900;">15,430 <span style="color: var(--red); font-size: 0.7rem;">-12%</span></span></div>
-        <div style="display: flex; justify-content: space-between; padding: 0.9rem; border-bottom: 1px solid var(--border-dark);"><span>مرات الظهور</span> <span style="font-weight: 900;">78,920 <span style="color: var(--green); font-size: 0.7rem;">+12%</span></span></div>
-        <div style="display: flex; justify-content: space-between; padding: 0.9rem; border-bottom: 1px solid var(--border-dark);"><span>الإعجابات</span> <span style="font-weight: 900;">8,765 <span style="color: var(--green); font-size: 0.7rem;">+8%</span></span></div>
-        <div style="display: flex; justify-content: space-between; padding: 0.9rem; border-bottom: 1px solid var(--border-dark);"><span>النشاط</span> <span style="font-weight: 900;">2,345 <span style="color: var(--green); font-size: 0.7rem;">+19%</span></span></div>
-        <div style="display: flex; justify-content: space-between; padding: 0.9rem; border-bottom: 1px solid var(--border-dark);"><span>التفاعل</span> <span style="font-weight: 900;">1,876 <span style="color: var(--green); font-size: 0.7rem;">+23%</span></span></div>
-        <div style="display: flex; justify-content: space-between; padding: 0.9rem; border-bottom: 1px solid var(--border-dark);"><span>الموثوقية</span> <span style="font-weight: 900;">324 <span style="color: var(--green); font-size: 0.7rem;">+33%</span></span></div>
-      </div>
-    </div>
+      <!-- ==================== تبويب 6: الإعدادات ==================== -->
+      <section id="tab-settings" class="dashboard-view-tab">
+        <div class="page-title-header">إعدادات المنصة العامة</div>
+        <div class="content-box-container" style="max-width: 600px;">
+          <div style="margin-bottom: 1rem;"><label style="font-size: 0.78rem; color: var(--text-gray); display: block; margin-bottom: 4px;">اسم المنصة</label><input type="text" value="يمن ريتغ" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r-md); padding: 0.6rem 1rem; color: #FFF;"></div>
+          <div style="margin-bottom: 1rem;"><label style="font-size: 0.78rem; color: var(--text-gray); display: block; margin-bottom: 4px;">البريد الإلكتروني</label><input type="email" value="info@yemenrating.ye" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r-md); padding: 0.6rem 1rem; color: #FFF;"></div>
+          <button class="btn-gold-add-entity" style="width: 100%; justify-content: center; padding: 0.75rem;" onclick="alert('تم حفظ الإعدادات بنجاح!')">حفظ التغييرات</button>
+        </div>
+      </section>
 
-    <!-- ==================== الشاشة 16: الإعدادات ==================== -->
-    <div id="view-s16" class="view-screen">
-      <div style="background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-dark);">
-        <div style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid var(--border-dark); cursor: pointer;"><span>الإعدادات العامة</span> <svg class="icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
-        <div style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid var(--border-dark); cursor: pointer;"><span>إعدادات الأسعار</span> <svg class="icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
-        <div style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid var(--border-dark); cursor: pointer;"><span>النسخ الاحتياطي</span> <svg class="icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
-      </div>
-      <div style="text-align: center; color: var(--text-muted); font-size: 0.7rem; margin-top: 1.5rem;">الإصدار 1.0.0 | © 2026 Yemen Rating</div>
     </div>
-
-  </main>
-
-  <!-- شريط التنقل السفلي المعتمد في دليل الهوية مع الزر الدائري الأصفر (+) -->
-  <nav class="app-bottom-bar">
-    <button class="bottom-tab-item active" onclick="switchScreenTab('s1', document.querySelectorAll('.screen-tab-btn')[0])">
-      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-      <span>الرئيسية</span>
-    </button>
-    <button class="bottom-tab-item" onclick="switchScreenTab('s2', document.querySelectorAll('.screen-tab-btn')[1])">
-      <svg viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
-      <span>الأنشطة</span>
-    </button>
-    <div class="bottom-center-btn-fab" onclick="switchScreenTab('s2', document.querySelectorAll('.screen-tab-btn')[1])">
-      <svg class="icon" style="width: 22px; height: 22px; fill: #000;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-    </div>
-    <button class="bottom-tab-item" onclick="switchScreenTab('s10', document.querySelectorAll('.screen-tab-btn')[9])">
-      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11l-5-3 5-3v6z"/></svg>
-      <span>الإعلانات</span>
-    </button>
-    <button class="bottom-tab-item" onclick="switchScreenTab('s16', document.querySelectorAll('.screen-tab-btn')[15])">
-      <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-      <span>المزيد</span>
-    </button>
-  </nav>
+  </div>
 
   <script>
-    function switchScreenTab(tabKey, btnElement) {
-      document.querySelectorAll('.view-screen').forEach(view => view.classList.remove('active'));
-      document.querySelectorAll('.screen-tab-btn').forEach(btn => btn.classList.remove('active'));
+    function switchNavTab(tabId, btn) {
+      document.querySelectorAll('.dashboard-view-tab').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn-link').forEach(b => b.classList.remove('active'));
 
-      const target = document.getElementById('view-' + tabKey);
+      const target = document.getElementById('tab-' + tabId);
       if (target) target.classList.add('active');
+      if (btn) btn.classList.add('active');
 
-      if (btnElement && btnElement.classList) btnElement.classList.add('active');
+      if (window.innerWidth <= 992) {
+        document.getElementById('appSidebar').classList.remove('open');
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (tabId === 'dash') drawSpline();
     }
+
+    function drawSpline() {
+      const canvas = document.getElementById('splineCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.parentElement.clientWidth * dpr;
+      canvas.height = canvas.parentElement.clientHeight * dpr;
+      ctx.scale(dpr, dpr);
+
+      const w = canvas.parentElement.clientWidth;
+      const h = canvas.parentElement.clientHeight;
+
+      const points = [
+        {x: w*0.05, y: h*0.8}, {x: w*0.2, y: h*0.5}, {x: w*0.35, y: h*0.55},
+        {x: w*0.5, y: h*0.25}, {x: w*0.65, y: h*0.6}, {x: w*0.8, y: h*0.5}, {x: w*0.95, y: h*0.15}
+      ];
+
+      ctx.clearRect(0, 0, w, h);
+
+      // شبكة الخطوط
+      ctx.strokeStyle = '#20202C';
+      ctx.lineWidth = 1;
+      for (let y = h*0.25; y < h; y += h*0.25) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+
+      // المنحنى الذهبي
+      ctx.strokeStyle = '#FFB800';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+
+      for (let i = 0; i < points.length - 1; i++) {
+        const xc = (points[i].x + points[i+1].x) / 2;
+        const yc = (points[i].y + points[i+1].y) / 2;
+        ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+      }
+      ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
+      ctx.stroke();
+
+      // النقاط
+      points.forEach(p => {
+        ctx.fillStyle = '#000';
+        ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#FFB800';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.stroke();
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', drawSpline);
+    window.addEventListener('resize', drawSpline);
   </script>
 </body>
 </html>
