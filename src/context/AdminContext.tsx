@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import { BusinessItem } from '../types/business';
+import { BusinessItem, BusinessReview } from '../types/business';
 import { DEMO_BUSINESSES } from '../data/demoBusinesses';
 import { CurrencyPriceItem, GoldPriceItem, CommodityPriceItem } from '../types/prices';
 import { DEMO_CURRENCIES, DEMO_GOLD, DEMO_COMMODITIES } from '../data/demoPrices';
@@ -22,19 +22,33 @@ interface AdminContextType {
   adMedia: AdMediaItem[];
   auditLogs: AuditLogItem[];
   users: AdminUserItem[];
+  
+  // Business Actions
   updateBusiness: (updated: BusinessItem, reason?: string) => void;
   createBusiness: (newBiz: BusinessItem) => void;
   deleteBusiness: (id: string) => void;
   changeBadge: (id: string, badgeType: 'gold' | 'blue' | 'gray', reason: string) => void;
+  
+  // Review Actions
+  addReviewToBusiness: (businessId: string, review: { authorName: string; rating: number; comment: string }) => void;
+  deleteReview: (businessId: string, reviewId: string) => void;
+  
+  // Prices Actions
   updateCurrencyPrice: (id: string, buy: number, sell: number, change: 'up' | 'down' | 'stable') => void;
   updateGoldPrice: (id: string, buy: number, sell: number) => void;
+  
+  // Ads Actions
   publishAd: (id: string) => void;
   pauseAd: (id: string) => void;
   deleteAd: (id: string) => void;
   saveAd: (ad: AdItem) => void;
   duplicateAd: (id: string) => void;
+  
+  // Jobs Actions
   saveJob: (job: JobVacancy) => void;
   deleteJob: (id: string) => void;
+  
+  // Logs
   addAuditLog: (action: any, targetType: string, targetName: string, details: string) => void;
 }
 
@@ -86,6 +100,55 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       timestamp: formatted,
     };
     setAuditLogs((prev) => [newLog, ...prev]);
+  };
+
+  // إضافة تقييم جديد وتحديث مؤشرات التقييم و YR Score تلقائياً
+  const addReviewToBusiness = (businessId: string, newRevData: { authorName: string; rating: number; comment: string }) => {
+    const newReview: BusinessReview = {
+      id: `rev_${Date.now()}`,
+      authorName: newRevData.authorName,
+      rating: newRevData.rating,
+      date: 'اليوم',
+      comment: newRevData.comment,
+      isVerifiedReviewer: true,
+    };
+
+    setBusinesses((prev) =>
+      prev.map((b) => {
+        if (b.id !== businessId) return b;
+        const currentReviews = b.reviews || [];
+        const updatedReviews = [newReview, ...currentReviews];
+        const totalRating = updatedReviews.reduce((sum, r) => sum + r.rating, 0);
+        const avgRating = parseFloat((totalRating / updatedReviews.length).toFixed(1));
+        const updatedScore = Math.min(100, Math.round(b.yrScore + 1));
+
+        return {
+          ...b,
+          reviews: updatedReviews,
+          reviewCount: updatedReviews.length,
+          rating: avgRating,
+          yrScore: updatedScore,
+        };
+      })
+    );
+
+    addAuditLog('REVIEW_APPROVE', 'تقييم عميل', `نشاط #${businessId}`, `إضافة تقييم ${newRevData.rating} نجوم بواسطة ${newRevData.authorName}`);
+  };
+
+  const deleteReview = (businessId: string, reviewId: string) => {
+    setBusinesses((prev) =>
+      prev.map((b) => {
+        if (b.id !== businessId) return b;
+        const updatedReviews = (b.reviews || []).filter((r) => r.id !== reviewId);
+        return {
+          ...b,
+          reviews: updatedReviews,
+          reviewCount: updatedReviews.length,
+        };
+      })
+    );
+    addAuditLog('REVIEW_DELETE', 'تقييم عميل', `نشاط #${businessId}`, `حذف التقييم #${reviewId}`);
+    yrToast.warning('تم حذف التقييم');
   };
 
   const updateBusiness = (updated: BusinessItem, reason?: string) => {
@@ -170,9 +233,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const saveAd = (ad: AdItem) => {
     setAds((prev) => {
       const exists = prev.some((a) => a.id === ad.id);
-      if (exists) {
-        return prev.map((a) => (a.id === ad.id ? ad : a));
-      }
+      if (exists) return prev.map((a) => (a.id === ad.id ? ad : a));
       return [ad, ...prev];
     });
     addAuditLog('AD_CREATE', 'إعلان', ad.title, `حفظ الحملة الإعلانية (${ad.type})`);
@@ -198,21 +259,19 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const saveJob = (job: JobVacancy) => {
     setJobs((prev) => {
       const exists = prev.some((j) => j.id === job.id);
-      if (exists) {
-        return prev.map((j) => (j.id === job.id ? job : j));
-      }
+      if (exists) return prev.map((j) => (j.id === job.id ? job : j));
       return [job, ...prev];
     });
-    addAuditLog('JOB_CREATE', 'شاغر وظيفي', job.title, `حفظ الشاغر الوظيفي لشركة ${job.companyName}`);
-    yrToast.success(`تم حفظ الشاغر الوظيفي "${job.title}"`);
+    addAuditLog('JOB_CREATE', 'شاغر وظيفي', job.title, `حفظ الشاغر لشركة ${job.companyName}`);
+    yrToast.success(`تم حفظ الشاغر "${job.title}"`);
   };
 
   const deleteJob = (id: string) => {
     const job = jobs.find((j) => j.id === id);
     if (!job) return;
     setJobs((prev) => prev.filter((j) => j.id !== id));
-    addAuditLog('JOB_STATUS_CHANGE', 'شاغر وظيفي', job.title, 'حذف الشاغر الوظيفي نهائياً');
-    yrToast.warning(`تم حذف الشاغر الوظيفي "${job.title}"`);
+    addAuditLog('JOB_STATUS_CHANGE', 'شاغر وظيفي', job.title, 'حذف الشاغر نهائياً');
+    yrToast.warning(`تم حذف الشاغر "${job.title}"`);
   };
 
   return (
@@ -231,6 +290,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         createBusiness,
         deleteBusiness,
         changeBadge,
+        addReviewToBusiness,
+        deleteReview,
         updateCurrencyPrice,
         updateGoldPrice,
         publishAd,

@@ -7,12 +7,13 @@ import { RealEstateSection } from './sections/RealEstateSection';
 import { CarDealerSection } from './sections/CarDealerSection';
 import { Card } from '../ui/Card';
 import { YrVerifiedBadge } from './YrVerifiedBadge';
+import { AddReviewModal } from '../reviews/AddReviewModal';
+import { useAdmin } from '../../context/AdminContext';
 import {
   Building2,
   Utensils,
   DollarSign,
   Coins,
-  Wrench,
   MapPin,
   Star,
   Home,
@@ -20,22 +21,19 @@ import {
   Clock,
   Phone,
   Globe,
-  Share2,
   Plus,
-  User,
-  CheckCircle2,
   ArrowLeftRight,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { yrToast } from '../ui/Toast';
 
 export const BusinessProfileEngine: React.FC<{
   business: BusinessItem;
   onNavigate?: (path: string) => void;
 }> = ({ business, onNavigate }) => {
+  const { addReviewToBusiness } = useAdmin();
   const [activeTab, setActiveTab] = useState<string>('main');
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
-  // بناء التبويبات ديناميكياً فقط عند توفر البيانات (قاعدة منع الأقسام الفارغة)
   const tabs = [
     { id: 'main', label: 'الرئيسية ونظرة عامة', icon: Building2 },
     ...(business.businessType === 'WALLET' && business.walletFees ? [{ id: 'fees', label: 'رسوم التحويل', icon: DollarSign }] : []),
@@ -46,6 +44,10 @@ export const BusinessProfileEngine: React.FC<{
     ...(business.branches && business.branches.length > 0 ? [{ id: 'branches', label: 'الفروع', icon: MapPin }] : []),
     { id: 'reviews', label: 'التقييمات', icon: Star },
   ];
+
+  const handleReviewSubmitted = (revData: { authorName: string; rating: number; comment: string }) => {
+    addReviewToBusiness(business.id, revData);
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 space-y-6">
@@ -73,11 +75,10 @@ export const BusinessProfileEngine: React.FC<{
         })}
       </div>
 
-      {/* 2-Column Responsive Layout: Content on Right + Sticky Sidebar on Left (Desktop) */}
+      {/* 2-Column Responsive Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Main Content Column (8 cols on desktop) */}
+        {/* Main Content Column */}
         <div className="lg:col-span-8 space-y-5">
-          {/* 1. Overview Tab */}
           {activeTab === 'main' && (
             <div className="space-y-5">
               <OverviewSection business={business} />
@@ -116,29 +117,13 @@ export const BusinessProfileEngine: React.FC<{
                 </Card>
               )}
 
-              {/* Wallet Section if Wallet */}
-              {business.businessType === 'WALLET' && (
-                <WalletFeesSection business={business} />
-              )}
-
-              {/* Menu Section if Restaurant */}
-              {business.businessType === 'RESTAURANT' && (
-                <MenuSection business={business} />
-              )}
-
-              {/* Real Estate Section if Real Estate */}
-              {business.businessType === 'REAL_ESTATE' && (
-                <RealEstateSection business={business} />
-              )}
-
-              {/* Car Dealer Section if Cars */}
-              {business.businessType === 'CAR_DEALER' && (
-                <CarDealerSection business={business} />
-              )}
+              {business.businessType === 'WALLET' && <WalletFeesSection business={business} />}
+              {business.businessType === 'RESTAURANT' && <MenuSection business={business} />}
+              {business.businessType === 'REAL_ESTATE' && <RealEstateSection business={business} />}
+              {business.businessType === 'CAR_DEALER' && <CarDealerSection business={business} />}
             </div>
           )}
 
-          {/* Specialized Standalone Tabs */}
           {activeTab === 'fees' && <WalletFeesSection business={business} />}
           {activeTab === 'menu' && <MenuSection business={business} />}
           {activeTab === 'properties' && <RealEstateSection business={business} />}
@@ -180,7 +165,10 @@ export const BusinessProfileEngine: React.FC<{
                     <div key={rev.id} className="p-3 rounded-[10px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#1E1E1E] space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-xs text-[#0B1F3A] dark:text-white">{rev.authorName}</span>
-                        <span className="text-[10px] text-[#94A3B8] dark:text-[#71717A]">{rev.date}</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] font-black text-[#F5C400]">★ {rev.rating}</span>
+                          <span className="text-[10px] text-[#94A3B8] dark:text-[#71717A]">· {rev.date}</span>
+                        </div>
                       </div>
                       <p className="text-xs text-[#475569] dark:text-[#A1A1AA]">{rev.comment}</p>
                     </div>
@@ -192,24 +180,23 @@ export const BusinessProfileEngine: React.FC<{
 
               <button
                 type="button"
-                onClick={() => yrToast.info('تم فتح نموذج إضافة التقييم')}
+                onClick={() => setIsReviewModalOpen(true)}
                 className="w-full py-2.5 rounded-[10px] bg-[#F5C400] text-black font-black text-xs flex items-center justify-center gap-1.5 hover:bg-[#DDAF00] active:scale-95 transition-all shadow-sm"
               >
                 <Plus size={14} strokeWidth={2.5} />
-                <span>إضافة تقييمك وتجربتك</span>
+                <span>إضافة تقييمك وتجربتك الحقيقية</span>
               </button>
             </Card>
           )}
         </div>
 
-        {/* Sidebar Info Column (4 cols on desktop - Desktop Sticky Panel) */}
+        {/* Sidebar Info Column (Desktop Sticky) */}
         <div className="lg:col-span-4 space-y-4 sticky top-20">
-          {/* Verified Guarantee Card */}
           <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-[#64748B] dark:text-[#A1A1AA]">حالة التوثيق</span>
               {business.isVerified ? (
-                <YrVerifiedBadge text={business.verifiedBadgeText || 'موثّق ✓'} size="sm" />
+                <YrVerifiedBadge text={business.verifiedBadgeTitle || 'موثّق ✓'} size="sm" variant={business.verifiedBadgeType || 'gold'} />
               ) : (
                 <span className="text-xs font-bold text-[#94A3B8]">غير موثق</span>
               )}
@@ -221,7 +208,6 @@ export const BusinessProfileEngine: React.FC<{
             </div>
           </Card>
 
-          {/* Contact Details Card */}
           <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-2.5 text-xs">
             <h4 className="font-bold text-[#0B1F3A] dark:text-white pb-1.5 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
               معلومات التواصل وساعات العمل
@@ -250,6 +236,14 @@ export const BusinessProfileEngine: React.FC<{
           </Card>
         </div>
       </div>
+
+      {/* Interactive Review Modal */}
+      <AddReviewModal
+        businessName={business.name}
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        onSubmitReview={handleReviewSubmitted}
+      />
     </div>
   );
 };
