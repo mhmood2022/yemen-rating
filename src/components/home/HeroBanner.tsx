@@ -34,7 +34,7 @@ export const HeroBanner: React.FC<{ onNavigate: (path: string) => void }> = ({ o
 
   return (
     <div className="relative rounded-[16px] overflow-hidden bg-[#0A0A0A] shadow-md border-0">
-      <div className="relative h-[155px] sm:h-[175px] w-full overflow-hidden">
+      <div className="relative h-[150px] sm:h-[170px] w-full overflow-hidden">
         <img
           src={slide.imageUrl}
           alt={slide.title}
