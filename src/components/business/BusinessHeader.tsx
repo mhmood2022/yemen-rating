@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ArrowRight,
   MoreVertical,
@@ -8,9 +8,12 @@ import {
   Navigation,
   Star,
   Building2,
+  ShieldAlert,
+  ShieldCheck,
 } from 'lucide-react';
 import { BusinessItem } from '../../types/business';
 import { VerifiedBadge } from '../ui/VerifiedBadge';
+import { BusinessClaimModal } from '../claims/BusinessClaimModal';
 import { yrToast } from '../ui/Toast';
 
 interface BusinessHeaderProps {
@@ -19,6 +22,11 @@ interface BusinessHeaderProps {
 }
 
 export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavigate }) => {
+  const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
+  const [claimStatus, setClaimStatus] = useState<string>(
+    business.ownershipStatus || 'UNCLAIMED'
+  );
+
   const handleCall = () => {
     if (business.phone) {
       window.location.href = `tel:${business.phone}`;
@@ -44,13 +52,17 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
     }
   };
 
+  const handleClaimSubmitted = (_bizId: string, _data: any) => {
+    setClaimStatus('CLAIM_PENDING');
+  };
+
   const defaultCover =
     business.coverUrl ||
     'https://images.unsplash.com/photo-1578895210405-907db486c111?w=1000&auto=format&fit=crop&q=80';
 
   return (
     <div className="relative bg-white dark:bg-[#000000]">
-      {/* Cover Image */}
+      {/* 1. Cover Image */}
       <div className="relative h-[160px] sm:h-[220px] md:h-[260px] w-full overflow-hidden bg-[#0A0A0A]">
         <img
           src={defaultCover}
@@ -81,7 +93,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
         </div>
       </div>
 
-      {/* Logo & Identity Info */}
+      {/* 2. Overlapping Logo & Identity Info */}
       <div className="relative px-4 pb-5 -mt-12 sm:-mt-14 max-w-5xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3.5 text-center sm:text-right">
           {/* Logo Frame */}
@@ -99,15 +111,40 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
             )}
           </div>
 
-          {/* Business Name with Verified Badge directly beside it */}
+          {/* Business Details & Badges */}
           <div className="space-y-1.5">
-            <div>
+            <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
               <span className="text-[11px] font-bold px-2 py-0.5 rounded-[6px] bg-[#0B1F3A]/10 text-[#0B1F3A] dark:bg-[#181818] dark:text-[#A1A1AA]">
                 {business.category}
               </span>
+
+              {/* Ownership Status Badge / Claim Trigger */}
+              {claimStatus === 'UNCLAIMED' && (
+                <button
+                  type="button"
+                  onClick={() => setIsClaimModalOpen(true)}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/30 hover:bg-[#EF4444]/25 transition-colors"
+                >
+                  <ShieldAlert size={12} strokeWidth={2.5} />
+                  <span>أثبت ملكيتك</span>
+                </button>
+              )}
+
+              {claimStatus === 'CLAIM_PENDING' && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30">
+                  <span>طلب الملكية قيد المراجعة</span>
+                </span>
+              )}
+
+              {claimStatus === 'CLAIMED' && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30">
+                  <ShieldCheck size={12} strokeWidth={2.5} />
+                  <span>تم إثبات الملكية</span>
+                </span>
+              )}
             </div>
 
-            {/* Name + Badge in the Exact Natural Inline Position */}
+            {/* Name + Verified Badge */}
             <h1 className="text-lg sm:text-2xl font-black text-[#0B1F3A] dark:text-white leading-tight flex items-center justify-center sm:justify-start gap-1.5 flex-wrap">
               <span>{business.name}</span>
               {business.isVerified && (
@@ -132,7 +169,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* 3. Action Buttons */}
         <div className="flex items-center justify-center gap-2 w-full sm:w-auto pt-1">
           {business.phone && (
             <button
@@ -168,6 +205,14 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
           )}
         </div>
       </div>
+
+      {/* Claim Modal */}
+      <BusinessClaimModal
+        business={business}
+        isOpen={isClaimModalOpen}
+        onClose={() => setIsClaimModalOpen(false)}
+        onSubmitClaim={handleClaimSubmitted}
+      />
     </div>
   );
 };

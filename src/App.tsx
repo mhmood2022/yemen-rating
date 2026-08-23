@@ -16,6 +16,7 @@ import { TrendPage } from './pages/TrendPage';
 import { MoreMenuPage } from './pages/MoreMenuPage';
 import { PhoneMarketPage } from './pages/PhoneMarketPage';
 import { JobsPage } from './pages/JobsPage';
+import { CategoryHubPage } from './pages/categories/CategoryHubPage';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname + window.location.search);
@@ -54,6 +55,23 @@ export const App: React.FC = () => {
           <BusinessProfilePage businessId={id} onNavigate={navigate} />
         </AppLayout>
       );
+    }
+
+    // الصفحات الجماعية للتصنيفات الرسمية
+    if (pathname === '/restaurants') {
+      return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="المطاعم" categorySlug="restaurants" onNavigate={navigate} /></AppLayout>;
+    }
+    if (pathname === '/hotels') {
+      return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="الفنادق" categorySlug="hotels" onNavigate={navigate} /></AppLayout>;
+    }
+    if (pathname === '/companies') {
+      return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="الشركات" categorySlug="companies" onNavigate={navigate} /></AppLayout>;
+    }
+    if (pathname === '/healthcare') {
+      return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="الصحة" categorySlug="healthcare" onNavigate={navigate} /></AppLayout>;
+    }
+    if (pathname === '/cars') {
+      return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="السيارات" categorySlug="cars" onNavigate={navigate} /></AppLayout>;
     }
 
     if (pathname === '/directory') {
