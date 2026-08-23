@@ -1,31 +1,712 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#000000" />
-    <title>يمن ريتغ | Yemen Rating</title>
-    <script>
-      (function() {
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function(r) {
-            for (var i = 0; i < r.length; i++) r[i].unregister();
-          });
-        }
-        if ('caches' in window) {
-          caches.keys().then(function(n) {
-            for (var i = 0; i < n.length; i++) caches.delete(n[i]);
-          });
-        }
-      })();
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-  </head>
-  <body class="bg-[#F7F8FA] dark:bg-[#000000] text-[#0F172A] dark:text-white">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx?v=6.1"></script>
-  </body>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>يمن ريتغ | YEMEN RATING</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-black: #000000;
+      --bg-card: #121217;
+      --bg-card-inner: #181822;
+      --bg-input: #15151C;
+      
+      --gold: #FFB800;
+      --gold-hover: #E5A600;
+      --gold-dim: rgba(255, 184, 0, 0.14);
+      --gold-border: rgba(255, 184, 0, 0.35);
+      
+      --text: #FFFFFF;
+      --text-gray: #8E8E93;
+      --text-muted: #636366;
+      
+      --border: #20202A;
+      
+      --green: #10B981;
+      --green-dim: rgba(16, 185, 129, 0.16);
+      --red: #EF4444;
+      --orange: #FF5722;
+      
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-black); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+    .svg-icon { display: inline-block; width: 1.15em; height: 1.15em; fill: currentColor; vertical-align: -0.15em; flex-shrink: 0; }
+
+    /* الهيدر الرسمي المطابق تماماً للصورة بدون ساعة رقمية */
+    .main-app-header {
+      height: 60px; background: #000000; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem;
+      position: sticky; top: 0; z-index: 1000;
+    }
+    .header-logo-wrap { display: flex; align-items: center; gap: 8px; text-align: center; }
+    .header-logo-text-col { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+    .header-logo-text-col span.ar-title { font-size: 1.05rem; font-weight: 900; color: #FFF; letter-spacing: 0.5px; }
+    .header-logo-text-col span.en-title { font-size: 0.55rem; font-weight: 800; color: #FFF; letter-spacing: 1px; }
+    .header-logo-wrap svg.star-logo { width: 22px; height: 22px; fill: var(--gold); }
+
+    /* مساحة المحتوى */
+    .page-main-container { padding: 1rem 1.1rem; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; margin-bottom: 75px; }
+
+    .tab-view-section { display: none; animation: fadeIn 0.2s ease; }
+    .tab-view-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* شريط البحث وتحديد الموقع */
+    .home-search-box { position: relative; margin-bottom: 0.6rem; }
+    .home-search-box input {
+      width: 100%; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 0.75rem 2.6rem 0.75rem 1rem; color: #FFF; font-size: 0.8rem;
+    }
+    .home-search-box input:focus { outline: none; border-color: var(--gold); }
+    .home-search-box svg { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-gray); width: 16px; height: 16px; }
+
+    .location-selector-bar {
+      display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-gray);
+      margin-bottom: 1.1rem; font-weight: 700;
+    }
+    .location-selector-bar svg { color: var(--gold); width: 14px; height: 14px; }
+
+    /* البانر الترويجي (Hero Banner) */
+    .hero-banner-card {
+      height: 160px; border-radius: var(--radius-lg);
+      background: linear-gradient(to left, rgba(0,0,0,0.85), rgba(0,0,0,0.25)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800') center/cover;
+      padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between;
+      border: 1px solid var(--border); margin-bottom: 1.4rem; position: relative;
+    }
+    .hero-banner-title { font-size: 1.15rem; font-weight: 900; color: #FFF; line-height: 1.2; }
+    .hero-banner-sub { font-size: 0.72rem; color: var(--text-gray); max-width: 75%; margin-top: 4px; }
+    .btn-hero-cta {
+      background: var(--gold); color: #000; font-weight: 900; font-size: 0.75rem;
+      padding: 0.45rem 1.1rem; border-radius: var(--radius-md); border: none; cursor: pointer;
+      width: fit-content; margin-top: 8px; transition: 0.2s;
+    }
+    .hero-dots-indicator { display: flex; gap: 4px; position: absolute; bottom: 12px; left: 16px; }
+    .hero-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.4); }
+    .hero-dot.active { width: 14px; border-radius: 4px; background: var(--gold); }
+
+    /* التصنيفات الرئيسية الـ 5 */
+    .section-title-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
+    .section-title-text { font-size: 0.92rem; font-weight: 900; color: #FFF; }
+    .section-view-all { font-size: 0.72rem; color: var(--gold); cursor: pointer; font-weight: 700; }
+
+    .categories-5-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 1.4rem; }
+    .category-box-item {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 0.75rem 0.2rem; text-align: center; cursor: pointer; transition: 0.2s;
+    }
+    .category-box-item:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .category-box-icon {
+      width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card-inner);
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; color: var(--gold);
+    }
+    .category-box-icon svg { width: 18px; height: 18px; fill: var(--gold); }
+    .category-box-label { font-size: 0.65rem; font-weight: 700; color: var(--text); white-space: nowrap; }
+
+    /* قسم الأعلى تقييماً */
+    .horizontal-cards-scroll { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.4rem; }
+    .rated-business-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      overflow: hidden; cursor: pointer; transition: 0.2s;
+    }
+    .rated-business-card:hover { border-color: var(--gold); }
+    .rated-card-img { height: 95px; background-size: cover; background-position: center; position: relative; }
+    .rated-card-badge {
+      position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+      padding: 2px 6px; border-radius: 6px; font-size: 0.68rem; font-weight: 900; color: var(--gold);
+      display: flex; align-items: center; gap: 3px;
+    }
+    .rated-card-badge svg { width: 10px; height: 10px; fill: var(--gold); }
+    .rated-card-info { padding: 0.55rem; }
+    .rated-card-name { font-size: 0.78rem; font-weight: 800; color: #FFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rated-card-meta { font-size: 0.65rem; color: var(--text-gray); margin-top: 2px; }
+
+    /* قسم الترند الآن */
+    .trending-3-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.4rem; }
+    .trending-card-item {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      overflow: hidden; cursor: pointer;
+    }
+    .trending-card-img { height: 90px; background-size: cover; background-position: center; position: relative; }
+    .trending-flame-pill {
+      position: absolute; bottom: 6px; left: 6px; background: rgba(0,0,0,0.85);
+      padding: 2px 6px; border-radius: 10px; font-size: 0.65rem; font-weight: 800; color: #FFF; display: flex; align-items: center; gap: 3px;
+    }
+    .trending-flame-pill svg { width: 12px; height: 12px; fill: var(--orange); }
+    .trending-card-details { padding: 0.55rem; }
+    .trending-card-title { font-size: 0.75rem; font-weight: 800; color: #FFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .trending-card-type { font-size: 0.65rem; color: var(--text-gray); }
+
+    /* ويدجت أسعار العملات والذهب */
+    .rates-widget-box {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 1.1rem; margin-bottom: 1.4rem;
+    }
+    .rates-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 0.6rem; }
+    .rate-mini-card {
+      background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 0.65rem 0.4rem; text-align: center;
+    }
+    .rate-mini-title { font-size: 0.68rem; font-weight: 800; color: var(--gold); margin-bottom: 4px; }
+    .rate-mini-values { font-size: 0.75rem; font-weight: 900; color: #FFF; }
+    .rate-mini-sub { font-size: 0.6rem; color: var(--text-gray); margin-top: 2px; }
+
+    /* آخر التقييمات */
+    .review-mini-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 0.85rem; display: flex; gap: 10px; align-items: center; margin-bottom: 1.2rem;
+    }
+    .review-biz-thumb { width: 48px; height: 48px; border-radius: 10px; background-size: cover; background-position: center; flex-shrink: 0; }
+
+    /* شاشات الأسعار والترند والمزيد */
+    .screen-title-header { font-size: 1.1rem; font-weight: 900; color: #FFF; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; }
+    .subtabs-bar-line { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+    .subtab-link-btn { flex: 1; padding: 0.6rem; text-align: center; font-size: 0.8rem; font-weight: 800; color: var(--text-gray); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
+    .subtab-link-btn.active { color: var(--gold); border-color: var(--gold); }
+
+    .price-row-item {
+      display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.1rem;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px;
+    }
+    .price-sparkline-canvas { width: 70px; height: 24px; }
+
+    .trend-ranked-row {
+      display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px;
+    }
+    .trend-rank-circle {
+      width: 26px; height: 26px; border-radius: 50%; background: var(--gold); color: #000;
+      display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.75rem; margin-left: 10px; flex-shrink: 0;
+    }
+    .trend-thumb-img { width: 38px; height: 38px; border-radius: 8px; background-size: cover; background-position: center; margin-left: 10px; flex-shrink: 0; }
+
+    .more-menu-row {
+      display: flex; justify-content: space-between; align-items: center; padding: 0.95rem 1rem;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; cursor: pointer;
+    }
+    .more-menu-row span { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.82rem; }
+    .more-menu-row span svg { color: var(--gold); width: 16px; height: 16px; }
+
+    /* سويتش الوضع الليلي */
+    .toggle-night-wrap { position: relative; width: 44px; height: 24px; }
+    .toggle-night-wrap input { opacity: 0; width: 0; height: 0; }
+    .slider-night { position: absolute; inset: 0; cursor: pointer; background: #2A2A2A; border-radius: 24px; transition: 0.25s; }
+    .slider-night:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.25s; }
+    input:checked + .slider-night { background: var(--gold); }
+    input:checked + .slider-night:before { transform: translateX(20px); background: #000; }
+
+    /* شريط التنقل السفلي الخماسي */
+    .bottom-app-nav-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 62px; background: #0A0A0D;
+      border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000;
+    }
+    .bottom-nav-link {
+      background: none; border: none; color: var(--text-gray); font-size: 0.68rem; font-weight: 700;
+      display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
+    }
+    .bottom-nav-link.active { color: var(--gold); font-weight: 900; }
+    .bottom-nav-link svg { width: 18px; height: 18px; fill: currentColor; }
+    .bottom-center-add-fab {
+      width: 46px; height: 46px; border-radius: 50%; background: var(--gold); color: #000;
+      display: flex; align-items: center; justify-content: center; margin-top: -24px;
+      box-shadow: 0 4px 18px rgba(255, 184, 0, 0.4); border: 3px solid #000; cursor: pointer;
+    }
+    .bottom-center-add-fab svg { width: 22px; height: 22px; fill: #000; }
+  </style>
+</head>
+<body>
+
+  <!-- الهيدر الرسمي المطابق للصورة تماماً (بدون ساعة رقمية) -->
+  <header class="main-app-header">
+    <div style="cursor: pointer;" onclick="alert('الإشعارات')">
+      <svg class="svg-icon" style="color: var(--gold); width: 20px; height: 20px;" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+    </div>
+    <div class="header-logo-wrap">
+      <div class="header-logo-text-col">
+        <span class="ar-title">يمن ريتغ</span>
+        <span class="en-title">YEMEN RATING</span>
+      </div>
+      <svg class="star-logo" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+    </div>
+    <div style="cursor: pointer;" onclick="switchAppTab('more', document.querySelectorAll('.bottom-nav-link')[4])">
+      <svg class="svg-icon" style="color: #FFF; width: 22px; height: 22px;" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+    </div>
+  </header>
+
+  <!-- مساحة المحتوى -->
+  <main class="page-main-container">
+
+    <!-- ==================== 1. تبويب الرئيسية (Home Screen) ==================== -->
+    <div id="app-tab-home" class="tab-view-section active">
+      
+      <!-- شريط البحث ومحدد الموقع -->
+      <div class="home-search-box">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input type="text" placeholder="ابحث عن نشاط أو شركة أو خدمة...">
+      </div>
+
+      <div class="location-selector-bar">
+        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        <span>اليمن، صنعاء</span>
+      </div>
+
+      <!-- البانر الترويجي -->
+      <div class="hero-banner-card">
+        <div>
+          <div class="hero-banner-title">اكتشف الأفضل</div>
+          <div class="hero-banner-sub">تقييمات حقيقية من المجتمع لأفضل الشركات والخدمات</div>
+          <button class="btn-hero-cta" onclick="switchAppTab('prices', document.querySelectorAll('.bottom-nav-link')[1])">استكشف الآن</button>
+        </div>
+        <div class="hero-dots-indicator">
+          <div class="hero-dot active"></div>
+          <div class="hero-dot"></div>
+          <div class="hero-dot"></div>
+          <div class="hero-dot"></div>
+          <div class="hero-dot"></div>
+        </div>
+      </div>
+
+      <!-- التصنيفات الرئيسية الـ 5 -->
+      <div class="section-title-line">
+        <span class="section-title-text">التصنيفات الرئيسية</span>
+        <span class="section-view-all">عرض الكل</span>
+      </div>
+
+      <div class="categories-5-grid">
+        <div class="category-box-item" onclick="switchAppTab('trend', document.querySelectorAll('.bottom-nav-link')[3])">
+          <div class="category-box-icon">
+            <svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>
+          </div>
+          <div class="category-box-label">مطاعم ومقاهي</div>
+        </div>
+
+        <div class="category-box-item">
+          <div class="category-box-icon">
+            <svg viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.04 3H5.81l1.04-3zM19 17H5v-4.66l.12-.34h13.77l.11.34V17z"/><circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/></svg>
+          </div>
+          <div class="category-box-label">سيارات</div>
+        </div>
+
+        <div class="category-box-item">
+          <div class="category-box-icon">
+            <svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.1-.9-2-2-2zm-6 0h-4V4h4v2z"/></svg>
+          </div>
+          <div class="category-box-label">خدمات</div>
+        </div>
+
+        <div class="category-box-item">
+          <div class="category-box-icon">
+            <svg viewBox="0 0 24 24"><path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h4v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z"/></svg>
+          </div>
+          <div class="category-box-label">متاجر</div>
+        </div>
+
+        <div class="category-box-item">
+          <div class="category-box-icon">
+            <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+          </div>
+          <div class="category-box-label">صحة وجمال</div>
+        </div>
+      </div>
+
+      <!-- الأعلى تقييماً -->
+      <div class="section-title-line">
+        <span class="section-title-text">الأعلى تقييماً</span>
+        <span class="section-view-all">عرض الكل</span>
+      </div>
+
+      <div class="horizontal-cards-scroll">
+        <div class="rated-business-card">
+          <div class="rated-card-img" style="background-image: url('https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=300');">
+            <div class="rated-card-badge">
+              <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <span>4.7</span>
+            </div>
+          </div>
+          <div class="rated-card-info">
+            <div class="rated-card-name">مطعم حضرموت</div>
+            <div class="rated-card-meta">مطاعم ومقاهي • صنعاء</div>
+          </div>
+        </div>
+
+        <div class="rated-business-card">
+          <div class="rated-card-img" style="background-image: url('https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=300');">
+            <div class="rated-card-badge">
+              <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <span>4.6</span>
+            </div>
+          </div>
+          <div class="rated-card-info">
+            <div class="rated-card-name">هايبر بلس</div>
+            <div class="rated-card-meta">متاجر • صنعاء</div>
+          </div>
+        </div>
+
+        <div class="rated-business-card">
+          <div class="rated-card-img" style="background-image: url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=300');">
+            <div class="rated-card-badge">
+              <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <span>4.8</span>
+            </div>
+          </div>
+          <div class="rated-card-info">
+            <div class="rated-card-name">خدمات الخليج</div>
+            <div class="rated-card-meta">خدمات • صنعاء</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- الترند الآن مع اللهب -->
+      <div class="section-title-line">
+        <span class="section-title-text">الترند الآن</span>
+        <span class="section-view-all" onclick="switchAppTab('trend', document.querySelectorAll('.bottom-nav-link')[3])">عرض الكل</span>
+      </div>
+
+      <div class="trending-3-grid">
+        <div class="trending-card-item" onclick="switchAppTab('trend', document.querySelectorAll('.bottom-nav-link')[3])">
+          <div class="trending-card-img" style="background-image: url('https://images.unsplash.com/photo-1544025162-d76694265947?w=300');">
+            <div class="trending-flame-pill">
+              <svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+              <span>125</span>
+            </div>
+          </div>
+          <div class="trending-card-details">
+            <div class="trending-card-title">مطعم البيت اليمني</div>
+            <div class="trending-card-type">مطاعم ومقاهي</div>
+          </div>
+        </div>
+
+        <div class="trending-card-item" onclick="switchAppTab('trend', document.querySelectorAll('.bottom-nav-link')[3])">
+          <div class="trending-card-img" style="background-image: url('https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?w=300');">
+            <div class="trending-flame-pill">
+              <svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+              <span>98</span>
+            </div>
+          </div>
+          <div class="trending-card-details">
+            <div class="trending-card-title">متجر العصرية</div>
+            <div class="trending-card-type">متاجر</div>
+          </div>
+        </div>
+
+        <div class="trending-card-item" onclick="switchAppTab('trend', document.querySelectorAll('.bottom-nav-link')[3])">
+          <div class="trending-card-img" style="background-image: url('https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=300');">
+            <div class="trending-flame-pill">
+              <svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+              <span>76</span>
+            </div>
+          </div>
+          <div class="trending-card-details">
+            <div class="trending-card-title">غسيل حريري</div>
+            <div class="trending-card-type">خدمات</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ويدجت أسعار العملات والذهب -->
+      <div class="section-title-line">
+        <span class="section-title-text">أسعار العملات والذهب</span>
+        <span class="section-view-all" onclick="switchAppTab('prices', document.querySelectorAll('.bottom-nav-link')[1])">عرض الكل</span>
+      </div>
+
+      <div class="rates-widget-box">
+        <div class="rates-3col-grid">
+          <div class="rate-mini-card">
+            <div class="rate-mini-title">الذهب عيار 21</div>
+            <div class="rate-mini-values">43,500 / 42,500</div>
+            <div class="rate-mini-sub">ريال يمني / جرام</div>
+          </div>
+          <div class="rate-mini-card">
+            <div class="rate-mini-title">دولار أمريكي</div>
+            <div class="rate-mini-values">1,540 / 1,530</div>
+            <div class="rate-mini-sub">ريال يمني</div>
+          </div>
+          <div class="rate-mini-card">
+            <div class="rate-mini-title">ريال سعودي</div>
+            <div class="rate-mini-values">410 / 418</div>
+            <div class="rate-mini-sub">ريال يمني</div>
+          </div>
+        </div>
+        <div style="font-size: 0.65rem; color: var(--text-muted); text-align: center; margin-top: 8px;">آخر تحديث : منذ 5 دقائق</div>
+      </div>
+
+      <!-- آخر التقييمات -->
+      <div class="section-title-line">
+        <span class="section-title-text">آخر التقييمات</span>
+      </div>
+
+      <div class="review-mini-card">
+        <div class="review-biz-thumb" style="background-image: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=100');"></div>
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong style="font-size: 0.8rem; color: #FFF;">أبو محمد</strong>
+            <span style="color: var(--gold); font-size: 0.72rem;">★★★★★</span>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-gray); margin-top: 2px;">تجربة رائعة وجودة ممتازة وتعامل راقي</div>
+          <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 2px;">منذ ساعتين</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==================== 2. تبويب الأسعار (Prices Screen) ==================== -->
+    <div id="app-tab-prices" class="tab-view-section">
+      <div class="screen-title-header">
+        <span>الأسعار</span>
+        <svg class="svg-icon" style="cursor: pointer;" onclick="switchAppTab('home', document.querySelectorAll('.bottom-nav-link')[0])" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </div>
+
+      <div class="subtabs-bar-line">
+        <button class="subtab-link-btn active">العملات</button>
+        <button class="subtab-link-btn">الذهب</button>
+      </div>
+
+      <div class="price-row-item">
+        <div>
+          <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">دولار أمريكي (USD) 🇺🇸</div>
+          <div style="font-size: 0.7rem; color: var(--green);">▲ شراء 1,530 / بيع 1,540</div>
+        </div>
+        <div style="text-align: left;">
+          <div style="font-weight: 900; color: var(--gold); font-size: 0.95rem;">1,540 ريال</div>
+          <canvas class="price-sparkline-canvas" id="sparklineUSD"></canvas>
+        </div>
+      </div>
+
+      <div class="price-row-item">
+        <div>
+          <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">ريال سعودي (SAR) 🇸🇦</div>
+          <div style="font-size: 0.7rem; color: var(--green);">▲ شراء 408 / بيع 410</div>
+        </div>
+        <div style="text-align: left;">
+          <div style="font-weight: 900; color: var(--gold); font-size: 0.95rem;">410 ريال</div>
+          <canvas class="price-sparkline-canvas" id="sparklineSAR"></canvas>
+        </div>
+      </div>
+
+      <div class="price-row-item">
+        <div>
+          <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">درهم إماراتي (AED) 🇦🇪</div>
+          <div style="font-size: 0.7rem; color: var(--text-gray);">شراء 417 / بيع 419</div>
+        </div>
+        <div style="text-align: left;">
+          <div style="font-weight: 900; color: var(--gold); font-size: 0.95rem;">419 ريال</div>
+          <canvas class="price-sparkline-canvas" id="sparklineAED"></canvas>
+        </div>
+      </div>
+
+      <div class="price-row-item">
+        <div>
+          <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">يورو (EUR) 🇪🇺</div>
+          <div style="font-size: 0.7rem; color: var(--text-gray);">شراء 1,670 / بيع 1,670</div>
+        </div>
+        <div style="text-align: left;">
+          <div style="font-weight: 900; color: var(--gold); font-size: 0.95rem;">1,670 ريال</div>
+          <canvas class="price-sparkline-canvas" id="sparklineEUR"></canvas>
+        </div>
+      </div>
+
+      <div style="font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-top: 1rem;">آخر تحديث: منذ 5 دقائق</div>
+    </div>
+
+    <!-- ==================== 3. تبويب الترند (Trending Screen) ==================== -->
+    <div id="app-tab-trend" class="tab-view-section">
+      <div class="screen-title-header">
+        <span>الترند</span>
+        <svg class="svg-icon" style="cursor: pointer;" onclick="switchAppTab('home', document.querySelectorAll('.bottom-nav-link')[0])" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </div>
+
+      <div class="subtabs-bar-line">
+        <button class="subtab-link-btn active">الكل</button>
+        <button class="subtab-link-btn">مطاعم</button>
+        <button class="subtab-link-btn">متاجر</button>
+        <button class="subtab-link-btn">خدمات</button>
+      </div>
+
+      <div class="trend-ranked-row">
+        <div style="display: flex; align-items: center;">
+          <div class="trend-rank-circle">1</div>
+          <div class="trend-thumb-img" style="background-image: url('https://images.unsplash.com/photo-1544025162-d76694265947?w=100');"></div>
+          <div>
+            <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">مطعم البيت اليمني</div>
+            <div style="font-size: 0.7rem; color: var(--text-gray);">مطاعم ومقاهي</div>
+          </div>
+        </div>
+        <div style="font-weight: 900; color: #FFF; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;">
+          <svg class="svg-icon" style="color: var(--orange); width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+          <span>125</span>
+        </div>
+      </div>
+
+      <div class="trend-ranked-row">
+        <div style="display: flex; align-items: center;">
+          <div class="trend-rank-circle">2</div>
+          <div class="trend-thumb-img" style="background-image: url('https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?w=100');"></div>
+          <div>
+            <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">متجر العصرية</div>
+            <div style="font-size: 0.7rem; color: var(--text-gray);">متاجر</div>
+          </div>
+        </div>
+        <div style="font-weight: 900; color: #FFF; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;">
+          <svg class="svg-icon" style="color: var(--orange); width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+          <span>98</span>
+        </div>
+      </div>
+
+      <div class="trend-ranked-row">
+        <div style="display: flex; align-items: center;">
+          <div class="trend-rank-circle">3</div>
+          <div class="trend-thumb-img" style="background-image: url('https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=100');"></div>
+          <div>
+            <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">غسيل حريري</div>
+            <div style="font-size: 0.7rem; color: var(--text-gray);">خدمات</div>
+          </div>
+        </div>
+        <div style="font-weight: 900; color: #FFF; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;">
+          <svg class="svg-icon" style="color: var(--orange); width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+          <span>76</span>
+        </div>
+      </div>
+
+      <div class="trend-ranked-row">
+        <div style="display: flex; align-items: center;">
+          <div class="trend-rank-circle">4</div>
+          <div class="trend-thumb-img" style="background-image: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=100');"></div>
+          <div>
+            <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">كوفي زمان</div>
+            <div style="font-size: 0.7rem; color: var(--text-gray);">مطاعم ومقاهي</div>
+          </div>
+        </div>
+        <div style="font-weight: 900; color: #FFF; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;">
+          <svg class="svg-icon" style="color: var(--orange); width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+          <span>65</span>
+        </div>
+      </div>
+
+      <div class="trend-ranked-row">
+        <div style="display: flex; align-items: center;">
+          <div class="trend-rank-circle">5</div>
+          <div class="trend-thumb-img" style="background-image: url('https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?w=100');"></div>
+          <div>
+            <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">صيدلية الحكمة</div>
+            <div style="font-size: 0.7rem; color: var(--text-gray);">صحة وجمال</div>
+          </div>
+        </div>
+        <div style="font-weight: 900; color: #FFF; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;">
+          <svg class="svg-icon" style="color: var(--orange); width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+          <span>54</span>
+        </div>
+      </div>
+
+      <div style="text-align: center; color: var(--gold); font-size: 0.75rem; font-weight: 800; margin-top: 1rem; cursor: pointer;">عرض المزيد</div>
+    </div>
+
+    <!-- ==================== 4. تبويب المزيد (More Screen) ==================== -->
+    <div id="app-tab-more" class="tab-view-section">
+      <div class="screen-title-header">
+        <span>المزيد</span>
+        <svg class="svg-icon" style="cursor: pointer;" onclick="switchAppTab('home', document.querySelectorAll('.bottom-nav-link')[0])" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </div>
+
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <div>
+          <div style="font-weight: 900; font-size: 0.95rem; color: #FFF;">الملف الشخصي</div>
+          <div style="font-size: 0.75rem; color: var(--gold); cursor: pointer; margin-top: 2px;">سجل الدخول / إنشاء حساب</div>
+        </div>
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--bg-card-inner); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;">
+          <svg class="svg-icon" style="width: 22px; height: 22px; fill: var(--text-gray);" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
+      </div>
+
+      <div class="more-menu-row"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10z"/></svg> نشاطاتي</span> <svg class="svg-icon" style="width: 14px; height: 14px; color: var(--text-muted);" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+      <div class="more-menu-row"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> تقييماتي</span> <svg class="svg-icon" style="width: 14px; height: 14px; color: var(--text-muted);" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+      <div class="more-menu-row"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> المفضلة</span> <svg class="svg-icon" style="width: 14px; height: 14px; color: var(--text-muted);" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+      <div class="more-menu-row"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg> الإشعارات</span> <svg class="svg-icon" style="width: 14px; height: 14px; color: var(--text-muted);" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+      <div class="more-menu-row"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg> مشاركة التطبيق</span> <svg class="svg-icon" style="width: 14px; height: 14px; color: var(--text-muted);" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+      <div class="more-menu-row"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg> عن يمن ريتغ</span> <svg class="svg-icon" style="width: 14px; height: 14px; color: var(--text-muted);" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+      <div class="more-menu-row"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg> الإعدادات</span> <svg class="svg-icon" style="width: 14px; height: 14px; color: var(--text-muted);" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+      <div class="more-menu-row"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/></svg> المساعدة والدعم</span> <svg class="svg-icon" style="width: 14px; height: 14px; color: var(--text-muted);" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+
+      <!-- الوضع الليلي -->
+      <div class="more-menu-row" style="margin-top: 10px;">
+        <span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg> الوضع الليلي</span>
+        <label class="toggle-night-wrap"><input type="checkbox" checked><span class="slider-night"></span></label>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- شريط التنقل السفلي الخماسي المطابق للصورة تماماً -->
+  <nav class="bottom-app-nav-bar">
+    <button class="bottom-nav-link active" onclick="switchAppTab('home', this)">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span>الرئيسية</span>
+    </button>
+
+    <button class="bottom-nav-link" onclick="switchAppTab('prices', this)">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg>
+      <span>الأسعار</span>
+    </button>
+
+    <div class="bottom-center-add-fab" onclick="alert('إضافة نشاط جديد')">
+      <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+    </div>
+
+    <button class="bottom-nav-link" onclick="switchAppTab('trend', this)">
+      <svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+      <span>الترند</span>
+    </button>
+
+    <button class="bottom-nav-link" onclick="switchAppTab('more', this)">
+      <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+      <span>المزيد</span>
+    </button>
+  </nav>
+
+  <script>
+    function switchAppTab(tabKey, btnElement) {
+      document.querySelectorAll('.tab-view-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.bottom-nav-link').forEach(b => b.classList.remove('active'));
+
+      const target = document.getElementById('app-tab-' + tabKey);
+      if (target) target.classList.add('active');
+
+      if (btnElement && btnElement.classList) {
+        btnElement.classList.add('active');
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (tabKey === 'prices') {
+        drawSparklines();
+      }
+    }
+
+    function drawSparklines() {
+      ['USD', 'SAR', 'AED', 'EUR'].forEach(cur => {
+        const c = document.getElementById('sparkline' + cur);
+        if (!c) return;
+        const ctx = c.getContext('2d');
+        c.width = 70; c.height = 24;
+        ctx.strokeStyle = '#10B981';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(2, 18);
+        ctx.lineTo(20, 14);
+        ctx.lineTo(35, 16);
+        ctx.lineTo(50, 8);
+        ctx.lineTo(68, 4);
+        ctx.stroke();
+      });
+    }
+  </script>
+</body>
 </html>
