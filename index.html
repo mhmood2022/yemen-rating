@@ -42,7 +42,7 @@
 
     .svg-icon { display: inline-block; width: 1.15em; height: 1.15em; fill: currentColor; vertical-align: -0.15em; flex-shrink: 0; }
 
-    /* الهيدر الرسمي المحدث */
+    /* الهيدر الرسمي */
     .main-app-header {
       height: 58px; background: #000000; border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between; padding: 0 1rem;
@@ -113,26 +113,59 @@
     .hero-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.4); }
     .hero-dot.active { width: 12px; border-radius: 3px; background: var(--gold); }
 
-    /* التصنيفات الرئيسية */
+    /* 2. توحيد مربعات التصنيفات الرئيسية وتكبير الرموز */
     .section-title-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.7rem; }
     .section-title-text { font-size: 0.9rem; font-weight: 900; color: #FFF; }
     .section-view-all { font-size: 0.75rem; color: var(--gold); cursor: pointer; font-weight: 800; }
 
-    .categories-5-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; margin-bottom: 1.25rem; }
+    .categories-5-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px;
+      margin-bottom: 1.25rem;
+      align-items: stretch;
+    }
     .category-box-item {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      height: 78px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 0.4rem 0.15rem; text-align: center; cursor: pointer; transition: 0.2s;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      height: 82px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.35rem 0.1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+      overflow: hidden;
     }
     .category-box-item:hover { border-color: var(--gold); transform: translateY(-2px); }
     .category-box-icon {
-      width: 34px; height: 34px; border-radius: 9px; background: var(--bg-card-inner);
-      display: flex; align-items: center; justify-content: center; margin-bottom: 4px; color: var(--gold); flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: var(--bg-card-inner);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 4px;
+      color: var(--gold);
+      flex-shrink: 0;
     }
-    .category-box-icon svg { width: 17px; height: 17px; fill: var(--gold); }
-    .category-box-label { font-size: 0.64rem; font-weight: 800; color: var(--text); white-space: nowrap; }
+    .category-box-icon svg { width: 22px; height: 22px; fill: var(--gold); }
+    .category-box-label {
+      font-size: 0.62rem;
+      font-weight: 800;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      padding: 0 1px;
+    }
 
-    /* الأعلى تقييماً */
+    /* قسم الأعلى تقييماً */
     .horizontal-cards-scroll { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 1.25rem; }
     .rated-business-card {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
@@ -150,35 +183,77 @@
     .rated-card-name { font-size: 0.76rem; font-weight: 800; color: #FFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .rated-card-meta { font-size: 0.63rem; color: var(--text-gray); margin-top: 1px; }
 
-    /* الترند الآن */
+    /* 3. قسم الترند الآن ورفع الشعلة إلى الأعلى */
     .trending-3-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 1.25rem; }
     .trending-card-item {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
       overflow: hidden; cursor: pointer;
     }
     .trending-card-img { height: 86px; background-size: cover; background-position: center; position: relative; }
+    /* رفع شارة الترند إلى أعلى الصورة */
     .trending-flame-pill {
-      position: absolute; bottom: 5px; left: 5px; background: rgba(0,0,0,0.85);
-      padding: 2px 5px; border-radius: 8px; font-size: 0.63rem; font-weight: 800; color: #FFF; display: flex; align-items: center; gap: 3px;
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(4px);
+      padding: 2px 6px;
+      border-radius: 8px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      border: 1px solid rgba(255, 87, 34, 0.35);
+      z-index: 5;
     }
     .trending-flame-pill svg { width: 11px; height: 11px; fill: var(--orange); }
     .trending-card-details { padding: 0.5rem; }
     .trending-card-title { font-size: 0.74rem; font-weight: 800; color: #FFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .trending-card-type { font-size: 0.63rem; color: var(--text-gray); }
 
-    /* ويدجت الأسعار */
+    /* 1. ويدجت الأسعار وتلوين الشراء بالأخضر والبيع بالأحمر */
     .rates-widget-box {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.95rem; margin-bottom: 1.25rem;
+      padding: 0.85rem 0.65rem; margin-bottom: 1.25rem;
     }
-    .rates-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 0.5rem; }
+    .rates-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 0.4rem; }
     .rate-mini-card {
       background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-sm);
-      padding: 0.55rem 0.35rem; text-align: center;
+      padding: 0.5rem 0.25rem; text-align: center; display: flex; flex-direction: column; justify-content: space-between; min-height: 80px;
     }
-    .rate-mini-title { font-size: 0.66rem; font-weight: 800; color: var(--gold); margin-bottom: 3px; }
-    .rate-mini-values { font-size: 0.72rem; font-weight: 900; color: #FFF; }
-    .rate-mini-sub { font-size: 0.58rem; color: var(--text-gray); margin-top: 2px; }
+    .rate-mini-title { font-size: 0.66rem; font-weight: 900; color: var(--gold); margin-bottom: 2px; }
+    
+    .rate-price-pair {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      margin: 2px 0;
+    }
+    .rate-val-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1.1;
+    }
+    .rate-sub-label {
+      font-size: 0.58rem;
+      color: var(--text-gray);
+      font-weight: 700;
+    }
+    .rate-price-buy {
+      font-size: 0.76rem;
+      font-weight: 900;
+      color: var(--green); /* أخضر للشراء */
+    }
+    .rate-price-sell {
+      font-size: 0.76rem;
+      font-weight: 900;
+      color: var(--red); /* أحمر للبيع */
+    }
+    .rate-mini-sub { font-size: 0.56rem; color: var(--text-gray); font-weight: 600; margin-top: 1px; }
 
     /* التقييمات */
     .review-mini-card {
@@ -224,7 +299,7 @@
     input:checked + .slider-night { background: var(--gold); }
     input:checked + .slider-night:before { transform: translateX(18px); background: #000; }
 
-    /* شريط التنقل السفلي المطور: تكبير الأيقونات + إزالة استروك الدائرة وتوسيطها + إضافة أضف نشاطك */
+    /* شريط التنقل السفلي */
     .bottom-app-nav-bar {
       position: fixed; bottom: 0; left: 0; right: 0; height: 62px; background: #0A0A0D;
       border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000;
@@ -234,10 +309,8 @@
       display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; flex: 1;
     }
     .bottom-nav-link.active { color: var(--gold); font-weight: 900; }
-    /* تكبير رموز الأيقونات */
     .bottom-nav-link svg { width: 22px; height: 22px; fill: currentColor; }
     
-    /* مكوّن الزر المركزي الأوسط */
     .bottom-center-add-wrap {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       margin-top: -18px; cursor: pointer; flex: 1;
@@ -245,7 +318,7 @@
     .bottom-center-add-fab {
       width: 48px; height: 48px; border-radius: 50%; background: var(--gold); color: #000;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 18px rgba(255, 184, 0, 0.45); border: none; /* إزالة الاستروك تماماً */
+      box-shadow: 0 4px 18px rgba(255, 184, 0, 0.45); border: none;
       transition: transform 0.2s;
     }
     .bottom-center-add-fab:active { transform: scale(0.94); }
@@ -313,6 +386,7 @@
         </div>
       </div>
 
+      <!-- التصنيفات الرئيسية الـ 5 الموحدة المتطابقة بالمقاس -->
       <div class="section-title-line">
         <span class="section-title-text">التصنيفات الرئيسية</span>
         <span class="section-view-all">عرض الكل</span>
@@ -355,6 +429,7 @@
         </div>
       </div>
 
+      <!-- الأعلى تقييماً -->
       <div class="section-title-line">
         <span class="section-title-text">الأعلى تقييماً</span>
         <span class="section-view-all">عرض الكل</span>
@@ -401,6 +476,7 @@
         </div>
       </div>
 
+      <!-- الترند الآن مع رفع شارة الشعلة إلى الأعلى -->
       <div class="section-title-line">
         <span class="section-title-text">الترند الآن</span>
         <span class="section-view-all" onclick="switchAppTab('trend', document.querySelectorAll('.bottom-nav-link')[2])">عرض الكل</span>
@@ -447,6 +523,7 @@
         </div>
       </div>
 
+      <!-- ويدجت أسعار العملات والذهب: تلوين الشراء بالأخضر والبيع بالأحمر -->
       <div class="section-title-line">
         <span class="section-title-text">أسعار العملات والذهب</span>
         <span class="section-view-all" onclick="switchAppTab('prices', document.querySelectorAll('.bottom-nav-link')[1])">عرض الكل</span>
@@ -454,25 +531,58 @@
 
       <div class="rates-widget-box">
         <div class="rates-3col-grid">
+          <!-- 1. الذهب عيار 21 -->
           <div class="rate-mini-card">
             <div class="rate-mini-title">الذهب عيار 21</div>
-            <div class="rate-mini-values">43,500 / 42,500</div>
+            <div class="rate-price-pair">
+              <div class="rate-val-col">
+                <span class="rate-sub-label">شراء</span>
+                <span class="rate-price-buy">42,500</span>
+              </div>
+              <div class="rate-val-col">
+                <span class="rate-sub-label">بيع</span>
+                <span class="rate-price-sell">43,500</span>
+              </div>
+            </div>
             <div class="rate-mini-sub">ريال يمني / جرام</div>
           </div>
+
+          <!-- 2. دولار أمريكي -->
           <div class="rate-mini-card">
             <div class="rate-mini-title">دولار أمريكي</div>
-            <div class="rate-mini-values">1,540 / 1,530</div>
+            <div class="rate-price-pair">
+              <div class="rate-val-col">
+                <span class="rate-sub-label">شراء</span>
+                <span class="rate-price-buy">1,530</span>
+              </div>
+              <div class="rate-val-col">
+                <span class="rate-sub-label">بيع</span>
+                <span class="rate-price-sell">1,540</span>
+              </div>
+            </div>
             <div class="rate-mini-sub">ريال يمني</div>
           </div>
+
+          <!-- 3. ريال سعودي -->
           <div class="rate-mini-card">
             <div class="rate-mini-title">ريال سعودي</div>
-            <div class="rate-mini-values">410 / 418</div>
+            <div class="rate-price-pair">
+              <div class="rate-val-col">
+                <span class="rate-sub-label">شراء</span>
+                <span class="rate-price-buy">410</span>
+              </div>
+              <div class="rate-val-col">
+                <span class="rate-sub-label">بيع</span>
+                <span class="rate-price-sell">418</span>
+              </div>
+            </div>
             <div class="rate-mini-sub">ريال يمني</div>
           </div>
         </div>
         <div style="font-size: 0.65rem; color: var(--text-muted); text-align: center; margin-top: 8px;">آخر تحديث : منذ 5 دقائق</div>
       </div>
 
+      <!-- آخر التقييمات -->
       <div class="section-title-line">
         <span class="section-title-text">آخر التقييمات</span>
       </div>
@@ -676,7 +786,6 @@
 
   </main>
 
-  <!-- شريط التنقل السفلي المطور: بدون استروك حول الدائرة + توسيط + نص أضف نشاطك + تكبير الرموز -->
   <nav class="bottom-app-nav-bar">
     <button class="bottom-nav-link active" onclick="switchAppTab('home', this)">
       <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -688,7 +797,6 @@
       <span>الأسعار</span>
     </button>
 
-    <!-- الزر المركزي الأوسط: بدون استروك + في السنتر + نص أضف نشاطك -->
     <div class="bottom-center-add-wrap" onclick="alert('أضف نشاطك')">
       <div class="bottom-center-add-fab">
         <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
