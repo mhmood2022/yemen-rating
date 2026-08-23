@@ -19,7 +19,7 @@
       --gold: #FFB800;
       --gold-hover: #E5A600;
       --gold-dim: rgba(255, 184, 0, 0.14);
-      --gold-border: rgba(255, 184, 0, 0.35);
+      --gold-border: rgba(255, 184, 0, 0.3);
       
       --text: #FFFFFF;
       --text-gray: #8E8E93;
@@ -28,312 +28,307 @@
       --border: #20202A;
       
       --green: #10B981;
-      --green-dim: rgba(16, 185, 129, 0.16);
+      --green-dim: rgba(16, 185, 129, 0.15);
       --red: #EF4444;
-      --red-dim: rgba(239, 68, 68, 0.16);
+      --red-dim: rgba(239, 68, 68, 0.15);
       --orange: #FF5722;
       --blue: #1D9BF0;
       
       --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
+      --radius-md: 11px;
+      --radius-lg: 14px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-black); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
 
-    .svg-icon { display: inline-block; width: 1.15em; height: 1.15em; fill: currentColor; vertical-align: -0.15em; flex-shrink: 0; }
+    .svg-icon { display: inline-block; width: 1.1em; height: 1.1em; fill: currentColor; vertical-align: -0.15em; flex-shrink: 0; }
 
     /* الهيدر الموحد */
     .main-app-header {
-      height: 58px; background: #000000; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 1rem;
+      height: 54px; background: #000000; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 0.9rem;
       position: sticky; top: 0; z-index: 1000;
     }
     
-    .header-right-side { display: flex; align-items: center; gap: 10px; }
-    .header-menu-btn { background: none; border: none; cursor: pointer; color: #FFF; display: flex; align-items: center; justify-content: center; padding: 4px; }
+    .header-right-side { display: flex; align-items: center; gap: 8px; }
+    .header-menu-btn { background: none; border: none; cursor: pointer; color: #FFF; display: flex; align-items: center; justify-content: center; padding: 3px; }
     .header-menu-btn:hover { color: var(--gold); }
-    .header-logo-wrap { display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer; }
+    .header-logo-wrap { display: flex; align-items: center; gap: 7px; text-decoration: none; cursor: pointer; }
     
     .star-logo-hollow {
-      width: 22px; height: 22px; stroke: var(--gold); fill: none; stroke-width: 2.2;
-      filter: drop-shadow(0 0 3px rgba(255, 184, 0, 0.35)); flex-shrink: 0;
+      width: 20px; height: 20px; stroke: var(--gold); fill: none; stroke-width: 2.2;
+      filter: drop-shadow(0 0 3px rgba(255, 184, 0, 0.3)); flex-shrink: 0;
     }
     
-    .header-logo-text-col { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
-    .header-logo-text-col span.ar-title { font-size: 1.05rem; font-weight: 900; color: #FFF; letter-spacing: 0.5px; line-height: 1.1; }
-    .header-logo-text-col span.en-title { font-size: 0.62rem; font-weight: 900; color: var(--gold); letter-spacing: 1.5px; line-height: 1; }
+    .header-logo-text-col { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+    .header-logo-text-col span.ar-title { font-size: 0.95rem; font-weight: 900; color: #FFF; letter-spacing: 0.3px; line-height: 1; }
+    .header-logo-text-col span.en-title { font-size: 0.58rem; font-weight: 900; color: var(--gold); letter-spacing: 1.2px; line-height: 1; }
 
     .header-left-side { display: flex; align-items: center; }
     .header-bell-btn {
-      width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card);
+      width: 34px; height: 34px; border-radius: 50%; background: var(--bg-card);
       border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
       color: var(--gold); cursor: pointer; position: relative; transition: 0.2s;
     }
-    .header-bell-btn:hover { background: var(--bg-card-inner); border-color: var(--gold); }
-    .header-bell-dot { position: absolute; top: 7px; right: 8px; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+    .header-bell-dot { position: absolute; top: 6px; right: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--gold); }
 
-    /* مساحة المحتوى */
-    .page-main-container { padding: 0.85rem 1rem; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; margin-bottom: 75px; }
+    /* مساحة المحتوى والشاشات */
+    .page-main-container { padding: 0.75rem 0.85rem; max-width: 540px; margin: 0 auto; width: 100%; flex: 1; margin-bottom: 70px; }
+    .app-screen-view { display: none; animation: fadeIn 0.18s ease; }
+    .app-screen-view.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
 
-    .tab-view-section { display: none; animation: fadeIn 0.2s ease; }
-    .tab-view-section.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .screen-top-bar { font-size: 0.95rem; font-weight: 900; color: #FFF; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    .back-btn-icon { cursor: pointer; display: flex; align-items: center; gap: 4px; color: var(--gold); font-size: 0.75rem; font-weight: 800; }
 
-    /* شريط البحث */
-    .home-search-box { position: relative; margin-bottom: 0.45rem; }
+    /* شريط البحث المدمج */
+    .home-search-box { position: relative; margin-bottom: 0.4rem; }
     .home-search-box input {
-      width: 100%; height: 40px; background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-md); padding: 0 2.4rem 0 0.85rem; color: #FFF; font-size: 0.78rem;
+      width: 100%; height: 36px; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 0 2.2rem 0 0.75rem; color: #FFF; font-size: 0.74rem;
     }
     .home-search-box input:focus { outline: none; border-color: var(--gold); }
-    .home-search-box svg { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-gray); width: 15px; height: 15px; }
+    .home-search-box svg { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--text-gray); width: 14px; height: 14px; }
 
     .location-selector-bar {
-      display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: var(--text-gray);
-      margin-bottom: 0.9rem; font-weight: 700;
+      display: flex; align-items: center; gap: 4px; font-size: 0.67rem; color: var(--text-gray);
+      margin-bottom: 0.75rem; font-weight: 700;
     }
-    .location-selector-bar svg { color: var(--gold); width: 13px; height: 13px; }
+    .location-selector-bar svg { color: var(--gold); width: 12px; height: 12px; }
 
-    /* البانر الترويجي */
+    /* البانر الترويجي المصغر */
     .hero-banner-card {
-      height: 132px; border-radius: var(--radius-md);
-      background: linear-gradient(to left, rgba(0,0,0,0.9), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800') center/cover;
-      padding: 0.85rem 1rem; display: flex; flex-direction: column; justify-content: space-between;
-      border: 1px solid var(--border); margin-bottom: 1.1rem; position: relative;
+      height: 125px; border-radius: var(--radius-md);
+      background: linear-gradient(to left, rgba(0,0,0,0.92), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800') center/cover;
+      padding: 0.75rem 0.85rem; display: flex; flex-direction: column; justify-content: space-between;
+      border: 1px solid var(--border); margin-bottom: 0.95rem; position: relative;
     }
-    .hero-banner-title { font-size: 1.05rem; font-weight: 900; color: #FFF; line-height: 1.15; }
-    .hero-banner-sub { font-size: 0.68rem; color: var(--text-gray); max-width: 80%; margin-top: 2px; line-height: 1.25; }
+    .hero-banner-title { font-size: 0.95rem; font-weight: 900; color: #FFF; line-height: 1.15; }
+    .hero-banner-sub { font-size: 0.64rem; color: var(--text-gray); max-width: 80%; margin-top: 2px; line-height: 1.25; }
     .btn-hero-cta {
-      background: var(--gold); color: #000; font-weight: 900; font-size: 0.72rem;
-      padding: 0.32rem 0.95rem; border-radius: var(--radius-sm); border: none; cursor: pointer;
-      width: fit-content; margin-top: 4px; transition: 0.2s;
+      background: var(--gold); color: #000; font-weight: 900; font-size: 0.68rem;
+      padding: 0.28rem 0.85rem; border-radius: var(--radius-sm); border: none; cursor: pointer;
+      width: fit-content; margin-top: 3px;
     }
     .btn-hero-cta:active { transform: scale(0.96); }
-    .hero-dots-indicator { display: flex; gap: 4px; position: absolute; bottom: 10px; left: 14px; }
-    .hero-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.4); }
-    .hero-dot.active { width: 12px; border-radius: 3px; background: var(--gold); }
+    .hero-dots-indicator { display: flex; gap: 3px; position: absolute; bottom: 8px; left: 12px; }
+    .hero-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,0.3); }
+    .hero-dot.active { width: 11px; border-radius: 3px; background: var(--gold); }
 
-    /* التصنيفات الرئيسية الموحدة */
-    .section-title-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.7rem; }
-    .section-title-text { font-size: 0.9rem; font-weight: 900; color: #FFF; }
-    .section-view-all { font-size: 0.75rem; color: var(--gold); cursor: pointer; font-weight: 800; }
+    /* التصنيفات الـ 5 الموحدة بدقة */
+    .section-title-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+    .section-title-text { font-size: 0.82rem; font-weight: 900; color: #FFF; }
+    .section-view-all { font-size: 0.7rem; color: var(--gold); cursor: pointer; font-weight: 800; }
 
-    .categories-5-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-bottom: 1.25rem; }
+    .categories-5-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; margin-bottom: 1.1rem; }
     .category-box-item {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      height: 82px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 0.35rem 0.1rem; text-align: center; cursor: pointer; transition: 0.2s; overflow: hidden;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      height: 74px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 0.3rem 0.1rem; text-align: center; cursor: pointer; transition: 0.15s; overflow: hidden;
     }
-    .category-box-item:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .category-box-item:hover { border-color: var(--gold); }
     .category-box-icon {
-      width: 40px; height: 40px; border-radius: 11px; background: var(--bg-card-inner);
-      display: flex; align-items: center; justify-content: center; margin-bottom: 4px; color: var(--gold); flex-shrink: 0;
+      width: 32px; height: 32px; border-radius: 8px; background: var(--bg-card-inner);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 3px; color: var(--gold); flex-shrink: 0;
     }
-    .category-box-icon svg { width: 22px; height: 22px; fill: var(--gold); }
-    .category-box-label { font-size: 0.62rem; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .category-box-icon svg { width: 17px; height: 17px; fill: var(--gold); }
+    .category-box-label { font-size: 0.58rem; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
-    /* العروض والخصومات YR Deals */
+    /* كروت العروض والأعلى تقييماً والترند */
     .deal-card-item {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.85rem; margin-bottom: 8px; display: flex; gap: 10px; align-items: center; justify-content: space-between;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 0.65rem 0.75rem; margin-bottom: 7px; display: flex; gap: 8px; align-items: center; justify-content: space-between;
     }
     .deal-badge-pct {
-      background: rgba(239, 68, 68, 0.15); color: var(--red); font-weight: 900; font-size: 0.75rem;
-      padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.15); color: var(--red); font-weight: 900; font-size: 0.68rem;
+      padding: 2px 6px; border-radius: 5px; border: 1px solid rgba(239, 68, 68, 0.25);
     }
     .deal-coupon-btn {
       background: var(--bg-card-inner); color: var(--gold); border: 1px dashed var(--gold);
-      padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 900; cursor: pointer;
+      padding: 3px 8px; border-radius: 5px; font-size: 0.65rem; font-weight: 900; cursor: pointer;
     }
 
-    /* الأعلى تقييماً */
-    .horizontal-cards-scroll { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 1.25rem; }
+    .horizontal-cards-scroll { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 1.1rem; }
     .rated-business-card {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      overflow: hidden; cursor: pointer; transition: 0.2s;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      overflow: hidden; cursor: pointer; transition: 0.15s;
     }
     .rated-business-card:hover { border-color: var(--gold); }
-    .rated-card-img { height: 90px; background-size: cover; background-position: center; position: relative; }
+    .rated-card-img { height: 80px; background-size: cover; background-position: center; position: relative; }
     .rated-card-badge {
-      position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
-      padding: 2px 5px; border-radius: 5px; font-size: 0.65rem; font-weight: 900; color: var(--gold);
-      display: flex; align-items: center; gap: 3px;
+      position: absolute; top: 4px; left: 4px; background: rgba(0,0,0,0.8); backdrop-filter: blur(3px);
+      padding: 1px 4px; border-radius: 4px; font-size: 0.6rem; font-weight: 900; color: var(--gold);
+      display: flex; align-items: center; gap: 2px;
     }
-    .rated-card-badge svg { width: 9px; height: 9px; fill: var(--gold); }
-    .rated-card-info { padding: 0.45rem 0.4rem; }
-    .rated-card-name { font-size: 0.74rem; font-weight: 800; color: #FFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .rated-card-meta { font-size: 0.62rem; color: var(--text-gray); margin-top: 1px; }
+    .rated-card-badge svg { width: 8px; height: 8px; fill: var(--gold); }
+    .rated-card-info { padding: 0.4rem 0.35rem; }
+    .rated-card-name { font-size: 0.68rem; font-weight: 800; color: #FFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 3px; }
+    .rated-card-meta { font-size: 0.58rem; color: var(--text-gray); margin-top: 1px; }
 
-    /* الترند مع الشعلة بالأعلى */
-    .trending-3-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 1.25rem; }
+    /* شارات التوثيق المعتمدة الثلاث */
+    .rosette-badge-svg { width: 13px; height: 13px; display: inline-block; vertical-align: middle; flex-shrink: 0; }
+
+    /* الترند */
+    .trending-3-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 1.1rem; }
     .trending-card-item {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm);
       overflow: hidden; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between;
     }
-    .trending-card-img { height: 86px; background-size: cover; background-position: center; position: relative; }
+    .trending-card-img { height: 76px; background-size: cover; background-position: center; position: relative; }
     .trending-flame-pill {
-      position: absolute; top: 5px; left: 5px; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px);
-      padding: 2px 6px; border-radius: 8px; font-size: 0.65rem; font-weight: 800; color: #FFF;
-      display: flex; align-items: center; gap: 3px; border: 1px solid rgba(255, 87, 34, 0.35); z-index: 5;
+      position: absolute; top: 4px; left: 4px; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(3px);
+      padding: 1px 5px; border-radius: 6px; font-size: 0.58rem; font-weight: 800; color: #FFF;
+      display: flex; align-items: center; gap: 2px; border: 1px solid rgba(255, 87, 34, 0.3); z-index: 5;
     }
-    .trending-flame-pill svg { width: 11px; height: 11px; fill: var(--orange); }
-    .trending-card-details { padding: 0.45rem 0.4rem; height: 48px; display: flex; flex-direction: column; justify-content: center; }
-    .trending-card-title { font-size: 0.72rem; font-weight: 800; color: #FFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
-    .trending-card-type { font-size: 0.62rem; color: var(--text-gray); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .trending-flame-pill svg { width: 10px; height: 10px; fill: var(--orange); }
+    .trending-card-details { padding: 0.35rem; height: 42px; display: flex; flex-direction: column; justify-content: center; }
+    .trending-card-title { font-size: 0.66rem; font-weight: 800; color: #FFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .trending-card-type { font-size: 0.56rem; color: var(--text-gray); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* ويدجت الأسعار وتلوين الشراء بالأخضر والبيع بالأحمر */
+    /* أسعار العملات والذهب المصغرة */
     .rates-widget-box {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.85rem 0.65rem; margin-bottom: 1.25rem;
+      padding: 0.75rem 0.6rem; margin-bottom: 1.1rem;
     }
-    .rates-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 0.4rem; }
+    .rates-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 0.35rem; }
     .rate-mini-card {
       background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-sm);
-      padding: 0.5rem 0.25rem; text-align: center; display: flex; flex-direction: column; justify-content: space-between; min-height: 80px;
+      padding: 0.45rem 0.2rem; text-align: center; display: flex; flex-direction: column; justify-content: space-between; min-height: 72px;
     }
-    .rate-mini-title { font-size: 0.66rem; font-weight: 900; color: var(--gold); margin-bottom: 2px; }
-    .rate-price-pair { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 2px 0; }
+    .rate-mini-title { font-size: 0.62rem; font-weight: 900; color: var(--gold); margin-bottom: 2px; }
+    .rate-price-pair { display: flex; align-items: center; justify-content: center; gap: 5px; margin: 1px 0; }
     .rate-val-col { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
-    .rate-sub-label { font-size: 0.58rem; color: var(--text-gray); font-weight: 700; }
-    .rate-price-buy { font-size: 0.76rem; font-weight: 900; color: var(--green); }
-    .rate-price-sell { font-size: 0.76rem; font-weight: 900; color: var(--red); }
-    .rate-mini-sub { font-size: 0.56rem; color: var(--text-gray); font-weight: 600; margin-top: 1px; }
-
-    /* بطاقة آخر التقييمات */
-    .review-mini-card {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.8rem; display: flex; gap: 12px; align-items: center; margin-bottom: 1rem;
-    }
-    .review-biz-thumb { width: 50px; height: 50px; border-radius: 10px; background-size: cover; background-position: center; flex-shrink: 0; }
-    .review-content-col { flex: 1; min-width: 0; }
-    .review-top-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
-    .review-author-name { font-size: 0.8rem; font-weight: 800; color: #FFF; }
-    .review-stars { color: var(--gold); font-size: 0.75rem; letter-spacing: 1px; }
-    .review-text-body { font-size: 0.72rem; color: var(--text-gray); line-height: 1.3; margin: 2px 0; }
-    .review-time-stamp { font-size: 0.62rem; color: var(--text-muted); }
-
-    /* ==================== 2. صفحة الأسعار الداخلية وحاسبة الصرف ==================== */
-    .screen-title-header { font-size: 1.05rem; font-weight: 900; color: #FFF; margin-bottom: 0.9rem; display: flex; justify-content: space-between; align-items: center; }
-    
-    .price-market-switch-bar {
-      display: flex; gap: 6px; background: var(--bg-card-inner); padding: 4px; border-radius: var(--radius-md);
-      border: 1px solid var(--border); margin-bottom: 1rem;
-    }
-    .market-pill-btn {
-      flex: 1; padding: 0.45rem 0.2rem; border-radius: var(--radius-sm); border: none; font-size: 0.75rem;
-      font-weight: 800; color: var(--text-gray); background: none; cursor: pointer; transition: 0.2s;
-    }
-    .market-pill-btn.active {
-      background: var(--gold); color: #000; font-weight: 900; box-shadow: 0 2px 8px rgba(255, 184, 0, 0.3);
-    }
+    .rate-sub-label { font-size: 0.54rem; color: var(--text-gray); font-weight: 700; }
+    .rate-price-buy { font-size: 0.7rem; font-weight: 900; color: var(--green); }
+    .rate-price-sell { font-size: 0.7rem; font-weight: 900; color: var(--red); }
+    .rate-mini-sub { font-size: 0.52rem; color: var(--text-gray); font-weight: 600; }
 
     /* حاسبة الصرف الحية */
     .currency-calc-box {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.85rem 1rem; margin-bottom: 1rem;
+      padding: 0.75rem 0.85rem; margin-bottom: 0.85rem;
     }
-    .calc-input-row { display: flex; gap: 8px; margin-top: 6px; }
+    .calc-input-row { display: flex; gap: 6px; margin-top: 5px; }
     .calc-input-row input {
-      flex: 2; height: 38px; background: var(--bg-card-inner); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); color: #FFF; padding: 0 0.8rem; font-size: 0.82rem; font-weight: 900;
+      flex: 2; height: 34px; background: var(--bg-card-inner); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: #FFF; padding: 0 0.65rem; font-size: 0.75rem; font-weight: 900;
     }
     .calc-input-row select {
-      flex: 1; height: 38px; background: var(--bg-card-inner); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); color: var(--gold); font-size: 0.78rem; font-weight: 800; padding: 0 0.5rem; outline: none;
+      flex: 1; height: 34px; background: var(--bg-card-inner); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--gold); font-size: 0.72rem; font-weight: 800; padding: 0 0.4rem; outline: none;
     }
     .calc-results-strip {
-      display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px;
-      border-top: 1px solid var(--border); font-size: 0.72rem;
+      display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 6px;
+      border-top: 1px solid var(--border); font-size: 0.67rem;
     }
 
-    .subtabs-bar-line { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
-    .subtab-link-btn { flex: 1; padding: 0.55rem; text-align: center; font-size: 0.8rem; font-weight: 800; color: var(--text-gray); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
+    /* أشرطة الأسواق والتبويبات */
+    .price-market-switch-bar {
+      display: flex; gap: 5px; background: var(--bg-card-inner); padding: 3px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); margin-bottom: 0.8rem;
+    }
+    .market-pill-btn {
+      flex: 1; padding: 0.35rem 0.2rem; border-radius: var(--radius-sm); border: none; font-size: 0.68rem;
+      font-weight: 800; color: var(--text-gray); background: none; cursor: pointer; transition: 0.15s;
+    }
+    .market-pill-btn.active {
+      background: var(--gold); color: #000; font-weight: 900;
+    }
+
+    .subtabs-bar-line { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 0.8rem; }
+    .subtab-link-btn { flex: 1; padding: 0.45rem; text-align: center; font-size: 0.74rem; font-weight: 800; color: var(--text-gray); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
     .subtab-link-btn.active { color: var(--gold); border-color: var(--gold); }
 
     .price-row-item {
-      display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.1rem;
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px;
+      display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0.85rem;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 6px;
     }
     
     .trend-arrow-badge {
-      display: inline-flex; align-items: center; gap: 3px; font-size: 0.68rem; font-weight: 900;
-      padding: 2px 6px; border-radius: 6px; margin-top: 3px;
+      display: inline-flex; align-items: center; gap: 2px; font-size: 0.62rem; font-weight: 900;
+      padding: 1px 5px; border-radius: 4px; margin-top: 2px;
     }
     .trend-arrow-badge.up { color: var(--green); background: var(--green-dim); }
     .trend-arrow-badge.down { color: var(--red); background: var(--red-dim); }
     .trend-arrow-badge.stable { color: var(--gold); background: var(--gold-dim); }
-    .trend-arrow-icon { font-size: 0.7rem; font-weight: 900; }
 
-    .price-values-box { display: flex; align-items: center; gap: 14px; text-align: left; }
+    .price-values-box { display: flex; align-items: center; gap: 10px; text-align: left; }
     .price-val-block { display: flex; flex-direction: column; align-items: flex-end; }
-    .price-val-block span.tag { font-size: 0.62rem; color: var(--text-muted); font-weight: 700; margin-bottom: 1px; }
-    .price-val-block span.num-buy { font-size: 0.95rem; font-weight: 900; color: var(--green); }
-    .price-val-block span.num-sell { font-size: 0.95rem; font-weight: 900; color: var(--red); }
+    .price-val-block span.tag { font-size: 0.56rem; color: var(--text-muted); font-weight: 700; }
+    .price-val-block span.num-buy { font-size: 0.85rem; font-weight: 900; color: var(--green); }
+    .price-val-block span.num-sell { font-size: 0.85rem; font-weight: 900; color: var(--red); }
 
-    /* شاشات الترند */
-    .trend-ranked-row {
-      display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0.9rem;
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 7px;
-    }
-    .trend-rank-circle {
-      width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: #000;
-      display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.72rem; margin-left: 9px; flex-shrink: 0;
-    }
-    .trend-thumb-img { width: 36px; height: 36px; border-radius: 7px; background-size: cover; background-position: center; margin-left: 9px; flex-shrink: 0; }
+    /* كروت القوائم */
+    .generic-list-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 8px; }
+    .card-meta-tags { display: flex; gap: 5px; flex-wrap: wrap; margin: 6px 0; }
+    .meta-tag { background: var(--bg-card-inner); color: #FFF; font-size: 0.62rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); }
+    .btn-apply-job { background: var(--gold); color: #000; font-weight: 900; font-size: 0.7rem; border-radius: 6px; border: none; padding: 5px 12px; cursor: pointer; width: 100%; }
 
-    /* قائمة شاشة المزيد المحدثة */
+    /* التقييمات */
+    .review-mini-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 0.65rem; display: flex; gap: 9px; align-items: center; margin-bottom: 0.85rem;
+    }
+    .review-biz-thumb { width: 42px; height: 42px; border-radius: 8px; background-size: cover; background-position: center; flex-shrink: 0; }
+    .review-content-col { flex: 1; min-width: 0; }
+    .review-top-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1px; }
+    .review-author-name { font-size: 0.72rem; font-weight: 800; color: #FFF; }
+    .review-stars { color: var(--gold); font-size: 0.68rem; letter-spacing: 0.5px; }
+    .review-text-body { font-size: 0.66rem; color: var(--text-gray); line-height: 1.25; margin: 1px 0; }
+    .review-time-stamp { font-size: 0.56rem; color: var(--text-muted); }
+
+    /* قائمة شاشة المزيد */
     .more-menu-row {
-      display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1rem;
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0.85rem;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 5px; cursor: pointer;
     }
-    .more-menu-row span.menu-title-wrap { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.82rem; color: #FFF; }
-    .more-menu-row span.menu-title-wrap svg { color: var(--gold); width: 17px; height: 17px; }
-    .more-menu-row span.arrow-indicator { color: var(--text-muted); font-size: 0.85rem; font-weight: 900; }
+    .more-menu-row span.menu-title-wrap { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.76rem; color: #FFF; }
+    .more-menu-row span.menu-title-wrap svg { color: var(--gold); width: 15px; height: 15px; }
+    .more-menu-row span.arrow-indicator { color: var(--text-muted); font-size: 0.75rem; font-weight: 900; }
 
     /* سويتش الوضع الليلي */
-    .toggle-night-wrap { position: relative; width: 40px; height: 22px; }
+    .toggle-night-wrap { position: relative; width: 36px; height: 20px; }
     .toggle-night-wrap input { opacity: 0; width: 0; height: 0; }
-    .slider-night { position: absolute; inset: 0; cursor: pointer; background: #2A2A2A; border-radius: 22px; transition: 0.25s; }
-    .slider-night:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.25s; }
+    .slider-night { position: absolute; inset: 0; cursor: pointer; background: #2A2A2A; border-radius: 20px; transition: 0.2s; }
+    .slider-night:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
     input:checked + .slider-night { background: var(--gold); }
-    input:checked + .slider-night:before { transform: translateX(18px); background: #000; }
+    input:checked + .slider-night:before { transform: translateX(16px); background: #000; }
 
     /* شريط التنقل السفلي */
     .bottom-app-nav-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 62px; background: #0A0A0D;
+      position: fixed; bottom: 0; left: 0; right: 0; height: 56px; background: #0A0A0D;
       border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000;
     }
     .bottom-nav-link {
-      background: none; border: none; color: var(--text-gray); font-size: 0.68rem; font-weight: 700;
-      display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; flex: 1;
+      background: none; border: none; color: var(--text-gray); font-size: 0.62rem; font-weight: 700;
+      display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; flex: 1;
     }
     .bottom-nav-link.active { color: var(--gold); font-weight: 900; }
-    .bottom-nav-link svg { width: 22px; height: 22px; fill: currentColor; }
+    .bottom-nav-link svg { width: 19px; height: 19px; fill: currentColor; }
     
     .bottom-center-add-wrap {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      margin-top: -18px; cursor: pointer; flex: 1;
+      margin-top: -15px; cursor: pointer; flex: 1;
     }
     .bottom-center-add-fab {
-      width: 48px; height: 48px; border-radius: 50%; background: var(--gold); color: #000;
+      width: 42px; height: 42px; border-radius: 50%; background: var(--gold); color: #000;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 18px rgba(255, 184, 0, 0.45); border: none;
-      transition: transform 0.2s;
+      box-shadow: 0 3px 14px rgba(255, 184, 0, 0.4); border: none;
+      transition: transform 0.15s;
     }
     .bottom-center-add-fab:active { transform: scale(0.94); }
-    .bottom-center-add-fab svg { width: 24px; height: 24px; fill: #000; }
+    .bottom-center-add-fab svg { width: 20px; height: 20px; fill: #000; }
     .bottom-center-add-label {
-      font-size: 0.65rem; font-weight: 800; color: var(--text-gray); margin-top: 3px; white-space: nowrap;
+      font-size: 0.58rem; font-weight: 800; color: var(--text-gray); margin-top: 2px; white-space: nowrap;
     }
 
-    /* نافذة الإشعارات التفاعلية المضافة حديثاً */
+    /* مركز الإشعارات المدمج */
     .notif-item-card {
       background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-sm);
-      padding: 0.75rem; margin-bottom: 8px; text-align: right;
+      padding: 0.65rem; margin-bottom: 6px; text-align: right;
     }
-    .notif-badge-tag { font-size: 0.62rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-bottom: 4px; }
+    .notif-badge-tag { font-size: 0.58rem; font-weight: 800; padding: 1px 5px; border-radius: 3px; display: inline-block; margin-bottom: 3px; }
     .notif-badge-tag.gold { background: var(--gold-dim); color: var(--gold); }
     .notif-badge-tag.green { background: var(--green-dim); color: var(--green); }
     .notif-badge-tag.blue { background: rgba(29,155,240,0.15); color: var(--blue); }
@@ -341,18 +336,17 @@
 </head>
 <body>
 
-  <!-- 1. الهيدر الموحد وربط جرس التنبيهات بمركز الإشعارات -->
+  <!-- الهيدر الموحد -->
   <header class="main-app-header">
     <div class="header-right-side">
       <button class="header-menu-btn" onclick="switchAppTab('more', document.querySelectorAll('.bottom-nav-link')[4])" aria-label="القائمة">
-        <svg class="svg-icon" style="width: 22px; height: 22px;" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        <svg class="svg-icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
       </button>
 
       <div class="header-logo-wrap" onclick="switchAppTab('home', document.querySelectorAll('.bottom-nav-link')[0])">
         <svg class="star-logo-hollow" viewBox="0 0 24 24">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
         </svg>
-        
         <div class="header-logo-text-col">
           <span class="ar-title">يمن ريتغ</span>
           <span class="en-title">YEMEN RATING</span>
@@ -360,10 +354,9 @@
       </div>
     </div>
 
-    <!-- جرس الإشعارات التفاعلي المباشر -->
     <div class="header-left-side">
-      <div class="header-bell-btn" onclick="openNotificationsCenter()" title="مركز الإشعارات">
-        <svg class="svg-icon" style="width: 17px; height: 17px;" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+      <div class="header-bell-btn" onclick="openNotificationsCenter()">
+        <svg class="svg-icon" style="width: 15px; height: 15px;" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
         <div class="header-bell-dot"></div>
       </div>
     </div>
@@ -371,7 +364,7 @@
 
   <main class="page-main-container">
 
-    <!-- ==================== 1. تبويب الرئيسية (Home Screen) ==================== -->
+    <!-- ==================== 1. تبويب الرئيسية ==================== -->
     <div id="app-tab-home" class="tab-view-section active">
       
       <div class="home-search-box">
@@ -400,7 +393,7 @@
         </div>
       </div>
 
-      <!-- التصنيفات الرئيسية الـ 5 الموحدة -->
+      <!-- التصنيفات الرئيسية الـ 5 الموحدة بدقة -->
       <div class="section-title-line">
         <span class="section-title-text">التصنيفات الرئيسية</span>
         <span class="section-view-all">عرض الكل</span>
@@ -445,23 +438,23 @@
 
       <!-- العروض والخصومات YR Deals -->
       <div class="section-title-line">
-        <span class="section-title-text">أقوى العروض والخصومات 🔥</span>
+        <span class="section-title-text">أقوى العروض والخصومات</span>
         <span class="section-view-all">جميع العروض</span>
       </div>
 
       <div class="deal-card-item">
-        <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 7px;">
           <div class="deal-badge-pct">خصم 20%</div>
           <div>
-            <div style="font-weight: 800; font-size: 0.78rem; color: #FFF;">عروض متجر العصرية للجوالات</div>
-            <div style="font-size: 0.65rem; color: var(--text-gray);">ضمان سنة كاملة + شاحن مجاني</div>
+            <div style="font-weight: 800; font-size: 0.72rem; color: #FFF;">عروض متجر العصرية للجوالات</div>
+            <div style="font-size: 0.6rem; color: var(--text-gray);">ضمان سنة كاملة + شاحن مجاني</div>
           </div>
         </div>
         <button class="deal-coupon-btn" onclick="navigator.clipboard.writeText('YR20'); alert('تم نسخ كود الخصم: YR20');">كود: YR20</button>
       </div>
 
       <!-- الأعلى تقييماً -->
-      <div class="section-title-line" style="margin-top: 1.1rem;">
+      <div class="section-title-line" style="margin-top: 0.9rem;">
         <span class="section-title-text">الأعلى تقييماً</span>
         <span class="section-view-all">عرض الكل</span>
       </div>
@@ -507,7 +500,7 @@
         </div>
       </div>
 
-      <!-- الترند الآن -->
+      <!-- الترند مع الشعلة بالأعلى -->
       <div class="section-title-line">
         <span class="section-title-text">الترند الآن</span>
         <span class="section-view-all" onclick="switchAppTab('trend', document.querySelectorAll('.bottom-nav-link')[3])">عرض الكل</span>
@@ -554,7 +547,7 @@
         </div>
       </div>
 
-      <!-- ويدجت أسعار العملات والذهب -->
+      <!-- ويدجت الأسعار -->
       <div class="section-title-line">
         <span class="section-title-text">أسعار العملات والذهب</span>
         <span class="section-view-all" onclick="switchAppTab('prices', document.querySelectorAll('.bottom-nav-link')[1])">عرض الكل</span>
@@ -565,14 +558,8 @@
           <div class="rate-mini-card">
             <div class="rate-mini-title">الذهب عيار 21</div>
             <div class="rate-price-pair">
-              <div class="rate-val-col">
-                <span class="rate-sub-label">شراء</span>
-                <span class="rate-price-buy">42,500</span>
-              </div>
-              <div class="rate-val-col">
-                <span class="rate-sub-label">بيع</span>
-                <span class="rate-price-sell">43,500</span>
-              </div>
+              <div class="rate-val-col"><span class="rate-sub-label">شراء</span><span class="rate-price-buy">42,500</span></div>
+              <div class="rate-val-col"><span class="rate-sub-label">بيع</span><span class="rate-price-sell">43,500</span></div>
             </div>
             <div class="rate-mini-sub">ريال يمني / جرام</div>
           </div>
@@ -580,14 +567,8 @@
           <div class="rate-mini-card">
             <div class="rate-mini-title">دولار أمريكي</div>
             <div class="rate-price-pair">
-              <div class="rate-val-col">
-                <span class="rate-sub-label">شراء</span>
-                <span class="rate-price-buy">1,530</span>
-              </div>
-              <div class="rate-val-col">
-                <span class="rate-sub-label">بيع</span>
-                <span class="rate-price-sell">1,540</span>
-              </div>
+              <div class="rate-val-col"><span class="rate-sub-label">شراء</span><span class="rate-price-buy">1,530</span></div>
+              <div class="rate-val-col"><span class="rate-sub-label">بيع</span><span class="rate-price-sell">1,540</span></div>
             </div>
             <div class="rate-mini-sub">ريال يمني</div>
           </div>
@@ -595,19 +576,13 @@
           <div class="rate-mini-card">
             <div class="rate-mini-title">ريال سعودي</div>
             <div class="rate-price-pair">
-              <div class="rate-val-col">
-                <span class="rate-sub-label">شراء</span>
-                <span class="rate-price-buy">410</span>
-              </div>
-              <div class="rate-val-col">
-                <span class="rate-sub-label">بيع</span>
-                <span class="rate-price-sell">418</span>
-              </div>
+              <div class="rate-val-col"><span class="rate-sub-label">شراء</span><span class="rate-price-buy">410</span></div>
+              <div class="rate-val-col"><span class="rate-sub-label">بيع</span><span class="rate-price-sell">418</span></div>
             </div>
             <div class="rate-mini-sub">ريال يمني</div>
           </div>
         </div>
-        <div style="font-size: 0.65rem; color: var(--text-muted); text-align: center; margin-top: 8px;">آخر تحديث : منذ 5 دقائق</div>
+        <div style="font-size: 0.62rem; color: var(--text-muted); text-align: center; margin-top: 6px;">آخر تحديث : منذ 5 دقائق</div>
       </div>
 
       <!-- آخر التقييمات -->
@@ -632,218 +607,96 @@
     <!-- ==================== 2. صفحة الأسعار وحاسبة الصرف الحية ==================== -->
     <div id="app-tab-prices" class="tab-view-section">
       <div class="screen-title-header">
-        <span>الأسعار ومحول العملات</span>
-        <svg class="svg-icon" style="cursor: pointer;" onclick="switchAppTab('home', document.querySelectorAll('.bottom-nav-link')[0])" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        <span>الأسعار ومحول الصرف</span>
+        <div class="back-btn-icon" onclick="switchAppTab('home', document.querySelectorAll('.bottom-nav-link')[0])">الرئيسية ←</div>
       </div>
 
-      <!-- حاسبة محول العملات المباشر -->
+      <!-- حاسبة الصرف -->
       <div class="currency-calc-box">
-        <div style="font-size: 0.75rem; font-weight: 900; color: var(--gold); display: flex; align-items: center; gap: 4px;">
-          <span>💱 حاسبة تحويل الصرف المباشر</span>
-        </div>
+        <div style="font-size: 0.72rem; font-weight: 900; color: var(--gold);">حاسبة تحويل الصرف المباشر</div>
         <div class="calc-input-row">
-          <input type="number" id="calc-amount" value="100" placeholder="أدخل المبلغ..." oninput="calculateLiveExchange()">
+          <input type="number" id="calc-amount" value="100" placeholder="المبلغ..." oninput="calculateLiveExchange()">
           <select id="calc-currency-select" onchange="calculateLiveExchange()">
-            <option value="USD">دولار أمريكي ($)</option>
-            <option value="SAR">ريال سعودي (ر.س)</option>
+            <option value="USD">دولار ($)</option>
+            <option value="SAR">سعودي (ر.س)</option>
           </select>
         </div>
         <div class="calc-results-strip">
-          <div>صنعاء: <strong id="calc-res-sanaa" style="color: var(--green); font-size: 0.82rem;">53,800 ريال</strong></div>
-          <div>عدن: <strong id="calc-res-aden" style="color: var(--gold); font-size: 0.82rem;">192,500 ريال</strong></div>
-          <div>الفارق: <strong id="calc-res-diff" style="color: var(--red); font-size: 0.75rem;">+138,700 ريال</strong></div>
+          <div>صنعاء: <strong id="calc-res-sanaa" style="color: var(--green);">53,800 ريال</strong></div>
+          <div>عدن: <strong id="calc-res-aden" style="color: var(--gold);">192,500 ريال</strong></div>
+          <div>الفارق: <strong id="calc-res-diff" style="color: var(--red);">+138,700 ريال</strong></div>
         </div>
       </div>
 
-      <!-- مفتاح التبديل للأسواق -->
       <div class="price-market-switch-bar">
-        <button id="mkt-btn-sanaa" class="market-pill-btn active" onclick="switchPriceMarket('sanaa', this)">سوق صنعاء</button>
-        <button id="mkt-btn-aden" class="market-pill-btn" onclick="switchPriceMarket('aden', this)">سوق عدن</button>
-        <button id="mkt-btn-compare" class="market-pill-btn" onclick="switchPriceMarket('compare', this)">مقارنة السوقين ⇄</button>
+        <button id="mkt-btn-sanaa" class="market-pill-btn active" onclick="switchPriceMarket('sanaa', this)">صنعاء</button>
+        <button id="mkt-btn-aden" class="market-pill-btn" onclick="switchPriceMarket('aden', this)">عدن</button>
+        <button id="mkt-btn-compare" class="market-pill-btn" onclick="switchPriceMarket('compare', this)">مقارنة السوقين</button>
       </div>
 
-      <!-- تبويبات العملات والذهب -->
       <div class="subtabs-bar-line">
-        <button id="price-subtab-cur" class="subtab-link-btn active" onclick="switchPriceSubTab('currencies', this)">العملات مقابل الريال اليمني</button>
-        <button id="price-subtab-gold" class="subtab-link-btn" onclick="switchPriceSubTab('gold', this)">أسعار الذهب (كافة العيارات)</button>
+        <button id="price-subtab-cur" class="subtab-link-btn active" onclick="switchPriceSubTab('currencies', this)">العملات</button>
+        <button id="price-subtab-gold" class="subtab-link-btn" onclick="switchPriceSubTab('gold', this)">الذهب</button>
       </div>
 
-      <!-- حاوية العملات -->
       <div id="prices-currencies-container">
         <div class="price-row-item">
           <div>
-            <div style="font-weight: 900; font-size: 0.88rem; color: #FFF;">دولار أمريكي (USD) 🇺🇸</div>
-            <div class="trend-arrow-badge up">
-              <span class="trend-arrow-icon">▲</span>
-              <span id="usd-change-tag">+0.4% صاعد</span>
-            </div>
+            <div style="font-weight: 900; font-size: 0.8rem; color: #FFF;">دولار أمريكي (USD)</div>
+            <div class="trend-arrow-badge up">▲ صاعد +0.4%</div>
           </div>
           <div class="price-values-box">
-            <div class="price-val-block">
-              <span class="tag">شراء</span>
-              <span class="num-buy" id="usd-buy-val">1,530</span>
-            </div>
-            <div class="price-val-block">
-              <span class="tag">بيع</span>
-              <span class="num-sell" id="usd-sell-val">1,540</span>
-            </div>
+            <div class="price-val-block"><span class="tag">شراء</span><span class="num-buy" id="usd-buy-val">1,530</span></div>
+            <div class="price-val-block"><span class="tag">بيع</span><span class="num-sell" id="usd-sell-val">1,540</span></div>
           </div>
         </div>
 
         <div class="price-row-item">
           <div>
-            <div style="font-weight: 900; font-size: 0.88rem; color: #FFF;">ريال سعودي (SAR) 🇸🇦</div>
-            <div class="trend-arrow-badge up">
-              <span class="trend-arrow-icon">▲</span>
-              <span id="sar-change-tag">+0.5 ريال</span>
-            </div>
+            <div style="font-weight: 900; font-size: 0.8rem; color: #FFF;">ريال سعودي (SAR)</div>
+            <div class="trend-arrow-badge up">▲ صاعد +0.5</div>
           </div>
           <div class="price-values-box">
-            <div class="price-val-block">
-              <span class="tag">شراء</span>
-              <span class="num-buy" id="sar-buy-val">408</span>
-            </div>
-            <div class="price-val-block">
-              <span class="tag">بيع</span>
-              <span class="num-sell" id="sar-sell-val">410</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="price-row-item">
-          <div>
-            <div style="font-weight: 900; font-size: 0.88rem; color: #FFF;">درهم إماراتي (AED) 🇦🇪</div>
-            <div class="trend-arrow-badge stable">
-              <span class="trend-arrow-icon">▬</span>
-              <span>مستقر</span>
-            </div>
-          </div>
-          <div class="price-values-box">
-            <div class="price-val-block">
-              <span class="tag">شراء</span>
-              <span class="num-buy" id="aed-buy-val">417</span>
-            </div>
-            <div class="price-val-block">
-              <span class="tag">بيع</span>
-              <span class="num-sell" id="aed-sell-val">419</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="price-row-item">
-          <div>
-            <div style="font-weight: 900; font-size: 0.88rem; color: #FFF;">يورو أوروبي (EUR) 🇪🇺</div>
-            <div class="trend-arrow-badge down">
-              <span class="trend-arrow-icon">▼</span>
-              <span>-0.2% هابط</span>
-            </div>
-          </div>
-          <div class="price-values-box">
-            <div class="price-val-block">
-              <span class="tag">شراء</span>
-              <span class="num-buy" id="eur-buy-val">1,665</span>
-            </div>
-            <div class="price-val-block">
-              <span class="tag">بيع</span>
-              <span class="num-sell" id="eur-sell-val">1,675</span>
-            </div>
+            <div class="price-val-block"><span class="tag">شراء</span><span class="num-buy" id="sar-buy-val">408</span></div>
+            <div class="price-val-block"><span class="tag">بيع</span><span class="num-sell" id="sar-sell-val">410</span></div>
           </div>
         </div>
       </div>
 
-      <!-- حاوية أسعار الذهب (كافة العيارات الـ 4) -->
       <div id="prices-gold-container" style="display: none;">
         <div class="price-row-item">
           <div>
-            <div style="font-weight: 900; font-size: 0.88rem; color: #FFF;">ذهب عيار 24 (جرام)</div>
-            <div class="trend-arrow-badge up">
-              <span class="trend-arrow-icon">▲</span>
-              <span>+400 ريال</span>
-            </div>
+            <div style="font-weight: 900; font-size: 0.8rem; color: #FFF;">ذهب عيار 21 (جرام)</div>
+            <div class="trend-arrow-badge up">▲ صاعد +300</div>
           </div>
           <div class="price-values-box">
-            <div class="price-val-block">
-              <span class="tag">شراء</span>
-              <span class="num-buy" id="gold24-buy-val">48,500</span>
-            </div>
-            <div class="price-val-block">
-              <span class="tag">بيع</span>
-              <span class="num-sell" id="gold24-sell-val">49,800</span>
-            </div>
+            <div class="price-val-block"><span class="tag">شراء</span><span class="num-buy" id="gold21-buy-val">42,500</span></div>
+            <div class="price-val-block"><span class="tag">بيع</span><span class="num-sell" id="gold21-sell-val">43,500</span></div>
           </div>
         </div>
 
         <div class="price-row-item">
           <div>
-            <div style="font-weight: 900; font-size: 0.88rem; color: #FFF;">ذهب عيار 21 (الأكثر تداولاً)</div>
-            <div class="trend-arrow-badge up">
-              <span class="trend-arrow-icon">▲</span>
-              <span>+300 ريال</span>
-            </div>
+            <div style="font-weight: 900; font-size: 0.8rem; color: #FFF;">ذهب عيار 24 (جرام)</div>
+            <div class="trend-arrow-badge up">▲ صاعد +400</div>
           </div>
           <div class="price-values-box">
-            <div class="price-val-block">
-              <span class="tag">شراء</span>
-              <span class="num-buy" id="gold21-buy-val">42,500</span>
-            </div>
-            <div class="price-val-block">
-              <span class="tag">بيع</span>
-              <span class="num-sell" id="gold21-sell-val">43,500</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="price-row-item">
-          <div>
-            <div style="font-weight: 900; font-size: 0.88rem; color: #FFF;">ذهب عيار 18 (جرام)</div>
-            <div class="trend-arrow-badge stable">
-              <span class="trend-arrow-icon">▬</span>
-              <span>مستقر</span>
-            </div>
-          </div>
-          <div class="price-values-box">
-            <div class="price-val-block">
-              <span class="tag">شراء</span>
-              <span class="num-buy" id="gold18-buy-val">36,500</span>
-            </div>
-            <div class="price-val-block">
-              <span class="tag">بيع</span>
-              <span class="num-sell" id="gold18-sell-val">37,200</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="price-row-item">
-          <div>
-            <div style="font-weight: 900; font-size: 0.88rem; color: #FFF;">الجنيه الذهب (8 جرام)</div>
-            <div class="trend-arrow-badge up">
-              <span class="trend-arrow-icon">▲</span>
-              <span>+2,000 ريال</span>
-            </div>
-          </div>
-          <div class="price-values-box">
-            <div class="price-val-block">
-              <span class="tag">شراء</span>
-              <span class="num-buy" id="goldpnd-buy-val">340,000</span>
-            </div>
-            <div class="price-val-block">
-              <span class="tag">بيع</span>
-              <span class="num-sell" id="goldpnd-sell-val">348,000</span>
-            </div>
+            <div class="price-val-block"><span class="tag">شراء</span><span class="num-buy" id="gold24-buy-val">48,500</span></div>
+            <div class="price-val-block"><span class="tag">بيع</span><span class="num-sell" id="gold24-sell-val">49,800</span></div>
           </div>
         </div>
       </div>
 
-      <div id="price-timestamp-footer" style="font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-top: 1rem;">
-        آخر تحديث حي: منذ دقيقتين (سوق صنعاء)
+      <div id="price-timestamp-footer" style="font-size: 0.62rem; color: var(--text-muted); text-align: center; margin-top: 0.8rem;">
+        آخر تحديث حي: منذ دقيقتين
       </div>
     </div>
 
     <!-- ==================== 3. تبويب الترند ==================== -->
     <div id="app-tab-trend" class="tab-view-section">
       <div class="screen-title-header">
-        <span>الترند والتفاعل</span>
-        <svg class="svg-icon" style="cursor: pointer;" onclick="switchAppTab('home', document.querySelectorAll('.bottom-nav-link')[0])" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        <span>الترند</span>
+        <div class="back-btn-icon" onclick="switchAppTab('home', document.querySelectorAll('.bottom-nav-link')[0])">الرئيسية ←</div>
       </div>
 
       <div class="subtabs-bar-line">
@@ -858,12 +711,12 @@
           <div class="trend-rank-circle">1</div>
           <div class="trend-thumb-img" style="background-image: url('https://images.unsplash.com/photo-1544025162-d76694265947?w=100');"></div>
           <div>
-            <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">مطعم البيت اليمني</div>
-            <div style="font-size: 0.7rem; color: var(--text-gray);">مطاعم ومقاهي</div>
+            <div style="font-weight: 800; font-size: 0.78rem; color: #FFF;">مطعم البيت اليمني</div>
+            <div style="font-size: 0.64rem; color: var(--text-gray);">مطاعم ومقاهي</div>
           </div>
         </div>
-        <div style="font-weight: 900; color: #FFF; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;">
-          <svg class="svg-icon" style="color: var(--orange); width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+        <div style="font-weight: 900; color: #FFF; font-size: 0.75rem; display: flex; align-items: center; gap: 3px;">
+          <svg class="svg-icon" style="color: var(--orange); width: 12px; height: 12px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
           <span>125</span>
         </div>
       </div>
@@ -873,12 +726,12 @@
           <div class="trend-rank-circle">2</div>
           <div class="trend-thumb-img" style="background-image: url('https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?w=100');"></div>
           <div>
-            <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">متجر العصرية</div>
-            <div style="font-size: 0.7rem; color: var(--text-gray);">جوالات وإلكترونيات</div>
+            <div style="font-weight: 800; font-size: 0.78rem; color: #FFF;">متجر العصرية</div>
+            <div style="font-size: 0.64rem; color: var(--text-gray);">متاجر</div>
           </div>
         </div>
-        <div style="font-weight: 900; color: #FFF; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;">
-          <svg class="svg-icon" style="color: var(--orange); width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+        <div style="font-weight: 900; color: #FFF; font-size: 0.75rem; display: flex; align-items: center; gap: 3px;">
+          <svg class="svg-icon" style="color: var(--orange); width: 12px; height: 12px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
           <span>98</span>
         </div>
       </div>
@@ -886,35 +739,35 @@
       <div class="trend-ranked-row">
         <div style="display: flex; align-items: center;">
           <div class="trend-rank-circle">3</div>
-          <div class="trend-thumb-img" style="background-image: url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=100');"></div>
+          <div class="trend-thumb-img" style="background-image: url('https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=100');"></div>
           <div>
-            <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">شركة راحة للنقل</div>
-            <div style="font-size: 0.7rem; color: var(--text-gray);">نقل وشحن</div>
+            <div style="font-weight: 800; font-size: 0.78rem; color: #FFF;">غسيل حريري</div>
+            <div style="font-size: 0.64rem; color: var(--text-gray);">خدمات</div>
           </div>
         </div>
-        <div style="font-weight: 900; color: #FFF; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;">
-          <svg class="svg-icon" style="color: var(--orange); width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
+        <div style="font-weight: 900; color: #FFF; font-size: 0.75rem; display: flex; align-items: center; gap: 3px;">
+          <svg class="svg-icon" style="color: var(--orange); width: 12px; height: 12px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
           <span>76</span>
         </div>
       </div>
 
-      <div style="text-align: center; color: var(--gold); font-size: 0.75rem; font-weight: 800; margin-top: 1rem; cursor: pointer;">عرض المزيد</div>
+      <div style="text-align: center; color: var(--gold); font-size: 0.7rem; font-weight: 800; margin-top: 0.8rem; cursor: pointer;">عرض المزيد</div>
     </div>
 
     <!-- ==================== 4. تبويب المزيد ==================== -->
     <div id="app-tab-more" class="tab-view-section">
       <div class="screen-title-header">
-        <span>المزيد والخدمات</span>
-        <svg class="svg-icon" style="cursor: pointer;" onclick="switchAppTab('home', document.querySelectorAll('.bottom-nav-link')[0])" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        <span>المزيد</span>
+        <div class="back-btn-icon" onclick="switchAppTab('home', document.querySelectorAll('.bottom-nav-link')[0])">الرئيسية ←</div>
       </div>
 
-      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.9rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.9rem;">
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
         <div>
-          <div style="font-weight: 900; font-size: 0.9rem; color: #FFF;">الملف الشخصي</div>
-          <div style="font-size: 0.72rem; color: var(--gold); cursor: pointer; margin-top: 2px;">سجل الدخول / إنشاء حساب</div>
+          <div style="font-weight: 900; font-size: 0.82rem; color: #FFF;">الملف الشخصي</div>
+          <div style="font-size: 0.65rem; color: var(--gold); cursor: pointer; margin-top: 1px;">سجل الدخول / حسابي</div>
         </div>
-        <div style="width: 42px; height: 42px; border-radius: 50%; background: var(--bg-card-inner); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;">
-          <svg class="svg-icon" style="width: 20px; height: 20px; fill: var(--text-gray);" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--bg-card-inner); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;">
+          <svg class="svg-icon" style="width: 17px; height: 17px; fill: var(--text-gray);" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </div>
       </div>
 
@@ -952,33 +805,24 @@
 
       <div class="more-menu-row">
         <span class="menu-title-wrap">
-          <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" fill="currentColor"/></svg>
-          <span>الإعدادات العامة</span>
-        </span>
-        <span class="arrow-indicator">‹</span>
-      </div>
-
-      <div class="more-menu-row">
-        <span class="menu-title-wrap">
           <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z" fill="currentColor"/></svg>
           <span>المساعدة والدعم الفني</span>
         </span>
         <span class="arrow-indicator">‹</span>
       </div>
 
-      <!-- سويتش الوضع الليلي -->
-      <div class="more-menu-row" style="margin-top: 10px;">
+      <!-- الوضع الليلي -->
+      <div class="more-menu-row" style="margin-top: 8px;">
         <span class="menu-title-wrap">
           <svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z" fill="currentColor"/></svg>
-          <span>الوضع الليلي (AMOLED Dark)</span>
+          <span>الوضع الليلي (AMOLED)</span>
         </span>
         <label class="toggle-night-wrap"><input type="checkbox" checked><span class="slider-night"></span></label>
       </div>
 
-      <!-- الفوتر وزر الدخول السري © -->
-      <footer style="text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+      <footer style="text-align: center; font-size: 0.65rem; color: var(--text-muted); margin-top: 1.2rem; padding-top: 0.8rem; border-top: 1px solid var(--border);">
         <div>يمن ريتغ — Yemen Rating</div>
-        <p style="margin-top: 4px;">
+        <p style="margin-top: 3px;">
           <span style="cursor: pointer; font-weight: 900; color: var(--gold);" onclick="alert('دخول الإدارة: admin@yemenrating.com')">©</span> 2026 جميع الحقوق محفوظة
         </p>
       </footer>
@@ -986,43 +830,33 @@
 
   </main>
 
-  <!-- ==================== 5. مركز الإشعارات التفاعلي المضاف حديثاً ==================== -->
-  <div id="modal-notifications-center" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 1rem;">
-    <div style="background: #121217; border: 1px solid var(--border); border-radius: var(--radius-md); width: 100%; max-width: 440px; padding: 1.25rem; max-height: 85vh; overflow-y: auto; position: relative;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
-        <h3 style="color: #FFF; font-size: 0.95rem; font-weight: 900; display: flex; align-items: center; gap: 6px;">
-          <span>🔔 مركز الإشعارات والتنبيهات المباشرة</span>
-        </h3>
-        <button style="background: none; border: none; color: var(--text-gray); font-size: 1.3rem; cursor: pointer;" onclick="closeNotificationsCenter()">×</button>
-      </div>
-
-      <!-- قائمة الإشعارات الحية المحدثة -->
-      <div class="notif-item-card">
-        <span class="notif-badge-tag gold">تحديث أسعار الصرف 💱</span>
-        <h4 style="font-size: 0.8rem; font-weight: 900; color: #FFF;">تحديث أسعار العملات في سوق صنعاء وعدن</h4>
-        <p style="font-size: 0.72rem; color: var(--text-gray); margin-top: 2px;">تم تحديث أسعار صرف الدولار والسعودي والذهب عيار 21 وفق آخر تداولات الصرافين الآن.</p>
-        <span style="font-size: 0.62rem; color: var(--text-muted); display: block; margin-top: 4px;">منذ 5 دقائق</span>
+  <!-- نافذة مركز الإشعارات -->
+  <div id="modal-notifications-center" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(3px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 0.8rem;">
+    <div style="background: #121217; border: 1px solid var(--border); border-radius: var(--radius-sm); width: 100%; max-width: 400px; padding: 1rem; max-height: 80vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+        <h3 style="color: #FFF; font-size: 0.85rem; font-weight: 900;">مركز الإشعارات والتنبيهات المباشرة</h3>
+        <button style="background: none; border: none; color: var(--text-gray); font-size: 1.2rem; cursor: pointer;" onclick="closeNotificationsCenter()">×</button>
       </div>
 
       <div class="notif-item-card">
-        <span class="notif-badge-tag green">مطابقة وظيفية AI 💼</span>
-        <h4 style="font-size: 0.8rem; font-weight: 900; color: #FFF;">شاغر جديد يطابق مؤهلاتك بنسبة 96%</h4>
-        <p style="font-size: 0.72rem; color: var(--text-gray); margin-top: 2px;">مطلوب مطور برمجيات Full-Stack لدى شركة تقنية معتمدة في صنعاء براتب $1,500.</p>
-        <span style="font-size: 0.62rem; color: var(--text-muted); display: block; margin-top: 4px;">منذ ساعتين</span>
+        <span class="notif-badge-tag gold">أسعار الصرف 💱</span>
+        <h4 style="font-size: 0.74rem; font-weight: 900; color: #FFF;">تحديث أسعار العملات في صنعاء وعدن</h4>
+        <p style="font-size: 0.65rem; color: var(--text-gray); margin-top: 2px;">تم تحديث أسعار صرف الدولار والسعودي والذهب عيار 21 الآن.</p>
+        <span style="font-size: 0.56rem; color: var(--text-muted); display: block; margin-top: 3px;">منذ 5 دقائق</span>
       </div>
 
       <div class="notif-item-card">
-        <span class="notif-badge-tag blue">عروض حصرية YR Deals 🔥</span>
-        <h4 style="font-size: 0.8rem; font-weight: 900; color: #FFF;">كود خصم 20% متجر العصرية للجوالات</h4>
-        <p style="font-size: 0.72rem; color: var(--text-gray); margin-top: 2px;">استفد من كود الخصم (YR20) لشراء أحدث الهواتف والشواحن الأصلية في عدن.</p>
-        <span style="font-size: 0.62rem; color: var(--text-muted); display: block; margin-top: 4px;">اليوم</span>
+        <span class="notif-badge-tag green">وظائف AI 💼</span>
+        <h4 style="font-size: 0.74rem; font-weight: 900; color: #FFF;">شاغر جديد يطابق مؤهلاتك بنسبة 96%</h4>
+        <p style="font-size: 0.65rem; color: var(--text-gray); margin-top: 2px;">مطلوب مطور برمجيات Full-Stack في صنعاء براتب $1,500.</p>
+        <span style="font-size: 0.56rem; color: var(--text-muted); display: block; margin-top: 3px;">منذ ساعتين</span>
       </div>
 
-      <button style="width: 100%; background: var(--bg-card-inner); border: 1px solid var(--border); color: var(--gold); font-size: 0.75rem; font-weight: 800; padding: 8px; border-radius: 6px; cursor: pointer; margin-top: 6px;" onclick="closeNotificationsCenter()">إغلاق التنبيهات</button>
+      <button style="width: 100%; background: var(--bg-card-inner); border: 1px solid var(--border); color: var(--gold); font-size: 0.7rem; font-weight: 800; padding: 6px; border-radius: 5px; cursor: pointer; margin-top: 4px;" onclick="closeNotificationsCenter()">إغلاق</button>
     </div>
   </div>
 
-  <!-- شريط التنقل السفلي الخماسي -->
+  <!-- شريط التنقل السفلي الخماسي المدمج -->
   <nav class="bottom-app-nav-bar">
     <button class="bottom-nav-link active" onclick="switchAppTab('home', this)">
       <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
@@ -1052,7 +886,7 @@
     </button>
   </nav>
 
-  <!-- JavaScript التفاعلي الشامل لجميع الميزات وحاسبة الصرف والإشعارات -->
+  <!-- JavaScript التفاعلي -->
   <script>
     function switchAppTab(tabKey, btnElement) {
       document.querySelectorAll('.tab-view-section').forEach(s => s.classList.remove('active'));
@@ -1072,7 +906,6 @@
       }
     }
 
-    // دوال مركز الإشعارات المباشر
     function openNotificationsCenter() {
       document.getElementById('modal-notifications-center').style.display = 'flex';
     }
@@ -1081,7 +914,6 @@
       document.getElementById('modal-notifications-center').style.display = 'none';
     }
 
-    // حاسبة الصرف الحية
     function calculateLiveExchange() {
       const amount = parseFloat(document.getElementById('calc-amount').value) || 0;
       const curr = document.getElementById('calc-currency-select').value;
@@ -1123,16 +955,12 @@
         document.getElementById('sar-buy-val').innerText = '140.0';
         document.getElementById('sar-sell-val').innerText = '140.5';
         
-        document.getElementById('gold24-buy-val').innerText = '42,500';
-        document.getElementById('gold24-sell-val').innerText = '43,200';
-        document.getElementById('gold21-buy-val').innerText = '36,800';
-        document.getElementById('gold21-sell-val').innerText = '37,500';
-        document.getElementById('gold18-buy-val').innerText = '31,500';
-        document.getElementById('gold18-sell-val').innerText = '32,200';
-        document.getElementById('goldpnd-buy-val').innerText = '294,000';
-        document.getElementById('goldpnd-sell-val').innerText = '298,000';
+        document.getElementById('gold24-buy-val').innerText = '48,500';
+        document.getElementById('gold24-sell-val').innerText = '49,800';
+        document.getElementById('gold21-buy-val').innerText = '42,500';
+        document.getElementById('gold21-sell-val').innerText = '43,500';
 
-        if (footer) footer.innerText = 'آخر تحديث حي: منذ دقيقتين (سوق صنعاء)';
+        if (footer) footer.innerText = 'آخر تحديث حي: منذ دقيقتين';
       } else if (mkt === 'aden') {
         document.getElementById('usd-buy-val').innerText = '1,910';
         document.getElementById('usd-sell-val').innerText = '1,925';
@@ -1143,26 +971,18 @@
         document.getElementById('gold24-sell-val').innerText = '156,000';
         document.getElementById('gold21-buy-val').innerText = '133,000';
         document.getElementById('gold21-sell-val').innerText = '136,500';
-        document.getElementById('gold18-buy-val').innerText = '114,000';
-        document.getElementById('gold18-sell-val').innerText = '117,000';
-        document.getElementById('goldpnd-buy-val').innerText = '1,064,000';
-        document.getElementById('goldpnd-sell-val').innerText = '1,092,000';
 
-        if (footer) footer.innerText = 'آخر تحديث حي: منذ دقيقة (سوق عدن)';
+        if (footer) footer.innerText = 'آخر تحديث حي: منذ دقيقة';
       } else {
         document.getElementById('usd-buy-val').innerText = '535 / 1,910';
         document.getElementById('usd-sell-val').innerText = '538 / 1,925';
         document.getElementById('sar-buy-val').innerText = '140 / 501.5';
         document.getElementById('sar-sell-val').innerText = '140.5 / 503';
 
-        document.getElementById('gold24-buy-val').innerText = '42.5k / 152k';
-        document.getElementById('gold24-sell-val').innerText = '43.2k / 156k';
-        document.getElementById('gold21-buy-val').innerText = '36.8k / 133k';
-        document.getElementById('gold21-sell-val').innerText = '37.5k / 136.5k';
-        document.getElementById('gold18-buy-val').innerText = '31.5k / 114k';
-        document.getElementById('gold18-sell-val').innerText = '32.2k / 117k';
-        document.getElementById('goldpnd-buy-val').innerText = '294k / 1,064k';
-        document.getElementById('goldpnd-sell-val').innerText = '298k / 1,092k';
+        document.getElementById('gold24-buy-val').innerText = '48.5k / 152k';
+        document.getElementById('gold24-sell-val').innerText = '49.8k / 156k';
+        document.getElementById('gold21-buy-val').innerText = '42.5k / 133k';
+        document.getElementById('gold21-sell-val').innerText = '43.5k / 136.5k';
 
         if (footer) footer.innerText = 'مقارنة حية: صنعاء مقابل عدن';
       }
