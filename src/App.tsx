@@ -17,6 +17,7 @@ import { MoreMenuPage } from './pages/MoreMenuPage';
 import { PhoneMarketPage } from './pages/PhoneMarketPage';
 import { JobsPage } from './pages/JobsPage';
 import { CategoryHubPage } from './pages/categories/CategoryHubPage';
+import { OwnerDashboardPage } from './pages/owner/OwnerDashboardPage';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname + window.location.search);
@@ -48,6 +49,15 @@ export const App: React.FC = () => {
       );
     }
 
+    if (pathname.startsWith('/owner')) {
+      const bizId = searchParams.get('id') || 't1';
+      return (
+        <AppLayout onNavigate={navigate}>
+          <OwnerDashboardPage businessId={bizId} onNavigate={navigate} />
+        </AppLayout>
+      );
+    }
+
     if (pathname.startsWith('/business/')) {
       const id = pathname.replace('/business/', '');
       return (
@@ -57,22 +67,12 @@ export const App: React.FC = () => {
       );
     }
 
-    // الصفحات الجماعية للتصنيفات الرسمية
-    if (pathname === '/restaurants') {
-      return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="المطاعم" categorySlug="restaurants" onNavigate={navigate} /></AppLayout>;
-    }
-    if (pathname === '/hotels') {
-      return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="الفنادق" categorySlug="hotels" onNavigate={navigate} /></AppLayout>;
-    }
-    if (pathname === '/companies') {
-      return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="الشركات" categorySlug="companies" onNavigate={navigate} /></AppLayout>;
-    }
-    if (pathname === '/healthcare') {
-      return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="الصحة" categorySlug="healthcare" onNavigate={navigate} /></AppLayout>;
-    }
-    if (pathname === '/cars') {
-      return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="السيارات" categorySlug="cars" onNavigate={navigate} /></AppLayout>;
-    }
+    // Collective category hubs
+    if (pathname === '/restaurants') return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="المطاعم" categorySlug="restaurants" onNavigate={navigate} /></AppLayout>;
+    if (pathname === '/hotels') return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="الفنادق" categorySlug="hotels" onNavigate={navigate} /></AppLayout>;
+    if (pathname === '/companies') return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="الشركات" categorySlug="companies" onNavigate={navigate} /></AppLayout>;
+    if (pathname === '/healthcare') return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="الصحة" categorySlug="healthcare" onNavigate={navigate} /></AppLayout>;
+    if (pathname === '/cars') return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="السيارات" categorySlug="cars" onNavigate={navigate} /></AppLayout>;
 
     if (pathname === '/directory') {
       const categoryParam = searchParams.get('category') || '';
@@ -88,45 +88,11 @@ export const App: React.FC = () => {
       );
     }
 
-    if (pathname === '/jobs') {
-      return (
-        <AppLayout onNavigate={navigate}>
-          <JobsPage onNavigate={navigate} />
-        </AppLayout>
-      );
-    }
-
-    if (pathname === '/trend') {
-      return (
-        <AppLayout onNavigate={navigate}>
-          <TrendPage onNavigate={navigate} />
-        </AppLayout>
-      );
-    }
-
-    if (pathname === '/prices') {
-      return (
-        <AppLayout onNavigate={navigate}>
-          <PricesPage onNavigate={navigate} />
-        </AppLayout>
-      );
-    }
-
-    if (pathname === '/phones') {
-      return (
-        <AppLayout onNavigate={navigate}>
-          <PhoneMarketPage onNavigate={navigate} />
-        </AppLayout>
-      );
-    }
-
-    if (pathname === '/more') {
-      return (
-        <AppLayout onNavigate={navigate}>
-          <MoreMenuPage onNavigate={navigate} />
-        </AppLayout>
-      );
-    }
+    if (pathname === '/jobs') return <AppLayout onNavigate={navigate}><JobsPage onNavigate={navigate} /></AppLayout>;
+    if (pathname === '/trend') return <AppLayout onNavigate={navigate}><TrendPage onNavigate={navigate} /></AppLayout>;
+    if (pathname === '/prices') return <AppLayout onNavigate={navigate}><PricesPage onNavigate={navigate} /></AppLayout>;
+    if (pathname === '/phones') return <AppLayout onNavigate={navigate}><PhoneMarketPage onNavigate={navigate} /></AppLayout>;
+    if (pathname === '/more') return <AppLayout onNavigate={navigate}><MoreMenuPage onNavigate={navigate} /></AppLayout>;
 
     if (pathname === '/banks-wallets' || pathname === '/banks' || pathname === '/wallets') {
       const initialType = pathname === '/banks' ? 'bank' : pathname === '/wallets' ? 'wallet' : 'all';
