@@ -3,532 +3,488 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>يمن ريتنج | لوحة الإدارة</title>
+  <title>يمن ريتنج | لوحة الإدارة الرسمية</title>
   
+  <!-- خط Cairo الرسمي للهوية -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
+    /* ==========================================================================
+       الألوان الرسمية المستخرجة بدقة من دليل الهوية (Brand Tokens)
+       ========================================================================== */
     :root {
-      --bg-black: #000000;
-      --bg-card: #121215;
-      --bg-card-inner: #181820;
-      --bg-input: #121217;
+      --gold-primary: #FFC107;
+      --gold-hover: #E0A800;
+      --gold-dim: rgba(255, 193, 7, 0.14);
+      --gold-border: rgba(255, 193, 7, 0.35);
       
-      --gold: #FFB800;
-      --gold-hover: #E5A600;
-      --gold-dim: rgba(255, 184, 0, 0.14);
-      --gold-border: rgba(255, 184, 0, 0.35);
+      --bg-black: #0D0D0D;
+      --bg-card: #1A1A1A;
+      --bg-card-inner: #141414;
+      --border-dark: #2A2A2A;
       
-      --text: #FFFFFF;
+      --text-white: #E6E6E6;
       --text-gray: #8E8E93;
       --text-muted: #636366;
       
-      --border: #202028;
-      
       --green: #10B981;
-      --green-dim: rgba(16, 185, 129, 0.15);
-      --red: #EF4444;
-      --red-dim: rgba(239, 68, 68, 0.15);
+      --green-dim: rgba(16, 185, 129, 0.16);
       --blue: #3B82F6;
-      --blue-dim: rgba(59, 130, 246, 0.15);
+      --blue-dim: rgba(59, 130, 246, 0.16);
+      --red: #EF4444;
+      --red-dim: rgba(239, 68, 68, 0.16);
       
       --radius-sm: 8px;
       --radius-md: 14px;
       --radius-lg: 20px;
+      --radius-xl: 26px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg-black); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+    body { background-color: var(--bg-black); color: var(--text-white); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
 
-    /* تنسيق رموز الـ SVG المدمجة */
-    .svg-icon {
-      display: inline-block;
-      width: 1.15em;
-      height: 1.15em;
-      fill: currentColor;
-      vertical-align: -0.15em;
-      flex-shrink: 0;
-    }
+    /* أيقونات SVG برمجية مدمجة */
+    .icon { display: inline-flex; align-items: center; justify-content: center; width: 1.15em; height: 1.15em; vertical-align: middle; fill: currentColor; }
 
     /* شريط الساعة العلوي 9:41 */
-    .status-bar-phone {
-      height: 26px; padding: 0 1.25rem; display: flex; justify-content: space-between; align-items: center;
-      font-size: 0.72rem; font-weight: 700; color: #FFF; background: #000;
+    .status-bar-top {
+      height: 24px; padding: 0 1.25rem; display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.72rem; font-weight: 700; color: #FFF; background: var(--bg-black);
     }
 
-    /* الهيدر مع الأيقونات */
-    .app-header-exact {
-      height: 52px; background: #000000; border-bottom: 1px solid var(--border);
+    /* الهيدر مع شعار يمن ريتنج الرسمي (النجمة بحرف ي) */
+    .app-header-brand {
+      height: 58px; background: var(--bg-black); border-bottom: 1px solid var(--border-dark);
       display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem;
       position: sticky; top: 0; z-index: 1000;
     }
-    .header-logo-title { display: flex; align-items: center; gap: 6px; font-weight: 900; font-size: 1.05rem; color: #FFF; }
-    .header-logo-title svg { color: var(--gold); }
+    .brand-logo-wrap { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 1.05rem; color: var(--text-white); }
+    .brand-star-svg { width: 26px; height: 26px; }
 
-    /* شريط التبديل بين الشاشات الـ 16 */
-    .screens-quick-strip {
-      background: #0A0A0E; border-bottom: 1px solid var(--border); padding: 0.5rem 0.75rem;
+    /* شريط التبديل بين الشاشات */
+    .screen-tabs-bar {
+      background: #111111; border-bottom: 1px solid var(--border-dark); padding: 0.5rem 0.75rem;
       display: flex; align-items: center; gap: 6px; overflow-x: auto;
     }
-    .screen-tab-chip {
+    .screen-tab-btn {
       padding: 0.35rem 0.85rem; border-radius: 16px; font-size: 0.72rem; font-weight: 800;
-      background: var(--bg-card); color: var(--text-gray); border: 1px solid var(--border);
+      background: var(--bg-card); color: var(--text-gray); border: 1px solid var(--border-dark);
       cursor: pointer; white-space: nowrap; transition: 0.2s;
     }
-    .screen-tab-chip.active { background: var(--gold); color: #000; font-weight: 900; border-color: var(--gold); }
+    .screen-tab-btn.active { background: var(--gold-primary); color: #000; font-weight: 900; border-color: var(--gold-primary); }
 
-    /* الحاوية الرئيسية */
-    .main-screen-container { padding: 1rem; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; margin-bottom: 70px; }
+    /* مساحة العرض المركزية */
+    .main-canvas { padding: 1rem; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; margin-bottom: 75px; }
 
-    .view-screen-module { display: none; animation: fadeIn 0.2s ease; }
-    .view-screen-module.active { display: block; }
+    .view-screen { display: none; animation: fadeIn 0.2s ease; }
+    .view-screen.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ==========================================================================
-       الشاشة 1: الرئيسية
+       الشاشة 1: الرئيسية (مرحباً بك، انضم الآن + بطاقة التاج الذهبية)
        ========================================================================== */
-    .dash-greeting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .dash-greeting-text h2 { font-size: 1.1rem; font-weight: 900; color: #FFF; line-height: 1.2; }
-    .dash-greeting-text p { font-size: 0.75rem; color: var(--text-gray); }
-    .dash-add-circle { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--gold); cursor: pointer; }
-
-    /* بطاقة التاج */
-    .crown-banner-card {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
-      padding: 1rem 1.25rem; display: flex; align-items: center; gap: 14px; margin-bottom: 1.25rem;
+    .dash-header-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .dash-header-title h2 { font-size: 1.1rem; font-weight: 900; color: var(--text-white); }
+    .dash-header-title p { font-size: 0.75rem; color: var(--text-gray); }
+    
+    .crown-banner-box {
+      background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-lg);
+      padding: 1.1rem 1.3rem; display: flex; align-items: center; gap: 14px; margin-bottom: 1.25rem;
     }
-    .crown-gold-box { width: 44px; height: 44px; border-radius: 12px; background: var(--gold); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #000; }
-    .crown-gold-box svg { width: 24px; height: 24px; fill: #000; }
-    .crown-info-text h3 { font-size: 0.95rem; font-weight: 900; color: #FFF; }
-    .crown-info-text p { font-size: 0.72rem; color: var(--gold); font-weight: 700; }
+    .crown-gem-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--gold-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #000; }
+    .crown-info-texts h3 { font-size: 0.95rem; font-weight: 900; color: var(--text-white); }
+    .crown-info-texts p { font-size: 0.72rem; color: var(--gold-primary); font-weight: 700; }
 
-    /* شبكة الـ 6 إحصائيات من عمودين */
-    .stats-header-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
-    .stats-header-title { font-size: 0.85rem; font-weight: 800; color: #FFF; }
-    .stats-toggle-pills { display: flex; background: var(--bg-card); padding: 2px; border-radius: 12px; border: 1px solid var(--border); }
-    .stats-toggle-btn { padding: 3px 10px; border-radius: 10px; font-size: 0.68rem; font-weight: 700; color: var(--text-gray); background: none; border: none; cursor: pointer; }
-    .stats-toggle-btn.active { background: #262632; color: #FFF; }
-
-    .stats-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1.25rem; }
-    .stat-card-unit {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.85rem 1rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 95px;
+    /* شبكة الـ 4 كروت إحصائيات المطابقة تماماً للصورة المرجعية */
+    .stats-4-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+    .stat-box-card {
+      background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-md);
+      padding: 0.9rem 1rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 96px;
     }
-    .stat-unit-top { display: flex; justify-content: space-between; align-items: center; }
-    .stat-unit-icon { width: 28px; height: 28px; border-radius: 8px; background: var(--bg-inner); display: flex; align-items: center; justify-content: center; }
-    .stat-unit-num { font-size: 1.5rem; font-weight: 900; color: #FFF; line-height: 1.1; margin: 4px 0; }
-    .stat-unit-bottom { display: flex; justify-content: space-between; align-items: center; }
-    .stat-unit-label { font-size: 0.72rem; color: var(--text-gray); font-weight: 700; }
-    .stat-unit-badge { font-size: 0.68rem; font-weight: 800; color: var(--green); background: var(--green-dim); padding: 1px 6px; border-radius: 8px; }
+    .stat-card-top { display: flex; justify-content: space-between; align-items: center; }
+    .stat-icon-square { width: 28px; height: 28px; border-radius: 8px; background: var(--bg-card-inner); display: flex; align-items: center; justify-content: center; }
+    .stat-number-val { font-size: 1.55rem; font-weight: 900; color: var(--text-white); line-height: 1.1; margin: 4px 0; }
+    .stat-card-bottom { display: flex; justify-content: space-between; align-items: center; }
+    .stat-label-text { font-size: 0.72rem; color: var(--text-gray); font-weight: 700; }
+    .stat-growth-pill { font-size: 0.68rem; font-weight: 800; color: var(--green); background: var(--green-dim); padding: 1px 6px; border-radius: 8px; }
 
-    /* الأزرار الذهبية */
-    .btn-gold-cta {
-      background: var(--gold); color: #000; font-weight: 900; font-size: 0.88rem;
+    /* الأزرار الذهبية الرسمية بعرض الشاشة */
+    .btn-gold-main {
+      background: var(--gold-primary); color: #000; font-weight: 900; font-size: 0.88rem;
       padding: 0.8rem; border-radius: var(--radius-md); border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: 0.2s;
     }
-    .btn-gold-cta:hover { background: var(--gold-hover); }
+    .btn-gold-main:hover { background: var(--gold-hover); }
 
-    /* الأنشطة - Screen 2 */
-    .entity-item-box {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+    /* كروت دليل الأنشطة والشارات */
+    .entity-row-card {
+      background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-md);
       padding: 0.85rem 1rem; margin-bottom: 0.6rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;
     }
-    .yr-pill { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); padding: 2px 7px; border-radius: 10px; font-weight: 900; font-size: 0.72rem; }
-    .verified-pill { background: var(--green-dim); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 7px; border-radius: 10px; font-weight: 800; font-size: 0.72rem; }
+    .yr-score-tag { background: var(--gold-dim); color: var(--gold-primary); border: 1px solid var(--gold-border); padding: 2px 7px; border-radius: 10px; font-weight: 900; font-size: 0.72rem; }
+    .verified-pill-tag { background: var(--green-dim); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 7px; border-radius: 10px; font-weight: 800; font-size: 0.72rem; }
 
-    /* تفاصيل النشاط - Screen 3 */
-    .hero-banner-box {
-      height: 140px; border-radius: var(--radius-md);
-      background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800') center/cover;
-      position: relative; margin-bottom: 2.5rem;
+    /* الشاشة 3: بروفايل النشاط (الكريمي الذهبي 4.8 / YR 9.7 موثق) */
+    .hero-profile-banner {
+      height: 150px; border-radius: var(--radius-md);
+      background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800') center/cover;
+      position: relative; margin-bottom: 2.75rem;
     }
-    .hero-logo-badge {
-      width: 56px; height: 56px; border-radius: 14px; border: 3px solid var(--bg-card); background: #000;
-      position: absolute; bottom: -18px; right: 16px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--gold); font-size: 0.95rem;
+    .hero-logo-center {
+      width: 60px; height: 60px; border-radius: 16px; border: 3px solid var(--bg-card); background: #000;
+      position: absolute; bottom: -20px; right: 18px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--gold-primary); font-size: 1rem;
     }
+    .subtabs-scroll { display: flex; gap: 8px; overflow-x: auto; border-bottom: 1px solid var(--border-dark); padding-bottom: 0.75rem; margin-bottom: 1.25rem; }
+    .subtab-pill { padding: 0.45rem 1rem; border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border-dark); font-size: 0.8rem; font-weight: 700; color: var(--text-gray); cursor: pointer; }
+    .subtab-pill.active { background: var(--gold-primary); color: #000; font-weight: 900; }
 
-    /* سويتشات الأقسام - Screen 5 */
-    .toggle-line-exact { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); }
-    .gold-switch-wrap { position: relative; width: 42px; height: 22px; }
-    .gold-switch-wrap input { opacity: 0; width: 0; height: 0; }
-    .gold-slider { position: absolute; inset: 0; cursor: pointer; background: #2C2C2E; border-radius: 22px; transition: 0.25s; }
-    .gold-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.25s; }
-    input:checked + .gold-slider { background: var(--gold); }
-    input:checked + .gold-slider:before { transform: translateX(20px); background: #000; }
+    /* سويتشات الأقسام (Toggles) */
+    .toggle-line-row { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; border-bottom: 1px solid var(--border-dark); }
+    .gold-toggle-switch { position: relative; width: 42px; height: 22px; }
+    .gold-toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .gold-slider-thumb { position: absolute; inset: 0; cursor: pointer; background: #2A2A2A; border-radius: 22px; transition: 0.25s; }
+    .gold-slider-thumb:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.25s; }
+    input:checked + .gold-slider-thumb { background: var(--gold-primary); }
+    input:checked + .gold-slider-thumb:before { transform: translateX(20px); background: #000; }
 
-    /* شارات التوثيق - Screen 6 */
-    .badge-picker-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin: 1rem 0; }
-    .badge-choice-item { background: var(--bg-card); border: 2px solid var(--border); border-radius: var(--radius-md); padding: 0.85rem; text-align: center; cursor: pointer; }
-    .badge-choice-item.active-gold { border-color: var(--gold); background: var(--gold-dim); color: var(--gold); }
+    /* أسعار الصرف */
+    .market-tabs-pill { display: flex; background: var(--bg-card); padding: 3px; border-radius: 12px; border: 1px solid var(--border-dark); margin-bottom: 1rem; }
+    .market-btn-tab { flex: 1; padding: 6px; border-radius: 10px; font-size: 0.78rem; font-weight: 800; color: var(--text-gray); background: none; border: none; cursor: pointer; text-align: center; }
+    .market-btn-tab.active { background: var(--gold-primary); color: #000; }
+    .rate-box-unit { background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 0.75rem; }
+    .rate-inputs-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.5rem; }
+    .rate-inputs-2col input { width: 100%; background: var(--bg-card-inner); border: 1px solid var(--border-dark); border-radius: 8px; padding: 0.6rem; color: #FFF; font-weight: 900; font-size: 1.05rem; text-align: center; }
 
-    /* أسعار الصرف - Screen 7 */
-    .rates-market-switch { display: flex; background: var(--bg-card); padding: 3px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1rem; }
-    .market-tab-btn { flex: 1; padding: 6px; border-radius: 10px; font-size: 0.78rem; font-weight: 800; color: var(--text-gray); background: none; border: none; cursor: pointer; text-align: center; }
-    .market-tab-btn.active { background: var(--gold); color: #000; }
-    .rate-card-block { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 0.75rem; }
-    .rate-inputs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.5rem; }
-    .rate-inputs-row input { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem; color: #FFF; font-weight: 900; font-size: 1.05rem; text-align: center; }
-
-    /* شريط التنقل السفلي */
-    .app-bottom-navbar {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #0A0A0D;
-      border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000;
+    /* شريط التنقل السفلي الأصلي المعتمد في الهوية */
+    .app-bottom-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--bg-black);
+      border-top: 1px solid var(--border-dark); display: flex; justify-content: space-around; align-items: center; z-index: 1000;
     }
-    .bottom-tab-action { background: none; border: none; color: var(--text-gray); font-size: 0.7rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
-    .bottom-tab-action.active { color: var(--gold); font-weight: 900; }
-    .bottom-fab-plus {
-      width: 44px; height: 44px; border-radius: 50%; background: var(--gold); color: #000;
+    .bottom-tab-item { background: none; border: none; color: var(--text-gray); font-size: 0.7rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+    .bottom-tab-item.active { color: var(--gold-primary); font-weight: 900; }
+    .bottom-tab-item svg { width: 18px; height: 18px; fill: currentColor; }
+    .bottom-center-btn-fab {
+      width: 44px; height: 44px; border-radius: 50%; background: var(--gold-primary); color: #000;
       display: flex; align-items: center; justify-content: center; margin-top: -22px;
-      box-shadow: 0 4px 16px rgba(255, 184, 0, 0.35); border: 3px solid #000; cursor: pointer;
-    }
-
-    @media (max-width: 768px) {
-      .stats-grid-2col { grid-template-columns: 1fr 1fr; }
+      box-shadow: 0 4px 16px rgba(255, 193, 7, 0.35); border: 3px solid var(--bg-black); cursor: pointer;
     }
   </style>
 </head>
 <body>
 
   <!-- شريط الساعة العلوي 9:41 -->
-  <div class="status-bar-phone">
+  <div class="status-bar-top">
     <span>9:41</span>
     <div style="display: flex; gap: 6px; align-items: center;">
-      <svg class="svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 18.25c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l.64-.64C7.93 20.26 9.88 21 12 21s4.07-.74 5.61-1.97l.64.64c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-.64-.64C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
-      <svg class="svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+      <svg class="icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 18.25c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l.64-.64C7.93 20.26 9.88 21 12 21s4.07-.74 5.61-1.97l.64.64c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41l-.64-.64C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+      <svg class="icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
     </div>
   </div>
 
-  <!-- الهيدر مع النجمة الذهبية وشعار يمن ريتنج وجرس الإشعارات -->
-  <header class="app-header-exact">
+  <!-- الهيدر الرسمي المعتمد مع شعار يمن ريتنج وجرس التنبيهات -->
+  <header class="app-header-brand">
     <div style="cursor: pointer;" onclick="alert('الإشعارات')">
-      <svg class="svg-icon" style="width: 20px; height: 20px; color: var(--gold);" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+      <svg class="icon" style="width: 20px; height: 20px; fill: none; stroke: var(--gold-primary); stroke-width: 2;" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
     </div>
-    <div class="header-logo-title">
-      <span>يمن ريتنج</span>
-      <svg class="svg-icon" style="width: 18px; height: 18px; color: var(--gold);" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+    
+    <!-- شعار النجمة الذهبية وبداخله حرف (ي) -->
+    <div class="brand-logo-wrap">
+      <svg class="brand-star-svg" viewBox="0 0 32 32">
+        <path d="M16 2.5L20.2 11.2L29.7 12.6L22.8 19.3L24.5 28.8L16 24.3L7.5 28.8L9.2 19.3L2.3 12.6L11.8 11.2L16 2.5Z" fill="none" stroke="#FFC107" stroke-width="2.5" stroke-linejoin="round"/>
+        <text x="16" y="21" fill="#FFC107" font-size="12" font-weight="900" font-family="Cairo" text-anchor="middle">ي</text>
+      </svg>
+      <span>يمن ريتغ</span>
     </div>
-    <div style="cursor: pointer;" onclick="switchModule('s16', document.querySelectorAll('.screen-tab-chip')[15])">
-      <svg class="svg-icon" style="width: 22px; height: 22px; color: #FFF;" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+
+    <div style="cursor: pointer;" onclick="switchScreenTab('s16', document.querySelectorAll('.screen-tab-btn')[15])">
+      <svg class="icon" style="width: 22px; height: 22px; fill: none; stroke: #FFF; stroke-width: 2;" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
     </div>
   </header>
 
   <!-- شريط التبديل بين الشاشات الـ 16 المرجعية -->
-  <div class="screens-quick-strip">
-    <button class="screen-tab-chip active" onclick="switchModule('s1', this)">1. الرئيسية</button>
-    <button class="screen-tab-chip" onclick="switchModule('s2', this)">2. الأنشطة</button>
-    <button class="screen-tab-chip" onclick="switchModule('s3', this)">3. تفاصيل النشاط</button>
-    <button class="screen-tab-chip" onclick="switchModule('s4', this)">4. الصور</button>
-    <button class="screen-tab-chip" onclick="switchModule('s5', this)">5. الأقسام</button>
-    <button class="screen-tab-chip" onclick="switchModule('s6', this)">6. التوثيق</button>
-    <button class="screen-tab-chip" onclick="switchModule('s7', this)">7. أسعار الصرف</button>
-    <button class="screen-tab-chip" onclick="switchModule('s8', this)">8. الوظائف</button>
-    <button class="screen-tab-chip" onclick="switchModule('s9', this)">9. التقييمات</button>
-    <button class="screen-tab-chip" onclick="switchModule('s10', this)">10. الإعلانات</button>
-    <button class="screen-tab-chip" onclick="switchModule('s11', this)">11. تحليلات الإعلانات</button>
-    <button class="screen-tab-chip" onclick="switchModule('s12', this)">12. معرض الإعلانات</button>
-    <button class="screen-tab-chip" onclick="switchModule('s13', this)">13. التقارير</button>
-    <button class="screen-tab-chip" onclick="switchModule('s14', this)">14. المستخدمين</button>
-    <button class="screen-tab-chip" onclick="switchModule('s15', this)">15. سجل النشاطات</button>
-    <button class="screen-tab-chip" onclick="switchModule('s16', this)">16. الإعدادات</button>
+  <div class="screen-tabs-bar">
+    <button class="screen-tab-btn active" onclick="switchScreenTab('s1', this)">1. الرئيسية</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s2', this)">2. الأنشطة</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s3', this)">3. تفاصيل النشاط</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s4', this)">4. الصور</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s5', this)">5. الأقسام</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s6', this)">6. التوثيق</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s7', this)">7. أسعار الصرف</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s8', this)">8. الوظائف</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s9', this)">9. التقييمات</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s10', this)">10. الإعلانات</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s11', this)">11. تحليلات الإعلانات</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s12', this)">12. معرض الإعلانات</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s13', this)">13. التقارير</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s14', this)">14. المستخدمين</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s15', this)">15. سجل النشاطات</button>
+    <button class="screen-tab-btn" onclick="switchScreenTab('s16', this)">16. الإعدادات</button>
   </div>
 
-  <main class="main-screen-container">
+  <main class="main-canvas">
 
     <!-- ==================== الشاشة 1: الرئيسية ==================== -->
-    <div id="module-s1" class="view-screen-module active">
-      <div class="dash-greeting-row">
-        <div class="dash-greeting-text">
-          <h2>الرئيسية</h2>
-          <p>مرحباً بك، المدير العام</p>
+    <div id="view-s1" class="view-screen active">
+      <div class="dash-header-title">
+        <div>
+          <h2>مرحباً بك، انضم الآن</h2>
+          <p>لوحة التحكم الرسمية - يمن ريتنج</p>
         </div>
-        <div class="dash-add-circle" onclick="switchModule('s2', document.querySelectorAll('.screen-tab-chip')[1])">
-          <svg class="svg-icon" style="width: 16px; height: 16px; color: var(--gold);" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        </div>
-      </div>
-
-      <!-- بطاقة التاج الذهبية مع رمز التاج -->
-      <div class="crown-banner-card">
-        <div class="crown-gold-box">
-          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .55-.45 1-1 1H6c-.55 0-1-.45-1-1v-1h14v1z"/></svg>
-        </div>
-        <div class="crown-info-text">
-          <h3>صلاحية المدير العام</h3>
-          <p>كل الصلاحيات متاحة</p>
+        <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-dark); display: flex; align-items: center; justify-content: center; color: var(--gold-primary);">
+          <svg class="icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         </div>
       </div>
 
-      <!-- شريط العنوان والفلتر -->
-      <div class="stats-header-line">
-        <span class="stats-header-title">إحصائيات عامة</span>
-        <div class="stats-toggle-pills">
-          <button class="stats-toggle-btn active">اليوم</button>
-          <button class="stats-toggle-btn">هذا الشهر</button>
+      <!-- بطاقة صاحب المتجر المميز / صلاحية المدير العام -->
+      <div class="crown-banner-box">
+        <div class="crown-gem-icon">
+          <svg class="icon" style="width: 24px; height: 24px; fill: #000;" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .55-.45 1-1 1H6c-.55 0-1-.45-1-1v-1h14v1z"/></svg>
+        </div>
+        <div class="crown-info-texts">
+          <h3>صاحب المتجر المميز</h3>
+          <p>ارفع علامتك التجارية</p>
         </div>
       </div>
 
-      <!-- شبكة الـ 6 إحصائيات المدمجة من عمودين مع الأيقونات -->
-      <div class="stats-grid-2col">
-        <!-- 1. إجمالي الأنشطة -->
-        <div class="stat-card-unit">
-          <div class="stat-unit-top">
-            <div class="stat-unit-icon"><svg class="svg-icon" style="color: #3B82F6;" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <span style="font-size: 0.85rem; font-weight: 800; color: var(--text-white);">إحصائيات عامة</span>
+        <span style="font-size: 0.7rem; color: var(--gold-primary); font-weight: 700;">محدث لحظياً</span>
+      </div>
+
+      <!-- شبكة الـ 4 كروت إحصائيات المطابقة تماماً للشاشة الأولى -->
+      <div class="stats-4-grid">
+        <div class="stat-box-card">
+          <div class="stat-card-top">
+            <div class="stat-icon-square"><svg class="icon" style="color: #3B82F6;" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg></div>
           </div>
-          <div class="stat-unit-num">1,248</div>
-          <div class="stat-unit-bottom">
-            <span class="stat-unit-label">إجمالي الأنشطة</span>
-            <span class="stat-unit-badge">+18</span>
+          <div class="stat-number-val">1,248</div>
+          <div class="stat-card-bottom">
+            <span class="stat-label-text">الأنشطة</span>
+            <span class="stat-growth-pill">+18</span>
           </div>
         </div>
 
-        <!-- 2. الشركات والمحلات -->
-        <div class="stat-card-unit">
-          <div class="stat-unit-top">
-            <div class="stat-unit-icon"><svg class="svg-icon" style="color: var(--gold);" viewBox="0 0 24 24"><path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/></svg></div>
+        <div class="stat-box-card">
+          <div class="stat-card-top">
+            <div class="stat-icon-square"><svg class="icon" style="color: var(--gold-primary);" viewBox="0 0 24 24"><path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/></svg></div>
           </div>
-          <div class="stat-unit-num">892</div>
-          <div class="stat-unit-bottom">
-            <span class="stat-unit-label">الشركات والمحلات</span>
-            <span class="stat-unit-badge">+24</span>
-          </div>
-        </div>
-
-        <!-- 3. الوظائف المنشورة -->
-        <div class="stat-card-unit">
-          <div class="stat-unit-top">
-            <div class="stat-unit-icon"><svg class="svg-icon" style="color: var(--gold);" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg></div>
-          </div>
-          <div class="stat-unit-num">326</div>
-          <div class="stat-unit-bottom">
-            <span class="stat-unit-label">الوظائف المنشورة</span>
-            <span class="stat-unit-badge">+116</span>
+          <div class="stat-number-val">892</div>
+          <div class="stat-card-bottom">
+            <span class="stat-label-text">المتاجر</span>
+            <span class="stat-growth-pill">+24</span>
           </div>
         </div>
 
-        <!-- 4. التقييمات -->
-        <div class="stat-card-unit">
-          <div class="stat-unit-top">
-            <div class="stat-unit-icon"><svg class="svg-icon" style="color: var(--gold);" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
+        <div class="stat-box-card">
+          <div class="stat-card-top">
+            <div class="stat-icon-square"><svg class="icon" style="color: var(--gold-primary);" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
           </div>
-          <div class="stat-unit-num">5,432</div>
-          <div class="stat-unit-bottom">
-            <span class="stat-unit-label">التقييمات</span>
-            <span class="stat-unit-badge">+156</span>
-          </div>
-        </div>
-
-        <!-- 5. طلبات التوثيق -->
-        <div class="stat-card-unit">
-          <div class="stat-unit-top">
-            <div class="stat-unit-icon"><svg class="svg-icon" style="color: var(--green);" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg></div>
-          </div>
-          <div class="stat-unit-num">230</div>
-          <div class="stat-unit-bottom">
-            <span class="stat-unit-label">طلبات التوثيق</span>
-            <span class="stat-unit-badge" style="color: var(--gold); background: var(--gold-dim);">+4</span>
+          <div class="stat-number-val">5,432</div>
+          <div class="stat-card-bottom">
+            <span class="stat-label-text">التقييمات</span>
+            <span class="stat-growth-pill">+116</span>
           </div>
         </div>
 
-        <!-- 6. الإعلانات النشطة -->
-        <div class="stat-card-unit">
-          <div class="stat-unit-top">
-            <div class="stat-unit-icon"><svg class="svg-icon" style="color: var(--gold);" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11l-5-3 5-3v6z"/></svg></div>
+        <div class="stat-box-card">
+          <div class="stat-card-top">
+            <div class="stat-icon-square"><svg class="icon" style="color: var(--gold-primary);" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg></div>
           </div>
-          <div class="stat-unit-num">12</div>
-          <div class="stat-unit-bottom">
-            <span class="stat-unit-label">الإعلانات النشطة</span>
-            <span class="stat-unit-badge">+3</span>
+          <div class="stat-number-val">326</div>
+          <div class="stat-card-bottom">
+            <span class="stat-label-text">المتاجر</span>
+            <span class="stat-growth-pill">+156</span>
           </div>
         </div>
       </div>
     </div>
 
     <!-- ==================== الشاشة 2: الأنشطة ==================== -->
-    <div id="module-s2" class="view-screen-module">
+    <div id="view-s2" class="view-screen">
       <div style="margin-bottom: 0.75rem; font-size: 0.8rem; font-weight: 800; color: var(--text-gray);">إجمالي الأنشطة: 1,248</div>
       
-      <div class="entity-item-box" onclick="switchModule('s3', document.querySelectorAll('.screen-tab-chip')[2])">
+      <div class="entity-row-card" onclick="switchScreenTab('s3', document.querySelectorAll('.screen-tab-btn')[2])">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 36px; height: 36px; border-radius: 8px; background: #000; color: var(--gold); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem;">بنك</div>
-          <div><div style="font-weight: 800; font-size: 0.85rem;">بنك الكريمي</div><div style="font-size: 0.68rem; color: var(--text-gray);">بنك • صنعاء</div></div>
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: #000; color: var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem;">الكريمي</div>
+          <div>
+            <div style="font-weight: 800; font-size: 0.85rem;">الكريمي الذهبي</div>
+            <div style="font-size: 0.68rem; color: var(--text-gray);">مطعم • كافيه • صنعاء</div>
+          </div>
         </div>
-        <div style="display: flex; gap: 6px;"><span class="yr-pill">YR 97</span><span class="verified-pill">موثق</span></div>
+        <div style="display: flex; gap: 6px;"><span class="yr-score-tag">YR 9.7</span><span class="verified-pill-tag">موثق</span></div>
       </div>
 
-      <div class="entity-item-box">
+      <div class="entity-row-card">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 36px; height: 36px; border-radius: 8px; background: #000; color: var(--gold); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem;">مطعم</div>
-          <div><div style="font-weight: 800; font-size: 0.85rem;">مطعم البيت اليمني</div><div style="font-size: 0.68rem; color: var(--text-gray);">مطعم • صنعاء</div></div>
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: #000; color: var(--gold-primary); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem;">مطعم</div>
+          <div><div style="font-weight: 800; font-size: 0.85rem;">مطعم البيت اليمني</div><div style="font-size: 0.68rem; color: var(--text-gray);">مطاعم • صنعاء</div></div>
         </div>
-        <div style="display: flex; gap: 6px;"><span class="yr-pill">YR 96</span><span class="verified-pill">موثق</span></div>
+        <div style="display: flex; gap: 6px;"><span class="yr-score-tag">YR 9.6</span><span class="verified-pill-tag">موثق</span></div>
       </div>
 
-      <div class="entity-item-box">
+      <div class="entity-row-card">
         <div style="display: flex; align-items: center; gap: 10px;">
           <div style="width: 36px; height: 36px; border-radius: 8px; background: #000; color: var(--blue); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem;">جيب</div>
           <div><div style="font-weight: 800; font-size: 0.85rem;">محفظة جيب</div><div style="font-size: 0.68rem; color: var(--text-gray);">محفظة إلكترونية</div></div>
         </div>
-        <div style="display: flex; gap: 6px;"><span class="yr-pill">YR 95</span><span class="verified-pill">موثق</span></div>
+        <div style="display: flex; gap: 6px;"><span class="yr-score-tag">YR 9.5</span><span class="verified-pill-tag">موثق</span></div>
       </div>
 
-      <button class="btn-gold-cta" style="margin-top: 1rem;">
-        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      <button class="btn-gold-main" style="margin-top: 1rem;">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         <span>إضافة نشاط</span>
       </button>
     </div>
 
     <!-- ==================== الشاشة 3: تفاصيل النشاط ==================== -->
-    <div id="module-s3" class="view-screen-module">
-      <div class="hero-banner-box">
-        <div class="hero-logo-badge">الكريمي</div>
+    <div id="view-s3" class="view-screen">
+      <div class="hero-profile-banner">
+        <div class="hero-logo-center">الكريمي</div>
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <div><h2 style="font-size: 1.1rem; font-weight: 900;">بنك الكريمي</h2><div style="font-size: 0.72rem; color: var(--text-gray);">موثق • YR 97 • بنك</div></div>
-        <span class="yr-pill" style="font-size: 0.85rem;">YR 97</span>
+        <div>
+          <h2 style="font-size: 1.1rem; font-weight: 900;">الكريمي الذهبي</h2>
+          <div style="font-size: 0.72rem; color: var(--text-gray);">موثق • YR 9.7 • 4.8 ⭐</div>
+        </div>
+        <span class="yr-score-tag" style="font-size: 0.85rem;">YR 9.7</span>
       </div>
-      <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 1rem; font-size: 0.78rem; line-height: 1.7;">
-        <div><strong style="color: var(--gold);">اسم النشاط:</strong> بنك الكريمي</div>
-        <div><strong style="color: var(--gold);">التصنيف:</strong> بنوك • بنك تجاري</div>
-        <div><strong style="color: var(--gold);">الوصف:</strong> بنك الكريمي للتمويل الأصغر الإسلامي يقدم خدمات مصرفية للشركات والأفراد وفق أحكام الشريعة الإسلامية.</div>
+
+      <div class="subtabs-scroll">
+        <div class="subtab-pill active">المعلومات</div>
+        <div class="subtab-pill">العروض</div>
+        <div class="subtab-pill">المعرض</div>
+        <div class="subtab-pill">الصور</div>
+        <div class="subtab-pill">التقييمات</div>
       </div>
-      <button class="btn-gold-cta">تعديل البيانات</button>
+
+      <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-dark); margin-bottom: 1rem; font-size: 0.78rem; line-height: 1.8;">
+        <div><strong style="color: var(--gold-primary);">اسم النشاط:</strong> الكريمي الذهبي</div>
+        <div><strong style="color: var(--gold-primary);">نوع النشاط:</strong> مطعم - كافيه</div>
+        <div><strong style="color: var(--gold-primary);">الموقع:</strong> صنعاء - شارع الخمسين</div>
+        <div><strong style="color: var(--gold-primary);">مستوى الأسعار:</strong> مرتفع</div>
+      </div>
+
+      <button class="btn-gold-main">تواصل الآن</button>
     </div>
 
     <!-- ==================== الشاشة 5: إدارة الأقسام ==================== -->
-    <div id="module-s5" class="view-screen-module">
-      <div style="background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border); margin-bottom: 1rem;">
-        <div class="toggle-line-exact"><span>نبذة</span> <label class="gold-switch-wrap"><input type="checkbox" checked><span class="gold-slider"></span></label></div>
-        <div class="toggle-line-exact"><span>الخدمات</span> <label class="gold-switch-wrap"><input type="checkbox" checked><span class="gold-slider"></span></label></div>
-        <div class="toggle-line-exact"><span>المنتجات</span> <label class="gold-switch-wrap"><input type="checkbox" checked><span class="gold-slider"></span></label></div>
-        <div class="toggle-line-exact"><span>الأسعار</span> <label class="gold-switch-wrap"><input type="checkbox" checked><span class="gold-slider"></span></label></div>
-        <div class="toggle-line-exact"><span>الفروع</span> <label class="gold-switch-wrap"><input type="checkbox" checked><span class="gold-slider"></span></label></div>
-        <div class="toggle-line-exact"><span>التقييمات</span> <label class="gold-switch-wrap"><input type="checkbox" checked><span class="gold-slider"></span></label></div>
-        <div class="toggle-line-exact"><span>الوظائف</span> <label class="gold-switch-wrap"><input type="checkbox"><span class="gold-slider"></span></label></div>
-        <div class="toggle-line-exact"><span>الإعلانات</span> <label class="gold-switch-wrap"><input type="checkbox" checked><span class="gold-slider"></span></label></div>
+    <div id="view-s5" class="view-screen">
+      <div style="background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-dark); margin-bottom: 1rem;">
+        <div class="toggle-line-row"><span>نبذة</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
+        <div class="toggle-line-row"><span>الخدمات</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
+        <div class="toggle-line-row"><span>المنتجات</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
+        <div class="toggle-line-row"><span>الأسعار</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
+        <div class="toggle-line-row"><span>الفروع</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
+        <div class="toggle-line-row"><span>التقييمات</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
+        <div class="toggle-line-row"><span>الوظائف</span> <label class="gold-toggle-switch"><input type="checkbox"><span class="gold-slider-thumb"></span></label></div>
+        <div class="toggle-line-row"><span>الإعلانات</span> <label class="gold-toggle-switch"><input type="checkbox" checked><span class="gold-slider-thumb"></span></label></div>
       </div>
-      <button class="btn-gold-cta" onclick="alert('تم حفظ التغييرات')">حفظ التغييرات</button>
-    </div>
-
-    <!-- ==================== الشاشة 6: التوثيق ==================== -->
-    <div id="module-s6" class="view-screen-module">
-      <div class="badge-picker-strip">
-        <div class="badge-choice-item active-gold" onclick="selectBadge(this)"><svg class="svg-icon" style="width: 20px; height: 20px; color: var(--gold);" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg><div style="font-weight: 800; font-size: 0.75rem;">ذهبية</div></div>
-        <div class="badge-choice-item" onclick="selectBadge(this)"><svg class="svg-icon" style="width: 20px; height: 20px; color: var(--blue);" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg><div style="font-weight: 800; font-size: 0.75rem;">زرقاء</div></div>
-        <div class="badge-choice-item" onclick="selectBadge(this)"><svg class="svg-icon" style="width: 20px; height: 20px; color: var(--text-muted);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z"/></svg><div style="font-weight: 800; font-size: 0.75rem;">رمادية</div></div>
-      </div>
-      <button class="btn-gold-cta">تغيير الشارة</button>
+      <button class="btn-gold-main" onclick="alert('تم حفظ التغييرات')">حفظ التغييرات</button>
     </div>
 
     <!-- ==================== الشاشة 7: أسعار الصرف ==================== -->
-    <div id="module-s7" class="view-screen-module">
-      <div class="rates-market-switch">
-        <button class="market-tab-btn active">صنعاء</button>
-        <button class="market-tab-btn">عدن</button>
+    <div id="view-s7" class="view-screen">
+      <div class="market-tabs-pill">
+        <button class="market-btn-tab active">صنعاء</button>
+        <button class="market-btn-tab">عدن</button>
       </div>
 
-      <div class="rate-card-block">
-        <h4 style="color: var(--gold); font-size: 0.85rem; margin-bottom: 4px;">
-          <svg class="svg-icon" style="color: var(--gold);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg>
-          <span>الدولار الأمريكي</span>
-        </h4>
-        <div class="rate-inputs-row">
+      <div class="rate-box-unit">
+        <h4 style="color: var(--gold-primary); font-size: 0.85rem; margin-bottom: 4px;">الدولار الأمريكي</h4>
+        <div class="rate-inputs-2col">
           <div><span style="font-size: 0.68rem; color: var(--text-gray);">سعر الشراء</span><input type="number" value="1540"></div>
           <div><span style="font-size: 0.68rem; color: var(--text-gray);">سعر البيع</span><input type="number" value="1530"></div>
         </div>
       </div>
 
-      <div class="rate-card-block">
-        <h4 style="color: var(--gold); font-size: 0.85rem; margin-bottom: 4px;">
-          <svg class="svg-icon" style="color: var(--gold);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg>
-          <span>الريال السعودي</span>
-        </h4>
-        <div class="rate-inputs-row">
+      <div class="rate-box-unit">
+        <h4 style="color: var(--gold-primary); font-size: 0.85rem; margin-bottom: 4px;">الريال السعودي</h4>
+        <div class="rate-inputs-2col">
           <div><span style="font-size: 0.68rem; color: var(--text-gray);">سعر الشراء</span><input type="number" value="410"></div>
           <div><span style="font-size: 0.68rem; color: var(--text-gray);">سعر البيع</span><input type="number" value="408"></div>
         </div>
       </div>
 
-      <div style="font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-bottom: 0.75rem;">آخر تحديث : منذ 5 دقائق (22/05/2024 - 10:30)</div>
-      <button class="btn-gold-cta" onclick="alert('تم تحديث الأسعار بنجاح!')">تحديث الأسعار</button>
-    </div>
-
-    <!-- ==================== الشاشة 8: الوظائف ==================== -->
-    <div id="module-s8" class="view-screen-module">
-      <div class="entity-item-box"><div><div style="font-weight: 800; font-size: 0.85rem;">محاسب مالي</div><div style="font-size: 0.7rem; color: var(--gold);">بنك الكريمي • صنعاء</div></div><span class="verified-pill">$800</span></div>
-      <button class="btn-gold-cta" style="margin-top: 1rem;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> <span>إضافة وظيفة</span></button>
+      <button class="btn-gold-main" onclick="alert('تم تحديث الأسعار بنجاح!')">تحديث الأسعار</button>
     </div>
 
     <!-- ==================== الشاشة 9: التقييمات ==================== -->
-    <div id="module-s9" class="view-screen-module">
-      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 8px;">
+    <div id="view-s9" class="view-screen">
+      <div style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 8px;">
         <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
           <strong>أبو محمد</strong>
-          <span style="color: var(--gold);">★★★★★</span>
+          <span style="color: var(--gold-primary);">★★★★★</span>
         </div>
-        <div style="font-size: 0.75rem; color: var(--text-gray);">خدمة ممتازة وتعامل راقي - بنك الكريمي</div>
+        <div style="font-size: 0.75rem; color: var(--text-gray);">تجربة ممتازة وتعامل راقي جداً - الكريمي الذهبي</div>
+      </div>
+      <div style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+          <strong>سالم الشريف</strong>
+          <span style="color: var(--gold-primary);">★★★★★</span>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-gray);">أفضل مطعم في صنعاء وخدمة سريعة</div>
       </div>
     </div>
 
-    <!-- ==================== الشاشة 13: التقارير ==================== -->
-    <div id="module-s13" class="view-screen-module">
-      <div style="background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border);">
-        <div class="toggle-line-exact"><span>الزيارات</span> <span style="font-weight: 900;">15,430 <span style="color: var(--green); font-size: 0.7rem;">+12%</span></span></div>
-        <div class="toggle-line-exact"><span>مرات الظهور</span> <span style="font-weight: 900;">78,920 <span style="color: var(--green); font-size: 0.7rem;">+18%</span></span></div>
-        <div class="toggle-line-exact"><span>البحث</span> <span style="font-weight: 900;">8,765 <span style="color: var(--red); font-size: 0.7rem;">-8%</span></span></div>
+    <!-- ==================== الشاشة 13: التقارير والنمو ==================== -->
+    <div id="view-s13" class="view-screen">
+      <div style="background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-dark);">
+        <div style="display: flex; justify-content: space-between; padding: 0.9rem; border-bottom: 1px solid var(--border-dark);"><span>الزيارات</span> <span style="font-weight: 900;">15,430 <span style="color: var(--red); font-size: 0.7rem;">-12%</span></span></div>
+        <div style="display: flex; justify-content: space-between; padding: 0.9rem; border-bottom: 1px solid var(--border-dark);"><span>مرات الظهور</span> <span style="font-weight: 900;">78,920 <span style="color: var(--green); font-size: 0.7rem;">+12%</span></span></div>
+        <div style="display: flex; justify-content: space-between; padding: 0.9rem; border-bottom: 1px solid var(--border-dark);"><span>الإعجابات</span> <span style="font-weight: 900;">8,765 <span style="color: var(--green); font-size: 0.7rem;">+8%</span></span></div>
+        <div style="display: flex; justify-content: space-between; padding: 0.9rem; border-bottom: 1px solid var(--border-dark);"><span>النشاط</span> <span style="font-weight: 900;">2,345 <span style="color: var(--green); font-size: 0.7rem;">+19%</span></span></div>
+        <div style="display: flex; justify-content: space-between; padding: 0.9rem; border-bottom: 1px solid var(--border-dark);"><span>التفاعل</span> <span style="font-weight: 900;">1,876 <span style="color: var(--green); font-size: 0.7rem;">+23%</span></span></div>
+        <div style="display: flex; justify-content: space-between; padding: 0.9rem; border-bottom: 1px solid var(--border-dark);"><span>الموثوقية</span> <span style="font-weight: 900;">324 <span style="color: var(--green); font-size: 0.7rem;">+33%</span></span></div>
       </div>
     </div>
 
     <!-- ==================== الشاشة 16: الإعدادات ==================== -->
-    <div id="module-s16" class="view-screen-module">
-      <div style="background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border);">
-        <div class="toggle-line-exact" style="cursor: pointer;"><span>الإعدادات العامة</span> <svg class="svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
-        <div class="toggle-line-exact" style="cursor: pointer;"><span>إعدادات الأسعار</span> <svg class="svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
-        <div class="toggle-line-exact" style="cursor: pointer;"><span>إعدادات الإعلانات</span> <svg class="svg-icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+    <div id="view-s16" class="view-screen">
+      <div style="background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-dark);">
+        <div style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid var(--border-dark); cursor: pointer;"><span>الإعدادات العامة</span> <svg class="icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+        <div style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid var(--border-dark); cursor: pointer;"><span>إعدادات الأسعار</span> <svg class="icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+        <div style="display: flex; justify-content: space-between; padding: 1rem; border-bottom: 1px solid var(--border-dark); cursor: pointer;"><span>النسخ الاحتياطي</span> <svg class="icon" style="width: 14px; height: 14px;" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
       </div>
-      <div style="text-align: center; color: var(--text-muted); font-size: 0.7rem; margin-top: 1.5rem;">الإصدار 1.0.0 | © 2024 - 2026 Yemen Rating</div>
+      <div style="text-align: center; color: var(--text-muted); font-size: 0.7rem; margin-top: 1.5rem;">الإصدار 1.0.0 | © 2026 Yemen Rating</div>
     </div>
 
   </main>
 
-  <!-- شريط التنقل السفلي المعتمد في الموبايل مع الـ SVG -->
-  <nav class="app-bottom-navbar">
-    <button class="bottom-tab-action active" onclick="switchModule('s1', document.querySelectorAll('.screen-tab-chip')[0])">
-      <svg class="svg-icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+  <!-- شريط التنقل السفلي المعتمد في دليل الهوية مع الزر الدائري الأصفر (+) -->
+  <nav class="app-bottom-bar">
+    <button class="bottom-tab-item active" onclick="switchScreenTab('s1', document.querySelectorAll('.screen-tab-btn')[0])">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       <span>الرئيسية</span>
     </button>
-    <button class="bottom-tab-action" onclick="switchModule('s2', document.querySelectorAll('.screen-tab-chip')[1])">
-      <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
+    <button class="bottom-tab-item" onclick="switchScreenTab('s2', document.querySelectorAll('.screen-tab-btn')[1])">
+      <svg viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
       <span>الأنشطة</span>
     </button>
-    <div class="bottom-fab-plus" onclick="switchModule('s2', document.querySelectorAll('.screen-tab-chip')[1])">
-      <svg class="svg-icon" style="width: 22px; height: 22px; fill: #000;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+    <div class="bottom-center-btn-fab" onclick="switchScreenTab('s2', document.querySelectorAll('.screen-tab-btn')[1])">
+      <svg class="icon" style="width: 22px; height: 22px; fill: #000;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
     </div>
-    <button class="bottom-tab-action" onclick="switchModule('s10', document.querySelectorAll('.screen-tab-chip')[9])">
-      <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11l-5-3 5-3v6z"/></svg>
+    <button class="bottom-tab-item" onclick="switchScreenTab('s10', document.querySelectorAll('.screen-tab-btn')[9])">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11l-5-3 5-3v6z"/></svg>
       <span>الإعلانات</span>
     </button>
-    <button class="bottom-tab-action" onclick="switchModule('s16', document.querySelectorAll('.screen-tab-chip')[15])">
-      <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+    <button class="bottom-tab-item" onclick="switchScreenTab('s16', document.querySelectorAll('.screen-tab-btn')[15])">
+      <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
       <span>المزيد</span>
     </button>
   </nav>
 
   <script>
-    function switchModule(mId, chipEl) {
-      document.querySelectorAll('.view-screen-module').forEach(m => m.classList.remove('active'));
-      document.querySelectorAll('.screen-tab-chip').forEach(c => c.classList.remove('active'));
-      
-      const target = document.getElementById('module-' + mId);
-      if (target) target.classList.add('active');
-      if (chipEl && chipEl.classList) chipEl.classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    function switchScreenTab(tabKey, btnElement) {
+      document.querySelectorAll('.view-screen').forEach(view => view.classList.remove('active'));
+      document.querySelectorAll('.screen-tab-btn').forEach(btn => btn.classList.remove('active'));
 
-    function selectBadge(box) {
-      document.querySelectorAll('.badge-choice-item').forEach(b => b.classList.remove('active-gold'));
-      box.classList.add('active-gold');
+      const target = document.getElementById('view-' + tabKey);
+      if (target) target.classList.add('active');
+
+      if (btnElement && btnElement.classList) btnElement.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   </script>
 </body>
