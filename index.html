@@ -7,46 +7,33 @@
     <meta name="theme-color" content="#000000" />
     <meta name="color-scheme" content="dark light" />
     <title>يمن ريتغ | Yemen Rating</title>
-
-    <!-- 1. تنظيف ومسح Service Worker والكاش القديم المخزن في ذاكرة الهاتف -->
     <script>
       (function() {
-        // حذف أي Service Worker قديم مخزن في المتصفح
         if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function(registrations) {
-            for (var i = 0; i < registrations.length; i++) {
-              registrations[i].unregister();
-            }
+          navigator.serviceWorker.getRegistrations().then(function(r) {
+            for (var i = 0; i < r.length; i++) r[i].unregister();
           });
         }
-        // مسح مخزن Caches القديم من ذاكرة الهاتف
         if ('caches' in window) {
           caches.keys().then(function(names) {
-            for (var i = 0; i < names.length; i++) {
-              caches.delete(names[i]);
-            }
+            for (var i = 0; i < names.length; i++) caches.delete(names[i]);
           });
         }
-        // تطبيق الوضع الليلي الافتراضي الفوري
         try {
-          var stored = localStorage.getItem('yr-theme');
-          if (stored === 'light') {
-            document.documentElement.classList.remove('dark');
-          } else {
-            document.documentElement.classList.add('dark');
-          }
+          var s = localStorage.getItem('yr-theme');
+          if (s === 'light') document.documentElement.classList.remove('dark');
+          else document.documentElement.classList.add('dark');
         } catch (e) {
           document.documentElement.classList.add('dark');
         }
       })();
     </script>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   </head>
   <body class="bg-[#F7F8FA] dark:bg-[#000000] text-[#0F172A] dark:text-white" style="direction: rtl;">
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx?v=4.0"></script>
+    <script type="module" src="/src/main.tsx?v=5.0"></script>
   </body>
 </html>
