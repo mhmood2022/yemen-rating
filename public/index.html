@@ -371,16 +371,7 @@ body.menu-open {
 </style>
 
 
-<style id="tab-strict-isolation-style">
-  /* إخفاء كافة التبويبات افتراضياً */
-  #app-tab-home, #app-tab-prices, #app-tab-trend, #app-tab-more {
-    display: none !important;
-  }
-  /* إظهار التبويب النشط فقط */
-  #app-tab-home.active-tab, #app-tab-prices.active-tab, #app-tab-trend.active-tab, #app-tab-more.active-tab {
-    display: block !important;
-  }
-</style>
+
 
 </head>
 <body>
@@ -936,107 +927,7 @@ body.menu-open {
   </nav>
 
   <!-- JavaScript التفاعلي -->
-  <script>
-    function switchAppTab(tabKey, btnElement) {
-      document.querySelectorAll('.tab-view-section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.bottom-nav-link').forEach(b => b.classList.remove('active'));
-
-      const target = document.getElementById('app-tab-' + tabKey);
-      if (target) target.classList.add('active');
-
-      if (btnElement && btnElement.classList) {
-        btnElement.classList.add('active');
-      }
-
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-
-      if (tabKey === 'prices') {
-        calculateLiveExchange();
-      }
-    }
-
-    function openNotificationsCenter() {
-      document.getElementById('modal-notifications-center').style.display = 'flex';
-    }
-
-    function closeNotificationsCenter() {
-      document.getElementById('modal-notifications-center').style.display = 'none';
-    }
-
-    function calculateLiveExchange() {
-      const amount = parseFloat(document.getElementById('calc-amount').value) || 0;
-      const curr = document.getElementById('calc-currency-select').value;
-      
-      const rateSanaa = (curr === 'USD') ? 538 : 140.5;
-      const rateAden = (curr === 'USD') ? 1925 : 503;
-
-      const totalSanaa = Math.round(amount * rateSanaa);
-      const totalAden = Math.round(amount * rateAden);
-      const diff = totalAden - totalSanaa;
-
-      document.getElementById('calc-res-sanaa').innerText = totalSanaa.toLocaleString() + ' ريال';
-      document.getElementById('calc-res-aden').innerText = totalAden.toLocaleString() + ' ريال';
-      document.getElementById('calc-res-diff').innerText = '+' + diff.toLocaleString() + ' ريال';
-    }
-
-    function switchPriceSubTab(subKey, btn) {
-      document.querySelectorAll('.subtab-link-btn').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-
-      if (subKey === 'currencies') {
-        document.getElementById('prices-currencies-container').style.display = 'block';
-        document.getElementById('prices-gold-container').style.display = 'none';
-      } else {
-        document.getElementById('prices-currencies-container').style.display = 'none';
-        document.getElementById('prices-gold-container').style.display = 'block';
-      }
-    }
-
-    function switchPriceMarket(mkt, btn) {
-      document.querySelectorAll('.market-pill-btn').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-
-      const footer = document.getElementById('price-timestamp-footer');
-
-      if (mkt === 'sanaa') {
-        document.getElementById('usd-buy-val').innerText = '535';
-        document.getElementById('usd-sell-val').innerText = '538';
-        document.getElementById('sar-buy-val').innerText = '140.0';
-        document.getElementById('sar-sell-val').innerText = '140.5';
-        
-        document.getElementById('gold24-buy-val').innerText = '48,500';
-        document.getElementById('gold24-sell-val').innerText = '49,800';
-        document.getElementById('gold21-buy-val').innerText = '42,500';
-        document.getElementById('gold21-sell-val').innerText = '43,500';
-
-        if (footer) footer.innerText = 'آخر تحديث حي: منذ دقيقتين';
-      } else if (mkt === 'aden') {
-        document.getElementById('usd-buy-val').innerText = '1,910';
-        document.getElementById('usd-sell-val').innerText = '1,925';
-        document.getElementById('sar-buy-val').innerText = '501.5';
-        document.getElementById('sar-sell-val').innerText = '503.0';
-
-        document.getElementById('gold24-buy-val').innerText = '152,000';
-        document.getElementById('gold24-sell-val').innerText = '156,000';
-        document.getElementById('gold21-buy-val').innerText = '133,000';
-        document.getElementById('gold21-sell-val').innerText = '136,500';
-
-        if (footer) footer.innerText = 'آخر تحديث حي: منذ دقيقة';
-      } else {
-        document.getElementById('usd-buy-val').innerText = '535 / 1,910';
-        document.getElementById('usd-sell-val').innerText = '538 / 1,925';
-        document.getElementById('sar-buy-val').innerText = '140 / 501.5';
-        document.getElementById('sar-sell-val').innerText = '140.5 / 503';
-
-        document.getElementById('gold24-buy-val').innerText = '48.5k / 152k';
-        document.getElementById('gold24-sell-val').innerText = '49.8k / 156k';
-        document.getElementById('gold21-buy-val').innerText = '42.5k / 133k';
-        document.getElementById('gold21-sell-val').innerText = '43.5k / 136.5k';
-
-        if (footer) footer.innerText = 'مقارنة حية: صنعاء مقابل عدن';
-      }
-    }
-  </script>
+  
 
 <script>
 function switchTab(tabName) {
@@ -1092,6 +983,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // تفعيل التبويب الافتراضي (الرئيسية) عند فتح الموقع
   switchTab('home-page');
+});
+</script>
+
+
+<script>
+function showTab(tabId) {
+  const tabs = ['app-tab-home', 'app-tab-prices', 'app-tab-trend', 'app-tab-more'];
+  
+  tabs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      if (id === tabId) {
+        el.style.display = 'block';
+      } else {
+        el.style.display = 'none';
+      }
+    }
+  });
+  window.scrollTo(0, 0);
+}
+
+// تشغيل الرئيسية تلقائياً بعد إتمام تحميل الصفحة
+window.addEventListener('load', function() {
+  showTab('app-tab-home');
 });
 </script>
 
