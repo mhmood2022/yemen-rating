@@ -370,6 +370,18 @@ body.menu-open {
 }
 </style>
 
+
+<style id="tab-strict-isolation-style">
+  /* إخفاء كافة التبويبات افتراضياً */
+  #app-tab-home, #app-tab-prices, #app-tab-trend, #app-tab-more {
+    display: none !important;
+  }
+  /* إظهار التبويب النشط فقط */
+  #app-tab-home.active-tab, #app-tab-prices.active-tab, #app-tab-trend.active-tab, #app-tab-more.active-tab {
+    display: block !important;
+  }
+</style>
+
 </head>
 <body>
 
