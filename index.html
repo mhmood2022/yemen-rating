@@ -929,189 +929,55 @@ body.menu-open {
   <!-- JavaScript التفاعلي -->
   
 
-<script>
-function switchTab(tabName) {
-  // إخفاء جميع التبويبات
-  const tabs = document.querySelectorAll('.tab-content, .page-section, #home-tab, #more-tab');
-  tabs.forEach(tab => tab.style.display = 'none');
 
-  // إزالة التنشيط عن الأزرار
-  document.querySelectorAll('.bottom-nav-item').forEach(btn => btn.classList.remove('active'));
 
-  // إظهار التبويب المطلوب فقط
-  if (tabName === 'home') {
-    const homeEl = document.getElementById('home-tab') || document.querySelector('.main-content');
-    if (homeEl) homeEl.style.display = 'block';
-    window.scrollTo(0, 0);
-  } else if (tabName === 'more') {
-    const moreEl = document.getElementById('more-tab') || document.getElementById('moreMenu');
-    if (moreEl) moreEl.style.display = 'block';
-    window.scrollTo(0, 0);
+
+
+
+
+
+
+
+
+
+
+<script id="unified-tab-system">
+window.appGoToTab = function(tabId, evt) {
+  if (evt) {
+    evt.preventDefault();
+    evt.stopPropagation();
   }
-}
-</script>
 
+  const validTabs = ['app-tab-home', 'app-tab-prices', 'app-tab-trend', 'app-tab-more'];
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // ربط أزرار التنقل السفلي بالتغيير بين التبويبات
-  const navItems = document.querySelectorAll('.bottom-nav-item, [data-tab]');
-  
-  window.switchTab = function(tabId) {
-    // 1. إخفاء كافة الأقسام الرئيسية
-    const sections = document.querySelectorAll('main > section, .tab-page, #home-page, #rates-page, #more-page, #trend-page');
-    sections.forEach(sec => {
-      sec.style.display = 'none';
-      sec.classList.remove('active-tab');
-    });
-
-    // 2. إظهار القسم المطلوب فقط
-    const targetSection = document.getElementById(tabId) || document.querySelector('.' + tabId + '-section');
-    if (targetSection) {
-      targetSection.style.display = 'block';
-      targetSection.classList.add('active-tab');
-    }
-
-    // 3. تحديث الزر النشط في الشريط السفلي
-    document.querySelectorAll('.bottom-nav-item').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.querySelector(`[onclick*="${tabId}"]`);
-    if (activeBtn) activeBtn.classList.add('active');
-
-    // الصعود لأعلى الصفحة
-    window.scrollTo(0, 0);
-  };
-
-  // تفعيل التبويب الافتراضي (الرئيسية) عند فتح الموقع
-  switchTab('home-page');
-});
-</script>
-
-
-<script>
-function showTab(tabId) {
-  const tabs = ['app-tab-home', 'app-tab-prices', 'app-tab-trend', 'app-tab-more'];
-  
-  tabs.forEach(id => {
+  validTabs.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
       if (id === tabId) {
-        el.style.display = 'block';
+        el.style.setProperty('display', 'block', 'important');
       } else {
-        el.style.display = 'none';
-      }
-    }
-  });
-  window.scrollTo(0, 0);
-}
-
-// تشغيل الرئيسية تلقائياً بعد إتمام تحميل الصفحة
-window.addEventListener('load', function() {
-  showTab('app-tab-home');
-});
-</script>
-
-<!-- fixPricesScriptApplied -->
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // البحث عن كافة أزرار الأسعار في الشريط السفلي أو القوائم
-  const allNavBtns = document.querySelectorAll('.bottom-nav-item, nav a, button');
-  
-  allNavBtns.forEach(btn => {
-    const text = btn.textContent.trim();
-    if (text.includes('الأسعار') || text.includes('أسعار')) {
-      btn.setAttribute('onclick', "showTab('app-tab-prices'); event.preventDefault();");
-      btn.style.cursor = 'pointer';
-    } else if (text.includes('الرئيسية')) {
-      btn.setAttribute('onclick', "showTab('app-tab-home'); event.preventDefault();");
-      btn.style.cursor = 'pointer';
-    } else if (text.includes('المزيد')) {
-      btn.setAttribute('onclick', "showTab('app-tab-more'); event.preventDefault();");
-      btn.style.cursor = 'pointer';
-    } else if (text.includes('الترند')) {
-      btn.setAttribute('onclick', "showTab('app-tab-trend'); event.preventDefault();");
-      btn.style.cursor = 'pointer';
-    }
-  });
-});
-</script>
-
-<!-- headerFixScriptApplied -->
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // 1. ربط زر قائمة الهيدر العلوي (أيقونة القائمة الجانبية)
-  const topMenuBtns = document.querySelectorAll('.header-menu-btn, header .fa-bars, header [class*="menu"]');
-  topMenuBtns.forEach(btn => {
-    const parentBtn = btn.closest('button') || btn.closest('a') || btn;
-    parentBtn.setAttribute('onclick', "if(window.forceSwitchTab) { forceSwitchTab('app-tab-more'); } else { showTab('app-tab-more'); } event.preventDefault();");
-    parentBtn.style.cursor = 'pointer';
-  });
-
-  // 2. ربط زر "الرئيسية ←" الموجود في رأس قائمة المزيد
-  const allLinks = document.querySelectorAll('a, button, span, div');
-  allLinks.forEach(el => {
-    if (el.textContent.includes('الرئيسية') && (el.textContent.includes('←') || el.classList.contains('back-btn'))) {
-      el.setAttribute('onclick', "if(window.forceSwitchTab) { forceSwitchTab('app-tab-home'); } else { showTab('app-tab-home'); } event.preventDefault();");
-      el.style.cursor = 'pointer';
-    }
-  });
-});
-</script>
-
-
-<script>
-(function() {
-  // دالة موحدة ومعزولة للتبديل بين التبويبات بدون أي تأثيرات جانبية
-  window.navigateTab = function(tabId, event) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    const allTabs = ['app-tab-home', 'app-tab-prices', 'app-tab-trend', 'app-tab-more'];
-    
-    // إخفاء كل التبويبات
-    allTabs.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
         el.style.setProperty('display', 'none', 'important');
       }
-    });
-
-    // إظهار التبويب المطلوب فقط
-    const target = document.getElementById(tabId);
-    if (target) {
-      target.style.setProperty('display', 'block', 'important');
-    }
-
-    // التمرير للأعلى
-    window.scrollTo(0, 0);
-    return false;
-  };
-
-  // ربط أزرار الشريط السفلي بالدالة الجديدة فور تحميل الصفحة
-  window.addEventListener('load', function() {
-    // إلغاء أي أحداث نقر عشوائية مسجلة على صفحة الأسعار أو الترند
-    ['app-tab-prices', 'app-tab-trend', 'app-tab-more'].forEach(tabId => {
-      const tabEl = document.getElementById(tabId);
-      if (tabEl) {
-        tabEl.onclick = function(e) {
-          e.stopPropagation();
-        };
-      }
-    });
-
-    // إعادة ضبط الأزرار
-    const navItems = document.querySelectorAll('.bottom-nav-item');
-    if (navItems.length >= 5) {
-      navItems[0].setAttribute('onclick', "return navigateTab('app-tab-home', event)");
-      navItems[1].setAttribute('onclick', "return navigateTab('app-tab-prices', event)");
-      navItems[3].setAttribute('onclick', "return navigateTab('app-tab-trend', event)");
-      navItems[4].setAttribute('onclick', "return navigateTab('app-tab-more', event)");
     }
   });
-})();
+
+  window.scrollTo(0, 0);
+  return false;
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  // ربط الأزرار بحسب ترتيبها في الشريط السفلي
+  const navItems = document.querySelectorAll('.bottom-nav-item');
+  if (navItems.length >= 5) {
+    navItems[0].onclick = (e) => appGoToTab('app-tab-home', e);
+    navItems[1].onclick = (e) => appGoToTab('app-tab-prices', e);
+    navItems[3].onclick = (e) => appGoToTab('app-tab-trend', e);
+    navItems[4].onclick = (e) => appGoToTab('app-tab-more', e);
+  }
+
+  // تفعيل الرئيسية افتراضياً
+  appGoToTab('app-tab-home');
+});
 </script>
 
 </body>
