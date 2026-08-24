@@ -3,21 +3,14 @@ import { AuthProvider } from './context/AuthContext';
 import { ModalProvider } from './context/ModalContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AdminProvider } from './context/AdminContext';
-import { ToastProvider } from './components/ui/Toast';
 import { AppLayout } from './layouts/AppLayout';
-import { AdminLayout } from './layouts/AdminLayout';
-import { AdminDashboardShell } from './pages/AdminDashboardShell';
 import { HomePage } from './pages/HomePage';
+import { CategoryCollectivePage } from './pages/CategoryCollectivePage';
 import { DirectoryPage } from './pages/DirectoryPage';
-import { BusinessProfilePage } from './pages/BusinessProfilePage';
-import { BanksAndWalletsPage } from './pages/BanksAndWalletsPage';
+import { JobsPage } from './pages/JobsPage';
 import { PricesPage } from './pages/PricesPage';
 import { TrendPage } from './pages/TrendPage';
 import { MoreMenuPage } from './pages/MoreMenuPage';
-import { PhoneMarketPage } from './pages/PhoneMarketPage';
-import { JobsPage } from './pages/JobsPage';
-import { CategoryHubPage } from './pages/categories/CategoryHubPage';
-import { OwnerDashboardPage } from './pages/owner/OwnerDashboardPage';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname + window.location.search);
@@ -38,71 +31,79 @@ export const App: React.FC = () => {
 
   const url = new URL(window.location.origin + currentPath);
   const pathname = url.pathname;
-  const searchParams = url.searchParams;
+
+  const categoryMap: Record<string, { slug: string; title: string; icon: string }> = {
+    '/restaurants': { slug: 'restaurants', title: 'المطاعم والكافيهات', icon: 'fa-utensils' },
+    '/hotels': { slug: 'hotels', title: 'الفنادق والإقامة والسياحة', icon: 'fa-hotel' },
+    '/banks': { slug: 'banks', title: 'البنوك والمصارف', icon: 'fa-building-columns' },
+    '/exchanges': { slug: 'exchanges', title: 'شركات الصرافة والتحويلات', icon: 'fa-money-bill-transfer' },
+    '/wallets': { slug: 'wallets', title: 'المحافظ والخدمات المالية', icon: 'fa-wallet' },
+    '/companies': { slug: 'companies', title: 'الشركات والمؤسسات', icon: 'fa-building' },
+    '/transport': { slug: 'transport', title: 'السيارات والنقل البري', icon: 'fa-car' },
+    '/shops': { slug: 'shops', title: 'المتاجر ومراكز التسوق', icon: 'fa-bag-shopping' },
+    '/health': { slug: 'health', title: 'الصحة والمستشفيات', icon: 'fa-hospital' },
+    '/services': { slug: 'services', title: 'الخدمات العامة', icon: 'fa-wrench' },
+    '/education': { slug: 'education', title: 'التعليم والجامعات', icon: 'fa-graduation-cap' },
+    '/entertainment': { slug: 'entertainment', title: 'السياحة والترفيه', icon: 'fa-umbrella-beach' },
+  };
 
   const renderContent = () => {
-    if (pathname.startsWith('/admin')) {
-      return (
-        <AdminLayout>
-          <AdminDashboardShell />
-        </AdminLayout>
-      );
-    }
-
-    if (pathname.startsWith('/owner')) {
-      const bizId = searchParams.get('id') || 't1';
+    // 1. التوجيه للصفحات الجماعية للتصنيفات
+    if (categoryMap[pathname]) {
+      const cat = categoryMap[pathname];
       return (
         <AppLayout onNavigate={navigate}>
-          <OwnerDashboardPage businessId={bizId} onNavigate={navigate} />
-        </AppLayout>
-      );
-    }
-
-    if (pathname.startsWith('/business/')) {
-      const id = pathname.replace('/business/', '');
-      return (
-        <AppLayout onNavigate={navigate}>
-          <BusinessProfilePage businessId={id} onNavigate={navigate} />
-        </AppLayout>
-      );
-    }
-
-    // Collective category hubs
-    if (pathname === '/restaurants') return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="المطاعم" categorySlug="restaurants" onNavigate={navigate} /></AppLayout>;
-    if (pathname === '/hotels') return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="الفنادق" categorySlug="hotels" onNavigate={navigate} /></AppLayout>;
-    if (pathname === '/companies') return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="الشركات" categorySlug="companies" onNavigate={navigate} /></AppLayout>;
-    if (pathname === '/healthcare') return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="الصحة" categorySlug="healthcare" onNavigate={navigate} /></AppLayout>;
-    if (pathname === '/cars') return <AppLayout onNavigate={navigate}><CategoryHubPage categoryTitle="السيارات" categorySlug="cars" onNavigate={navigate} /></AppLayout>;
-
-    if (pathname === '/directory') {
-      const categoryParam = searchParams.get('category') || '';
-      const queryParam = searchParams.get('q') || '';
-      return (
-        <AppLayout onNavigate={navigate}>
-          <DirectoryPage
-            initialCategory={categoryParam}
-            initialQuery={queryParam}
+          <CategoryCollectivePage
+            categorySlug={cat.slug}
+            categoryTitle={cat.title}
+            categoryIcon={cat.icon}
             onNavigate={navigate}
           />
         </AppLayout>
       );
     }
 
-    if (pathname === '/jobs') return <AppLayout onNavigate={navigate}><JobsPage onNavigate={navigate} /></AppLayout>;
-    if (pathname === '/trend') return <AppLayout onNavigate={navigate}><TrendPage onNavigate={navigate} /></AppLayout>;
-    if (pathname === '/prices') return <AppLayout onNavigate={navigate}><PricesPage onNavigate={navigate} /></AppLayout>;
-    if (pathname === '/phones') return <AppLayout onNavigate={navigate}><PhoneMarketPage onNavigate={navigate} /></AppLayout>;
-    if (pathname === '/more') return <AppLayout onNavigate={navigate}><MoreMenuPage onNavigate={navigate} /></AppLayout>;
-
-    if (pathname === '/banks-wallets' || pathname === '/banks' || pathname === '/wallets') {
-      const initialType = pathname === '/banks' ? 'bank' : pathname === '/wallets' ? 'wallet' : 'all';
+    if (pathname === '/directory') {
       return (
         <AppLayout onNavigate={navigate}>
-          <BanksAndWalletsPage initialType={initialType} onNavigate={navigate} />
+          <DirectoryPage onNavigate={navigate} />
         </AppLayout>
       );
     }
 
+    if (pathname === '/jobs') {
+      return (
+        <AppLayout onNavigate={navigate}>
+          <JobsPage onNavigate={navigate} />
+        </AppLayout>
+      );
+    }
+
+    if (pathname === '/prices') {
+      return (
+        <AppLayout onNavigate={navigate}>
+          <PricesPage onNavigate={navigate} />
+        </AppLayout>
+      );
+    }
+
+    if (pathname === '/trend') {
+      return (
+        <AppLayout onNavigate={navigate}>
+          <TrendPage onNavigate={navigate} />
+        </AppLayout>
+      );
+    }
+
+    if (pathname === '/more') {
+      return (
+        <AppLayout onNavigate={navigate}>
+          <MoreMenuPage onNavigate={navigate} />
+        </AppLayout>
+      );
+    }
+
+    // الصفحة الرئيسية الافتراضية
     return (
       <AppLayout onNavigate={navigate}>
         <HomePage onNavigate={navigate} />
@@ -115,7 +116,6 @@ export const App: React.FC = () => {
       <AuthProvider>
         <AdminProvider>
           <ModalProvider>
-            <ToastProvider />
             {renderContent()}
           </ModalProvider>
         </AdminProvider>
