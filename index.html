@@ -14,7 +14,7 @@
       --bg-black: #0D0D0D;
       --bg-card: #1A1A1A;
       --bg-card-inner: #141414;
-      --bg-input: #15151C;
+      --bg-input: #16161A;
       
       --gold: #FFC107;
       --gold-hover: #E0A800;
@@ -30,169 +30,199 @@
       --green: #10B981;
       --green-dim: rgba(16, 185, 129, 0.16);
       --red: #EF4444;
-      --red-dim: rgba(239, 68, 68, 0.16);
       --orange: #FF5722;
       --blue: #3B82F6;
-      --blue-dim: rgba(59, 130, 246, 0.16);
       
       --radius-sm: 8px;
       --radius-md: 14px;
       --radius-lg: 20px;
+      --radius-xl: 24px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-black); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
 
-    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-black); }
-    ::-webkit-scrollbar-thumb { background: #2A2A38; border-radius: 2px; }
+    ::-webkit-scrollbar-thumb { background: #2A2A38; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 
     .svg-icon { display: inline-block; width: 1.15em; height: 1.15em; fill: currentColor; vertical-align: -0.15em; flex-shrink: 0; }
 
-    /* الهيدر الرسمي المعتمد */
+    /* ==========================================================================
+       الهيدر المتجاوب العالمي (Global Responsive Header)
+       ========================================================================== */
     .main-app-header {
-      height: 60px; background: #000000; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem;
+      height: 68px; background: #0A0A0A; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;
       position: sticky; top: 0; z-index: 1000;
     }
-    .header-logo-wrap { display: flex; align-items: center; gap: 8px; text-align: center; }
-    .header-logo-text-col { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
-    .header-logo-text-col span.ar-title { font-size: 1.05rem; font-weight: 900; color: #FFF; letter-spacing: 0.5px; }
-    .header-logo-text-col span.en-title { font-size: 0.55rem; font-weight: 800; color: #FFF; letter-spacing: 1px; }
-    .header-logo-wrap svg.star-logo { width: 22px; height: 22px; fill: var(--gold); }
+    .header-logo-wrap { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .header-logo-gem {
+      width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, var(--gold), #D97706);
+      display: flex; align-items: center; justify-content: center; color: #000;
+    }
+    .header-logo-text-col { display: flex; flex-direction: column; line-height: 1.1; }
+    .header-logo-text-col span.ar-title { font-size: 1.15rem; font-weight: 900; color: #FFF; }
+    .header-logo-text-col span.en-title { font-size: 0.6rem; font-weight: 800; color: var(--gold); letter-spacing: 1px; }
 
-    /* الحاوية الرئيسية للمحتوى */
-    .page-main-container { padding: 1rem 1.1rem; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; margin-bottom: 75px; }
+    /* روابط التنقل لسطح المكتب */
+    .desktop-nav-links { display: flex; align-items: center; gap: 8px; }
+    .nav-link-item {
+      padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: 0.82rem; font-weight: 800;
+      color: var(--text-gray); background: none; border: none; cursor: pointer; transition: 0.2s;
+    }
+    .nav-link-item:hover { color: #FFF; background: rgba(255,255,255,0.05); }
+    .nav-link-item.active { background: var(--gold); color: #000; font-weight: 900; }
 
-    .tab-view-section { display: none; animation: fadeIn 0.2s ease; }
+    .header-actions-group { display: flex; align-items: center; gap: 12px; }
+    .btn-header-add {
+      background: var(--gold); color: #000; font-weight: 900; font-size: 0.82rem;
+      padding: 0.55rem 1.2rem; border-radius: var(--radius-md); border: none; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; transition: 0.2s;
+    }
+    .btn-header-add:hover { background: var(--gold-hover); transform: translateY(-1px); }
+
+    /* ==========================================================================
+       حاوية المحتوى المتجاوبة بكامل العرض (Full-Width Responsive Canvas)
+       ========================================================================== */
+    .page-main-container {
+      width: 100%; max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; flex: 1; margin-bottom: 75px;
+    }
+
+    .tab-view-section { display: none; animation: fadeIn 0.25s ease; }
     .tab-view-section.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* شريط البحث وفلترة المدن */
-    .home-search-box { position: relative; margin-bottom: 0.6rem; }
+    /* شريط البحث وتحديد الموقع */
+    .search-location-bar {
+      display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 1.5rem;
+    }
+    .home-search-box { position: relative; }
     .home-search-box input {
       width: 100%; background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-lg); padding: 0.75rem 2.6rem 0.75rem 1rem; color: #FFF; font-size: 0.82rem;
+      border-radius: var(--radius-md); padding: 0.75rem 2.8rem 0.75rem 1rem; color: #FFF; font-size: 0.85rem;
     }
     .home-search-box input:focus { outline: none; border-color: var(--gold); }
-    .home-search-box svg { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-gray); width: 16px; height: 16px; }
+    .home-search-box svg { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-gray); width: 18px; height: 18px; }
 
-    .city-filter-strip {
-      display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 1rem;
+    .city-filter-box {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 0 1rem; display: flex; align-items: center; gap: 8px; overflow-x: auto;
     }
     .city-pill-btn {
-      padding: 0.3rem 0.85rem; border-radius: 14px; font-size: 0.72rem; font-weight: 800;
-      background: var(--bg-card); color: var(--text-gray); border: 1px solid var(--border);
+      padding: 0.35rem 0.85rem; border-radius: 12px; font-size: 0.75rem; font-weight: 800;
+      background: var(--bg-card-inner); color: var(--text-gray); border: 1px solid var(--border);
       cursor: pointer; white-space: nowrap; transition: 0.2s;
     }
     .city-pill-btn.active { background: var(--gold); color: #000; font-weight: 900; border-color: var(--gold); }
 
-    /* البانر الترويجي */
+    /* البانر الترويجي المتجاوب */
     .hero-banner-card {
-      height: 160px; border-radius: var(--radius-lg);
-      background: linear-gradient(to left, rgba(0,0,0,0.85), rgba(0,0,0,0.25)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800') center/cover;
-      padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between;
-      border: 1px solid var(--border); margin-bottom: 1.4rem; position: relative;
+      height: 200px; border-radius: var(--radius-xl);
+      background: linear-gradient(to left, rgba(0,0,0,0.9), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=1400') center/cover;
+      padding: 2rem; display: flex; flex-direction: column; justify-content: space-between;
+      border: 1px solid var(--border); margin-bottom: 2rem; position: relative;
     }
-    .hero-banner-title { font-size: 1.15rem; font-weight: 900; color: #FFF; line-height: 1.2; }
-    .hero-banner-sub { font-size: 0.72rem; color: var(--text-gray); max-width: 75%; margin-top: 4px; }
+    .hero-banner-title { font-size: 1.5rem; font-weight: 900; color: #FFF; line-height: 1.2; }
+    .hero-banner-sub { font-size: 0.82rem; color: var(--text-gray); max-width: 600px; margin-top: 6px; }
     .btn-hero-cta {
-      background: var(--gold); color: #000; font-weight: 900; font-size: 0.75rem;
-      padding: 0.45rem 1.1rem; border-radius: var(--radius-md); border: none; cursor: pointer;
-      width: fit-content; margin-top: 8px; transition: 0.2s;
+      background: var(--gold); color: #000; font-weight: 900; font-size: 0.82rem;
+      padding: 0.6rem 1.4rem; border-radius: var(--radius-md); border: none; cursor: pointer;
+      width: fit-content; margin-top: 10px; transition: 0.2s;
     }
-    .hero-dots-indicator { display: flex; gap: 4px; position: absolute; bottom: 12px; left: 16px; }
-    .hero-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.4); }
-    .hero-dot.active { width: 14px; border-radius: 4px; background: var(--gold); }
+    .btn-hero-cta:hover { background: var(--gold-hover); transform: translateY(-1px); }
 
-    /* شبكة التصنيفات الـ 12 */
-    .section-title-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
-    .section-title-text { font-size: 0.92rem; font-weight: 900; color: #FFF; }
-    .section-view-all { font-size: 0.72rem; color: var(--gold); cursor: pointer; font-weight: 700; }
+    /* قسم التصنيفات الـ 12 المتكاملة */
+    .section-title-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .section-title-text { font-size: 1.1rem; font-weight: 900; color: #FFF; }
+    .section-view-all { font-size: 0.78rem; color: var(--gold); cursor: pointer; font-weight: 800; }
 
-    .categories-full-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1.25rem;
+    .categories-grid-responsive {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 10px; margin-bottom: 2rem;
     }
     .category-card-btn {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.75rem 0.2rem; text-align: center; cursor: pointer; transition: 0.2s;
+      padding: 0.9rem 0.3rem; text-align: center; cursor: pointer; transition: 0.2s;
     }
     .category-card-btn:hover, .category-card-btn.active { border-color: var(--gold); background: var(--bg-card-inner); transform: translateY(-2px); }
     .category-card-icon {
-      width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card-inner);
-      display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; color: var(--gold);
+      width: 40px; height: 40px; border-radius: 12px; background: var(--bg-card-inner);
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; color: var(--gold);
     }
-    .category-card-icon svg { width: 18px; height: 18px; fill: var(--gold); }
-    .category-card-label { font-size: 0.68rem; font-weight: 800; color: var(--text); white-space: nowrap; }
+    .category-card-icon svg { width: 20px; height: 20px; fill: var(--gold); }
+    .category-card-label { font-size: 0.72rem; font-weight: 800; color: var(--text); white-space: nowrap; }
 
-    /* كروت الأنشطة والمنشآت المكتملة */
-    .entity-full-card {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.9rem; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; transition: 0.2s; cursor: pointer;
+    /* شبكة عرض المنشآت المتجاوبة (3 إلى 4 أعمدة في الشاشات الكبيرة) */
+    .entities-feed-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;
     }
-    .entity-full-card:hover { border-color: var(--gold); }
-    .entity-card-header { display: flex; justify-content: space-between; align-items: center; }
-    .entity-info-group { display: flex; align-items: center; gap: 10px; }
-    .entity-logo-img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border); }
-    .yr-score-badge { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); padding: 2px 7px; border-radius: 10px; font-weight: 900; font-size: 0.72rem; }
-    .verified-badge { background: var(--green-dim); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 7px; border-radius: 10px; font-weight: 800; font-size: 0.72rem; }
+    .entity-full-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s; cursor: pointer;
+    }
+    .entity-full-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
+    .entity-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .entity-info-group { display: flex; align-items: center; gap: 12px; }
+    .entity-logo-img { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border); }
+    .yr-score-badge { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); padding: 2px 8px; border-radius: 10px; font-weight: 900; font-size: 0.75rem; }
+    .verified-badge { background: var(--green-dim); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 10px; font-weight: 800; font-size: 0.75rem; }
 
     .entity-contact-actions {
-      display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px;
+      display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 8px;
     }
     .action-contact-btn {
-      flex: 1; padding: 6px; border-radius: 8px; font-size: 0.72rem; font-weight: 800;
+      flex: 1; padding: 7px; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 800;
       background: var(--bg-card-inner); border: 1px solid var(--border); color: #FFF;
       display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; transition: 0.2s;
     }
     .action-contact-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); }
     .action-contact-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
-    /* ويدجت أسعار العملات والذهب */
+    /* ويدجت أسعار العملات والذهب العريض */
     .rates-widget-box {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
-      padding: 1.1rem; margin-bottom: 1.4rem;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl);
+      padding: 1.5rem; margin-bottom: 2rem;
     }
-    .rates-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 0.6rem; }
+    .rates-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 0.85rem; }
     .rate-mini-card {
       background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.65rem 0.4rem; text-align: center;
+      padding: 1rem 0.75rem; text-align: center;
     }
-    .rate-mini-title { font-size: 0.68rem; font-weight: 800; color: var(--gold); margin-bottom: 4px; }
-    .rate-mini-values { font-size: 0.75rem; font-weight: 900; color: #FFF; }
-    .rate-mini-sub { font-size: 0.6rem; color: var(--text-gray); margin-top: 2px; }
+    .rate-mini-title { font-size: 0.78rem; font-weight: 800; color: var(--gold); margin-bottom: 4px; }
+    .rate-mini-values { font-size: 0.95rem; font-weight: 900; color: #FFF; }
+    .rate-mini-sub { font-size: 0.68rem; color: var(--text-gray); margin-top: 3px; }
 
     /* شاشات الأسعار والترند والمزيد */
-    .screen-title-header { font-size: 1.1rem; font-weight: 900; color: #FFF; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; }
-    .subtabs-bar-line { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
-    .subtab-link-btn { flex: 1; padding: 0.6rem; text-align: center; font-size: 0.8rem; font-weight: 800; color: var(--text-gray); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
+    .screen-title-header { font-size: 1.3rem; font-weight: 900; color: #FFF; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+    .subtabs-bar-line { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.25rem; }
+    .subtab-link-btn { flex: 1; padding: 0.75rem; text-align: center; font-size: 0.85rem; font-weight: 800; color: var(--text-gray); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
     .subtab-link-btn.active { color: var(--gold); border-color: var(--gold); }
 
     .price-row-item {
-      display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.1rem;
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px;
+      display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.4rem;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 10px;
     }
-
     .trend-ranked-row {
-      display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem;
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px;
+      display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.4rem;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 10px;
     }
     .trend-rank-circle {
-      width: 26px; height: 26px; border-radius: 50%; background: var(--gold); color: #000;
-      display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.75rem; margin-left: 10px; flex-shrink: 0;
+      width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #000;
+      display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; margin-left: 12px; flex-shrink: 0;
     }
 
     .more-menu-row {
-      display: flex; justify-content: space-between; align-items: center; padding: 0.95rem 1rem;
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.4rem;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px; cursor: pointer;
     }
-    .more-menu-row span { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.82rem; }
-    .more-menu-row span svg { color: var(--gold); width: 16px; height: 16px; }
+    .more-menu-row span { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 0.88rem; }
+    .more-menu-row span svg { color: var(--gold); width: 18px; height: 18px; }
 
-    /* شريط التنقل السفلي الخماسي */
+    /* شريط التنقل السفلي للهواتف فقط */
     .bottom-app-nav-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 62px; background: #0A0A0D;
-      border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000;
+      display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 62px; background: #0A0A0D;
+      border-top: 1px solid var(--border); justify-content: space-around; align-items: center; z-index: 1000;
     }
     .bottom-nav-link {
       background: none; border: none; color: var(--text-gray); font-size: 0.68rem; font-weight: 700;
@@ -207,103 +237,133 @@
     }
     .bottom-center-add-fab svg { width: 22px; height: 22px; fill: #000; }
 
-    /* النوافذ المنبثقة التفاعلية (Modals & Drawers) */
+    /* النوافذ المنبثقة التفاعلية */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
-      display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;
+      display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1.5rem;
     }
     .modal-overlay.open { display: flex; }
     .modal-card {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
-      width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-      padding: 1.25rem; position: relative;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl);
+      width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      padding: 1.5rem; position: relative;
     }
-    .modal-close-btn { position: absolute; top: 12px; left: 12px; background: none; border: none; color: var(--text-gray); font-size: 1.2rem; cursor: pointer; }
+    .modal-close-btn { position: absolute; top: 16px; left: 16px; background: none; border: none; color: var(--text-gray); font-size: 1.2rem; cursor: pointer; }
 
-    .form-group-field { margin-bottom: 0.9rem; }
-    .form-group-field label { display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-gray); margin-bottom: 4px; }
+    .form-group-field { margin-bottom: 1rem; }
+    .form-group-field label { display: block; font-size: 0.78rem; font-weight: 800; color: var(--text-gray); margin-bottom: 6px; }
     .form-group-field input, .form-group-field select, .form-group-field textarea {
       width: 100%; background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.65rem 0.85rem; color: #FFF; font-size: 0.8rem;
+      padding: 0.7rem 1rem; color: #FFF; font-size: 0.82rem;
     }
     .form-group-field input:focus, .form-group-field select:focus, .form-group-field textarea:focus { outline: none; border-color: var(--gold); }
 
     .btn-gold-submit {
-      background: var(--gold); color: #000; font-weight: 900; font-size: 0.85rem; padding: 0.75rem;
-      border-radius: var(--radius-md); border: none; cursor: pointer; width: 100%; margin-top: 8px;
+      background: var(--gold); color: #000; font-weight: 900; font-size: 0.88rem; padding: 0.8rem;
+      border-radius: var(--radius-md); border: none; cursor: pointer; width: 100%; margin-top: 10px;
     }
 
     .toast-popup {
-      position: fixed; bottom: 74px; left: 50%; transform: translateX(-50%); background: var(--gold);
-      color: #000; padding: 8px 20px; border-radius: 20px; font-weight: 900; font-size: 0.78rem;
-      z-index: 3000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--gold);
+      color: #000; padding: 9px 24px; border-radius: 20px; font-weight: 900; font-size: 0.82rem;
+      z-index: 3000; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+
+    /* التجاوب الدقيق لجميع الشاشات */
+    @media (max-width: 992px) {
+      .desktop-nav-links { display: none; }
+      .search-location-bar { grid-template-columns: 1fr; }
+      .page-main-container { padding: 1rem; }
+      .bottom-app-nav-bar { display: flex; }
+      .main-app-header { padding: 0 1.25rem; }
+    }
+    @media (max-width: 600px) {
+      .categories-grid-responsive { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+      .rates-3col-grid { grid-template-columns: 1fr; }
+      .entities-feed-grid { grid-template-columns: 1fr; }
+      .hero-banner-card { height: 170px; padding: 1.2rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- الهيدر الرسمي مع الشعار والنجمة (بدون ساعة رقمية) -->
+  <!-- الهيدر العالمي المتجاوب -->
   <header class="main-app-header">
-    <div style="cursor: pointer;" onclick="openNotificationsModal()">
-      <svg class="svg-icon" style="color: var(--gold); width: 20px; height: 20px;" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <a href="/" class="header-logo-wrap">
+        <div class="header-logo-gem">
+          <svg style="width: 20px; height: 20px; fill: #000;" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        </div>
+        <div class="header-logo-text-col">
+          <span class="ar-title">يمن ريتغ</span>
+          <span class="en-title">YEMEN RATING</span>
+        </div>
+      </a>
+
+      <!-- روابط التوجيه لسطح المكتب والشاشات الكبيرة -->
+      <nav class="desktop-nav-links">
+        <button class="nav-link-item active" onclick="switchAppTab('home', this)">الرئيسية</button>
+        <button class="nav-link-item" onclick="switchAppTab('directory', this)">الدليل الشامل</button>
+        <button class="nav-link-item" onclick="switchAppTab('prices', this)">أسعار الصرف</button>
+        <button class="nav-link-item" onclick="switchAppTab('trend', this)">الترند</button>
+        <button class="nav-link-item" onclick="switchAppTab('more', this)">المزيد</button>
+      </nav>
     </div>
-    <div class="header-logo-wrap">
-      <div class="header-logo-text-col">
-        <span class="ar-title">يمن ريتغ</span>
-        <span class="en-title">YEMEN RATING</span>
+
+    <div class="header-actions-group">
+      <button class="btn-header-add" onclick="openAddEntityModal()">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        <span>+ أضف نشاطك</span>
+      </button>
+
+      <div style="cursor: pointer;" onclick="openNotificationsModal()" title="الإشعارات">
+        <svg class="svg-icon" style="color: var(--gold); width: 22px; height: 22px;" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
       </div>
-      <svg class="star-logo" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-    </div>
-    <div style="cursor: pointer;" onclick="switchAppTab('more', document.querySelectorAll('.bottom-nav-link')[4])">
-      <svg class="svg-icon" style="color: #FFF; width: 22px; height: 22px;" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+
+      <a href="/admin.html" style="color: var(--text-gray); display: flex; align-items: center; justify-content: center;" title="لوحة الإدارة">
+        <svg class="svg-icon" style="width: 22px; height: 22px;" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+      </a>
     </div>
   </header>
 
-  <!-- مساحة المحتوى -->
+  <!-- مساحة المحتوى الرئيسية المتجاوبة بكامل العرض -->
   <main class="page-main-container">
 
-    <!-- ==================== 1. تبويب الرئيسية (Home Screen) ==================== -->
+    <!-- ==================== 1. تبويب الرئيسية ==================== -->
     <div id="app-tab-home" class="tab-view-section active">
       
-      <!-- شريط البحث ومحدد الموقع -->
-      <div class="home-search-box">
-        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        <input type="text" id="homeSearchInput" placeholder="ابحث عن نشاط أو شركة أو خدمة..." oninput="handleDirectorySearch(this.value)">
+      <!-- شريط البحث وفلترة المحافظات -->
+      <div class="search-location-bar">
+        <div class="home-search-box">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="text" placeholder="ابحث عن شركة، فندق، مطعم، بنك، صرافة، أو خدمة..." oninput="handleDirectorySearch(this.value)">
+        </div>
+
+        <div class="city-filter-box">
+          <button class="city-pill-btn active" onclick="filterByCity('all', this)">كل المدن 📍</button>
+          <button class="city-pill-btn" onclick="filterByCity('صنعاء', this)">صنعاء</button>
+          <button class="city-pill-btn" onclick="filterByCity('عدن', this)">عدن</button>
+          <button class="city-pill-btn" onclick="filterByCity('تعز', this)">تعز</button>
+          <button class="city-pill-btn" onclick="filterByCity('حضرموت', this)">المكلا</button>
+        </div>
       </div>
 
-      <!-- فلتر المدن والمحافظات الفوري -->
-      <div class="city-filter-strip">
-        <button class="city-pill-btn active" onclick="filterByCity('all', this)">كل المدن 📍</button>
-        <button class="city-pill-btn" onclick="filterByCity('صنعاء', this)">صنعاء</button>
-        <button class="city-pill-btn" onclick="filterByCity('عدن', this)">عدن</button>
-        <button class="city-pill-btn" onclick="filterByCity('تعز', this)">تعز</button>
-        <button class="city-pill-btn" onclick="filterByCity('حضرموت', this)">المكلا / حضرموت</button>
-        <button class="city-pill-btn" onclick="filterByCity('إب', this)">إب</button>
-        <button class="city-pill-btn" onclick="filterByCity('الحديدة', this)">الحديدة</button>
-      </div>
-
-      <!-- البانر الترويجي -->
+      <!-- البانر الترويجي العريض -->
       <div class="hero-banner-card">
         <div>
-          <div class="hero-banner-title">اكتشف الأفضل</div>
-          <div class="hero-banner-sub">تقييمات حقيقية من المجتمع لأفضل الشركات والخدمات في اليمن</div>
-          <button class="btn-hero-cta" onclick="switchAppTab('directory', document.querySelectorAll('.bottom-nav-link')[1])">استكشف الدليل الكامل</button>
-        </div>
-        <div class="hero-dots-indicator">
-          <div class="hero-dot active"></div>
-          <div class="hero-dot"></div>
-          <div class="hero-dot"></div>
-          <div class="hero-dot"></div>
+          <div class="hero-banner-title">اكتشف الأفضل في اليمن</div>
+          <div class="hero-banner-sub">الدليل الشامل والتقييمات الحقيقية الموثقة لجميع الشركات والمؤسسات والخدمات في المحافظات اليمنية.</div>
+          <button class="btn-hero-cta" onclick="switchAppTab('directory', document.querySelectorAll('.nav-link-item')[1])">استكشف الدليل الكامل</button>
         </div>
       </div>
 
-      <!-- التصنيفات الـ 12 الكاملة -->
+      <!-- التصنيفات الرئيسية الـ 12 المكتملة -->
       <div class="section-title-line">
-        <span class="section-title-text">التصنيفات الرئيسية (12)</span>
+        <span class="section-title-text">التصنيفات والقطاعات الرئيسية (12)</span>
         <span class="section-view-all" onclick="filterByCategory('all')">عرض الكل</span>
       </div>
 
-      <div class="categories-full-grid">
+      <div class="categories-grid-responsive">
         <div class="category-card-btn" onclick="filterByCategory('restaurant')">
           <div class="category-card-icon"><svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg></div>
           <div class="category-card-label">مطاعم ومقاهي</div>
@@ -365,17 +425,17 @@
         </div>
       </div>
 
-      <!-- قائمة المنشآت المحدثة -->
+      <!-- قائمة المنشآت المتجاوبة (3 إلى 4 أعمدة في الشاشات العريضة) -->
       <div class="section-title-line">
         <span class="section-title-text" id="currentSectionTitle">أبرز المنشآت المعتمدة</span>
       </div>
 
-      <div id="homeEntitiesFeed"></div>
+      <div id="homeEntitiesFeed" class="entities-feed-grid"></div>
 
-      <!-- ويدجت أسعار العملات والذهب التفاعلي -->
-      <div class="section-title-line" style="margin-top: 1.5rem;">
-        <span class="section-title-text">أسعار العملات والذهب الحية</span>
-        <span class="section-view-all" onclick="switchAppTab('prices', document.querySelectorAll('.bottom-nav-link')[3])">عرض الكل والمحول</span>
+      <!-- ويدجت أسعار العملات والذهب -->
+      <div class="section-title-line">
+        <span class="section-title-text">أسعار العملات والذهب الحية (صنعاء / عدن)</span>
+        <span class="section-view-all" onclick="switchAppTab('prices', this)">المحول والأسعار المباشرة</span>
       </div>
 
       <div class="rates-widget-box">
@@ -386,96 +446,99 @@
             <div class="rate-mini-sub">ريال يمني / جرام</div>
           </div>
           <div class="rate-mini-card">
-            <div class="rate-mini-title">دولار أمريكي</div>
+            <div class="rate-mini-title">دولار أمريكي (USD)</div>
             <div class="rate-mini-values">1,540 / 1,530</div>
             <div class="rate-mini-sub">ريال يمني</div>
           </div>
           <div class="rate-mini-card">
-            <div class="rate-mini-title">ريال سعودي</div>
+            <div class="rate-mini-title">ريال سعودي (SAR)</div>
             <div class="rate-mini-values">410 / 418</div>
             <div class="rate-mini-sub">ريال يمني</div>
           </div>
         </div>
-        <div style="font-size: 0.65rem; color: var(--text-muted); text-align: center; margin-top: 8px;">آخر تحديث : منذ دقيقة واحدة</div>
       </div>
 
     </div>
 
-    <!-- ==================== 2. تبويب الدليل الشامل (Directory Screen) ==================== -->
+    <!-- ==================== 2. تبويب الدليل الشامل ==================== -->
     <div id="app-tab-directory" class="tab-view-section">
       <div class="screen-title-header">
-        <span>دليل المنشآت والأنشطة</span>
-        <span style="font-size: 0.75rem; color: var(--gold); font-weight: 800;" id="dirCountText">8 منشآت</span>
+        <span>دليل المنشآت والأنشطة في اليمن</span>
+        <span style="font-size: 0.82rem; color: var(--gold); font-weight: 800;" id="dirCountText">8 منشآت</span>
       </div>
 
-      <div class="home-search-box">
+      <div class="home-search-box" style="margin-bottom: 1.5rem;">
         <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        <input type="text" placeholder="بحث باسم النشاط أو المدينة..." oninput="handleDirectorySearch(this.value)">
+        <input type="text" placeholder="بحث شامل باسم المنشأة أو المدينة أو الخدمة..." oninput="handleDirectorySearch(this.value)">
       </div>
 
-      <div id="fullDirectoryList"></div>
+      <div id="fullDirectoryList" class="entities-feed-grid"></div>
     </div>
 
-    <!-- ==================== 3. تبويب الأسعار ومحول العملات (Prices & Converter) ==================== -->
+    <!-- ==================== 3. تبويب الأسعار المباشرة والمحول ==================== -->
     <div id="app-tab-prices" class="tab-view-section">
       <div class="screen-title-header">
-        <span>الأسعار المباشرة ومحول العملات</span>
-        <span style="font-size: 0.72rem; color: var(--gold);">صنعاء / عدن</span>
+        <span>أسعار الصرف المباشرة وحاسبة التحويل</span>
       </div>
 
-      <!-- محول العملات التفاعلي -->
-      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem;">
-        <div style="font-weight: 800; font-size: 0.8rem; color: var(--gold); margin-bottom: 8px;">💱 حاسبة وتحويل العملات الفوري</div>
-        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-          <input type="number" id="calcAmount" value="100" placeholder="المبلغ" oninput="calculateExchange()" style="flex: 1; background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; color: #FFF; font-weight: 800;">
-          <select id="calcCurrency" onchange="calculateExchange()" style="background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: 8px; padding: 6px; color: #FFF; font-weight: 800;">
+      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem;">
+        <div style="font-weight: 900; font-size: 0.95rem; color: var(--gold); margin-bottom: 12px;">💱 حاسبة تحويل العملات اللحظية</div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
+          <input type="number" id="calcAmount" value="100" placeholder="المبلغ" oninput="calculateExchange()" style="flex: 1; min-width: 140px; background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: #FFF; font-weight: 800;">
+          <select id="calcCurrency" onchange="calculateExchange()" style="background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: 10px; padding: 10px; color: #FFF; font-weight: 800;">
             <option value="USD">دولار أمريكي (USD)</option>
             <option value="SAR">ريال سعودي (SAR)</option>
           </select>
-          <select id="calcMarket" onchange="calculateExchange()" style="background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: 8px; padding: 6px; color: #FFF; font-weight: 800;">
+          <select id="calcMarket" onchange="calculateExchange()" style="background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: 10px; padding: 10px; color: #FFF; font-weight: 800;">
             <option value="aden">سوق عدن</option>
             <option value="sanaa">سوق صنعاء</option>
           </select>
         </div>
-        <div style="background: #000; border-radius: 8px; padding: 8px; text-align: center;">
-          <span style="font-size: 0.7rem; color: var(--text-gray);">المبلغ المقابل:</span>
-          <strong id="calcResult" style="color: var(--gold); font-size: 1rem; margin-right: 6px;">154,000 ريال يمني</strong>
+        <div style="background: #000; border-radius: 12px; padding: 14px; text-align: center;">
+          <span style="font-size: 0.8rem; color: var(--text-gray);">المبلغ المقابل:</span>
+          <strong id="calcResult" style="color: var(--gold); font-size: 1.3rem; margin-right: 8px;">154,000 ريال يمني</strong>
         </div>
       </div>
 
       <div class="price-row-item">
         <div>
-          <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">دولار أمريكي (USD) 🇺🇸</div>
-          <div style="font-size: 0.7rem; color: var(--green);">▲ شراء 1,530 / بيع 1,540</div>
+          <div style="font-weight: 800; font-size: 0.9rem; color: #FFF;">دولار أمريكي (USD) 🇺🇸</div>
+          <div style="font-size: 0.75rem; color: var(--green);">▲ شراء 1,530 / بيع 1,540</div>
         </div>
-        <div style="font-weight: 900; color: var(--gold); font-size: 0.95rem;">1,540 ريال</div>
+        <div style="font-weight: 900; color: var(--gold); font-size: 1.1rem;">1,540 ريال</div>
       </div>
 
       <div class="price-row-item">
         <div>
-          <div style="font-weight: 800; font-size: 0.85rem; color: #FFF;">ريال سعودي (SAR) 🇸🇦</div>
-          <div style="font-size: 0.7rem; color: var(--green);">▲ شراء 408 / بيع 410</div>
+          <div style="font-weight: 800; font-size: 0.9rem; color: #FFF;">ريال سعودي (SAR) 🇸🇦</div>
+          <div style="font-size: 0.75rem; color: var(--green);">▲ شراء 408 / بيع 410</div>
         </div>
-        <div style="font-weight: 900; color: var(--gold); font-size: 0.95rem;">410 ريال</div>
+        <div style="font-weight: 900; color: var(--gold); font-size: 1.1rem;">410 ريال</div>
       </div>
     </div>
 
-    <!-- ==================== 4. تبويب المزيد (More Screen) ==================== -->
+    <!-- ==================== 4. تبويب الترند ==================== -->
+    <div id="app-tab-trend" class="tab-view-section">
+      <div class="screen-title-header"><span>الترند والأعلى تفاعلاً</span></div>
+      <div class="trend-ranked-row">
+        <div style="display: flex; align-items: center;">
+          <div class="trend-rank-circle">1</div>
+          <div><div style="font-weight: 800; font-size: 0.9rem; color: #FFF;">مطعم البيت اليمني</div><div style="font-size: 0.75rem; color: var(--text-gray);">مطاعم ومقاهي • صنعاء</div></div>
+        </div>
+        <div style="font-weight: 900; color: #FFF; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><svg class="svg-icon" style="color: var(--orange); width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg> <span>125</span></div>
+      </div>
+      <div class="trend-ranked-row">
+        <div style="display: flex; align-items: center;">
+          <div class="trend-rank-circle">2</div>
+          <div><div style="font-weight: 800; font-size: 0.9rem; color: #FFF;">بنك الكريمي الإسلامي</div><div style="font-size: 0.75rem; color: var(--text-gray);">بنوك ومصارف • جميع الفروع</div></div>
+        </div>
+        <div style="font-weight: 900; color: #FFF; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><svg class="svg-icon" style="color: var(--orange); width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg> <span>98</span></div>
+      </div>
+    </div>
+
+    <!-- ==================== 5. تبويب المزيد ==================== -->
     <div id="app-tab-more" class="tab-view-section">
-      <div class="screen-title-header">
-        <span>المزيد والخيارات</span>
-      </div>
-
-      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem; display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-        <div>
-          <div style="font-weight: 900; font-size: 0.95rem; color: #FFF;">الملف الشخصي</div>
-          <div style="font-size: 0.75rem; color: var(--gold); cursor: pointer; margin-top: 2px;" onclick="openAuthModal()">سجل الدخول / إنشاء حساب</div>
-        </div>
-        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--bg-card-inner); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;">
-          <svg class="svg-icon" style="width: 22px; height: 22px; fill: var(--text-gray);" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-        </div>
-      </div>
-
+      <div class="screen-title-header"><span>المزيد والخيارات</span></div>
       <div class="more-menu-row" onclick="window.location.href='/admin.html'"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg> لوحة تحكم الإدارة (Admin Panel)</span> <span>‹</span></div>
       <div class="more-menu-row" onclick="openFavoritesModal()"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> المفضلة والمحفوظات</span> <span>‹</span></div>
       <div class="more-menu-row" onclick="openNotificationsModal()"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg> الإشعارات والتنبيهات</span> <span>‹</span></div>
@@ -483,19 +546,18 @@
 
   </main>
 
-  <!-- ==================== نافذة فحص وتفاصيل المنشأة الكاملة ==================== -->
+  <!-- نافذة تفاصيل المنشأة التفاعلية -->
   <div class="modal-overlay" id="bizDetailModal">
     <div class="modal-card">
       <button class="modal-close-btn" onclick="closeModal('bizDetailModal')">✕</button>
-      
-      <div id="modalBizCover" style="height: 140px; border-radius: 12px; background-size: cover; background-position: center; margin-bottom: 2.5rem; position: relative;">
-        <img id="modalBizLogo" style="width: 60px; height: 60px; border-radius: 14px; border: 3px solid var(--bg-card); background: #000; position: absolute; bottom: -20px; right: 16px; object-fit: cover;">
+      <div id="modalBizCover" style="height: 160px; border-radius: 14px; background-size: cover; background-position: center; margin-bottom: 2.5rem; position: relative;">
+        <img id="modalBizLogo" style="width: 68px; height: 68px; border-radius: 16px; border: 3px solid var(--bg-card); background: #000; position: absolute; bottom: -20px; right: 18px; object-fit: cover;">
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
         <div>
-          <h2 id="modalBizName" style="font-size: 1.1rem; font-weight: 900; color: #FFF;"></h2>
-          <p id="modalBizCategory" style="font-size: 0.72rem; color: var(--text-gray);"></p>
+          <h2 id="modalBizName" style="font-size: 1.15rem; font-weight: 900; color: #FFF;"></h2>
+          <p id="modalBizCategory" style="font-size: 0.78rem; color: var(--text-gray);"></p>
         </div>
         <div style="display: flex; gap: 6px;">
           <span id="modalBizScore" class="yr-score-badge"></span>
@@ -503,31 +565,25 @@
         </div>
       </div>
 
-      <p id="modalBizDesc" style="font-size: 0.78rem; color: var(--text-gray); line-height: 1.7; background: var(--bg-card-inner); padding: 10px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1rem;"></p>
+      <p id="modalBizDesc" style="font-size: 0.82rem; color: var(--text-gray); line-height: 1.8; background: var(--bg-card-inner); padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1rem;"></p>
 
-      <!-- أزرار الاتصال والمشاركة المباشرة -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 1rem;">
-        <a id="modalBizCall" href="#" class="action-contact-btn" style="background: var(--bg-card-inner);"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg> اتصال</a>
-        <a id="modalBizWhatsapp" href="#" target="_blank" class="action-contact-btn" style="background: var(--bg-card-inner); color: #25D366;"><svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/></svg> واتساب</a>
-        <button id="modalBizCopy" onclick="" class="action-contact-btn" style="background: var(--bg-card-inner); color: var(--gold);"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> مشاركة</button>
-      </div>
-
-      <div style="display: flex; gap: 8px;">
-        <button id="modalBizClaimBtn" onclick="" class="btn-gold-submit" style="background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.3); font-size: 0.78rem;">🔴 أثبت ملكيتك لهذا النشاط</button>
-        <button id="modalBizReviewBtn" onclick="" class="btn-gold-submit" style="font-size: 0.78rem;">⭐ أضف تقييمك</button>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 1rem;">
+        <a id="modalBizCall" href="#" class="action-contact-btn"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg> اتصال</a>
+        <a id="modalBizWhatsapp" href="#" target="_blank" class="action-contact-btn" style="color: #25D366;"><svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/></svg> واتساب</a>
+        <button id="modalBizCopy" onclick="" class="action-contact-btn" style="color: var(--gold);"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> مشاركة</button>
       </div>
     </div>
   </div>
 
-  <!-- ==================== نافذة إضافة نشاط جديد (+) ==================== -->
+  <!-- نافذة إضافة نشاط جديد (+) -->
   <div class="modal-overlay" id="addEntityModal">
     <div class="modal-card">
       <button class="modal-close-btn" onclick="closeModal('addEntityModal')">✕</button>
-      <div style="font-weight: 900; font-size: 1rem; color: var(--gold); margin-bottom: 12px;">+ إضافة نشاطك التجاري للدليل</div>
+      <div style="font-weight: 900; font-size: 1.1rem; color: var(--gold); margin-bottom: 14px;">+ إضافة منشأة تجارية إلى يمن ريتغ</div>
       <form onsubmit="handleAddNewBusiness(event)">
         <div class="form-group-field"><label>اسم المنشأة *</label><input type="text" id="new_name" required placeholder="مثال: مطعم شواطئ عدن"></div>
         <div class="form-group-field"><label>التصنيف *</label><select id="new_type"><option value="restaurant">مطاعم ومقاهي</option><option value="hotel">فنادق وإقامة</option><option value="bank">بنوك ومصارف</option><option value="exchange">شركات صرافة</option><option value="wallet">محافظ إلكترونية</option><option value="company">شركات ومؤسسات</option><option value="shop">متاجر وتسوق</option><option value="health">صحة ومستشفيات</option><option value="services">خدمات عامة</option></select></div>
-        <div class="form-group-field"><label>المدينة *</label><input type="text" id="new_city" required placeholder="صنعاء / عدن / تعز..."></div>
+        <div class="form-group-field"><label>المدينة والمحافظة *</label><input type="text" id="new_city" required placeholder="صنعاء / عدن / تعز..."></div>
         <div class="form-group-field"><label>رقم الهاتف *</label><input type="tel" id="new_phone" required placeholder="770000000"></div>
         <div class="form-group-field"><label>رقم الواتساب</label><input type="tel" id="new_wa" placeholder="967770000000"></div>
         <button type="submit" class="btn-gold-submit">حفظ وإرسال للمراجعة</button>
@@ -535,53 +591,32 @@
     </div>
   </div>
 
-  <!-- ==================== نافذة إضافة تقييم ومراجعة ==================== -->
-  <div class="modal-overlay" id="reviewModal">
-    <div class="modal-card">
-      <button class="modal-close-btn" onclick="closeModal('reviewModal')">✕</button>
-      <div style="font-weight: 900; font-size: 0.95rem; color: #FFF; margin-bottom: 10px;">⭐ أضف تقييمك للمنشأة</div>
-      <form onsubmit="handleSubmitReview(event)">
-        <input type="hidden" id="review_biz_id">
-        <div class="form-group-field"><label>اسمك الكامل *</label><input type="text" id="review_author" required placeholder="مثال: محمد اليافعي"></div>
-        <div class="form-group-field"><label>التقييم بالنجوم *</label><select id="review_stars"><option value="5">★★★★★ (5 من 5 ممتاز)</option><option value="4">★★★★☆ (4 من 5 جيد جداً)</option><option value="3">★★★☆☆ (3 من 5 متوسط)</option></select></div>
-        <div class="form-group-field"><label>رأيك وتعليقك *</label><textarea id="review_comment" rows="3" required placeholder="اكتب تفاصيل تجربتك الصادقة..."></textarea></div>
-        <button type="submit" class="btn-gold-submit">نشر التقييم فوراً</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- شريط التنقل السفلي الخماسي التفاعلي -->
+  <!-- شريط التنقل السفلي للهواتف -->
   <nav class="bottom-app-nav-bar">
     <button class="bottom-nav-link active" onclick="switchAppTab('home', this)">
       <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       <span>الرئيسية</span>
     </button>
-
     <button class="bottom-nav-link" onclick="switchAppTab('directory', this)">
       <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
       <span>الدليل</span>
     </button>
-
     <div class="bottom-center-add-fab" onclick="openAddEntityModal()">
       <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
     </div>
-
     <button class="bottom-nav-link" onclick="switchAppTab('prices', this)">
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg>
       <span>الأسعار</span>
     </button>
-
     <button class="bottom-nav-link" onclick="switchAppTab('more', this)">
       <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
       <span>المزيد</span>
     </button>
   </nav>
 
-  <!-- نافذة Toast التنبيهات -->
   <div id="toastPopup" class="toast-popup"></div>
 
   <script>
-    // قاعدة بيانات المنشآت الحية التفاعلية
     let entitiesDatabase = [
       { id: 1, name: 'بنك الكريمي للتمويل الأصغر', type: 'bank', typeName: 'بنوك ومصارف', city: 'صنعاء', phone: '770123456', wa: '967770123456', score: 97, rating: 4.8, slug: 'alkuraimi', logo: 'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=100', cover: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800', desc: 'خدمات مصرفية وتمويلية إسلامية رائدة للأفراد والشركات في جميع أنحاء اليمن.' },
       { id: 2, name: 'مطعم حضرموت للمأكولات', type: 'restaurant', typeName: 'مطاعم ومقاهي', city: 'صنعاء', phone: '771987654', wa: '967771987654', score: 96, rating: 4.7, slug: 'hadramout-rest', logo: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100', cover: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800', desc: 'أشهى المأكولات التراثية اليمنية واللحوم الطازجة والأسماك على مدار الساعة.' },
@@ -601,7 +636,7 @@
       if (!container) return;
 
       if (!list.length) {
-        container.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:2rem; font-size:0.8rem;">لا توجد منشآت مطابقة للبحث حالياً</div>';
+        container.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:2rem; font-size:0.85rem;">لا توجد منشآت مطابقة للبحث أو الفلتر المحدد حالياً</div>';
         return;
       }
 
@@ -611,11 +646,11 @@
             <div class="entity-info-group">
               <img src="${item.logo}" class="entity-logo-img" alt="${item.name}">
               <div>
-                <div style="font-weight:900; font-size:0.88rem; color:#FFF;">${item.name}</div>
-                <div style="font-size:0.68rem; color:var(--text-gray);">${item.typeName} • ${item.city}</div>
+                <div style="font-weight:900; font-size:0.92rem; color:#FFF;">${item.name}</div>
+                <div style="font-size:0.72rem; color:var(--text-gray);">${item.typeName} • ${item.city}</div>
               </div>
             </div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:3px;">
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
               <span class="yr-score-badge">YR ${item.score}</span>
               <span class="verified-badge">موثق ✅</span>
             </div>
@@ -673,7 +708,6 @@
       renderBusinessesFeed(filtered, 'fullDirectoryList');
     }
 
-    // فتح تفاصيل النشاط الكاملة (Business Detail Modal)
     function openBusinessDetailModal(id) {
       const b = entitiesDatabase.find(x => x.id === id);
       if (!b) return;
@@ -686,8 +720,6 @@
       document.getElementById('modalBizCall').href = `tel:${b.phone}`;
       document.getElementById('modalBizWhatsapp').href = `https://wa.me/${b.wa}`;
       document.getElementById('modalBizCopy').setAttribute('onclick', `copyEntitySlug('${b.slug}')`);
-      document.getElementById('modalBizClaimBtn').setAttribute('onclick', `openClaimModal('${b.name}')`);
-      document.getElementById('modalBizReviewBtn').setAttribute('onclick', `openReviewModal(${b.id})`);
       openModal('bizDetailModal');
     }
 
@@ -716,49 +748,15 @@
       applyFilters();
     }
 
-    function openReviewModal(bizId) {
-      closeModal('bizDetailModal');
-      document.getElementById('review_biz_id').value = bizId;
-      openModal('reviewModal');
-    }
+    function openNotificationsModal() { showToast('🔔 لديك 3 إشعارات وتحديثات جديدة'); }
+    function openFavoritesModal() { showToast('🤍 تم فتح قائمة المنشآت المفضلة'); }
 
-    function handleSubmitReview(e) {
-      e.preventDefault();
-      const author = document.getElementById('review_author').value;
-      closeModal('reviewModal');
-      showToast(`⭐ شكراً ${author}، تم تسجيل تقييمك بنجاح!`);
-    }
-
-    function openClaimModal(bizName) {
-      closeModal('bizDetailModal');
-      showToast(`🛡️ تم فتح استمارة إثبات ملكية: ${bizName}`);
-    }
-
-    function openNotificationsModal() {
-      showToast('🔔 لديك 3 إشعارات جديدة: تم توثيق بنك الكريمي');
-    }
-
-    function openFavoritesModal() {
-      showToast('🤍 تم فتح قائمة المنشآت المفضلة لديك');
-    }
-
-    function openAuthModal() {
-      showToast('👤 سيتم توجيهك لصفحة تسجيل الدخول');
-    }
-
-    // حاسبة العملات الفورية
     function calculateExchange() {
       const amount = parseFloat(document.getElementById('calcAmount').value) || 0;
       const cur = document.getElementById('calcCurrency').value;
       const market = document.getElementById('calcMarket').value;
 
-      let rate = 1540;
-      if (cur === 'USD') {
-        rate = (market === 'aden') ? 1540 : 535;
-      } else if (cur === 'SAR') {
-        rate = (market === 'aden') ? 410 : 140.5;
-      }
-
+      let rate = (cur === 'USD') ? ((market === 'aden') ? 1540 : 535) : ((market === 'aden') ? 410 : 140.5);
       const total = (amount * rate).toLocaleString();
       document.getElementById('calcResult').textContent = `${total} ريال يمني`;
     }
@@ -769,15 +767,8 @@
       showToast(`📋 تم نسخ الرابط: /businesses/${slug}`);
     }
 
-    function openModal(id) {
-      const m = document.getElementById(id);
-      if (m) m.classList.add('open');
-    }
-
-    function closeModal(id) {
-      const m = document.getElementById(id);
-      if (m) m.classList.remove('open');
-    }
+    function openModal(id) { const m = document.getElementById(id); if (m) m.classList.add('open'); }
+    function closeModal(id) { const m = document.getElementById(id); if (m) m.classList.remove('open'); }
 
     function showToast(msg) {
       const t = document.getElementById('toastPopup');
@@ -788,14 +779,12 @@
 
     function switchAppTab(tabKey, btnElement) {
       document.querySelectorAll('.tab-view-section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.bottom-nav-link').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.bottom-nav-link, .nav-link-item').forEach(b => b.classList.remove('active'));
 
       const target = document.getElementById('app-tab-' + tabKey);
       if (target) target.classList.add('active');
 
-      if (btnElement && btnElement.classList) {
-        btnElement.classList.add('active');
-      }
+      if (btnElement && btnElement.classList) btnElement.classList.add('active');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
