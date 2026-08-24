@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>يمن ريتغ | منصة التقييم الأولى في اليمن</title>
+  <title>يمن ريتغ | YEMEN RATING</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,208 +21,135 @@
       --gold-dim: rgba(255, 193, 7, 0.14);
       --gold-border: rgba(255, 193, 7, 0.35);
       
+      --badge-gold: #FFC107;
+      --badge-blue: #29A6FF;
+      --badge-gray: #8E8E93;
+      
       --text: #E6E6E6;
       --text-gray: #8E8E93;
       --text-muted: #636366;
-      
       --border: #2A2A2A;
-      
       --green: #10B981;
-      --green-dim: rgba(16, 185, 129, 0.16);
-      --red: #EF4444;
       --orange: #FF5722;
-      --blue: #3B82F6;
       
       --radius-sm: 8px;
       --radius-md: 14px;
       --radius-lg: 20px;
-      --radius-xl: 24px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg-black); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
 
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-black); }
-    ::-webkit-scrollbar-thumb { background: #2A2A38; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
-
     .svg-icon { display: inline-block; width: 1.15em; height: 1.15em; fill: currentColor; vertical-align: -0.15em; flex-shrink: 0; }
 
-    /* ==========================================================================
-       الهيدر المتجاوب العالمي (Global Responsive Header)
-       ========================================================================== */
+    /* شارة التوثيق الرسمية المعتمدة ملاصقة للاسم */
+    .official-badge-svg {
+      width: 17px; height: 17px; display: inline-block; vertical-align: middle; margin-right: 4px; flex-shrink: 0;
+    }
+
     .main-app-header {
-      height: 68px; background: #0A0A0A; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;
+      height: 60px; background: #000000; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem;
       position: sticky; top: 0; z-index: 1000;
     }
-    .header-logo-wrap { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-    .header-logo-gem {
-      width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, var(--gold), #D97706);
-      display: flex; align-items: center; justify-content: center; color: #000;
-    }
-    .header-logo-text-col { display: flex; flex-direction: column; line-height: 1.1; }
-    .header-logo-text-col span.ar-title { font-size: 1.15rem; font-weight: 900; color: #FFF; }
-    .header-logo-text-col span.en-title { font-size: 0.6rem; font-weight: 800; color: var(--gold); letter-spacing: 1px; }
+    .header-logo-wrap { display: flex; align-items: center; gap: 8px; text-align: center; }
+    .header-logo-text-col { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+    .header-logo-text-col span.ar-title { font-size: 1.05rem; font-weight: 900; color: #FFF; letter-spacing: 0.5px; }
+    .header-logo-text-col span.en-title { font-size: 0.55rem; font-weight: 800; color: #FFF; letter-spacing: 1px; }
+    .header-logo-wrap svg.star-logo { width: 22px; height: 22px; fill: var(--gold); }
 
-    /* روابط التنقل لسطح المكتب */
-    .desktop-nav-links { display: flex; align-items: center; gap: 8px; }
-    .nav-link-item {
-      padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: 0.82rem; font-weight: 800;
-      color: var(--text-gray); background: none; border: none; cursor: pointer; transition: 0.2s;
-    }
-    .nav-link-item:hover { color: #FFF; background: rgba(255,255,255,0.05); }
-    .nav-link-item.active { background: var(--gold); color: #000; font-weight: 900; }
+    .page-main-container { padding: 1rem 1.1rem; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; margin-bottom: 75px; }
 
-    .header-actions-group { display: flex; align-items: center; gap: 12px; }
-    .btn-header-add {
-      background: var(--gold); color: #000; font-weight: 900; font-size: 0.82rem;
-      padding: 0.55rem 1.2rem; border-radius: var(--radius-md); border: none; cursor: pointer;
-      display: flex; align-items: center; gap: 6px; transition: 0.2s;
-    }
-    .btn-header-add:hover { background: var(--gold-hover); transform: translateY(-1px); }
-
-    /* ==========================================================================
-       حاوية المحتوى المتجاوبة بكامل العرض (Full-Width Responsive Canvas)
-       ========================================================================== */
-    .page-main-container {
-      width: 100%; max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; flex: 1; margin-bottom: 75px;
-    }
-
-    .tab-view-section { display: none; animation: fadeIn 0.25s ease; }
+    .tab-view-section { display: none; animation: fadeIn 0.2s ease; }
     .tab-view-section.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* شريط البحث وتحديد الموقع */
-    .search-location-bar {
-      display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 1.5rem;
-    }
-    .home-search-box { position: relative; }
+    .home-search-box { position: relative; margin-bottom: 0.6rem; }
     .home-search-box input {
       width: 100%; background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-md); padding: 0.75rem 2.8rem 0.75rem 1rem; color: #FFF; font-size: 0.85rem;
+      border-radius: var(--radius-lg); padding: 0.75rem 2.6rem 0.75rem 1rem; color: #FFF; font-size: 0.82rem;
     }
     .home-search-box input:focus { outline: none; border-color: var(--gold); }
-    .home-search-box svg { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-gray); width: 18px; height: 18px; }
+    .home-search-box svg { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-gray); width: 16px; height: 16px; }
 
-    .city-filter-box {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0 1rem; display: flex; align-items: center; gap: 8px; overflow-x: auto;
+    .location-selector-bar {
+      display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: var(--text-gray);
+      margin-bottom: 1.1rem; font-weight: 700;
     }
-    .city-pill-btn {
-      padding: 0.35rem 0.85rem; border-radius: 12px; font-size: 0.75rem; font-weight: 800;
-      background: var(--bg-card-inner); color: var(--text-gray); border: 1px solid var(--border);
-      cursor: pointer; white-space: nowrap; transition: 0.2s;
-    }
-    .city-pill-btn.active { background: var(--gold); color: #000; font-weight: 900; border-color: var(--gold); }
+    .location-selector-bar svg { color: var(--gold); width: 14px; height: 14px; }
 
-    /* البانر الترويجي المتجاوب */
     .hero-banner-card {
-      height: 200px; border-radius: var(--radius-xl);
-      background: linear-gradient(to left, rgba(0,0,0,0.9), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=1400') center/cover;
-      padding: 2rem; display: flex; flex-direction: column; justify-content: space-between;
-      border: 1px solid var(--border); margin-bottom: 2rem; position: relative;
+      height: 160px; border-radius: var(--radius-lg);
+      background: linear-gradient(to left, rgba(0,0,0,0.85), rgba(0,0,0,0.25)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800') center/cover;
+      padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between;
+      border: 1px solid var(--border); margin-bottom: 1.4rem; position: relative;
     }
-    .hero-banner-title { font-size: 1.5rem; font-weight: 900; color: #FFF; line-height: 1.2; }
-    .hero-banner-sub { font-size: 0.82rem; color: var(--text-gray); max-width: 600px; margin-top: 6px; }
+    .hero-banner-title { font-size: 1.15rem; font-weight: 900; color: #FFF; line-height: 1.2; }
+    .hero-banner-sub { font-size: 0.72rem; color: var(--text-gray); max-width: 75%; margin-top: 4px; }
     .btn-hero-cta {
-      background: var(--gold); color: #000; font-weight: 900; font-size: 0.82rem;
-      padding: 0.6rem 1.4rem; border-radius: var(--radius-md); border: none; cursor: pointer;
-      width: fit-content; margin-top: 10px; transition: 0.2s;
+      background: var(--gold); color: #000; font-weight: 900; font-size: 0.75rem;
+      padding: 0.45rem 1.1rem; border-radius: var(--radius-md); border: none; cursor: pointer;
+      width: fit-content; margin-top: 8px; transition: 0.2s;
     }
-    .btn-hero-cta:hover { background: var(--gold-hover); transform: translateY(-1px); }
 
-    /* قسم التصنيفات الـ 12 المتكاملة */
-    .section-title-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .section-title-text { font-size: 1.1rem; font-weight: 900; color: #FFF; }
-    .section-view-all { font-size: 0.78rem; color: var(--gold); cursor: pointer; font-weight: 800; }
+    .section-title-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
+    .section-title-text { font-size: 0.92rem; font-weight: 900; color: #FFF; }
+    .section-view-all { font-size: 0.72rem; color: var(--gold); cursor: pointer; font-weight: 700; }
 
-    .categories-grid-responsive {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 10px; margin-bottom: 2rem;
-    }
-    .category-card-btn {
+    .categories-5-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 1.4rem; }
+    .category-box-item {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.9rem 0.3rem; text-align: center; cursor: pointer; transition: 0.2s;
+      padding: 0.75rem 0.2rem; text-align: center; cursor: pointer; transition: 0.2s;
     }
-    .category-card-btn:hover, .category-card-btn.active { border-color: var(--gold); background: var(--bg-card-inner); transform: translateY(-2px); }
-    .category-card-icon {
-      width: 40px; height: 40px; border-radius: 12px; background: var(--bg-card-inner);
-      display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; color: var(--gold);
+    .category-box-item:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .category-box-icon {
+      width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card-inner);
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; color: var(--gold);
     }
-    .category-card-icon svg { width: 20px; height: 20px; fill: var(--gold); }
-    .category-card-label { font-size: 0.72rem; font-weight: 800; color: var(--text); white-space: nowrap; }
+    .category-box-icon svg { width: 18px; height: 18px; fill: var(--gold); }
+    .category-box-label { font-size: 0.65rem; font-weight: 700; color: var(--text); white-space: nowrap; }
 
-    /* شبكة عرض المنشآت المتجاوبة (3 إلى 4 أعمدة في الشاشات الكبيرة) */
-    .entities-feed-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;
-    }
+    /* كروت المنشآت مع شارة التوثيق الرسمية بجانب الاسم */
     .entity-full-card {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
-      padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s; cursor: pointer;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 0.9rem; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; transition: 0.2s; cursor: pointer;
     }
-    .entity-full-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
-    .entity-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .entity-info-group { display: flex; align-items: center; gap: 12px; }
-    .entity-logo-img { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border); }
-    .yr-score-badge { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); padding: 2px 8px; border-radius: 10px; font-weight: 900; font-size: 0.75rem; }
-    .verified-badge { background: var(--green-dim); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 10px; font-weight: 800; font-size: 0.75rem; }
+    .entity-full-card:hover { border-color: var(--gold); }
+    .entity-card-header { display: flex; justify-content: space-between; align-items: center; }
+    .entity-info-group { display: flex; align-items: center; gap: 10px; }
+    .entity-logo-img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border); }
+    .entity-title-row { display: flex; align-items: center; gap: 4px; font-weight: 900; font-size: 0.92rem; color: #FFF; }
+    .yr-score-badge { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); padding: 2px 7px; border-radius: 10px; font-weight: 900; font-size: 0.72rem; }
 
     .entity-contact-actions {
-      display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 8px;
+      display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px;
     }
     .action-contact-btn {
-      flex: 1; padding: 7px; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 800;
+      flex: 1; padding: 6px; border-radius: 8px; font-size: 0.72rem; font-weight: 800;
       background: var(--bg-card-inner); border: 1px solid var(--border); color: #FFF;
       display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; transition: 0.2s;
     }
     .action-contact-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); }
     .action-contact-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
-    /* ويدجت أسعار العملات والذهب العريض */
+    /* ويدجت أسعار العملات والذهب */
     .rates-widget-box {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl);
-      padding: 1.5rem; margin-bottom: 2rem;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 1.1rem; margin-bottom: 1.4rem;
     }
-    .rates-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 0.85rem; }
+    .rates-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 0.6rem; }
     .rate-mini-card {
       background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 1rem 0.75rem; text-align: center;
+      padding: 0.65rem 0.4rem; text-align: center;
     }
-    .rate-mini-title { font-size: 0.78rem; font-weight: 800; color: var(--gold); margin-bottom: 4px; }
-    .rate-mini-values { font-size: 0.95rem; font-weight: 900; color: #FFF; }
-    .rate-mini-sub { font-size: 0.68rem; color: var(--text-gray); margin-top: 3px; }
+    .rate-mini-title { font-size: 0.68rem; font-weight: 800; color: var(--gold); margin-bottom: 4px; }
+    .rate-mini-values { font-size: 0.75rem; font-weight: 900; color: #FFF; }
+    .rate-mini-sub { font-size: 0.6rem; color: var(--text-gray); margin-top: 2px; }
 
-    /* شاشات الأسعار والترند والمزيد */
-    .screen-title-header { font-size: 1.3rem; font-weight: 900; color: #FFF; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-    .subtabs-bar-line { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.25rem; }
-    .subtab-link-btn { flex: 1; padding: 0.75rem; text-align: center; font-size: 0.85rem; font-weight: 800; color: var(--text-gray); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; }
-    .subtab-link-btn.active { color: var(--gold); border-color: var(--gold); }
-
-    .price-row-item {
-      display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.4rem;
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 10px;
-    }
-    .trend-ranked-row {
-      display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.4rem;
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 10px;
-    }
-    .trend-rank-circle {
-      width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #000;
-      display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; margin-left: 12px; flex-shrink: 0;
-    }
-
-    .more-menu-row {
-      display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.4rem;
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px; cursor: pointer;
-    }
-    .more-menu-row span { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 0.88rem; }
-    .more-menu-row span svg { color: var(--gold); width: 18px; height: 18px; }
-
-    /* شريط التنقل السفلي للهواتف فقط */
+    /* شريط التنقل السفلي */
     .bottom-app-nav-bar {
-      display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 62px; background: #0A0A0D;
-      border-top: 1px solid var(--border); justify-content: space-around; align-items: center; z-index: 1000;
+      position: fixed; bottom: 0; left: 0; right: 0; height: 62px; background: #0A0A0D;
+      border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000;
     }
     .bottom-nav-link {
       background: none; border: none; color: var(--text-gray); font-size: 0.68rem; font-weight: 700;
@@ -233,209 +160,107 @@
     .bottom-center-add-fab {
       width: 46px; height: 46px; border-radius: 50%; background: var(--gold); color: #000;
       display: flex; align-items: center; justify-content: center; margin-top: -24px;
-      box-shadow: 0 4px 18px rgba(255, 193, 7, 0.4); border: 3px solid #000; cursor: pointer;
+      box-shadow: 0 4px 18px rgba(255, 184, 0, 0.4); border: 3px solid #000; cursor: pointer;
     }
     .bottom-center-add-fab svg { width: 22px; height: 22px; fill: #000; }
 
-    /* النوافذ المنبثقة التفاعلية */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
-      display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1.5rem;
+      display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;
     }
     .modal-overlay.open { display: flex; }
     .modal-card {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl);
-      width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-      padding: 1.5rem; position: relative;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      padding: 1.25rem; position: relative;
     }
-    .modal-close-btn { position: absolute; top: 16px; left: 16px; background: none; border: none; color: var(--text-gray); font-size: 1.2rem; cursor: pointer; }
-
-    .form-group-field { margin-bottom: 1rem; }
-    .form-group-field label { display: block; font-size: 0.78rem; font-weight: 800; color: var(--text-gray); margin-bottom: 6px; }
-    .form-group-field input, .form-group-field select, .form-group-field textarea {
-      width: 100%; background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.7rem 1rem; color: #FFF; font-size: 0.82rem;
-    }
-    .form-group-field input:focus, .form-group-field select:focus, .form-group-field textarea:focus { outline: none; border-color: var(--gold); }
-
-    .btn-gold-submit {
-      background: var(--gold); color: #000; font-weight: 900; font-size: 0.88rem; padding: 0.8rem;
-      border-radius: var(--radius-md); border: none; cursor: pointer; width: 100%; margin-top: 10px;
-    }
+    .modal-close-btn { position: absolute; top: 12px; left: 12px; background: none; border: none; color: var(--text-gray); font-size: 1.2rem; cursor: pointer; }
 
     .toast-popup {
-      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--gold);
-      color: #000; padding: 9px 24px; border-radius: 20px; font-weight: 900; font-size: 0.82rem;
-      z-index: 3000; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-    }
-
-    /* التجاوب الدقيق لجميع الشاشات */
-    @media (max-width: 992px) {
-      .desktop-nav-links { display: none; }
-      .search-location-bar { grid-template-columns: 1fr; }
-      .page-main-container { padding: 1rem; }
-      .bottom-app-nav-bar { display: flex; }
-      .main-app-header { padding: 0 1.25rem; }
-    }
-    @media (max-width: 600px) {
-      .categories-grid-responsive { grid-template-columns: repeat(4, 1fr); gap: 6px; }
-      .rates-3col-grid { grid-template-columns: 1fr; }
-      .entities-feed-grid { grid-template-columns: 1fr; }
-      .hero-banner-card { height: 170px; padding: 1.2rem; }
+      position: fixed; bottom: 74px; left: 50%; transform: translateX(-50%); background: var(--gold);
+      color: #000; padding: 8px 20px; border-radius: 20px; font-weight: 900; font-size: 0.78rem;
+      z-index: 3000; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
   </style>
 </head>
 <body>
 
-  <!-- الهيدر العالمي المتجاوب -->
+  <!-- الهيدر الرسمي -->
   <header class="main-app-header">
-    <div style="display: flex; align-items: center; gap: 16px;">
-      <a href="/" class="header-logo-wrap">
-        <div class="header-logo-gem">
-          <svg style="width: 20px; height: 20px; fill: #000;" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-        </div>
-        <div class="header-logo-text-col">
-          <span class="ar-title">يمن ريتغ</span>
-          <span class="en-title">YEMEN RATING</span>
-        </div>
-      </a>
-
-      <!-- روابط التوجيه لسطح المكتب والشاشات الكبيرة -->
-      <nav class="desktop-nav-links">
-        <button class="nav-link-item active" onclick="switchAppTab('home', this)">الرئيسية</button>
-        <button class="nav-link-item" onclick="switchAppTab('directory', this)">الدليل الشامل</button>
-        <button class="nav-link-item" onclick="switchAppTab('prices', this)">أسعار الصرف</button>
-        <button class="nav-link-item" onclick="switchAppTab('trend', this)">الترند</button>
-        <button class="nav-link-item" onclick="switchAppTab('more', this)">المزيد</button>
-      </nav>
+    <div style="cursor: pointer;" onclick="alert('الإشعارات')">
+      <svg class="svg-icon" style="color: var(--gold); width: 20px; height: 20px;" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
     </div>
-
-    <div class="header-actions-group">
-      <button class="btn-header-add" onclick="openAddEntityModal()">
-        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        <span>+ أضف نشاطك</span>
-      </button>
-
-      <div style="cursor: pointer;" onclick="openNotificationsModal()" title="الإشعارات">
-        <svg class="svg-icon" style="color: var(--gold); width: 22px; height: 22px;" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+    <div class="header-logo-wrap">
+      <div class="header-logo-text-col">
+        <span class="ar-title">يمن ريتغ</span>
+        <span class="en-title">YEMEN RATING</span>
       </div>
-
-      <a href="/admin.html" style="color: var(--text-gray); display: flex; align-items: center; justify-content: center;" title="لوحة الإدارة">
-        <svg class="svg-icon" style="width: 22px; height: 22px;" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-      </a>
+      <svg class="star-logo" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+    </div>
+    <div style="cursor: pointer;" onclick="window.location.href='/admin.html'">
+      <svg class="svg-icon" style="color: #FFF; width: 22px; height: 22px;" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
     </div>
   </header>
 
-  <!-- مساحة المحتوى الرئيسية المتجاوبة بكامل العرض -->
   <main class="page-main-container">
-
-    <!-- ==================== 1. تبويب الرئيسية ==================== -->
     <div id="app-tab-home" class="tab-view-section active">
       
-      <!-- شريط البحث وفلترة المحافظات -->
-      <div class="search-location-bar">
-        <div class="home-search-box">
-          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-          <input type="text" placeholder="ابحث عن شركة، فندق، مطعم، بنك، صرافة، أو خدمة..." oninput="handleDirectorySearch(this.value)">
-        </div>
-
-        <div class="city-filter-box">
-          <button class="city-pill-btn active" onclick="filterByCity('all', this)">كل المدن 📍</button>
-          <button class="city-pill-btn" onclick="filterByCity('صنعاء', this)">صنعاء</button>
-          <button class="city-pill-btn" onclick="filterByCity('عدن', this)">عدن</button>
-          <button class="city-pill-btn" onclick="filterByCity('تعز', this)">تعز</button>
-          <button class="city-pill-btn" onclick="filterByCity('حضرموت', this)">المكلا</button>
-        </div>
+      <div class="home-search-box">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input type="text" placeholder="ابحث عن نشاط أو شركة أو خدمة..." oninput="handleSearch(this.value)">
       </div>
 
-      <!-- البانر الترويجي العريض -->
+      <div class="location-selector-bar">
+        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        <span>اليمن، صنعاء</span>
+      </div>
+
       <div class="hero-banner-card">
         <div>
-          <div class="hero-banner-title">اكتشف الأفضل في اليمن</div>
-          <div class="hero-banner-sub">الدليل الشامل والتقييمات الحقيقية الموثقة لجميع الشركات والمؤسسات والخدمات في المحافظات اليمنية.</div>
-          <button class="btn-hero-cta" onclick="switchAppTab('directory', document.querySelectorAll('.nav-link-item')[1])">استكشف الدليل الكامل</button>
+          <div class="hero-banner-title">اكتشف الأفضل</div>
+          <div class="hero-banner-sub">تقييمات حقيقية من المجتمع لأفضل الشركات والخدمات</div>
+          <button class="btn-hero-cta" onclick="filterCategory('all')">استكشف الآن</button>
         </div>
       </div>
 
-      <!-- التصنيفات الرئيسية الـ 12 المكتملة -->
       <div class="section-title-line">
-        <span class="section-title-text">التصنيفات والقطاعات الرئيسية (12)</span>
-        <span class="section-view-all" onclick="filterByCategory('all')">عرض الكل</span>
+        <span class="section-title-text">التصنيفات الرئيسية</span>
+        <span class="section-view-all" onclick="filterCategory('all')">عرض الكل</span>
       </div>
 
-      <div class="categories-grid-responsive">
-        <div class="category-card-btn" onclick="filterByCategory('restaurant')">
-          <div class="category-card-icon"><svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg></div>
-          <div class="category-card-label">مطاعم ومقاهي</div>
+      <div class="categories-5-grid">
+        <div class="category-box-item" onclick="filterCategory('restaurant')">
+          <div class="category-box-icon"><svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg></div>
+          <div class="category-box-label">مطاعم ومقاهي</div>
         </div>
-
-        <div class="category-card-btn" onclick="filterByCategory('hotel')">
-          <div class="category-card-icon"><svg viewBox="0 0 24 24"><path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/></svg></div>
-          <div class="category-card-label">فنادق وسياحة</div>
+        <div class="category-box-item" onclick="filterCategory('bank')">
+          <div class="category-box-icon"><svg viewBox="0 0 24 24"><path d="M4 10h3v7H4zM10.5 10h3v7h-3zM2 22h20v-3H2v3zm15-12h3v7h-3zM12 1L2 6v2h20V6L12 1z"/></svg></div>
+          <div class="category-box-label">بنوك ومصارف</div>
         </div>
-
-        <div class="category-card-btn" onclick="filterByCategory('bank')">
-          <div class="category-card-icon"><svg viewBox="0 0 24 24"><path d="M4 10h3v7H4zM10.5 10h3v7h-3zM2 22h20v-3H2v3zm15-12h3v7h-3zM12 1L2 6v2h20V6L12 1z"/></svg></div>
-          <div class="category-card-label">بنوك ومصارف</div>
+        <div class="category-box-item" onclick="filterCategory('hotel')">
+          <div class="category-box-icon"><svg viewBox="0 0 24 24"><path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/></svg></div>
+          <div class="category-box-label">فنادق وسياحة</div>
         </div>
-
-        <div class="category-card-btn" onclick="filterByCategory('exchange')">
-          <div class="category-card-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg></div>
-          <div class="category-card-label">شركات صرافة</div>
+        <div class="category-box-item" onclick="filterCategory('exchange')">
+          <div class="category-box-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg></div>
+          <div class="category-box-label">شركات صرافة</div>
         </div>
-
-        <div class="category-card-btn" onclick="filterByCategory('wallet')">
-          <div class="category-card-icon"><svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
-          <div class="category-card-label">محافظ إلكترونية</div>
-        </div>
-
-        <div class="category-card-btn" onclick="filterByCategory('company')">
-          <div class="category-card-icon"><svg viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg></div>
-          <div class="category-card-label">شركات ومؤسسات</div>
-        </div>
-
-        <div class="category-card-btn" onclick="filterByCategory('transport')">
-          <div class="category-card-icon"><svg viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.22.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.04 3H5.81l1.04-3zM19 17H5v-4.66l.12-.34h13.77l.11.34V17z"/><circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/></svg></div>
-          <div class="category-card-label">سيارات ونقل</div>
-        </div>
-
-        <div class="category-card-btn" onclick="filterByCategory('shop')">
-          <div class="category-card-icon"><svg viewBox="0 0 24 24"><path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h4v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z"/></svg></div>
-          <div class="category-card-label">متاجر وتسوق</div>
-        </div>
-
-        <div class="category-card-btn" onclick="filterByCategory('health')">
-          <div class="category-card-icon"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z"/></svg></div>
-          <div class="category-card-label">صحة ومستشفيات</div>
-        </div>
-
-        <div class="category-card-btn" onclick="filterByCategory('services')">
-          <div class="category-card-icon"><svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.1-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg></div>
-          <div class="category-card-label">خدمات عامة</div>
-        </div>
-
-        <div class="category-card-btn" onclick="filterByCategory('education')">
-          <div class="category-card-icon"><svg viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg></div>
-          <div class="category-card-label">تعليم وجامعات</div>
-        </div>
-
-        <div class="category-card-btn" onclick="filterByCategory('entertainment')">
-          <div class="category-card-icon"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
-          <div class="category-card-label">سياحة وترفيه</div>
+        <div class="category-box-item" onclick="filterCategory('wallet')">
+          <div class="category-box-icon"><svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>
+          <div class="category-box-label">محافظ إلكترونية</div>
         </div>
       </div>
 
-      <!-- قائمة المنشآت المتجاوبة (3 إلى 4 أعمدة في الشاشات العريضة) -->
       <div class="section-title-line">
-        <span class="section-title-text" id="currentSectionTitle">أبرز المنشآت المعتمدة</span>
+        <span class="section-title-text">أبرز المنشآت المعتمدة</span>
       </div>
 
-      <div id="homeEntitiesFeed" class="entities-feed-grid"></div>
+      <!-- قائمة المنشآت الحية مع الشارات الملاصقة للاسم -->
+      <div id="entitiesFeedList"></div>
 
       <!-- ويدجت أسعار العملات والذهب -->
-      <div class="section-title-line">
-        <span class="section-title-text">أسعار العملات والذهب الحية (صنعاء / عدن)</span>
-        <span class="section-view-all" onclick="switchAppTab('prices', this)">المحول والأسعار المباشرة</span>
+      <div class="section-title-line" style="margin-top: 1.5rem;">
+        <span class="section-title-text">أسعار العملات والذهب</span>
       </div>
 
       <div class="rates-widget-box">
@@ -446,12 +271,12 @@
             <div class="rate-mini-sub">ريال يمني / جرام</div>
           </div>
           <div class="rate-mini-card">
-            <div class="rate-mini-title">دولار أمريكي (USD)</div>
+            <div class="rate-mini-title">دولار أمريكي</div>
             <div class="rate-mini-values">1,540 / 1,530</div>
             <div class="rate-mini-sub">ريال يمني</div>
           </div>
           <div class="rate-mini-card">
-            <div class="rate-mini-title">ريال سعودي (SAR)</div>
+            <div class="rate-mini-title">ريال سعودي</div>
             <div class="rate-mini-values">410 / 418</div>
             <div class="rate-mini-sub">ريال يمني</div>
           </div>
@@ -459,338 +284,157 @@
       </div>
 
     </div>
-
-    <!-- ==================== 2. تبويب الدليل الشامل ==================== -->
-    <div id="app-tab-directory" class="tab-view-section">
-      <div class="screen-title-header">
-        <span>دليل المنشآت والأنشطة في اليمن</span>
-        <span style="font-size: 0.82rem; color: var(--gold); font-weight: 800;" id="dirCountText">8 منشآت</span>
-      </div>
-
-      <div class="home-search-box" style="margin-bottom: 1.5rem;">
-        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        <input type="text" placeholder="بحث شامل باسم المنشأة أو المدينة أو الخدمة..." oninput="handleDirectorySearch(this.value)">
-      </div>
-
-      <div id="fullDirectoryList" class="entities-feed-grid"></div>
-    </div>
-
-    <!-- ==================== 3. تبويب الأسعار المباشرة والمحول ==================== -->
-    <div id="app-tab-prices" class="tab-view-section">
-      <div class="screen-title-header">
-        <span>أسعار الصرف المباشرة وحاسبة التحويل</span>
-      </div>
-
-      <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem;">
-        <div style="font-weight: 900; font-size: 0.95rem; color: var(--gold); margin-bottom: 12px;">💱 حاسبة تحويل العملات اللحظية</div>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
-          <input type="number" id="calcAmount" value="100" placeholder="المبلغ" oninput="calculateExchange()" style="flex: 1; min-width: 140px; background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: #FFF; font-weight: 800;">
-          <select id="calcCurrency" onchange="calculateExchange()" style="background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: 10px; padding: 10px; color: #FFF; font-weight: 800;">
-            <option value="USD">دولار أمريكي (USD)</option>
-            <option value="SAR">ريال سعودي (SAR)</option>
-          </select>
-          <select id="calcMarket" onchange="calculateExchange()" style="background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: 10px; padding: 10px; color: #FFF; font-weight: 800;">
-            <option value="aden">سوق عدن</option>
-            <option value="sanaa">سوق صنعاء</option>
-          </select>
-        </div>
-        <div style="background: #000; border-radius: 12px; padding: 14px; text-align: center;">
-          <span style="font-size: 0.8rem; color: var(--text-gray);">المبلغ المقابل:</span>
-          <strong id="calcResult" style="color: var(--gold); font-size: 1.3rem; margin-right: 8px;">154,000 ريال يمني</strong>
-        </div>
-      </div>
-
-      <div class="price-row-item">
-        <div>
-          <div style="font-weight: 800; font-size: 0.9rem; color: #FFF;">دولار أمريكي (USD) 🇺🇸</div>
-          <div style="font-size: 0.75rem; color: var(--green);">▲ شراء 1,530 / بيع 1,540</div>
-        </div>
-        <div style="font-weight: 900; color: var(--gold); font-size: 1.1rem;">1,540 ريال</div>
-      </div>
-
-      <div class="price-row-item">
-        <div>
-          <div style="font-weight: 800; font-size: 0.9rem; color: #FFF;">ريال سعودي (SAR) 🇸🇦</div>
-          <div style="font-size: 0.75rem; color: var(--green);">▲ شراء 408 / بيع 410</div>
-        </div>
-        <div style="font-weight: 900; color: var(--gold); font-size: 1.1rem;">410 ريال</div>
-      </div>
-    </div>
-
-    <!-- ==================== 4. تبويب الترند ==================== -->
-    <div id="app-tab-trend" class="tab-view-section">
-      <div class="screen-title-header"><span>الترند والأعلى تفاعلاً</span></div>
-      <div class="trend-ranked-row">
-        <div style="display: flex; align-items: center;">
-          <div class="trend-rank-circle">1</div>
-          <div><div style="font-weight: 800; font-size: 0.9rem; color: #FFF;">مطعم البيت اليمني</div><div style="font-size: 0.75rem; color: var(--text-gray);">مطاعم ومقاهي • صنعاء</div></div>
-        </div>
-        <div style="font-weight: 900; color: #FFF; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><svg class="svg-icon" style="color: var(--orange); width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg> <span>125</span></div>
-      </div>
-      <div class="trend-ranked-row">
-        <div style="display: flex; align-items: center;">
-          <div class="trend-rank-circle">2</div>
-          <div><div style="font-weight: 800; font-size: 0.9rem; color: #FFF;">بنك الكريمي الإسلامي</div><div style="font-size: 0.75rem; color: var(--text-gray);">بنوك ومصارف • جميع الفروع</div></div>
-        </div>
-        <div style="font-weight: 900; color: #FFF; font-size: 0.85rem; display: flex; align-items: center; gap: 4px;"><svg class="svg-icon" style="color: var(--orange); width: 16px; height: 16px;" viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg> <span>98</span></div>
-      </div>
-    </div>
-
-    <!-- ==================== 5. تبويب المزيد ==================== -->
-    <div id="app-tab-more" class="tab-view-section">
-      <div class="screen-title-header"><span>المزيد والخيارات</span></div>
-      <div class="more-menu-row" onclick="window.location.href='/admin.html'"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg> لوحة تحكم الإدارة (Admin Panel)</span> <span>‹</span></div>
-      <div class="more-menu-row" onclick="openFavoritesModal()"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> المفضلة والمحفوظات</span> <span>‹</span></div>
-      <div class="more-menu-row" onclick="openNotificationsModal()"><span><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg> الإشعارات والتنبيهات</span> <span>‹</span></div>
-    </div>
-
   </main>
 
-  <!-- نافذة تفاصيل المنشأة التفاعلية -->
+  <!-- نافذة تفاصيل المنشأة -->
   <div class="modal-overlay" id="bizDetailModal">
     <div class="modal-card">
       <button class="modal-close-btn" onclick="closeModal('bizDetailModal')">✕</button>
-      <div id="modalBizCover" style="height: 160px; border-radius: 14px; background-size: cover; background-position: center; margin-bottom: 2.5rem; position: relative;">
-        <img id="modalBizLogo" style="width: 68px; height: 68px; border-radius: 16px; border: 3px solid var(--bg-card); background: #000; position: absolute; bottom: -20px; right: 18px; object-fit: cover;">
+      <div id="modalBizCover" style="height: 140px; border-radius: 12px; background-size: cover; background-position: center; margin-bottom: 2.5rem; position: relative;">
+        <img id="modalBizLogo" style="width: 60px; height: 60px; border-radius: 14px; border: 3px solid var(--bg-card); background: #000; position: absolute; bottom: -20px; right: 16px; object-fit: cover;">
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
         <div>
-          <h2 id="modalBizName" style="font-size: 1.15rem; font-weight: 900; color: #FFF;"></h2>
-          <p id="modalBizCategory" style="font-size: 0.78rem; color: var(--text-gray);"></p>
+          <div id="modalBizName" style="display: flex; align-items: center; gap: 4px; font-size: 1.15rem; font-weight: 900; color: #FFF;"></div>
+          <p id="modalBizCategory" style="font-size: 0.75rem; color: var(--text-gray);"></p>
         </div>
-        <div style="display: flex; gap: 6px;">
-          <span id="modalBizScore" class="yr-score-badge"></span>
-          <span class="verified-badge">موثق ✅</span>
-        </div>
+        <span id="modalBizScore" class="yr-score-badge"></span>
       </div>
 
-      <p id="modalBizDesc" style="font-size: 0.82rem; color: var(--text-gray); line-height: 1.8; background: var(--bg-card-inner); padding: 12px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1rem;"></p>
+      <p id="modalBizDesc" style="font-size: 0.8rem; color: var(--text-gray); line-height: 1.8; background: var(--bg-card-inner); padding: 10px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1rem;"></p>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 1rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
         <a id="modalBizCall" href="#" class="action-contact-btn"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg> اتصال</a>
         <a id="modalBizWhatsapp" href="#" target="_blank" class="action-contact-btn" style="color: #25D366;"><svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/></svg> واتساب</a>
-        <button id="modalBizCopy" onclick="" class="action-contact-btn" style="color: var(--gold);"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> مشاركة</button>
+        <button id="modalBizCopy" class="action-contact-btn" style="color: var(--gold);"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> مشاركة</button>
       </div>
     </div>
   </div>
 
-  <!-- نافذة إضافة نشاط جديد (+) -->
-  <div class="modal-overlay" id="addEntityModal">
-    <div class="modal-card">
-      <button class="modal-close-btn" onclick="closeModal('addEntityModal')">✕</button>
-      <div style="font-weight: 900; font-size: 1.1rem; color: var(--gold); margin-bottom: 14px;">+ إضافة منشأة تجارية إلى يمن ريتغ</div>
-      <form onsubmit="handleAddNewBusiness(event)">
-        <div class="form-group-field"><label>اسم المنشأة *</label><input type="text" id="new_name" required placeholder="مثال: مطعم شواطئ عدن"></div>
-        <div class="form-group-field"><label>التصنيف *</label><select id="new_type"><option value="restaurant">مطاعم ومقاهي</option><option value="hotel">فنادق وإقامة</option><option value="bank">بنوك ومصارف</option><option value="exchange">شركات صرافة</option><option value="wallet">محافظ إلكترونية</option><option value="company">شركات ومؤسسات</option><option value="shop">متاجر وتسوق</option><option value="health">صحة ومستشفيات</option><option value="services">خدمات عامة</option></select></div>
-        <div class="form-group-field"><label>المدينة والمحافظة *</label><input type="text" id="new_city" required placeholder="صنعاء / عدن / تعز..."></div>
-        <div class="form-group-field"><label>رقم الهاتف *</label><input type="tel" id="new_phone" required placeholder="770000000"></div>
-        <div class="form-group-field"><label>رقم الواتساب</label><input type="tel" id="new_wa" placeholder="967770000000"></div>
-        <button type="submit" class="btn-gold-submit">حفظ وإرسال للمراجعة</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- شريط التنقل السفلي للهواتف -->
+  <!-- شريط التنقل السفلي -->
   <nav class="bottom-app-nav-bar">
-    <button class="bottom-nav-link active" onclick="switchAppTab('home', this)">
+    <button class="bottom-nav-link active" onclick="filterCategory('all')">
       <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       <span>الرئيسية</span>
     </button>
-    <button class="bottom-nav-link" onclick="switchAppTab('directory', this)">
+    <button class="bottom-nav-link" onclick="filterCategory('all')">
       <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
       <span>الدليل</span>
     </button>
-    <div class="bottom-center-add-fab" onclick="openAddEntityModal()">
+    <div class="bottom-center-add-fab" onclick="window.location.href='/admin.html'">
       <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
     </div>
-    <button class="bottom-nav-link" onclick="switchAppTab('prices', this)">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/></svg>
-      <span>الأسعار</span>
+    <button class="bottom-nav-link" onclick="alert('المفضلة')">
+      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+      <span>المفضلة</span>
     </button>
-    <button class="bottom-nav-link" onclick="switchAppTab('more', this)">
+    <button class="bottom-nav-link" onclick="window.location.href='/admin.html'">
       <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-      <span>المزيد</span>
+      <span>الإدارة</span>
     </button>
   </nav>
 
   <div id="toastPopup" class="toast-popup"></div>
 
   <script>
-    let entitiesDatabase = [
-      { id: 1, name: 'بنك الكريمي للتمويل الأصغر', type: 'bank', typeName: 'بنوك ومصارف', city: 'صنعاء', phone: '770123456', wa: '967770123456', score: 97, rating: 4.8, slug: 'alkuraimi', logo: 'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=100', cover: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800', desc: 'خدمات مصرفية وتمويلية إسلامية رائدة للأفراد والشركات في جميع أنحاء اليمن.' },
-      { id: 2, name: 'مطعم حضرموت للمأكولات', type: 'restaurant', typeName: 'مطاعم ومقاهي', city: 'صنعاء', phone: '771987654', wa: '967771987654', score: 96, rating: 4.7, slug: 'hadramout-rest', logo: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100', cover: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800', desc: 'أشهى المأكولات التراثية اليمنية واللحوم الطازجة والأسماك على مدار الساعة.' },
-      { id: 3, name: 'فندق تاج سبأ الدولي', type: 'hotel', typeName: 'فنادق وإقامة', city: 'تعز', phone: '772111222', wa: '96772111222', score: 94, rating: 4.7, slug: 'taj-sheba', logo: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=100', cover: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800', desc: 'خدمات فندقية 5 نجوم، أجنحة فخمة، وقاعات مؤتمرات مجهزة بالكامل.' },
-      { id: 4, name: 'محفظة جيب الإلكترونية', type: 'wallet', typeName: 'محافظ إلكترونية', city: 'صنعاء', phone: '777000111', wa: '967777000111', score: 95, rating: 4.8, slug: 'jeeb-wallet', logo: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=100', cover: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800', desc: 'تطبيق المحفظة الإلكترونية الأسرع في اليمن للتحويلات وسداد الفواتير والمشتريات.' },
-      { id: 5, name: 'شركة النجم للصرافة والتحويلات', type: 'exchange', typeName: 'شركات صرافة', city: 'عدن', phone: '773334445', wa: '96773334445', score: 93, rating: 4.5, slug: 'alnejm-exchange', logo: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=100', cover: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800', desc: 'شبكة صرافة وتحويلات مالية محلية ودولية موثوقة وفورية.' },
-      { id: 6, name: 'هايبر بلس التجاري', type: 'shop', typeName: 'متاجر وتسوق', city: 'عدن', phone: '778889990', wa: '967778889990', score: 94, rating: 4.6, slug: 'hyper-plus', logo: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=100', cover: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=800', desc: 'أكبر مركز تسوق استهلاكي وإلكتروني يقدم أفضل العروض اليومية.' },
-      { id: 7, name: 'مركز إشراقة الطبي التخصصي', type: 'health', typeName: 'صحة ومستشفيات', city: 'حضرموت', phone: '775556667', wa: '967775556667', score: 92, rating: 4.5, slug: 'eshraqa-clinic', logo: 'https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?w=100', cover: 'https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?w=800', desc: 'رعاية صحية متميزة وعيادات استشارية متخصصة ومختبرات مجهزة بأحدث التقنيات.' },
-      { id: 8, name: 'غسيل وخدمات حريري للسيارات', type: 'services', typeName: 'خدمات عامة', city: 'صنعاء', phone: '774443332', wa: '967774443332', score: 90, rating: 4.4, slug: 'hareeri-services', logo: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=100', cover: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=800', desc: 'عناية متكاملة للسيارات وتلميع احترافي بأحدث المواد والمعدات.' }
+    // دالة توليد كود SVG لشارة التوثيق المسننة الرسمية المطابقة للصورة 1:1
+    function getOfficialBadgeSVG(type) {
+      let color = '#FFC107'; // ذهبي
+      if (type === 'blue') color = '#29A6FF'; // أزرق
+      if (type === 'gray') color = '#8E8E93'; // رمادي
+      
+      return `
+        <svg class="official-badge-svg" viewBox="0 0 24 24">
+          <path fill="${color}" d="M22.5 12c0-.7-.29-1.35-.78-1.82.26-.67.24-1.42-.09-2.07-.33-.65-.92-1.1-1.63-1.24-.04-.72-.36-1.39-.89-1.87-.53-.48-1.23-.71-1.95-.65-.33-.65-.92-1.1-1.63-1.24-.71-.14-1.43.08-1.99.59-.62-.38-1.35-.59-2.12-.59s-1.5.21-2.12.59c-.56-.51-1.28-.73-1.99-.59-.71.14-1.3.59-1.63 1.24-.72-.06-1.42.17-1.95.65-.53.48-.85 1.15-.89 1.87-.71.14-1.3.59-1.63 1.24-.33.65-.35 1.4-.09 2.07-.49.47-.78 1.12-.78 1.82s.29 1.35.78 1.82c-.26.67-.24 1.42.09 2.07.33.65.92 1.1 1.63 1.24.04.72.36 1.39.89 1.87.53.48 1.24.71 1.95.65.33.65.92 1.1 1.63 1.24.71.14 1.43-.08 1.99-.59.62.38 1.35.59 2.12.59s1.5-.21 2.12-.59c.56.51 1.28.73 1.99.59.71-.14 1.3-.59 1.63-1.24.72.06 1.42-.17 1.95-.65.53-.48.85-1.15.89-1.87.71-.14 1.3-.59 1.63-1.24.33-.65.35-1.4.09-2.07.49-.47.78-1.12.78-1.82z"/>
+          <path fill="#FFFFFF" d="M10.2 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.3-5.3 1.4 1.4-6.7 6.7z"/>
+        </svg>
+      `;
+    }
+
+    const entitiesData = [
+      { id: 1, name: 'بنك الكريمي للتمويل الأصغر', badge: 'gold', type: 'bank', typeName: 'بنوك ومصارف', city: 'صنعاء', phone: '770123456', wa: '967770123456', score: 97, rating: 4.8, slug: 'alkuraimi', logo: 'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=100', cover: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800', desc: 'خدمات مصرفية وتمويلية إسلامية رائدة لكافة الشركات والأفراد.' },
+      { id: 2, name: 'مطعم حضرموت الدولي', badge: 'gold', type: 'restaurant', typeName: 'مطاعم ومقاهي', city: 'صنعاء', phone: '771987654', wa: '967771987654', score: 96, rating: 4.7, slug: 'hadramout-rest', logo: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100', cover: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800', desc: 'أشهى المأكولات التراثية واللحوم الطازجة والأسماك المشوية.' },
+      { id: 3, name: 'فندق تاج سبأ الدولي', badge: 'gold', type: 'hotel', typeName: 'فنادق وإقامة', city: 'تعز', phone: '772111222', wa: '96772111222', score: 94, rating: 4.7, slug: 'taj-sheba', logo: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=100', cover: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800', desc: 'فندقة 5 نجوم وأجنحة فخمة وخدمة راقية.' },
+      { id: 4, name: 'محفظة جيب الإلكترونية', badge: 'blue', type: 'wallet', typeName: 'محافظ إلكترونية', city: 'صنعاء', phone: '777000111', wa: '967777000111', score: 95, rating: 4.8, slug: 'jeeb-wallet', logo: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=100', cover: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800', desc: 'المحفظة الإلكترونية الأسرع في اليمن للتحويلات وسداد الفواتير.' },
+      { id: 5, name: 'شركة النجم للصرافة', badge: 'blue', type: 'exchange', typeName: 'شركات صرافة', city: 'عدن', phone: '773334445', wa: '96773334445', score: 93, rating: 4.5, slug: 'alnejm-exchange', logo: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=100', cover: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800', desc: 'شبكة تحويلات وصرافة سريعة وموثوقة محلياً ودولياً.' },
+      { id: 6, name: 'شركة راحة للنقل الدولي', badge: 'gray', type: 'transport', typeName: 'سيارات ونقل', city: 'صنعاء', phone: '770998877', wa: '967770998877', score: 88, rating: 4.2, slug: 'raha-transport', logo: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=100', cover: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800', desc: 'رحلات نقل بري دولية فاخرة ومريحة.' }
     ];
 
-    let currentCategory = 'all';
-    let currentCity = 'all';
-
-    function renderBusinessesFeed(list, containerId) {
-      const container = document.getElementById(containerId);
+    function renderFeed(list) {
+      const container = document.getElementById('entitiesFeedList');
       if (!container) return;
 
-      if (!list.length) {
-        container.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:2rem; font-size:0.85rem;">لا توجد منشآت مطابقة للبحث أو الفلتر المحدد حالياً</div>';
-        return;
-      }
-
       container.innerHTML = list.map(item => `
-        <div class="entity-full-card" onclick="openBusinessDetailModal(${item.id})">
+        <div class="entity-full-card" onclick="openDetails(${item.id})">
           <div class="entity-card-header">
             <div class="entity-info-group">
-              <img src="${item.logo}" class="entity-logo-img" alt="${item.name}">
+              <img src="${item.logo}" class="entity-logo-img">
               <div>
-                <div style="font-weight:900; font-size:0.92rem; color:#FFF;">${item.name}</div>
-                <div style="font-size:0.72rem; color:var(--text-gray);">${item.typeName} • ${item.city}</div>
+                <div class="entity-title-row">
+                  <span>${item.name}</span>
+                  ${getOfficialBadgeSVG(item.badge)}
+                </div>
+                <div style="font-size:0.68rem; color:var(--text-gray);">${item.typeName} • ${item.city}</div>
               </div>
             </div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
-              <span class="yr-score-badge">YR ${item.score}</span>
-              <span class="verified-badge">موثق ✅</span>
-            </div>
+            <span class="yr-score-badge">YR ${item.score}</span>
           </div>
 
           <div class="entity-contact-actions" onclick="event.stopPropagation()">
-            <a href="tel:${item.phone}" class="action-contact-btn"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg> <span>اتصال</span></a>
-            <a href="https://wa.me/${item.wa}" target="_blank" class="action-contact-btn" style="color:#25D366;"><svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/></svg> <span>واتساب</span></a>
-            <button onclick="copyEntitySlug('${item.slug}')" class="action-contact-btn" style="color:var(--gold);"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> <span>مشاركة</span></button>
+            <a href="tel:${item.phone}" class="action-contact-btn"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg> اتصال</a>
+            <a href="https://wa.me/${item.wa}" target="_blank" class="action-contact-btn" style="color:#25D366;"><svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/></svg> واتساب</a>
+            <button onclick="copySlug('${item.slug}')" class="action-contact-btn" style="color:var(--gold);"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> مشاركة</button>
           </div>
         </div>
       `).join('');
     }
 
-    function applyFilters() {
-      let filtered = entitiesDatabase;
-      if (currentCategory !== 'all') {
-        filtered = filtered.filter(e => e.type === currentCategory);
-      }
-      if (currentCity !== 'all') {
-        filtered = filtered.filter(e => e.city.includes(currentCity));
-      }
-      renderBusinessesFeed(filtered, 'homeEntitiesFeed');
-      renderBusinessesFeed(filtered, 'fullDirectoryList');
-      const dirCount = document.getElementById('dirCountText');
-      if (dirCount) dirCount.textContent = `${filtered.length} منشآت`;
+    function filterCategory(type) {
+      const filtered = (type === 'all') ? entitiesData : entitiesData.filter(e => e.type === type);
+      renderFeed(filtered);
     }
 
-    function filterByCategory(typeKey) {
-      currentCategory = typeKey;
-      document.querySelectorAll('.category-card-btn').forEach(btn => btn.classList.remove('active'));
-      const titles = {
-        all: 'أبرز المنشآت المعتمدة', restaurant: 'مطاعم ومقاهي معتمدة', hotel: 'فنادق وإقامة سياحية',
-        bank: 'بنوك ومصارف رسمية', exchange: 'شركات صرافة وتحويلات', wallet: 'محافظ إلكترونية',
-        company: 'شركات ومؤسسات', transport: 'سيارات ونقل', shop: 'متاجر وتسوق', health: 'صحة ومستشفيات',
-        services: 'خدمات عامة', education: 'تعليم وجامعات', entertainment: 'سياحة وترفيه'
-      };
-      const titleEl = document.getElementById('currentSectionTitle');
-      if (titleEl) titleEl.textContent = titles[typeKey] || 'المنشآت المعتمدة';
-      applyFilters();
+    function handleSearch(q) {
+      const query = q.trim().toLowerCase();
+      const filtered = entitiesData.filter(e => e.name.toLowerCase().includes(query) || e.city.toLowerCase().includes(query) || e.typeName.toLowerCase().includes(query));
+      renderFeed(filtered);
     }
 
-    function filterByCity(cityName, btn) {
-      currentCity = cityName;
-      document.querySelectorAll('.city-pill-btn').forEach(b => b.classList.remove('active'));
-      if (btn) btn.classList.add('active');
-      applyFilters();
+    function openDetails(id) {
+      const item = entitiesData.find(x => x.id === id);
+      if (!item) return;
+      document.getElementById('modalBizCover').style.backgroundImage = `url('${item.cover}')`;
+      document.getElementById('modalBizLogo').src = item.logo;
+      document.getElementById('modalBizName').innerHTML = `<span>${item.name}</span> ${getOfficialBadgeSVG(item.badge)}`;
+      document.getElementById('modalBizCategory').textContent = `${item.typeName} • ${item.city}`;
+      document.getElementById('modalBizScore').textContent = `YR ${item.score}`;
+      document.getElementById('modalBizDesc').textContent = item.desc;
+      document.getElementById('modalBizCall').href = `tel:${item.phone}`;
+      document.getElementById('modalBizWhatsapp').href = `https://wa.me/${item.wa}`;
+      document.getElementById('modalBizCopy').setAttribute('onclick', `copySlug('${item.slug}')`);
+      document.getElementById('bizDetailModal').classList.add('open');
     }
 
-    function handleDirectorySearch(query) {
-      const q = query.trim().toLowerCase();
-      if (!q) { applyFilters(); return; }
-      const filtered = entitiesDatabase.filter(e => e.name.toLowerCase().includes(q) || e.city.toLowerCase().includes(q) || e.typeName.toLowerCase().includes(q));
-      renderBusinessesFeed(filtered, 'homeEntitiesFeed');
-      renderBusinessesFeed(filtered, 'fullDirectoryList');
-    }
-
-    function openBusinessDetailModal(id) {
-      const b = entitiesDatabase.find(x => x.id === id);
-      if (!b) return;
-      document.getElementById('modalBizCover').style.backgroundImage = `url('${b.cover}')`;
-      document.getElementById('modalBizLogo').src = b.logo;
-      document.getElementById('modalBizName').textContent = b.name;
-      document.getElementById('modalBizCategory').textContent = `${b.typeName} • ${b.city}`;
-      document.getElementById('modalBizScore').textContent = `YR ${b.score}`;
-      document.getElementById('modalBizDesc').textContent = b.desc;
-      document.getElementById('modalBizCall').href = `tel:${b.phone}`;
-      document.getElementById('modalBizWhatsapp').href = `https://wa.me/${b.wa}`;
-      document.getElementById('modalBizCopy').setAttribute('onclick', `copyEntitySlug('${b.slug}')`);
-      openModal('bizDetailModal');
-    }
-
-    function openAddEntityModal() {
-      openModal('addEntityModal');
-    }
-
-    function handleAddNewBusiness(e) {
-      e.preventDefault();
-      const name = document.getElementById('new_name').value;
-      const type = document.getElementById('new_type').value;
-      const city = document.getElementById('new_city').value;
-      const phone = document.getElementById('new_phone').value;
-      const wa = document.getElementById('new_wa').value || phone;
-      const typeNames = { restaurant:'مطاعم ومقاهي', hotel:'فنادق وإقامة', bank:'بنوك ومصارف', exchange:'شركات صرافة', wallet:'محافظ إلكترونية', company:'شركات ومؤسسات', shop:'متاجر وتسوق', health:'صحة ومستشفيات', services:'خدمات عامة' };
-
-      const newEntity = {
-        id: Date.now(), name, type, typeName: typeNames[type] || 'نشاط تجاري', city, phone, wa, score: 95, rating: 5.0,
-        slug: name.toLowerCase().replace(/\s+/g, '-'), logo: 'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=100',
-        cover: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800', desc: 'نشاط تجاري جديد مسجل في منصة يمن ريتغ.'
-      };
-
-      entitiesDatabase.unshift(newEntity);
-      closeModal('addEntityModal');
-      showToast('✅ تم إضافة نشاطك بنجاح وسيظهر في الدليل فوراً');
-      applyFilters();
-    }
-
-    function openNotificationsModal() { showToast('🔔 لديك 3 إشعارات وتحديثات جديدة'); }
-    function openFavoritesModal() { showToast('🤍 تم فتح قائمة المنشآت المفضلة'); }
-
-    function calculateExchange() {
-      const amount = parseFloat(document.getElementById('calcAmount').value) || 0;
-      const cur = document.getElementById('calcCurrency').value;
-      const market = document.getElementById('calcMarket').value;
-
-      let rate = (cur === 'USD') ? ((market === 'aden') ? 1540 : 535) : ((market === 'aden') ? 410 : 140.5);
-      const total = (amount * rate).toLocaleString();
-      document.getElementById('calcResult').textContent = `${total} ريال يمني`;
-    }
-
-    function copyEntitySlug(slug) {
-      const url = `${window.location.origin}/businesses/${slug}`;
-      navigator.clipboard.writeText(url);
+    function copySlug(slug) {
+      navigator.clipboard.writeText(`${window.location.origin}/businesses/${slug}`);
       showToast(`📋 تم نسخ الرابط: /businesses/${slug}`);
     }
-
-    function openModal(id) { const m = document.getElementById(id); if (m) m.classList.add('open'); }
-    function closeModal(id) { const m = document.getElementById(id); if (m) m.classList.remove('open'); }
 
     function showToast(msg) {
       const t = document.getElementById('toastPopup');
       t.textContent = msg;
       t.style.display = 'block';
-      setTimeout(() => { t.style.display = 'none'; }, 3000);
+      setTimeout(() => t.style.display = 'none', 3000);
     }
 
-    function switchAppTab(tabKey, btnElement) {
-      document.querySelectorAll('.tab-view-section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.bottom-nav-link, .nav-link-item').forEach(b => b.classList.remove('active'));
-
-      const target = document.getElementById('app-tab-' + tabKey);
-      if (target) target.classList.add('active');
-
-      if (btnElement && btnElement.classList) btnElement.classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('open');
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      applyFilters();
-      calculateExchange();
+      renderFeed(entitiesData);
     });
   </script>
 </body>
