@@ -941,90 +941,69 @@ body.menu-open {
 
 
 
-<script id="unified-tab-system">
-window.appGoToTab = function(tabId, evt) {
-  if (evt) {
-    evt.preventDefault();
-    evt.stopPropagation();
-  }
 
-  const validTabs = ['app-tab-home', 'app-tab-prices', 'app-tab-trend', 'app-tab-more'];
 
-  validTabs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      if (id === tabId) {
-        el.style.setProperty('display', 'block', 'important');
-      } else {
-        el.style.setProperty('display', 'none', 'important');
+
+
+
+
+
+
+
+<script id="ultimate-nav-engine">
+(function() {
+  window.switchAppTab = function(tabId, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    // الأقسام الأربعة الأساسية
+    const tabs = ['app-tab-home', 'app-tab-prices', 'app-tab-trend', 'app-tab-more'];
+    
+    tabs.forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        if (id === tabId) {
+          el.style.setProperty('display', 'block', 'important');
+          el.style.setProperty('visibility', 'visible', 'important');
+          el.style.setProperty('opacity', '1', 'important');
+        } else {
+          el.style.setProperty('display', 'none', 'important');
+        }
       }
-    }
-  });
+    });
 
-  window.scrollTo(0, 0);
-  return false;
-};
+    window.scrollTo(0, 0);
+    return false;
+  };
 
-document.addEventListener('DOMContentLoaded', function() {
-  // ربط الأزرار بحسب ترتيبها في الشريط السفلي
-  const navItems = document.querySelectorAll('.bottom-nav-item');
-  if (navItems.length >= 5) {
-    navItems[0].onclick = (e) => appGoToTab('app-tab-home', e);
-    navItems[1].onclick = (e) => appGoToTab('app-tab-prices', e);
-    navItems[3].onclick = (e) => appGoToTab('app-tab-trend', e);
-    navItems[4].onclick = (e) => appGoToTab('app-tab-more', e);
-  }
+  // ربط عام لكافة عناصر التنقل في الشاشة
+  document.addEventListener('click', function(e) {
+    const target = e.target.closest('[data-tab], .bottom-nav-item, .header-menu-btn, .fa-bell');
+    if (!target) return;
 
-  // تفعيل الرئيسية افتراضياً
-  appGoToTab('app-tab-home');
-});
-</script>
-
-
-
-
-
-<script id="master-control-script">
-function switchTabDirect(tabId) {
-  const tabs = ['app-tab-home', 'app-tab-prices', 'app-tab-trend', 'app-tab-more'];
-  tabs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.style.setProperty('display', id === tabId ? 'block' : 'none', 'important');
-    }
-  });
-  window.scrollTo(0, 0);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  // تفعيل الرئيسية أولاً
-  switchTabDirect('app-tab-home');
-
-  // ربط الأزرار السفلية صراحة
-  const navItems = document.querySelectorAll('.bottom-nav-item');
-  if (navItems.length >= 5) {
-    navItems[0].onclick = function(e) { e.preventDefault(); switchTabDirect('app-tab-home'); };
-    navItems[1].onclick = function(e) { e.preventDefault(); switchTabDirect('app-tab-prices'); };
-    navItems[3].onclick = function(e) { e.preventDefault(); switchTabDirect('app-tab-trend'); };
-    navItems[4].onclick = function(e) { e.preventDefault(); switchTabDirect('app-tab-more'); };
-  }
-
-  // ربط أزرار الهيدر العلوية
-  const headerMenuBtn = document.querySelector('.header-menu-btn, header .fa-bars');
-  if (headerMenuBtn) {
-    headerMenuBtn.onclick = function(e) { e.preventDefault(); switchTabDirect('app-tab-more'); };
-  }
-
-  // ربط أيقونة الجرس
-  const bellBtn = document.querySelector('.fa-bell, .notification-btn');
-  if (bellBtn) {
-    bellBtn.onclick = function(e) {
-      e.preventDefault();
+    // زر الجرس
+    if (target.classList.contains('fa-bell') || target.classList.contains('notification-btn')) {
       const modal = document.getElementById('modal-notifications-center');
       if (modal) modal.style.setProperty('display', 'flex', 'important');
-    };
-  }
-});
+      return;
+    }
+
+    // زر قائمة الهيدر
+    if (target.classList.contains('header-menu-btn') || target.matches('header .fa-bars')) {
+      window.switchAppTab('app-tab-more', e);
+      return;
+    }
+
+    // الأزرار السفلية بحسب النمط
+    const text = target.textContent.trim();
+    if (text.includes('الرئيسية')) window.switchAppTab('app-tab-home', e);
+    else if (text.includes('الأسعار')) window.switchAppTab('app-tab-prices', e);
+    else if (text.includes('الترند')) window.switchAppTab('app-tab-trend', e);
+    else if (text.includes('المزيد')) window.switchAppTab('app-tab-more', e);
+  }, true);
+})();
 </script>
 
 </body>
