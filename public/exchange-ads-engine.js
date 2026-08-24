@@ -1,6 +1,4 @@
-import fs from 'fs';
 
-const phase9_10_Engine = `
 /* Yemen Rating Module - Phase 9 & 10 (Exchange Rates & Ads/Offers Engine) */
 
 // 1. نظام أسعار الصرف (صنعاء / عدن)
@@ -8,7 +6,7 @@ const EXCHANGE_RATES_CONFIG = {
   cities: ['Sanaa', 'Aden'],
   currencies: ['USD', 'SAR'],
   updateRate: function(city, currency, buyRate, sellRate, adminId) {
-    console.log(\`[Exchange System] Updated \${currency} in \${city}: Buy \${buyRate}, Sell \${sellRate} by Admin \${adminId}\`);
+    console.log(`[Exchange System] Updated ${currency} in ${city}: Buy ${buyRate}, Sell ${sellRate} by Admin ${adminId}`);
   }
 };
 
@@ -36,7 +34,3 @@ function createAdOffer(businessId, categoryScope, adData) {
 }
 
 console.log("Phase 9 & 10 Exchange Rates & Ads/Offers Engine Loaded.");
-`;
-
-fs.writeFileSync('public/exchange-ads-engine.js', phase9_10_Engine);
-console.log('✅ Phase 9 & 10 Modules Created Successfully with ESM Compatibility.');
