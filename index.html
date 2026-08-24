@@ -981,49 +981,48 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 
-<script id="global-interactivity-fix">
-document.addEventListener('DOMContentLoaded', function() {
-  // 1. معالجة النقر على التبويبات الفرعية داخل صفحة الأسعار (عملات / ذهب / صنعاء / عدن)
-  document.body.addEventListener('click', function(e) {
-    const target = e.target.closest('button, a, .tab-btn, .sub-tab, .mkt-btn, [data-tab]');
-    if (!target) return;
 
-    const text = target.textContent.trim();
 
-    // أزرار التنقل بين العملات والذهب
-    if (target.id === 'price-subtab-cur' || text.includes('العملات')) {
-      const curContainer = document.getElementById('prices-currencies-container');
-      const goldContainer = document.getElementById('prices-gold-container');
-      if (curContainer) curContainer.style.display = 'block';
-      if (goldContainer) goldContainer.style.display = 'none';
-    } 
-    else if (target.id === 'price-subtab-gold' || text.includes('الذهب')) {
-      const curContainer = document.getElementById('prices-currencies-container');
-      const goldContainer = document.getElementById('prices-gold-container');
-      if (curContainer) curContainer.style.display = 'none';
-      if (goldContainer) goldContainer.style.display = 'block';
-    }
 
-    // أزرار التبديل بين صنعاء وعدن
-    if (target.id === 'mkt-btn-sanaa' || text.includes('صنعاء')) {
-      document.querySelectorAll('.sanaa-rates').forEach(el => el.style.display = 'block');
-      document.querySelectorAll('.aden-rates').forEach(el => el.style.display = 'none');
-    } 
-    else if (target.id === 'mkt-btn-aden' || text.includes('عدن')) {
-      document.querySelectorAll('.sanaa-rates').forEach(el => el.style.display = 'none');
-      document.querySelectorAll('.aden-rates').forEach(el => el.style.display = 'block');
+<script id="master-control-script">
+function switchTabDirect(tabId) {
+  const tabs = ['app-tab-home', 'app-tab-prices', 'app-tab-trend', 'app-tab-more'];
+  tabs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.setProperty('display', id === tabId ? 'block' : 'none', 'important');
     }
   });
+  window.scrollTo(0, 0);
+}
 
-  // 2. ضمان تفاعل حاسبة التحويل
-  const calcAmount = document.getElementById('calc-amount');
-  const calcSelect = document.getElementById('calc-currency-select');
-  if (calcAmount) {
-    calcAmount.addEventListener('input', function() {
-      if (typeof window.calculateRate === 'function') {
-        window.calculateRate();
-      }
-    });
+document.addEventListener('DOMContentLoaded', function() {
+  // تفعيل الرئيسية أولاً
+  switchTabDirect('app-tab-home');
+
+  // ربط الأزرار السفلية صراحة
+  const navItems = document.querySelectorAll('.bottom-nav-item');
+  if (navItems.length >= 5) {
+    navItems[0].onclick = function(e) { e.preventDefault(); switchTabDirect('app-tab-home'); };
+    navItems[1].onclick = function(e) { e.preventDefault(); switchTabDirect('app-tab-prices'); };
+    navItems[3].onclick = function(e) { e.preventDefault(); switchTabDirect('app-tab-trend'); };
+    navItems[4].onclick = function(e) { e.preventDefault(); switchTabDirect('app-tab-more'); };
+  }
+
+  // ربط أزرار الهيدر العلوية
+  const headerMenuBtn = document.querySelector('.header-menu-btn, header .fa-bars');
+  if (headerMenuBtn) {
+    headerMenuBtn.onclick = function(e) { e.preventDefault(); switchTabDirect('app-tab-more'); };
+  }
+
+  // ربط أيقونة الجرس
+  const bellBtn = document.querySelector('.fa-bell, .notification-btn');
+  if (bellBtn) {
+    bellBtn.onclick = function(e) {
+      e.preventDefault();
+      const modal = document.getElementById('modal-notifications-center');
+      if (modal) modal.style.setProperty('display', 'flex', 'important');
+    };
   }
 });
 </script>
