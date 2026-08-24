@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>بوابة العقارات والوساطة الذكية | يمن ريتغ</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-black: #000000;
+      --bg-card: #121217;
+      --bg-card-inner: #181822;
+      --bg-input: #15151C;
+      
+      --gold: #FFB800;
+      --gold-hover: #E5A600;
+      --gold-dim: rgba(255, 184, 0, 0.14);
+      --gold-border: rgba(255, 184, 0, 0.35);
+      
+      --text: #FFFFFF;
+      --text-gray: #8E8E98;
+      --text-muted: #5E5E6A;
+      
+      --border: #20202A;
+      --green: #10B981;
+      --green-dim: rgba(16, 185, 129, 0.15);
+      --blue: #3B82F6;
+      --blue-dim: rgba(59, 130, 246, 0.15);
+      
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-black); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+    .properties-header {
+      height: 60px; background: #000; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem;
+      position: sticky; top: 0; z-index: 1000;
+    }
+    .properties-header h1 { font-size: 1.05rem; font-weight: 900; color: #FFF; display: flex; align-items: center; gap: 8px; }
+    .properties-header h1 i { color: var(--gold); }
+
+    .properties-container { padding: 1.25rem; max-width: 800px; margin: 0 auto; width: 100%; flex: 1; margin-bottom: 75px; }
+
+    /* بانر الوساطة العقارية */
+    .realestate-shield-banner {
+      background: linear-gradient(135deg, rgba(255, 184, 0, 0.15), rgba(255, 184, 0, 0.03));
+      border: 1px solid var(--gold-border); border-radius: var(--radius-lg); padding: 1.25rem;
+      display: flex; align-items: center; gap: 14px; margin-bottom: 1.5rem;
+    }
+    .shield-icon-box {
+      width: 44px; height: 44px; border-radius: 12px; background: var(--gold); color: #000;
+      display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+    }
+
+    /* أزرار الفلترة المزدوجة */
+    .filter-pills-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 1.25rem; }
+    .prop-pill-btn {
+      padding: 0.4rem 1rem; border-radius: 14px; font-size: 0.75rem; font-weight: 800;
+      background: var(--bg-card); color: var(--text-gray); border: 1px solid var(--border);
+      cursor: pointer; white-space: nowrap; transition: 0.2s; display: flex; align-items: center; gap: 6px;
+    }
+    .prop-pill-btn:hover { color: #FFF; border-color: var(--gold-border); }
+    .prop-pill-btn.active { background: var(--gold); color: #000; font-weight: 900; border-color: var(--gold); }
+    .prop-pill-btn.active i { color: #000; }
+
+    /* كروت العقارات المجهولة الفاخرة */
+    .property-item-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      overflow: hidden; margin-bottom: 1.25rem; transition: 0.2s;
+    }
+    .property-item-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+
+    .prop-img-box { height: 180px; background-size: cover; background-position: center; position: relative; }
+    .prop-tag-floating {
+      position: absolute; top: 12px; right: 12px; padding: 4px 12px; border-radius: 10px;
+      font-size: 0.72rem; font-weight: 900; backdrop-filter: blur(4px);
+    }
+    .tag-sale { background: var(--gold); color: #000; }
+    .tag-rent { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(59, 130, 246, 0.3); }
+
+    .prop-price-floating {
+      position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.85);
+      border: 1px solid var(--border); padding: 4px 12px; border-radius: 10px;
+      font-size: 1rem; font-weight: 900; color: #FFF;
+    }
+
+    .prop-body-info { padding: 1.25rem; }
+    .prop-title-text { font-size: 1rem; font-weight: 900; color: #FFF; margin-bottom: 6px; }
+    .prop-location-text { font-size: 0.75rem; color: var(--text-gray); display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+
+    /* شبكة مواصفات العقار */
+    .prop-specs-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      background: var(--bg-card-inner); padding: 10px; border-radius: var(--radius-md);
+      border: 1px solid var(--border); margin-bottom: 10px; text-align: center;
+    }
+    .spec-unit { font-size: 0.72rem; color: var(--text-gray); }
+    .spec-unit strong { display: block; font-size: 0.85rem; color: #FFF; font-weight: 900; margin-top: 2px; }
+
+    .prop-features-list { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 1.25rem; }
+    .feature-chip { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; }
+
+    .btn-inquire-prop {
+      background: var(--gold); color: #000; font-weight: 900; font-size: 0.85rem;
+      padding: 0.75rem; border-radius: var(--radius-md); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: 0.2s;
+    }
+    .btn-inquire-prop:hover { background: var(--gold-hover); }
+
+    /* النوافذ المنبثقة */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      padding: 1.5rem; position: relative;
+    }
+    .modal-close-btn { position: absolute; top: 14px; left: 14px; background: none; border: none; color: var(--text-gray); font-size: 1.2rem; cursor: pointer; }
+
+    .form-group-unit { margin-bottom: 0.9rem; }
+    .form-group-unit label { display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-gray); margin-bottom: 4px; }
+    .form-group-unit input, .form-group-unit textarea {
+      width: 100%; background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 0.65rem 0.85rem; color: #FFF; font-size: 0.8rem;
+    }
+    .form-group-unit input:focus, .form-group-unit textarea:focus { outline: none; border-color: var(--gold); }
+
+    /* شريط التنقل السفلي */
+    .bottom-app-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #0A0A0D;
+      border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000;
+    }
+    .bottom-nav-link { background: none; border: none; color: var(--text-gray); font-size: 0.68rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; text-decoration: none; }
+    .bottom-nav-link i { font-size: 1.15rem; }
+    .bottom-nav-link.active { color: var(--gold); font-weight: 900; }
+  </style>
+</head>
+<body>
+
+  <!-- الهيدر -->
+  <header class="properties-header">
+    <div style="cursor: pointer;" onclick="window.location.href='/'" title="الرئيسية">
+      <i class="fa-solid fa-house"></i>
+    </div>
+    <h1>
+      <i class="fa-solid fa-city"></i>
+      <span>بوابة العقارات والوساطة الذكية</span>
+    </h1>
+    <div style="cursor: pointer;" onclick="window.location.href='/admin.html'" title="لوحة الإدارة">
+      <i class="fa-solid fa-shield-halved"></i>
+    </div>
+  </header>
+
+  <main class="properties-container">
+
+    <!-- بانر الوساطة العقارية وحماية البيانات -->
+    <div class="realestate-shield-banner">
+      <div class="shield-icon-box">
+        <i class="fa-solid fa-building-shield"></i>
+      </div>
+      <div>
+        <h2 style="font-size: 0.95rem; font-weight: 900; color: #FFF;">نظام العروض العقارية المحمية</h2>
+        <p style="font-size: 0.72rem; color: var(--text-gray); margin-top: 2px; line-height: 1.5;">
+          تُعرض العقارات بدون كشف بيانات المالك، ويتم حجز مواعيد المعاينة ومطابقة الطلبات عبر وساطة يمن ريتغ المعتمدة بأمان تام.
+        </p>
+      </div>
+    </div>
+
+    <!-- فلتر نوع العرض (بيع / إيجار) -->
+    <div class="filter-pills-row">
+      <button class="prop-pill-btn active" onclick="filterListingType('all', this)"><i class="fa-solid fa-layer-group"></i> <span>جميع العروض</span></button>
+      <button class="prop-pill-btn" onclick="filterListingType('SALE', this)"><i class="fa-solid fa-tag"></i> <span>للبيع</span></button>
+      <button class="prop-pill-btn" onclick="filterListingType('RENT', this)"><i class="fa-solid fa-key"></i> <span>للإيجار</span></button>
+      <button class="prop-pill-btn" onclick="filterCity('صنعاء', this)"><i class="fa-solid fa-location-dot"></i> <span>صنعاء</span></button>
+      <button class="prop-pill-btn" onclick="filterCity('عدن', this)"><i class="fa-solid fa-location-dot"></i> <span>عدن</span></button>
+    </div>
+
+    <!-- قائمة العقارات المجهولة للزوار -->
+    <div id="propertiesFeedList"></div>
+
+  </main>
+
+  <!-- نافذة إبداء الاهتمام وحجز موعد معاينة -->
+  <div class="modal-overlay" id="inquiryModal">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeInquiryModal()"><i class="fa-solid fa-xmark"></i></button>
+      
+      <div id="inquiryFormView">
+        <div style="font-weight: 900; font-size: 1.05rem; color: #FFF; margin-bottom: 2px; display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-calendar-check" style="color: var(--gold);"></i>
+          <span>حجز موعد معاينة وعرض اهتمام</span>
+        </div>
+        <p id="inquiryPropTitle" style="font-size: 0.75rem; color: var(--gold); font-weight: 800; margin-bottom: 14px;"></p>
+
+        <form onsubmit="handleInquirySubmit(event)">
+          <input type="hidden" id="inquiry_prop_id">
+
+          <div class="form-group-unit">
+            <label>اسم المهتم / المشتري الكامل *</label>
+            <input type="text" id="inq_name" required placeholder="مثال: المهندس عادل الصعفاني">
+          </div>
+
+          <div class="form-group-unit">
+            <label>رقم الهاتف للتواصل والواتساب *</label>
+            <input type="tel" id="inq_phone" required placeholder="770123456">
+          </div>
+
+          <div class="form-group-unit">
+            <label>الموعد المقترح للمعاينة الميدانية</label>
+            <input type="date" required>
+          </div>
+
+          <div class="form-group-unit">
+            <label>ملاحظات إضافية أو شروط الدفع</label>
+            <textarea rows="2" placeholder="أي استفسارات حول آلية الشراء، التمويل، أو الدفع..."></textarea>
+          </div>
+
+          <button type="submit" class="btn-inquire-prop" style="margin-top: 8px;">
+            <span>إرسال الطلب لفريق الوساطة العقارية</span>
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+        </form>
+      </div>
+
+      <!-- تأكيد استلام الطلب ومطابقة الـ AI -->
+      <div id="inquirySuccessView" style="display: none; text-align: center; padding: 1rem 0;">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--green-dim); color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 10px;">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <h3 style="font-size: 1.05rem; font-weight: 900; color: #FFF; margin-bottom: 6px;">تم تسجيل طلب المعاينة بنجاح!</h3>
+        <p style="font-size: 0.75rem; color: var(--text-gray); line-height: 1.6; margin-bottom: 1.25rem;">
+          تم تسجيل بياناتك وربط طلبك بكود العقار لدى وسيط يمن ريتغ المعتمد. سيتواصل معك فريق المعاينة لترتيب الموعد بأمان وسرية تامة.
+        </p>
+        <button onclick="closeInquiryModal()" class="btn-inquire-prop" style="background: var(--bg-card-inner); border: 1px solid var(--border); color: #FFF;">
+          إغلاق
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- شريط التنقل السفلي الرسمي -->
+  <nav class="bottom-app-nav">
+    <a href="/" class="bottom-nav-link">
+      <i class="fa-solid fa-house"></i>
+      <span>الرئيسية</span>
+    </a>
+    <a href="/properties.html" class="bottom-nav-link active">
+      <i class="fa-solid fa-city"></i>
+      <span>العقارات</span>
+    </a>
+    <a href="/jobs.html" class="bottom-nav-link">
+      <i class="fa-solid fa-briefcase"></i>
+      <span>الوظائف</span>
+    </a>
+    <a href="/owner.html" class="bottom-nav-link">
+      <i class="fa-solid fa-user-tie"></i>
+      <span>لوحة المالك</span>
+    </a>
+    <a href="/admin.html" class="bottom-nav-link">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>الإدارة</span>
+    </a>
+  </nav>
+
+  <script>
+    const propertiesData = [
+      {
+        id: 'prop-101',
+        title: 'شقة سكنية سوبر ديلوكس (حي حدة الراقي)',
+        type: 'apartment',
+        listing_type: 'SALE',
+        price: '$55,000',
+        area: '165 م²',
+        beds: 3,
+        baths: 2,
+        city: 'صنعاء',
+        district: 'حدة - قرب المجمع السكني',
+        features: ['موقف سيارات', 'مصعد كهربائي', 'حراسة 24/7', 'خزان مستقل'],
+        image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600'
+      },
+      {
+        id: 'prop-102',
+        title: 'أرض تجارية استثمارية على شارعين رئيسيين',
+        type: 'commercial_land',
+        listing_type: 'SALE',
+        price: '$120,000',
+        area: '450 م²',
+        beds: 0,
+        baths: 0,
+        city: 'عدن',
+        district: 'المنصورة - الشارع العام',
+        features: ['واجهة تجارية 20م', 'موقع حيوي', 'بصائر معتمدة'],
+        image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600'
+      },
+      {
+        id: 'prop-103',
+        title: 'فيلا فاخرة للإيجار السنوي (سفارات وشركات)',
+        type: 'villa',
+        listing_type: 'RENT',
+        price: '$1,200 / شهر',
+        area: '380 م²',
+        beds: 5,
+        baths: 4,
+        city: 'صنعاء',
+        district: 'بيت بوس - حي السفارات',
+        features: ['حوش وحديقة', 'طاقة شمسية', 'غرفة حراسة', 'مجلس مستقل'],
+        image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=600'
+      }
+    ];
+
+    function renderProperties(list) {
+      const container = document.getElementById('propertiesFeedList');
+      if (!container) return;
+
+      container.innerHTML = list.map(p => `
+        <div class="property-item-card">
+          <div class="prop-img-box" style="background-image: url('${p.image}');">
+            <span class="prop-tag-floating ${p.listing_type === 'SALE' ? 'tag-sale' : 'tag-rent'}">
+              ${p.listing_type === 'SALE' ? 'للبيع' : 'للإيجار'}
+            </span>
+            <div class="prop-price-floating">${p.price}</div>
+          </div>
+
+          <div class="prop-body-info">
+            <div class="prop-title-text">${p.title}</div>
+            <div class="prop-location-text">
+              <i class="fa-solid fa-location-dot" style="color:var(--gold);"></i>
+              <span>${p.city} • ${p.district} • كود: ${p.id}</span>
+            </div>
+
+            <div class="prop-specs-grid">
+              <div class="spec-unit">المساحة<strong>${p.area}</strong></div>
+              <div class="spec-unit">الغرف<strong>${p.beds > 0 ? p.beds : '-'}</strong></div>
+              <div class="spec-unit">الحمامات<strong>${p.baths > 0 ? p.baths : '-'}</strong></div>
+            </div>
+
+            <div class="prop-features-list">
+              ${p.features.map(f => `<span class="feature-chip"><i class="fa-solid fa-check" style="font-size:0.6rem;"></i> ${f}</span>`).join('')}
+            </div>
+
+            <button onclick="openInquiryModal('${p.id}', '${p.title}')" class="btn-inquire-prop">
+              <span>حجز موعد معاينة ميدانية (وساطة ذكية)</span>
+              <i class="fa-solid fa-arrow-left"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterListingType(type, btn) {
+      document.querySelectorAll('.prop-pill-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      if (type === 'all') {
+        renderProperties(propertiesData);
+      } else {
+        renderProperties(propertiesData.filter(p => p.listing_type === type));
+      }
+    }
+
+    function filterCity(city, btn) {
+      document.querySelectorAll('.prop-pill-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderProperties(propertiesData.filter(p => p.city.includes(city)));
+    }
+
+    function openInquiryModal(propId, propTitle) {
+      document.getElementById('inquiry_prop_id').value = propId;
+      document.getElementById('inquiryPropTitle').textContent = propTitle;
+      document.getElementById('inquiryFormView').style.display = 'block';
+      document.getElementById('inquirySuccessView').style.display = 'none';
+      document.getElementById('inquiryModal').classList.add('open');
+    }
+
+    function closeInquiryModal() {
+      document.getElementById('inquiryModal').classList.remove('open');
+    }
+
+    function handleInquirySubmit(e) {
+      e.preventDefault();
+      document.getElementById('inquiryFormView').style.display = 'none';
+      document.getElementById('inquirySuccessView').style.display = 'block';
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderProperties(propertiesData);
+    });
+  </script>
+</body>
+</html>
