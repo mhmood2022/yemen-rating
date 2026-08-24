@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>بوابة المؤسسات المالية وأسعار الصرف | يمن ريتغ</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-black: #000000;
+      --bg-card: #121217;
+      --bg-card-inner: #181822;
+      --bg-input: #15151C;
+      
+      --gold: #FFB800;
+      --gold-hover: #E5A600;
+      --gold-dim: rgba(255, 184, 0, 0.14);
+      --gold-border: rgba(255, 184, 0, 0.35);
+      
+      --text: #FFFFFF;
+      --text-gray: #8E8E98;
+      --text-muted: #5E5E6A;
+      
+      --border: #20202A;
+      --green: #10B981;
+      --green-dim: rgba(16, 185, 129, 0.15);
+      --red: #EF4444;
+      --red-dim: rgba(239, 68, 68, 0.15);
+      --blue: #3B82F6;
+      --blue-dim: rgba(59, 130, 246, 0.15);
+      
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-black); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+    .svg-icon { display: inline-block; width: 1.15em; height: 1.15em; fill: currentColor; vertical-align: -0.15em; flex-shrink: 0; }
+
+    /* الهيدر */
+    .fin-header {
+      height: 60px; background: #000; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem;
+      position: sticky; top: 0; z-index: 1000;
+    }
+    .fin-header h1 { font-size: 1.05rem; font-weight: 900; color: #FFF; display: flex; align-items: center; gap: 8px; }
+    .fin-header h1 i { color: var(--gold); }
+
+    .fin-container { padding: 1.25rem; max-width: 800px; margin: 0 auto; width: 100%; flex: 1; margin-bottom: 75px; }
+
+    /* تبويبات القطاعات المالية الرئيسية الـ 4 */
+    .fin-tabs-strip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 1.25rem; }
+    .fin-tab-btn {
+      padding: 0.45rem 1rem; border-radius: 14px; font-size: 0.78rem; font-weight: 800;
+      background: var(--bg-card); color: var(--text-gray); border: 1px solid var(--border);
+      cursor: pointer; white-space: nowrap; transition: 0.2s; display: flex; align-items: center; gap: 6px;
+    }
+    .fin-tab-btn:hover { color: #FFF; border-color: var(--gold-border); }
+    .fin-tab-btn.active { background: var(--gold); color: #000; font-weight: 900; border-color: var(--gold); }
+    .fin-tab-btn.active i { color: #000; }
+
+    .fin-section-view { display: none; animation: fadeIn 0.2s ease; }
+    .fin-section-view.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* كروت المنشآت المالية */
+    .fin-card-item {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 1.2rem; margin-bottom: 1rem; transition: 0.2s;
+    }
+    .fin-card-item:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .fin-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .fin-brand-group { display: flex; align-items: center; gap: 12px; }
+    .fin-logo-thumb { width: 46px; height: 46px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border); }
+    .yr-score-pill { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); padding: 2px 8px; border-radius: 10px; font-weight: 900; font-size: 0.75rem; }
+
+    .fin-services-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 0.75rem 0; }
+    .service-chip { background: var(--bg-card-inner); border: 1px solid var(--border); padding: 3px 8px; border-radius: 6px; font-size: 0.7rem; color: var(--text-gray); font-weight: 700; }
+
+    .fin-actions-grid { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 6px; }
+    .fin-action-btn {
+      flex: 1; padding: 7px; border-radius: 8px; font-size: 0.75rem; font-weight: 800;
+      background: var(--bg-card-inner); border: 1px solid var(--border); color: #FFF;
+      display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; transition: 0.2s;
+    }
+    .fin-action-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); }
+
+    /* أسعار الصرف والمقارنة بين صنعاء وعدن */
+    .market-switch-box {
+      display: flex; background: var(--bg-card); padding: 4px; border-radius: 14px;
+      border: 1px solid var(--border); margin-bottom: 1.25rem;
+    }
+    .market-switch-btn {
+      flex: 1; padding: 8px; border-radius: 10px; font-size: 0.8rem; font-weight: 800;
+      color: var(--text-gray); background: none; border: none; cursor: pointer; text-align: center; transition: 0.2s;
+    }
+    .market-switch-btn.active { background: var(--gold); color: #000; font-weight: 900; }
+
+    .rates-comparison-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 1.25rem; margin-bottom: 1rem;
+    }
+    .rates-row-metric {
+      display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1rem;
+      background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 8px;
+    }
+    .rate-price-text { font-size: 1.15rem; font-weight: 900; color: #FFF; }
+    .rate-delta-pill { font-size: 0.7rem; font-weight: 800; color: var(--green); background: var(--green-dim); padding: 2px 7px; border-radius: 6px; }
+
+    /* حاسبة العملات */
+    .converter-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 1.25rem; margin-bottom: 1.5rem;
+    }
+    .converter-inputs-grid { display: flex; gap: 8px; margin: 10px 0; }
+    .converter-inputs-grid input, .converter-inputs-grid select {
+      background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 8px 12px; color: #FFF; font-weight: 800; font-size: 0.85rem;
+    }
+    .converter-inputs-grid input { flex: 1; }
+
+    /* شريط التنقل السفلي */
+    .bottom-app-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: #0A0A0D;
+      border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000;
+    }
+    .bottom-nav-link { background: none; border: none; color: var(--text-gray); font-size: 0.68rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; text-decoration: none; }
+    .bottom-nav-link i { font-size: 1.15rem; }
+    .bottom-nav-link.active { color: var(--gold); font-weight: 900; }
+  </style>
+</head>
+<body>
+
+  <!-- الهيدر -->
+  <header class="fin-header">
+    <div style="cursor: pointer;" onclick="window.location.href='/'" title="الرئيسية">
+      <i class="fa-solid fa-house" style="color: #FFF;"></i>
+    </div>
+    <h1>
+      <i class="fa-solid fa-building-columns"></i>
+      <span>المؤسسات المالية وأسعار الصرف</span>
+    </h1>
+    <div style="cursor: pointer;" onclick="window.location.href='/admin.html'" title="لوحة الإدارة">
+      <i class="fa-solid fa-shield-halved" style="color: var(--gold);"></i>
+    </div>
+  </header>
+
+  <main class="fin-container">
+
+    <!-- شريط التبويبات المالية الـ 4 -->
+    <div class="fin-tabs-strip">
+      <button class="fin-tab-btn active" onclick="switchFinTab('banks', this)"><i class="fa-solid fa-building-columns"></i> <span>البنوك والمصارف</span></button>
+      <button class="fin-tab-btn" onclick="switchFinTab('exchanges', this)"><i class="fa-solid fa-money-bill-transfer"></i> <span>شركات الصرافة</span></button>
+      <button class="fin-tab-btn" onclick="switchFinTab('wallets', this)"><i class="fa-solid fa-wallet"></i> <span>المحافظ الإلكترونية</span></button>
+      <button class="fin-tab-btn" onclick="switchFinTab('rates', this)"><i class="fa-solid fa-coins"></i> <span>أسعار الصرف والمقارنة</span></button>
+    </div>
+
+    <!-- ==================== 1. تبويب البنوك ==================== -->
+    <div id="fin-view-banks" class="fin-section-view active">
+      <div id="banksListContainer"></div>
+    </div>
+
+    <!-- ==================== 2. تبويب شركات الصرافة ==================== -->
+    <div id="fin-view-exchanges" class="fin-section-view">
+      <div id="exchangesListContainer"></div>
+    </div>
+
+    <!-- ==================== 3. تبويب المحافظ الإلكترونية ==================== -->
+    <div id="fin-view-wallets" class="fin-section-view">
+      <div id="walletsListContainer"></div>
+    </div>
+
+    <!-- ==================== 4. تبويب أسعار الصرف والمقارنة ==================== -->
+    <div id="fin-view-rates" class="fin-section-view">
+      
+      <!-- محول العملات التفاعلي -->
+      <div class="converter-card">
+        <div style="font-weight: 900; font-size: 0.9rem; color: var(--gold); display: flex; align-items: center; gap: 6px;">
+          <i class="fa-solid fa-calculator"></i>
+          <span>حاسبة تحويل العملات اللحظية</span>
+        </div>
+        <div class="converter-inputs-grid">
+          <input type="number" id="calcInputAmount" value="100" placeholder="المبلغ" oninput="runCalculator()">
+          <select id="calcInputCurrency" onchange="runCalculator()">
+            <option value="USD">دولار أمريكي (USD)</option>
+            <option value="SAR">ريال سعودي (SAR)</option>
+            <option value="AED">درهم إماراتي (AED)</option>
+            <option value="EUR">يورو (EUR)</option>
+          </select>
+          <select id="calcInputMarket" onchange="runCalculator()">
+            <option value="aden">سوق عدن</option>
+            <option value="sanaa">سوق صنعاء</option>
+          </select>
+        </div>
+        <div style="background: #000; border-radius: 10px; padding: 12px; text-align: center; border: 1px solid var(--border);">
+          <span style="font-size: 0.75rem; color: var(--text-gray);">المبلغ المعادل:</span>
+          <strong id="calcResultDisplay" style="color: var(--gold); font-size: 1.25rem; margin-right: 8px;">154,000 ريال يمني</strong>
+        </div>
+      </div>
+
+      <!-- محدد السوق -->
+      <div class="market-switch-box">
+        <button class="market-switch-btn active" onclick="switchRatesMarket('sanaa', this)">أسعار سوق صنعاء</button>
+        <button class="market-switch-btn" onclick="switchRatesMarket('aden', this)">أسعار سوق عدن</button>
+      </div>
+
+      <!-- كروت الأسعار ومقارنة الفوارق -->
+      <div class="rates-comparison-card">
+        <div style="font-weight: 800; font-size: 0.85rem; color: #FFF; margin-bottom: 10px; display: flex; justify-content: space-between;">
+          <span id="marketTitleText">أسعار العملات في صنعاء</span>
+          <span style="font-size: 0.7rem; color: var(--gold);">آخر تحديث: منذ 5 دقائق</span>
+        </div>
+
+        <div class="rates-row-metric">
+          <div>
+            <div style="font-weight: 900; font-size: 0.9rem; color: #FFF;">الدولار الأمريكي (USD) 🇺🇸</div>
+            <div style="font-size: 0.72rem; color: var(--text-gray);" id="usdSubText">سعر الشراء: 535 | سعر البيع: 532</div>
+          </div>
+          <div style="text-align: left;">
+            <div class="rate-price-text" id="usdPriceText">535 ريال</div>
+            <span class="rate-delta-pill">مستقر</span>
+          </div>
+        </div>
+
+        <div class="rates-row-metric">
+          <div>
+            <div style="font-weight: 900; font-size: 0.9rem; color: #FFF;">الريال السعودي (SAR) 🇸🇦</div>
+            <div style="font-size: 0.72rem; color: var(--text-gray);" id="sarSubText">سعر الشراء: 140.5 | سعر البيع: 139.8</div>
+          </div>
+          <div style="text-align: left;">
+            <div class="rate-price-text" id="sarPriceText">140.5 ريال</div>
+            <span class="rate-delta-pill">مستقر</span>
+          </div>
+        </div>
+
+        <div class="rates-row-metric">
+          <div>
+            <div style="font-weight: 900; font-size: 0.9rem; color: var(--gold);">الذهب عيار 21 (جرام)</div>
+            <div style="font-size: 0.72rem; color: var(--text-gray);" id="goldSubText">سعر الشراء: 32,000 | سعر البيع: 34,500</div>
+          </div>
+          <div style="text-align: left;">
+            <div class="rate-price-text" id="goldPriceText">32,000 ريال</div>
+            <span class="rate-delta-pill" style="color: var(--gold); background: var(--gold-dim);">سوق الصاغة</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- شريط التنقل السفلي -->
+  <nav class="bottom-app-nav">
+    <a href="/" class="bottom-nav-link">
+      <i class="fa-solid fa-house"></i>
+      <span>الرئيسية</span>
+    </a>
+    <a href="/financials.html" class="bottom-nav-link active">
+      <i class="fa-solid fa-building-columns"></i>
+      <span>المالية</span>
+    </a>
+    <a href="/jobs.html" class="bottom-nav-link">
+      <i class="fa-solid fa-briefcase"></i>
+      <span>الوظائف</span>
+    </a>
+    <a href="/properties.html" class="bottom-nav-link">
+      <i class="fa-solid fa-city"></i>
+      <span>العقارات</span>
+    </a>
+    <a href="/admin.html" class="bottom-nav-link">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>الإدارة</span>
+    </a>
+  </nav>
+
+  <script>
+    const banksData = [
+      {
+        id: 'b1', name: 'بنك الكريمي للتمويل الأصغر الإسلامي', logo: 'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=100',
+        score: 97, rating: 4.8, branches: '240 فرع في جميع المحافظات', phone: '770123456', wa: '967770123456',
+        services: ['حسابات جارية وتوفير', 'تمويل أصغر إسلامي', 'تطبيق كريمي جوال', 'بطاقات صراف آلي مسبقة الدفع']
+      },
+      {
+        id: 'b2', name: 'بنك التضامن الإسلامي الدولي', logo: 'https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?w=100',
+        score: 95, rating: 4.7, branches: '85 فرع', phone: '771223344', wa: '967771223344',
+        services: ['محفظة محفظتي', 'خدمات الشركات الدولية', 'بطاقات فيزا وماستركارد', 'اعتمادات مستندية']
+      },
+      {
+        id: 'b3', name: 'بنك اليمن والكويت', logo: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100',
+        score: 94, rating: 4.6, branches: '45 فرع', phone: '772334455', wa: '967772334455',
+        services: ['حسابات استثمارية', 'تطبيق YKB Mobile', 'تحويلات سويفت سريعة', 'خدمات مصرفية إلكترونية']
+      }
+    ];
+
+    const exchangesData = [
+      {
+        id: 'e1', name: 'شركة النجم للصرافة والتحويلات', logo: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=100',
+        score: 96, rating: 4.7, branches: 'أكثر من 1500 نقطة خدمة وشبكة تحويلات', phone: '773334445', wa: '96773334445',
+        services: ['شبكة النجم للحوالات الفورية', 'صرافة العملات الأجنبية', 'سداد فواتير', 'حوالات دولية']
+      },
+      {
+        id: 'e2', name: 'شركة العمقي وإخوانه للصرافة', logo: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=100',
+        score: 95, rating: 4.6, branches: 'شبكة انتشار واسعة في حضرموت وعدن وصنعاء', phone: '774445556', wa: '96774445556',
+        services: ['شبكة العمقي إكسبرس', 'حوالات سريعة', 'صرافة عملات', 'خدمات رجال الأعمال']
+      }
+    ];
+
+    const walletsData = [
+      {
+        id: 'w1', name: 'محفظة جيب الإلكترونية (Jeeb)', logo: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=100',
+        score: 97, rating: 4.8, provider: 'محفظة رقمية معتمدة', phone: '777000111', wa: '967777000111',
+        services: ['دفع مشتريات QR Code', 'سداد باقات الإنترنت والاتصالات', 'تحويل فوري بدون رسوم', 'شحن ألعاب وتطبيقات']
+      },
+      {
+        id: 'w2', name: 'محفظة كاش الإلكترونية (CAC Bank)', logo: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=100',
+        score: 94, rating: 4.5, provider: 'بنك التسليف التعاوني الزراعي', phone: '778000222', wa: '967778000222',
+        services: ['سداد الرواتب والمستحقات', 'تحويلات محلية سريعة', 'سداد فواتير الكهرباء والمياه']
+      }
+    ];
+
+    function renderCards(list, containerId, typeLabel) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      container.innerHTML = list.map(item => `
+        <div class="fin-card-item">
+          <div class="fin-card-top">
+            <div class="fin-brand-group">
+              <img src="${item.logo}" class="fin-logo-thumb" alt="${item.name}">
+              <div>
+                <div style="font-weight:900; font-size:0.92rem; color:#FFF; display:flex; align-items:center; gap:5px;">
+                  <span>${item.name}</span>
+                  <i class="fa-solid fa-certificate" style="color:var(--gold); font-size:0.85rem;"></i>
+                </div>
+                <div style="font-size:0.7rem; color:var(--text-gray); margin-top:2px;">
+                  <i class="fa-solid fa-location-dot" style="color:var(--gold);"></i> ${item.branches || item.provider}
+                </div>
+              </div>
+            </div>
+            <span class="yr-score-pill">YR ${item.score}</span>
+          </div>
+
+          <div class="fin-services-chips">
+            ${item.services.map(s => `<span class="service-chip"><i class="fa-solid fa-check" style="color:var(--gold); font-size:0.6rem;"></i> ${s}</span>`).join('')}
+          </div>
+
+          <div class="fin-actions-grid">
+            <a href="tel:${item.phone}" class="fin-action-btn"><i class="fa-solid fa-phone"></i> <span>اتصال</span></a>
+            <a href="https://wa.me/${item.wa}" target="_blank" class="fin-action-btn" style="color:#25D366;"><i class="fa-brands fa-whatsapp"></i> <span>واتساب</span></a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function switchFinTab(tabKey, btn) {
+      document.querySelectorAll('.fin-section-view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.fin-tab-btn').forEach(b => b.classList.remove('active'));
+      
+      const target = document.getElementById('fin-view-' + tabKey);
+      if (target) target.classList.add('active');
+      if (btn) btn.classList.add('active');
+    }
+
+    function switchRatesMarket(market, btn) {
+      document.querySelectorAll('.market-switch-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      if (market === 'sanaa') {
+        document.getElementById('marketTitleText').textContent = 'أسعار العملات في صنعاء';
+        document.getElementById('usdPriceText').textContent = '535 ريال';
+        document.getElementById('usdSubText').textContent = 'سعر الشراء: 535 | سعر البيع: 532';
+        document.getElementById('sarPriceText').textContent = '140.5 ريال';
+        document.getElementById('sarSubText').textContent = 'سعر الشراء: 140.5 | سعر البيع: 139.8';
+        document.getElementById('goldPriceText').textContent = '32,000 ريال';
+        document.getElementById('goldSubText').textContent = 'سعر الشراء: 32,000 | سعر البيع: 34,500';
+      } else {
+        document.getElementById('marketTitleText').textContent = 'أسعار العملات في عدن والمحافظات الجنوبية';
+        document.getElementById('usdPriceText').textContent = '1,540 ريال';
+        document.getElementById('usdSubText').textContent = 'سعر الشراء: 1,540 | سعر البيع: 1,530';
+        document.getElementById('sarPriceText').textContent = '410 ريال';
+        document.getElementById('sarSubText').textContent = 'سعر الشراء: 410 | سعر البيع: 408';
+        document.getElementById('goldPriceText').textContent = '92,000 ريال';
+        document.getElementById('goldSubText').textContent = 'سعر الشراء: 92,000 | سعر البيع: 98,000';
+      }
+      runCalculator();
+    }
+
+    function runCalculator() {
+      const amount = parseFloat(document.getElementById('calcInputAmount').value) || 0;
+      const cur = document.getElementById('calcInputCurrency').value;
+      const market = document.getElementById('calcInputMarket').value;
+
+      let rate = (cur === 'USD') ? ((market === 'aden') ? 1540 : 535) :
+                 (cur === 'SAR') ? ((market === 'aden') ? 410 : 140.5) :
+                 (cur === 'AED') ? ((market === 'aden') ? 419 : 145) :
+                 ((market === 'aden') ? 1670 : 580);
+
+      const total = (amount * rate).toLocaleString();
+      document.getElementById('calcResultDisplay').textContent = `${total} ريال يمني`;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCards(banksData, 'banksListContainer', 'بنك');
+      renderCards(exchangesData, 'exchangesListContainer', 'صرافة');
+      renderCards(walletsData, 'walletsListContainer', 'محفظة');
+      runCalculator();
+    });
+  </script>
+</body>
+</html>
