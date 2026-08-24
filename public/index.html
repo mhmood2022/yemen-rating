@@ -60,29 +60,24 @@
       display: flex; align-items: center; justify-content: space-between; padding: 0 1.25rem;
       position: sticky; top: 0; z-index: 1000;
     }
-    
     .header-menu-bars { color: #FFF; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; }
-
     .header-logo-group { display: flex; align-items: center; gap: 8px; }
     .header-logo-text-wrap { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.1; }
     .header-logo-text-wrap span.ar-title { font-size: 1.1rem; font-weight: 900; color: #FFF; letter-spacing: 0.5px; }
     .header-logo-text-wrap span.en-title { font-size: 0.58rem; font-weight: 800; color: var(--gold); letter-spacing: 1px; }
     .header-star-icon { width: 22px; height: 22px; fill: var(--gold); }
-
     .header-bell-circle {
       width: 38px; height: 38px; border-radius: 50%; background: var(--bg-card);
       border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
       color: var(--gold); cursor: pointer;
     }
 
-    /* الحاوية الرئيسية */
     .page-main-container { padding: 1rem 1.1rem; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; margin-bottom: 75px; }
 
     .tab-view-section { display: none; animation: fadeIn 0.2s ease; }
     .tab-view-section.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* شريط البحث */
     .home-search-box { position: relative; margin-bottom: 0.5rem; }
     .home-search-box input {
       width: 100%; background: var(--bg-input); border: 1px solid var(--border);
@@ -96,7 +91,6 @@
       font-size: 0.75rem; color: var(--text-gray); font-weight: 700; margin-bottom: 1.25rem;
     }
 
-    /* البانر الترويجي */
     .hero-banner-card {
       height: 160px; border-radius: var(--radius-lg);
       background: linear-gradient(to left, rgba(0,0,0,0.85), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800') center/cover;
@@ -114,61 +108,25 @@
     .hero-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.3); }
     .hero-dot.active { width: 14px; border-radius: 4px; background: var(--gold); }
 
-    /* عناوين الأقسام */
     .section-title-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
     .section-title-text { font-size: 0.95rem; font-weight: 900; color: #FFF; }
     .section-view-all { font-size: 0.75rem; color: var(--gold); cursor: pointer; font-weight: 800; }
 
-    /* ==========================================================================
-       مربعات التصنيفات الموحدة هندسياً بحجم وارتفاع موحد 100%
-       ========================================================================== */
-    .categories-5-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-      margin-bottom: 1.4rem;
-    }
+    /* مربعات التصنيفات الموحدة هندسياً 1:1 */
+    .categories-5-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 1.4rem; }
     .category-box-item {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      height: 74px;
-      padding: 0.5rem 0.2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      cursor: pointer;
-      transition: 0.2s;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      height: 74px; padding: 0.5rem 0.2rem; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center; cursor: pointer; transition: 0.2s;
     }
     .category-box-item:hover { border-color: var(--gold); transform: translateY(-2px); }
     .category-box-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      background: var(--bg-card-inner);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 4px;
-      color: var(--gold);
-      flex-shrink: 0;
+      width: 34px; height: 34px; border-radius: 10px; background: var(--bg-card-inner);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 4px; color: var(--gold); flex-shrink: 0;
     }
     .category-box-icon svg { width: 17px; height: 17px; fill: var(--gold); }
-    .category-box-label {
-      font-size: 0.64rem;
-      font-weight: 800;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
-      text-align: center;
-      display: block;
-    }
+    .category-box-label { font-size: 0.64rem; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: center; display: block; }
 
-    /* قسم أقوى العروض والخصومات */
     .offers-discount-card {
       background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
       padding: 1rem 1.1rem; display: flex; justify-content: space-between; align-items: center;
@@ -177,34 +135,8 @@
     .offers-discount-card:hover { border-color: var(--gold); }
     .offer-details-col h4 { font-size: 0.88rem; font-weight: 900; color: #FFF; margin-bottom: 2px; }
     .offer-details-col p { font-size: 0.7rem; color: var(--text-gray); }
-    
-    .offer-badges-col { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
-    .discount-red-pill {
-      background: var(--red-discount); color: #FFF; font-weight: 900; font-size: 0.72rem;
-      padding: 3px 10px; border-radius: 8px;
-    }
-    .coupon-code-dashed {
-      border: 1.5px dashed var(--gold); background: var(--gold-dim); color: var(--gold);
-      font-size: 0.72rem; font-weight: 900; padding: 2px 8px; border-radius: 6px; font-family: monospace;
-    }
-
-    /* قسم الأعلى تقييماً */
-    .horizontal-cards-scroll { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1.4rem; }
-    .rated-business-card {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
-      overflow: hidden; cursor: pointer; transition: 0.2s;
-    }
-    .rated-business-card:hover { border-color: var(--gold); }
-    .rated-card-img { height: 95px; background-size: cover; background-position: center; position: relative; }
-    .rated-card-badge {
-      position: absolute; top: 6px; left: 6px; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
-      padding: 2px 6px; border-radius: 6px; font-size: 0.68rem; font-weight: 900; color: var(--gold);
-      display: flex; align-items: center; gap: 3px;
-    }
-    .rated-card-badge svg { width: 10px; height: 10px; fill: var(--gold); }
-    .rated-card-info { padding: 0.55rem; }
-    .rated-card-name { font-size: 0.78rem; font-weight: 800; color: #FFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .rated-card-meta { font-size: 0.65rem; color: var(--text-gray); margin-top: 2px; }
+    .discount-red-pill { background: var(--red-discount); color: #FFF; font-weight: 900; font-size: 0.72rem; padding: 3px 10px; border-radius: 8px; }
+    .coupon-code-dashed { border: 1.5px dashed var(--gold); background: var(--gold-dim); color: var(--gold); font-size: 0.72rem; font-weight: 900; padding: 2px 8px; border-radius: 6px; font-family: monospace; }
 
     /* كروت المنشآت */
     .entity-full-card {
@@ -212,31 +144,15 @@
       padding: 0.95rem 1rem; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; transition: 0.2s; cursor: pointer;
     }
     .entity-full-card:hover { border-color: var(--gold); }
-    
-    .entity-card-header {
-      display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
-    }
-    .entity-info-group {
-      display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
-    }
+    .entity-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .entity-info-group { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
     .entity-logo-img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
-    
     .entity-text-details { flex: 1; min-width: 0; }
-    .entity-title-row {
-      display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
-      font-weight: 900; font-size: 0.92rem; color: #FFF; line-height: 1.3;
-    }
+    .entity-title-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; font-weight: 900; font-size: 0.92rem; color: #FFF; line-height: 1.3; }
     .entity-sub-info { font-size: 0.7rem; color: var(--text-gray); margin-top: 2px; }
+    .yr-score-badge { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); padding: 3px 8px; border-radius: 10px; font-weight: 900; font-size: 0.75rem; white-space: nowrap; flex-shrink: 0; line-height: 1.1; }
 
-    .yr-score-badge {
-      background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border);
-      padding: 3px 8px; border-radius: 10px; font-weight: 900; font-size: 0.75rem;
-      white-space: nowrap; flex-shrink: 0; line-height: 1.1;
-    }
-
-    .entity-contact-actions {
-      display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px;
-    }
+    .entity-contact-actions { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
     .action-contact-btn {
       flex: 1; padding: 6px; border-radius: 8px; font-size: 0.72rem; font-weight: 800;
       background: var(--bg-card-inner); border: 1px solid var(--border); color: #FFF;
@@ -246,15 +162,9 @@
     .action-contact-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
     /* ويدجت أسعار العملات والذهب */
-    .rates-widget-box {
-      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
-      padding: 1.1rem; margin-bottom: 1.4rem;
-    }
+    .rates-widget-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.1rem; margin-bottom: 1.4rem; }
     .rates-3col-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 0.6rem; }
-    .rate-mini-card {
-      background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 0.65rem 0.4rem; text-align: center;
-    }
+    .rate-mini-card { background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.65rem 0.4rem; text-align: center; }
     .rate-mini-title { font-size: 0.68rem; font-weight: 800; color: var(--gold); margin-bottom: 4px; }
     .rate-mini-values { font-size: 0.75rem; font-weight: 900; color: #FFF; }
     .rate-mini-sub { font-size: 0.6rem; color: var(--text-gray); margin-top: 2px; }
@@ -277,7 +187,7 @@
     }
     .bottom-center-add-fab svg { width: 22px; height: 22px; fill: #000; }
 
-    /* النوافذ المنبثقة */
+    /* النوافذ المنبثقة التفاعلية */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
       display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1rem;
@@ -290,6 +200,24 @@
     }
     .modal-close-btn { position: absolute; top: 12px; left: 12px; background: none; border: none; color: var(--text-gray); font-size: 1.2rem; cursor: pointer; }
 
+    /* النجوم التفاعلية للتقييم */
+    .star-rating-select { display: flex; gap: 8px; justify-content: center; font-size: 1.8rem; margin: 10px 0; cursor: pointer; }
+    .star-rating-select span { color: #33333E; transition: 0.2s; }
+    .star-rating-select span.gold { color: var(--gold); }
+
+    .form-group-field { margin-bottom: 0.9rem; }
+    .form-group-field label { display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-gray); margin-bottom: 4px; }
+    .form-group-field input, .form-group-field select, .form-group-field textarea {
+      width: 100%; background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 0.65rem 0.85rem; color: #FFF; font-size: 0.8rem;
+    }
+    .form-group-field input:focus, .form-group-field textarea:focus { outline: none; border-color: var(--gold); }
+
+    .btn-gold-submit {
+      background: var(--gold); color: #000; font-weight: 900; font-size: 0.85rem; padding: 0.75rem;
+      border-radius: var(--radius-md); border: none; cursor: pointer; width: 100%; margin-top: 8px;
+    }
+
     .toast-popup {
       position: fixed; bottom: 76px; left: 50%; transform: translateX(-50%); background: var(--gold);
       color: #000; padding: 8px 20px; border-radius: 20px; font-weight: 900; font-size: 0.78rem;
@@ -299,7 +227,7 @@
 </head>
 <body>
 
-  <!-- الهيدر المصحح بدقة -->
+  <!-- الهيدر الرسمي -->
   <header class="main-app-header">
     <div class="header-menu-bars" onclick="switchAppTab('more', document.querySelectorAll('.bottom-nav-link')[4])">
       <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
@@ -348,7 +276,7 @@
         </div>
       </div>
 
-      <!-- التصنيفات الرئيسية الـ 5 الموحدة تماماً بالحجم والارتفاع -->
+      <!-- التصنيفات الرئيسية الـ 5 الموحدة تماماً 1:1 -->
       <div class="section-title-line">
         <span class="section-title-text">التصنيفات الرئيسية</span>
         <span class="section-view-all" onclick="filterCategory('all')">عرض الكل</span>
@@ -425,7 +353,7 @@
         </div>
       </div>
 
-      <!-- قائمة المنشآت النظيفة -->
+      <!-- قائمة المنشآت الحية المصححة -->
       <div id="entitiesFeedList"></div>
 
       <!-- ويدجت أسعار العملات والذهب -->
@@ -462,11 +390,51 @@
 
       <p id="modalBizDesc" style="font-size: 0.8rem; color: var(--text-gray); line-height: 1.8; background: var(--bg-card-inner); padding: 10px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1rem;"></p>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 1rem;">
         <a id="modalBizCall" href="#" class="action-contact-btn"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg> اتصال</a>
         <a id="modalBizWhatsapp" href="#" target="_blank" class="action-contact-btn" style="color: #25D366;"><svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/></svg> واتساب</a>
         <button id="modalBizCopy" class="action-contact-btn" style="color: var(--gold);"><svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> مشاركة</button>
       </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button id="modalBizReviewBtn" onclick="" class="btn-gold-submit" style="font-size: 0.78rem;">⭐ أضف تقييمك للمنشأة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة التقييم التفاعلية بالنجوم (PHASE 5) -->
+  <div class="modal-overlay" id="reviewModal">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeModal('reviewModal')">✕</button>
+      <div style="font-weight: 900; font-size: 1rem; color: #FFF; margin-bottom: 4px;">⭐ أضف تقييمك ومراجعتك</div>
+      <p style="font-size: 0.72rem; color: var(--text-gray); margin-bottom: 12px;" id="reviewModalBizName"></p>
+
+      <form onsubmit="handleReviewSubmit(event)">
+        <input type="hidden" id="review_biz_id">
+        <input type="hidden" id="review_selected_stars" value="5">
+
+        <!-- النجوم التفاعلية القابلة للنقر -->
+        <div class="star-rating-select" id="starSelector">
+          <span onclick="setStars(1)">★</span>
+          <span onclick="setStars(2)">★</span>
+          <span onclick="setStars(3)">★</span>
+          <span onclick="setStars(4)">★</span>
+          <span onclick="setStars(5)" class="gold">★</span>
+        </div>
+        <div style="text-align: center; font-size: 0.75rem; color: var(--gold); font-weight: 800; margin-bottom: 12px;" id="starsLabel">5 من 5 (ممتاز)</div>
+
+        <div class="form-group-field">
+          <label>اسمك الكريم *</label>
+          <input type="text" id="review_author" required placeholder="مثال: سالم العولقي">
+        </div>
+
+        <div class="form-group-field">
+          <label>رأيك وتجربتك الصادقة *</label>
+          <textarea id="review_comment" rows="3" required placeholder="اكتب تفاصيل تجربتك مع هذه المنشأة..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-gold-submit">نشر التقييم فوراً</button>
+      </form>
     </div>
   </div>
 
@@ -489,7 +457,7 @@
       <svg viewBox="0 0 24 24"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/></svg>
       <span>الترند</span>
     </button>
-    <button class="bottom-nav-link" onclick="switchAppTab('more', document.querySelectorAll('.bottom-nav-link')[4])">
+    <button class="bottom-nav-link" onclick="window.location.href='/admin.html'">
       <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
       <span>المزيد</span>
     </button>
@@ -498,6 +466,7 @@
   <div id="toastPopup" class="toast-popup"></div>
 
   <script>
+    // دالة رسم شارة التوثيق المسننة الرسمية المفردة
     function getOfficialBadgeSVG(type) {
       if (!type || type === 'none') return '';
       let color = '#FFB800';
@@ -512,10 +481,10 @@
       `;
     }
 
-    const entitiesData = [
-      { id: 1, name: 'مطعم حضرموت الدولي', badge: 'gold', type: 'restaurant', typeName: 'مطاعم ومقاهي', city: 'صنعاء', phone: '771987654', wa: '967771987654', score: 96, rating: 4.7, slug: 'hadramout-rest', logo: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100', cover: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800', desc: 'أشهى المأكولات التراثية واللحوم الطازجة والأسماك المشوية على مدار الساعة.' },
-      { id: 2, name: 'متجر العصرية للجوالات', badge: 'gold', type: 'shop', typeName: 'متاجر وتسوق', city: 'صنعاء', phone: '778889990', wa: '967778889990', score: 95, rating: 4.8, slug: 'alasria-store', logo: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=100', cover: 'https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?w=800', desc: 'أحدث الهواتف الذكية والأجهزة اللوحية والإكسسوارات الأصلية وضمان معتمد.' },
-      { id: 3, name: 'غسيل وخدمات حريري للسيارات', badge: 'blue', type: 'services', typeName: 'خدمات سيارات', city: 'صنعاء', phone: '774443332', wa: '967774443332', score: 93, rating: 4.6, slug: 'hareeri-services', logo: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=100', cover: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=800', desc: 'عناية متكاملة للسيارات وتلميع احترافي بأحدث المواد والمعدات.' }
+    let entitiesData = [
+      { id: 1, name: 'مطعم حضرموت الدولي', badge: 'gold', type: 'restaurant', typeName: 'مطاعم ومقاهي', city: 'صنعاء', phone: '771987654', wa: '967771987654', score: 96, rating: 4.7, reviewCount: 120, slug: 'hadramout-rest', logo: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100', cover: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800', desc: 'أشهى المأكولات التراثية واللحوم الطازجة والأسماك المشوية على مدار الساعة.' },
+      { id: 2, name: 'متجر العصرية للجوالات', badge: 'gold', type: 'shop', typeName: 'متاجر وتسوق', city: 'صنعاء', phone: '778889990', wa: '967778889990', score: 95, rating: 4.8, reviewCount: 95, slug: 'alasria-store', logo: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=100', cover: 'https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?w=800', desc: 'أحدث الهواتف الذكية والأجهزة اللوحية والإكسسوارات الأصلية وضمان معتمد.' },
+      { id: 3, name: 'غسيل وخدمات حريري للسيارات', badge: 'blue', type: 'services', typeName: 'خدمات سيارات', city: 'صنعاء', phone: '774443332', wa: '967774443332', score: 93, rating: 4.6, reviewCount: 64, slug: 'hareeri-services', logo: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=100', cover: 'https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?w=800', desc: 'عناية متكاملة للسيارات وتلميع احترافي بأحدث المواد والمعدات.' }
     ];
 
     function renderFeed(list) {
@@ -532,7 +501,7 @@
                   <span>${item.name}</span>
                   ${getOfficialBadgeSVG(item.badge)}
                 </div>
-                <div class="entity-sub-info">${item.typeName} • ${item.city}</div>
+                <div class="entity-sub-info">${item.typeName} • ${item.city} • ★ ${item.rating.toFixed(1)} (${item.reviewCount || 10})</div>
               </div>
             </div>
             <span class="yr-score-badge">YR ${item.score}</span>
@@ -569,13 +538,61 @@
       document.getElementById('modalBizCover').style.backgroundImage = `url('${item.cover}')`;
       document.getElementById('modalBizLogo').src = item.logo;
       document.getElementById('modalBizName').innerHTML = `<span>${item.name}</span> ${getOfficialBadgeSVG(item.badge)}`;
-      document.getElementById('modalBizCategory').textContent = `${item.typeName} • ${item.city}`;
+      document.getElementById('modalBizCategory').textContent = `${item.typeName} • ${item.city} • ★ ${item.rating.toFixed(1)}`;
       document.getElementById('modalBizScore').textContent = `YR ${item.score}`;
       document.getElementById('modalBizDesc').textContent = item.desc;
       document.getElementById('modalBizCall').href = `tel:${item.phone}`;
       document.getElementById('modalBizWhatsapp').href = `https://wa.me/${item.wa}`;
       document.getElementById('modalBizCopy').setAttribute('onclick', `copySlug('${item.slug}')`);
+      document.getElementById('modalBizReviewBtn').setAttribute('onclick', `openReviewModal(${item.id}, '${item.name}')`);
       document.getElementById('bizDetailModal').classList.add('open');
+    }
+
+    // محرك التقييم والمراجعات التفاعلي (PHASE 5)
+    function openReviewModal(bizId, bizName) {
+      closeModal('bizDetailModal');
+      document.getElementById('review_biz_id').value = bizId;
+      document.getElementById('reviewModalBizName').textContent = `تقييم نشاط: ${bizName}`;
+      setStars(5);
+      openModal('reviewModal');
+    }
+
+    function setStars(count) {
+      document.getElementById('review_selected_stars').value = count;
+      const spans = document.querySelectorAll('#starSelector span');
+      spans.forEach((s, idx) => {
+        if (idx < count) {
+          s.classList.add('gold');
+        } else {
+          s.classList.remove('gold');
+        }
+      });
+      const labels = ['', '1 من 5 (سيء جداً)', '2 من 5 (مقبول)', '3 من 5 (جيد)', '4 من 5 (جيد جداً)', '5 من 5 (ممتاز)'];
+      document.getElementById('starsLabel').textContent = labels[count] || '';
+    }
+
+    function handleReviewSubmit(e) {
+      e.preventDefault();
+      const bizId = parseInt(document.getElementById('review_biz_id').value);
+      const stars = parseInt(document.getElementById('review_selected_stars').value) || 5;
+      const author = document.getElementById('review_author').value.trim();
+
+      const biz = entitiesData.find(x => x.id === bizId);
+      if (biz) {
+        // حساب التقييم الجديد والـ YR Score تلقائياً
+        const prevCount = biz.reviewCount || 10;
+        const newCount = prevCount + 1;
+        const newRating = ((biz.rating * prevCount) + stars) / newCount;
+        biz.rating = parseFloat(newRating.toFixed(2));
+        biz.reviewCount = newCount;
+        
+        // تحديث YR Score وفق النجوم والتوثيق
+        biz.score = Math.min(99, Math.round(biz.score + (stars >= 4 ? 0.3 : -0.5)));
+      }
+
+      closeModal('reviewModal');
+      showToast(`⭐ شكراً ${author}، تم تسجيل تقييمك وتحديث مؤشر YR Score بنجاح!`);
+      renderFeed(entitiesData);
     }
 
     function copySlug(slug) {
@@ -590,10 +607,8 @@
       setTimeout(() => t.style.display = 'none', 3000);
     }
 
-    function closeModal(id) {
-      const el = document.getElementById(id);
-      if (el) el.classList.remove('open');
-    }
+    function openModal(id) { const m = document.getElementById(id); if (m) m.classList.add('open'); }
+    function closeModal(id) { const m = document.getElementById(id); if (m) m.classList.remove('open'); }
 
     function switchAppTab(tabKey, btnElement) {
       document.querySelectorAll('.tab-view-section').forEach(s => s.classList.remove('active'));
