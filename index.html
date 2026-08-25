@@ -51,20 +51,17 @@
     a, a:visited, a:hover { color: inherit; text-decoration: none; }
     .svg-icon { display: inline-block; width: 1.15em; height: 1.15em; fill: currentColor; vertical-align: -0.15em; flex-shrink: 0; }
 
-    /* شارة التوثيق المسننة الرسمية المفردة الملاصقة للاسم */
+    /* شارة التوثيق المسننة الرسمية الملاصقة للاسم */
     .official-badge-svg {
       width: 17px; height: 17px; min-width: 17px; display: inline-block; vertical-align: middle; margin-right: 4px; flex-shrink: 0;
     }
 
-    /* ==========================================================================
-       1. الهيدر المتجاوب العالمي ومبدل الأنظمة الأربعة
-       ========================================================================== */
-    .master-top-header {
+    /* الهيدر المتجاوب العالمي */
+    .master-header {
       height: 68px; background: #0A0A0E; border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;
       position: sticky; top: 0; z-index: 1000;
     }
-    .brand-logo-unit { display: flex; align-items: center; gap: 10px; }
     .brand-logo-gem {
       width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, var(--gold), #D97706);
       display: flex; align-items: center; justify-content: center; color: #000; font-size: 1.1rem;
@@ -72,7 +69,7 @@
     .brand-title-wrap h1 { font-size: 1.15rem; font-weight: 900; color: #FFF; line-height: 1.1; }
     .brand-title-wrap span { font-size: 0.62rem; color: var(--gold); font-weight: 800; letter-spacing: 0.5px; }
 
-    /* مبدل الأنظمة الأربعة لسطح المكتب */
+    /* مبدل الأنظمة */
     .system-nav-tabs { display: flex; align-items: center; gap: 6px; }
     .sys-tab-btn {
       padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: 0.8rem; font-weight: 800;
@@ -92,10 +89,8 @@
     }
     .btn-gold-add:hover { background: var(--gold-hover); transform: translateY(-1px); }
 
-    /* ==========================================================================
-       2. شريط البحث الاستكشافي المزدوج على طراز Yelp (الخدمة + المدينة)
-       ========================================================================== */
-    .discovery-search-strip {
+    /* شريط البحث المزدوج من طراز Yelp (الخدمة + المدينة) */
+    .yelp-search-strip {
       background: var(--bg-surface); border-bottom: 1px solid var(--border); padding: 1.25rem 2rem;
     }
     .search-bar-2col {
@@ -129,9 +124,7 @@
     .filter-chip-item:hover, .filter-chip-item.active { border-color: var(--gold); color: #FFF; background: var(--gold-dim); }
     .filter-chip-item.active { color: var(--gold); }
 
-    /* ==========================================================================
-       3. الحاوية الرئيسية ومبدل الأنظمة الأربعة (Main Views)
-       ========================================================================== */
+    /* الحاوية الرئيسية ومبدل الأنظمة */
     .system-view-container {
       width: 100%; max-width: 1400px; margin: 0 auto; padding: 1.75rem 2rem; flex: 1; margin-bottom: 75px;
     }
@@ -139,7 +132,9 @@
     .system-module-panel.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* ==================== 1) تصميم واجهة الاستكشاف (Yelp-Style Discovery) ==================== */
+    /* ==========================================================================
+       1) تصميم واجهة الاستكشاف (Yelp Discovery Layout)
+       ========================================================================== */
     .discovery-2col-layout { display: grid; grid-template-columns: 1fr 340px; gap: 2rem; }
     
     .competitor-card-box {
@@ -182,12 +177,14 @@
     .btn-action-tile:hover { background: var(--gold); color: #000; border-color: var(--gold); }
     .btn-quote-lead { background: var(--gold); color: #000; font-weight: 900; border: none; cursor: pointer; }
 
-    /* الشريط الجانبي للاستكشاف والمقارنة */
+    /* الشريط الجانبي للاستكشاف */
     .side-widget-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem; }
     .side-widget-header { font-size: 0.95rem; font-weight: 900; color: #FFF; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
     .side-widget-header i { color: var(--gold); }
 
-    /* ==================== 2) تصميم لوحة صاحب النشاط (Business Owner Hub) ==================== */
+    /* ==========================================================================
+       2) تصميم لوحة صاحب النشاط (Business Owner Hub)
+       ========================================================================== */
     .owner-profile-banner {
       height: 160px; border-radius: var(--radius-lg);
       background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1000') center/cover;
@@ -210,13 +207,17 @@
     }
     .tool-label-text { font-size: 0.75rem; font-weight: 800; color: var(--text-white); }
 
-    /* ==================== 3) تصميم نظام YR Ads المتكامل ==================== */
+    /* ==========================================================================
+       3) تصميم نظام YR Ads المتكامل
+       ========================================================================== */
     .ads-metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 1.5rem; }
     .ad-stat-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
     .ad-stat-label { font-size: 0.75rem; color: var(--text-gray); font-weight: 700; margin-bottom: 4px; }
     .ad-stat-val { font-size: 1.7rem; font-weight: 900; color: #FFF; line-height: 1; }
 
-    /* ==================== 4) لوحة الإدارة المركزية (Super Admin) ==================== */
+    /* ==========================================================================
+       4) لوحة الإدارة المركزية (Super Admin)
+       ========================================================================== */
     .admin-master-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 1.5rem; }
     .admin-kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
 
@@ -272,9 +273,9 @@
     .bottom-nav-link i { font-size: 1.15rem; }
 
     @media (max-width: 992px) {
-      .master-top-header { padding: 0 1rem; }
+      .master-header { padding: 0 1rem; }
       .system-nav-tabs { display: none; }
-      .discovery-search-strip { padding: 1rem; }
+      .yelp-search-strip { padding: 1rem; }
       .search-bar-2col { grid-template-columns: 1fr; }
       .discovery-2col-layout { grid-template-columns: 1fr; }
       .competitor-card-box { grid-template-columns: 1fr; }
@@ -291,8 +292,8 @@
 <body>
 
   <!-- 1. الهيدر العالمي المتجاوب ومبدل الأنظمة الأربعة -->
-  <header class="master-top-header">
-    <div class="brand-logo-unit">
+  <header class="master-header">
+    <div style="display: flex; align-items: center; gap: 10px;">
       <div class="brand-logo-gem">
         <i class="fa-solid fa-star"></i>
       </div>
@@ -302,7 +303,7 @@
       </div>
     </div>
 
-    <!-- مبدل الأنظمة الأربعة (Desktop Switcher) -->
+    <!-- مبدل الأنظمة الأربعة (Desktop Navigation) -->
     <nav class="system-nav-tabs">
       <button class="sys-tab-btn active" onclick="switchMainSystem('discovery', this)"><i class="fa-solid fa-compass"></i> <span>1. استكشاف الأنشطة</span></button>
       <button class="sys-tab-btn" onclick="switchMainSystem('owner', this)"><i class="fa-solid fa-store"></i> <span>2. لوحة المالك</span></button>
@@ -310,7 +311,7 @@
       <button class="sys-tab-btn" onclick="switchMainSystem('admin', this)"><i class="fa-solid fa-shield-halved"></i> <span>4. الإدارة المركزية</span></button>
     </nav>
 
-    <div class="header-actions-group">
+    <div class="header-quick-actions">
       <button class="btn-gold-add" onclick="openAddBizModal()">
         <i class="fa-solid fa-plus"></i>
         <span>أضف نشاطك</span>
@@ -319,7 +320,7 @@
   </header>
 
   <!-- 2. شريط البحث المزدوج من طراز Yelp (الخدمة + المدينة) -->
-  <div class="discovery-search-strip" id="yelpSearchStrip">
+  <div class="yelp-search-strip" id="yelpSearchStrip">
     <div class="search-bar-2col">
       <div class="search-input-field">
         <i class="fa-solid fa-magnifying-glass"></i>
@@ -428,7 +429,6 @@
          النظام 2: لوحة صاحب النشاط (Business Owner Hub - 16 Modules)
          ==================================================================== -->
     <div id="system-owner" class="system-module-panel">
-      <!-- غلاف وبروفايل المنشأة المعتمد -->
       <div class="owner-profile-banner">
         <img src="https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=200" class="owner-logo-floating" alt="Logo">
       </div>
@@ -444,7 +444,6 @@
         <span style="background: var(--green-dim); color: var(--green); border: 1px solid rgba(16,185,129,0.3); padding: 4px 12px; border-radius: 12px; font-weight: 800; font-size: 0.75rem;">حساب موثق ومعتمد ✅</span>
       </div>
 
-      <!-- نسبة اكتمال الملف 86% والمؤشرات الـ 3 -->
       <div class="ads-metrics-grid" style="margin-bottom: 1.5rem;">
         <div class="ad-stat-box">
           <div class="ad-stat-label">مشاهدات البروفايل</div>
@@ -468,41 +467,16 @@
         </div>
       </div>
 
-      <!-- شبكة أدوات إدارة النشاط الـ 8 الشاملة -->
       <h3 style="font-size: 1.05rem; font-weight: 900; color: #FFF; margin-bottom: 1rem;">أدوات إدارة النشاط التجاري</h3>
       <div class="tools-8-responsive-grid">
-        <div class="tool-box-card" onclick="openOwnerModal('modalEditInfo')">
-          <div class="tool-icon-wrap"><i class="fa-solid fa-pen-to-square"></i></div>
-          <div class="tool-label-text">المعلومات الأساسية</div>
-        </div>
-        <div class="tool-box-card" onclick="openOwnerModal('modalProductsServices')">
-          <div class="tool-icon-wrap"><i class="fa-solid fa-list-check"></i></div>
-          <div class="tool-label-text">الخدمات والمنتجات</div>
-        </div>
-        <div class="tool-box-card" onclick="openOwnerModal('modalMediaUpload')">
-          <div class="tool-icon-wrap"><i class="fa-solid fa-images"></i></div>
-          <div class="tool-label-text">الصور والوسائط</div>
-        </div>
-        <div class="tool-box-card" onclick="openOwnerModal('modalOffersDiscounts')">
-          <div class="tool-icon-wrap"><i class="fa-solid fa-tags"></i></div>
-          <div class="tool-label-text">العروض والخصومات</div>
-        </div>
-        <div class="tool-box-card" onclick="openOwnerModal('modalJobsHiring')">
-          <div class="tool-icon-wrap"><i class="fa-solid fa-briefcase"></i></div>
-          <div class="tool-label-text">الوظائف والتوظيف</div>
-        </div>
-        <div class="tool-box-card" onclick="openOwnerModal('modalReviewsFeedback')">
-          <div class="tool-icon-wrap"><i class="fa-solid fa-star"></i></div>
-          <div class="tool-label-text">التقييمات والردود</div>
-        </div>
-        <div class="tool-box-card" onclick="openOwnerModal('modalLeadsInbox')">
-          <div class="tool-icon-wrap"><i class="fa-solid fa-inbox"></i></div>
-          <div class="tool-label-text">صندوق طلبات الأسعار</div>
-        </div>
-        <div class="tool-box-card" onclick="showToastAlert('📊 جاري تحميل تقارير الفواتير والاشتراك')">
-          <div class="tool-icon-wrap"><i class="fa-solid fa-file-invoice"></i></div>
-          <div class="tool-label-text">الفواتير والاشتراك</div>
-        </div>
+        <div class="tool-box-card" onclick="openOwnerModal('modalEditInfo')"><div class="tool-icon-wrap"><i class="fa-solid fa-pen-to-square"></i></div><div class="tool-label-text">المعلومات الأساسية</div></div>
+        <div class="tool-box-card" onclick="openOwnerModal('modalProductsServices')"><div class="tool-icon-wrap"><i class="fa-solid fa-list-check"></i></div><div class="tool-label-text">الخدمات والمنتجات</div></div>
+        <div class="tool-box-card" onclick="openOwnerModal('modalMediaUpload')"><div class="tool-icon-wrap"><i class="fa-solid fa-images"></i></div><div class="tool-label-text">الصور والوسائط</div></div>
+        <div class="tool-box-card" onclick="openOwnerModal('modalOffersDiscounts')"><div class="tool-icon-wrap"><i class="fa-solid fa-tags"></i></div><div class="tool-label-text">العروض والخصومات</div></div>
+        <div class="tool-box-card" onclick="openOwnerModal('modalJobsHiring')"><div class="tool-icon-wrap"><i class="fa-solid fa-briefcase"></i></div><div class="tool-label-text">الوظائف والتوظيف</div></div>
+        <div class="tool-box-card" onclick="openOwnerModal('modalReviewsFeedback')"><div class="tool-icon-wrap"><i class="fa-solid fa-star"></i></div><div class="tool-label-text">التقييمات والردود</div></div>
+        <div class="tool-box-card" onclick="openOwnerModal('modalLeadsInbox')"><div class="tool-icon-wrap"><i class="fa-solid fa-inbox"></i></div><div class="tool-label-text">صندوق طلبات الأسعار</div></div>
+        <div class="tool-box-card" onclick="showToastAlert('📊 جاري تحميل تقارير الفواتير والاشتراك')"><div class="tool-icon-wrap"><i class="fa-solid fa-file-invoice"></i></div><div class="tool-label-text">الفواتير والاشتراك</div></div>
       </div>
     </div>
 
@@ -521,7 +495,6 @@
         </button>
       </div>
 
-      <!-- مؤشرات الـ Ads الأربعة -->
       <div class="ads-metrics-grid">
         <div class="ad-stat-box">
           <div class="ad-stat-label">المشاهدات المؤكدة (Impressions)</div>
@@ -545,7 +518,6 @@
         </div>
       </div>
 
-      <!-- جدول الحملات الإعلانية -->
       <div class="data-table-wrap">
         <table class="enterprise-table">
           <thead>
@@ -580,7 +552,7 @@
     </div>
 
     <!-- ====================================================================
-         النظام 4: لوحة الإدارة المركزية (Super Admin Control Console)
+         النظام 4: لوحة الإدارة المركزية (Super Admin)
          ==================================================================== -->
     <div id="system-admin" class="system-module-panel">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
@@ -681,9 +653,9 @@
   <script>
     // دالة رسم شارة التوثيق المسننة الرسمية المفردة
     function getRosetteBadgeSVG(badgeType) {
-      let color = '#FFB800';
-      if (badgeType === 'blue') color = '#29A6FF';
-      if (badgeType === 'gray') color = '#8E8E93';
+      let color = '#FFB800'; // ذهبي
+      if (badgeType === 'blue') color = '#29A6FF'; // أزرق
+      if (badgeType === 'gray') color = '#8E8E93'; // رمادي
       return `
         <svg class="official-badge-svg" viewBox="0 0 24 24">
           <path fill="${color}" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.02-2.9-1.08-3.99s-2.6-1.54-3.99-1.08C14.32 2.28 13.08 1.4 11.65 1.4s-2.67.88-3.34 2.19c-1.39-.46-2.9-.02-3.99 1.08s-1.54 2.6-1.08 3.99C1.88 9.33 1 10.57 1 12s.88 2.67 2.19 3.34c-.46 1.39-.02 2.9 1.08 3.99s2.6 1.54 3.99 1.08c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.02 3.99-1.08s1.54-2.6 1.08-3.99c1.31-.67 2.19-1.91 2.19-3.34z"/>
