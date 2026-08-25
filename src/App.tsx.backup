@@ -45,23 +45,6 @@ export const App: React.FC = () => {
     '/services': { slug: 'services', title: 'الخدمات العامة', icon: 'fa-wrench' },
     '/education': { slug: 'education', title: 'التعليم والجامعات', icon: 'fa-graduation-cap' },
     '/entertainment': { slug: 'entertainment', title: 'السياحة والترفيه', icon: 'fa-umbrella-beach' },
-    '/phones': { slug: 'phones', title: 'سوق الهواتف والإلكترونيات', icon: 'fa-mobile-screen-button' },
-    '/car-market': { slug: 'car-market', title: 'سوق السيارات', icon: 'fa-car-side' },
-    '/real-estate': { slug: 'real-estate', title: 'العقارات', icon: 'fa-city' },
-    '/hospitals': { slug: 'hospitals', title: 'المستشفيات', icon: 'fa-hospital' },
-    '/universities': { slug: 'universities', title: 'الجامعات الخاصة', icon: 'fa-graduation-cap' },
-    '/pharmacies': { slug: 'pharmacies', title: 'الصيدليات', icon: 'fa-pills' },
-    '/car-rental': { slug: 'car-rental', title: 'تأجير السيارات', icon: 'fa-car-on' },
-    '/beauty-salons': { slug: 'beauty-salons', title: 'الكوافير والتجميل', icon: 'fa-spray-can-sparkles' },
-    '/chalets': { slug: 'chalets', title: 'الشاليهات', icon: 'fa-umbrella-beach' },
-    '/steam-baths': { slug: 'steam-baths', title: 'حمامات البخار', icon: 'fa-hot-tub-person' },
-    '/gyms': { slug: 'gyms', title: 'النوادي الرياضية', icon: 'fa-dumbbell' },
-    '/car-auction': { slug: 'car-auction', title: 'حراج السيارات', icon: 'fa-gavel' },
-    '/offices': { slug: 'offices', title: 'المكاتب والخدمات المهنية', icon: 'fa-briefcase' },
-    '/factories': { slug: 'factories', title: 'المصانع', icon: 'fa-industry' },
-    '/establishments': { slug: 'establishments', title: 'المؤسسات', icon: 'fa-sitemap' },
-    '/barbershops': { slug: 'barbershops', title: 'صالونات الحلاقة', icon: 'fa-scissors' },
-    '/schools': { slug: 'schools', title: 'المدارس الخاصة', icon: 'fa-school' },
   };
 
   const renderContent = () => {
