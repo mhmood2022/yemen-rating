@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { businessService } from '../services/businessService';
-import { BusinessEntity } from '../types/database.types';
+import React, { useState } from 'react';
+import { mockBusinesses } from '../services/businessService';
+import { BusinessItem } from '../types/database.types';
 import { BusinessCard } from '../components/business/BusinessCard';
 import { CategoryAdBanner } from '../components/ads/CategoryAdBanner';
-import { ClaimOwnershipModal } from '../components/business/ClaimOwnershipModal';
+import { ComparisonModal } from '../components/business/ComparisonModal';
+import { QuoteModal } from '../components/business/QuoteModal';
 
 interface Props {
   categorySlug: string;
@@ -18,11 +19,12 @@ export const CategoryCollectivePage: React.FC<Props> = ({
   categoryIcon,
   onNavigate,
 }) => {
-  const [businesses, setBusinesses] = useState<BusinessEntity[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedCity, setSelectedCity] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [claimBusiness, setClaimBusiness] = useState<BusinessEntity | null>(null);
+  const [comparedIds, setComparedIds] = useState<string[]>([]);
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
+  const [selectedQuoteBiz, setSelectedQuoteBiz] = useState<BusinessItem | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const cities = [
     { id: 'all', label: 'جميع المحافظات' },
@@ -30,36 +32,43 @@ export const CategoryCollectivePage: React.FC<Props> = ({
     { id: 'عدن', label: 'عدن' },
     { id: 'تعز', label: 'تعز' },
     { id: 'حضرموت', label: 'المكلا / حضرموت' },
-    { id: 'إب', label: 'إب' },
-    { id: 'الحديدة', label: 'الحديدة' },
   ];
 
-  useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      const data = await businessService.getBusinesses({
-        city: selectedCity,
-        search: searchQuery,
-      });
-      setBusinesses(data);
-      setLoading(false);
-    }
-    loadData();
-  }, [categorySlug, selectedCity, searchQuery]);
+  const filteredBusinesses = mockBusinesses.filter(b => {
+    const matchesCategory = categorySlug === 'all' || b.category === categorySlug;
+    const matchesCity = selectedCity === 'all' || b.city.includes(selectedCity);
+    const matchesSearch = !searchQuery || b.name.toLowerCase().includes(searchQuery.toLowerCase()) || b.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesCity && matchesSearch;
+  });
 
-  // تقسيم المنشآت إلى المستويات الثلاثة الإلزامية
-  const tier1Businesses = businesses.filter(b => b.tier_level === 1);
-  const tier2Businesses = businesses.filter(b => b.tier_level === 2);
-  const tier3Businesses = businesses.filter(b => b.tier_level === 3 || !b.tier_level);
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleToggleCompare = (id: string) => {
+    if (comparedIds.includes(id)) {
+      setComparedIds(comparedIds.filter(x => x !== id));
+    } else {
+      if (comparedIds.length >= 3) {
+        showToast('⚠️ الحد الأقصى للمقارنة هو 3 منشآت معاً');
+        return;
+      }
+      setComparedIds([...comparedIds, id]);
+      showToast('✓ تم إضافة المنشأة لجدول المقارنة المباشرة');
+    }
+  };
+
+  const comparedBusinesses = mockBusinesses.filter(b => comparedIds.includes(b.id));
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-[#E6E6E6] font-sans pb-20" dir="rtl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+    <div className="min-h-screen bg-[#08080B] text-[#E6E6E6] font-sans pb-24" dir="rtl">
+      <div className="max-w-6xl mx-auto px-4 pt-6 space-y-6">
         
-        {/* ترويسة التصنيف وزر العودة */}
-        <div className="flex items-center justify-between mb-6">
+        {/* ترويسة التصنيف والعودة */}
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-amber-400/10 border border-amber-400/30 text-amber-400 flex items-center justify-center text-xl">
+            <div className="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/30 text-amber-400 flex items-center justify-center text-xl">
               <i className={`fa-solid ${categoryIcon}`}></i>
             </div>
             <div>
@@ -70,18 +79,18 @@ export const CategoryCollectivePage: React.FC<Props> = ({
 
           <button
             onClick={() => onNavigate('/')}
-            className="px-3.5 py-1.5 rounded-xl bg-[#1A1A1A] border border-[#2A2A2A] text-neutral-300 hover:text-white text-xs font-bold flex items-center gap-1.5 transition"
+            className="px-4 py-2 rounded-xl bg-[#14141C] border border-[#22222E] hover:border-amber-400 text-neutral-300 hover:text-white text-xs font-bold flex items-center gap-2 transition"
           >
-            <i className="fa-solid fa-arrow-left text-xs"></i>
+            <i className="fa-solid fa-house text-amber-400"></i>
             <span>الرئيسية</span>
           </button>
         </div>
 
-        {/* المساحة الإعلانية الكبيرة العلوية */}
+        {/* البانر الإعلاني العلوي للتصنيف */}
         <CategoryAdBanner categoryTitle={categoryTitle} categorySlug={categorySlug} />
 
-        {/* شريط البحث وفلترة المحافظات */}
-        <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-4 mb-8 space-y-3">
+        {/* شريط البحث والفلترة */}
+        <div className="bg-[#14141C] border border-[#22222E] rounded-2xl p-4 space-y-3">
           <div className="relative">
             <i className="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
             <input
@@ -89,7 +98,7 @@ export const CategoryCollectivePage: React.FC<Props> = ({
               placeholder={`بحث داخل ${categoryTitle}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#121217] border border-[#2A2A2A] rounded-xl pr-9 pl-4 py-2.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400 transition"
+              className="w-full bg-[#101017] border border-[#22222E] rounded-xl pr-9 pl-4 py-2.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400 transition"
             />
           </div>
 
@@ -100,8 +109,8 @@ export const CategoryCollectivePage: React.FC<Props> = ({
                 onClick={() => setSelectedCity(city.id)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
                   selectedCity === city.id
-                    ? 'bg-[#FFC107] text-neutral-950 shadow-md'
-                    : 'bg-[#121217] text-neutral-400 hover:text-white border border-[#2A2A2A]'
+                    ? 'bg-[#FFB800] text-black font-black shadow-md'
+                    : 'bg-[#101017] text-neutral-400 hover:text-white border border-[#22222E]'
                 }`}
               >
                 {city.label}
@@ -110,108 +119,58 @@ export const CategoryCollectivePage: React.FC<Props> = ({
           </div>
         </div>
 
-        {loading ? (
-          <div className="text-center py-16 text-neutral-500">
-            <i className="fa-solid fa-spinner fa-spin text-2xl text-amber-400 mb-2"></i>
-            <p className="text-xs font-bold">جاري تحميل بيانات {categoryTitle}...</p>
+        {/* قائمة النتائج */}
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-sm font-black text-white">
+              المنشآت المعتمدة المسجلة ({filteredBusinesses.length})
+            </h2>
+            <span className="text-xs text-amber-400 font-bold">مرتبة حسب: الأفضل تقييماً</span>
           </div>
-        ) : (
-          <div className="space-y-10">
 
-            {/* المستوى الأول: الجهات المميزة والموثقة (Tier 1) */}
-            {tier1Businesses.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-4 pb-2 border-b border-amber-400/20">
-                  <h2 className="text-base font-black text-amber-400 flex items-center gap-2">
-                    <i className="fa-solid fa-crown text-amber-400 text-sm"></i>
-                    <span>الجهات المميزة والموثقة (الأعلى تقييماً)</span>
-                  </h2>
-                  <span className="text-xs text-neutral-400 font-bold">{tier1Businesses.length} منشأة</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {tier1Businesses.map((biz) => (
-                    <BusinessCard
-                      key={biz.id}
-                      business={biz}
-                      onOpenProfile={(slug) => onNavigate(`/businesses/${slug}`)}
-                      onClaimOwnership={(b) => setClaimBusiness(b)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* المستوى الثاني: الجهات الموثقة (Tier 2) */}
-            {tier2Businesses.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#2A2A2A]">
-                  <h2 className="text-base font-black text-white flex items-center gap-2">
-                    <i className="fa-solid fa-certificate text-blue-400 text-sm"></i>
-                    <span>الجهات الموثقة والمعتمدة</span>
-                  </h2>
-                  <span className="text-xs text-neutral-400 font-bold">{tier2Businesses.length} منشأة</span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {tier2Businesses.map((biz) => (
-                    <BusinessCard
-                      key={biz.id}
-                      business={biz}
-                      onOpenProfile={(slug) => onNavigate(`/businesses/${slug}`)}
-                      onClaimOwnership={(b) => setClaimBusiness(b)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* المستوى الثالث: جميع الجهات (Tier 3) */}
-            <div>
-              <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#2A2A2A]">
-                <h2 className="text-base font-black text-neutral-300 flex items-center gap-2">
-                  <i className="fa-solid fa-layer-group text-neutral-400 text-sm"></i>
-                  <span>جميع {categoryTitle} المسجلة في الدليل</span>
-                </h2>
-                <span className="text-xs text-neutral-400 font-bold">{tier3Businesses.length} منشأة</span>
-              </div>
-
-              {tier3Businesses.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {tier3Businesses.map((biz) => (
-                    <BusinessCard
-                      key={biz.id}
-                      business={biz}
-                      onOpenProfile={(slug) => onNavigate(`/businesses/${slug}`)}
-                      onClaimOwnership={(b) => setClaimBusiness(b)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-10 text-neutral-500 bg-[#141418] rounded-2xl border border-[#222]">
-                  <i className="fa-solid fa-folder-open text-2xl mb-2 text-neutral-600"></i>
-                  <p className="text-xs">لا توجد منشآت إضافية مطابقة في هذا الفلتر</p>
-                </div>
-              )}
+          {filteredBusinesses.length > 0 ? (
+            <div className="space-y-4">
+              {filteredBusinesses.map((biz, idx) => (
+                <BusinessCard
+                  key={biz.id}
+                  business={biz}
+                  rank={idx + 1}
+                  onOpenProfile={(b) => onNavigate(`/businesses/${b.slug}`)}
+                  onOpenQuote={(b) => setSelectedQuoteBiz(b)}
+                  onToggleCompare={handleToggleCompare}
+                  isCompared={comparedIds.includes(biz.id)}
+                />
+              ))}
             </div>
-
-          </div>
-        )}
+          ) : (
+            <div className="text-center py-16 text-neutral-500 bg-[#14141C] rounded-2xl border border-[#22222E]">
+              <i className="fa-solid fa-folder-open text-3xl mb-2 text-neutral-600"></i>
+              <p className="text-xs font-bold">لا توجد منشآت مطابقة لهذا التصنيف أو الفلتر حالياً</p>
+            </div>
+          )}
+        </div>
 
       </div>
 
-      {/* نافذة إثبات الملكية */}
-      {claimBusiness && (
-        <ClaimOwnershipModal
-          businessId={claimBusiness.id}
-          businessName={claimBusiness.name}
-          isOpen={!!claimBusiness}
-          onClose={() => setClaimBusiness(null)}
-          onSuccess={() => {
-            alert('تم إرسال طلب إثبات الملكية بنجاح وسيتم مراجعته من الإدارة.');
-            setClaimBusiness(null);
-          }}
-        />
+      {/* النوافذ المنبثقة */}
+      <ComparisonModal
+        businesses={comparedBusinesses}
+        isOpen={isCompareOpen}
+        onClose={() => setIsCompareOpen(false)}
+        onRemove={handleToggleCompare}
+      />
+
+      <QuoteModal
+        business={selectedQuoteBiz}
+        isOpen={!!selectedQuoteBiz}
+        onClose={() => setSelectedQuoteBiz(null)}
+        onSuccess={(author) => showToast(`✅ شكراً ${author}، تم إرسال طلب السعر لإدارة المنشأة بنجاح!`)}
+      />
+
+      {toastMessage && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-amber-400 text-black font-black text-xs px-5 py-2.5 rounded-full shadow-2xl z-50 animate-bounce">
+          {toastMessage}
+        </div>
       )}
     </div>
   );
