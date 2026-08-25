@@ -34,11 +34,11 @@ export const HomePage: React.FC<Props> = ({ onNavigate }) => {
   ];
 
   const cities = [
-    { id: 'all', label: 'كل المدن 📍' },
-    { id: 'صنعاء', label: 'صنعاء' },
-    { id: 'عدن', label: 'عدن' },
-    { id: 'تعز', label: 'تعز' },
-    { id: 'حضرموت', label: 'المكلا / حضرموت' },
+    { id: 'all', label: 'كل المدن', icon: 'fa-location-dot' },
+    { id: 'صنعاء', label: 'صنعاء', icon: 'fa-city' },
+    { id: 'عدن', label: 'عدن', icon: 'fa-city' },
+    { id: 'تعز', label: 'تعز', icon: 'fa-city' },
+    { id: 'حضرموت', label: 'المكلا / حضرموت', icon: 'fa-city' },
   ];
 
   const filteredBusinesses = mockBusinesses.filter(b => {
@@ -58,24 +58,23 @@ export const HomePage: React.FC<Props> = ({ onNavigate }) => {
       setComparedIds(comparedIds.filter(x => x !== id));
     } else {
       if (comparedIds.length >= 3) {
-        showToast('⚠️ الحد الأقصى للمقارنة هو 3 منشآت معاً');
+        showToast('الحد الأقصى للمقارنة هو 3 منشآت معاً');
         return;
       }
       setComparedIds([...comparedIds, id]);
-      showToast('✓ تم إضافة المنشأة لجدول المقارنة المباشرة');
+      showToast('تمت إضافة المنشأة للمقارنة');
     }
   };
 
   const comparedBusinesses = mockBusinesses.filter(b => comparedIds.includes(b.id));
 
-  // حساب محول العملات اللحظي
   const currentRate = calcCurrency === 'USD' ? (ratesMarket === 'aden' ? 1540 : 535) : (ratesMarket === 'aden' ? 410 : 140.5);
   const totalConverted = (calcAmount * currentRate).toLocaleString();
 
   return (
     <div className="min-h-screen bg-[#08080B] text-white font-sans pb-24" dir="rtl">
       
-      {/* 1. هيدر الاستكشاف المزدوج Yelp-Style Search Header */}
+      {/* 1. الهيدر المزدوج من طراز Yelp */}
       <div className="bg-[#0E0E14] border-b border-[#22222E] p-4 md:p-6 sticky top-0 z-40 shadow-xl">
         <div className="max-w-6xl mx-auto space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr_auto] gap-2.5">
@@ -95,9 +94,10 @@ export const HomePage: React.FC<Props> = ({ onNavigate }) => {
                 <button
                   key={c.id}
                   onClick={() => setCityQuery(c.id)}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${cityQuery === c.id ? 'bg-[#FFB800] text-black font-black' : 'bg-[#101017] border border-[#22222E] text-neutral-400 hover:text-white'}`}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition flex items-center gap-1.5 ${cityQuery === c.id ? 'bg-[#FFB800] text-black font-black' : 'bg-[#101017] border border-[#22222E] text-neutral-400 hover:text-white'}`}
                 >
-                  {c.label}
+                  <i className={`fa-solid ${c.icon} text-[10px]`}></i>
+                  <span>{c.label}</span>
                 </button>
               ))}
             </div>
@@ -111,7 +111,6 @@ export const HomePage: React.FC<Props> = ({ onNavigate }) => {
             </button>
           </div>
 
-          {/* فلاتر التصنيفات الأفقية */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
             {categories.map(c => (
               <button
@@ -131,10 +130,9 @@ export const HomePage: React.FC<Props> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* 2. مساحة العرض الرئيسية المتجاوبة بكامل العرض */}
+      {/* 2. مساحة العرض الرئيسية */}
       <div className="max-w-6xl mx-auto px-4 pt-6 grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
         
-        {/* عمود كروت المنشآت والمنافسين */}
         <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-base font-black text-white flex items-center gap-2">
@@ -159,17 +157,15 @@ export const HomePage: React.FC<Props> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* الشريط الجانبي الذكي: المقارنة المباشرة + حاسبة الصرف */}
+        {/* الشريط الجانبي */}
         <div className="space-y-5">
-          
-          {/* صندوق المقارنة المباشرة Side-by-Side */}
           <div className="bg-[#14141C] border border-[#22222E] rounded-2xl p-4 shadow-lg">
             <div className="flex items-center gap-2 text-white font-black text-sm mb-2">
               <i className="fa-solid fa-scale-balanced text-amber-400"></i>
               <span>المقارنة المباشرة بين الأنشطة</span>
             </div>
             <p className="text-xs text-neutral-400 leading-relaxed mb-3">
-              قارن بين المنشآت المتنافسة في التقييمات، الأسعار، مؤشر `YR Score`، والموقع لاختيار الأنسب.
+              قارن بين المنشآت المتنافسة في التقييمات، الأسعار، مؤشر YR Score، والموقع لاختيار الأنسب.
             </p>
 
             <div className="space-y-2 mb-3">
@@ -196,11 +192,10 @@ export const HomePage: React.FC<Props> = ({ onNavigate }) => {
             </button>
           </div>
 
-          {/* حاسبة أسعار الصرف الحية (صنعاء / عدن) */}
           <div className="bg-[#14141C] border border-[#22222E] rounded-2xl p-4 shadow-lg space-y-3">
             <div className="flex justify-between items-center border-b border-[#22222E] pb-2">
               <div className="text-xs font-black text-white flex items-center gap-1.5">
-                <i className="fa-solid fa-calculator text-amber-400"></i>
+                <i className="fa-solid fa-coins text-amber-400"></i>
                 <span>حاسبة أسعار الصرف والذهب</span>
               </div>
               <div className="flex bg-[#101015] p-0.5 rounded-lg text-[10px]">
@@ -222,12 +217,10 @@ export const HomePage: React.FC<Props> = ({ onNavigate }) => {
               <strong className="text-amber-400 font-black text-sm">{totalConverted} ريال يمني</strong>
             </div>
           </div>
-
         </div>
 
       </div>
 
-      {/* النوافذ المنبثقة التفاعلية */}
       <ComparisonModal
         businesses={comparedBusinesses}
         isOpen={isCompareOpen}
@@ -239,7 +232,7 @@ export const HomePage: React.FC<Props> = ({ onNavigate }) => {
         business={selectedQuoteBiz}
         isOpen={!!selectedQuoteBiz}
         onClose={() => setSelectedQuoteBiz(null)}
-        onSuccess={(author) => showToast(`✅ شكراً ${author}، تم إرسال طلب عرض السعر لإدارة المنشأة بنجاح!`)}
+        onSuccess={(author) => showToast(`شكراً ${author}، تم إرسال طلب السعر لإدارة المنشأة بنجاح!`)}
       />
 
       {toastMessage && (

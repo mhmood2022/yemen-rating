@@ -19,11 +19,16 @@ export const PricesPage: React.FC<Props> = ({ onNavigate }) => {
           <i className="fa-solid fa-coins text-amber-400"></i>
           <span>أسعار الصرف وحاسبة التحويل اللحظية</span>
         </h1>
-        <button onClick={() => onNavigate('/')} className="text-xs text-neutral-400 hover:text-white">الرئيسية</button>
+        <button onClick={() => onNavigate('/')} className="text-xs text-neutral-400 hover:text-white">
+          <i className="fa-solid fa-house ml-1"></i> الرئيسية
+        </button>
       </div>
 
       <div className="bg-[#14141C] border border-[#22222E] rounded-2xl p-4 space-y-3">
-        <div className="text-xs font-bold text-amber-400">💱 الحاسبة الفورية</div>
+        <div className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+          <i className="fa-solid fa-calculator"></i>
+          <span>الحاسبة الفورية للتحويل</span>
+        </div>
         <div className="grid grid-cols-3 gap-2">
           <input type="number" value={amount} onChange={e => setAmount(parseFloat(e.target.value) || 0)} className="bg-[#101015] border border-[#22222E] rounded-xl px-3 py-2 text-xs text-white" />
           <select value={currency} onChange={e => setCurrency(e.target.value)} className="bg-[#101015] border border-[#22222E] rounded-xl px-2 py-2 text-xs text-white">
