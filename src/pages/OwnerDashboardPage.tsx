@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { mockBusinesses } from '../services/businessService';
+import React, { useState, useEffect } from 'react';
+import { getBusinesses } from '../services/businessService';
 import { BusinessItem } from '../types/database.types';
 
 interface Props {

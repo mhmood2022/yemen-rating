@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { mockBusinesses } from '../services/businessService';
+import React, { useState, useEffect } from 'react';
+import { getBusinesses } from '../services/businessService';
 import { BusinessItem } from '../types/database.types';
 import { BusinessCard } from '../components/business/BusinessCard';
 import { CategoryAdBanner } from '../components/ads/CategoryAdBanner';
@@ -19,6 +19,9 @@ export const CategoryCollectivePage: React.FC<Props> = ({
   categoryIcon,
   onNavigate,
 }) => {
+  const [businesses, setBusinesses] = useState<BusinessItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => { getBusinesses({ category: categorySlug, limit: 50 }).then(d => { setBusinesses(d); setLoading(false); }); }, [categorySlug]);
   const [selectedCity, setSelectedCity] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [comparedIds, setComparedIds] = useState<string[]>([]);
@@ -34,7 +37,7 @@ export const CategoryCollectivePage: React.FC<Props> = ({
     { id: 'حضرموت', label: 'المكلا / حضرموت' },
   ];
 
-  const filteredBusinesses = mockBusinesses.filter(b => {
+  const filteredBusinesses = businesses.filter(b => {
     const matchesCategory = categorySlug === 'all' || b.category === categorySlug;
     const matchesCity = selectedCity === 'all' || b.city.includes(selectedCity);
     const matchesSearch = !searchQuery || b.name.toLowerCase().includes(searchQuery.toLowerCase()) || b.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -59,7 +62,7 @@ export const CategoryCollectivePage: React.FC<Props> = ({
     }
   };
 
-  const comparedBusinesses = mockBusinesses.filter(b => comparedIds.includes(b.id));
+  const comparedBusinesses = businesses.filter(b => comparedIds.includes(b.id));
 
   return (
     <div className="min-h-screen bg-[#08080B] text-[#E6E6E6] font-sans pb-24" dir="rtl">
