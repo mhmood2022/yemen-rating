@@ -1,62 +1,132 @@
 import React, { useState } from 'react';
-import { BusinessItem } from '../../types/database.types';
+import { YRBusiness } from '../../types/database.types';
+import { sendLeadRequest } from '../../services/businessService';
 
-interface Props {
-  business: BusinessItem | null;
+interface QuoteModalProps {
+  business: YRBusiness;
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (name: string) => void;
 }
 
-export const QuoteModal: React.FC<Props> = ({ business, isOpen, onClose, onSuccess }) => {
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
+export const QuoteModal: React.FC<QuoteModalProps> = ({ business, isOpen, onClose }) => {
   const [service, setService] = useState('');
   const [details, setDetails] = useState('');
+  const [budget, setBudget] = useState('');
+  const [contactMethod, setContactMethod] = useState<'phone' | 'whatsapp' | 'email'>('whatsapp');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  if (!isOpen || !business) return null;
+  if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSuccess(name);
-    onClose();
+    setLoading(true);
+
+    const res = await sendLeadRequest({
+      business_id: business.id,
+      service_requested: service,
+      details,
+      budget_estimation: budget,
+      preferred_contact_method: contactMethod,
+      status: 'pending',
+      created_at: new Date().toISOString()
+    });
+
+    setLoading(false);
+    if (res.success) {
+      setSuccess(true);
+      setTimeout(() => {
+        setSuccess(false);
+        onClose();
+      }, 2000);
+    } else {
+      alert('حدث خطأ أثناء إرسال الطلب، يرجى المحاولة لاحقاً.');
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md font-sans" dir="rtl">
-      <div className="bg-[#14141C] border border-[#2A2A38] w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl p-6 text-white">
-        <div className="flex justify-between items-center pb-4 mb-4 border-b border-[#22222E]">
-          <div className="flex items-center gap-2">
-            <i className="fa-solid fa-file-invoice-dollar text-amber-400 text-lg"></i>
-            <div>
-              <h3 className="text-base font-black text-white">طلب عرض سعر واستفسار مباشر</h3>
-              <p className="text-xs text-amber-400 mt-0.5">{business.name}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-neutral-400 hover:text-white p-1 text-lg">✕</button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <div className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-900 p-6 text-white shadow-2xl dir-rtl">
+        <div className="flex items-center justify-between border-b border-gray-800 pb-4">
+          <h3 className="text-xl font-bold text-yellow-400">طلب عرض سعر - {business.name}</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white">
+            <i className="fa-solid fa-xmark text-xl"></i>
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5">
-          <div>
-            <label className="block text-xs font-bold text-neutral-300 mb-1">اسمك الكريم *</label>
-            <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="مثال: يحيى حمود" className="w-full bg-[#101015] border border-[#2A2A38] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400" />
+        {success ? (
+          <div className="py-8 text-center text-green-400">
+            <i className="fa-solid fa-circle-check mb-2 text-4xl"></i>
+            <p className="text-lg font-semibold">تم إرسال طلبك بنجاح! سيتم التواصل معك قريبًا.</p>
           </div>
-          <div>
-            <label className="block text-xs font-bold text-neutral-300 mb-1">رقم الهاتف للاتصال والواتساب *</label>
-            <input type="tel" required value={phone} onChange={e => setPhone(e.target.value)} placeholder="770123456" className="w-full bg-[#101015] border border-[#2A2A38] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-neutral-300 mb-1">الخدمة المطلوبة *</label>
-            <input type="text" required value={service} onChange={e => setService(e.target.value)} placeholder="مثال: حجز جناح / صيانة / تمويل..." className="w-full bg-[#101015] border border-[#2A2A38] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-neutral-300 mb-1">تفاصيل واستفسارات إضافية *</label>
-            <textarea rows={3} required value={details} onChange={e => setDetails(e.target.value)} placeholder="اكتب تفاصيل طلبك ليقوم المالك بالرد عليك..." className="w-full bg-[#101015] border border-[#2A2A38] rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-400"></textarea>
-          </div>
-          <button type="submit" className="w-full py-3 bg-amber-400 hover:bg-amber-500 text-neutral-950 font-black text-xs rounded-xl shadow-lg shadow-amber-400/20 transition">
-            إرسال طلب السعر لإدارة المنشأة فوراً
-          </button>
-        </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-300">الخدمة المطلوب سعرها</label>
+              <input
+                type="text"
+                required
+                value={service}
+                onChange={(e) => setService(e.target.value)}
+                placeholder="مثال: تركيب نظام كاميرات، صيانة كهربائية..."
+                className="w-full rounded-lg border border-gray-700 bg-gray-800 p-2.5 text-sm text-white focus:border-yellow-400 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-300">تفاصيل الطلب والاحتياجات</label>
+              <textarea
+                required
+                rows={3}
+                value={details}
+                onChange={(e) => setDetails(e.target.value)}
+                placeholder="اشرح المواصفات أو التفاصيل التي تحتاجها..."
+                className="w-full rounded-lg border border-gray-700 bg-gray-800 p-2.5 text-sm text-white focus:border-yellow-400 focus:outline-none"
+              ></textarea>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-300">الميزانية التقديرية (اختياري)</label>
+              <input
+                type="text"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                placeholder="مثال: 500$ - 1000$"
+                className="w-full rounded-lg border border-gray-700 bg-gray-800 p-2.5 text-sm text-white focus:border-yellow-400 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-300">طريقة التواصل المفضلة</label>
+              <select
+                value={contactMethod}
+                onChange={(e) => setContactMethod(e.target.value as any)}
+                className="w-full rounded-lg border border-gray-700 bg-gray-800 p-2.5 text-sm text-white focus:border-yellow-400 focus:outline-none"
+              >
+                <option value="whatsapp">واتساب (مفضل)</option>
+                <option value="phone">اتصال هاتفي</option>
+                <option value="email">البريد الإلكتروني</option>
+              </select>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 rounded-lg bg-yellow-400 py-2.5 font-bold text-black hover:bg-yellow-500 disabled:opacity-50"
+              >
+                {loading ? 'جاري الإرسال...' : 'إرسال الطلب'}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg border border-gray-700 bg-gray-800 px-5 py-2.5 font-medium text-gray-300 hover:bg-gray-700"
+              >
+                إلغاء
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

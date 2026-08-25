@@ -76,3 +76,57 @@ export async function getCategories(): Promise<{ slug: string; name: string; ico
   (cats || []).forEach(c => { idToSlug[c.id] = c.slug; });
   return (cats || []).map(c => ({ slug: c.slug, name: c.name, icon: c.icon || 'fa-building', count: counts[c.id] || 0 }));
 }
+
+// --- خدمات التواصل والـ Leads والإعلانات الجديدة ---
+
+export async function sendLeadRequest(leadData: any) {
+  try {
+    const { data, error } = await supabase.from('yr_leads').insert([leadData]).select();
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err) {
+    console.error('Error sending lead request:', err);
+    return { success: false, error: err };
+  }
+}
+
+export async function sendMessageToBusiness(messageData: any) {
+  try {
+    const { data, error } = await supabase.from('yr_messages').insert([messageData]).select();
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err) {
+    console.error('Error sending message:', err);
+    return { success: false, error: err };
+  }
+}
+
+export async function trackBusinessEvent(businessId: string, eventType: 'view' | 'phone' | 'direction' | 'website') {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const updateField = eventType === 'phone' ? 'phone_clicks' 
+      : eventType === 'direction' ? 'directions_clicks'
+      : eventType === 'website' ? 'website_clicks' : 'views_count';
+
+    const { data, error } = await supabase.rpc('increment_business_metric', {
+      b_id: businessId,
+      metric_field: updateField,
+      p_date: today
+    });
+    return { success: !error };
+  } catch (err) {
+    return { success: false };
+  }
+}
+
+// --- دالة جلب الأنشطة التجارية لـ Local Discovery ---
+export async function fetchBusinesses() {
+  try {
+    const { data, error } = await supabase.from('businesses').select('*');
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error('Error fetching businesses:', err);
+    return [];
+  }
+}
