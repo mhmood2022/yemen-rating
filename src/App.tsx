@@ -3,14 +3,13 @@ import { AuthProvider } from './context/AuthContext';
 import { ModalProvider } from './context/ModalContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AdminProvider } from './context/AdminContext';
-import { AppLayout } from './layouts/AppLayout';
 import { HomePage } from './pages/HomePage';
+import { BusinessProfilePage } from './pages/BusinessProfilePage';
 import { CategoryCollectivePage } from './pages/CategoryCollectivePage';
-import { DirectoryPage } from './pages/DirectoryPage';
+import { OwnerDashboardPage } from './pages/OwnerDashboardPage';
+import { AdminDashboardShell } from './pages/AdminDashboardShell';
 import { JobsPage } from './pages/JobsPage';
 import { PricesPage } from './pages/PricesPage';
-import { TrendPage } from './pages/TrendPage';
-import { MoreMenuPage } from './pages/MoreMenuPage';
 
 export const App: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname + window.location.search);
@@ -45,87 +44,50 @@ export const App: React.FC = () => {
     '/services': { slug: 'services', title: 'الخدمات العامة', icon: 'fa-wrench' },
     '/education': { slug: 'education', title: 'التعليم والجامعات', icon: 'fa-graduation-cap' },
     '/entertainment': { slug: 'entertainment', title: 'السياحة والترفيه', icon: 'fa-umbrella-beach' },
-    '/phones': { slug: 'phones', title: 'سوق الهواتف والإلكترونيات', icon: 'fa-mobile-screen-button' },
-    '/car-market': { slug: 'car-market', title: 'سوق السيارات', icon: 'fa-car-side' },
-    '/real-estate': { slug: 'real-estate', title: 'العقارات', icon: 'fa-city' },
-    '/hospitals': { slug: 'hospitals', title: 'المستشفيات', icon: 'fa-hospital' },
-    '/universities': { slug: 'universities', title: 'الجامعات الخاصة', icon: 'fa-graduation-cap' },
-    '/pharmacies': { slug: 'pharmacies', title: 'الصيدليات', icon: 'fa-pills' },
-    '/car-rental': { slug: 'car-rental', title: 'تأجير السيارات', icon: 'fa-car-on' },
-    '/beauty-salons': { slug: 'beauty-salons', title: 'الكوافير والتجميل', icon: 'fa-spray-can-sparkles' },
-    '/chalets': { slug: 'chalets', title: 'الشاليهات', icon: 'fa-umbrella-beach' },
-    '/steam-baths': { slug: 'steam-baths', title: 'حمامات البخار', icon: 'fa-hot-tub-person' },
-    '/gyms': { slug: 'gyms', title: 'النوادي الرياضية', icon: 'fa-dumbbell' },
-    '/car-auction': { slug: 'car-auction', title: 'حراج السيارات', icon: 'fa-gavel' },
-    '/offices': { slug: 'offices', title: 'المكاتب والخدمات المهنية', icon: 'fa-briefcase' },
-    '/factories': { slug: 'factories', title: 'المصانع', icon: 'fa-industry' },
-    '/establishments': { slug: 'establishments', title: 'المؤسسات', icon: 'fa-sitemap' },
-    '/barbershops': { slug: 'barbershops', title: 'صالونات الحلاقة', icon: 'fa-scissors' },
-    '/schools': { slug: 'schools', title: 'المدارس الخاصة', icon: 'fa-school' },
   };
 
   const renderContent = () => {
-    // 1. التوجيه للصفحات الجماعية للتصنيفات
+    // 1. لوحة تحكم الإدارة المركزية
+    if (pathname.startsWith('/admin')) {
+      return <AdminDashboardShell onNavigate={navigate} />;
+    }
+
+    // 2. لوحة مالك النشاط
+    if (pathname.startsWith('/owner')) {
+      return <OwnerDashboardPage onNavigate={navigate} />;
+    }
+
+    // 3. بوابة الوظائف
+    if (pathname === '/jobs') {
+      return <JobsPage onNavigate={navigate} />;
+    }
+
+    // 4. أسعار الصرف
+    if (pathname === '/prices') {
+      return <PricesPage onNavigate={navigate} />;
+    }
+
+    // 5. بروفايل المنشأة المخصص
+    if (pathname.startsWith('/businesses/') || pathname.startsWith('/business/')) {
+      const slug = pathname.replace('/businesses/', '').replace('/business/', '');
+      return <BusinessProfilePage slug={slug} onNavigate={navigate} />;
+    }
+
+    // 6. صفحات التصنيفات الجماعية
     if (categoryMap[pathname]) {
       const cat = categoryMap[pathname];
       return (
-        <AppLayout onNavigate={navigate}>
-          <CategoryCollectivePage
-            categorySlug={cat.slug}
-            categoryTitle={cat.title}
-            categoryIcon={cat.icon}
-            onNavigate={navigate}
-          />
-        </AppLayout>
-      );
-    }
-
-    if (pathname === '/directory') {
-      return (
-        <AppLayout onNavigate={navigate}>
-          <DirectoryPage onNavigate={navigate} />
-        </AppLayout>
-      );
-    }
-
-    if (pathname === '/jobs') {
-      return (
-        <AppLayout onNavigate={navigate}>
-          <JobsPage onNavigate={navigate} />
-        </AppLayout>
-      );
-    }
-
-    if (pathname === '/prices') {
-      return (
-        <AppLayout onNavigate={navigate}>
-          <PricesPage onNavigate={navigate} />
-        </AppLayout>
-      );
-    }
-
-    if (pathname === '/trend') {
-      return (
-        <AppLayout onNavigate={navigate}>
-          <TrendPage onNavigate={navigate} />
-        </AppLayout>
-      );
-    }
-
-    if (pathname === '/more') {
-      return (
-        <AppLayout onNavigate={navigate}>
-          <MoreMenuPage onNavigate={navigate} />
-        </AppLayout>
+        <CategoryCollectivePage
+          categorySlug={cat.slug}
+          categoryTitle={cat.title}
+          categoryIcon={cat.icon}
+          onNavigate={navigate}
+        />
       );
     }
 
     // الصفحة الرئيسية الافتراضية
-    return (
-      <AppLayout onNavigate={navigate}>
-        <HomePage onNavigate={navigate} />
-      </AppLayout>
-    );
+    return <HomePage onNavigate={navigate} />;
   };
 
   return (
