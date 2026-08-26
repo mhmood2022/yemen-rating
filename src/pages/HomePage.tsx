@@ -41,7 +41,32 @@ export const HomePage: React.FC = () => {
     { id: 'health', name: 'الصحة' }
   ];
 
-  const cities = ['الكل', 'صنعاء', 'عدن', 'تعز', 'الحديدة', 'المكلا'];
+  // جميع المحافظات اليمنية الـ 22
+  const cities = [
+    'الكل',
+    'أمانة العاصمة (صنعاء)',
+    'صنعاء',
+    'عدن',
+    'تعز',
+    'الحديدة',
+    'إب',
+    'حضرموت (المكلا)',
+    'ذمار',
+    'حجة',
+    'عمران',
+    'صعدة',
+    'البيضاء',
+    'لحج',
+    'أبين',
+    'شبوة',
+    'المهرة',
+    'سقطرى',
+    'مأرب',
+    'الجوف',
+    'الضالع',
+    'محويت',
+    'ريمة'
+  ];
 
   const isCompared = (id: string) => selectedBusinesses?.some((item) => item.id === id);
 
@@ -54,7 +79,7 @@ export const HomePage: React.FC = () => {
           دليل الأنشطة التجارية في اليمن
         </h1>
         <p className="text-gray-400 text-sm md:text-base">
-          ابحث وقارن بين أفضل الشركات، المطاعم، والمؤسسات اليمنية
+          ابحث وقارن بين أفضل الشركات، المطاعم، والمؤسسات في كافة المحافظات اليمنية
         </p>
       </header>
 
@@ -78,9 +103,9 @@ export const HomePage: React.FC = () => {
             <select
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-[#0D0D12] border border-[#2A2A2A] text-white focus:outline-none focus:border-amber-400 transition"
+              className="w-full px-4 py-3 rounded-xl bg-[#0D0D12] border border-[#2A2A2A] text-white focus:outline-none focus:border-amber-400 transition cursor-pointer"
             >
-              <option value="الكل">جميع المدن</option>
+              <option value="الكل">جميع المحافظات (22)</option>
               {cities.filter(c => c !== 'الكل').map(city => (
                 <option key={city} value={city}>{city}</option>
               ))}
@@ -124,8 +149,8 @@ export const HomePage: React.FC = () => {
         {filteredBusinesses.length === 0 ? (
           <div className="col-span-full text-center py-16 text-gray-500">
             <i className="fa-solid fa-building-circle-exclamation text-4xl mb-3 text-amber-400"></i>
-            <p className="font-bold text-lg">لم يتم العثور على أنشطة مطابقة للبحث</p>
-            <p className="text-xs text-gray-600 mt-1">جرب البحث بكلمات أخرى أو تغيير الفلتر.</p>
+            <p className="font-bold text-lg">لم يتم العثور على أنشطة مطابقة للبحث في هذه المحافظة</p>
+            <p className="text-xs text-gray-600 mt-1">جرب اختيار محافظة أخرى أو تعديل كلمة البحث.</p>
           </div>
         ) : (
           filteredBusinesses.map((b) => (
