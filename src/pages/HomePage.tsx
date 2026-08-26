@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { YRBusiness } from '../types/database.types';
 import { fetchBusinesses } from '../services/businessService';
 import { useComparison } from '../context/ComparisonContext';
@@ -10,6 +10,9 @@ export const HomePage: React.FC = () => {
   const [selectedCity, setSelectedCity] = useState('الكل');
   const [selectedCategory, setSelectedCategory] = useState('الكل');
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { addToCompare, removeFromCompare, selectedBusinesses } = useComparison() || {
     addToCompare: () => {},
@@ -19,6 +22,17 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     fetchBusinesses().then((data) => setBusinesses(data || []));
+  }, []);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsCityDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Filter Logic
@@ -34,14 +48,13 @@ export const HomePage: React.FC = () => {
   const categories = [
     { id: 'الكل', name: 'جميع الأقسام', icon: 'fa-solid fa-border-all' },
     { id: 'companies', name: 'الشركات', icon: 'fa-solid fa-building' },
-    { id: 'banks', name: 'البنوك', icon: 'fa-solid fa-[#2A2A2A] fa-building-columns' },
+    { id: 'banks', name: 'البنوك', icon: 'fa-solid fa-building-columns' },
     { id: 'restaurants', name: 'المطاعم', icon: 'fa-solid fa-utensils' },
     { id: 'exchanges', name: 'الصرافة', icon: 'fa-solid fa-money-bill-transfer' },
     { id: 'hotels', name: 'الفنادق', icon: 'fa-solid fa-hotel' },
     { id: 'health', name: 'الصحة', icon: 'fa-solid fa-heart-pulse' }
   ];
 
-  // جميع المحافظات اليمنية الـ 22
   const cities = [
     'الكل',
     'أمانة العاصمة (صنعاء)',
@@ -91,7 +104,7 @@ export const HomePage: React.FC = () => {
       {/* Controls Section: Search & Filters */}
       <div className="max-w-6xl mx-auto mb-8 bg-[#14141C] border border-[#2A2A2A] p-4 md:p-6 rounded-2xl shadow-xl space-y-4">
         
-        {/* Search & City Input */}
+        {/* Search & Custom City Dropdown */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2 relative">
             <i className="fa-solid fa-magnifying-glass absolute right-4 top-3.5 text-amber-400 text-lg"></i>
@@ -104,25 +117,46 @@ export const HomePage: React.FC = () => {
             />
           </div>
 
-          <div className="relative">
-            <select
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className={`w-full px-4 py-3 rounded-xl font-bold transition cursor-pointer border ${
+          {/* Custom City Selector */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
+              className={`w-full px-4 py-3 rounded-xl font-bold transition flex items-center justify-between border ${
                 selectedCity !== 'الكل'
                   ? 'bg-amber-400 text-black border-amber-400 shadow-lg shadow-amber-400/20'
-                  : 'bg-[#0D0D12] text-amber-400 border-[#2A2A2A] focus:border-amber-400'
+                  : 'bg-[#0D0D12] text-amber-400 border-[#2A2A2A] hover:border-amber-400'
               }`}
             >
-              <option value="الكل" className="bg-[#14141C] text-white font-normal">
-                جميع المحافظات (22)
-              </option>
-              {cities.filter(c => c !== 'الكل').map(city => (
-                <option key={city} value={city} className="bg-[#14141C] text-white font-normal">
-                  {city}
-                </option>
-              ))}
-            </select>
+              <span className="flex items-center gap-2 truncate">
+                <i className="fa-solid fa-location-dot"></i>
+                {selectedCity === 'الكل' ? 'جميع المحافظات (22)' : selectedCity}
+              </span>
+              <i className={`fa-solid fa-chevron-down text-xs transition-transform duration-300 ${isCityDropdownOpen ? 'rotate-180' : ''}`}></i>
+            </button>
+
+            {/* Custom Dropdown List */}
+            {isCityDropdownOpen && (
+              <div className="absolute top-full right-0 left-0 mt-2 z-50 max-h-60 overflow-y-auto rounded-xl bg-[#14141C] border border-amber-400/40 shadow-2xl p-1.5 space-y-1">
+                {cities.map((city) => (
+                  <button
+                    key={city}
+                    onClick={() => {
+                      setSelectedCity(city);
+                      setIsCityDropdownOpen(false);
+                    }}
+                    className={`w-full text-right px-3 py-2 rounded-lg text-sm font-bold transition flex items-center justify-between ${
+                      selectedCity === city
+                        ? 'bg-amber-400 text-black font-black'
+                        : 'text-amber-400 hover:bg-amber-400/10 hover:text-white'
+                    }`}
+                  >
+                    <span>{city === 'الكل' ? '📍 جميع المحافظات (22)' : city}</span>
+                    {selectedCity === city && <i className="fa-solid fa-check text-xs"></i>}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -135,7 +169,7 @@ export const HomePage: React.FC = () => {
               className={`px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold whitespace-nowrap transition-all duration-300 flex items-center gap-2 ${
                 selectedCategory === cat.id
                   ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20 scale-105 border border-amber-400'
-                  : 'bg-[#0D0D12] text-gray-300 border border-[#2A2A2A] hover:border-amber-400/60 hover:text-amber-400'
+                  : 'bg-[#0D0D12] text-amber-400 border border-[#2A2A2A] hover:border-amber-400/60 hover:bg-amber-400/10'
               }`}
             >
               <i className={cat.icon}></i>
