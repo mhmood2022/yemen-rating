@@ -33,9 +33,9 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
     const fullStars = Math.floor(rating);
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
-        stars.push(<i key={i} className="fa-solid fa-star text-amber-400 text-[11px]"></i>);
+        stars.push(<i key={i} className="fa-solid fa-star text-amber-400 text-xs"></i>);
       } else {
-        stars.push(<i key={i} className="fa-regular fa-star text-gray-600 text-[11px]"></i>);
+        stars.push(<i key={i} className="fa-regular fa-star text-gray-600 text-xs"></i>);
       }
     }
     return stars;
@@ -91,46 +91,52 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
           </div>
         </div>
 
-        {/* Unified Single Card Header */}
-        <div className="bg-[#111118] border border-white/10 rounded-2xl p-5 shadow-2xl space-y-4">
+        {/* Unified Single Card Header (X / Twitter Style Layout) */}
+        <div className="bg-[#111118] border border-white/10 rounded-2xl p-4 shadow-2xl space-y-4">
           
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
             
-            {/* Right Side: Name, Badge & Stars */}
-            <div className="space-y-2 flex-1">
-              <h1 className="text-base md:text-xl font-bold text-white flex items-center gap-1.5 flex-wrap">
-                <span>{business.name}</span>
-                <VerifiedBadge type="gold" size={18} />
-              </h1>
+            {/* Top Right Logo (No Yellow Stroke) */}
+            <div className="w-16 h-16 rounded-xl bg-[#09090D] overflow-hidden shrink-0 shadow-md border border-white/5">
+              <img src={business.cover_url} alt={business.name} className="w-full h-full object-cover" />
+            </div>
 
-              <div className="flex items-center gap-3 flex-wrap text-xs text-gray-300">
-                {/* Rating Box */}
-                <div className="flex items-center gap-1.5 bg-[#09090D] border border-white/10 px-2.5 py-1 rounded-lg">
-                  <div className="flex items-center gap-0.5">{renderStars(business.rating)}</div>
-                  <span className="text-amber-400 font-bold text-xs">{business.rating}</span>
-                  <span className="text-gray-400 text-[10px]">(48 تقييم)</span>
+            {/* Name, Verified Badge & Stars Rating */}
+            <div className="space-y-1.5 flex-1 pt-0.5">
+              
+              {/* Name + Badge (X Style) */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h1 className="text-sm md:text-base font-bold text-white tracking-wide">
+                  {business.name}
+                </h1>
+                <VerifiedBadge type="gold" size={16} />
+              </div>
+
+              {/* Gold Stars & Status Row */}
+              <div className="flex items-center gap-2.5 flex-wrap pt-0.5">
+                
+                {/* Visible 5 Gold Stars Rating */}
+                <div className="flex items-center gap-1 bg-[#09090D] border border-white/10 px-2 py-0.5 rounded-lg">
+                  <div className="flex items-center gap-0.5">
+                    {renderStars(business.rating)}
+                  </div>
+                  <span className="text-amber-400 font-bold text-xs mr-1">{business.rating}</span>
+                  <span className="text-gray-400 text-[10px]">(48)</span>
                 </div>
 
-                <span className="flex items-center gap-1 text-gray-400 text-xs">
-                  <i className="fa-solid fa-location-dot text-amber-400"></i>
-                  {business.city}
-                </span>
-
-                <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md text-[11px] flex items-center gap-1">
+                {/* Status Badge */}
+                <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-md text-[10px] flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                   مفتوح الآن
                 </span>
-              </div>
-            </div>
 
-            {/* Left Side: Avatar Photo */}
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl border-2 border-amber-400 bg-[#09090D] p-1 overflow-hidden shrink-0 shadow-lg">
-              <img src={business.cover_url} alt={business.name} className="w-full h-full object-cover rounded-xl" />
+              </div>
+
             </div>
 
           </div>
 
-          {/* Action Buttons inside the same unified block */}
+          {/* Action Buttons */}
           <div className="flex items-center gap-3 pt-2 border-t border-white/5">
             {business.whatsapp && (
               <a
@@ -244,10 +250,6 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
               <h3 className="text-xs font-bold text-amber-400 border-b border-white/5 pb-2.5 flex items-center gap-2">
                 <i className="fa-solid fa-address-card"></i> معلومات التواصل
               </h3>
-              <p className="text-xs text-gray-300 flex items-center gap-2">
-                <i className="fa-solid fa-location-dot text-amber-400"></i>
-                {business.city} - الشارع الرئيسي
-              </p>
               <p className="text-xs text-emerald-400 flex items-center gap-2">
                 <i className="fa-solid fa-clock"></i> 08:00 صباحاً - 09:00 مساءً
               </p>
