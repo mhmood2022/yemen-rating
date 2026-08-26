@@ -32,13 +32,13 @@ export const HomePage: React.FC = () => {
   });
 
   const categories = [
-    { id: 'الكل', name: 'جميع الأقسام' },
-    { id: 'companies', name: 'الشركات' },
-    { id: 'banks', name: 'البنوك' },
-    { id: 'restaurants', name: 'المطاعم' },
-    { id: 'exchanges', name: 'الصرافة' },
-    { id: 'hotels', name: 'الفنادق' },
-    { id: 'health', name: 'الصحة' }
+    { id: 'الكل', name: 'جميع الأقسام', icon: 'fa-solid fa-border-all' },
+    { id: 'companies', name: 'الشركات', icon: 'fa-solid fa-building' },
+    { id: 'banks', name: 'البنوك', icon: 'fa-solid fa-[#2A2A2A] fa-building-columns' },
+    { id: 'restaurants', name: 'المطاعم', icon: 'fa-solid fa-utensils' },
+    { id: 'exchanges', name: 'الصرافة', icon: 'fa-solid fa-money-bill-transfer' },
+    { id: 'hotels', name: 'الفنادق', icon: 'fa-solid fa-hotel' },
+    { id: 'health', name: 'الصحة', icon: 'fa-solid fa-heart-pulse' }
   ];
 
   // جميع المحافظات اليمنية الـ 22
@@ -75,7 +75,12 @@ export const HomePage: React.FC = () => {
       
       {/* Header & Title */}
       <header className="max-w-6xl mx-auto mb-8 text-center">
-        <h1 className="text-3xl md:text-5xl font-black mb-3 text-amber-400">
+        <div className="inline-flex items-center gap-2 bg-amber-400/10 border border-amber-400/30 px-4 py-1.5 rounded-full text-amber-400 font-bold text-xs mb-4">
+          <i className="fa-solid fa-icons"></i>
+          دليل يمن ريتينغ التفاعلي
+        </div>
+        <h1 className="text-3xl md:text-5xl font-black mb-3 text-amber-400 flex items-center justify-center gap-3">
+          <i className="fa-solid fa-store text-2xl md:text-4xl"></i>
           دليل الأنشطة التجارية في اليمن
         </h1>
         <p className="text-gray-400 text-sm md:text-base">
@@ -89,7 +94,7 @@ export const HomePage: React.FC = () => {
         {/* Search & City Input */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2 relative">
-            <i className="fa-solid fa-magnifying-glass absolute right-4 top-3.5 text-amber-400"></i>
+            <i className="fa-solid fa-magnifying-glass absolute right-4 top-3.5 text-amber-400 text-lg"></i>
             <input
               type="text"
               placeholder="ابحث باسم النشاط التجاري أو الخدمة..."
@@ -99,7 +104,7 @@ export const HomePage: React.FC = () => {
             />
           </div>
 
-          <div>
+          <div className="relative">
             <select
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
@@ -110,7 +115,7 @@ export const HomePage: React.FC = () => {
               }`}
             >
               <option value="الكل" className="bg-[#14141C] text-white font-normal">
-                📍 جميع المحافظات (22)
+                جميع المحافظات (22)
               </option>
               {cities.filter(c => c !== 'الكل').map(city => (
                 <option key={city} value={city} className="bg-[#14141C] text-white font-normal">
@@ -121,18 +126,19 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Category Chips */}
+        {/* Category Chips with Icons */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-2 scrollbar-none">
           {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold whitespace-nowrap transition-all duration-300 ${
+              className={`px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold whitespace-nowrap transition-all duration-300 flex items-center gap-2 ${
                 selectedCategory === cat.id
                   ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20 scale-105 border border-amber-400'
                   : 'bg-[#0D0D12] text-gray-300 border border-[#2A2A2A] hover:border-amber-400/60 hover:text-amber-400'
               }`}
             >
+              <i className={cat.icon}></i>
               {cat.name}
             </button>
           ))}
@@ -146,7 +152,7 @@ export const HomePage: React.FC = () => {
             onClick={() => setIsCompareModalOpen(true)}
             className="flex items-center gap-2 bg-amber-400 text-black px-5 py-3 rounded-2xl font-bold shadow-2xl hover:bg-amber-300 transition transform hover:scale-105"
           >
-            <i className="fa-solid fa-code-compare"></i>
+            <i className="fa-solid fa-code-compare text-lg"></i>
             عرض المقارنة ({selectedBusinesses.length})
           </button>
         </div>
@@ -156,7 +162,7 @@ export const HomePage: React.FC = () => {
       <main className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredBusinesses.length === 0 ? (
           <div className="col-span-full text-center py-16 text-gray-500 bg-[#14141C] border border-[#2A2A2A] rounded-2xl">
-            <i className="fa-solid fa-building-circle-exclamation text-4xl mb-3 text-amber-400"></i>
+            <i className="fa-solid fa-building-circle-exclamation text-5xl mb-3 text-amber-400"></i>
             <p className="font-bold text-lg text-white">لم يتم العثور على أنشطة مطابقة</p>
             <p className="text-xs text-gray-400 mt-1">جرب اختيار محافظة أخرى أو تصفح أقسام مختلفة.</p>
           </div>
@@ -173,14 +179,18 @@ export const HomePage: React.FC = () => {
                     alt={b.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                   />
-                  <span className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-amber-400 text-xs px-3 py-1 rounded-full border border-amber-400/30 font-bold">
+                  <span className="absolute top-3 right-3 bg-black/70 backdrop-blur-md text-amber-400 text-xs px-3 py-1 rounded-full border border-amber-400/30 font-bold flex items-center gap-1.5">
+                    <i className="fa-solid fa-layer-group text-[10px]"></i>
                     {b.category_name}
                   </span>
                 </div>
 
                 <div className="p-5">
                   <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-bold text-lg text-white">{b.name}</h3>
+                    <h3 className="font-bold text-lg text-white flex items-center gap-2">
+                      <i className="fa-solid fa-circle-check text-amber-400 text-sm"></i>
+                      {b.name}
+                    </h3>
                     <span className="flex items-center gap-1 text-xs bg-amber-400/10 text-amber-400 px-2 py-1 rounded-lg border border-amber-400/20 font-bold">
                       <i className="fa-solid fa-star text-[10px]"></i>
                       {b.rating}
@@ -217,9 +227,9 @@ export const HomePage: React.FC = () => {
                     href={`https://wa.me/${b.whatsapp}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-[#25D366] hover:opacity-90 transition flex items-center gap-1"
+                    className="px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-[#25D366] hover:opacity-90 transition flex items-center gap-1.5"
                   >
-                    <i className="fa-brands fa-whatsapp"></i>
+                    <i className="fa-brands fa-whatsapp text-sm"></i>
                   </a>
                 )}
               </div>
