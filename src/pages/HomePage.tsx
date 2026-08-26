@@ -32,7 +32,7 @@ export const HomePage: React.FC = () => {
   });
 
   const categories = [
-    { id: 'الكل', name: 'الكل' },
+    { id: 'الكل', name: 'جميع الأقسام' },
     { id: 'companies', name: 'الشركات' },
     { id: 'banks', name: 'البنوك' },
     { id: 'restaurants', name: 'المطاعم' },
@@ -89,7 +89,7 @@ export const HomePage: React.FC = () => {
         {/* Search & City Input */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2 relative">
-            <i className="fa-solid fa-magnifying-glass absolute right-4 top-3.5 text-gray-500"></i>
+            <i className="fa-solid fa-magnifying-glass absolute right-4 top-3.5 text-amber-400"></i>
             <input
               type="text"
               placeholder="ابحث باسم النشاط التجاري أو الخدمة..."
@@ -103,11 +103,19 @@ export const HomePage: React.FC = () => {
             <select
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-[#0D0D12] border border-[#2A2A2A] text-white focus:outline-none focus:border-amber-400 transition cursor-pointer"
+              className={`w-full px-4 py-3 rounded-xl font-bold transition cursor-pointer border ${
+                selectedCity !== 'الكل'
+                  ? 'bg-amber-400 text-black border-amber-400 shadow-lg shadow-amber-400/20'
+                  : 'bg-[#0D0D12] text-amber-400 border-[#2A2A2A] focus:border-amber-400'
+              }`}
             >
-              <option value="الكل">جميع المحافظات (22)</option>
+              <option value="الكل" className="bg-[#14141C] text-white font-normal">
+                📍 جميع المحافظات (22)
+              </option>
               {cities.filter(c => c !== 'الكل').map(city => (
-                <option key={city} value={city}>{city}</option>
+                <option key={city} value={city} className="bg-[#14141C] text-white font-normal">
+                  {city}
+                </option>
               ))}
             </select>
           </div>
@@ -119,10 +127,10 @@ export const HomePage: React.FC = () => {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2 rounded-xl text-xs md:text-sm font-bold whitespace-nowrap transition ${
+              className={`px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold whitespace-nowrap transition-all duration-300 ${
                 selectedCategory === cat.id
-                  ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
-                  : 'bg-[#0D0D12] text-gray-400 border border-[#2A2A2A] hover:border-amber-400/50'
+                  ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20 scale-105 border border-amber-400'
+                  : 'bg-[#0D0D12] text-gray-300 border border-[#2A2A2A] hover:border-amber-400/60 hover:text-amber-400'
               }`}
             >
               {cat.name}
@@ -136,7 +144,7 @@ export const HomePage: React.FC = () => {
         <div className="fixed bottom-6 left-6 z-40">
           <button
             onClick={() => setIsCompareModalOpen(true)}
-            className="flex items-center gap-2 bg-amber-400 text-black px-5 py-3 rounded-2xl font-bold shadow-2xl hover:bg-amber-300 transition"
+            className="flex items-center gap-2 bg-amber-400 text-black px-5 py-3 rounded-2xl font-bold shadow-2xl hover:bg-amber-300 transition transform hover:scale-105"
           >
             <i className="fa-solid fa-code-compare"></i>
             عرض المقارنة ({selectedBusinesses.length})
@@ -147,10 +155,10 @@ export const HomePage: React.FC = () => {
       {/* Businesses Grid */}
       <main className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredBusinesses.length === 0 ? (
-          <div className="col-span-full text-center py-16 text-gray-500">
+          <div className="col-span-full text-center py-16 text-gray-500 bg-[#14141C] border border-[#2A2A2A] rounded-2xl">
             <i className="fa-solid fa-building-circle-exclamation text-4xl mb-3 text-amber-400"></i>
-            <p className="font-bold text-lg">لم يتم العثور على أنشطة مطابقة للبحث في هذه المحافظة</p>
-            <p className="text-xs text-gray-600 mt-1">جرب اختيار محافظة أخرى أو تعديل كلمة البحث.</p>
+            <p className="font-bold text-lg text-white">لم يتم العثور على أنشطة مطابقة</p>
+            <p className="text-xs text-gray-400 mt-1">جرب اختيار محافظة أخرى أو تصفح أقسام مختلفة.</p>
           </div>
         ) : (
           filteredBusinesses.map((b) => (
@@ -183,9 +191,9 @@ export const HomePage: React.FC = () => {
                     {b.description}
                   </p>
 
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
                     <i className="fa-solid fa-location-dot text-amber-400"></i>
-                    <span>{b.city}</span>
+                    <span className="font-medium text-white">{b.city}</span>
                   </div>
                 </div>
               </div>
