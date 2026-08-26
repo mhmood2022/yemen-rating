@@ -14,6 +14,7 @@ interface HomePageProps {
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const [businesses, setBusinesses] = useState<YRBusiness[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
 
@@ -22,17 +23,24 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
   const [activeQuoteBusiness, setActiveQuoteBusiness] = useState<YRBusiness | null>(null);
   const [activeMsgBusiness, setActiveMsgBusiness] = useState<YRBusiness | null>(null);
 
-  const { addToCompare, selectedBusinesses, setIsCompareOpen, isCompareOpen } = useComparison();
+  const { addToCompare, selectedBusinesses = [], setIsCompareOpen, isCompareOpen } = useComparison() || {};
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
-    setLoading(true);
-    const data = await fetchBusinesses();
-    setBusinesses(data || []);
-    setLoading(false);
+    try {
+      setLoading(true);
+      setErrorMsg(null);
+      const data = await fetchBusinesses();
+      setBusinesses(data || []);
+    } catch (err: any) {
+      console.error('Error loading businesses:', err);
+      setErrorMsg(err?.message || 'تعذر الاتصال بقاعدة البيانات');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const categories = [
@@ -46,9 +54,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
     { title: 'السيارات والنقل', icon: 'fa-car', path: '/transport' },
   ];
 
-  const filtered = businesses.filter((b) => {
-    const matchesSearch = b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (b.services && b.services.some(s => s.toLowerCase().includes(searchTerm.toLowerCase())));
+  const filtered = (businesses || []).filter((b) => {
+    const matchesSearch = (b.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ((b.services || [])).some(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCity = !selectedCity || b.city === selectedCity;
     return matchesSearch && matchesCity;
   });
@@ -92,7 +100,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
             {selectedBusinesses.length > 0 && (
               <button
-                onClick={() => setIsCompareOpen(true)}
+                onClick={() => setIsCompareOpen?.(true)}
                 className="px-3.5 py-2.5 rounded-xl font-bold text-xs sm:text-sm border flex items-center gap-2 transition"
                 style={{ backgroundColor: '#14141C', borderColor: '#FFC107', color: '#FFC107' }}
               >
@@ -192,10 +200,24 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               <i className="fa-solid fa-spinner fa-spin text-3xl mb-3" style={{ color: '#FFC107' }}></i>
               <p className="text-sm">جاري تحميل الأنشطة...</p>
             </div>
+          ) : errorMsg ? (
+            <div className="text-center py-16 rounded-2xl border border-red-500/30 bg-red-500/10">
+              <i className="fa-solid fa-triangle-exclamation text-4xl mb-3 text-red-400"></i>
+              <p className="text-red-300 font-bold mb-2">عذراً، حدث خطأ في جلب البيانات.</p>
+              <p className="text-xs text-gray-400 mb-4">{errorMsg}</p>
+              <button
+                onClick={loadData}
+                className="px-5 py-2.5 rounded-xl font-bold text-sm text-black inline-flex items-center gap-2"
+                style={{ backgroundColor: '#FFC107' }}
+              >
+                <i className="fa-solid fa-rotate-right"></i>
+                <span>إعادة المحاولة</span>
+              </button>
+            </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-16 rounded-2xl border" style={{ backgroundColor: '#14141C', borderColor: '#2A2A2A' }}>
               <i className="fa-solid fa-folder-open text-4xl mb-3" style={{ color: '#A1A1AA' }}></i>
-              <p className="text-gray-300 font-bold mb-4">لم يتم العثور على أنشطة تجارية لهذه الخيارات.</p>
+              <p className="text-gray-300 font-bold mb-4">لم يتم العثور على أنشطة تجارية مطابقة.</p>
               <button
                 onClick={() => setIsAddOpen(true)}
                 className="px-5 py-2.5 rounded-xl font-bold text-sm text-black inline-flex items-center gap-2"
@@ -208,7 +230,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filtered.map((item) => {
-                const isComparing = selectedBusinesses.some((b) => b.id === item.id);
+                const isComparing = (selectedBusinesses || []).some((b) => b.id === item.id);
                 return (
                   <div
                     key={item.id}
@@ -271,7 +293,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                       </div>
 
                       <button
-                        onClick={() => addToCompare(item)}
+                        onClick={() => addToCompare?.(item)}
                         disabled={isComparing}
                         className="w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border transition"
                         style={{
@@ -317,7 +339,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
       <ComparisonModal
         isOpen={isCompareOpen}
-        onClose={() => setIsCompareOpen(false)}
+        onClose={() => setIsCompareOpen?.(false)}
       />
     </div>
   );
