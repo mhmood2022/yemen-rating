@@ -3,6 +3,8 @@ import { AuthProvider } from './context/AuthContext';
 import { ModalProvider } from './context/ModalContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AdminProvider } from './context/AdminContext';
+import { ComparisonProvider } from './context/ComparisonContext';
+
 import { HomePage } from './pages/HomePage';
 import { BusinessProfilePage } from './pages/BusinessProfilePage';
 import { CategoryCollectivePage } from './pages/CategoryCollectivePage';
@@ -44,6 +46,7 @@ export const App: React.FC = () => {
     '/services': { slug: 'services', title: 'الخدمات العامة', icon: 'fa-wrench' },
     '/education': { slug: 'education', title: 'التعليم والجامعات', icon: 'fa-graduation-cap' },
     '/entertainment': { slug: 'entertainment', title: 'السياحة والترفيه', icon: 'fa-umbrella-beach' },
+    '/discovery': { slug: 'all', title: 'جميع الأنشطة المحلية', icon: 'fa-compass' },
   };
 
   const renderContent = () => {
@@ -52,7 +55,7 @@ export const App: React.FC = () => {
       return <AdminDashboardShell onNavigate={navigate} />;
     }
 
-    // 2. لوحة مالك النشاط
+    // 2. لوحة مالك النشاط (تشمل الإعلانات والرسائل)
     if (pathname.startsWith('/owner')) {
       return <OwnerDashboardPage onNavigate={navigate} />;
     }
@@ -73,7 +76,7 @@ export const App: React.FC = () => {
       return <BusinessProfilePage slug={slug} onNavigate={navigate} />;
     }
 
-    // 6. صفحات التصنيفات الجماعية
+    // 6. صفحات التصنيفات واستكشاف Local Discovery
     if (categoryMap[pathname]) {
       const cat = categoryMap[pathname];
       return (
@@ -94,9 +97,11 @@ export const App: React.FC = () => {
     <ThemeProvider>
       <AuthProvider>
         <AdminProvider>
-          <ModalProvider>
-            {renderContent()}
-          </ModalProvider>
+          <ComparisonProvider>
+            <ModalProvider>
+              {renderContent()}
+            </ModalProvider>
+          </ComparisonProvider>
         </AdminProvider>
       </AuthProvider>
     </ThemeProvider>
