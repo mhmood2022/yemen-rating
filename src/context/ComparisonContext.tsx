@@ -17,17 +17,19 @@ export const ComparisonProvider: React.FC<{ children: ReactNode }> = ({ children
   const [isCompareOpen, setIsCompareOpen] = useState(false);
 
   const addToCompare = (business: YRBusiness) => {
-    if (selectedBusinesses.length >= 4) {
-      alert('يمكنك مقارنة 4 أنشطة تجارية كحد أقصى في وقت واحد.');
-      return;
-    }
-    if (!selectedBusinesses.find((b) => b.id === business.id)) {
-      setSelectedBusinesses((prev) => [...prev, business]);
-    }
+    setSelectedBusinesses((prev) => {
+      const list = prev || [];
+      if (list.some((b) => b.id === business.id)) return list;
+      if (list.length >= 4) {
+        alert('يمكنك مقارنة 4 منشآت كحد أقصى في المرة الواحدة.');
+        return list;
+      }
+      return [...list, business];
+    });
   };
 
   const removeFromCompare = (id: string) => {
-    setSelectedBusinesses((prev) => prev.filter((b) => b.id !== id));
+    setSelectedBusinesses((prev) => (prev || []).filter((b) => b.id !== id));
   };
 
   const clearComparison = () => {
@@ -37,7 +39,7 @@ export const ComparisonProvider: React.FC<{ children: ReactNode }> = ({ children
   return (
     <ComparisonContext.Provider
       value={{
-        selectedBusinesses,
+        selectedBusinesses: selectedBusinesses || [],
         addToCompare,
         removeFromCompare,
         clearComparison,
