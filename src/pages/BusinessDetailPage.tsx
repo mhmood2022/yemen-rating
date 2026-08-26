@@ -21,114 +21,134 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
     );
   }
 
+  // Render Star Rating
+  const renderStars = (rating: number) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(<i key={i} className="fa-solid fa-star text-amber-400 text-xs"></i>);
+      } else {
+        stars.push(<i key={i} className="fa-regular fa-star text-gray-600 text-xs"></i>);
+      }
+    }
+    return stars;
+  };
+
   return (
-    <div className="min-h-screen bg-[#0D0D12] text-white dir-rtl pb-16">
+    <div className="min-h-screen bg-[#0D0D12] text-white dir-rtl pb-16 font-sans">
       
-      {/* Top Sticky Header */}
-      <div className="bg-[#14141C] border-b border-[#2A2A2A] px-4 py-3 sticky top-0 z-40 flex items-center justify-between max-w-6xl mx-auto rounded-b-xl shadow-md">
-        <button onClick={onBack} className="flex items-center gap-2 text-amber-400 text-xs md:text-sm font-bold hover:underline">
-          <i className="fa-solid fa-arrow-right text-xs"></i>
-          العودة للنتائج
-        </button>
-        <div className="flex items-center gap-2">
-          <button className="h-9 px-3 rounded-lg bg-[#0D0D12] border border-[#2A2A2A] hover:border-amber-400 text-amber-400 text-xs font-bold flex items-center gap-1.5">
-            <i className="fa-solid fa-share-nodes text-xs"></i>
-            <span className="hidden sm:inline">مشاركة</span>
+      {/* Top Header Navigation */}
+      <div className="bg-[#14141C] border-b border-[#2A2A2A] px-4 py-3 sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <button onClick={onBack} className="flex items-center gap-2 text-amber-400 text-xs font-bold hover:underline">
+            <i className="fa-solid fa-arrow-right text-xs"></i>
+            العودة للنتائج
           </button>
-          <button className="h-9 px-3 rounded-lg bg-[#0D0D12] border border-[#2A2A2A] hover:border-amber-400 text-amber-400 text-xs font-bold flex items-center gap-1.5">
-            <i className="fa-regular fa-bookmark text-xs"></i>
-            <span className="hidden sm:inline">حفظ</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button className="h-9 px-3 rounded-lg bg-[#0D0D12] border border-[#2A2A2A] text-amber-400 text-xs font-bold flex items-center gap-1.5 hover:border-amber-400 transition">
+              <i className="fa-solid fa-share-nodes text-xs"></i>
+              مشاركة
+            </button>
+            <button className="h-9 px-3 rounded-lg bg-[#0D0D12] border border-[#2A2A2A] text-amber-400 text-xs font-bold flex items-center gap-1.5 hover:border-amber-400 transition">
+              <i className="fa-regular fa-bookmark text-xs"></i>
+              حفظ
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Clean Cover Banner Image */}
+      {/* Cover Banner */}
       <div className="max-w-6xl mx-auto px-4 mt-4">
-        <div className="h-48 md:h-72 w-full rounded-2xl overflow-hidden border border-[#2A2A2A] relative bg-[#14141C]">
+        <div className="h-44 md:h-64 w-full rounded-2xl overflow-hidden border border-[#2A2A2A] relative bg-[#14141C]">
           <img src={business.cover_url} alt={business.name} className="w-full h-full object-cover" />
         </div>
       </div>
 
-      {/* Business Identity & Main Actions Header */}
-      <div className="max-w-6xl mx-auto px-4 relative -mt-10 md:-mt-14 mb-6">
-        <div className="bg-[#14141C] border border-[#2A2A2A] rounded-2xl p-5 md:p-6 shadow-2xl flex flex-col md:flex-row md:items-end justify-between gap-6">
+      {/* Business Main Identity */}
+      <div className="max-w-6xl mx-auto px-4 relative -mt-8 md:-mt-12 mb-6">
+        <div className="bg-[#14141C] border border-[#2A2A2A] rounded-2xl p-5 md:p-6 shadow-2xl space-y-4">
           
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-            {/* Business Logo Avatar */}
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl border-2 border-amber-400 bg-[#0D0D12] p-1 overflow-hidden shrink-0 shadow-lg">
-              <img src={business.cover_url} alt={business.name} className="w-full h-full object-cover rounded-xl" />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="bg-amber-400/10 text-amber-400 border border-amber-400/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
-                  {business.category_name}
-                </span>
-                <span className="bg-blue-500/10 text-blue-400 border border-blue-500/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                  <i className="fa-solid fa-circle-check text-[10px]"></i>
-                  حساب موثق
-                </span>
+          <div className="flex items-start md:items-center gap-4 flex-col md:flex-row justify-between">
+            <div className="flex items-center gap-4">
+              {/* Logo Avatar */}
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl border-2 border-amber-400 bg-[#0D0D12] p-1 overflow-hidden shrink-0 shadow-lg">
+                <img src={business.cover_url} alt={business.name} className="w-full h-full object-cover rounded-xl" />
               </div>
 
-              <h1 className="text-xl md:text-2xl font-black text-white flex items-center gap-2">
-                {business.name}
-              </h1>
+              <div className="space-y-1">
+                {/* Title + Verified Badge inline like X */}
+                <h1 className="text-lg md:text-2xl font-black text-white flex items-center gap-1.5">
+                  <span>{business.name}</span>
+                  <i className="fa-solid fa-circle-check text-blue-500 text-base md:text-lg" title="حساب موثق"></i>
+                </h1>
 
-              <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
-                <span className="flex items-center gap-1 bg-amber-400/20 text-amber-400 px-2 py-0.5 rounded-md font-bold">
-                  <i className="fa-solid fa-star text-[10px]"></i>
-                  {business.rating} (48 تقييم)
-                </span>
-                <span className="flex items-center gap-1 text-gray-300">
-                  <i className="fa-solid fa-location-dot text-amber-400"></i>
-                  {business.city}
-                </span>
-                <span className="text-emerald-400 font-bold flex items-center gap-1">
-                  <i className="fa-solid fa-door-open"></i>
-                  مفتوح الآن
-                </span>
+                <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap pt-0.5">
+                  {/* Category Pill */}
+                  <span className="bg-amber-400/10 text-amber-400 border border-amber-400/30 text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <i className="fa-solid fa-layer-group text-[10px]"></i>
+                    {business.category_name}
+                  </span>
+
+                  {/* Stars Rating */}
+                  <div className="flex items-center gap-1.5 bg-[#0D0D12] px-2.5 py-1 rounded-lg border border-[#2A2A2A]">
+                    <div className="flex items-center gap-0.5">{renderStars(business.rating)}</div>
+                    <span className="text-amber-400 font-bold text-xs">{business.rating}</span>
+                    <span className="text-gray-500 text-[11px]">(48 تقييم)</span>
+                  </div>
+
+                  <span className="flex items-center gap-1 text-gray-300">
+                    <i className="fa-solid fa-location-dot text-amber-400 text-xs"></i>
+                    {business.city}
+                  </span>
+
+                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                    <i className="fa-solid fa-circle text-[8px]"></i>
+                    مفتوح الآن
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2.5 flex-wrap">
-            {business.whatsapp && (
-              <a
-                href={`https://wa.me/${business.whatsapp}`}
-                target="_blank"
-                rel="noreferrer"
-                className="h-10 px-4 rounded-xl font-bold text-xs text-white bg-[#25D366] hover:opacity-90 transition flex items-center gap-1.5 shadow-md"
-              >
-                <i className="fa-brands fa-whatsapp text-sm"></i>
-                واتساب
-              </a>
-            )}
-            <button className="h-10 px-4 rounded-xl font-bold text-xs bg-amber-400 text-black hover:bg-amber-300 transition flex items-center gap-1.5 shadow-md">
-              <i className="fa-solid fa-star text-xs"></i>
-              أضف مراجعة
-            </button>
-            <button className="h-10 px-3 rounded-xl font-bold text-xs bg-[#0D0D12] text-gray-400 border border-[#2A2A2A] hover:border-amber-400 hover:text-amber-400 transition flex items-center gap-1.5">
-              <i className="fa-solid fa-user-shield text-xs"></i>
-              مطالبة بالملكية
-            </button>
+            {/* Top Right Action Buttons */}
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              {business.whatsapp && (
+                <a
+                  href={`https://wa.me/${business.whatsapp}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 md:flex-none h-10 px-4 rounded-xl font-bold text-xs text-white bg-[#25D366] hover:opacity-90 transition flex items-center justify-center gap-2 shadow-md"
+                >
+                  <i className="fa-brands fa-whatsapp text-sm"></i>
+                  واتساب
+                </a>
+              )}
+              <button className="flex-1 md:flex-none h-10 px-4 rounded-xl font-bold text-xs bg-amber-400 text-black hover:bg-amber-300 transition flex items-center justify-center gap-1.5 shadow-md">
+                <i className="fa-solid fa-star text-xs"></i>
+                أضف مراجعة
+              </button>
+              <button className="h-10 px-3 rounded-xl font-bold text-xs bg-[#0D0D12] text-gray-400 border border-[#2A2A2A] hover:border-amber-400 hover:text-amber-400 transition flex items-center justify-center gap-1.5">
+                <i className="fa-solid fa-user-shield text-xs"></i>
+                مطالبة
+              </button>
+            </div>
           </div>
 
         </div>
       </div>
 
-      {/* Main Details Grid */}
+      {/* Main Content Layout */}
       <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Left Section: Overview & Gallery */}
+        {/* Left Section */}
         <div className="lg:col-span-2 space-y-6">
           
           {/* Navigation Tabs */}
-          <div className="flex border-b border-[#2A2A2A] gap-4 text-xs md:text-sm font-bold">
+          <div className="flex border-b border-[#2A2A2A] gap-6 text-xs md:text-sm font-bold">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`pb-2.5 transition border-b-2 flex items-center gap-1.5 ${
-                activeTab === 'overview' ? 'border-amber-400 text-amber-400' : 'border-transparent text-gray-400'
+              className={`pb-3 transition border-b-2 flex items-center gap-2 ${
+                activeTab === 'overview' ? 'border-amber-400 text-amber-400' : 'border-transparent text-gray-400 hover:text-white'
               }`}
             >
               <i className="fa-solid fa-circle-info text-xs"></i>
@@ -136,8 +156,8 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
             </button>
             <button
               onClick={() => setActiveTab('reviews')}
-              className={`pb-2.5 transition border-b-2 flex items-center gap-1.5 ${
-                activeTab === 'reviews' ? 'border-amber-400 text-amber-400' : 'border-transparent text-gray-400'
+              className={`pb-3 transition border-b-2 flex items-center gap-2 ${
+                activeTab === 'reviews' ? 'border-amber-400 text-amber-400' : 'border-transparent text-gray-400 hover:text-white'
               }`}
             >
               <i className="fa-solid fa-comments text-xs"></i>
@@ -145,12 +165,12 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
             </button>
           </div>
 
-          {/* Overview Content */}
+          {/* Overview Tab Content */}
           {activeTab === 'overview' && (
             <div className="space-y-6">
               
               <div className="bg-[#14141C] border border-[#2A2A2A] p-5 rounded-2xl space-y-3">
-                <h3 className="text-base font-bold text-amber-400 flex items-center gap-2">
+                <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">
                   <i className="fa-solid fa-align-right text-xs"></i>
                   عن النشاط التجاري
                 </h3>
@@ -159,7 +179,7 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
 
               {/* Photo Gallery Grid */}
               <div className="bg-[#14141C] border border-[#2A2A2A] p-5 rounded-2xl space-y-3">
-                <h3 className="text-base font-bold text-amber-400 flex items-center gap-2">
+                <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">
                   <i className="fa-solid fa-images text-xs"></i>
                   معرض الصور
                 </h3>
@@ -177,24 +197,30 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
             </div>
           )}
 
-          {/* Reviews Content */}
+          {/* Reviews Tab Content */}
           {activeTab === 'reviews' && (
             <div className="bg-[#14141C] border border-[#2A2A2A] p-5 rounded-2xl space-y-4">
-              <h3 className="text-base font-bold text-amber-400">تقييمات العملاء</h3>
-              <div className="border-b border-[#2A2A2A] pb-3 space-y-2">
+              <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">
+                <i className="fa-solid fa-star text-xs"></i>
+                تقييمات ومراجعات العملاء
+              </h3>
+
+              {/* Individual Comment Box */}
+              <div className="border-b border-[#2A2A2A] pb-4 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-white">علي المقطري</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-amber-400/20 text-amber-400 font-bold text-xs flex items-center justify-center border border-amber-400/30">
+                      م
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white">مهندس علي المقطري</h4>
+                      <div className="flex items-center gap-1 mt-0.5">{renderStars(5)}</div>
+                    </div>
+                  </div>
                   <span className="text-[10px] text-gray-500">منذ 3 أيام</span>
                 </div>
-                <div className="flex items-center gap-1 text-amber-400 text-[10px]">
-                  <i className="fa-solid fa-star"></i>
-                  <i className="fa-solid fa-star"></i>
-                  <i className="fa-solid fa-star"></i>
-                  <i className="fa-solid fa-star"></i>
-                  <i className="fa-solid fa-star"></i>
-                </div>
-                <p className="text-xs text-gray-300 leading-relaxed">
-                  خدمة رائعة جداً وتعامل احترافي وراقي، من أفضل الخيارات الموصى بها في هذه المحافظة.
+                <p className="text-xs text-gray-300 leading-relaxed pr-10">
+                  خدمة ممتازة جداً واستجابة سريعة. التعامل راقي جداً وأنصح بالتواصل معهم.
                 </p>
               </div>
             </div>
@@ -202,16 +228,16 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
 
         </div>
 
-        {/* Right Section: Sidebar Business Info */}
+        {/* Right Section: Sidebar */}
         <div className="space-y-4">
           <div className="bg-[#14141C] border border-[#2A2A2A] p-5 rounded-2xl space-y-4">
-            <h3 className="font-bold text-sm text-white border-b border-[#2A2A2A] pb-3 flex items-center gap-2">
-              <i className="fa-solid fa-address-card text-amber-400"></i>
+            <h3 className="font-bold text-xs text-amber-400 border-b border-[#2A2A2A] pb-3 flex items-center gap-2">
+              <i className="fa-solid fa-address-card"></i>
               تفاصيل التواصل والموقع
             </h3>
 
             <div className="flex items-start gap-3 text-xs text-gray-300">
-              <i className="fa-solid fa-location-dot text-amber-400 mt-0.5"></i>
+              <i className="fa-solid fa-location-dot text-amber-400 mt-1"></i>
               <div>
                 <p className="font-bold text-white">العنوان الجغرافي</p>
                 <p className="text-gray-400 mt-0.5">{business.city} - الشارع الرئيسي</p>
@@ -219,7 +245,7 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
             </div>
 
             <div className="flex items-start gap-3 text-xs text-gray-300">
-              <i className="fa-solid fa-clock text-amber-400 mt-0.5"></i>
+              <i className="fa-solid fa-clock text-amber-400 mt-1"></i>
               <div>
                 <p className="font-bold text-white">ساعات العمل</p>
                 <p className="text-emerald-400 font-bold mt-0.5">08:00 صباحاً - 09:00 مساءً</p>
@@ -227,7 +253,7 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
             </div>
 
             <div className="flex items-start gap-3 text-xs text-gray-300">
-              <i className="fa-solid fa-circle-check text-amber-400 mt-0.5"></i>
+              <i className="fa-solid fa-shield-halved text-amber-400 mt-1"></i>
               <div>
                 <p className="font-bold text-white">حالة الملكية</p>
                 <p className="text-gray-400 mt-0.5">منشأة موثقة ومسجلة في الدليل</p>
