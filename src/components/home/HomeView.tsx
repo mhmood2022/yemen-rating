@@ -7,14 +7,17 @@ import {
   Building, 
   Briefcase, 
   TrendingUp, 
-  TrendingDown,
+  TrendingDown, 
   Sparkles, 
-  ChevronDown,
-  ChevronUp,
-  RefreshCw,
-  Coins,
-  DollarSign,
-  ArrowRight
+  ChevronDown, 
+  ChevronUp, 
+  RefreshCw, 
+  Coins, 
+  DollarSign, 
+  ArrowRight,
+  BedDouble,
+  Bath,
+  Maximize2
 } from 'lucide-react';
 import { OFFICIAL_CATEGORIES, CategoryItem } from '../../data/categories';
 import { BusinessItem } from '../../data/mockData';
@@ -42,7 +45,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [activeMarketHome, setActiveMarketHome] = useState<'sanaa' | 'aden'>('sanaa');
 
-  // إظهار 8 تصنيفات فقط افتراضياً، وكامل الـ 26 عند النقر على عرض الكل
   const displayedCategories = showAllCategories 
     ? OFFICIAL_CATEGORIES 
     : OFFICIAL_CATEGORIES.slice(0, 8);
@@ -63,11 +65,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const currentHomeRates = marketRates[activeMarketHome];
 
   return (
-    <div dir="rtl" className="space-y-6 pb-20 pt-1">
+    <div dir="rtl" className="space-y-6 pb-20 pt-1 max-w-6xl mx-auto">
       
-      {/* 1. Hero Promo Banner Card (منسق بدون قص للنصوص) */}
+      {/* 1. Hero Promo Banner Card */}
       <div className="relative overflow-hidden rounded-3xl bg-[#151515] border border-[#242424] shadow-2xl">
-        <div className="relative min-h-[190px] sm:min-h-[220px] w-full flex items-center">
+        <div className="relative min-h-[180px] sm:min-h-[220px] w-full flex items-center">
           <img
             src="https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=1400&auto=format&fit=crop&q=80"
             alt="صنعاء القديمة"
@@ -101,7 +103,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 2. التصنيفات الرئيسية (بطاقات متسقة ونظيفة بدون أي فروع مشتتة) */}
+      {/* 2. التصنيفات الرئيسية */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -121,7 +123,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        {/* شبكة التصنيفات المتناسقة والمنظمة */}
         <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-3">
           {displayedCategories.map((cat: CategoryItem) => {
             const Icon = cat.icon;
@@ -143,7 +144,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 3. أسعار العملات والذهب (اللون المالي الصافي: أخضر للشراء وأحمر للبيع) */}
+      {/* 3. أسعار العملات والذهب */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -287,47 +288,47 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 4. منشآت وخدمات مميزة وموثقة */}
+      {/* 4. الأعلى تقييماً */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#f5b800]" />
-            <span>منشآت وخدمات موثقة ومميزة</span>
-          </h3>
+          <h3 className="text-sm sm:text-base font-bold text-white">الأعلى تقييماً</h3>
+          <button
+            onClick={() => onSelectCategory('restaurants')}
+            className="text-xs text-[#f5b800] hover:underline font-semibold"
+          >
+            عرض الكل
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div className="flex items-center gap-3.5 overflow-x-auto pb-1 no-scrollbar">
           {businesses.map((item) => (
             <div
               key={item.id}
               onClick={() => onSelectBusiness(item)}
-              className="bg-[#151515] hover:bg-[#181818] border border-[#242424] hover:border-[#f5b800]/40 rounded-3xl p-3.5 sm:p-4 flex gap-3.5 transition-all cursor-pointer group shadow-xl"
+              className="w-44 sm:w-48 rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden flex-shrink-0 cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-lg"
             >
-              <div className="w-20 h-20 rounded-2xl bg-[#202020] overflow-hidden flex-shrink-0 border border-[#282828]">
-                <img src={item.logo} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+              <div className="relative h-28 w-full bg-[#202020] overflow-hidden">
+                <img
+                  src={item.coverImage}
+                  alt={item.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute top-2 right-2 bg-zinc-950/90 backdrop-blur-md px-2 py-0.5 rounded-lg border border-zinc-800 text-[11px] font-bold text-[#f5b800] flex items-center gap-1">
+                  <Star className="w-3 h-3 fill-[#f5b800]" />
+                  <span>{item.rating}</span>
+                </div>
               </div>
-              <div className="flex-1 flex flex-col justify-between min-w-0">
-                <div>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] transition-colors truncate">
-                      {item.name}
-                    </h4>
-                    {item.isVerified && (
-                      <VerifiedBadge type={item.badgeType} size="sm" />
-                    )}
-                  </div>
-                  <p className="text-[11px] text-zinc-400 line-clamp-2 mt-1">{item.description}</p>
+
+              <div className="p-3 space-y-1">
+                <div className="flex items-center gap-1">
+                  <h4 className="font-bold text-xs text-white truncate group-hover:text-[#f5b800]">{item.name}</h4>
+                  {item.isVerified && <VerifiedBadge type={item.badgeType} size="sm" />}
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-[#202020] text-xs">
-                  <span className="flex items-center gap-1 text-[#f5b800] font-bold">
-                    <Star className="w-3.5 h-3.5 fill-[#f5b800]" />
-                    {item.rating}
-                  </span>
-                  <span className="text-zinc-500 text-[11px] truncate flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-[#f5b800] flex-shrink-0" />
-                    {item.address}
-                  </span>
-                </div>
+                <p className="text-[10px] text-zinc-400 truncate">{item.categorySlug}</p>
+                <p className="text-[10px] text-zinc-500 flex items-center gap-1 pt-0.5 truncate">
+                  <MapPin className="w-3 h-3 text-[#f5b800] flex-shrink-0" />
+                  <span>{item.address}</span>
+                </p>
               </div>
             </div>
           ))}
@@ -353,23 +354,34 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div
             onClick={onNavigateAuctions}
-            className="rounded-3xl bg-[#151515] border border-[#242424] p-3.5 flex gap-3.5 cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl"
+            className="rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl flex flex-col"
           >
-            <div className="w-20 h-20 rounded-2xl bg-[#202020] overflow-hidden flex-shrink-0">
+            <div className="relative h-40 sm:h-44 w-full bg-[#202020] overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400&auto=format&fit=crop&q=80"
+                src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800&auto=format&fit=crop&q=80"
                 alt="مزاد سيارة"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
-            </div>
-            <div className="flex-1 flex flex-col justify-between min-w-0">
-              <div>
-                <span className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-md font-bold">مباشر</span>
-                <h4 className="font-bold text-xs sm:text-sm text-white truncate mt-1 group-hover:text-[#f5b800]">تويوتا لاندكروزر V8 2022 وكالة</h4>
-                <p className="text-xs text-zinc-400 font-mono mt-0.5">أعلى مزايدة: 48,500 $</p>
+              <div className="absolute top-2.5 right-2.5 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-mono font-bold text-[#f5b800] flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" />
+                <span>04:18:22</span>
               </div>
-              <div className="flex items-center justify-between text-xs text-zinc-400 pt-1.5 border-t border-[#202020]">
-                <span className="flex items-center gap-1 text-[#f5b800] font-mono"><Clock className="w-3.5 h-3.5" /> 04:18:22</span>
+              <div className="absolute top-2.5 left-2.5 bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                مباشر
+              </div>
+            </div>
+
+            <div className="p-3.5 flex flex-col justify-between flex-1 space-y-2">
+              <div>
+                <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] truncate">
+                  تويوتا لاندكروزر V8 2022 وكالة
+                </h4>
+                <p className="text-xs text-emerald-400 font-mono font-bold mt-1">
+                  أعلى مزايدة: 48,500 $
+                </p>
+              </div>
+              <div className="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-[#202020]">
+                <span>صنعاء</span>
                 <span className="text-[#f5b800] font-bold">دخول المزاد ←</span>
               </div>
             </div>
@@ -377,23 +389,34 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
           <div
             onClick={onNavigateAuctions}
-            className="rounded-3xl bg-[#151515] border border-[#242424] p-3.5 flex gap-3.5 cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl"
+            className="rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl flex flex-col"
           >
-            <div className="w-20 h-20 rounded-2xl bg-[#202020] overflow-hidden flex-shrink-0">
+            <div className="relative h-40 sm:h-44 w-full bg-[#202020] overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&auto=format&fit=crop&q=80"
+                src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop&q=80"
                 alt="مزاد عقار"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
-            </div>
-            <div className="flex-1 flex flex-col justify-between min-w-0">
-              <div>
-                <span className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-md font-bold">مباشر</span>
-                <h4 className="font-bold text-xs sm:text-sm text-white truncate mt-1 group-hover:text-[#f5b800]">أرض تجارية 6 لبن شارع الستين</h4>
-                <p className="text-xs text-zinc-400 font-mono mt-0.5">أعلى مزايدة: 185,000,000 YER</p>
+              <div className="absolute top-2.5 right-2.5 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-mono font-bold text-[#f5b800] flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" />
+                <span>01:12:45</span>
               </div>
-              <div className="flex items-center justify-between text-xs text-zinc-400 pt-1.5 border-t border-[#202020]">
-                <span className="flex items-center gap-1 text-[#f5b800] font-mono"><Clock className="w-3.5 h-3.5" /> 01:12:45</span>
+              <div className="absolute top-2.5 left-2.5 bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                مباشر
+              </div>
+            </div>
+
+            <div className="p-3.5 flex flex-col justify-between flex-1 space-y-2">
+              <div>
+                <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] truncate">
+                  أرض تجارية 6 لبن شارع الستين
+                </h4>
+                <p className="text-xs text-emerald-400 font-mono font-bold mt-1">
+                  أعلى مزايدة: 185,000,000 YER
+                </p>
+              </div>
+              <div className="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-[#202020]">
+                <span>صنعاء</span>
                 <span className="text-[#f5b800] font-bold">دخول المزاد ←</span>
               </div>
             </div>
@@ -401,7 +424,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 6. العقارات المميزة */}
+      {/* 6. العقارات المميزة (مصفوفة مضبوطة الأبعاد بدون أي تمدد أو خروج عن الشاشة) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
@@ -418,47 +441,81 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          
+          {/* كارت عقار 1 */}
           <div
             onClick={onNavigateRealEstate}
-            className="p-3.5 rounded-3xl bg-[#151515] border border-[#242424] flex items-center gap-3.5 cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl"
+            className="rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl flex flex-col"
           >
-            <div className="w-18 h-18 rounded-2xl bg-[#202020] overflow-hidden flex-shrink-0">
+            <div className="relative h-40 sm:h-44 w-full bg-[#202020] overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&auto=format&fit=crop&q=80"
-                alt="عقار للإيجار"
-                className="w-full h-full object-cover"
+                src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=80"
+                alt="شقة للإيجار"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-md font-semibold">للإيجار</span>
-                <span className="text-xs sm:text-sm font-bold text-[#f5b800] font-mono">400 $/شهر</span>
+              <div className="absolute top-2.5 right-2.5 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-mono font-bold text-[#f5b800]">
+                400 $/شهر
               </div>
-              <h4 className="text-xs sm:text-sm font-bold text-white truncate mt-1 group-hover:text-[#f5b800]">شقة سوبر ديلوكس حدة - صنعاء</h4>
-              <p className="text-[11px] text-zinc-400 mt-0.5">3 غرف · 2 حمام · 160 م²</p>
+              <div className="absolute top-2.5 left-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                للإيجار
+              </div>
+            </div>
+
+            <div className="p-3.5 flex flex-col justify-between flex-1 space-y-2">
+              <div>
+                <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] truncate">
+                  شقة سوبر ديلوكس حدة - صنعاء
+                </h4>
+                <div className="flex items-center gap-3 text-[11px] text-zinc-400 mt-1.5">
+                  <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5 text-[#f5b800]" /> 3 غرف</span>
+                  <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5 text-[#f5b800]" /> 2 حمام</span>
+                  <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5 text-[#f5b800]" /> 160 م²</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-[#202020]">
+                <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-[#f5b800]" /> صنعاء، حدة</span>
+                <span className="text-[#f5b800] font-bold">معاينة العقار ←</span>
+              </div>
             </div>
           </div>
 
+          {/* كارت عقار 2 */}
           <div
             onClick={onNavigateRealEstate}
-            className="p-3.5 rounded-3xl bg-[#151515] border border-[#242424] flex items-center gap-3.5 cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl"
+            className="rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl flex flex-col"
           >
-            <div className="w-18 h-18 rounded-2xl bg-[#202020] overflow-hidden flex-shrink-0">
+            <div className="relative h-40 sm:h-44 w-full bg-[#202020] overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400&auto=format&fit=crop&q=80"
+                src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80"
                 alt="فيلا للبيع"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md font-semibold">للبيع</span>
-                <span className="text-xs sm:text-sm font-bold text-[#f5b800] font-mono">280,000 $</span>
+              <div className="absolute top-2.5 right-2.5 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-mono font-bold text-[#f5b800]">
+                280,000 $
               </div>
-              <h4 className="text-xs sm:text-sm font-bold text-white truncate mt-1 group-hover:text-[#f5b800]">فيلا مستقلة مودرن إنماء عدن</h4>
-              <p className="text-[11px] text-zinc-400 mt-0.5">5 غرف · مسبح · 450 م²</p>
+              <div className="absolute top-2.5 left-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold">
+                للبيع
+              </div>
+            </div>
+
+            <div className="p-3.5 flex flex-col justify-between flex-1 space-y-2">
+              <div>
+                <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] truncate">
+                  فيلا مستقلة مودرن إنماء عدن
+                </h4>
+                <div className="flex items-center gap-3 text-[11px] text-zinc-400 mt-1.5">
+                  <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5 text-[#f5b800]" /> 5 غرف</span>
+                  <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5 text-[#f5b800]" /> 4 حمام</span>
+                  <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5 text-[#f5b800]" /> 450 م²</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-[#202020]">
+                <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-[#f5b800]" /> عدن، إنماء</span>
+                <span className="text-[#f5b800] font-bold">معاينة العقار ←</span>
+              </div>
             </div>
           </div>
+
         </div>
       </div>
 
@@ -481,7 +538,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="space-y-2.5">
           <div
             onClick={onNavigateJobs}
-            className="p-3.5 rounded-2xl bg-[#151515] border border-[#242424] hover:border-[#f5b800]/40 transition-all flex items-center justify-between cursor-pointer group shadow-md"
+            className="p-3.5 rounded-2xl bg-[#161616] border border-[#242424] hover:border-[#f5b800]/40 transition-all flex items-center justify-between cursor-pointer group shadow-sm"
           >
             <div className="space-y-1 min-w-0">
               <h4 className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-[#f5b800]">
@@ -496,7 +553,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
           <div
             onClick={onNavigateJobs}
-            className="p-3.5 rounded-2xl bg-[#151515] border border-[#242424] hover:border-[#f5b800]/40 transition-all flex items-center justify-between cursor-pointer group shadow-md"
+            className="p-3.5 rounded-2xl bg-[#161616] border border-[#242424] hover:border-[#f5b800]/40 transition-all flex items-center justify-between cursor-pointer group shadow-sm"
           >
             <div className="space-y-1 min-w-0">
               <h4 className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-[#f5b800]">
@@ -521,7 +578,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <span className="text-xs text-zinc-400">آراء حقيقية</span>
         </div>
 
-        <div className="p-3.5 sm:p-4 rounded-3xl bg-[#151515] border border-[#242424] flex items-start gap-3.5 shadow-xl">
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-[#161616] border border-[#242424] flex items-start gap-3.5 shadow-xl">
           <div className="w-14 h-14 rounded-2xl bg-[#202020] overflow-hidden flex-shrink-0">
             <img
               src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop&q=80"
