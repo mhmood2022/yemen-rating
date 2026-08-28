@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
-import { SearchSection } from './components/common/SearchSection';
+import { BottomNav } from './components/common/BottomNav';
 import { HomeView } from './components/home/HomeView';
 import { CategoryListing } from './components/category/CategoryListing';
 import { BusinessDetails } from './components/business/BusinessDetails';
@@ -20,17 +20,9 @@ export function App() {
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessItem | null>(null);
   const [currentPage, setCurrentPage] = useState<'home' | 'auctions' | 'markets' | 'real-estate' | 'jobs' | 'exchange-rates' | 'profile' | 'notifications' | 'favorites'>('home');
-  const [selectedGov, setSelectedGov] = useState<string>('all');
-  const [selectedCity, setSelectedCity] = useState<string>('all');
-
-  const handleGlobalSearch = (query: string, govId: string, cityId: string) => {
-    setSelectedGov(govId);
-    setSelectedCity(cityId);
-    if (selectedBusiness) setSelectedBusiness(null);
-  };
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const handleSelectCategory = (slug: string) => {
-    // توجيه الأقسام الخاصة لصفحاتها الفرعية المتكاملة
     if (slug === 'auctions') {
       setCurrentPage('auctions');
       setSelectedCategorySlug(null);
@@ -68,17 +60,12 @@ export function App() {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-zinc-950 text-white flex flex-col font-sans selection:bg-amber-400 selection:text-zinc-950">
+    <div dir="rtl" className="min-h-screen bg-[#0d0d0d] text-white flex flex-col font-sans selection:bg-[#f5c400] selection:text-zinc-950">
       
-      {/* 1. Header (Sticky Top) */}
+      {/* 1. Header المطابق للصورة */}
       <Header
         onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
         onNavigateHome={handleGoHome}
-        onNavigateProfile={() => {
-          setCurrentPage('profile');
-          setSelectedBusiness(null);
-          setSelectedCategorySlug(null);
-        }}
         onNavigateNotifications={() => {
           setCurrentPage('notifications');
           setSelectedBusiness(null);
@@ -86,21 +73,10 @@ export function App() {
         }}
       />
 
-      {/* 2. Prominent Search Section (يظهر في الرئيسية والتصنيفات) */}
-      {currentPage === 'home' && !selectedBusiness && (
-        <SearchSection
-          onSearch={handleGlobalSearch}
-          selectedGov={selectedGov}
-          selectedCity={selectedCity}
-          onGovChange={setSelectedGov}
-          onCityChange={setSelectedCity}
-        />
-      )}
-
-      {/* 3. Main Container: Sidebar + Content */}
-      <div className="flex-1 w-full max-w-7xl mx-auto flex">
+      {/* 2. Body Container: Sidebar + Content */}
+      <div className="flex-1 w-full max-w-5xl mx-auto flex">
         
-        {/* Public Sidebar (26 Categories) */}
+        {/* Public Sidebar */}
         <Sidebar
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
@@ -108,8 +84,8 @@ export function App() {
           onSelectCategory={handleSelectCategory}
         />
 
-        {/* Dynamic Main Content Area */}
-        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
+        {/* Dynamic Main Content */}
+        <main className="flex-1 min-w-0 p-3.5 sm:p-5">
           {selectedBusiness ? (
             <BusinessDetails
               business={selectedBusiness}
@@ -135,8 +111,8 @@ export function App() {
             <CategoryListing
               categorySlug={selectedCategorySlug}
               businesses={SAMPLE_BUSINESSES}
-              selectedGov={selectedGov}
-              selectedCity={selectedCity}
+              selectedGov="all"
+              selectedCity="all"
               onSelectBusiness={handleSelectBusiness}
               onBackHome={handleGoHome}
             />
@@ -145,10 +121,50 @@ export function App() {
               onSelectCategory={handleSelectCategory}
               onSelectBusiness={handleSelectBusiness}
               businesses={SAMPLE_BUSINESSES}
+              onNavigateAuctions={() => setCurrentPage('auctions')}
+              onNavigateRealEstate={() => setCurrentPage('real-estate')}
+              onNavigateJobs={() => setCurrentPage('jobs')}
+              onNavigateExchangeRates={() => setCurrentPage('exchange-rates')}
             />
           )}
         </main>
       </div>
+
+      {/* 3. Bottom Nav Bar للهواتف */}
+      <BottomNav
+        currentPage={currentPage}
+        onNavigate={(page: any) => {
+          setCurrentPage(page);
+          setSelectedBusiness(null);
+          setSelectedCategorySlug(null);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onOpenAddModal={() => setIsAddModalOpen(true)}
+      />
+
+      {/* نافذة أضف نشاط (+) المنبثقة */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#181818] border border-[#282828] rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl">
+            <h3 className="text-sm font-bold text-white text-center">إضافة إعلان أو نشاط تجاري جديد</h3>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <button onClick={() => { setIsAddModalOpen(false); setCurrentPage('auctions'); }} className="p-3 bg-[#121212] hover:bg-[#f5c400] hover:text-zinc-950 rounded-xl border border-[#2a2a2a] text-center font-bold">
+                🔨 إنشاء مزاد
+              </button>
+              <button onClick={() => { setIsAddModalOpen(false); setCurrentPage('real-estate'); }} className="p-3 bg-[#121212] hover:bg-[#f5c400] hover:text-zinc-950 rounded-xl border border-[#2a2a2a] text-center font-bold">
+                🏢 إضافة عقار
+              </button>
+              <button onClick={() => { setIsAddModalOpen(false); setCurrentPage('jobs'); }} className="p-3 bg-[#121212] hover:bg-[#f5c400] hover:text-zinc-950 rounded-xl border border-[#2a2a2a] text-center font-bold">
+                💼 إضافة وظيفة
+              </button>
+              <button onClick={() => { setIsAddModalOpen(false); }} className="p-3 bg-[#121212] hover:bg-[#f5c400] hover:text-zinc-950 rounded-xl border border-[#2a2a2a] text-center font-bold">
+                ⭐ إضافة منشأة
+              </button>
+            </div>
+            <button onClick={() => setIsAddModalOpen(false)} className="w-full py-2 bg-[#252525] text-zinc-300 text-xs rounded-xl hover:text-white">إغلاق</button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
