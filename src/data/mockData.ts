@@ -7,12 +7,6 @@ export interface Review {
   comment: string;
 }
 
-export interface Amenity {
-  id: string;
-  label: string;
-  iconName: string;
-}
-
 export interface BadgeItem {
   id: string;
   label: string;
@@ -43,6 +37,30 @@ export interface BusinessItem {
   gallery: string[];
   reviews: Review[];
 }
+
+export interface AdItem {
+  id: string;
+  title: string;
+  description: string;
+  categorySlug?: string;
+  imageUrl: string;
+  linkText: string;
+  targetUrl: string;
+  badgeText: string;
+}
+
+export const SAMPLE_ADS: AdItem[] = [
+  {
+    id: 'ad-1',
+    title: 'تطبيق يمن ريتينغ - دليلك التجاري الأول',
+    description: 'تصفح آلاف المنشآت والخدمات وقيم تجربتك بكل شفافية وموثوقية في جميع المحافظات.',
+    categorySlug: 'services',
+    imageUrl: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200&auto=format&fit=crop&q=80',
+    linkText: 'اكتشف المزيد',
+    targetUrl: '#',
+    badgeText: 'إعلان مميز'
+  }
+];
 
 export const SAMPLE_BUSINESSES: BusinessItem[] = [
   {

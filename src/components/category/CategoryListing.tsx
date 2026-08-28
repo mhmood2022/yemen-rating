@@ -1,8 +1,7 @@
 import React from 'react';
 import { Star, MapPin, Phone, CheckCircle2, ArrowRight, Frown } from 'lucide-react';
 import { OFFICIAL_CATEGORIES } from '../../data/categories';
-import { BusinessItem, SAMPLE_ADS } from '../../data/mockData';
-import { AdBanner } from '../common/AdBanner';
+import { BusinessItem } from '../../data/mockData';
 
 interface CategoryListingProps {
   categorySlug: string;
@@ -61,9 +60,6 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
         </button>
       </div>
 
-      {/* In-feed Ad */}
-      <AdBanner ad={SAMPLE_ADS[0]} type="in-feed" />
-
       {/* Results Count */}
       <div className="text-xs text-zinc-400">
         تم العثور على <strong className="text-amber-400">{filtered.length}</strong> منشأة مطابقة
@@ -89,10 +85,10 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
                   <span>{item.rating}</span>
                   <span className="text-zinc-500 text-[10px]">({item.reviewsCount})</span>
                 </div>
-                {item.isVerified && (
+                {item.badges && item.badges.length > 0 && (
                   <div className="absolute top-3 left-3 bg-amber-400/20 text-amber-400 border border-amber-400/40 text-[11px] px-2 py-0.5 rounded-md backdrop-blur-md font-semibold flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" />
-                    موثق
+                    {item.badges[0].label}
                   </div>
                 )}
               </div>
@@ -122,7 +118,6 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
           ))}
         </div>
       ) : (
-        /* Empty State */
         <div className="text-center py-16 bg-zinc-900/30 border border-zinc-800 rounded-2xl p-6 space-y-3">
           <Frown className="w-10 h-10 text-zinc-600 mx-auto" />
           <h3 className="text-base font-bold text-white">لا توجد منشآت مطابقة حالياً</h3>

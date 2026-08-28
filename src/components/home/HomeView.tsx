@@ -1,8 +1,7 @@
 import React from 'react';
 import { OFFICIAL_CATEGORIES, CategoryItem } from '../../data/categories';
-import { BusinessItem, SAMPLE_ADS } from '../../data/mockData';
-import { AdBanner } from '../common/AdBanner';
-import { Star, MapPin, CheckCircle2, TrendingUp, Sparkles, Building, Briefcase, Gavel, Layers } from 'lucide-react';
+import { BusinessItem } from '../../data/mockData';
+import { Star, CheckCircle2, Sparkles, Building2 } from 'lucide-react';
 
 interface HomeViewProps {
   onSelectCategory: (slug: string) => void;
@@ -15,16 +14,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onSelectBusiness,
   businesses
 }) => {
-  const featuredBusinesses = businesses.filter(b => b.isFeatured);
   const topRated = [...businesses].sort((a, b) => b.rating - a.rating);
 
   return (
     <div dir="rtl" className="space-y-8">
       
-      {/* 1. Hero Ad / Spotlight */}
-      <AdBanner ad={SAMPLE_ADS[0]} type="hero" />
-
-      {/* 2. Official 26 Categories Grid */}
+      {/* 1. Official 26 Categories Grid */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
@@ -58,32 +53,37 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 3. Featured Businesses Section */}
+      {/* 2. Featured Businesses Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-400" />
-            منشآت وخدمات مميزة وموثقة
+            منشآت وخدمات موثقة ومميزة
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-          {featuredBusinesses.map((item) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {businesses.map((item) => (
             <div
               key={item.id}
               onClick={() => onSelectBusiness(item)}
               className="bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 hover:border-amber-400/40 rounded-2xl p-4 flex gap-4 transition-all cursor-pointer group shadow-md"
             >
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-zinc-800 overflow-hidden flex-shrink-0">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-zinc-800 overflow-hidden flex-shrink-0">
                 <img src={item.logo} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
               </div>
-              <div className="flex-1 flex flex-col justify-between">
+              <div className="flex-1 flex flex-col justify-between min-w-0">
                 <div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <h3 className="font-bold text-xs sm:text-sm text-white group-hover:text-amber-400 transition-colors line-clamp-1">
                       {item.name}
                     </h3>
-                    {item.isVerified && <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />}
+                    {item.badges && item.badges.length > 0 && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] bg-amber-400/10 text-amber-400 border border-amber-400/30 px-1.5 py-0.2 rounded-md">
+                        <CheckCircle2 className="w-3 h-3" />
+                        {item.badges[0].label}
+                      </span>
+                    )}
                   </div>
                   <p className="text-[11px] text-zinc-400 line-clamp-2 mt-1">{item.description}</p>
                 </div>
@@ -92,7 +92,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <Star className="w-3.5 h-3.5 fill-amber-400" />
                     {item.rating}
                   </span>
-                  <span className="text-zinc-500 text-[11px]">{item.address}</span>
+                  <span className="text-zinc-500 text-[11px] truncate">{item.address}</span>
                 </div>
               </div>
             </div>
@@ -100,10 +100,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 4. Secondary In-Feed Ad */}
-      <AdBanner ad={SAMPLE_ADS[1]} type="in-feed" />
-
-      {/* 5. Top Rated Businesses */}
+      {/* 3. Top Rated Businesses */}
       <div className="space-y-4">
         <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
           <Star className="w-4 h-4 text-amber-400" />
