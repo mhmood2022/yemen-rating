@@ -16,18 +16,26 @@
 
   body {
     background-color: #0d0d0d;
-    overflow-x: clip; /* يمنع خروج العناصر بدون إلغاء ميزة الـ Sticky Header */
+    overflow-x: clip;
     min-height: 100vh;
+  }
+
+  * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
   }
 }
 
-/* إخفاء شريط التمرير الأبيض الافتراضي في الهواتف */
 .no-scrollbar::-webkit-scrollbar {
   display: none !important;
-  width: 0 !important;
-  height: 0 !important;
 }
-
 .no-scrollbar {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
