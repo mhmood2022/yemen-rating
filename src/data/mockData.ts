@@ -7,6 +7,18 @@ export interface Review {
   comment: string;
 }
 
+export interface Amenity {
+  id: string;
+  label: string;
+  iconName: string;
+}
+
+export interface BadgeItem {
+  id: string;
+  label: string;
+  type: 'verified' | 'featured' | 'top-rated';
+}
+
 export interface BusinessItem {
   id: string;
   name: string;
@@ -20,23 +32,16 @@ export interface BusinessItem {
   whatsapp?: string;
   workingHours: string;
   description: string;
-  isVerified: boolean;
-  isFeatured?: boolean;
+  badges: BadgeItem[];
+  amenities: string[];
+  stats: {
+    viewsCount: number;
+    savesCount: number;
+  };
   coverImage: string;
   logo: string;
   gallery: string[];
   reviews: Review[];
-}
-
-export interface AdItem {
-  id: string;
-  title: string;
-  description: string;
-  categorySlug?: string;
-  imageUrl: string;
-  linkText: string;
-  targetUrl: string;
-  badgeText: string;
 }
 
 export const SAMPLE_BUSINESSES: BusinessItem[] = [
@@ -52,19 +57,23 @@ export const SAMPLE_BUSINESSES: BusinessItem[] = [
     phone: '01-200000',
     whatsapp: '777000111',
     workingHours: '8:00 ص - 4:00 م (السبت - الخميس)',
-    description: 'يقدم بنك الكريمي أوسع شبكة خدمات مصرفية وتمويلية في كافة أنحاء اليمن مع خدمات الحسابات والتحويلات اللحظية وتطبيق كريمي جوال.',
-    isVerified: true,
-    isFeatured: true,
-    coverImage: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=1200&auto=format&fit=crop&q=80',
-    logo: 'https://images.unsplash.com/photo-1554469384-e58fac16e23a?w=200&auto=format&fit=crop&q=80',
+    description: 'يقدم بنك الكريمي أوسع شبكة خدمات مصرفية وتمويلية في كافة أنحاء الجمهورية اليمنية مع خدمات الحسابات، والتمويل، والتحويلات اللحظية عبر تطبيق كريمي جوال بأعلى معايير الأمان والسرعة.',
+    badges: [
+      { id: 'v-1', label: 'موثق رسمياً', type: 'verified' },
+      { id: 't-1', label: 'شريك معتمد', type: 'top-rated' }
+    ],
+    amenities: ['صرافات آلية 24/7', 'خدمات مصرفية إلكترونية', 'حوالات لحظية', 'خدمة عملاء مميزة', 'مواقف سيارات'],
+    stats: { viewsCount: 14250, savesCount: 890 },
+    coverImage: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=1400&auto=format&fit=crop&q=80',
+    logo: 'https://images.unsplash.com/photo-1554469384-e58fac16e23a?w=300&auto=format&fit=crop&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&auto=format&fit=crop&q=80'
+      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&auto=format&fit=crop&q=80'
     ],
     reviews: [
       { id: 'r-1', userName: 'محمد الأهدل', rating: 5, date: 'قبل يومين', comment: 'خدمة سريعة وتطبيق الهاتف يعمل بكفاءة عالية في كل المحافظات.' },
-      { id: 'r-2', userName: 'فؤاد الشميري', rating: 4, date: 'قبل أسبوع', comment: 'الفروع متوفرة في كل مكان ولكن في أوقات الذروة يكون هناك بعض الازدحام.' }
+      { id: 'r-2', userName: 'فؤاد الشميري', rating: 4, date: 'قبل أسبوع', comment: 'الفروع متوفرة في كل مكان مع انتشار واسع لأجهزة الصراف الآلي.' }
     ]
   },
   {
@@ -79,19 +88,23 @@ export const SAMPLE_BUSINESSES: BusinessItem[] = [
     phone: '02-345678',
     whatsapp: '733111222',
     workingHours: '11:00 ص - 1:00 ص (يومياً)',
-    description: 'أرقى المأكولات اليمنية والبحرية والشرقية، مع صالات عائلية متميزة وإطلالة رائعة وخدمة فندقية راقية.',
-    isVerified: true,
-    isFeatured: true,
-    coverImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&auto=format&fit=crop&q=80',
-    logo: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200&auto=format&fit=crop&q=80',
+    description: 'أرقى المأكولات اليمنية والبحرية والشرقية، مع صالات عائلية واسعة ومطلة، مجهزة بأعلى معايير النظافة والضيافة والخدمة الراقية.',
+    badges: [
+      { id: 'v-2', label: 'موثق', type: 'verified' },
+      { id: 't-2', label: 'الأعلى تقييماً', type: 'top-rated' }
+    ],
+    amenities: ['صالات عائلية خاصة', 'مأكولات بحرية طازجة', 'واي فاي مجاني', 'دفع إلكتروني', 'تكييف مركزي', 'مواقف سيارات'],
+    stats: { viewsCount: 9800, savesCount: 650 },
+    coverImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1400&auto=format&fit=crop&q=80',
+    logo: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=300&auto=format&fit=crop&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=600&auto=format&fit=crop&q=80'
+      'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=800&auto=format&fit=crop&q=80'
     ],
     reviews: [
       { id: 'r-3', userName: 'سالم بازرعة', rating: 5, date: 'قبل 3 أيام', comment: 'المأكولات البحرية طازجة والسمك الموفى من أروع ما تذوقت في عدن.' },
-      { id: 'r-4', userName: 'أروى باعباد', rating: 5, date: 'قبل أسبوعين', comment: 'جلسات عائلية مريحة ونظافة استثنائية وأسعار معقولة.' }
+      { id: 'r-4', userName: 'أروى باعباد', rating: 5, date: 'قبل أسبوعين', comment: 'جلسات عائلية مريحة ونظافة استثنائية وطاقم عمل ودود للغاية.' }
     ]
   },
   {
@@ -106,17 +119,20 @@ export const SAMPLE_BUSINESSES: BusinessItem[] = [
     phone: '01-445566',
     whatsapp: '771234567',
     workingHours: 'طوارئ 24 ساعة - العيادات 8:00 ص إلى 8:00 م',
-    description: 'أحدث التجهيزات الطبية والكوادر الاستشارية في جميع التخصصات الجراحية والباطنية وقسم طوارئ متقدم.',
-    isVerified: true,
-    isFeatured: false,
-    coverImage: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=1200&auto=format&fit=crop&q=80',
-    logo: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=200&auto=format&fit=crop&q=80',
+    description: 'صرح طبي متكامل يقدم رعاية صحية تشخيصية وعلاجية بأحدث التجهيزات الطبية الحديثة ونخبة من الاستشاريين في كافة التخصصات الطبية والجراحية.',
+    badges: [
+      { id: 'v-3', label: 'موثق رسمياً', type: 'verified' }
+    ],
+    amenities: ['طوارئ 24 ساعة', 'مختبرات متقدمة', 'عناية مركزة', 'أشعة مقطعية ورنين', 'صيدلية داخلية', 'إسعاف مجهز'],
+    stats: { viewsCount: 8400, savesCount: 410 },
+    coverImage: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=1400&auto=format&fit=crop&q=80',
+    logo: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=300&auto=format&fit=crop&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=600&auto=format&fit=crop&q=80'
+      'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=800&auto=format&fit=crop&q=80'
     ],
     reviews: [
-      { id: 'r-5', userName: 'طارق القباطي', rating: 5, date: 'قبل شهر', comment: 'رعاية ممتازة والأطباء متعاونون جداً.' }
+      { id: 'r-5', userName: 'طارق القباطي', rating: 5, date: 'قبل شهر', comment: 'كادر طبي مؤهل ورعاية فائقة في قسم الطوارئ.' }
     ]
   },
   {
@@ -127,44 +143,24 @@ export const SAMPLE_BUSINESSES: BusinessItem[] = [
     cityId: 'mukalla',
     rating: 4.6,
     reviewsCount: 112,
-    address: 'المكلا - شارع الستين - بجوار خور المكلا',
+    address: 'المكلا - شارع الستين - إطلالة خور المكلا',
     phone: '05-312345',
     whatsapp: '775554433',
-    workingHours: 'استقبال 24 ساعة',
-    description: 'إطلالة بحرية ساحرة على بحر العرب وخور المكلا، أجنحة فندقية مجهزة بأحدث سبل الراحة ومطعم فاخر.',
-    isVerified: false,
-    isFeatured: true,
-    coverImage: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&auto=format&fit=crop&q=80',
-    logo: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=200&auto=format&fit=crop&q=80',
+    workingHours: 'استقبال وحجوزات 24 ساعة',
+    description: 'تجربة إقامة فاخرة بإطلالة ساحرة على بحر العرب وخور المكلا، غرف وأجنحة فندقية ملكية، مطاعم وقاعات مؤتمرات واجتماعات.',
+    badges: [
+      { id: 'v-4', label: 'فندق 4 نجوم', type: 'top-rated' }
+    ],
+    amenities: ['إطلالة بحرية', 'خدمة غرف 24 ساعة', 'مطعم فاخر', 'واي فاي فائق السرعة', 'قاعات مناسبات', 'مواقف خاصة'],
+    stats: { viewsCount: 6200, savesCount: 380 },
+    coverImage: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&auto=format&fit=crop&q=80',
+    logo: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=300&auto=format&fit=crop&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=600&auto=format&fit=crop&q=80'
+      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&auto=format&fit=crop&q=80'
     ],
     reviews: [
-      { id: 'r-6', userName: 'عمر الكثيري', rating: 4, date: 'قبل 3 أسابيع', comment: 'موقع استراتيجي رائع ونظافة عالية.' }
+      { id: 'r-6', userName: 'عمر الكثيري', rating: 4, date: 'قبل 3 أسابيع', comment: 'موقع ممتاز وهادئ والخدمة راقية جداً.' }
     ]
-  }
-];
-
-export const SAMPLE_ADS: AdItem[] = [
-  {
-    id: 'ad-hero-1',
-    title: 'تطبيق كريمي جوال - بنك الكريمي',
-    description: 'سدد الفواتير وحول أموالك لحظياً في جميع المحافظات بأعلى أمان وسرعة.',
-    categorySlug: 'banks',
-    imageUrl: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=1200&auto=format&fit=crop&q=80',
-    linkText: 'حمّل التطبيق الآن',
-    targetUrl: '#',
-    badgeText: 'إعلان مميز'
-  },
-  {
-    id: 'ad-feed-1',
-    title: 'عروض الشاليهات الصيفية في عدن والمكلا',
-    description: 'احجز شاليهك العائلي الخاص مع مسبح خاص وإطلالة بحرية بأفضل الأسعار.',
-    categorySlug: 'chalets',
-    imageUrl: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&auto=format&fit=crop&q=80',
-    linkText: 'عرض الشاليهات المتاحة',
-    targetUrl: '#',
-    badgeText: 'إعلان مروّج'
   }
 ];
