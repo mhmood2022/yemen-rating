@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
-import { BottomNav } from './components/common/BottomNav';
+import { SearchSection } from './components/common/SearchSection';
 import { HomeView } from './components/home/HomeView';
 import { CategoryListing } from './components/category/CategoryListing';
 import { BusinessDetails } from './components/business/BusinessDetails';
@@ -22,7 +22,6 @@ export function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'auctions' | 'markets' | 'real-estate' | 'jobs' | 'exchange-rates' | 'profile' | 'notifications' | 'favorites'>('home');
   const [selectedGov, setSelectedGov] = useState<string>('all');
   const [selectedCity, setSelectedCity] = useState<string>('all');
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const handleGlobalSearch = (query: string, govId: string, cityId: string) => {
     setSelectedGov(govId);
@@ -74,26 +73,37 @@ export function App() {
   return (
     <div dir="rtl" className="min-h-screen bg-[#0d0d0d] text-white flex flex-col font-sans selection:bg-[#f5c400] selection:text-zinc-950">
       
-      {/* 1. Header مع محدد المحافظات والمديريات */}
+      {/* 1. Header الأصلي الأنيق */}
       <Header
         onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
         onNavigateHome={handleGoHome}
+        onNavigateProfile={() => {
+          setCurrentPage('profile');
+          setSelectedBusiness(null);
+          setSelectedCategorySlug(null);
+        }}
         onNavigateNotifications={() => {
           setCurrentPage('notifications');
           setSelectedBusiness(null);
           setSelectedCategorySlug(null);
         }}
-        onSearch={handleGlobalSearch}
-        selectedGov={selectedGov}
-        selectedCity={selectedCity}
-        onGovChange={setSelectedGov}
-        onCityChange={setSelectedCity}
       />
 
-      {/* 2. المحتوى الرئيسي */}
-      <div className="flex-1 w-full max-w-5xl mx-auto flex">
+      {/* 2. شريط البحث ومحدد المحافظات والمديريات */}
+      {currentPage === 'home' && !selectedBusiness && (
+        <SearchSection
+          onSearch={handleGlobalSearch}
+          selectedGov={selectedGov}
+          selectedCity={selectedCity}
+          onGovChange={setSelectedGov}
+          onCityChange={setSelectedCity}
+        />
+      )}
+
+      {/* 3. الحاوية الرئيسية (القائمة الجانبية + محتوى الصفحات) */}
+      <div className="flex-1 w-full max-w-7xl mx-auto flex">
         
-        {/* القائمة الجانبية */}
+        {/* القائمة الجانبية الـ 26 تصنيفاً */}
         <Sidebar
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
@@ -101,8 +111,8 @@ export function App() {
           onSelectCategory={handleSelectCategory}
         />
 
-        {/* جسم الصفحة */}
-        <main className="flex-1 min-w-0 p-3 sm:p-5">
+        {/* عرض المحتوى التفاعلي */}
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
           {selectedBusiness ? (
             <BusinessDetails
               business={selectedBusiness}
@@ -146,42 +156,6 @@ export function App() {
           )}
         </main>
       </div>
-
-      {/* 3. شريط التنقل السفلي */}
-      <BottomNav
-        currentPage={currentPage}
-        onNavigate={(page: any) => {
-          setCurrentPage(page);
-          setSelectedBusiness(null);
-          setSelectedCategorySlug(null);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        onOpenAddModal={() => setIsAddModalOpen(true)}
-      />
-
-      {/* نافذة الإضافة السريعة (+) */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#181818] border border-[#282828] rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl">
-            <h3 className="text-sm font-bold text-white text-center">إضافة إعلان أو نشاط تجاري جديد</h3>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button onClick={() => { setIsAddModalOpen(false); setCurrentPage('auctions'); }} className="p-3 bg-[#121212] hover:bg-[#f5c400] hover:text-zinc-950 rounded-xl border border-[#2a2a2a] text-center font-bold">
-                🔨 إنشاء مزاد
-              </button>
-              <button onClick={() => { setIsAddModalOpen(false); setCurrentPage('real-estate'); }} className="p-3 bg-[#121212] hover:bg-[#f5c400] hover:text-zinc-950 rounded-xl border border-[#2a2a2a] text-center font-bold">
-                🏢 إضافة عقار
-              </button>
-              <button onClick={() => { setIsAddModalOpen(false); setCurrentPage('jobs'); }} className="p-3 bg-[#121212] hover:bg-[#f5c400] hover:text-zinc-950 rounded-xl border border-[#2a2a2a] text-center font-bold">
-                💼 إضافة وظيفة
-              </button>
-              <button onClick={() => { setIsAddModalOpen(false); }} className="p-3 bg-[#121212] hover:bg-[#f5c400] hover:text-zinc-950 rounded-xl border border-[#2a2a2a] text-center font-bold">
-                ⭐ إضافة منشأة
-              </button>
-            </div>
-            <button onClick={() => setIsAddModalOpen(false)} className="w-full py-2 bg-[#252525] text-zinc-300 text-xs rounded-xl hover:text-white">إغلاق</button>
-          </div>
-        </div>
-      )}
 
     </div>
   );
