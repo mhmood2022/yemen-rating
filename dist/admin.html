@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>يمن ريتغ | لوحة التحكم والإعلانات الرسمية</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #0B0B0F;
+      --bg-sidebar: #101015;
+      --bg-topbar: #101015;
+      --bg-card: #15151C;
+      --bg-card-inner: #1A1A24;
+      --bg-input: #0E0E14;
+      
+      --gold: #FFB800;
+      --gold-hover: #E5A600;
+      --gold-dim: rgba(255, 184, 0, 0.12);
+      --gold-border: rgba(255, 184, 0, 0.3);
+      
+      --text: #FFFFFF;
+      --text-gray: #8E8E98;
+      --text-muted: #5E5E6A;
+      
+      --border: #20202C;
+      --border-light: #282836;
+      
+      --green: #10B981;
+      --green-dim: rgba(16, 185, 129, 0.15);
+      --red: #EF4444;
+      --red-dim: rgba(239, 68, 68, 0.15);
+      --orange: #F59E0B;
+      --orange-dim: rgba(245, 158, 11, 0.15);
+      --blue: #3B82F6;
+      --blue-dim: rgba(59, 130, 246, 0.15);
+      
+      --sidebar-w: 260px;
+      --topbar-h: 70px;
+      --r-md: 12px;
+      --r-lg: 18px;
+      --r-xl: 24px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-dark); color: var(--text); min-height: 100vh; display: flex; overflow-x: hidden; }
+
+    .svg-icon { display: inline-block; width: 1.15em; height: 1.15em; fill: currentColor; vertical-align: -0.15em; flex-shrink: 0; }
+
+    /* القائمة الجانبية الفاخرة */
+    .app-sidebar {
+      width: var(--sidebar-w); background: var(--bg-sidebar); border-left: 1px solid var(--border);
+      height: 100vh; position: fixed; top: 0; right: 0; display: flex; flex-direction: column;
+      justify-content: space-between; z-index: 1000; transition: transform 0.3s ease;
+    }
+    .sidebar-brand {
+      height: var(--topbar-h); display: flex; align-items: center; gap: 12px; padding: 0 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-logo-gem {
+      width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--gold), #D97706);
+      display: flex; align-items: center; justify-content: center; color: #000;
+    }
+    .brand-text-wrap h2 { font-size: 1.05rem; font-weight: 900; color: #FFF; line-height: 1.1; }
+    .brand-text-wrap span { font-size: 0.65rem; color: var(--gold); font-weight: 700; letter-spacing: 0.5px; }
+
+    .sidebar-nav-menu { padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 3px; overflow-y: auto; flex: 1; }
+    .nav-btn-link {
+      display: flex; align-items: center; justify-content: space-between; padding: 0.7rem 1rem; border-radius: var(--r-md);
+      color: var(--text-gray); background: transparent; border: 1px solid transparent; font-size: 0.84rem;
+      font-weight: 700; cursor: pointer; text-align: right; width: 100%; transition: 0.2s;
+    }
+    .nav-btn-link div { display: flex; align-items: center; gap: 12px; }
+    .nav-btn-link:hover { color: #FFF; background: rgba(255, 255, 255, 0.04); }
+    .nav-btn-link.active { background: var(--gold); color: #000; font-weight: 900; }
+    .nav-btn-link.active svg { fill: #000; }
+    .nav-btn-badge { font-size: 0.65rem; padding: 2px 7px; border-radius: 10px; background: rgba(255,255,255,0.08); color: var(--text-gray); }
+    .nav-btn-link.active .nav-btn-badge { background: rgba(0,0,0,0.25); color: #000; font-weight: 900; }
+
+    /* بطاقة الترقية والبروفايل */
+    .vip-upgrade-card {
+      margin: 0.75rem; background: var(--bg-card); border: 1px solid var(--gold-border);
+      border-radius: var(--r-md); padding: 0.85rem; text-align: center;
+    }
+    .vip-upgrade-card svg { fill: var(--gold); width: 24px; height: 24px; margin-bottom: 4px; }
+    .vip-upgrade-card h4 { font-size: 0.8rem; font-weight: 900; color: #FFF; }
+    .vip-upgrade-card p { font-size: 0.68rem; color: var(--text-gray); margin-bottom: 8px; }
+    .btn-vip-upgrade {
+      background: none; border: 1px solid var(--gold); color: var(--gold);
+      padding: 4px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; cursor: pointer; width: 100%;
+    }
+    .btn-vip-upgrade:hover { background: var(--gold); color: #000; }
+
+    .user-profile-bottom {
+      padding: 0.85rem 1rem; border-top: 1px solid var(--border); display: flex;
+      align-items: center; justify-content: space-between;
+    }
+    .user-profile-info { display: flex; align-items: center; gap: 10px; }
+    .user-avatar-circle { width: 34px; height: 34px; border-radius: 50%; background: var(--gold-dim); color: var(--gold); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; border: 1px solid var(--gold-border); }
+
+    /* منطقة العمل الرئيسية */
+    .app-main-layout {
+      margin-right: var(--sidebar-w); flex: 1; min-width: 0; display: flex;
+      flex-direction: column; min-height: 100vh; transition: margin 0.3s ease;
+    }
+
+    /* الشريط العلوي */
+    .topbar-header {
+      height: var(--topbar-h); background: var(--bg-topbar); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;
+      position: sticky; top: 0; z-index: 900;
+    }
+    .topbar-search-wrap { position: relative; width: 360px; }
+    .topbar-search-wrap input {
+      width: 100%; background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 0.6rem 2.4rem 0.6rem 1rem; color: #FFF; font-size: 0.82rem;
+    }
+    .topbar-search-wrap input:focus { outline: none; border-color: var(--gold); }
+    .topbar-search-wrap svg { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-gray); }
+
+    .topbar-actions-group { display: flex; align-items: center; gap: 12px; }
+    .btn-gold-action {
+      background: var(--gold); color: #000; font-weight: 900; font-size: 0.82rem;
+      padding: 0.55rem 1.25rem; border-radius: var(--r-md); border: none; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; transition: 0.2s;
+    }
+    .btn-gold-action:hover { background: var(--gold-hover); }
+    .notif-bell-btn {
+      position: relative; width: 38px; height: 38px; border-radius: var(--r-md);
+      background: var(--bg-card); border: 1px solid var(--border); display: flex;
+      align-items: center; justify-content: center; color: var(--text-gray); cursor: pointer;
+    }
+    .notif-counter-badge {
+      position: absolute; top: -4px; right: -4px; width: 18px; height: 18px;
+      background: var(--gold); color: #000; border-radius: 50%; font-size: 0.65rem; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .main-body-content { padding: 2rem; flex: 1; }
+
+    .dashboard-view-tab { display: none; animation: fadeIn 0.25s ease; }
+    .dashboard-view-tab.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ==========================================================================
+       مكونات بطاقات الإحصائيات والجداول
+       ========================================================================== */
+    .page-title-header { font-size: 1.35rem; font-weight: 900; color: #FFF; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+
+    .kpi-row-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 1.5rem; }
+    .kpi-main-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg);
+      padding: 1.25rem 1.4rem; display: flex; justify-content: space-between; align-items: center;
+    }
+    .kpi-card-right .kpi-label { font-size: 0.75rem; color: var(--text-gray); font-weight: 700; margin-bottom: 4px; }
+    .kpi-card-right .kpi-val { font-size: 1.8rem; font-weight: 900; color: #FFF; line-height: 1; margin-bottom: 6px; }
+    .kpi-card-right .kpi-sub { font-size: 0.68rem; color: var(--text-muted); }
+    .kpi-card-left { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .kpi-growth-pill { font-size: 0.72rem; font-weight: 800; color: var(--green); background: var(--green-dim); padding: 2px 7px; border-radius: 8px; }
+    .kpi-icon-circle { width: 36px; height: 36px; border-radius: 10px; background: var(--bg-card-inner); display: flex; align-items: center; justify-content: center; color: var(--gold); border: 1px solid var(--border); }
+
+    /* الجداول والصناديق */
+    .content-box-container {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .data-table-custom { width: 100%; border-collapse: collapse; text-align: right; font-size: 0.82rem; }
+    .data-table-custom th { padding: 1rem 1.25rem; background: var(--bg-card-inner); color: var(--text-gray); border-bottom: 1px solid var(--border); font-weight: 800; }
+    .data-table-custom td { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); color: #FFF; }
+    .data-table-custom tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    /* تبويبات الفلترة داخل قسم الإعلانات */
+    .sub-filter-tabs { display: flex; gap: 6px; background: var(--bg-card-inner); padding: 4px; border-radius: var(--r-md); border: 1px solid var(--border); width: fit-content; margin-bottom: 1.25rem; }
+    .sub-filter-btn { padding: 6px 14px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; color: var(--text-gray); background: none; border: none; cursor: pointer; transition: 0.2s; }
+    .sub-filter-btn.active { background: var(--gold); color: #000; font-weight: 900; }
+
+    /* شبكة مواضع الإعلانات */
+    .placements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+    .placement-card {
+      background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--r-md);
+      padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .placement-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+    .placement-slug-badge { font-family: monospace; font-size: 0.7rem; color: var(--gold); background: var(--gold-dim); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--gold-border); }
+
+    /* النوافذ المنبثقة (Modals) */
+    .modal-overlay-bg {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center; z-index: 2000; padding: 1.5rem;
+    }
+    .modal-overlay-bg.open { display: flex; }
+    .modal-card-body {
+      background: var(--bg-card); border: 1px solid var(--border-light); border-radius: var(--r-xl);
+      width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+    .modal-header-line { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-content-form { padding: 1.5rem; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group-unit { margin-bottom: 1.1rem; }
+    .form-group-unit label { display: block; font-size: 0.78rem; font-weight: 800; color: var(--text-gray); margin-bottom: 6px; }
+    .form-group-unit input, .form-group-unit select, .form-group-unit textarea {
+      width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--r-md);
+      padding: 0.65rem 1rem; color: #FFF; font-size: 0.82rem;
+    }
+    .form-group-unit input:focus, .form-group-unit select:focus { outline: none; border-color: var(--gold); }
+
+    /* التجاوب */
+    @media (max-width: 1200px) {
+      .kpi-row-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 992px) {
+      .app-sidebar { transform: translateX(100%); }
+      .app-sidebar.open { transform: translateX(0); }
+      .app-main-layout { margin-right: 0; }
+      .topbar-header { padding: 0 1rem; }
+      .main-body-content { padding: 1rem; }
+      .topbar-search-wrap { display: none; }
+      .mobile-menu-btn { display: block !important; }
+    }
+    @media (max-width: 600px) {
+      .kpi-row-grid, .form-row-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================================
+       1. القائمة الجانبية (Sidebar Navigation)
+       ======================================================================== -->
+  <aside class="app-sidebar" id="appSidebar">
+    <div>
+      <div class="sidebar-brand">
+        <div class="brand-logo-gem">
+          <svg style="width: 20px; height: 20px; fill: #000;" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        </div>
+        <div class="brand-text-wrap">
+          <h2>يمن ريتغ</h2>
+          <span>YEMEN RATING</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav-menu">
+        <button class="nav-btn-link active" onclick="switchNavTab('dash', this)">
+          <div><svg class="svg-icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> <span>الرئيسية</span></div>
+        </button>
+
+        <!-- تبويب إدارة الإعلانات والحملات (YR Ads Suite) -->
+        <button class="nav-btn-link" onclick="switchNavTab('ads', this)">
+          <div><svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11l-5-3 5-3v6z"/></svg> <span>إدارة الإعلانات</span></div>
+          <span class="nav-btn-badge" style="color: var(--gold); background: var(--gold-dim); font-weight: 900;">YR Ads</span>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('entities', this)">
+          <div><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg> <span>المنشآت</span></div>
+          <span class="nav-btn-badge">1,248</span>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('reviews', this)">
+          <div><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> <span>التقييمات</span></div>
+          <span class="nav-btn-badge">5,432</span>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('activity', this)">
+          <div><svg class="svg-icon" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg> <span>النشاط</span></div>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('users', this)">
+          <div><svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> <span>المستخدمين</span></div>
+          <span class="nav-btn-badge">892</span>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('reports', this)">
+          <div><svg class="svg-icon" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg> <span>البلاغات</span></div>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('analytics', this)">
+          <div><svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg> <span>التقارير</span></div>
+        </button>
+
+        <button class="nav-btn-link" onclick="switchNavTab('settings', this)">
+          <div><svg class="svg-icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg> <span>الإعدادات</span></div>
+        </button>
+      </nav>
+
+      <div class="vip-upgrade-card">
+        <svg viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .55-.45 1-1 1H6c-.55 0-1-.45-1-1v-1h14v1z"/></svg>
+        <h4>صاحب المتجر المميز</h4>
+        <p>الترقية لتميز منشأتك</p>
+        <button class="btn-vip-upgrade">ترقية الآن</button>
+      </div>
+
+      <div class="user-profile-bottom">
+        <div class="user-profile-info">
+          <div class="user-avatar-circle">أم</div>
+          <div>
+            <div style="font-size: 0.8rem; font-weight: 800; color: #FFF;">أحمد محمد</div>
+            <div style="font-size: 0.65rem; color: var(--text-gray);">مشرف عام</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       2. مساحة العمل والهيدر (Main Workspace)
+       ======================================================================== -->
+  <div class="app-main-layout">
+    
+    <header class="topbar-header">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button class="mobile-menu-btn" style="display: none; background: none; border: none; color: #FFF; font-size: 1.2rem; cursor: pointer;" onclick="document.getElementById('appSidebar').classList.toggle('open')">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </button>
+        <div class="topbar-search-wrap">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="text" placeholder="ابحث عن منشأة، إعلان، أو مستخدم...">
+        </div>
+      </div>
+
+      <div class="topbar-actions-group">
+        <button class="btn-gold-action" onclick="openCreateAdModal()">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          <span>إنشاء إعلان جديد</span>
+        </button>
+
+        <div class="notif-bell-btn">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+          <div class="notif-counter-badge">12</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-body-content">
+
+      <!-- ==================== تبويب 1: الرئيسية ==================== -->
+      <section id="tab-dash" class="dashboard-view-tab active">
+        <div class="page-title-header">
+          <span>الرئيسية</span>
+          <span style="font-size: 0.8rem; color: var(--gold); font-weight: 700;">مباشر • لوحة الإدارة</span>
+        </div>
+
+        <div class="kpi-row-grid">
+          <div class="kpi-main-card">
+            <div class="kpi-card-right"><div class="kpi-label">إجمالي المنشآت</div><div class="kpi-val">1,248</div><div class="kpi-sub">عن الشهر الماضي</div></div>
+            <div class="kpi-card-left"><div class="kpi-growth-pill">+18%</div><div class="kpi-icon-circle"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div></div>
+          </div>
+          <div class="kpi-main-card">
+            <div class="kpi-card-right"><div class="kpi-label">إجمالي التقييمات</div><div class="kpi-val">5,432</div><div class="kpi-sub">عن الشهر الماضي</div></div>
+            <div class="kpi-card-left"><div class="kpi-growth-pill">+16%</div><div class="kpi-icon-circle"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div></div>
+          </div>
+          <div class="kpi-main-card">
+            <div class="kpi-card-right"><div class="kpi-label">إجمالي المستخدمين</div><div class="kpi-val">892</div><div class="kpi-sub">عن الشهر الماضي</div></div>
+            <div class="kpi-card-left"><div class="kpi-growth-pill">+24%</div><div class="kpi-icon-circle"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div></div>
+          </div>
+          <div class="kpi-main-card">
+            <div class="kpi-card-right"><div class="kpi-label">عدد الزيارات</div><div class="kpi-val">23,456</div><div class="kpi-sub">عن الشهر الماضي</div></div>
+            <div class="kpi-card-left"><div class="kpi-growth-pill">+22%</div><div class="kpi-icon-circle"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></div></div>
+          </div>
+        </div>
+
+        <div class="content-box-container">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div style="font-size: 0.95rem; font-weight: 800; color: #FFF;">نظرة عامة على التقييمات والأداء</div>
+            <span style="font-size: 0.72rem; color: var(--gold);">آخر 7 أيام</span>
+          </div>
+          <div style="height: 180px; position: relative;"><canvas id="splineRatingCanvas" style="width: 100%; height: 100%;"></canvas></div>
+        </div>
+      </section>
+
+      <!-- ==================== تبويب 2: منظومة الإعلانات الشاملة (YR Ads Suite) ==================== -->
+      <section id="tab-ads" class="dashboard-view-tab">
+        <div class="page-title-header">
+          <div>
+            <span>نظام إدارة الإعلانات والحملات</span>
+            <span style="display: block; font-size: 0.75rem; color: var(--text-gray); font-weight: 600; margin-top: 2px;">
+              Enterprise YR Ads Server • تتبع المشاهدات المؤكدة، النقرات، ونسب التحويل CTR
+            </span>
+          </div>
+          <button class="btn-gold-action" onclick="openCreateAdModal()">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            <span>+ إنشاء حملة إعلانية</span>
+          </button>
+        </div>
+
+        <!-- 4 كروت إحصائيات الإعلانات الحقيقية -->
+        <div class="kpi-row-grid">
+          <div class="kpi-main-card">
+            <div class="kpi-card-right"><div class="kpi-label">الحملات النشطة</div><div class="kpi-val" id="adStatsActive">14</div><div class="kpi-sub">من إجمالي 28 حملة</div></div>
+            <div class="kpi-card-left"><div class="kpi-growth-pill">+4 جديدة</div><div class="kpi-icon-circle"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11l-5-3 5-3v6z"/></svg></div></div>
+          </div>
+          <div class="kpi-main-card">
+            <div class="kpi-card-right"><div class="kpi-label">إجمالي المشاهدات المؤكدة</div><div class="kpi-val">524,190</div><div class="kpi-sub">Viewable Impressions</div></div>
+            <div class="kpi-card-left"><div class="kpi-growth-pill">+18.4%</div><div class="kpi-icon-circle" style="color: #3B82F6;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg></div></div>
+          </div>
+          <div class="kpi-main-card">
+            <div class="kpi-card-right"><div class="kpi-label">إجمالي النقرات الفعلية</div><div class="kpi-val">18,430</div><div class="kpi-sub">Deduplicated Clicks</div></div>
+            <div class="kpi-card-left"><div class="kpi-growth-pill">+12.1%</div><div class="kpi-icon-circle" style="color: var(--green);"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M13.64 21.97C13.14 22.21 12.54 22 12.31 21.5L10.13 16.7L7.62 18.78C7.14 19.17 6.43 18.83 6.43 18.21V3.79C6.43 3.17 7.14 2.83 7.62 3.22L18.67 12.14C19.17 12.55 18.99 13.36 18.36 13.51L14.73 14.39L16.91 19.18C17.15 19.68 16.94 20.28 16.44 20.52L13.64 21.97Z"/></svg></div></div>
+          </div>
+          <div class="kpi-main-card">
+            <div class="kpi-card-right"><div class="kpi-label">متوسط نسبة النقر (CTR)</div><div class="kpi-val" style="color: var(--gold);">3.51%</div><div class="kpi-sub">معدل التفاعل العام</div></div>
+            <div class="kpi-card-left"><div class="kpi-growth-pill">+0.4%</div><div class="kpi-icon-circle"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg></div></div>
+          </div>
+        </div>
+
+        <!-- تبويبات التصفية الداخلية -->
+        <div class="sub-filter-tabs">
+          <button class="sub-filter-btn active" onclick="switchAdSection('campaigns', this)">الحملات الإعلانية</button>
+          <button class="sub-filter-btn" onclick="switchAdSection('placements', this)">مواضع الظهور (Placements)</button>
+          <button class="sub-filter-btn" onclick="switchAdSection('advertisers', this)">المعلنون</button>
+        </div>
+
+        <!-- 1. قسم جدول الحملات الإعلانية -->
+        <div id="adSubSection-campaigns" class="content-box-container" style="padding: 0; overflow-x: auto;">
+          <table class="data-table-custom">
+            <thead>
+              <tr>
+                <th>الحملة الإعلانية</th>
+                <th>المعلن</th>
+                <th>الموضع</th>
+                <th>الميزانية / المصروف</th>
+                <th>الظهور</th>
+                <th>النقرات</th>
+                <th>CTR</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="campaignsTableBody">
+              <tr>
+                <td style="font-weight: 800; color: #FFF;">
+                  <div>بانر التمويل الأصغر الإسلامي</div>
+                  <div style="font-size: 0.68rem; color: var(--text-muted);">2026/08/01 إلى 2026/09/01</div>
+                </td>
+                <td style="color: var(--gold); font-weight: 700;">بنك الكريمي</td>
+                <td><span class="placement-slug-badge">home_top</span></td>
+                <td><strong style="color: #FFF;">$850</strong> / $1,500</td>
+                <td style="font-weight: 800;">185,400</td>
+                <td style="font-weight: 800; color: var(--green);">6,200</td>
+                <td style="font-weight: 900; color: var(--gold);">3.34%</td>
+                <td><span style="color: var(--green); background: var(--green-dim); padding: 3px 8px; border-radius: 6px; font-weight: 800;">نشط ✅</span></td>
+                <td>
+                  <button onclick="alert('إيقاف مؤقت للحملة')" style="background: none; border: 1px solid var(--border); color: var(--text-gray); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; cursor: pointer;">إيقاف</button>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-weight: 800; color: #FFF;">
+                  <div>مهرجان عروض التوفير الكبرى</div>
+                  <div style="font-size: 0.68rem; color: var(--text-muted);">2026/08/15 إلى 2026/08/30</div>
+                </td>
+                <td style="color: var(--gold); font-weight: 700;">هايبر بلس التجاري</td>
+                <td><span class="placement-slug-badge">home_middle</span></td>
+                <td><strong style="color: #FFF;">$320</strong> / $800</td>
+                <td style="font-weight: 800;">94,200</td>
+                <td style="font-weight: 800; color: var(--green);">3,890</td>
+                <td style="font-weight: 900; color: var(--gold);">4.12%</td>
+                <td><span style="color: var(--green); background: var(--green-dim); padding: 3px 8px; border-radius: 6px; font-weight: 800;">نشط ✅</span></td>
+                <td>
+                  <button onclick="alert('إيقاف مؤقت للحملة')" style="background: none; border: 1px solid var(--border); color: var(--text-gray); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; cursor: pointer;">إيقاف</button>
+                </td>
+              </tr>
+              <tr>
+                <td style="font-weight: 800; color: #FFF;">
+                  <div>ترويج تطبيق المحفظة السريعة</div>
+                  <div style="font-size: 0.68rem; color: var(--text-muted);">2026/09/01 إلى 2026/10/01</div>
+                </td>
+                <td style="color: var(--gold); font-weight: 700;">محفظة جيب الإلكترونية</td>
+                <td><span class="placement-slug-badge">companies_top</span></td>
+                <td><strong style="color: #FFF;">$0</strong> / $2,000</td>
+                <td style="font-weight: 800;">0</td>
+                <td style="font-weight: 800; color: var(--text-muted);">0</td>
+                <td style="font-weight: 900; color: var(--text-muted);">0.00%</td>
+                <td><span style="color: var(--orange); background: var(--orange-dim); padding: 3px 8px; border-radius: 6px; font-weight: 800;">بانتظار المراجعة ⏳</span></td>
+                <td>
+                  <button onclick="alert('تم اعتماد ونشر الحملة بنجاح!')" style="background: var(--gold); border: none; color: #000; padding: 3px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 900; cursor: pointer;">اعتماد</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 2. قسم مواضع الظهور (Placements) -->
+        <div id="adSubSection-placements" style="display: none;">
+          <div class="placements-grid">
+            <div class="placement-card">
+              <div class="placement-header">
+                <div><div style="font-weight: 800; font-size: 0.88rem; color: #FFF;">بانر أعلى الصفحة الرئيسية</div><span class="placement-slug-badge">home_top</span></div>
+                <span style="color: var(--green); font-size: 0.72rem; font-weight: 800;">نشط</span>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-gray); margin: 8px 0;">الأبعاد: <strong>970×90</strong> (كمبيوتر) / <strong>320×100</strong> (هاتف)</div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 8px;">
+                <span>الإعلانات النشطة: <strong>2/5</strong></span>
+                <span style="color: var(--gold);">نظام تدوير عادل</span>
+              </div>
+            </div>
+
+            <div class="placement-card">
+              <div class="placement-header">
+                <div><div style="font-weight: 800; font-size: 0.88rem; color: #FFF;">إعلان وسط الرئيسية</div><span class="placement-slug-badge">home_middle</span></div>
+                <span style="color: var(--green); font-size: 0.72rem; font-weight: 800;">نشط</span>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-gray); margin: 8px 0;">الأبعاد: <strong>728×90</strong> (كمبيوتر) / <strong>300×250</strong> (هاتف)</div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 8px;">
+                <span>الإعلانات النشطة: <strong>1/5</strong></span>
+                <span style="color: var(--gold);">نظام تدوير عادل</span>
+              </div>
+            </div>
+
+            <div class="placement-card">
+              <div class="placement-header">
+                <div><div style="font-weight: 800; font-size: 0.88rem; color: #FFF;">شريط الهاتف المثبت</div><span class="placement-slug-badge">mobile_sticky</span></div>
+                <span style="color: var(--green); font-size: 0.72rem; font-weight: 800;">نشط</span>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-gray); margin: 8px 0;">الأبعاد: <strong>320×50</strong> (خاص بالهواتف)</div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 8px;">
+                <span>الإعلانات النشطة: <strong>3/3</strong></span>
+                <span style="color: var(--gold);">محجوز بالكامل</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. قسم المعلنين (Advertisers) -->
+        <div id="adSubSection-advertisers" class="content-box-container" style="display: none; padding: 0; overflow-x: auto;">
+          <table class="data-table-custom">
+            <thead>
+              <tr><th>المعلن / الشركة</th><th>المسؤول</th><th>الهاتف</th><th>البريد</th><th>الحملات</th><th>الحالة</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight: 800; color: #FFF;">بنك الكريمي الإسلامي</td>
+                <td>محمد الأحمدي</td>
+                <td>+967 770 123 456</td>
+                <td>marketing@alkuraimi.com</td>
+                <td><strong style="color: var(--gold);">4 حملات</strong></td>
+                <td><span style="color: var(--green); background: var(--green-dim); padding: 2px 7px; border-radius: 6px;">موثق ✅</span></td>
+              </tr>
+              <tr>
+                <td style="font-weight: 800; color: #FFF;">هايبر بلس التجاري</td>
+                <td>سامي العريفي</td>
+                <td>+967 771 987 654</td>
+                <td>ads@hyperplus.ye</td>
+                <td><strong style="color: var(--gold);">2 حملات</strong></td>
+                <td><span style="color: var(--green); background: var(--green-dim); padding: 2px 7px; border-radius: 6px;">موثق ✅</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ==================== باقي الأقسام ==================== -->
+      <section id="tab-entities" class="dashboard-view-tab">
+        <div class="page-title-header">دليل المنشآت المسجلة (1,248)</div>
+        <div class="content-box-container" style="padding: 0; overflow-x: auto;">
+          <table class="data-table-custom">
+            <thead><tr><th>المنشأة</th><th>القسم</th><th>الموقع</th><th>التقييم</th><th>الحالة</th></tr></thead>
+            <tbody>
+              <tr><td style="font-weight: 800; color: #FFF;">الكريمي الذهبي</td><td>مطعم</td><td>صنعاء - التحرير</td><td><span style="color: var(--gold);">★ 4.8</span></td><td><span style="color: var(--green); background: var(--green-dim); padding: 2px 7px; border-radius: 6px;">مفعل</span></td></tr>
+              <tr><td style="font-weight: 800; color: #FFF;">مقهى البن اليمني</td><td>مقهى</td><td>عدن - خور مكسر</td><td><span style="color: var(--gold);">★ 4.6</span></td><td><span style="color: var(--green); background: var(--green-dim); padding: 2px 7px; border-radius: 6px;">مفعل</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="tab-reviews" class="dashboard-view-tab">
+        <div class="page-title-header">التقييمات والمراجعات (5,432)</div>
+        <div class="content-box-container">
+          <div style="padding: 1rem; background: var(--bg-card-inner); border-radius: var(--r-md); margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><strong>أبو محمد</strong> <span style="color: var(--gold);">★★★★★</span></div>
+            <div style="font-size: 0.78rem; color: var(--text-gray);">خدمة ممتازة وتعامل راقي جداً - الكريمي الذهبي</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-activity" class="dashboard-view-tab"><div class="page-title-header">النشاط الحي للنظام</div><div class="content-box-container"><p style="color: var(--text-gray);">سجل تحركات النظام والعمليات الإدارية الفورية.</p></div></section>
+      <section id="tab-users" class="dashboard-view-tab"><div class="page-title-header">إدارة المستخدمين والصلاحيات (892)</div><div class="content-box-container"><p style="color: var(--text-gray);">قائمة الحسابات والملاك وصلاحيات الإدارة.</p></div></section>
+      <section id="tab-reports" class="dashboard-view-tab"><div class="page-title-header">إدارة البلاغات والمحتوى المخالف</div><div class="content-box-container"><p style="color: var(--text-gray);">مراجعة البلاغات والشكاوى الواردة من المستخدمين.</p></div></section>
+      <section id="tab-analytics" class="dashboard-view-tab"><div class="page-title-header">التقارير والإحصائيات</div><div class="content-box-container"><p style="color: var(--text-gray);">تقارير النمو ومعدلات التفاعل والزيارات.</p></div></section>
+      <section id="tab-settings" class="dashboard-view-tab"><div class="page-title-header">إعدادات المنصة</div><div class="content-box-container"><p style="color: var(--text-gray);">تخصيص الهوية والبريد الإلكتروني والعملة الرسمية.</p></div></section>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       3. نافذة إنشاء حملة وإعلان جديد مع المعاينة الحية (Create Ad Modal)
+       ======================================================================== -->
+  <div class="modal-overlay-bg" id="createAdModal">
+    <div class="modal-card-body">
+      <div class="modal-header-line">
+        <div style="font-weight: 900; font-size: 1rem; color: #FFF; display: flex; align-items: center; gap: 8px;">
+          <svg class="svg-icon" style="color: var(--gold);" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          <span>إنشاء حملة وإعلان جديد (YR Ads)</span>
+        </div>
+        <button onclick="closeCreateAdModal()" style="background: none; border: none; color: var(--text-gray); font-size: 1.2rem; cursor: pointer;">✕</button>
+      </div>
+
+      <form onsubmit="handleSaveNewAd(event)" class="modal-content-form">
+        <div class="form-group-unit">
+          <label>عنوان الحملة الإعلانية *</label>
+          <input type="text" required placeholder="مثال: خصومات حصرية بنسبة 30% من بنك الكريمي">
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group-unit">
+            <label>المعلن / النشاط التجاري *</label>
+            <select required>
+              <option value="alkuraimi">بنك الكريمي الإسلامي</option>
+              <option value="hyperplus">هايبر بلس التجاري</option>
+              <option value="jeeb">محفظة جيب الإلكترونية</option>
+              <option value="yemen_house">مطعم البيت اليمني</option>
+            </select>
+          </div>
+          <div class="form-group-unit">
+            <label>موضع الظهور (Placement) *</label>
+            <select required id="modalPlacementSelect">
+              <option value="home_top">بانر أعلى الصفحة الرئيسية (970×90)</option>
+              <option value="home_middle">إعلان وسط الرئيسية (728×90)</option>
+              <option value="companies_top">بانر دليل الشركات (728×90)</option>
+              <option value="mobile_sticky">شريط الهاتف المثبت (320×50)</option>
+              <option value="desktop_sidebar">إعلان القائمة الجانبية (300×250)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group-unit">
+            <label>رابط التوجيه (Destination URL) *</label>
+            <input type="url" required placeholder="https://example.com/offer">
+          </div>
+          <div class="form-group-unit">
+            <label>الميزانية المقدرة ($ USD)</label>
+            <input type="number" value="500" min="50">
+          </div>
+        </div>
+
+        <!-- رفع الصور المخصصة للكمبيوتر والهاتف -->
+        <div class="form-row-2">
+          <div class="form-group-unit">
+            <label>صورة إعلان الكمبيوتر (Desktop/Tablet)</label>
+            <input type="file" accept="image/*">
+          </div>
+          <div class="form-group-unit">
+            <label>صورة إعلان الهاتف المخصص (Mobile)</label>
+            <input type="file" accept="image/*">
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group-unit">
+            <label>تاريخ البدء *</label>
+            <input type="date" required value="2026-08-23">
+          </div>
+          <div class="form-group-unit">
+            <label>تاريخ الانتهاء *</label>
+            <input type="date" required value="2026-09-23">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+          <button type="button" onclick="closeCreateAdModal()" style="padding: 0.6rem 1.2rem; background: var(--bg-card-inner); border: 1px solid var(--border); border-radius: var(--r-md); color: var(--text-gray); font-weight: 700; cursor: pointer;">إلغاء</button>
+          <button type="submit" class="btn-gold-action" style="padding: 0.6rem 1.5rem;">حفظ وإرسال للمراجعة</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function switchNavTab(tabId, btn) {
+      document.querySelectorAll('.dashboard-view-tab').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn-link').forEach(b => b.classList.remove('active'));
+
+      const target = document.getElementById('tab-' + tabId);
+      if (target) target.classList.add('active');
+      if (btn) btn.classList.add('active');
+
+      if (window.innerWidth <= 992) {
+        document.getElementById('appSidebar').classList.remove('open');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (tabId === 'dash') drawSplineChart();
+    }
+
+    function switchAdSection(secId, btn) {
+      document.getElementById('adSubSection-campaigns').style.display = 'none';
+      document.getElementById('adSubSection-placements').style.display = 'none';
+      document.getElementById('adSubSection-advertisers').style.display = 'none';
+      document.querySelectorAll('.sub-filter-btn').forEach(b => b.classList.remove('active'));
+
+      document.getElementById('adSubSection-' + secId).style.display = (secId === 'placements') ? 'block' : (secId === 'campaigns' || secId === 'advertisers') ? 'block' : 'none';
+      btn.classList.add('active');
+    }
+
+    function openCreateAdModal() {
+      document.getElementById('createAdModal').classList.add('open');
+    }
+
+    function closeCreateAdModal() {
+      document.getElementById('createAdModal').classList.remove('open');
+    }
+
+    function handleSaveNewAd(e) {
+      e.preventDefault();
+      alert('✅ تم إنشاء الحملة الإعلانية بنجاح وإدراجها في جدول المراجعة والاعتماد!');
+      closeCreateAdModal();
+    }
+
+    // رسم المنحنى الذهبي الانسيابي
+    function drawSplineChart() {
+      const canvas = document.getElementById('splineRatingCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.parentElement.clientWidth * dpr;
+      canvas.height = canvas.parentElement.clientHeight * dpr;
+      ctx.scale(dpr, dpr);
+
+      const w = canvas.parentElement.clientWidth;
+      const h = canvas.parentElement.clientHeight;
+      const points = [
+        {x: w*0.05, y: h*0.8}, {x: w*0.2, y: h*0.5}, {x: w*0.35, y: h*0.55},
+        {x: w*0.5, y: h*0.25}, {x: w*0.65, y: h*0.6}, {x: w*0.8, y: h*0.5}, {x: w*0.95, y: h*0.15}
+      ];
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = '#20202C'; ctx.lineWidth = 1;
+      for (let y = h*0.25; y < h; y += h*0.25) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+
+      ctx.strokeStyle = '#FFB800'; ctx.lineWidth = 3; ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 0; i < points.length - 1; i++) {
+        const xc = (points[i].x + points[i+1].x) / 2;
+        const yc = (points[i].y + points[i+1].y) / 2;
+        ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+      }
+      ctx.lineTo(points[points.length-1].x, points[points.length-1].y);
+      ctx.stroke();
+
+      points.forEach(p => {
+        ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#FFB800'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI*2); ctx.stroke();
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', drawSplineChart);
+    window.addEventListener('resize', drawSplineChart);
+  </script>
+</body>
+</html>
