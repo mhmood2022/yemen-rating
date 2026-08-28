@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, ArrowRight, DollarSign, Coins, RefreshCw, Calculator, ShieldCheck } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight, DollarSign, Coins, RefreshCw, Calculator } from 'lucide-react';
 
 export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [activeMarket, setActiveMarket] = useState<'sanaa' | 'aden'>('sanaa');
@@ -10,32 +10,24 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
     sanaa: {
       currencies: [
         { code: 'SAR', name: 'الريال السعودي', buy: 140.20, sell: 140.70, change: '+0.15%', isUp: true, icon: Coins },
-        { code: 'USD', name: 'الدولار الأمريكي', buy: 535.00, sell: 538.00, change: '-0.20%', isUp: false, icon: DollarSign },
-        { code: 'AED', name: 'الدرهم الإماراتي', buy: 145.50, sell: 146.20, change: '+0.10%', isUp: true, icon: Coins },
-        { code: 'OMR', name: 'الريال العماني', buy: 1380.00, sell: 1395.00, change: '0.00%', isUp: true, icon: Coins },
-        { code: 'EUR', name: 'اليورو الأوروبي', buy: 578.00, sell: 585.00, change: '+0.30%', isUp: true, icon: Coins }
+        { code: 'USD', name: 'الدولار الأمريكي', buy: 535.00, sell: 538.00, change: '-0.20%', isUp: false, icon: DollarSign }
       ],
       gold: [
         { karat: 'الذهب عيار 24 (جرام)', buy: 42500, sell: 44200, change: '+0.50%', isUp: true },
         { karat: 'الذهب عيار 21 (جرام)', buy: 37200, sell: 39500, change: '+0.45%', isUp: true },
-        { karat: 'الذهب عيار 18 (جرام)', buy: 31800, sell: 33500, change: '+0.40%', isUp: true },
-        { karat: 'الجنيه الذهب (سويسري/محلي)', buy: 298000, sell: 312000, change: '+0.85%', isUp: true }
+        { karat: 'الذهب عيار 18 (جرام)', buy: 31800, sell: 33500, change: '+0.40%', isUp: true }
       ],
       updatedAt: 'اليوم، 11:45 م (تحديث فوري)'
     },
     aden: {
       currencies: [
         { code: 'SAR', name: 'الريال السعودي', buy: 495.00, sell: 500.00, change: '+0.80%', isUp: true, icon: Coins },
-        { code: 'USD', name: 'الدولار الأمريكي', buy: 1890.00, sell: 1910.00, change: '+1.10%', isUp: true, icon: DollarSign },
-        { code: 'AED', name: 'الدرهم الإماراتي', buy: 512.00, sell: 518.00, change: '+0.75%', isUp: true, icon: Coins },
-        { code: 'OMR', name: 'الريال العماني', buy: 4890.00, sell: 4950.00, change: '+0.90%', isUp: true, icon: Coins },
-        { code: 'EUR', name: 'اليورو الأوروبي', buy: 2040.00, sell: 2075.00, change: '+1.25%', isUp: true, icon: Coins }
+        { code: 'USD', name: 'الدولار الأمريكي', buy: 1890.00, sell: 1910.00, change: '+1.10%', isUp: true, icon: DollarSign }
       ],
       gold: [
         { karat: 'الذهب عيار 24 (جرام)', buy: 148000, sell: 155000, change: '+0.95%', isUp: true },
         { karat: 'الذهب عيار 21 (جرام)', buy: 129500, sell: 138000, change: '+0.60%', isUp: true },
-        { karat: 'الذهب عيار 18 (جرام)', buy: 111000, sell: 119000, change: '+0.70%', isUp: true },
-        { karat: 'الجنيه الذهب (سويسري/محلي)', buy: 1040000, sell: 1095000, change: '+1.40%', isUp: true }
+        { karat: 'الذهب عيار 18 (جرام)', buy: 111000, sell: 119000, change: '+0.70%', isUp: true }
       ],
       updatedAt: 'اليوم، 11:45 م (تحديث فوري)'
     }
@@ -104,29 +96,29 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
 
         <span className="text-xs text-zinc-400 flex items-center gap-1.5">
-          <RefreshCw className="w-3.5 h-3.5 text-[#f5c400] animate-spin-slow" />
+          <RefreshCw className="w-3.5 h-3.5 text-zinc-400 animate-spin-slow" />
           <span>{current.updatedAt}</span>
         </span>
       </div>
 
-      {/* 1. Currencies Rates Table / Cards */}
+      {/* 1. Currencies Rates */}
       <div className="space-y-3">
         <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-emerald-400" />
-          <span>أسعار صرف العملات الأجنبية مقابل الريال اليمني (YER)</span>
+          <span>أسعار العملات الأجنبية مقابل الريال اليمني (YER)</span>
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {current.currencies.map((curr) => {
             const Icon = curr.icon;
             return (
               <div
                 key={curr.code}
-                className="bg-[#151515] border border-[#262626] rounded-2xl p-4 space-y-3 shadow-lg hover:border-[#383838] transition-colors"
+                className="bg-[#151515] border border-[#262626] rounded-2xl p-4 space-y-3 shadow-lg"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-[#1e1e1e] border border-[#2e2e2e] flex items-center justify-center text-[#f5c400]">
+                    <div className="w-8 h-8 rounded-xl bg-[#1e1e1e] border border-[#2e2e2e] flex items-center justify-center text-zinc-300">
                       <Icon className="w-4 h-4" />
                     </div>
                     <div>
@@ -144,16 +136,16 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-[#222222]">
-                  <div className="bg-[#0f0f0f] p-2 rounded-xl border border-[#1e1e1e]">
-                    <span className="block text-[10px] text-zinc-400">سعر الشراء</span>
+                  <div className="bg-[#0f0f0f] p-2.5 rounded-xl border border-[#1e1e1e]">
+                    <span className="block text-[10px] text-zinc-400">سعر الشراء (YER)</span>
                     <span className="text-base font-extrabold text-emerald-400 font-mono tracking-tight">
                       {curr.buy.toLocaleString()}
                     </span>
                   </div>
 
-                  <div className="bg-[#0f0f0f] p-2 rounded-xl border border-[#1e1e1e]">
-                    <span className="block text-[10px] text-zinc-400">سعر البيع</span>
-                    <span className="text-base font-extrabold text-[#f5c400] font-mono tracking-tight">
+                  <div className="bg-[#0f0f0f] p-2.5 rounded-xl border border-[#1e1e1e]">
+                    <span className="block text-[10px] text-zinc-400">سعر البيع (YER)</span>
+                    <span className="text-base font-extrabold text-rose-400 font-mono tracking-tight">
                       {curr.sell.toLocaleString()}
                     </span>
                   </div>
@@ -164,18 +156,18 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
       </div>
 
-      {/* 2. Gold Prices Section */}
+      {/* 2. Gold 24K */}
       <div className="space-y-3 pt-2">
         <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-          <Coins className="w-4 h-4 text-[#f5c400]" />
-          <span>أسعار الذهب والسبائك في {activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'}</span>
+          <Coins className="w-4 h-4 text-zinc-300" />
+          <span>أسعار الذهب عيار 24 في {activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'}</span>
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {current.gold.map((item, idx) => (
             <div
               key={idx}
-              className="bg-[#151515] border border-[#262626] rounded-2xl p-4 space-y-3 shadow-lg hover:border-[#383838] transition-colors"
+              className="bg-[#151515] border border-[#262626] rounded-2xl p-4 space-y-3 shadow-lg"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white">{item.karat}</span>
@@ -186,15 +178,15 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#222222]">
-                <div>
-                  <span className="block text-[10px] text-zinc-400">شراء</span>
+                <div className="bg-[#0f0f0f] p-2 rounded-xl border border-[#1e1e1e]">
+                  <span className="block text-[10px] text-zinc-400">شراء (YER)</span>
                   <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">
                     {item.buy.toLocaleString()}
                   </span>
                 </div>
-                <div>
-                  <span className="block text-[10px] text-zinc-400">بيع</span>
-                  <span className="text-sm font-extrabold text-[#f5c400] font-mono tracking-tight">
+                <div className="bg-[#0f0f0f] p-2 rounded-xl border border-[#1e1e1e]">
+                  <span className="block text-[10px] text-zinc-400">بيع (YER)</span>
+                  <span className="text-sm font-extrabold text-rose-400 font-mono tracking-tight">
                     {item.sell.toLocaleString()}
                   </span>
                 </div>
@@ -204,11 +196,11 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
       </div>
 
-      {/* 3. Live Currency Calculator */}
+      {/* 3. Currency Converter */}
       <div className="bg-[#151515] border border-[#262626] rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl">
         <div className="flex items-center gap-2 border-b border-[#242424] pb-3">
-          <Calculator className="w-5 h-5 text-[#f5c400]" />
-          <h3 className="text-sm sm:text-base font-bold text-white">حاسبة تحويل العملات اللحظية</h3>
+          <Calculator className="w-5 h-5 text-zinc-300" />
+          <h3 className="text-sm sm:text-base font-bold text-white">حاسبة تحويل العملات بالريال اليمني</h3>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">

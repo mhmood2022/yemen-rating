@@ -49,12 +49,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
     sanaa: {
       sar: { buy: '140.20', sell: '140.70', change: '+0.15%', isUp: true },
       usd: { buy: '535.00', sell: '538.00', change: '-0.20%', isUp: false },
-      gold21: { buy: '37,200', sell: '39,500', change: '+0.45%', isUp: true }
+      gold24: { buy: '42,500', sell: '44,200', change: '+0.50%', isUp: true }
     },
     aden: {
       sar: { buy: '495.00', sell: '500.00', change: '+0.80%', isUp: true },
       usd: { buy: '1,890.00', sell: '1,910.00', change: '+1.10%', isUp: true },
-      gold21: { buy: '129,500', sell: '138,000', change: '+0.60%', isUp: true }
+      gold24: { buy: '148,000', sell: '155,000', change: '+0.95%', isUp: true }
     }
   };
 
@@ -138,7 +138,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 3. أسعار العملات والذهب */}
+      {/* 3. أسعار العملات والذهب (أحمر وأخضر فقط: الدولار، السعودي، الذهب عيار 24) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -156,8 +156,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        <div className="rounded-2xl bg-[#151515] border border-[#262626] p-3.5 sm:p-4 space-y-3.5 shadow-xl">
+        {/* كارت الأسعار المالية بالأحمر والأخضر فقط */}
+        <div className="rounded-2xl bg-[#151515] border border-[#262626] p-3.5 sm:p-4 space-y-3 shadow-xl">
           
+          {/* محدد السوق (صنعاء / عدن) */}
           <div className="flex items-center justify-between gap-2 border-b border-[#242424] pb-2.5">
             <div className="flex items-center gap-1.5 bg-[#0f0f0f] p-1 rounded-xl border border-[#222]">
               <button
@@ -182,19 +184,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </button>
             </div>
 
-            <div className="flex items-center gap-1 text-[10px] text-zinc-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>مباشر</span>
             </div>
           </div>
 
+          {/* الكروت الثلاثة: السعودي، الدولار، الذهب عيار 24 */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             
-            {/* الريال السعودي */}
-            <div className="bg-[#0f0f0f] p-3 rounded-xl border border-[#222] space-y-2 relative overflow-hidden group hover:border-[#333] transition-colors">
+            {/* 1. الريال السعودي */}
+            <div className="bg-[#0f0f0f] p-3 rounded-xl border border-[#222] space-y-2 relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Coins className="w-3.5 h-3.5 text-[#f5c400]" />
+                  <Coins className="w-3.5 h-3.5 text-zinc-400" />
                   الريال السعودي (SAR)
                 </span>
                 <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
@@ -207,21 +210,21 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
               <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#1e1e1e]">
                 <div>
-                  <span className="text-[10px] text-zinc-400 block">شراء</span>
+                  <span className="text-[10px] text-zinc-400 block">شراء (YER)</span>
                   <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">{currentHomeRates.sar.buy}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-zinc-400 block">بيع</span>
-                  <span className="text-sm font-extrabold text-[#f5c400] font-mono tracking-tight">{currentHomeRates.sar.sell}</span>
+                  <span className="text-[10px] text-zinc-400 block">بيع (YER)</span>
+                  <span className="text-sm font-extrabold text-rose-400 font-mono tracking-tight">{currentHomeRates.sar.sell}</span>
                 </div>
               </div>
             </div>
 
-            {/* الدولار الأمريكي */}
-            <div className="bg-[#0f0f0f] p-3 rounded-xl border border-[#222] space-y-2 relative overflow-hidden group hover:border-[#333] transition-colors">
+            {/* 2. الدولار الأمريكي */}
+            <div className="bg-[#0f0f0f] p-3 rounded-xl border border-[#222] space-y-2 relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                  <DollarSign className="w-3.5 h-3.5 text-zinc-400" />
                   الدولار الأمريكي (USD)
                 </span>
                 <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
@@ -234,39 +237,39 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
               <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#1e1e1e]">
                 <div>
-                  <span className="text-[10px] text-zinc-400 block">شراء</span>
+                  <span className="text-[10px] text-zinc-400 block">شراء (YER)</span>
                   <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">{currentHomeRates.usd.buy}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-zinc-400 block">بيع</span>
-                  <span className="text-sm font-extrabold text-[#f5c400] font-mono tracking-tight">{currentHomeRates.usd.sell}</span>
+                  <span className="text-[10px] text-zinc-400 block">بيع (YER)</span>
+                  <span className="text-sm font-extrabold text-rose-400 font-mono tracking-tight">{currentHomeRates.usd.sell}</span>
                 </div>
               </div>
             </div>
 
-            {/* الذهب عيار 21 */}
-            <div className="bg-[#0f0f0f] p-3 rounded-xl border border-[#222] space-y-2 relative overflow-hidden group hover:border-[#333] transition-colors">
+            {/* 3. الذهب عيار 24 */}
+            <div className="bg-[#0f0f0f] p-3 rounded-xl border border-[#222] space-y-2 relative overflow-hidden">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Coins className="w-3.5 h-3.5 text-[#f5c400]" />
-                  الذهب عيار 21 (جرام)
+                  <Coins className="w-3.5 h-3.5 text-zinc-400" />
+                  الذهب عيار 24 (جرام)
                 </span>
                 <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
-                  currentHomeRates.gold21.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                  currentHomeRates.gold24.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                 }`}>
-                  {currentHomeRates.gold21.isUp ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
-                  {currentHomeRates.gold21.change}
+                  {currentHomeRates.gold24.isUp ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                  {currentHomeRates.gold24.change}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#1e1e1e]">
                 <div>
-                  <span className="text-[10px] text-zinc-400 block">شراء</span>
-                  <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">{currentHomeRates.gold21.buy}</span>
+                  <span className="text-[10px] text-zinc-400 block">شراء (YER)</span>
+                  <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">{currentHomeRates.gold24.buy}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-zinc-400 block">بيع</span>
-                  <span className="text-sm font-extrabold text-[#f5c400] font-mono tracking-tight">{currentHomeRates.gold21.sell}</span>
+                  <span className="text-[10px] text-zinc-400 block">بيع (YER)</span>
+                  <span className="text-sm font-extrabold text-rose-400 font-mono tracking-tight">{currentHomeRates.gold24.sell}</span>
                 </div>
               </div>
             </div>
@@ -274,8 +277,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           <div className="text-center text-[10px] text-zinc-400 pt-1 flex items-center justify-center gap-1">
-            <RefreshCw className="w-3 h-3 text-[#f5c400]" />
-            <span>تحديث الأسعار يتم على مدار الساعة من محلات الصرافة المعتمدة</span>
+            <RefreshCw className="w-3 h-3 text-zinc-500" />
+            <span>الأسعار بالريال اليمني • تحديث فوري على مدار الساعة</span>
           </div>
 
         </div>
