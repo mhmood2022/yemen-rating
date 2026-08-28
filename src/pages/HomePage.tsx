@@ -1,221 +1,219 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { YRBusiness } from '../types/database.types';
+import { fetchBusinesses } from '../services/businessService';
+import { useComparison } from '../context/ComparisonContext';
+import { ComparisonModal } from '../components/business/ComparisonModal';
 
-interface Props {
-  onNavigate: (path: string) => void;
+interface HomePageProps {
+  onSelectBusiness: (business: YRBusiness) => void;
 }
 
-export const HomePage: React.FC<Props> = ({ onNavigate }) => {
-  const [activeMarket, setActiveMarket] = useState<'sanaa' | 'aden'>('sanaa');
+export const HomePage: React.FC<HomePageProps> = ({ onSelectBusiness }) => {
+  const [businesses, setBusinesses] = useState<YRBusiness[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCity, setSelectedCity] = useState('الكل');
+  const [selectedCategory, setSelectedCategory] = useState('الكل');
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const { addToCompare, removeFromCompare, selectedBusinesses } = useComparison() || {
+    addToCompare: () => {},
+    removeFromCompare: () => {},
+    selectedBusinesses: []
+  };
+
+  useEffect(() => {
+    fetchBusinesses().then((data) => setBusinesses(data || []));
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsCityDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredBusinesses = businesses.filter((b) => {
+    const matchesSearch = b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          b.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCity = selectedCity === 'الكل' || b.city === selectedCity;
+    const matchesCategory = selectedCategory === 'الكل' || b.category_id === selectedCategory;
+
+    return matchesSearch && matchesCity && matchesCategory;
+  });
 
   const categories = [
-    { slug: 'restaurants', name: 'مطاعم ومقاهي', icon: 'fa-utensils', count: '438' },
-    { slug: 'hotels', name: 'فنادق وسياحة', icon: 'fa-hotel', count: '142' },
-    { slug: 'banks', name: 'بنوك ومصارف', icon: 'fa-building-columns', count: '24' },
-    { slug: 'exchanges', name: 'شركات صرافة', icon: 'fa-money-bill-transfer', count: '86' },
-    { slug: 'wallets', name: 'محافظ إلكترونية', icon: 'fa-wallet', count: '12' },
-    { slug: 'companies', name: 'شركات ومؤسسات', icon: 'fa-building', count: '1,248' },
-    { slug: 'transport', name: 'سيارات ونقل', icon: 'fa-car', count: '95' },
-    { slug: 'shops', name: 'متاجر وتسوق', icon: 'fa-bag-shopping', count: '310' },
-    { slug: 'health', name: 'صحة ومستشفيات', icon: 'fa-hospital', count: '180' },
-    { slug: 'services', name: 'خدمات عامة', icon: 'fa-wrench', count: '240' },
-    { slug: 'education', name: 'تعليم وجامعات', icon: 'fa-graduation-cap', count: '75' },
-    { slug: 'entertainment', name: 'سياحة وترفيه', icon: 'fa-umbrella-beach', count: '60' },
+    { id: 'الكل', name: 'جميع الأقسام', icon: 'fa-solid fa-border-all' },
+    { id: 'companies', name: 'الشركات', icon: 'fa-solid fa-building' },
+    { id: 'banks', name: 'البنوك', icon: 'fa-solid fa-building-columns' },
+    { id: 'restaurants', name: 'المطاعم', icon: 'fa-solid fa-utensils' },
+    { id: 'exchanges', name: 'الصرافة', icon: 'fa-solid fa-money-bill-transfer' },
+    { id: 'hotels', name: 'الفنادق', icon: 'fa-solid fa-hotel' },
+    { id: 'health', name: 'الصحة', icon: 'fa-solid fa-heart-pulse' }
   ];
 
+  const cities = [
+    'الكل', 'أمانة العاصمة (صنعاء)', 'صنعاء', 'عدن', 'تعز', 'الحديدة', 'إب',
+    'حضرموت (المكلا)', 'ذمار', 'حجة', 'عمران', 'صعدة', 'البيضاء', 'لحج', 'أبين',
+    'شبوة', 'المهرة', 'سقطرى', 'مأرب', 'الجوف', 'الضالع', 'محويت', 'ريمة'
+  ];
+
+  const isCompared = (id: string) => selectedBusinesses?.some((item) => item.id === id);
+
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-[#E6E6E6] font-sans pb-20" dir="rtl">
+    <div className="min-h-screen bg-[#0D0D12] text-white p-4 md:p-8 dir-rtl">
       
-      {/* 1. الترويسة الرئيسية والبحث */}
-      <div className="max-w-4xl mx-auto px-4 pt-4">
-        
-        {/* شريط البحث الموحد */}
-        <div className="relative mb-2">
-          <i className="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 text-xs"></i>
-          <input
-            type="text"
-            placeholder="ابحث عن نشاط أو شركة أو بنك أو خدمة..."
-            onClick={() => onNavigate('/directory')}
-            readOnly
-            className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl pr-10 pl-4 py-3 text-xs text-white placeholder-neutral-400 cursor-pointer shadow-md focus:border-amber-400 transition"
-          />
+      {/* Header Section */}
+      <header className="max-w-6xl mx-auto mb-8 text-center space-y-3">
+        <div className="inline-flex items-center gap-2 bg-amber-400/10 border border-amber-400/30 px-4 py-1.5 rounded-full text-amber-400 font-bold text-xs">
+          <i className="fa-solid fa-icons text-xs"></i>
+          دليل يمن ريتينغ التفاعلي
         </div>
+        <h1 className="text-2xl md:text-4xl lg:text-5xl font-black text-amber-400 flex items-center justify-center gap-3">
+          <i className="fa-solid fa-store text-xl md:text-3xl"></i>
+          دليل الأنشطة التجارية في اليمن
+        </h1>
+        <p className="text-gray-400 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
+          ابحث وقارن بين أفضل الشركات، المطاعم، والمؤسسات في كافة المحافظات اليمنية
+        </p>
+      </header>
 
-        <div className="flex items-center gap-1.5 text-xs text-neutral-400 mb-4 font-bold">
-          <i className="fa-solid fa-location-dot text-amber-400"></i>
-          <span>اليمن، صنعاء وعدن وجميع المحافظات</span>
-        </div>
-
-        {/* 2. البانر الترويجي (اكتشف الأفضل) */}
-        <div className="relative h-44 rounded-2xl overflow-hidden border border-[#2A2A2A] bg-gradient-to-l from-black/90 via-black/40 to-transparent p-5 flex flex-col justify-between mb-6 shadow-xl">
-          <img
-            src="https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800"
-            alt="Yemen Rating"
-            className="absolute inset-0 w-full h-full object-cover -z-10"
-          />
-          <div>
-            <h2 className="text-lg font-black text-white">اكتشف الأفضل في اليمن</h2>
-            <p className="text-xs text-neutral-300 max-w-xs mt-1 leading-relaxed">
-              دليل شامل وموثق لجميع الشركات، البنوك، الفنادق، والخدمات مع تقييمات حقيقية من المجتمع.
-            </p>
+      {/* Control Panel: Search & Filters */}
+      <div className="max-w-6xl mx-auto mb-8 bg-[#14141C] border border-[#2A2A2A] p-4 md:p-6 rounded-2xl shadow-2xl space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          
+          {/* Search Box */}
+          <div className="md:col-span-2 relative">
+            <i className="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-amber-400 text-base"></i>
+            <input
+              type="text"
+              placeholder="ابحث باسم النشاط التجاري أو الخدمة..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-12 pr-11 pl-4 rounded-xl bg-[#0D0D12] border border-[#2A2A2A] text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-400 transition"
+            />
           </div>
 
-          <div className="flex items-center justify-between">
+          {/* City Selector Dropdown */}
+          <div className="relative" ref={dropdownRef}>
             <button
-              onClick={() => onNavigate('/directory')}
-              className="bg-[#FFC107] hover:bg-[#FFB300] text-neutral-950 font-black text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-lg shadow-amber-400/20 active:scale-95 transition"
+              type="button"
+              onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
+              className={`w-full h-12 px-4 rounded-xl font-bold text-sm transition flex items-center justify-between border ${
+                selectedCity !== 'الكل'
+                  ? 'bg-amber-400 text-black border-amber-400 shadow-lg shadow-amber-400/20'
+                  : 'bg-[#0D0D12] text-amber-400 border-[#2A2A2A] hover:border-amber-400'
+              }`}
             >
-              <span>استكشف الدليل الكامل</span>
-              <i className="fa-solid fa-arrow-left text-[10px]"></i>
+              <span className="flex items-center gap-2 truncate">
+                <i className="fa-solid fa-location-dot text-sm"></i>
+                {selectedCity === 'الكل' ? 'جميع المحافظات (22)' : selectedCity}
+              </span>
+              <i className={`fa-solid fa-chevron-down text-xs transition-transform duration-300 ${isCityDropdownOpen ? 'rotate-180' : ''}`}></i>
             </button>
 
-            <div className="flex gap-1">
-              <span className="w-4 h-1.5 rounded-full bg-[#FFC107]" />
-              <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
-              <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
-            </div>
+            {isCityDropdownOpen && (
+              <div className="absolute top-full right-0 left-0 mt-2 z-50 max-h-60 overflow-y-auto rounded-xl bg-[#14141C] border border-amber-400/40 shadow-2xl p-1.5 space-y-1">
+                {cities.map((city) => (
+                  <button
+                    key={city}
+                    onClick={() => {
+                      setSelectedCity(city);
+                      setIsCityDropdownOpen(false);
+                    }}
+                    className={`w-full text-right h-10 px-3 rounded-lg text-xs md:text-sm font-bold transition flex items-center justify-between ${
+                      selectedCity === city
+                        ? 'bg-amber-400 text-black font-black'
+                        : 'text-amber-400 hover:bg-amber-400/10 hover:text-white'
+                    }`}
+                  >
+                    <span>{city === 'الكل' ? '📍 جميع المحافظات (22)' : city}</span>
+                    {selectedCity === city && <i className="fa-solid fa-check text-xs"></i>}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* 3. شبكة التصنيفات الـ 12 الكاملة */}
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-sm font-black text-white">التصنيفات والقطاعات الرئيسية</h3>
-          <button onClick={() => onNavigate('/directory')} className="text-xs text-amber-400 font-bold hover:underline">
-            عرض الكل (12)
-          </button>
-        </div>
-
-        <div className="grid grid-cols-4 gap-2.5 mb-6">
+        {/* Categories Chips */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 scrollbar-none">
           {categories.map((cat) => (
-            <div
-              key={cat.slug}
-              onClick={() => onNavigate(`/${cat.slug}`)}
-              className="bg-[#1A1A1A] border border-[#2A2A2A] hover:border-[#FFC107] p-2.5 rounded-2xl text-center cursor-pointer transition group hover:-translate-y-0.5"
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`h-10 px-4 rounded-xl text-xs md:text-sm font-bold whitespace-nowrap transition-all duration-300 flex items-center gap-2 border ${
+                selectedCategory === cat.id
+                  ? 'bg-amber-400 text-black shadow-md shadow-amber-400/20 border-amber-400 scale-[1.02]'
+                  : 'bg-[#0D0D12] text-amber-400 border-[#2A2A2A] hover:border-amber-400/60 hover:bg-amber-400/10'
+              }`}
             >
-              <div className="w-9 h-9 rounded-xl bg-[#141414] text-amber-400 group-hover:bg-[#FFC107] group-hover:text-black flex items-center justify-center mx-auto mb-1.5 transition text-sm">
-                <i className={`fa-solid ${cat.icon}`}></i>
-              </div>
-              <div className="text-[11px] font-bold text-neutral-200 group-hover:text-white line-clamp-1">{cat.name}</div>
-              <div className="text-[9px] text-neutral-500">{cat.count}</div>
-            </div>
+              <i className={`${cat.icon} text-xs`}></i>
+              {cat.name}
+            </button>
           ))}
         </div>
-
-        {/* 4. ويدجت أسعار الصرف المباشرة (صنعاء / عدن) */}
-        <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-4 mb-6 shadow-md">
-          <div className="flex justify-between items-center mb-3 pb-2 border-b border-[#262626]">
-            <div className="flex items-center gap-2">
-              <i className="fa-solid fa-coins text-amber-400 text-sm"></i>
-              <span className="text-xs font-black text-white">أسعار العملات والذهب المباشرة</span>
-            </div>
-            <div className="flex bg-[#121217] p-0.5 rounded-lg border border-[#2A2A2A] text-[10px]">
-              <button
-                onClick={() => setActiveMarket('sanaa')}
-                className={`px-2.5 py-1 rounded-md font-bold transition ${activeMarket === 'sanaa' ? 'bg-[#FFC107] text-black font-black' : 'text-neutral-400'}`}
-              >
-                صنعاء
-              </button>
-              <button
-                onClick={() => setActiveMarket('aden')}
-                className={`px-2.5 py-1 rounded-md font-bold transition ${activeMarket === 'aden' ? 'bg-[#FFC107] text-black font-black' : 'text-neutral-400'}`}
-              >
-                عدن
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-[#141414] border border-[#262626] p-2 rounded-xl">
-              <div className="text-[10px] text-neutral-400 font-bold mb-0.5">الدولار (USD)</div>
-              <div className="text-xs font-black text-amber-400">{activeMarket === 'sanaa' ? '535 / 532' : '1,540 / 1,530'}</div>
-              <div className="text-[9px] text-neutral-500">ريال يمني</div>
-            </div>
-            <div className="bg-[#141414] border border-[#262626] p-2 rounded-xl">
-              <div className="text-[10px] text-neutral-400 font-bold mb-0.5">السعودي (SAR)</div>
-              <div className="text-xs font-black text-amber-400">{activeMarket === 'sanaa' ? '140.5 / 139.8' : '410 / 408'}</div>
-              <div className="text-[9px] text-neutral-500">ريال يمني</div>
-            </div>
-            <div className="bg-[#141414] border border-[#262626] p-2 rounded-xl">
-              <div className="text-[10px] text-neutral-400 font-bold mb-0.5">ذهب عيار 21</div>
-              <div className="text-xs font-black text-emerald-400">{activeMarket === 'sanaa' ? '32,000' : '92,000'}</div>
-              <div className="text-[9px] text-neutral-500">ريال / جرام</div>
-            </div>
-          </div>
-        </div>
-
-        {/* 5. الترند الآن والأنشطة الأعلى تقييماً */}
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-sm font-black text-white flex items-center gap-1.5">
-            <i className="fa-solid fa-fire text-orange-500 text-xs"></i>
-            <span>الترند والأعلى تقييماً اليوم</span>
-          </h3>
-          <button onClick={() => onNavigate('/trend')} className="text-xs text-amber-400 font-bold hover:underline">
-            عرض الكل
-          </button>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2.5 mb-6">
-          <div
-            onClick={() => onNavigate('/restaurants')}
-            className="bg-[#1A1A1A] border border-[#2A2A2A] hover:border-amber-400 rounded-xl overflow-hidden cursor-pointer group"
-          >
-            <div className="h-20 bg-neutral-800 relative">
-              <img
-                src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=300"
-                alt="مطعم حضرموت"
-                className="w-full h-full object-cover"
-              />
-              <span className="absolute top-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 rounded text-[9px] font-black text-amber-400 flex items-center gap-0.5">
-                <i className="fa-solid fa-star text-[8px]"></i> 4.7
-              </span>
-            </div>
-            <div className="p-2">
-              <div className="text-[11px] font-bold text-white line-clamp-1">مطعم حضرموت</div>
-              <div className="text-[9px] text-neutral-400">مطاعم • صنعاء</div>
-            </div>
-          </div>
-
-          <div
-            onClick={() => onNavigate('/banks')}
-            className="bg-[#1A1A1A] border border-[#2A2A2A] hover:border-amber-400 rounded-xl overflow-hidden cursor-pointer group"
-          >
-            <div className="h-20 bg-neutral-800 relative">
-              <img
-                src="https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=300"
-                alt="بنك الكريمي"
-                className="w-full h-full object-cover"
-              />
-              <span className="absolute top-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 rounded text-[9px] font-black text-amber-400 flex items-center gap-0.5">
-                <i className="fa-solid fa-star text-[8px]"></i> 4.8
-              </span>
-            </div>
-            <div className="p-2">
-              <div className="text-[11px] font-bold text-white line-clamp-1">بنك الكريمي</div>
-              <div className="text-[9px] text-neutral-400">بنوك • صنعاء</div>
-            </div>
-          </div>
-
-          <div
-            onClick={() => onNavigate('/shops')}
-            className="bg-[#1A1A1A] border border-[#2A2A2A] hover:border-amber-400 rounded-xl overflow-hidden cursor-pointer group"
-          >
-            <div className="h-20 bg-neutral-800 relative">
-              <img
-                src="https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=300"
-                alt="هايبر بلس"
-                className="w-full h-full object-cover"
-              />
-              <span className="absolute top-1.5 right-1.5 bg-black/80 px-1.5 py-0.5 rounded text-[9px] font-black text-amber-400 flex items-center gap-0.5">
-                <i className="fa-solid fa-star text-[8px]"></i> 4.6
-              </span>
-            </div>
-            <div className="p-2">
-              <div className="text-[11px] font-bold text-white line-clamp-1">هايبر بلس</div>
-              <div className="text-[9px] text-neutral-400">متاجر • عدن</div>
-            </div>
-          </div>
-        </div>
-
       </div>
+
+      {/* Grid List */}
+      <main className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredBusinesses.map((b) => (
+          <div
+            key={b.id}
+            onClick={() => onSelectBusiness(b)}
+            className="bg-[#14141C] border border-[#2A2A2A] rounded-2xl overflow-hidden flex flex-col justify-between hover:border-amber-400/80 transition-all duration-300 cursor-pointer group shadow-xl"
+          >
+            <div>
+              <div className="h-48 md:h-52 overflow-hidden relative">
+                <img
+                  src={b.cover_url}
+                  alt={b.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <span className="absolute top-3 right-3 bg-black/80 backdrop-blur-md text-amber-400 text-xs px-3 py-1 rounded-full border border-amber-400/30 font-bold">
+                  {b.category_name}
+                </span>
+              </div>
+
+              <div className="p-5 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-bold text-base md:text-lg text-white group-hover:text-amber-400 transition-colors line-clamp-1">{b.name}</h3>
+                  <span className="flex items-center gap-1 text-xs bg-amber-400/10 text-amber-400 px-2 py-1 rounded-lg border border-amber-400/20 font-bold shrink-0">
+                    <i className="fa-solid fa-star text-[10px]"></i>
+                    {b.rating}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed">{b.description}</p>
+                <div className="flex items-center gap-2 text-xs text-gray-400 pt-1">
+                  <i className="fa-solid fa-location-dot text-amber-400 text-sm"></i>
+                  <span>{b.city}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 pt-0 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => (isCompared(b.id) ? removeFromCompare(b.id) : addToCompare(b))}
+                className={`flex-1 h-11 rounded-xl font-bold text-xs transition border flex items-center justify-center gap-2 ${
+                  isCompared(b.id)
+                    ? 'bg-amber-400/20 text-amber-400 border-amber-400'
+                    : 'bg-[#0D0D12] text-gray-300 border-[#2A2A2A] hover:border-amber-400 hover:text-amber-400'
+                }`}
+              >
+                <i className="fa-solid fa-code-compare text-xs"></i>
+                {isCompared(b.id) ? 'تمت الإضافة' : 'مقارنة'}
+              </button>
+            </div>
+          </div>
+        ))}
+      </main>
+
+      <ComparisonModal isOpen={isCompareModalOpen} onClose={() => setIsCompareModalOpen(false)} />
     </div>
   );
 };

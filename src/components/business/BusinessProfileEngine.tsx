@@ -1,249 +1,130 @@
 import React, { useState } from 'react';
-import { BusinessItem } from '../../types/business';
-import { OverviewSection } from './sections/OverviewSection';
-import { WalletFeesSection } from './sections/WalletFeesSection';
+import { BusinessItem } from '../../types/database.types';
+import { BusinessTabs } from './BusinessTabs';
+import { BusinessReviews } from './BusinessReviews';
 import { MenuSection } from './sections/MenuSection';
-import { RealEstateSection } from './sections/RealEstateSection';
 import { CarDealerSection } from './sections/CarDealerSection';
-import { Card } from '../ui/Card';
-import { YrVerifiedBadge } from './YrVerifiedBadge';
-import { AddReviewModal } from '../reviews/AddReviewModal';
-import { useAdmin } from '../../context/AdminContext';
-import {
-  Building2,
-  Utensils,
-  DollarSign,
-  Coins,
-  MapPin,
-  Star,
-  Home,
-  Car,
-  Clock,
-  Phone,
-  Globe,
-  Plus,
-  ArrowLeftRight,
-} from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { RealEstateSection } from './sections/RealEstateSection';
+import { WalletFeesSection } from './sections/WalletFeesSection';
+import { OverviewSection } from './sections/OverviewSection';
 
-export const BusinessProfileEngine: React.FC<{
+interface Props {
   business: BusinessItem;
-  onNavigate?: (path: string) => void;
-}> = ({ business, onNavigate }) => {
-  const { addReviewToBusiness } = useAdmin();
-  const [activeTab, setActiveTab] = useState<string>('main');
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  onNavigate: (path: string) => void;
+}
+
+export const BusinessProfileEngine: React.FC<Props> = ({ business, onNavigate }) => {
+  const [activeTab, setActiveTab] = useState('overview');
 
   const tabs = [
-    { id: 'main', label: 'الرئيسية ونظرة عامة', icon: Building2 },
-    ...(business.businessType === 'WALLET' && business.walletFees ? [{ id: 'fees', label: 'رسوم التحويل', icon: DollarSign }] : []),
-    ...(business.businessType === 'RESTAURANT' && business.menuItems ? [{ id: 'menu', label: 'قائمة الطعام', icon: Utensils }] : []),
-    ...(business.businessType === 'REAL_ESTATE' && business.realEstateListings ? [{ id: 'properties', label: 'العقارات المعروضة', icon: Home }] : []),
-    ...(business.businessType === 'CAR_DEALER' && business.carListings ? [{ id: 'cars', label: 'السيارات المتاحة', icon: Car }] : []),
-    ...(business.exchangeRates ? [{ id: 'exchange', label: 'أسعار الصرف', icon: Coins }] : []),
-    ...(business.branches && business.branches.length > 0 ? [{ id: 'branches', label: 'الفروع', icon: MapPin }] : []),
-    { id: 'reviews', label: 'التقييمات', icon: Star },
+    { id: 'overview', label: 'نظرة عامة', icon: 'fa-info-circle' },
+    { id: 'services', label: 'الخدمات', icon: 'fa-list-check' },
+    { id: 'photos', label: 'الصور', icon: 'fa-images' },
+    { id: 'reviews', label: 'التقييمات', icon: 'fa-star' },
+    { id: 'contact', label: 'اتصل بنا', icon: 'fa-phone' },
   ];
 
-  const handleReviewSubmitted = (revData: { authorName: string; rating: number; comment: string }) => {
-    addReviewToBusiness(business.id, revData);
-  };
-
-  return (
-    <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 space-y-6">
-      {/* Dynamic Tab Strip */}
-      <div className="flex items-center gap-1.5 border-b border-[#E2E8F0] dark:border-[#222222] pb-2 overflow-x-auto no-scrollbar">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                'flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] text-xs font-black transition-all whitespace-nowrap select-none',
-                isActive
-                  ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-black shadow-sm'
-                  : 'text-[#64748B] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414] hover:text-[#0B1F3A] dark:hover:text-white'
-              )}
-            >
-              <Icon size={14} strokeWidth={2} />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 2-Column Responsive Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Main Content Column */}
-        <div className="lg:col-span-8 space-y-5">
-          {activeTab === 'main' && (
-            <div className="space-y-5">
-              <OverviewSection business={business} />
-
-              {/* Exchange Rates if Bank */}
-              {business.exchangeRates && (
-                <Card className="p-4 sm:p-5 space-y-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
-                    <div className="flex items-center gap-2 text-[#0B1F3A] dark:text-[#F5C400] font-black text-xs sm:text-sm">
-                      <Coins size={16} strokeWidth={2} />
-                      <span>أسعار الصرف المعتمدة لدى {business.name}</span>
-                    </div>
-                    <span className="text-[10px] text-[#64748B] dark:text-[#71717A]">سوق صنعاء</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    {business.exchangeRates.map((r, idx) => (
-                      <div key={idx} className="p-2.5 rounded-[9px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#1E1E1E] flex items-center justify-between text-xs">
-                        <span className="font-bold text-[#0B1F3A] dark:text-white">{r.currency}</span>
-                        <div className="text-left font-black">
-                          <span className="text-[#16A34A] dark:text-[#22C55E] block">{r.buy.toLocaleString()} شراء</span>
-                          <span className="text-[#0B1F3A] dark:text-white block">{r.sell.toLocaleString()} بيع</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => onNavigate && onNavigate('/prices')}
-                    className="w-full py-2 rounded-[9px] border border-[#E2E8F0] dark:border-[#222222] bg-[#F7F8FA] dark:bg-[#141414] text-[#0B1F3A] dark:text-[#F5C400] text-xs font-bold flex items-center justify-center gap-1.5 hover:border-[#F5C400]/50 transition-colors"
-                  >
-                    <ArrowLeftRight size={13} strokeWidth={2} />
-                    <span>مقارنة الأسعار مع السوق العام</span>
-                  </button>
-                </Card>
-              )}
-
-              {business.businessType === 'WALLET' && <WalletFeesSection business={business} />}
-              {business.businessType === 'RESTAURANT' && <MenuSection business={business} />}
-              {business.businessType === 'REAL_ESTATE' && <RealEstateSection business={business} />}
-              {business.businessType === 'CAR_DEALER' && <CarDealerSection business={business} />}
-            </div>
-          )}
-
-          {activeTab === 'fees' && <WalletFeesSection business={business} />}
-          {activeTab === 'menu' && <MenuSection business={business} />}
-          {activeTab === 'properties' && <RealEstateSection business={business} />}
-          {activeTab === 'cars' && <CarDealerSection business={business} />}
-
-          {/* Branches Section */}
-          {activeTab === 'branches' && business.branches && (
-            <Card className="p-4 sm:p-5 space-y-3">
-              <h3 className="font-black text-xs sm:text-sm text-[#0B1F3A] dark:text-white pb-2 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
-                شبكة الفروع المعتمدة
-              </h3>
-              <div className="space-y-2">
-                {business.branches.map((b, idx) => (
-                  <div key={idx} className="p-3 rounded-[9px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#1E1E1E] text-xs flex items-start gap-2">
-                    <span className="font-extrabold text-[#F5C400] shrink-0">{b.city}:</span>
-                    <span className="text-[#475569] dark:text-[#A1A1AA] leading-relaxed">{b.address}</span>
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'overview':
+        return <OverviewSection business={business} />;
+      case 'services':
+        return (
+          <div className="p-4">
+            <h3 className="text-lg font-black text-white mb-3">
+              <i className="fa-solid fa-list-check text-[#FFC107] ml-2"></i>
+              الخدمات المقدمة
+            </h3>
+            {(business.services || []).length > 0 ? (
+              <div className="grid grid-cols-1 gap-2">
+                {(business.services || []).map((service: string, idx: number) => (
+                  <div key={idx} className="flex items-center gap-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-3 text-sm">
+                    <i className="fa-solid fa-circle-check text-[#FFC107]"></i>
+                    <span className="text-white">{service}</span>
                   </div>
                 ))}
               </div>
-            </Card>
-          )}
-
-          {/* Reviews Section */}
-          {(activeTab === 'reviews' || activeTab === 'main') && (
-            <Card className="p-4 sm:p-5 space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
-                <div className="flex items-center gap-2 font-black text-xs sm:text-sm text-[#0B1F3A] dark:text-white">
-                  <Star size={16} className="text-[#F5C400] fill-[#F5C400]" />
-                  <span>تقييمات وآراء العملاء</span>
-                </div>
-                <span className="text-xs font-black text-[#F5C400]">
-                  {business.rating.toFixed(1)} / 5 ({business.reviewCount} تقييم)
-                </span>
+            ) : (
+              <div className="text-center py-8 text-neutral-500 text-sm">
+                <i className="fa-solid fa-box-open text-4xl mb-2 block"></i>
+                لا توجد خدمات مسجلة حالياً
               </div>
-
-              {business.reviews && business.reviews.length > 0 ? (
-                <div className="space-y-2.5">
-                  {business.reviews.map((rev) => (
-                    <div key={rev.id} className="p-3 rounded-[10px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#1E1E1E] space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs text-[#0B1F3A] dark:text-white">{rev.authorName}</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-black text-[#F5C400]">★ {rev.rating}</span>
-                          <span className="text-[10px] text-[#94A3B8] dark:text-[#71717A]">· {rev.date}</span>
-                        </div>
-                      </div>
-                      <p className="text-xs text-[#475569] dark:text-[#A1A1AA]">{rev.comment}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-[#94A3B8] text-center py-3">لا توجد تقييمات مسجلة حتى الآن.</p>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setIsReviewModalOpen(true)}
-                className="w-full py-2.5 rounded-[10px] bg-[#F5C400] text-black font-black text-xs flex items-center justify-center gap-1.5 hover:bg-[#DDAF00] active:scale-95 transition-all shadow-sm"
-              >
-                <Plus size={14} strokeWidth={2.5} />
-                <span>إضافة تقييمك وتجربتك الحقيقية</span>
-              </button>
-            </Card>
-          )}
-        </div>
-
-        {/* Sidebar Info Column (Desktop Sticky) */}
-        <div className="lg:col-span-4 space-y-4 sticky top-20">
-          <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#64748B] dark:text-[#A1A1AA]">حالة التوثيق</span>
-              {business.isVerified ? (
-                <YrVerifiedBadge text={business.verifiedBadgeTitle || 'موثّق ✓'} size="sm" variant={business.verifiedBadgeType || 'gold'} />
-              ) : (
-                <span className="text-xs font-bold text-[#94A3B8]">غير موثق</span>
-              )}
-            </div>
-
-            <div className="p-3 rounded-[9px] bg-[#F7F8FA] dark:bg-[#070707] border border-[#E2E8F0] dark:border-[#1C1C1C] flex items-center justify-between text-xs">
-              <span className="text-[#64748B] dark:text-[#A1A1AA]">مؤشر الثقة YR:</span>
-              <span className="font-black text-sm text-[#F5C400]">{business.yrScore} / 100</span>
-            </div>
-          </Card>
-
-          <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-2.5 text-xs">
-            <h4 className="font-bold text-[#0B1F3A] dark:text-white pb-1.5 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
-              معلومات التواصل وساعات العمل
-            </h4>
-
+            )}
+          </div>
+        );
+      case 'photos':
+        return (
+          <div className="p-4">
+            <h3 className="text-lg font-black text-white mb-3">
+              <i className="fa-solid fa-images text-[#FFC107] ml-2"></i>
+              معرض الصور
+            </h3>
+            {(business.gallery_urls || []).length > 0 ? (
+              <div className="grid grid-cols-2 gap-2">
+                {(business.gallery_urls || []).map((url: string, idx: number) => (
+                  <img key={idx} src={url} alt={`صورة ${idx + 1}`} className="w-full h-32 object-cover rounded-xl border border-[#2A2A2A]" />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                {business.cover_url && (
+                  <img src={business.cover_url} alt={business.name} className="w-full h-48 object-cover rounded-xl border border-[#2A2A2A]" />
+                )}
+                <p className="text-neutral-500 text-sm mt-4">لا توجد صور إضافية حالياً</p>
+              </div>
+            )}
+          </div>
+        );
+      case 'reviews':
+        return <BusinessReviews businessId={business.id} />;
+      case 'contact':
+        return (
+          <div className="p-4 space-y-3">
+            <h3 className="text-lg font-black text-white mb-3">
+              <i className="fa-solid fa-phone text-[#FFC107] ml-2"></i>
+              معلومات الاتصال
+            </h3>
             {business.phone && (
-              <div className="flex items-center justify-between text-[#475569] dark:text-[#A1A1AA]">
-                <span className="flex items-center gap-1.5"><Phone size={13} className="text-[#F5C400]" /> الهاتف:</span>
-                <span dir="ltr" className="font-bold text-[#0B1F3A] dark:text-white">{business.phone}</span>
+              <a href={`tel:${business.phone}`} className="flex items-center gap-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-3 hover:border-[#FFC107] transition">
+                <i className="fa-solid fa-phone text-[#FFC107]"></i>
+                <span className="text-white text-sm">{business.phone}</span>
+              </a>
+            )}
+            {business.whatsapp && (
+              <a href={`https://wa.me/${business.whatsapp}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-3 hover:border-[#25D366] transition">
+                <i className="fa-brands fa-whatsapp text-[#25D366]"></i>
+                <span className="text-white text-sm">واتساب: {business.whatsapp}</span>
+              </a>
+            )}
+            {business.email && (
+              <a href={`mailto:${business.email}`} className="flex items-center gap-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-3 hover:border-[#FFC107] transition">
+                <i className="fa-solid fa-envelope text-[#FFC107]"></i>
+                <span className="text-white text-sm">{business.email}</span>
+              </a>
+            )}
+            {business.website_url && (
+              <a href={business.website_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-3 hover:border-[#FFC107] transition">
+                <i className="fa-solid fa-globe text-[#FFC107]"></i>
+                <span className="text-white text-sm truncate">{business.website_url}</span>
+              </a>
+            )}
+            {business.district && (
+              <div className="flex items-center gap-3 bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl p-3">
+                <i className="fa-solid fa-location-dot text-[#FFC107]"></i>
+                <span className="text-white text-sm">{business.city} - {business.district}</span>
               </div>
             )}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
-            {business.workingHours && (
-              <div className="flex items-center justify-between text-[#475569] dark:text-[#A1A1AA]">
-                <span className="flex items-center gap-1.5"><Clock size={13} className="text-[#F5C400]" /> ساعات العمل:</span>
-                <span className="font-bold text-[#0B1F3A] dark:text-white">{business.workingHours}</span>
-              </div>
-            )}
-
-            {business.website && (
-              <div className="flex items-center justify-between text-[#475569] dark:text-[#A1A1AA]">
-                <span className="flex items-center gap-1.5"><Globe size={13} className="text-[#F5C400]" /> الموقع:</span>
-                <a href={business.website} target="_blank" rel="noreferrer" className="text-[#F5C400] font-bold hover:underline">زيارة الرابط</a>
-              </div>
-            )}
-          </Card>
-        </div>
-      </div>
-
-      {/* Interactive Review Modal */}
-      <AddReviewModal
-        businessName={business.name}
-        isOpen={isReviewModalOpen}
-        onClose={() => setIsReviewModalOpen(false)}
-        onSubmitReview={handleReviewSubmitted}
-      />
+  return (
+    <div className="bg-[#121217] border-t border-[#20202A]">
+      <BusinessTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+      <div className="pb-6">{renderContent()}</div>
     </div>
   );
 };
