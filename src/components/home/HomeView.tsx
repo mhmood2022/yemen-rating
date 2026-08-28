@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Star, 
   MapPin, 
@@ -8,16 +8,8 @@ import {
   Briefcase, 
   TrendingUp, 
   Sparkles, 
-  ArrowLeft,
-  Coins,
-  DollarSign,
-  Utensils,
-  Car,
-  ShoppingBag,
-  HeartPulse,
-  Store,
-  Layers,
-  CheckCircle2
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { OFFICIAL_CATEGORIES, CategoryItem } from '../../data/categories';
 import { BusinessItem } from '../../data/mockData';
@@ -42,11 +34,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onNavigateJobs,
   onNavigateExchangeRates
 }) => {
+  const [showAllCategories, setShowAllCategories] = useState(false);
+
+  // إظهار أهم 8 تصنيفات في الوضع الافتراضي أو كامل الـ 26 عند النقر على عرض الكل
+  const displayedCategories = showAllCategories 
+    ? OFFICIAL_CATEGORIES 
+    : OFFICIAL_CATEGORIES.slice(0, 8);
+
   return (
     <div dir="rtl" className="space-y-6 pb-20">
       
-      {/* 1. Hero Promo Banner Card (اكتشف الأفضل) */}
-      <div className="relative overflow-hidden rounded-2xl bg-[#181818] border border-[#292929] shadow-xl">
+      {/* 1. Hero Promo Banner Card */}
+      <div className="relative overflow-hidden rounded-2xl bg-[#181818] border border-[#282828] shadow-xl">
         <div className="relative h-44 sm:h-52 w-full">
           <img
             src="https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=1200&auto=format&fit=crop&q=80"
@@ -73,46 +72,47 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
           </div>
 
-          {/* Dots Indicator */}
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
             <span className="w-4 h-1.5 rounded-full bg-[#f5c400]" />
-            <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
             <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
             <span className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
           </div>
         </div>
       </div>
 
-      {/* 2. التصنيفات الرئيسية (Categories Row Cards) */}
+      {/* 2. التصنيفات الرئيسية (كامل التصنيفات الـ 26 مع خيار عرض الكل) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm sm:text-base font-bold text-white">التصنيفات الرئيسية</h3>
+          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+            <span>التصنيفات الرئيسية</span>
+            <span className="text-[10px] bg-[#181818] border border-[#282828] text-[#f5c400] px-2 py-0.5 rounded-md font-mono">
+              26 تصنيفاً
+            </span>
+          </h3>
           <button
-            onClick={() => onSelectCategory('all')}
-            className="text-xs text-[#f5c400] hover:underline font-semibold"
+            onClick={() => setShowAllCategories(!showAllCategories)}
+            className="text-xs text-[#f5c400] hover:underline font-bold flex items-center gap-1"
           >
-            عرض الكل
+            <span>{showAllCategories ? 'عرض أقل' : 'عرض الكل'}</span>
+            {showAllCategories ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
         </div>
 
-        <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
-          {[
-            { name: 'صحة وجمال', slug: 'health', icon: HeartPulse },
-            { name: 'متاجر', slug: 'shops', icon: ShoppingBag },
-            { name: 'خدمات', slug: 'services', icon: Layers },
-            { name: 'سيارات', slug: 'transport', icon: Car },
-            { name: 'مطاعم ومقاهي', slug: 'restaurants', icon: Utensils }
-          ].map((item, idx) => {
-            const Icon = item.icon;
+        {/* شبكة التصنيفات بدون أي خطوط بيضاء */}
+        <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-3">
+          {displayedCategories.map((cat: CategoryItem) => {
+            const Icon = cat.icon;
             return (
               <button
-                key={idx}
-                onClick={() => onSelectCategory(item.slug)}
-                className="w-20 sm:w-24 h-20 sm:h-24 rounded-2xl bg-[#181818] border border-[#282828] hover:border-[#f5c400]/50 p-2 flex flex-col items-center justify-center gap-2 flex-shrink-0 transition-all group"
+                key={cat.id}
+                onClick={() => onSelectCategory(cat.slug)}
+                className="h-20 sm:h-24 rounded-2xl bg-[#181818] border border-[#282828] hover:border-[#f5c400]/50 p-2 flex flex-col items-center justify-center gap-1.5 transition-all group shadow-sm active:scale-95"
               >
-                <Icon className="w-6 h-6 text-[#f5c400] group-hover:scale-110 transition-transform" />
-                <span className="text-[11px] font-medium text-zinc-300 truncate w-full text-center">
-                  {item.name}
+                <div className="w-8 h-8 rounded-lg bg-[#222222] group-hover:bg-[#f5c400] text-[#f5c400] group-hover:text-zinc-950 flex items-center justify-center transition-colors flex-shrink-0">
+                  <Icon className="w-4 h-4" />
+                </div>
+                <span className="text-[10px] sm:text-[11px] font-medium text-zinc-300 group-hover:text-white truncate w-full text-center leading-tight">
+                  {cat.name}
                 </span>
               </button>
             );
@@ -120,7 +120,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 3. الأعلى تقييماً (Top Rated) */}
+      {/* 3. الأعلى تقييماً (بدون أي شريط أبيض) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white">الأعلى تقييماً</h3>
@@ -132,7 +132,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-3.5 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex items-center gap-3.5 overflow-x-auto pb-1 no-scrollbar">
           {businesses.map((item) => (
             <div
               key={item.id}
@@ -157,8 +157,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   {item.isVerified && <VerifiedBadge type={item.badgeType} size="sm" />}
                 </div>
                 <p className="text-[10px] text-zinc-400 truncate">{item.categorySlug}</p>
-                <p className="text-[10px] text-zinc-500 flex items-center gap-1 pt-0.5">
-                  <MapPin className="w-3 h-3 text-zinc-400" />
+                <p className="text-[10px] text-zinc-500 flex items-center gap-1 pt-0.5 truncate">
+                  <MapPin className="w-3 h-3 text-[#f5c400] flex-shrink-0" />
                   <span>{item.address}</span>
                 </p>
               </div>
@@ -167,7 +167,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 4. المزادات الحية (المزاد بدل الترند) */}
+      {/* 4. المزادات الحية */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
@@ -233,7 +233,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 5. العقارات المميزة (Real Estate Spotlight) */}
+      {/* 5. العقارات المميزة */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
@@ -293,7 +293,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 6. أحدث الوظائف (Jobs Spotlight) */}
+      {/* 6. أحدث الوظائف */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
@@ -341,7 +341,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 7. أسعار العملات والذهب (Exchange Rates) */}
+      {/* 7. أسعار العملات والذهب */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
@@ -359,7 +359,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="rounded-2xl bg-[#181818] border border-[#282828] p-3.5 space-y-3 shadow-lg">
           <div className="grid grid-cols-3 gap-2 text-center">
             
-            {/* ريال سعودي */}
             <div className="bg-[#121212] p-2.5 rounded-xl border border-[#222]">
               <span className="text-[11px] font-bold text-white block mb-1">ريال سعودي</span>
               <div className="flex justify-around text-[10px] text-zinc-400">
@@ -369,7 +368,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <span className="text-[9px] text-zinc-500 mt-1 block font-mono">ريال يمني</span>
             </div>
 
-            {/* دولار أمريكي */}
             <div className="bg-[#121212] p-2.5 rounded-xl border border-[#222]">
               <span className="text-[11px] font-bold text-white block mb-1">دولار أمريكي</span>
               <div className="flex justify-around text-[10px] text-zinc-400">
@@ -379,7 +377,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <span className="text-[9px] text-zinc-500 mt-1 block font-mono">ريال يمني</span>
             </div>
 
-            {/* الذهب عيار 21 */}
             <div className="bg-[#121212] p-2.5 rounded-xl border border-[#222]">
               <span className="text-[11px] font-bold text-white block mb-1">الذهب عيار 21</span>
               <div className="flex justify-around text-[10px] text-zinc-400">
@@ -396,7 +393,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 8. آخر التقييمات (Latest Reviews) */}
+      {/* 8. آخر التقييمات */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white">آخر التقييمات</h3>

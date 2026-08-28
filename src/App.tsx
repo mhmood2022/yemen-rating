@@ -20,9 +20,21 @@ export function App() {
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessItem | null>(null);
   const [currentPage, setCurrentPage] = useState<'home' | 'auctions' | 'markets' | 'real-estate' | 'jobs' | 'exchange-rates' | 'profile' | 'notifications' | 'favorites'>('home');
+  const [selectedGov, setSelectedGov] = useState<string>('all');
+  const [selectedCity, setSelectedCity] = useState<string>('all');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
+  const handleGlobalSearch = (query: string, govId: string, cityId: string) => {
+    setSelectedGov(govId);
+    setSelectedCity(cityId);
+    if (selectedBusiness) setSelectedBusiness(null);
+  };
+
   const handleSelectCategory = (slug: string) => {
+    if (slug === 'all') {
+      setIsSidebarOpen(true);
+      return;
+    }
     if (slug === 'auctions') {
       setCurrentPage('auctions');
       setSelectedCategorySlug(null);
@@ -62,7 +74,7 @@ export function App() {
   return (
     <div dir="rtl" className="min-h-screen bg-[#0d0d0d] text-white flex flex-col font-sans selection:bg-[#f5c400] selection:text-zinc-950">
       
-      {/* 1. Header المطابق للصورة */}
+      {/* 1. Header مع محدد المحافظات والمديريات */}
       <Header
         onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
         onNavigateHome={handleGoHome}
@@ -71,12 +83,17 @@ export function App() {
           setSelectedBusiness(null);
           setSelectedCategorySlug(null);
         }}
+        onSearch={handleGlobalSearch}
+        selectedGov={selectedGov}
+        selectedCity={selectedCity}
+        onGovChange={setSelectedGov}
+        onCityChange={setSelectedCity}
       />
 
-      {/* 2. Body Container: Sidebar + Content */}
+      {/* 2. المحتوى الرئيسي */}
       <div className="flex-1 w-full max-w-5xl mx-auto flex">
         
-        {/* Public Sidebar */}
+        {/* القائمة الجانبية */}
         <Sidebar
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
@@ -84,8 +101,8 @@ export function App() {
           onSelectCategory={handleSelectCategory}
         />
 
-        {/* Dynamic Main Content */}
-        <main className="flex-1 min-w-0 p-3.5 sm:p-5">
+        {/* جسم الصفحة */}
+        <main className="flex-1 min-w-0 p-3 sm:p-5">
           {selectedBusiness ? (
             <BusinessDetails
               business={selectedBusiness}
@@ -111,8 +128,8 @@ export function App() {
             <CategoryListing
               categorySlug={selectedCategorySlug}
               businesses={SAMPLE_BUSINESSES}
-              selectedGov="all"
-              selectedCity="all"
+              selectedGov={selectedGov}
+              selectedCity={selectedCity}
               onSelectBusiness={handleSelectBusiness}
               onBackHome={handleGoHome}
             />
@@ -130,7 +147,7 @@ export function App() {
         </main>
       </div>
 
-      {/* 3. Bottom Nav Bar للهواتف */}
+      {/* 3. شريط التنقل السفلي */}
       <BottomNav
         currentPage={currentPage}
         onNavigate={(page: any) => {
@@ -142,7 +159,7 @@ export function App() {
         onOpenAddModal={() => setIsAddModalOpen(true)}
       />
 
-      {/* نافذة أضف نشاط (+) المنبثقة */}
+      {/* نافذة الإضافة السريعة (+) */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#181818] border border-[#282828] rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl">
