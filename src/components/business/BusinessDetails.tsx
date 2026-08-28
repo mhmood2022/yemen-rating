@@ -4,7 +4,6 @@ import {
   MapPin, 
   Phone, 
   Clock, 
-  CheckCircle2, 
   MessageSquare, 
   ArrowRight, 
   Share2, 
@@ -14,11 +13,11 @@ import {
   Building2,
   Sparkles,
   Check,
-  Eye,
-  BookmarkCheck
+  Eye
 } from 'lucide-react';
 import { BusinessItem, Review } from '../../data/mockData';
 import { OFFICIAL_CATEGORIES } from '../../data/categories';
+import { VerifiedBadge } from '../common/VerifiedBadge';
 
 interface BusinessDetailsProps {
   business: BusinessItem;
@@ -125,7 +124,7 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
           
           <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-5 border-b border-zinc-800/80 pb-6">
             
-            {/* Logo + Name & Badges */}
+            {/* Logo + Name & Aligned Badge */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 w-full md:w-auto">
               
               {/* Business Logo */}
@@ -137,25 +136,17 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
                 />
               </div>
 
-              {/* Title & Neatly Anchored Badges */}
+              {/* Title & Neatly Anchored Badge at the exact end of name */}
               <div className="space-y-2 flex-1">
                 
-                {/* Title + Badges at end of title */}
-                <div className="flex items-center flex-wrap gap-2.5">
-                  <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-tight">
-                    {business.name}
+                {/* Title + Verification Badge */}
+                <div className="flex items-center flex-wrap gap-2">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-tight inline-flex items-center gap-2 flex-wrap">
+                    <span>{business.name}</span>
+                    {business.isVerified && (
+                      <VerifiedBadge type={business.badgeType} size="lg" />
+                    )}
                   </h1>
-
-                  {/* Render Badges neatly right at the end of the name */}
-                  {business.badges && business.badges.map((badge) => (
-                    <span
-                      key={badge.id}
-                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap self-center bg-amber-400/10 text-amber-400 border border-amber-400/30 shadow-sm"
-                    >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />
-                      <span>{badge.label}</span>
-                    </span>
-                  ))}
                 </div>
 
                 {/* Subtitle / Category / Location */}
@@ -220,7 +211,7 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
           {/* Unified Page Body: Two Columns Structure */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
             
-            {/* Right 2 Columns: Integrated Profile Details */}
+            {/* Right 2 Columns: Profile Details */}
             <div className="lg:col-span-2 space-y-6">
               
               {/* 1. About the Establishment */}
@@ -333,7 +324,7 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
 
             </div>
 
-            {/* Left 1 Column: Integrated Sidebar Specs */}
+            {/* Left 1 Column: Contact Specs */}
             <div className="space-y-4">
               
               <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/90 space-y-4">

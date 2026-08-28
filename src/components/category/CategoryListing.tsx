@@ -1,7 +1,8 @@
 import React from 'react';
-import { Star, MapPin, Phone, CheckCircle2, ArrowRight, Frown } from 'lucide-react';
+import { Star, MapPin, Phone, ArrowRight, Frown } from 'lucide-react';
 import { OFFICIAL_CATEGORIES } from '../../data/categories';
 import { BusinessItem } from '../../data/mockData';
+import { VerifiedBadge } from '../common/VerifiedBadge';
 
 interface CategoryListingProps {
   categorySlug: string;
@@ -85,19 +86,23 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
                   <span>{item.rating}</span>
                   <span className="text-zinc-500 text-[10px]">({item.reviewsCount})</span>
                 </div>
-                {item.badges && item.badges.length > 0 && (
-                  <div className="absolute top-3 left-3 bg-amber-400/20 text-amber-400 border border-amber-400/40 text-[11px] px-2 py-0.5 rounded-md backdrop-blur-md font-semibold flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" />
-                    {item.badges[0].label}
+                {item.isVerified && (
+                  <div className="absolute top-3 left-3 bg-zinc-950/80 backdrop-blur-md border border-zinc-700/80 p-1.5 rounded-lg">
+                    <VerifiedBadge type={item.badgeType} size="sm" />
                   </div>
                 )}
               </div>
 
               <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                 <div>
-                  <h3 className="font-bold text-sm text-white group-hover:text-amber-400 transition-colors line-clamp-1">
-                    {item.name}
-                  </h3>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <h3 className="font-bold text-sm text-white group-hover:text-amber-400 transition-colors line-clamp-1">
+                      {item.name}
+                    </h3>
+                    {item.isVerified && (
+                      <VerifiedBadge type={item.badgeType} size="sm" />
+                    )}
+                  </div>
                   <p className="text-xs text-zinc-400 flex items-center gap-1 mt-1.5 line-clamp-1">
                     <MapPin className="w-3.5 h-3.5 text-zinc-500 flex-shrink-0" />
                     {item.address}

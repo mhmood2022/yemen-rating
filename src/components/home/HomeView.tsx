@@ -1,7 +1,8 @@
 import React from 'react';
 import { OFFICIAL_CATEGORIES, CategoryItem } from '../../data/categories';
 import { BusinessItem } from '../../data/mockData';
-import { Star, CheckCircle2, Sparkles, Building2 } from 'lucide-react';
+import { VerifiedBadge } from '../common/VerifiedBadge';
+import { Star, Sparkles } from 'lucide-react';
 
 interface HomeViewProps {
   onSelectCategory: (slug: string) => void;
@@ -78,11 +79,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <h3 className="font-bold text-xs sm:text-sm text-white group-hover:text-amber-400 transition-colors line-clamp-1">
                       {item.name}
                     </h3>
-                    {item.badges && item.badges.length > 0 && (
-                      <span className="inline-flex items-center gap-0.5 text-[10px] bg-amber-400/10 text-amber-400 border border-amber-400/30 px-1.5 py-0.2 rounded-md">
-                        <CheckCircle2 className="w-3 h-3" />
-                        {item.badges[0].label}
-                      </span>
+                    {item.isVerified && (
+                      <VerifiedBadge type={item.badgeType} size="sm" />
                     )}
                   </div>
                   <p className="text-[11px] text-zinc-400 line-clamp-2 mt-1">{item.description}</p>
@@ -118,7 +116,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <img src={item.logo} alt={item.name} className="w-full h-full object-cover" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-xs font-bold text-white truncate group-hover:text-amber-400">{item.name}</h4>
+                <div className="flex items-center gap-1">
+                  <h4 className="text-xs font-bold text-white truncate group-hover:text-amber-400">{item.name}</h4>
+                  {item.isVerified && (
+                    <VerifiedBadge type={item.badgeType} size="sm" />
+                  )}
+                </div>
                 <div className="flex items-center gap-2 mt-1 text-[11px] text-zinc-400">
                   <span className="flex items-center gap-0.5 text-amber-400 font-bold">
                     <Star className="w-3 h-3 fill-amber-400" />

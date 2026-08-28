@@ -1,3 +1,5 @@
+import { BadgeType } from '../components/common/VerifiedBadge';
+
 export interface Review {
   id: string;
   userName: string;
@@ -5,12 +7,6 @@ export interface Review {
   rating: number;
   date: string;
   comment: string;
-}
-
-export interface BadgeItem {
-  id: string;
-  label: string;
-  type: 'verified' | 'featured' | 'top-rated';
 }
 
 export interface BusinessItem {
@@ -26,7 +22,8 @@ export interface BusinessItem {
   whatsapp?: string;
   workingHours: string;
   description: string;
-  badges: BadgeItem[];
+  isVerified: boolean;
+  badgeType: BadgeType; // 'gold' | 'blue' | 'gray' | 'none'
   amenities: string[];
   stats: {
     viewsCount: number;
@@ -76,10 +73,8 @@ export const SAMPLE_BUSINESSES: BusinessItem[] = [
     whatsapp: '777000111',
     workingHours: '8:00 ص - 4:00 م (السبت - الخميس)',
     description: 'يقدم بنك الكريمي أوسع شبكة خدمات مصرفية وتمويلية في كافة أنحاء الجمهورية اليمنية مع خدمات الحسابات، والتمويل، والتحويلات اللحظية عبر تطبيق كريمي جوال بأعلى معايير الأمان والسرعة.',
-    badges: [
-      { id: 'v-1', label: 'موثق رسمياً', type: 'verified' },
-      { id: 't-1', label: 'شريك معتمد', type: 'top-rated' }
-    ],
+    isVerified: true,
+    badgeType: 'gold', // شارة ذهبية
     amenities: ['صرافات آلية 24/7', 'خدمات مصرفية إلكترونية', 'حوالات لحظية', 'خدمة عملاء مميزة', 'مواقف سيارات'],
     stats: { viewsCount: 14250, savesCount: 890 },
     coverImage: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=1400&auto=format&fit=crop&q=80',
@@ -107,10 +102,8 @@ export const SAMPLE_BUSINESSES: BusinessItem[] = [
     whatsapp: '733111222',
     workingHours: '11:00 ص - 1:00 ص (يومياً)',
     description: 'أرقى المأكولات اليمنية والبحرية والشرقية، مع صالات عائلية واسعة ومطلة، مجهزة بأعلى معايير النظافة والضيافة والخدمة الراقية.',
-    badges: [
-      { id: 'v-2', label: 'موثق', type: 'verified' },
-      { id: 't-2', label: 'الأعلى تقييماً', type: 'top-rated' }
-    ],
+    isVerified: true,
+    badgeType: 'blue', // شارة زرقاء
     amenities: ['صالات عائلية خاصة', 'مأكولات بحرية طازجة', 'واي فاي مجاني', 'دفع إلكتروني', 'تكييف مركزي', 'مواقف سيارات'],
     stats: { viewsCount: 9800, savesCount: 650 },
     coverImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1400&auto=format&fit=crop&q=80',
@@ -138,9 +131,8 @@ export const SAMPLE_BUSINESSES: BusinessItem[] = [
     whatsapp: '771234567',
     workingHours: 'طوارئ 24 ساعة - العيادات 8:00 ص إلى 8:00 م',
     description: 'صرح طبي متكامل يقدم رعاية صحية تشخيصية وعلاجية بأحدث التجهيزات الطبية الحديثة ونخبة من الاستشاريين في كافة التخصصات الطبية والجراحية.',
-    badges: [
-      { id: 'v-3', label: 'موثق رسمياً', type: 'verified' }
-    ],
+    isVerified: true,
+    badgeType: 'gray', // شارة رمادية / فضية
     amenities: ['طوارئ 24 ساعة', 'مختبرات متقدمة', 'عناية مركزة', 'أشعة مقطعية ورنين', 'صيدلية داخلية', 'إسعاف مجهز'],
     stats: { viewsCount: 8400, savesCount: 410 },
     coverImage: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=1400&auto=format&fit=crop&q=80',
@@ -166,9 +158,8 @@ export const SAMPLE_BUSINESSES: BusinessItem[] = [
     whatsapp: '775554433',
     workingHours: 'استقبال وحجوزات 24 ساعة',
     description: 'تجربة إقامة فاخرة بإطلالة ساحرة على بحر العرب وخور المكلا، غرف وأجنحة فندقية ملكية، مطاعم وقاعات مؤتمرات واجتماعات.',
-    badges: [
-      { id: 'v-4', label: 'فندق 4 نجوم', type: 'top-rated' }
-    ],
+    isVerified: true,
+    badgeType: 'blue',
     amenities: ['إطلالة بحرية', 'خدمة غرف 24 ساعة', 'مطعم فاخر', 'واي فاي فائق السرعة', 'قاعات مناسبات', 'مواقف خاصة'],
     stats: { viewsCount: 6200, savesCount: 380 },
     coverImage: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&auto=format&fit=crop&q=80',
