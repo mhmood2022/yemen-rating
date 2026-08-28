@@ -7,9 +7,13 @@ import {
   Building, 
   Briefcase, 
   TrendingUp, 
+  TrendingDown,
   Sparkles, 
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  RefreshCw,
+  Coins,
+  DollarSign
 } from 'lucide-react';
 import { OFFICIAL_CATEGORIES, CategoryItem } from '../../data/categories';
 import { BusinessItem } from '../../data/mockData';
@@ -35,11 +39,26 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onNavigateExchangeRates
 }) => {
   const [showAllCategories, setShowAllCategories] = useState(false);
+  const [activeMarketHome, setActiveMarketHome] = useState<'sanaa' | 'aden'>('sanaa');
 
-  // إظهار أهم 8 تصنيفات في الوضع الافتراضي أو كامل الـ 26 عند النقر على عرض الكل
   const displayedCategories = showAllCategories 
     ? OFFICIAL_CATEGORIES 
     : OFFICIAL_CATEGORIES.slice(0, 8);
+
+  const marketRates = {
+    sanaa: {
+      sar: { buy: '140.20', sell: '140.70', change: '+0.15%', isUp: true },
+      usd: { buy: '535.00', sell: '538.00', change: '-0.20%', isUp: false },
+      gold21: { buy: '37,200', sell: '39,500', change: '+0.45%', isUp: true }
+    },
+    aden: {
+      sar: { buy: '495.00', sell: '500.00', change: '+0.80%', isUp: true },
+      usd: { buy: '1,890.00', sell: '1,910.00', change: '+1.10%', isUp: true },
+      gold21: { buy: '129,500', sell: '138,000', change: '+0.60%', isUp: true }
+    }
+  };
+
+  const currentHomeRates = marketRates[activeMarketHome];
 
   return (
     <div dir="rtl" className="space-y-6 pb-20">
@@ -80,7 +99,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 2. التصنيفات الرئيسية (كامل التصنيفات الـ 26 مع خيار عرض الكل) */}
+      {/* 2. التصنيفات الرئيسية */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
@@ -98,7 +117,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        {/* شبكة التصنيفات بدون أي خطوط بيضاء */}
         <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-3">
           {displayedCategories.map((cat: CategoryItem) => {
             const Icon = cat.icon;
@@ -120,7 +138,153 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 3. الأعلى تقييماً (بدون أي شريط أبيض) */}
+      {/* 3. أسعار العملات والذهب (التصميم المالي الاحترافي الجديد) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+            <h3 className="text-sm sm:text-base font-bold text-white">أسعار العملات والذهب</h3>
+          </div>
+
+          <button
+            onClick={onNavigateExchangeRates}
+            className="text-xs text-[#f5c400] hover:underline font-bold"
+          >
+            التفاصيل والحاسبة ←
+          </button>
+        </div>
+
+        {/* Financial Container Card */}
+        <div className="rounded-2xl bg-[#151515] border border-[#262626] p-3.5 sm:p-4 space-y-3.5 shadow-xl">
+          
+          {/* Top Ticker Switcher */}
+          <div className="flex items-center justify-between gap-2 border-b border-[#242424] pb-2.5">
+            <div className="flex items-center gap-1.5 bg-[#0f0f0f] p-1 rounded-xl border border-[#222]">
+              <button
+                onClick={() => setActiveMarketHome('sanaa')}
+                className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                  activeMarketHome === 'sanaa'
+                    ? 'bg-[#f5c400] text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                أسعار صنعاء
+              </button>
+              <button
+                onClick={() => setActiveMarketHome('aden')}
+                className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                  activeMarketHome === 'aden'
+                    ? 'bg-[#f5c400] text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                أسعار عدن
+              </button>
+            </div>
+
+            <div className="flex items-center gap-1 text-[10px] text-zinc-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>مباشر</span>
+            </div>
+          </div>
+
+          {/* Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            
+            {/* 1. الريال السعودي */}
+            <div className="bg-[#0f0f0f] p-3 rounded-xl border border-[#222] space-y-2 relative overflow-hidden group hover:border-[#333] transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <Coins className="w-3.5 h-3.5 text-[#f5c400]" />
+                  الريال السعودي (SAR)
+                </span>
+                <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
+                  currentHomeRates.sar.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                }`}>
+                  {currentHomeRates.sar.isUp ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                  {currentHomeRates.sar.change}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#1e1e1e]">
+                <div>
+                  <span className="text-[10px] text-zinc-400 block">شراء</span>
+                  <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">{currentHomeRates.sar.buy}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-zinc-400 block">بيع</span>
+                  <span className="text-sm font-extrabold text-[#f5c400] font-mono tracking-tight">{currentHomeRates.sar.sell}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. الدولار الأمريكي */}
+            <div className="bg-[#0f0f0f] p-3 rounded-xl border border-[#222] space-y-2 relative overflow-hidden group hover:border-[#333] transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                  الدولار الأمريكي (USD)
+                </span>
+                <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
+                  currentHomeRates.usd.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                }`}>
+                  {currentHomeRates.usd.isUp ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                  {currentHomeRates.usd.change}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#1e1e1e]">
+                <div>
+                  <span className="text-[10px] text-zinc-400 block">شراء</span>
+                  <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">{currentHomeRates.usd.buy}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-zinc-400 block">بيع</span>
+                  <span className="text-sm font-extrabold text-[#f5c400] font-mono tracking-tight">{currentHomeRates.usd.sell}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. الذهب عيار 21 */}
+            <div className="bg-[#0f0f0f] p-3 rounded-xl border border-[#222] space-y-2 relative overflow-hidden group hover:border-[#333] transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <Coins className="w-3.5 h-3.5 text-[#f5c400]" />
+                  الذهب عيار 21 (جرام)
+                </span>
+                <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
+                  currentHomeRates.gold21.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                }`}>
+                  {currentHomeRates.gold21.isUp ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                  {currentHomeRates.gold21.change}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#1e1e1e]">
+                <div>
+                  <span className="text-[10px] text-zinc-400 block">شراء</span>
+                  <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">{currentHomeRates.gold21.buy}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-zinc-400 block">بيع</span>
+                  <span className="text-sm font-extrabold text-[#f5c400] font-mono tracking-tight">{currentHomeRates.gold21.sell}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="text-center text-[10px] text-zinc-400 pt-1 flex items-center justify-center gap-1">
+            <RefreshCw className="w-3 h-3 text-[#f5c400]" />
+            <span>تحديث الأسعار يتم على مدار الساعة من محلات الصرافة المعتمدة</span>
+          </div>
+
+        </div>
+      </div>
+
+      {/* 4. الأعلى تقييماً */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white">الأعلى تقييماً</h3>
@@ -167,7 +331,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 4. المزادات الحية */}
+      {/* 5. المزادات الحية */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
@@ -233,7 +397,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 5. العقارات المميزة */}
+      {/* 6. العقارات المميزة */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
@@ -293,7 +457,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 6. أحدث الوظائف */}
+      {/* 7. أحدث الوظائف */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
@@ -341,63 +505,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 7. أسعار العملات والذهب */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
-            <TrendingUp className="w-4 h-4 text-[#f5c400]" />
-            <span>أسعار العملات والذهب</span>
-          </h3>
-          <button
-            onClick={onNavigateExchangeRates}
-            className="text-xs text-[#f5c400] hover:underline font-semibold"
-          >
-            عرض الكل
-          </button>
-        </div>
-
-        <div className="rounded-2xl bg-[#181818] border border-[#282828] p-3.5 space-y-3 shadow-lg">
-          <div className="grid grid-cols-3 gap-2 text-center">
-            
-            <div className="bg-[#121212] p-2.5 rounded-xl border border-[#222]">
-              <span className="text-[11px] font-bold text-white block mb-1">ريال سعودي</span>
-              <div className="flex justify-around text-[10px] text-zinc-400">
-                <span>شراء: <strong className="text-[#f5c400] font-mono">140.2</strong></span>
-                <span>بيع: <strong className="text-white font-mono">140.8</strong></span>
-              </div>
-              <span className="text-[9px] text-zinc-500 mt-1 block font-mono">ريال يمني</span>
-            </div>
-
-            <div className="bg-[#121212] p-2.5 rounded-xl border border-[#222]">
-              <span className="text-[11px] font-bold text-white block mb-1">دولار أمريكي</span>
-              <div className="flex justify-around text-[10px] text-zinc-400">
-                <span>شراء: <strong className="text-[#f5c400] font-mono">535</strong></span>
-                <span>بيع: <strong className="text-white font-mono">538</strong></span>
-              </div>
-              <span className="text-[9px] text-zinc-500 mt-1 block font-mono">ريال يمني</span>
-            </div>
-
-            <div className="bg-[#121212] p-2.5 rounded-xl border border-[#222]">
-              <span className="text-[11px] font-bold text-white block mb-1">الذهب عيار 21</span>
-              <div className="flex justify-around text-[10px] text-zinc-400">
-                <span>شراء: <strong className="text-[#f5c400] font-mono">37,200</strong></span>
-              </div>
-              <span className="text-[9px] text-zinc-500 mt-1 block font-mono">ريال / جرام</span>
-            </div>
-
-          </div>
-
-          <div className="text-center text-[10px] text-zinc-500 pt-1 border-t border-[#222]">
-            آخر تحديث: منذ 5 دقائق
-          </div>
-        </div>
-      </div>
-
       {/* 8. آخر التقييمات */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white">آخر التقييمات</h3>
-          <span className="text-xs text-zinc-500">آراء حقيقية</span>
+          <span className="text-xs text-zinc-400">آراء حقيقية</span>
         </div>
 
         <div className="p-3.5 rounded-2xl bg-[#181818] border border-[#282828] flex items-start gap-3 shadow-md">
@@ -411,7 +523,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-white">أبو محمد</span>
-              <span className="text-[10px] text-zinc-500">منذ ساعتين</span>
+              <span className="text-[10px] text-zinc-400">منذ ساعتين</span>
             </div>
             <p className="text-xs text-zinc-300 line-clamp-1">تجربة رائعة وجودة ممتازة وتعامل راقي جداً.</p>
             <div className="text-[#f5c400] text-xs">★★★★★</div>
