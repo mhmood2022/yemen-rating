@@ -11,8 +11,7 @@ import {
   Globe, 
   ShieldCheck, 
   Send,
-  CheckCircle,
-  ExternalLink
+  CheckCircle
 } from 'lucide-react';
 import { BusinessItem, Review } from '../../data/mockData';
 import { OFFICIAL_CATEGORIES } from '../../data/categories';
@@ -61,21 +60,21 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
   };
 
   return (
-    <div dir="rtl" className="max-w-6xl mx-auto space-y-5 pb-16">
+    <div dir="rtl" className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-5 pb-16 px-1 sm:px-0">
       
       {/* Top Back Navigation */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors"
+          className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors"
         >
           <ArrowRight className="w-4 h-4 text-amber-400" />
           <span>الرجوع إلى النتائج</span>
         </button>
 
         {copiedNotification && (
-          <span className="text-[11px] bg-amber-400/10 text-amber-400 border border-amber-400/30 px-3 py-1 rounded-lg">
-            تم نسخ رابط المنشأة بنجاح!
+          <span className="text-[10px] sm:text-[11px] bg-amber-400/10 text-amber-400 border border-amber-400/30 px-2.5 py-1 rounded-lg truncate">
+            تم نسخ الرابط!
           </span>
         )}
       </div>
@@ -84,7 +83,7 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
       <section className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-[#151515] shadow-2xl">
         
         {/* Cover Photo */}
-        <div className="relative h-60 sm:h-72 md:h-80 w-full bg-[#1e1e1e] overflow-hidden">
+        <div className="relative h-48 sm:h-72 md:h-80 w-full bg-[#1e1e1e] overflow-hidden">
           <img
             src={business.coverImage}
             alt={business.name}
@@ -94,10 +93,10 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
         </div>
 
         {/* Business Identity Info */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 px-6 pb-6 -mt-16 sm:-mt-20 relative z-10 text-center sm:text-right">
+        <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3.5 sm:gap-5 px-4 sm:px-6 pb-4 sm:pb-6 -mt-14 sm:-mt-20 relative z-10 text-center sm:text-right">
           
           {/* Logo */}
-          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-[#222] border-4 border-[#151515] overflow-hidden shadow-2xl flex-shrink-0">
+          <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-[#222] border-4 border-[#151515] overflow-hidden shadow-2xl flex-shrink-0">
             <img
               src={business.logo}
               alt={business.name}
@@ -106,9 +105,9 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
           </div>
 
           {/* Identity Details */}
-          <div className="flex-1 space-y-1.5 pb-1">
-            <div className="flex items-center justify-center sm:justify-start flex-wrap gap-2">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          <div className="flex-1 space-y-1.5 pb-1 w-full min-w-0">
+            <div className="flex items-center justify-center sm:justify-start flex-wrap gap-1.5 sm:gap-2">
+              <h1 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight break-words">
                 {business.name}
               </h1>
               {business.isVerified && (
@@ -116,101 +115,103 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
               )}
             </div>
 
-            <div className="text-xs sm:text-sm text-zinc-400">
+            <div className="text-xs sm:text-sm text-zinc-400 flex items-center justify-center sm:justify-start flex-wrap gap-1">
               <span>{category?.name || 'الخدمات'}</span>
-              <span className="mx-1.5 text-zinc-600">·</span>
-              <span>{business.address}</span>
+              <span className="text-zinc-600">·</span>
+              <span className="truncate max-w-xs">{business.address}</span>
             </div>
 
-            <div className="flex items-center justify-center sm:justify-start gap-2 pt-1">
-              <span className="text-amber-400 tracking-wider text-sm">★★★★★</span>
-              <span className="font-bold text-sm text-white font-mono">{business.rating}</span>
-              <span className="text-xs text-zinc-400">({reviewsList.length} تقييم)</span>
+            <div className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 pt-0.5">
+              <span className="text-amber-400 tracking-wider text-xs sm:text-sm">★★★★★</span>
+              <span className="font-bold text-xs sm:text-sm text-white font-mono">{business.rating}</span>
+              <span className="text-[11px] sm:text-xs text-zinc-400">({reviewsList.length} تقييم)</span>
             </div>
           </div>
 
         </div>
 
         {/* Actions Button Bar */}
-        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 px-6 pb-6 pt-2 border-t border-zinc-800/80">
-          
-          <a
-            href={`tel:${business.phone}`}
-            className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
-          >
-            <Phone className="w-3.5 h-3.5" />
-            <span>اتصال</span>
-          </a>
-
-          {business.whatsapp && (
+        <div className="p-3 sm:px-6 sm:pb-6 sm:pt-2 border-t border-zinc-800/80">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center sm:justify-start gap-2">
+            
             <a
-              href={`https://wa.me/${business.whatsapp}`}
-              target="_blank"
-              rel="noreferrer"
-              className="px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center gap-1.5"
+              href={`tel:${business.phone}`}
+              className="px-3 sm:px-4 py-2 bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm"
             >
-              <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
-              <span>WhatsApp</span>
+              <Phone className="w-3.5 h-3.5" />
+              <span>اتصال</span>
             </a>
-          )}
 
-          <button
-            onClick={() => window.scrollTo({ top: 600, behavior: 'smooth' })}
-            className="px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center gap-1.5"
-          >
-            <MapPin className="w-3.5 h-3.5 text-amber-400" />
-            <span>الموقع</span>
-          </button>
+            {business.whatsapp && (
+              <a
+                href={`https://wa.me/${business.whatsapp}`}
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 sm:px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                <span>WhatsApp</span>
+              </a>
+            )}
 
-          <button
-            onClick={handleShare}
-            className="px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center gap-1.5"
-          >
-            <Share2 className="w-3.5 h-3.5" />
-            <span>مشاركة</span>
-          </button>
+            <button
+              onClick={() => window.scrollTo({ top: 650, behavior: 'smooth' })}
+              className="px-3 sm:px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5"
+            >
+              <MapPin className="w-3.5 h-3.5 text-amber-400" />
+              <span>الموقع</span>
+            </button>
 
-          <button
-            onClick={() => setIsSaved(!isSaved)}
-            className={`px-4 py-2 border text-xs rounded-lg transition-colors flex items-center gap-1.5 ${
-              isSaved
-                ? 'bg-amber-400 text-zinc-950 border-amber-400 font-bold'
-                : 'bg-[#202020] hover:bg-zinc-800 text-zinc-200 border-zinc-700'
-            }`}
-          >
-            <Heart className={`w-3.5 h-3.5 ${isSaved ? 'fill-zinc-950' : ''}`} />
-            <span>{isSaved ? 'تم الحفظ' : 'حفظ'}</span>
-          </button>
+            <button
+              onClick={handleShare}
+              className="px-3 sm:px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>مشاركة</span>
+            </button>
 
-          <button
-            onClick={() => window.open('#', '_blank')}
-            className="px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center gap-1.5"
-          >
-            <Globe className="w-3.5 h-3.5" />
-            <span>الموقع الإلكتروني</span>
-          </button>
+            <button
+              onClick={() => setIsSaved(!isSaved)}
+              className={`px-3 sm:px-4 py-2 border text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 ${
+                isSaved
+                  ? 'bg-amber-400 text-zinc-950 border-amber-400 font-bold'
+                  : 'bg-[#202020] hover:bg-zinc-800 text-zinc-200 border-zinc-700'
+              }`}
+            >
+              <Heart className={`w-3.5 h-3.5 ${isSaved ? 'fill-zinc-950' : ''}`} />
+              <span>{isSaved ? 'تم الحفظ' : 'حفظ'}</span>
+            </button>
 
-          <button
-            onClick={() => setClaimModalOpen(true)}
-            className="px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-400 hover:text-amber-400 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center gap-1.5"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>المطالبة بملكية المنشأة</span>
-          </button>
+            <button
+              onClick={() => window.open('#', '_blank')}
+              className="px-3 sm:px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>الموقع الإلكتروني</span>
+            </button>
 
+            <button
+              onClick={() => setClaimModalOpen(true)}
+              className="col-span-2 sm:col-span-1 px-3 sm:px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-400 hover:text-amber-400 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>المطالبة بملكية المنشأة</span>
+            </button>
+
+          </div>
         </div>
 
       </section>
 
       {/* 2. Main Grid Layout (2fr Main Content / 1fr Sidebar) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         
         {/* Main Column (2fr) */}
-        <div className="lg:col-span-2 space-y-5">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-5">
           
           {/* About Section */}
-          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-3">
-            <h2 className="text-lg font-bold text-white">عن المنشأة</h2>
+          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-2.5 sm:space-y-3">
+            <h2 className="text-base sm:text-lg font-bold text-white">عن المنشأة</h2>
             <p className="text-xs sm:text-sm text-[#c7c7c7] leading-relaxed">
               {business.description}
             </p>
@@ -218,8 +219,8 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
 
           {/* Services Section */}
           {business.amenities && business.amenities.length > 0 && (
-            <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-3">
-              <h2 className="text-lg font-bold text-white">الخدمات</h2>
+            <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-2.5 sm:space-y-3">
+              <h2 className="text-base sm:text-lg font-bold text-white">الخدمات</h2>
               <p className="text-xs sm:text-sm text-zinc-300 font-medium leading-relaxed">
                 {business.amenities.join(' · ')}
               </p>
@@ -228,11 +229,11 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
 
           {/* Photo Gallery Section */}
           {business.gallery && business.gallery.length > 0 && (
-            <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-3">
-              <h2 className="text-lg font-bold text-white">معرض الصور</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-2.5 sm:space-y-3">
+              <h2 className="text-base sm:text-lg font-bold text-white">معرض الصور</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
                 {business.gallery.map((img, i) => (
-                  <div key={i} className="h-36 rounded-xl bg-zinc-900 overflow-hidden border border-zinc-800">
+                  <div key={i} className="h-28 sm:h-36 rounded-xl bg-zinc-900 overflow-hidden border border-zinc-800">
                     <img
                       src={img}
                       alt={`${business.name} ${i + 1}`}
@@ -245,23 +246,23 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
           )}
 
           {/* Reviews & Ratings Section */}
-          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
-              <h2 className="text-lg font-bold text-white">التقييمات والمراجعات</h2>
+          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-3 sm:space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2.5 sm:pb-3">
+              <h2 className="text-base sm:text-lg font-bold text-white">التقييمات والمراجعات</h2>
               <span className="text-xs text-zinc-400">({reviewsList.length} مراجعة)</span>
             </div>
 
             <div className="divide-y divide-zinc-800/80">
               {reviewsList.map((rev) => (
-                <div key={rev.id} className="py-3.5 space-y-1.5">
+                <div key={rev.id} className="py-3 space-y-1.5">
                   <div className="flex items-center justify-between">
                     <div className="font-bold text-xs sm:text-sm text-white">{rev.userName}</div>
-                    <span className="text-[11px] text-zinc-500">{rev.date}</span>
+                    <span className="text-[10px] sm:text-[11px] text-zinc-500">{rev.date}</span>
                   </div>
                   <div className="text-amber-400 text-xs tracking-wider">
                     {'★'.repeat(rev.rating)}{'☆'.repeat(5 - rev.rating)}
                   </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed pt-1">
+                  <p className="text-xs text-zinc-400 leading-relaxed pt-0.5">
                     {rev.comment}
                   </p>
                 </div>
@@ -270,7 +271,7 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
 
             <button
               onClick={() => setIsReviewModalOpen(true)}
-              className="mt-2 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               <Star className="w-3.5 h-3.5 fill-zinc-950" />
               <span>أضف تقييمك</span>
@@ -280,20 +281,20 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
         </div>
 
         {/* Sidebar Column (1fr) */}
-        <aside className="space-y-5">
+        <aside className="space-y-4 sm:space-y-5">
           
           {/* Ad Slot (مساحة الإعلان) */}
-          <div className="min-h-[120px] border border-dashed border-zinc-700/80 rounded-xl bg-[#151515]/60 flex items-center justify-center text-zinc-500 text-xs font-medium">
+          <div className="min-h-[100px] sm:min-h-[120px] border border-dashed border-zinc-700/80 rounded-xl bg-[#151515]/60 flex items-center justify-center text-zinc-500 text-xs font-medium">
             مساحة الإعلان
           </div>
 
           {/* Contact Information Section */}
-          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-3">
-            <h2 className="text-base font-bold text-white border-b border-zinc-800 pb-2.5">
+          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-2.5 sm:space-y-3">
+            <h2 className="text-base font-bold text-white border-b border-zinc-800 pb-2">
               معلومات التواصل
             </h2>
 
-            <div className="space-y-2 text-xs">
+            <div className="space-y-1.5 text-xs">
               <div className="flex items-center gap-2.5 py-2 border-b border-zinc-800/60 text-zinc-300">
                 <Phone className="w-4 h-4 text-amber-400 flex-shrink-0" />
                 <a href={`tel:${business.phone}`} className="font-mono hover:text-amber-400">{business.phone}</a>
@@ -310,7 +311,7 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
 
               <div className="flex items-center gap-2.5 py-2 border-b border-zinc-800/60 text-zinc-300">
                 <MapPin className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                <span>{business.address}</span>
+                <span className="truncate">{business.address}</span>
               </div>
 
               <div className="flex items-center gap-2.5 py-2 text-zinc-300">
@@ -321,16 +322,16 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
           </section>
 
           {/* Business Location Section */}
-          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-3">
+          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-2.5 sm:space-y-3">
             <h2 className="text-base font-bold text-white">موقع المنشأة</h2>
-            <div className="h-36 rounded-xl border border-dashed border-zinc-700/80 bg-zinc-950 flex flex-col items-center justify-center text-zinc-500 text-xs space-y-1">
+            <div className="h-32 sm:h-36 rounded-xl border border-dashed border-zinc-700/80 bg-zinc-950 flex flex-col items-center justify-center text-zinc-500 text-xs space-y-1">
               <MapPin className="w-5 h-5 text-zinc-600" />
               <span>الخريطة التفاعلية</span>
             </div>
           </section>
 
           {/* Working Hours Section */}
-          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-2">
+          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-4 sm:p-5 space-y-2">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
               <Clock className="w-4 h-4 text-amber-400" />
               <span>أوقات العمل</span>
@@ -346,8 +347,8 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
 
       {/* Review Modal */}
       {isReviewModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-sm font-bold text-white">إضافة تقييم لـ {business.name}</h3>
             
             <form onSubmit={handleAddReview} className="space-y-3">
@@ -414,13 +415,13 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
 
       {/* Claim Business Modal */}
       {claimModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 className="text-sm font-bold text-white">المطالبة بملكية منشأة: {business.name}</h3>
             
             {claimSuccess ? (
               <div className="p-4 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs flex items-center gap-2">
-                <CheckCircle className="w-5 h-5" />
+                <CheckCircle className="w-5 h-5 flex-shrink-0" />
                 <span>تم إرسال طلب المطالبة بنجاح، سيتواصل معك فريق التحقق.</span>
               </div>
             ) : (
@@ -435,7 +436,7 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
                 }}
                 className="space-y-3 text-xs text-zinc-300"
               >
-                <p className="text-[11px] text-zinc-400">
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
                   إذا كنت المالك الرسمي أو المفوض لهذه المنشأة، يرجى تزويدنا ببيانات التواصل لإتمام التحقق ومنحك إدارة الصفحة.
                 </p>
                 <div>
