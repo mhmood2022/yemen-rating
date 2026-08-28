@@ -7,13 +7,12 @@ import {
   MessageSquare, 
   ArrowRight, 
   Share2, 
-  Heart,
-  ImageIcon,
+  Heart, 
+  Globe, 
+  ShieldCheck, 
   Send,
-  Building2,
-  Sparkles,
-  Check,
-  Eye
+  CheckCircle,
+  ExternalLink
 } from 'lucide-react';
 import { BusinessItem, Review } from '../../data/mockData';
 import { OFFICIAL_CATEGORIES } from '../../data/categories';
@@ -25,13 +24,15 @@ interface BusinessDetailsProps {
 }
 
 export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBack }) => {
-  const [reviewsList, setReviewsList] = useState<Review[]>(business.reviews);
+  const [reviewsList, setReviewsList] = useState<Review[]>(business.reviews || []);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
   const [newUserName, setNewUserName] = useState('');
   const [isSaved, setIsSaved] = useState(false);
   const [copiedNotification, setCopiedNotification] = useState(false);
+  const [claimModalOpen, setClaimModalOpen] = useState(false);
+  const [claimSuccess, setClaimSuccess] = useState(false);
 
   const category = OFFICIAL_CATEGORIES.find(c => c.slug === business.categorySlug);
 
@@ -60,345 +61,310 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
   };
 
   return (
-    <div dir="rtl" className="space-y-6 pb-16">
+    <div dir="rtl" className="max-w-6xl mx-auto space-y-5 pb-16">
       
-      {/* Top Breadcrumb & Action Bar */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      {/* Top Back Navigation */}
+      <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-medium text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors"
         >
           <ArrowRight className="w-4 h-4 text-amber-400" />
-          <span>الرجوع إلى القائمة</span>
+          <span>الرجوع إلى النتائج</span>
         </button>
 
-        <div className="flex items-center gap-2">
-          {copiedNotification && (
-            <span className="text-[11px] bg-amber-400/10 text-amber-400 border border-amber-400/30 px-2.5 py-1 rounded-lg">
-              تم نسخ الرابط بنجاح!
-            </span>
-          )}
-          <button
-            onClick={() => setIsSaved(!isSaved)}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-medium transition-colors ${
-              isSaved
-                ? 'bg-amber-400 text-zinc-950 border-amber-400 shadow-md font-bold'
-                : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:text-white hover:border-zinc-700'
-            }`}
-          >
-            <Heart className={`w-4 h-4 ${isSaved ? 'fill-zinc-950' : ''}`} />
-            <span>{isSaved ? 'تم الحفظ' : 'حفظ'}</span>
-          </button>
-          <button
-            onClick={handleShare}
-            className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors"
-            title="مشاركة"
-          >
-            <Share2 className="w-4 h-4" />
-          </button>
-        </div>
+        {copiedNotification && (
+          <span className="text-[11px] bg-amber-400/10 text-amber-400 border border-amber-400/30 px-3 py-1 rounded-lg">
+            تم نسخ رابط المنشأة بنجاح!
+          </span>
+        )}
       </div>
 
-      {/* Main Integrated Business Header Frame */}
-      <div className="rounded-3xl overflow-hidden bg-zinc-900/90 border border-zinc-800 shadow-2xl">
+      {/* 1. Business Header Section (Cover + Info + Actions) */}
+      <section className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-[#151515] shadow-2xl">
         
-        {/* Cover Hero Photo */}
-        <div className="relative h-60 sm:h-72 md:h-84 w-full bg-zinc-800 overflow-hidden">
+        {/* Cover Photo */}
+        <div className="relative h-60 sm:h-72 md:h-80 w-full bg-[#1e1e1e] overflow-hidden">
           <img
             src={business.coverImage}
             alt={business.name}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
-          
-          <div className="absolute top-4 left-4 flex items-center gap-2">
-            <span className="bg-zinc-950/80 backdrop-blur-md border border-zinc-800 text-zinc-300 text-[11px] px-2.5 py-1 rounded-lg flex items-center gap-1">
-              <Eye className="w-3.5 h-3.5 text-zinc-400" />
-              {business.stats.viewsCount.toLocaleString()} مشاهدة
-            </span>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#151515]" />
         </div>
 
-        {/* Cohesive Identity Card Body */}
-        <div className="p-5 sm:p-7 -mt-16 sm:-mt-20 relative space-y-6">
+        {/* Business Identity Info */}
+        <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 px-6 pb-6 -mt-16 sm:-mt-20 relative z-10 text-center sm:text-right">
           
-          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-5 border-b border-zinc-800/80 pb-6">
-            
-            {/* Logo + Name & Aligned Badge */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 w-full md:w-auto">
-              
-              {/* Business Logo */}
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-zinc-950 border-2 border-zinc-700 p-1 overflow-hidden shadow-2xl flex-shrink-0">
-                <img
-                  src={business.logo}
-                  alt={business.name}
-                  className="w-full h-full object-cover rounded-xl"
-                />
-              </div>
+          {/* Logo */}
+          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-[#222] border-4 border-[#151515] overflow-hidden shadow-2xl flex-shrink-0">
+            <img
+              src={business.logo}
+              alt={business.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-              {/* Title & Neatly Anchored Badge at the exact end of name */}
-              <div className="space-y-2 flex-1">
-                
-                {/* Title + Verification Badge */}
-                <div className="flex items-center flex-wrap gap-2">
-                  <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-tight inline-flex items-center gap-2 flex-wrap">
-                    <span>{business.name}</span>
-                    {business.isVerified && (
-                      <VerifiedBadge type={business.badgeType} size="lg" />
-                    )}
-                  </h1>
-                </div>
-
-                {/* Subtitle / Category / Location */}
-                <div className="flex items-center flex-wrap gap-3 text-xs text-zinc-400">
-                  <span className="bg-zinc-800 text-amber-300 px-2.5 py-1 rounded-lg font-medium border border-zinc-700/60">
-                    {category?.name || 'الخدمات'}
-                  </span>
-                  <span className="flex items-center gap-1 text-zinc-300">
-                    <MapPin className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                    <span>{business.address}</span>
-                  </span>
-                </div>
-
-                {/* Rating Overview */}
-                <div className="flex items-center gap-3 pt-0.5">
-                  <div className="flex items-center gap-1 bg-amber-400 text-zinc-950 text-xs sm:text-sm font-black px-2.5 py-0.5 rounded-md shadow-sm">
-                    <Star className="w-3.5 h-3.5 fill-zinc-950" />
-                    <span>{business.rating}</span>
-                  </div>
-                  <span className="text-xs text-zinc-400">
-                    ({reviewsList.length} تقييم حقيقي)
-                  </span>
-                </div>
-
-              </div>
-
+          {/* Identity Details */}
+          <div className="flex-1 space-y-1.5 pb-1">
+            <div className="flex items-center justify-center sm:justify-start flex-wrap gap-2">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                {business.name}
+              </h1>
+              {business.isVerified && (
+                <VerifiedBadge type={business.badgeType || 'gold'} size="md" />
+              )}
             </div>
 
-            {/* Quick Interactive Actions */}
-            <div className="flex items-center gap-2.5 w-full md:w-auto flex-wrap flex-shrink-0">
-              <a
-                href={`tel:${business.phone}`}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold rounded-xl border border-zinc-700 transition-colors"
-              >
-                <Phone className="w-4 h-4 text-amber-400" />
-                <span>اتصال مباشر</span>
-              </a>
+            <div className="text-xs sm:text-sm text-zinc-400">
+              <span>{category?.name || 'الخدمات'}</span>
+              <span className="mx-1.5 text-zinc-600">·</span>
+              <span>{business.address}</span>
+            </div>
+
+            <div className="flex items-center justify-center sm:justify-start gap-2 pt-1">
+              <span className="text-amber-400 tracking-wider text-sm">★★★★★</span>
+              <span className="font-bold text-sm text-white font-mono">{business.rating}</span>
+              <span className="text-xs text-zinc-400">({reviewsList.length} تقييم)</span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Actions Button Bar */}
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 px-6 pb-6 pt-2 border-t border-zinc-800/80">
+          
+          <a
+            href={`tel:${business.phone}`}
+            className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
+          >
+            <Phone className="w-3.5 h-3.5" />
+            <span>اتصال</span>
+          </a>
+
+          {business.whatsapp && (
+            <a
+              href={`https://wa.me/${business.whatsapp}`}
+              target="_blank"
+              rel="noreferrer"
+              className="px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+              <span>WhatsApp</span>
+            </a>
+          )}
+
+          <button
+            onClick={() => window.scrollTo({ top: 600, behavior: 'smooth' })}
+            className="px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center gap-1.5"
+          >
+            <MapPin className="w-3.5 h-3.5 text-amber-400" />
+            <span>الموقع</span>
+          </button>
+
+          <button
+            onClick={handleShare}
+            className="px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center gap-1.5"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>مشاركة</span>
+          </button>
+
+          <button
+            onClick={() => setIsSaved(!isSaved)}
+            className={`px-4 py-2 border text-xs rounded-lg transition-colors flex items-center gap-1.5 ${
+              isSaved
+                ? 'bg-amber-400 text-zinc-950 border-amber-400 font-bold'
+                : 'bg-[#202020] hover:bg-zinc-800 text-zinc-200 border-zinc-700'
+            }`}
+          >
+            <Heart className={`w-3.5 h-3.5 ${isSaved ? 'fill-zinc-950' : ''}`} />
+            <span>{isSaved ? 'تم الحفظ' : 'حفظ'}</span>
+          </button>
+
+          <button
+            onClick={() => window.open('#', '_blank')}
+            className="px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-200 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center gap-1.5"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>الموقع الإلكتروني</span>
+          </button>
+
+          <button
+            onClick={() => setClaimModalOpen(true)}
+            className="px-4 py-2 bg-[#202020] hover:bg-zinc-800 text-zinc-400 hover:text-amber-400 border border-zinc-700 text-xs rounded-lg transition-colors flex items-center gap-1.5"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>المطالبة بملكية المنشأة</span>
+          </button>
+
+        </div>
+
+      </section>
+
+      {/* 2. Main Grid Layout (2fr Main Content / 1fr Sidebar) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        
+        {/* Main Column (2fr) */}
+        <div className="lg:col-span-2 space-y-5">
+          
+          {/* About Section */}
+          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-3">
+            <h2 className="text-lg font-bold text-white">عن المنشأة</h2>
+            <p className="text-xs sm:text-sm text-[#c7c7c7] leading-relaxed">
+              {business.description}
+            </p>
+          </section>
+
+          {/* Services Section */}
+          {business.amenities && business.amenities.length > 0 && (
+            <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-3">
+              <h2 className="text-lg font-bold text-white">الخدمات</h2>
+              <p className="text-xs sm:text-sm text-zinc-300 font-medium leading-relaxed">
+                {business.amenities.join(' · ')}
+              </p>
+            </section>
+          )}
+
+          {/* Photo Gallery Section */}
+          {business.gallery && business.gallery.length > 0 && (
+            <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-3">
+              <h2 className="text-lg font-bold text-white">معرض الصور</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {business.gallery.map((img, i) => (
+                  <div key={i} className="h-36 rounded-xl bg-zinc-900 overflow-hidden border border-zinc-800">
+                    <img
+                      src={img}
+                      alt={`${business.name} ${i + 1}`}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Reviews & Ratings Section */}
+          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-800/80 pb-3">
+              <h2 className="text-lg font-bold text-white">التقييمات والمراجعات</h2>
+              <span className="text-xs text-zinc-400">({reviewsList.length} مراجعة)</span>
+            </div>
+
+            <div className="divide-y divide-zinc-800/80">
+              {reviewsList.map((rev) => (
+                <div key={rev.id} className="py-3.5 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="font-bold text-xs sm:text-sm text-white">{rev.userName}</div>
+                    <span className="text-[11px] text-zinc-500">{rev.date}</span>
+                  </div>
+                  <div className="text-amber-400 text-xs tracking-wider">
+                    {'★'.repeat(rev.rating)}{'☆'.repeat(5 - rev.rating)}
+                  </div>
+                  <p className="text-xs text-zinc-400 leading-relaxed pt-1">
+                    {rev.comment}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setIsReviewModalOpen(true)}
+              className="mt-2 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <Star className="w-3.5 h-3.5 fill-zinc-950" />
+              <span>أضف تقييمك</span>
+            </button>
+          </section>
+
+        </div>
+
+        {/* Sidebar Column (1fr) */}
+        <aside className="space-y-5">
+          
+          {/* Ad Slot (مساحة الإعلان) */}
+          <div className="min-h-[120px] border border-dashed border-zinc-700/80 rounded-xl bg-[#151515]/60 flex items-center justify-center text-zinc-500 text-xs font-medium">
+            مساحة الإعلان
+          </div>
+
+          {/* Contact Information Section */}
+          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-3">
+            <h2 className="text-base font-bold text-white border-b border-zinc-800 pb-2.5">
+              معلومات التواصل
+            </h2>
+
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center gap-2.5 py-2 border-b border-zinc-800/60 text-zinc-300">
+                <Phone className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                <a href={`tel:${business.phone}`} className="font-mono hover:text-amber-400">{business.phone}</a>
+              </div>
 
               {business.whatsapp && (
-                <a
-                  href={`https://wa.me/${business.whatsapp}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 text-xs font-semibold rounded-xl transition-colors"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  <span>واتساب</span>
-                </a>
-              )}
-
-              <button
-                onClick={() => setIsReviewModalOpen(true)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs rounded-xl shadow-lg shadow-amber-400/10 transition-all"
-              >
-                <Star className="w-4 h-4 fill-zinc-950" />
-                <span>أضف تقييمك</span>
-              </button>
-            </div>
-
-          </div>
-
-          {/* Unified Page Body: Two Columns Structure */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-            
-            {/* Right 2 Columns: Profile Details */}
-            <div className="lg:col-span-2 space-y-6">
-              
-              {/* 1. About the Establishment */}
-              <div className="space-y-3">
-                <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-amber-400" />
-                  <span>نبذة عن المنشأة والخدمات</span>
-                </h2>
-                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed bg-zinc-950/60 p-4 rounded-2xl border border-zinc-800/80">
-                  {business.description}
-                </p>
-              </div>
-
-              {/* 2. Services & Amenities */}
-              {business.amenities && business.amenities.length > 0 && (
-                <div className="space-y-3">
-                  <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-400" />
-                    <span>المميزات والخدمات المتوفرة</span>
-                  </h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                    {business.amenities.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-2 p-2.5 rounded-xl bg-zinc-950/60 border border-zinc-800/80 text-xs text-zinc-200"
-                      >
-                        <div className="w-5 h-5 rounded-md bg-amber-400/10 text-amber-400 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3.5 h-3.5" />
-                        </div>
-                        <span className="truncate">{item}</span>
-                      </div>
-                    ))}
-                  </div>
+                <div className="flex items-center gap-2.5 py-2 border-b border-zinc-800/60 text-zinc-300">
+                  <MessageSquare className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <a href={`https://wa.me/${business.whatsapp}`} target="_blank" rel="noreferrer" className="font-mono text-emerald-400 hover:underline">
+                    {business.whatsapp}
+                  </a>
                 </div>
               )}
 
-              {/* 3. Photo Gallery */}
-              <div className="space-y-3">
-                <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4 text-amber-400" />
-                  <span>معرض الصور والوسائط</span>
-                </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {business.gallery.map((img, i) => (
-                    <div
-                      key={i}
-                      className="h-32 sm:h-36 rounded-2xl bg-zinc-950 overflow-hidden border border-zinc-800/80 group shadow-sm"
-                    >
-                      <img
-                        src={img}
-                        alt={`${business.name} ${i + 1}`}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  ))}
-                </div>
+              <div className="flex items-center gap-2.5 py-2 border-b border-zinc-800/60 text-zinc-300">
+                <MapPin className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                <span>{business.address}</span>
               </div>
 
-              {/* 4. Customer Reviews Section */}
-              <div className="space-y-4 pt-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-bold text-white flex items-center gap-2">
-                    <Star className="w-4 h-4 text-amber-400" />
-                    <span>آراء وتقييمات العملاء ({reviewsList.length})</span>
-                  </h2>
-                  <button
-                    onClick={() => setIsReviewModalOpen(true)}
-                    className="text-xs text-amber-400 hover:underline font-semibold"
-                  >
-                    + أضف مراجعة جديدة
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {reviewsList.map((rev) => (
-                    <div
-                      key={rev.id}
-                      className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-800/80 space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-lg bg-amber-400/20 text-amber-400 font-bold text-xs flex items-center justify-center">
-                            {rev.userName.charAt(0)}
-                          </div>
-                          <span className="text-xs font-bold text-white">{rev.userName}</span>
-                        </div>
-                        <span className="text-[11px] text-zinc-500">{rev.date}</span>
-                      </div>
-
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, index) => (
-                          <Star
-                            key={index}
-                            className={`w-3.5 h-3.5 ${
-                              index < rev.rating
-                                ? 'fill-amber-400 text-amber-400'
-                                : 'text-zinc-800'
-                            }`}
-                          />
-                        ))}
-                      </div>
-
-                      <p className="text-xs text-zinc-300 leading-relaxed">
-                        {rev.comment}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+              <div className="flex items-center gap-2.5 py-2 text-zinc-300">
+                <Globe className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                <span>الموقع الإلكتروني متاح</span>
               </div>
-
             </div>
+          </section>
 
-            {/* Left 1 Column: Contact Specs */}
-            <div className="space-y-4">
-              
-              <div className="p-5 rounded-2xl bg-zinc-950/80 border border-zinc-800/90 space-y-4">
-                <h3 className="text-xs font-bold text-white border-b border-zinc-800/80 pb-2.5 tracking-wide">
-                  معلومات التواصل وأوقات العمل
-                </h3>
-
-                <div className="space-y-3 text-xs">
-                  
-                  <div className="flex items-start gap-2.5 text-zinc-300">
-                    <Phone className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <span className="block text-[10px] text-zinc-500">الهاتف المباشر</span>
-                      <a href={`tel:${business.phone}`} className="font-mono text-zinc-200 hover:text-amber-400">
-                        {business.phone}
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-2.5 text-zinc-300">
-                    <Clock className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <span className="block text-[10px] text-zinc-500">ساعات العمل</span>
-                      <span className="text-zinc-200">{business.workingHours}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-2.5 text-zinc-300">
-                    <MapPin className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <span className="block text-[10px] text-zinc-500">العنوان بالتفصيل</span>
-                      <span className="text-zinc-200">{business.address}</span>
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Map Interactive Placeholder */}
-                <div className="h-32 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center text-zinc-500 text-xs space-y-1">
-                  <MapPin className="w-5 h-5 text-zinc-600" />
-                  <span className="text-[11px]">موقع المنشأة على الخريطة</span>
-                </div>
-
-              </div>
-
+          {/* Business Location Section */}
+          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-3">
+            <h2 className="text-base font-bold text-white">موقع المنشأة</h2>
+            <div className="h-36 rounded-xl border border-dashed border-zinc-700/80 bg-zinc-950 flex flex-col items-center justify-center text-zinc-500 text-xs space-y-1">
+              <MapPin className="w-5 h-5 text-zinc-600" />
+              <span>الخريطة التفاعلية</span>
             </div>
+          </section>
 
-          </div>
+          {/* Working Hours Section */}
+          <section className="bg-[#151515] border border-zinc-800 rounded-2xl p-5 space-y-2">
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <Clock className="w-4 h-4 text-amber-400" />
+              <span>أوقات العمل</span>
+            </h2>
+            <div className="text-xs text-zinc-300 space-y-1 leading-relaxed pt-1">
+              <p>{business.workingHours}</p>
+            </div>
+          </section>
 
-        </div>
+        </aside>
 
       </div>
 
       {/* Review Modal */}
       {isReviewModalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl">
+          <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
             <h3 className="text-sm font-bold text-white">إضافة تقييم لـ {business.name}</h3>
             
             <form onSubmit={handleAddReview} className="space-y-3">
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">اسمك الكريم</label>
+                <label className="block text-xs text-zinc-400 mb-1">اسمك الكامل</label>
                 <input
                   type="text"
                   required
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
-                  placeholder="مثال: أحمد عبدالكريم"
+                  placeholder="مثال: أحمد محمد"
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">التقييم بالنجوم</label>
+                <label className="block text-xs text-zinc-400 mb-1">التقييم</label>
                 <div className="flex items-center gap-1.5">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -415,13 +381,13 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
               </div>
 
               <div>
-                <label className="block text-xs text-zinc-400 mb-1">تفاصيل تجربتك أو ملاحظاتك</label>
+                <label className="block text-xs text-zinc-400 mb-1">تفاصيل المراجعة</label>
                 <textarea
                   required
                   rows={3}
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="اكتب رأيك بكل شفافية..."
+                  placeholder="اكتب تقييمك عن الخدمة والتجربة..."
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
@@ -430,16 +396,15 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
                 <button
                   type="button"
                   onClick={() => setIsReviewModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs text-zinc-400 hover:text-white hover:bg-zinc-800"
+                  className="px-4 py-2 rounded-lg text-xs text-zinc-400 hover:text-white hover:bg-zinc-800"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs transition-colors flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs"
                 >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>نشر التقييم</span>
+                  نشر التقييم
                 </button>
               </div>
             </form>
@@ -447,6 +412,52 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
         </div>
       )}
 
+      {/* Claim Business Modal */}
+      {claimModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#151515] border border-zinc-800 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
+            <h3 className="text-sm font-bold text-white">المطالبة بملكية منشأة: {business.name}</h3>
+            
+            {claimSuccess ? (
+              <div className="p-4 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                <span>تم إرسال طلب المطالبة بنجاح، سيتواصل معك فريق التحقق.</span>
+              </div>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setClaimSuccess(true);
+                  setTimeout(() => {
+                    setClaimSuccess(false);
+                    setClaimModalOpen(false);
+                  }, 2500);
+                }}
+                className="space-y-3 text-xs text-zinc-300"
+              >
+                <p className="text-[11px] text-zinc-400">
+                  إذا كنت المالك الرسمي أو المفوض لهذه المنشأة، يرجى تزويدنا ببيانات التواصل لإتمام التحقق ومنحك إدارة الصفحة.
+                </p>
+                <div>
+                  <label className="block text-zinc-400 mb-1">اسم المسؤول</label>
+                  <input type="text" required placeholder="الاسم الكامل" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-amber-400" />
+                </div>
+                <div>
+                  <label className="block text-zinc-400 mb-1">رقم الهاتف / الواتساب</label>
+                  <input type="tel" required placeholder="777000000" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white font-mono focus:outline-none focus:border-amber-400" />
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button type="button" onClick={() => setClaimModalOpen(false)} className="px-4 py-2 rounded-lg text-zinc-400 hover:text-white">إلغاء</button>
+                  <button type="submit" className="px-4 py-2 bg-amber-400 text-zinc-950 font-bold rounded-lg hover:bg-amber-300">إرسال الطلب</button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
+
+export default BusinessDetails;
