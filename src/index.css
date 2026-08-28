@@ -15,8 +15,9 @@
   }
 
   body {
-    overflow-x: hidden;
     background-color: #0d0d0d;
+    overflow-x: clip; /* يمنع خروج العناصر بدون إلغاء ميزة الـ Sticky Header */
+    min-height: 100vh;
   }
 }
 

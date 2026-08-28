@@ -34,7 +34,10 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header dir="rtl" className="w-full bg-[#0f0f0f] border-b border-[#222222] sticky top-0 z-40">
+    <header
+      dir="rtl"
+      className="sticky top-0 z-50 w-full bg-[#0f0f0f]/95 backdrop-blur-md border-b border-[#222222] shadow-lg transition-all"
+    >
       <div className="max-w-5xl mx-auto px-3.5 py-3 space-y-2.5">
         
         {/* Top Row: Menu + Logo + Bell */}
@@ -48,6 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Menu className="w-6 h-6 stroke-[2]" />
           </button>
 
+          {/* شعار يمن ريتغ مع النجمة الذهبية الموحدة */}
           <button
             onClick={onNavigateHome}
             className="flex items-center gap-2 focus:outline-none group"

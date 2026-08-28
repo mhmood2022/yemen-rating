@@ -138,7 +138,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 3. أسعار العملات والذهب (التصميم المالي الاحترافي الجديد) */}
+      {/* 3. أسعار العملات والذهب */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -156,10 +156,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        {/* Financial Container Card */}
         <div className="rounded-2xl bg-[#151515] border border-[#262626] p-3.5 sm:p-4 space-y-3.5 shadow-xl">
           
-          {/* Top Ticker Switcher */}
           <div className="flex items-center justify-between gap-2 border-b border-[#242424] pb-2.5">
             <div className="flex items-center gap-1.5 bg-[#0f0f0f] p-1 rounded-xl border border-[#222]">
               <button
@@ -190,10 +188,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
           </div>
 
-          {/* Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             
-            {/* 1. الريال السعودي */}
+            {/* الريال السعودي */}
             <div className="bg-[#0f0f0f] p-3 rounded-xl border border-[#222] space-y-2 relative overflow-hidden group hover:border-[#333] transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
@@ -220,7 +217,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
             </div>
 
-            {/* 2. الدولار الأمريكي */}
+            {/* الدولار الأمريكي */}
             <div className="bg-[#0f0f0f] p-3 rounded-xl border border-[#222] space-y-2 relative overflow-hidden group hover:border-[#333] transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
@@ -247,7 +244,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
             </div>
 
-            {/* 3. الذهب عيار 21 */}
+            {/* الذهب عيار 21 */}
             <div className="bg-[#0f0f0f] p-3 rounded-xl border border-[#222] space-y-2 relative overflow-hidden group hover:border-[#333] transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
