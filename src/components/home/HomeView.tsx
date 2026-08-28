@@ -20,14 +20,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
   return (
     <div dir="rtl" className="space-y-8">
       
-      {/* 1. Official 26 Categories Grid */}
+      {/* 1. Official 26 Categories Grid With Subcategories Tags */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
             <span className="w-2 h-5 bg-amber-400 rounded-sm"></span>
             التصنيفات الرسمية (26 تصنيفاً)
           </h2>
-          <span className="text-xs text-zinc-500">اختر التصنيف للتصفح الفوري</span>
+          <span className="text-xs text-zinc-500">اضغط على أي تصنيف للتصفح</span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -39,15 +39,31 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 onClick={() => onSelectCategory(cat.slug)}
                 className="flex flex-col items-start p-3.5 rounded-2xl bg-zinc-900/60 border border-zinc-800/80 hover:border-amber-400/50 hover:bg-zinc-900 transition-all group text-right shadow-sm"
               >
-                <div className="w-9 h-9 rounded-xl bg-zinc-800 group-hover:bg-amber-400 text-zinc-300 group-hover:text-zinc-950 flex items-center justify-center transition-colors mb-2.5">
+                <div className="w-9 h-9 rounded-xl bg-zinc-800 group-hover:bg-amber-400 text-zinc-300 group-hover:text-zinc-950 flex items-center justify-center transition-colors mb-2">
                   <Icon className="w-5 h-5" />
                 </div>
-                <span className="font-semibold text-xs sm:text-sm text-zinc-200 group-hover:text-amber-400 transition-colors line-clamp-1">
+                <span className="font-bold text-xs sm:text-sm text-zinc-200 group-hover:text-amber-400 transition-colors line-clamp-1">
                   {cat.name}
                 </span>
-                <span className="text-[10px] text-zinc-500 font-mono mt-0.5">
-                  {cat.slug}
-                </span>
+
+                {/* عرض الفروع الفرعية تحت التصنيف في الرئيسية */}
+                {cat.subcategories && cat.subcategories.length > 0 && (
+                  <div className="flex items-center gap-1 flex-wrap mt-2 pt-2 border-t border-zinc-800/60 w-full">
+                    {cat.subcategories.slice(0, 2).map((sub) => (
+                      <span
+                        key={sub.id}
+                        className="text-[10px] text-zinc-400 bg-zinc-950/80 px-1.5 py-0.5 rounded border border-zinc-800/80 truncate max-w-[90px]"
+                      >
+                        {sub.name}
+                      </span>
+                    ))}
+                    {cat.subcategories.length > 2 && (
+                      <span className="text-[10px] text-amber-400 font-mono font-bold">
+                        +{cat.subcategories.length - 2}
+                      </span>
+                    )}
+                  </div>
+                )}
               </button>
             );
           })}
