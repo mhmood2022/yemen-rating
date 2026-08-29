@@ -29,7 +29,6 @@ const MENU_ITEMS = [
 export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   return (
     <>
-      {/* Mobile Backdrop */}
       {isOpen && (
         <div 
           onClick={onClose} 
@@ -38,11 +37,10 @@ export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = 
       )}
 
       <aside 
-        className={`fixed top-0 right-0 h-full w-[280px] bg-[#0B0F17] border-l border-[#1F2937] z-50 flex flex-col transition-transform duration-300 ease-in-out font-['Cairo'] ${
+        className={`fixed top-0 right-0 h-full w-[280px] bg-[#0B0F17] border-l border-[#1F2937] z-50 flex flex-col transition-transform duration-300 ease-in-out font-['Cairo',sans-serif] ${
           isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
         }`}
       >
-        {/* Brand Header */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-[#1F2937] bg-[#111827]">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#FFC500] flex items-center justify-center font-bold text-black text-lg">
@@ -55,8 +53,7 @@ export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = 
           </div>
         </div>
 
-        {/* 16 Sections Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           {MENU_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
@@ -70,7 +67,7 @@ export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
                     isActive
-                      ? 'bg-[#FFC500] text-black shadow-md shadow-[#FFC500]/10 font-bold'
+                      ? 'bg-[#FFC500] text-black font-bold'
                       : 'text-[#9CA3AF] hover:text-white hover:bg-[#161D2B]'
                   }`
                 }
@@ -82,7 +79,6 @@ export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = 
           })}
         </nav>
 
-        {/* Admin Footer Info */}
         <div className="p-3 border-t border-[#1F2937] bg-[#0E131F]">
           <div className="flex items-center gap-3 p-2 rounded-lg bg-[#161D2B]">
             <div className="w-2.5 h-2.5 rounded-full bg-[#16A34A] animate-pulse" />
