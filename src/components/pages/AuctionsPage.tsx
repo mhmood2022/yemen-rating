@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Gavel, 
   Clock, 
@@ -24,30 +24,6 @@ import {
   Users 
 } from 'lucide-react';
 import { VerifiedBadge } from '../common/VerifiedBadge';
-
-function useAnimatedNumber(target: number, duration: number = 1200, initial: number = 0) {
-  const [current, setCurrent] = useState(initial);
-  const startTimeRef = useRef(0);
-  const frameRef = useRef(0);
-
-  useEffect(() => {
-    const animate = (time: number) => {
-      if (!startTimeRef.current) startTimeRef.current = time;
-      const progress = Math.min((time - startTimeRef.current) / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3);
-      setCurrent(Math.floor(initial + (target - initial) * ease));
-      if (progress < 1) {
-        frameRef.current = requestAnimationFrame(animate);
-      } else {
-        setCurrent(target);
-      }
-    };
-    frameRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frameRef.current);
-  }, [target, duration, initial]);
-
-  return current;
-}
 
 function formatTime(seconds: number) {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -79,7 +55,7 @@ export interface AuctionItem {
   bidsCount: number;
   startDate: string;
   endDate: string;
-  timeLeft: string;
+  timeLeftSeconds: number;
   city: string;
   location: string;
   contactPhone: string;
@@ -102,49 +78,12 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [bidSuccessToast, setBidSuccessToast] = useState(false);
   const [bidError, setBidError] = useState<string | null>(null);
   const [activeAuctionLightboxIndex, setActiveAuctionLightboxIndex] = useState<number | null>(null);
-
-  const [timer1, setTimer1] = useState(15738);
-  const [timer2, setTimer2] = useState(8073);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer1((t) => (t > 0 ? t - 1 : 0));
-      setTimer2((t) => (t > 0 ? t - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const animatedBids = useAnimatedNumber(1248);
-  const animatedMaxPrice = useAnimatedNumber(2450);
-  const animatedParticipants = useAnimatedNumber(86);
-  const progressPercent = 65;
+  const [isTickerPaused, setIsTickerPaused] = useState(false);
 
   const currentUserId = 'user-current';
   const currentUserRole: 'visitor' | 'seller' | 'admin' = 'seller';
 
-  const [createForm, setCreateForm] = useState({
-    title: '',
-    category: 'سيارات ومحركات',
-    description: '',
-    startingPrice: '',
-    minIncrement: '',
-    currency: 'SAR',
-    startDate: '',
-    endDate: '',
-    city: 'صنعاء',
-    location: '',
-    contactPhone: '',
-    terms: '',
-    images: [
-      'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=1000&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1000&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1000&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=1000&auto=format&fit=crop&q=80'
-    ]
-  });
-
-  const [createSuccessToast, setCreateSuccessToast] = useState(false);
-
+  // المزادات الحقيقية مع المؤقتات المتزامنة
   const [auctionsList, setAuctionsList] = useState<AuctionItem[]>([
     {
       id: 'auc-101',
@@ -158,7 +97,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       bidsCount: 17,
       startDate: '2026-08-25 10:00',
       endDate: '2026-08-30 20:00',
-      timeLeft: '04:18:22',
+      timeLeftSeconds: 15502, // 04:18:22
       city: 'صنعاء',
       location: 'حدة - جولة الرويشان',
       contactPhone: '777000111',
@@ -191,7 +130,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       bidsCount: 14,
       startDate: '2026-08-26 12:00',
       endDate: '2026-08-31 18:00',
-      timeLeft: '01:12:45',
+      timeLeftSeconds: 4365, // 01:12:45
       city: 'صنعاء',
       location: 'شارع الستين الغربي - جوار جسر مذبح',
       contactPhone: '771234567',
@@ -223,7 +162,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       bidsCount: 22,
       startDate: '2026-08-20 09:00',
       endDate: '2026-08-28 22:00',
-      timeLeft: '00:00:00',
+      timeLeftSeconds: 0,
       city: 'صنعاء',
       location: 'باب اليمن - سوق الجنابي',
       contactPhone: '733000999',
@@ -247,15 +186,31 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     }
   ]);
 
-  const auctionTickerItems = useMemo(() => {
-    return [
-      { text: '🔴 تويوتا لاندكروزر V8', bid: '182,000 SAR', time: '04:18:22 متبقي' },
-      { text: '🔴 أرض تجارية 6 لبن الستين', bid: '185,000,000 YER', time: '01:12:45 متبقي' },
-      { text: '⚡ أحدث مزايدة: مزايد #8392 قدم عرضاً جديداً', bid: '182,000 SAR', time: 'الآن' },
-      { text: '🏁 تم البيع: جنبية صيفاني فاخرة', bid: '12,400 USD', time: 'مكتمل الصفقة' }
-    ];
+  // تحديث تنازلي حي للثواني متزامن بين جميع المكونات
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setAuctionsList(prev => prev.map(a => ({
+        ...a,
+        timeLeftSeconds: a.timeLeftSeconds > 0 ? a.timeLeftSeconds - 1 : 0
+      })));
+    }, 1000);
+    return () => clearInterval(timer);
   }, []);
-  const fullAuctionTicker = [...auctionTickerItems, ...auctionTickerItems, ...auctionTickerItems, ...auctionTickerItems];
+
+  // حساب الأرقام الإحصائية الحية المشتقة مباشرة من المزادات
+  const liveAuctions = auctionsList.filter(a => a.status === 'live');
+  const totalBidsCount = auctionsList.reduce((acc, curr) => acc + curr.bidsCount, 0);
+  const featuredLiveAuction = liveAuctions[0] || auctionsList[0];
+
+  // عناصر الشريط المتحرك مشتقة مباشرة من المزادات الحية
+  const fullAuctionTicker = useMemo(() => {
+    const items = auctionsList.map(a => ({
+      text: `${a.status === 'live' ? '🔴' : '🏁'} ${a.title}`,
+      bid: `${a.currentBid.toLocaleString()} ${a.currency}`,
+      time: a.status === 'live' ? formatTime(a.timeLeftSeconds) : 'منتهي'
+    }));
+    return [...items, ...items, ...items, ...items];
+  }, [auctionsList]);
 
   const canViewCommission = (auction: AuctionItem): boolean => {
     return auction.sellerId === currentUserId || currentUserRole === 'admin';
@@ -303,42 +258,6 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setTimeout(() => setBidSuccessToast(false), 3000);
   };
 
-  const handleCreateAuctionSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newAuction: AuctionItem = {
-      id: `auc-${Date.now()}`,
-      title: createForm.title,
-      category: createForm.category,
-      description: createForm.description,
-      currency: createForm.currency,
-      startingPrice: Number(createForm.startingPrice),
-      minIncrement: Number(createForm.minIncrement),
-      currentBid: Number(createForm.startingPrice),
-      bidsCount: 0,
-      startDate: createForm.startDate || '2026-09-01 10:00',
-      endDate: createForm.endDate || '2026-09-07 20:00',
-      timeLeft: 'بانتظار الموافقة',
-      city: createForm.city,
-      location: createForm.location,
-      contactPhone: createForm.contactPhone,
-      terms: createForm.terms || 'تطبق الشروط والأحكام العامة للمنصة.',
-      sellerName: 'المستخدم الحالي',
-      sellerId: currentUserId,
-      isVerifiedSeller: true,
-      status: 'pending_review',
-      images: createForm.images,
-      bidsHistory: []
-    };
-
-    setAuctionsList([newAuction, ...auctionsList]);
-    setCreateSuccessToast(true);
-    setTimeout(() => {
-      setCreateSuccessToast(false);
-      setIsCreateModalOpen(false);
-      setActiveTab('my_requests');
-    }, 2000);
-  };
-
   return (
     <div dir="rtl" className="max-w-6xl mx-auto space-y-6 pb-20 pt-1">
       
@@ -357,7 +276,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </span>
             </div>
             <p className="text-xs text-zinc-400 mt-0.5">
-              إحصائيات ومزادات علنية مباشرة مع تحديث فوري لكافة المزايدات
+              إحصائيات ومزادات علنية مباشرة متطابقة الأرقام والأسعار والمؤقتات
             </p>
           </div>
         </div>
@@ -365,7 +284,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="px-4 py-2.5 bg-[#f5b800] hover:bg-[#e5aa00] active:scale-95 text-zinc-950 font-bold text-xs rounded-xl transition-all shadow-md shadow-[#f5b800]/20 flex items-center gap-1.5"
+            className="px-4 py-2.5 bg-[#f5b800] hover:bg-[#e5aa00] active:scale-95 text-zinc-950 font-black text-xs rounded-xl transition-all shadow-md shadow-[#f5b800]/20 flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>إنشاء مزاد جديد</span>
@@ -381,12 +300,16 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* 2. شريط إحصائيات المزادات المتحرك (صلب 100% بدون زجاج وبدون كحلي) */}
-      <div className="relative w-full overflow-hidden rounded-2xl border border-[#262626] bg-[#111111] shadow-xl">
+      {/* 2. شريط المزادات المتحرك اللحظي */}
+      <div 
+        className="relative w-full overflow-hidden rounded-2xl border border-[#262626] bg-[#111111] shadow-xl"
+        onMouseEnter={() => setIsTickerPaused(true)}
+        onMouseLeave={() => setIsTickerPaused(false)}
+      >
         <div className="pointer-events-none absolute inset-y-0 start-0 z-10 w-12 bg-gradient-to-r from-[#111111] to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 end-0 z-10 w-12 bg-gradient-to-l from-[#111111] to-transparent" />
         
-        <div className="ticker-continuous flex items-center gap-3 py-2.5 px-2">
+        <div className={`ticker-continuous flex items-center gap-3 py-2.5 px-2 ${isTickerPaused ? 'paused' : ''}`}>
           {fullAuctionTicker.map((item, idx) => (
             <div key={idx} className="flex shrink-0 items-center gap-2.5 rounded-full border border-[#282828] bg-[#181818] px-3.5 py-1 text-xs">
               <span className="font-bold text-white/90">{item.text}</span>
@@ -397,7 +320,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* 3. ويدجت إحصائيات المزاد بهوية صلبة موحدة */}
+      {/* 3. ويدجت إحصائيات المزاد الحية المتطابقة تماماً مع البيانات */}
       <div className="w-full max-w-[900px] mx-auto rounded-[16px] border border-[#262626] bg-[#000000] overflow-hidden shadow-2xl">
         
         <div className="flex items-center justify-between px-4 md:px-5 h-[48px] bg-[#000000] border-b border-[#202020]">
@@ -406,169 +329,102 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               <div className="w-[22px] h-[22px] rounded-[6px] bg-[#000000] border border-[#202020] flex items-center justify-center">
                 <div className="w-[5px] h-[5px] rounded-full bg-[#f5b800]" />
               </div>
-              <h3 className="text-[13px] font-bold text-white tracking-tight">إحصائيات المزاد</h3>
+              <h3 className="text-[13px] font-bold text-white tracking-tight">إحصائيات المزادات الحية</h3>
             </div>
           </div>
 
           <div className="flex items-center gap-3" dir="ltr">
-            <div className="hidden sm:flex items-center gap-2">
-              <div className="text-[12px] font-bold text-[#f5b800] tabular-nums tracking-widest bg-[#000000] border border-[#202020] rounded-full px-2.5 py-[3px]">
-                {formatTime(timer2)}
+            <div className="flex items-center gap-2">
+              <div className="text-[12px] font-bold text-[#f5b800] tabular-nums tracking-widest bg-[#000000] border border-[#202020] rounded-full px-2.5 py-[3px] font-mono">
+                {formatTime(featuredLiveAuction.timeLeftSeconds)}
               </div>
             </div>
 
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold text-[#EF4444]">مباشر</span>
+              <span className="text-[11px] font-bold text-red-500">مباشر</span>
               <span className="relative flex w-[8px] h-[8px]">
-                <span className="relative inline-flex rounded-full h-[8px] w-[8px] bg-[#EF4444]" />
+                <span className="relative inline-flex rounded-full h-[8px] w-[8px] bg-red-500 animate-pulse" />
               </span>
-            </div>
-
-            <div className="sm:hidden text-[11px] font-bold text-[#f5b800] tabular-nums">
-              {formatTime(timer2)}
             </div>
           </div>
         </div>
 
         <div className="p-3 md:p-3.5 grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3 bg-[#000000]">
           
-          {/* كارت 1 */}
-          <div className="group relative rounded-[12px] bg-[#000000] border border-[#202020] p-3 md:p-[14px] hover:border-[#333] transition-colors duration-300">
-            <div className="flex items-start justify-between mb-2.5">
-              <span className="text-[11px] text-[#999] font-semibold">المزايدات</span>
-              <div className="w-6 h-6 rounded-[7px] bg-[#0A0A0A] border border-[#202020] flex items-center justify-center">
-                <Gavel className="w-[13px] h-[13px] text-[#f5b800]" />
-              </div>
+          {/* كارت 1: المزايدات النشطة */}
+          <div className="rounded-[12px] bg-[#000000] border border-[#202020] p-3 md:p-[14px]">
+            <div className="flex items-start justify-between mb-2">
+              <span className="text-[11px] text-[#999] font-semibold">إجمالي المزايدات</span>
+              <Gavel className="w-[13px] h-[13px] text-[#f5b800]" />
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[18px] md:text-[20px] font-extrabold text-white leading-none tracking-tight font-mono">
-                {animatedBids.toLocaleString('en-US')}
+              <span className="text-[18px] md:text-[20px] font-extrabold text-white font-mono">
+                {totalBidsCount}
               </span>
-              <span className="text-[10px] font-extrabold rounded-full px-1.5 py-[2px] leading-none bg-[#f5b800] text-black">
-                +12%
+              <span className="text-[10px] font-bold rounded-full px-1.5 py-[2px] bg-[#f5b800] text-black">
+                عرض حي
               </span>
-            </div>
-            <div className="mt-2 h-[2px] w-full bg-[#111] rounded-full overflow-hidden">
-              <div className="h-full w-[78%] bg-[#f5b800]/80 rounded-full" />
             </div>
           </div>
 
-          {/* كارت 2 */}
-          <div className="group relative rounded-[12px] bg-[#000000] border border-[#202020] p-3 md:p-[14px] hover:border-[#EF4444]/30 transition-colors duration-300">
-            <div className="flex items-start justify-between mb-2.5">
-              <span className="text-[11px] text-[#999] font-semibold">أعلى سعر</span>
-              <div className="w-6 h-6 rounded-[7px] bg-[#0A0A0A] border border-[#202020] flex items-center justify-center">
-                <TrendingUp className="w-[13px] h-[13px] text-[#EF4444]" />
-              </div>
+          {/* كارت 2: أعلى مزاد نشط */}
+          <div className="rounded-[12px] bg-[#000000] border border-[#202020] p-3 md:p-[14px]">
+            <div className="flex items-start justify-between mb-2">
+              <span className="text-[11px] text-[#999] font-semibold">أعلى مزاد حالي</span>
+              <TrendingUp className="w-[13px] h-[13px] text-emerald-400" />
             </div>
-            <div className="flex items-baseline gap-1" dir="ltr">
-              <span className="text-[11px] font-bold text-[#EF4444]/70">$</span>
-              <span className="text-[18px] md:text-[20px] font-extrabold text-[#EF4444] leading-none tracking-tight font-mono">
-                {animatedMaxPrice.toLocaleString('en-US')}
-              </span>
-              <span className="text-[10px] font-extrabold rounded-full px-1.5 py-[2px] leading-none ml-1 bg-[#f5b800] text-black font-mono">
-                +4.2%
-              </span>
+            <div className="text-[16px] md:text-[18px] font-extrabold text-emerald-400 font-mono tracking-tight">
+              {featuredLiveAuction.currentBid.toLocaleString()} {featuredLiveAuction.currency}
             </div>
-            <div className="mt-2 text-[10px] text-[#666] font-mono" dir="ltr">
-              2,180 $ • احتياطي
+            <div className="text-[10px] text-zinc-500 truncate mt-1">
+              {featuredLiveAuction.title}
             </div>
           </div>
 
-          {/* كارت 3 */}
-          <div className="group relative rounded-[12px] bg-[#000000] border border-[#202020] p-3 md:p-[14px] hover:border-[#333] transition-colors duration-300">
-            <div className="flex items-start justify-between mb-2.5">
-              <span className="text-[11px] text-[#999] font-semibold">المشاركون</span>
-              <div className="w-6 h-6 rounded-[7px] bg-[#0A0A0A] border border-[#202020] flex items-center justify-center">
-                <Users className="w-[13px] h-[13px] text-[#f5b800]" />
-              </div>
+          {/* كارت 3: المزادات النشطة */}
+          <div className="rounded-[12px] bg-[#000000] border border-[#202020] p-3 md:p-[14px]">
+            <div className="flex items-start justify-between mb-2">
+              <span className="text-[11px] text-[#999] font-semibold">المزادات المباشرة</span>
+              <Users className="w-[13px] h-[13px] text-[#f5b800]" />
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[18px] md:text-[20px] font-extrabold text-white leading-none tracking-tight font-mono">
-                {animatedParticipants.toLocaleString('en-US')}
+              <span className="text-[18px] md:text-[20px] font-extrabold text-white font-mono">
+                {liveAuctions.length}
               </span>
-              <span className="text-[11px] text-[#666]">مُزايد</span>
-            </div>
-            <div className="mt-2 flex -space-x-1 rtl:space-x-reverse">
-              {[...Array(4)].map((_, i) => (
-                <div 
-                  key={i} 
-                  className="w-5 h-5 rounded-full bg-[#111] border-[2px] border-[#000000] text-[8px] font-bold text-[#777] flex items-center justify-center font-mono"
-                  style={{ zIndex: 4 - i }}
-                >
-                  {i === 3 ? `+${(82).toLocaleString('en-US')}` : String.fromCharCode(65 + i)}
-                </div>
-              ))}
+              <span className="text-[11px] text-zinc-400">مزاد جاري</span>
             </div>
           </div>
 
-          {/* كارت 4 */}
-          <div className="group relative rounded-[12px] bg-[#000000] border border-[#202020] p-3 md:p-[14px] hover:border-[#333] transition-colors duration-300">
-            <div className="flex items-start justify-between mb-2.5">
-              <span className="text-[11px] text-[#999] font-semibold flex items-center gap-1">
-                <span>الوقت المتبقي</span>
-                <span className="w-1 h-1 rounded-full bg-[#EF4444] animate-pulse" />
-              </span>
-              <div className="w-6 h-6 rounded-[7px] bg-[#0A0A0A] border border-[#202020] flex items-center justify-center">
-                <Clock className="w-[14px] h-[14px] text-[#f5b800]" />
-              </div>
+          {/* كارت 4: العداد المتزامن */}
+          <div className="rounded-[12px] bg-[#000000] border border-[#202020] p-3 md:p-[14px]">
+            <div className="flex items-start justify-between mb-2">
+              <span className="text-[11px] text-[#999] font-semibold">الوقت المتبقي</span>
+              <Clock className="w-[14px] h-[14px] text-[#f5b800]" />
             </div>
-            <div 
-              className="text-[18px] md:text-[20px] font-extrabold text-[#f5b800] leading-none tracking-widest tabular-nums font-mono"
-              dir="ltr"
-            >
-              {formatTime(timer1)}
+            <div className="text-[18px] md:text-[20px] font-extrabold text-[#f5b800] font-mono tracking-widest" dir="ltr">
+              {formatTime(featuredLiveAuction.timeLeftSeconds)}
             </div>
-            <div className="mt-2 text-[10px] text-[#777]">
-              ينتهي اليوم • <span className="font-mono" dir="ltr">18:30 KSA</span>
+            <div className="text-[10px] text-zinc-500 mt-1">
+              متزامن مع السلعة الرئيسية
             </div>
           </div>
 
         </div>
 
         <div className="px-3 md:px-3.5 pb-3 md:pb-3.5 bg-[#000000]">
-          <div className="rounded-[12px] bg-[#000000] border border-[#202020] p-3 flex flex-col md:flex-row items-center gap-3">
-            
-            <div className="w-full md:flex-1">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] text-[#999] font-medium">تقدم المزاد</span>
-                <span className="text-[11px] font-bold text-[#00C950] font-mono">{progressPercent}%</span>
-              </div>
-              <div className="relative h-[6px] w-full bg-[#0A0A0A] rounded-full overflow-hidden border border-[#202020]">
-                <div className="absolute inset-y-0 right-0 rounded-full bg-[#00C950] transition-all duration-700" style={{ width: `${progressPercent}%` }}>
-                  <div className="absolute inset-0 w-[60px] bg-gradient-to-l from-transparent via-white/30 to-transparent" />
-                </div>
-              </div>
-            </div>
+          <div className="rounded-[12px] bg-[#000000] border border-[#202020] p-3 flex flex-col md:flex-row items-center justify-between gap-3">
+            <span className="text-xs text-zinc-400">
+              جميع أرقام المزايدات ومبالغ الصفقات بالعملات المعتمدة من أصحاب المزادات
+            </span>
 
-            <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+            <div className="flex items-center gap-2 w-full md:w-auto">
               <button 
-                onClick={() => {
-                  const live = auctionsList.find(a => a.status === 'live');
-                  if (live) setSelectedAuction(live);
-                }}
-                className="px-5 py-2 rounded-full bg-[#f5b800] text-zinc-950 font-black text-xs hover:brightness-110 active:brightness-95 transition-all shadow-md"
+                onClick={() => setSelectedAuction(featuredLiveAuction)}
+                className="px-5 py-2 rounded-full bg-[#f5b800] text-zinc-950 font-black text-xs hover:brightness-110 active:brightness-95 transition-all shadow-md flex-1 md:flex-none"
               >
-                عرض التفاصيل
-              </button>
-
-              <button 
-                onClick={() => {
-                  const live = auctionsList.find(a => a.status === 'live');
-                  if (live) setSelectedAuction(live);
-                }}
-                className="px-5 py-2 rounded-full bg-[#f5b800] text-zinc-950 font-black text-xs hover:brightness-110 active:brightness-95 transition-all shadow-md flex items-center justify-center gap-1.5"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-[#000000] animate-pulse" />
-                <span>المزايدات الحية</span>
+                دخول المزاد المباشر
               </button>
             </div>
-
-          </div>
-
-          <div className="mt-3 flex items-center justify-between text-[10px] text-[#555]">
-            <span>يمن ريت • منصة المزادات اليمنية</span>
-            <span className="font-mono" dir="ltr">ID: YR-88412 • 1,248 bids</span>
           </div>
         </div>
 
@@ -585,7 +441,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           }`}
         >
           <Flame className="w-4 h-4" />
-          <span>المزادات المباشرة ({auctionsList.filter(a => a.status === 'live').length})</span>
+          <span>المزادات المباشرة ({liveAuctions.length})</span>
         </button>
 
         <button
@@ -625,7 +481,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </button>
       </div>
 
-      {/* تفاصيل المزاد المحدد */}
+      {/* تفاصيل المزاد المحدد مع شبكة الـ 4 صور */}
       {selectedAuction ? (
         <div className="space-y-6">
           
@@ -653,6 +509,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
+            {/* العمود الأيمن: معرض الـ 4 صور وتفاصيل السلعة */}
             <div className="lg:col-span-2 space-y-5">
               
               <div className="rounded-3xl bg-[#151515] border border-[#242424] overflow-hidden p-3 space-y-3 shadow-2xl">
@@ -670,7 +527,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   
                   <div className="absolute top-4 right-4 bg-zinc-950/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-800 text-xs font-mono font-bold text-[#f5b800] flex items-center gap-1.5">
                     <Clock className="w-4 h-4" />
-                    <span>الوقت المتبقي: {selectedAuction.timeLeft}</span>
+                    <span>الوقت المتبقي: {formatTime(selectedAuction.timeLeftSeconds)}</span>
                   </div>
 
                   <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-700 text-xs text-white flex items-center gap-1.5">
@@ -740,6 +597,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
             </div>
 
+            {/* العمود الأيسر: تقديم المزايدة وسجل المزايدات */}
             <div className="space-y-5">
               
               <div className="rounded-3xl bg-[#151515] border border-[#242424] p-5 space-y-4 shadow-2xl">
@@ -966,7 +824,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   
                   <div className="absolute top-3 right-3 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-xl border border-zinc-800 text-xs font-mono font-bold text-[#f5b800] flex items-center gap-1.5 shadow-md">
                     <Clock className="w-3.5 h-3.5" />
-                    <span>{item.timeLeft}</span>
+                    <span>{formatTime(item.timeLeftSeconds)}</span>
                   </div>
 
                   <div className="absolute top-3 left-3 flex items-center gap-1">
