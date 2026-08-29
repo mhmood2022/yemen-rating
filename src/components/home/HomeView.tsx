@@ -44,21 +44,30 @@ export const HomeView: React.FC<HomeViewProps> = ({
 }) => {
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [activeMarketHome, setActiveMarketHome] = useState<'sanaa' | 'aden'>('sanaa');
-  const [livePulse, setLivePulse] = useState(false);
+  const [auctionSeconds1, setAuctionSeconds1] = useState(15502); // 04:18:22
+  const [auctionSeconds2, setAuctionSeconds2] = useState(4365);  // 01:12:45
 
-  // تحديث وميض الأسعار اللحظي كل 4 ثوانٍ
+  // عداد تنازلي حي بالثواني للمزادات في الرئيسية
   useEffect(() => {
     const timer = setInterval(() => {
-      setLivePulse(true);
-      setTimeout(() => setLivePulse(false), 800);
-    }, 4000);
+      setAuctionSeconds1((s) => (s > 0 ? s - 1 : 0));
+      setAuctionSeconds2((s) => (s > 0 ? s - 1 : 0));
+    }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const formatCountdown = (totalSeconds: number) => {
+    const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+    const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+    const s = (totalSeconds % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  };
 
   const displayedCategories = showAllCategories 
     ? OFFICIAL_CATEGORIES 
     : OFFICIAL_CATEGORIES.slice(0, 8);
 
+  // مصفوفة أسعار الصرف المتطابقة تماماً
   const marketRates = {
     sanaa: {
       sar: { buy: '140.20', sell: '140.70', change: '+0.15%', isUp: true },
@@ -156,7 +165,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 3. 📈 أسعار العملات والذهب (بطاقة تفاعلية قابلة للنقر والانتقال لصفحة الأسعار) */}
+      {/* 3. أسعار العملات والذهب (المتطابقة تماماً) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div 
@@ -180,16 +189,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        {/* البطاقة المالية الكبيرة - عند النقر عليها تفتح قسم الأسعار بالكامل */}
         <div 
           onClick={onNavigateExchangeRates}
-          className="rounded-3xl bg-[#121620]/90 border border-white/[0.08] hover:border-[#f5b800]/50 p-3.5 sm:p-5 space-y-3.5 shadow-xl glass cursor-pointer transition-all group"
+          className="rounded-3xl bg-[#151515] border border-[#242424] hover:border-[#f5b800]/50 p-3.5 sm:p-5 space-y-3.5 shadow-xl cursor-pointer transition-all group"
         >
           
-          <div className="flex items-center justify-between gap-2 border-b border-white/[0.06] pb-2.5">
+          <div className="flex items-center justify-between gap-2 border-b border-[#202020] pb-2.5">
             <div 
               onClick={(e) => e.stopPropagation()} 
-              className="flex items-center gap-1.5 bg-[#090d16] p-1 rounded-xl border border-white/10"
+              className="flex items-center gap-1.5 bg-[#0d0d0d] p-1 rounded-xl border border-[#222]"
             >
               <button
                 onClick={() => setActiveMarketHome('sanaa')}
@@ -214,15 +222,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
 
             <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-              <span className={`w-1.5 h-1.5 rounded-full bg-emerald-400 ${livePulse ? 'scale-150 ring-4 ring-emerald-500/40' : 'animate-pulse'} transition-all`} />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>مباشر</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             
-            {/* الريال السعودي */}
-            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] group-hover:border-[#2b354d] space-y-1.5 transition-colors">
+            <div className="bg-[#0d0d0d] p-3 rounded-2xl border border-[#202020] space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1">
                   <span>🇸🇦</span>
@@ -232,7 +239,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   {currentHomeRates.sar.change}
                 </span>
               </div>
-              <div className="pt-1 border-t border-white/[0.06]">
+              <div className="pt-1 border-t border-[#1e1e1e]">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-zinc-400">شراء:</span>
                   <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.sar.buy}</span>
@@ -244,8 +251,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
             </div>
 
-            {/* الدولار الأمريكي */}
-            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] group-hover:border-[#2b354d] space-y-1.5 transition-colors">
+            <div className="bg-[#0d0d0d] p-3 rounded-2xl border border-[#202020] space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1">
                   <span>🇺🇸</span>
@@ -255,7 +261,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   {currentHomeRates.usd.change}
                 </span>
               </div>
-              <div className="pt-1 border-t border-white/[0.06]">
+              <div className="pt-1 border-t border-[#1e1e1e]">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-zinc-400">شراء:</span>
                   <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.usd.buy}</span>
@@ -267,8 +273,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
             </div>
 
-            {/* الذهب عيار 24 */}
-            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] group-hover:border-[#2b354d] space-y-1.5 transition-colors">
+            <div className="bg-[#0d0d0d] p-3 rounded-2xl border border-[#202020] space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1">
                   <span>🟡</span>
@@ -278,7 +283,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   {currentHomeRates.gold24.change}
                 </span>
               </div>
-              <div className="pt-1 border-t border-white/[0.06]">
+              <div className="pt-1 border-t border-[#1e1e1e]">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-zinc-400">شراء:</span>
                   <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.gold24.buy}</span>
@@ -290,8 +295,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
             </div>
 
-            {/* الذهب عيار 18 */}
-            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] group-hover:border-[#2b354d] space-y-1.5 transition-colors">
+            <div className="bg-[#0d0d0d] p-3 rounded-2xl border border-[#202020] space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1">
                   <span>🪙</span>
@@ -301,7 +305,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   {currentHomeRates.gold18.change}
                 </span>
               </div>
-              <div className="pt-1 border-t border-white/[0.06]">
+              <div className="pt-1 border-t border-[#1e1e1e]">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-zinc-400">شراء:</span>
                   <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.gold18.buy}</span>
@@ -316,7 +320,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           <div className="text-center text-[11px] text-zinc-400 pt-0.5 flex items-center justify-center gap-1 font-mono group-hover:text-[#f5b800] transition-colors">
-            <RefreshCw className={`w-3 h-3 text-[#f5b800] ${livePulse ? 'animate-spin' : ''}`} />
+            <RefreshCw className="w-3 h-3 text-[#f5b800]" />
             <span>انقر لمعاينة البورصة الكاملة والحاسبة الفورية بالريال اليمني ←</span>
           </div>
 
@@ -370,7 +374,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 5. المزادات الحية */}
+      {/* 5. المزادات الحية (الأرقام والعداد متطابقة تماماً) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
@@ -387,6 +391,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          
+          {/* مزاد 1: لاندكروزر */}
           <div
             onClick={onNavigateAuctions}
             className="rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl flex flex-col"
@@ -399,7 +405,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               />
               <div className="absolute top-2.5 right-2.5 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-mono font-bold text-[#f5b800] flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />
-                <span>04:18:22</span>
+                <span>{formatCountdown(auctionSeconds1)}</span>
               </div>
               <div className="absolute top-2.5 left-2.5 bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold">
                 مباشر
@@ -409,7 +415,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div className="p-3.5 flex flex-col justify-between flex-1 space-y-2">
               <div>
                 <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] truncate">
-                  تويوتا لاندكروزر V8 2022 وكالة
+                  تويوتا لاندكروزر V8 2022 وكالة بريمي
                 </h4>
                 <p className="text-xs text-emerald-400 font-mono font-bold mt-1">
                   أعلى مزايدة: 182,000 SAR
@@ -422,6 +428,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
           </div>
 
+          {/* مزاد 2: أرض تجارية */}
           <div
             onClick={onNavigateAuctions}
             className="rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl flex flex-col"
@@ -434,7 +441,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               />
               <div className="absolute top-2.5 right-2.5 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-mono font-bold text-[#f5b800] flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />
-                <span>01:12:45</span>
+                <span>{formatCountdown(auctionSeconds2)}</span>
               </div>
               <div className="absolute top-2.5 left-2.5 bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold">
                 مباشر
@@ -444,7 +451,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div className="p-3.5 flex flex-col justify-between flex-1 space-y-2">
               <div>
                 <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] truncate">
-                  أرض تجارية 6 لبن شارع الستين
+                  أرض تجارية 6 لبن شارع الستين الغربي
                 </h4>
                 <p className="text-xs text-emerald-400 font-mono font-bold mt-1">
                   أعلى مزايدة: 185,000,000 YER
@@ -609,7 +616,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <span className="text-xs text-zinc-400">آراء حقيقية</span>
         </div>
 
-        <div className="p-3.5 sm:p-4 rounded-3xl bg-[#161616] border border-[#242424] flex items-start gap-3.5 shadow-xl">
+        <div className="p-3.5 sm:p-4 rounded-3xl bg-[#151515] border border-[#242424] flex items-start gap-3.5 shadow-xl">
           <div className="w-14 h-14 rounded-2xl bg-[#202020] overflow-hidden flex-shrink-0">
             <img
               src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop&q=80"
@@ -620,7 +627,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-white">أبو محمد الأهدل</span>
-              <span className="text-[10px] text-zinc-500">منذ ساعتين</span>
+              <span className="text-[11px] text-zinc-500">منذ ساعتين</span>
             </div>
             <div className="text-[#f5b800] text-xs">★★★★★</div>
             <p className="text-xs text-zinc-300 leading-relaxed pt-0.5">
