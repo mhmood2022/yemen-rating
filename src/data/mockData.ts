@@ -23,7 +23,7 @@ export interface BusinessItem {
   workingHours: string;
   description: string;
   isVerified: boolean;
-  badgeType: BadgeType; // 'gold' | 'blue' | 'gray' | 'none'
+  badgeType: BadgeType;
   amenities: string[];
   stats: {
     viewsCount: number;
@@ -31,7 +31,7 @@ export interface BusinessItem {
   };
   coverImage: string;
   logo: string;
-  gallery: string[];
+  gallery: string[]; // 4 صور عالية الدقة
   reviews: Review[];
 }
 
@@ -62,35 +62,6 @@ export const SAMPLE_ADS: AdItem[] = [
 export const SAMPLE_BUSINESSES: BusinessItem[] = [
   {
     id: 'b-1',
-    name: 'بنك الكريمي للتمويل الأصغر الإسلامي',
-    categorySlug: 'banks',
-    governorateId: 'sanaa',
-    cityId: 'sabaeen',
-    rating: 4.8,
-    reviewsCount: 420,
-    address: 'شارع الزبيري - تقاطع حدة، صنعاء',
-    phone: '01-200000',
-    whatsapp: '777000111',
-    workingHours: '8:00 ص - 4:00 م (السبت - الخميس)',
-    description: 'يقدم بنك الكريمي أوسع شبكة خدمات مصرفية وتمويلية في كافة أنحاء الجمهورية اليمنية مع خدمات الحسابات، والتمويل، والتحويلات اللحظية عبر تطبيق كريمي جوال بأعلى معايير الأمان والسرعة.',
-    isVerified: true,
-    badgeType: 'gold', // شارة ذهبية
-    amenities: ['صرافات آلية 24/7', 'خدمات مصرفية إلكترونية', 'حوالات لحظية', 'خدمة عملاء مميزة', 'مواقف سيارات'],
-    stats: { viewsCount: 14250, savesCount: 890 },
-    coverImage: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=1400&auto=format&fit=crop&q=80',
-    logo: 'https://images.unsplash.com/photo-1554469384-e58fac16e23a?w=300&auto=format&fit=crop&q=80',
-    gallery: [
-      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&auto=format&fit=crop&q=80'
-    ],
-    reviews: [
-      { id: 'r-1', userName: 'محمد الأهدل', rating: 5, date: 'قبل يومين', comment: 'خدمة سريعة وتطبيق الهاتف يعمل بكفاءة عالية في كل المحافظات.' },
-      { id: 'r-2', userName: 'فؤاد الشميري', rating: 4, date: 'قبل أسبوع', comment: 'الفروع متوفرة في كل مكان مع انتشار واسع لأجهزة الصراف الآلي.' }
-    ]
-  },
-  {
-    id: 'b-2',
     name: 'مطعم ومأكولات رويال ستار السياحي',
     categorySlug: 'restaurants',
     governorateId: 'aden',
@@ -103,19 +74,49 @@ export const SAMPLE_BUSINESSES: BusinessItem[] = [
     workingHours: '11:00 ص - 1:00 ص (يومياً)',
     description: 'أرقى المأكولات اليمنية والبحرية والشرقية، مع صالات عائلية واسعة ومطلة، مجهزة بأعلى معايير النظافة والضيافة والخدمة الراقية.',
     isVerified: true,
-    badgeType: 'blue', // شارة زرقاء
+    badgeType: 'blue',
     amenities: ['صالات عائلية خاصة', 'مأكولات بحرية طازجة', 'واي فاي مجاني', 'دفع إلكتروني', 'تكييف مركزي', 'مواقف سيارات'],
     stats: { viewsCount: 9800, savesCount: 650 },
     coverImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1400&auto=format&fit=crop&q=80',
     logo: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=300&auto=format&fit=crop&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=800&auto=format&fit=crop&q=80'
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&auto=format&fit=crop&q=80', // الصالة الرئيسية
+      'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&auto=format&fit=crop&q=80', // الجلسات العائلية
+      'https://images.unsplash.com/photo-1544025162-d76694265947?w=1200&auto=format&fit=crop&q=80', // الأطباق البحرية
+      'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=1200&auto=format&fit=crop&q=80'  // ركن المشروبات والحلويات
     ],
     reviews: [
       { id: 'r-3', userName: 'سالم بازرعة', rating: 5, date: 'قبل 3 أيام', comment: 'المأكولات البحرية طازجة والسمك الموفى من أروع ما تذوقت في عدن.' },
       { id: 'r-4', userName: 'أروى باعباد', rating: 5, date: 'قبل أسبوعين', comment: 'جلسات عائلية مريحة ونظافة استثنائية وطاقم عمل ودود للغاية.' }
+    ]
+  },
+  {
+    id: 'b-2',
+    name: 'فندق بلقيس الملكي السياحي',
+    categorySlug: 'hotels',
+    governorateId: 'hadramout',
+    cityId: 'mukalla',
+    rating: 4.6,
+    reviewsCount: 112,
+    address: 'المكلا - شارع الستين - إطلالة خور المكلا',
+    phone: '05-312345',
+    whatsapp: '775554433',
+    workingHours: 'استقبال وحجوزات 24 ساعة',
+    description: 'تجربة إقامة فاخرة بإطلالة ساحرة على بحر العرب وخور المكلا، غرف وأجنحة فندقية ملكية، مطاعم وقاعات مؤتمرات واجتماعات.',
+    isVerified: true,
+    badgeType: 'gold',
+    amenities: ['إطلالة بحرية', 'خدمة غرف 24 ساعة', 'مطعم فاخر', 'واي فاي فائق السرعة', 'قاعات مناسبات', 'مواقف خاصة'],
+    stats: { viewsCount: 6200, savesCount: 380 },
+    coverImage: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&auto=format&fit=crop&q=80',
+    logo: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=300&auto=format&fit=crop&q=80',
+    gallery: [
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&auto=format&fit=crop&q=80', // واجهة الفندق
+      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200&auto=format&fit=crop&q=80', // الجناح الملكي
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200&auto=format&fit=crop&q=80', // اللوبي والاستقبال
+      'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200&auto=format&fit=crop&q=80'  // المسبح والإطلالة
+    ],
+    reviews: [
+      { id: 'r-6', userName: 'عمر الكثيري', rating: 4, date: 'قبل 3 أسابيع', comment: 'موقع ممتاز وهادئ والخدمة راقية جداً.' }
     ]
   },
   {
@@ -132,14 +133,16 @@ export const SAMPLE_BUSINESSES: BusinessItem[] = [
     workingHours: 'طوارئ 24 ساعة - العيادات 8:00 ص إلى 8:00 م',
     description: 'صرح طبي متكامل يقدم رعاية صحية تشخيصية وعلاجية بأحدث التجهيزات الطبية الحديثة ونخبة من الاستشاريين في كافة التخصصات الطبية والجراحية.',
     isVerified: true,
-    badgeType: 'gray', // شارة رمادية / فضية
+    badgeType: 'gray',
     amenities: ['طوارئ 24 ساعة', 'مختبرات متقدمة', 'عناية مركزة', 'أشعة مقطعية ورنين', 'صيدلية داخلية', 'إسعاف مجهز'],
     stats: { viewsCount: 8400, savesCount: 410 },
     coverImage: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=1400&auto=format&fit=crop&q=80',
     logo: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=300&auto=format&fit=crop&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=800&auto=format&fit=crop&q=80'
+      'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=1200&auto=format&fit=crop&q=80', // المبنى الرئيسي
+      'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=1200&auto=format&fit=crop&q=80', // الاستقبال
+      'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=1200&auto=format&fit=crop&q=80', // غرف العمليات
+      'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=1200&auto=format&fit=crop&q=80'  // أجهزة الأشعة والتشخيص
     ],
     reviews: [
       { id: 'r-5', userName: 'طارق القباطي', rating: 5, date: 'قبل شهر', comment: 'كادر طبي مؤهل ورعاية فائقة في قسم الطوارئ.' }
@@ -147,29 +150,32 @@ export const SAMPLE_BUSINESSES: BusinessItem[] = [
   },
   {
     id: 'b-4',
-    name: 'فندق بلقيس الملكي السياحي',
-    categorySlug: 'hotels',
-    governorateId: 'hadramout',
-    cityId: 'mukalla',
-    rating: 4.6,
-    reviewsCount: 112,
-    address: 'المكلا - شارع الستين - إطلالة خور المكلا',
-    phone: '05-312345',
-    whatsapp: '775554433',
-    workingHours: 'استقبال وحجوزات 24 ساعة',
-    description: 'تجربة إقامة فاخرة بإطلالة ساحرة على بحر العرب وخور المكلا، غرف وأجنحة فندقية ملكية، مطاعم وقاعات مؤتمرات واجتماعات.',
+    name: 'بنك الكريمي للتمويل الأصغر الإسلامي',
+    categorySlug: 'banks',
+    governorateId: 'sanaa',
+    cityId: 'sabaeen',
+    rating: 4.8,
+    reviewsCount: 420,
+    address: 'شارع الزبيري - تقاطع حدة، صنعاء',
+    phone: '01-200000',
+    whatsapp: '777000111',
+    workingHours: '8:00 ص - 4:00 م (السبت - الخميس)',
+    description: 'يقدم بنك الكريمي أوسع شبكة خدمات مصرفية وتمويلية في كافة أنحاء الجمهورية اليمنية مع خدمات الحسابات، والتمويل، والتحويلات اللحظية عبر تطبيق كريمي جوال بأعلى معايير الأمان والسرعة.',
     isVerified: true,
-    badgeType: 'blue',
-    amenities: ['إطلالة بحرية', 'خدمة غرف 24 ساعة', 'مطعم فاخر', 'واي فاي فائق السرعة', 'قاعات مناسبات', 'مواقف خاصة'],
-    stats: { viewsCount: 6200, savesCount: 380 },
-    coverImage: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&auto=format&fit=crop&q=80',
-    logo: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=300&auto=format&fit=crop&q=80',
+    badgeType: 'gold',
+    amenities: ['صرافات آلية 24/7', 'خدمات مصرفية إلكترونية', 'حوالات لحظية', 'خدمة عملاء مميزة', 'مواقف سيارات'],
+    stats: { viewsCount: 14250, savesCount: 890 },
+    coverImage: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=1400&auto=format&fit=crop&q=80',
+    logo: 'https://images.unsplash.com/photo-1554469384-e58fac16e23a?w=300&auto=format&fit=crop&q=80',
     gallery: [
-      'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&auto=format&fit=crop&q=80'
+      'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=1200&auto=format&fit=crop&q=80', // الفرع الرئيسي
+      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop&q=80', // صالة خدمة العملاء
+      'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&auto=format&fit=crop&q=80', // ركن كبار العملاء
+      'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&auto=format&fit=crop&q=80'  // شبكة الصرافات والخدمة الذاتية
     ],
     reviews: [
-      { id: 'r-6', userName: 'عمر الكثيري', rating: 4, date: 'قبل 3 أسابيع', comment: 'موقع ممتاز وهادئ والخدمة راقية جداً.' }
+      { id: 'r-1', userName: 'محمد الأهدل', rating: 5, date: 'قبل يومين', comment: 'خدمة سريعة وتطبيق الهاتف يعمل بكفاءة عالية في كل المحافظات.' },
+      { id: 'r-2', userName: 'فؤاد الشميري', rating: 4, date: 'قبل أسبوع', comment: 'الفروع متوفرة في كل مكان مع انتشار واسع لأجهزة الصراف الآلي.' }
     ]
   }
 ];
