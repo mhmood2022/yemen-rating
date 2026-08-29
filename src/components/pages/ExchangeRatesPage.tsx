@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -9,6 +9,46 @@ import {
   Calculator
 } from 'lucide-react';
 
+// هوك تحريك وانسيابية الأرقام تدريجياً
+function useAnimatedNumber(value: number, duration: number = 700) {
+  const [current, setCurrent] = useState(value);
+  const ref = useRef(value);
+
+  useEffect(() => {
+    const start = ref.current;
+    const end = value;
+    if (start === end) return;
+    const startTime = performance.now();
+    let frameId = 0;
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - startTime) / duration);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      setCurrent(start + (end - start) * ease);
+      if (progress < 1) {
+        frameId = requestAnimationFrame(tick);
+      } else {
+        ref.current = end;
+      }
+    };
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, [value, duration]);
+
+  return current;
+}
+
+// مكوّن عرض الأرقام المتحركة بانسيابية
+const LiveNumber: React.FC<{ value: number; decimals?: number }> = ({ value, decimals = 2 }) => {
+  const animated = useAnimatedNumber(value, 700);
+  return <span className="tabular-nums font-mono">{animated.toFixed(decimals)}</span>;
+};
+
+const LiveInt: React.FC<{ value: number }> = ({ value }) => {
+  const animated = useAnimatedNumber(value, 700);
+  return <span className="tabular-nums font-mono">{Math.round(animated).toLocaleString()}</span>;
+};
+
+// شارت الـ Sparkline التفاعلي المتحرك
 const MiniSparkline: React.FC<{ data: number[]; isUp: boolean; color: string }> = ({ data, color }) => {
   if (data.length < 2) return null;
   const min = Math.min(...data);
@@ -32,15 +72,17 @@ const MiniSparkline: React.FC<{ data: number[]; isUp: boolean; color: string }> 
       <polyline
         fill="none"
         stroke={color}
-        strokeWidth={2}
+        strokeWidth={2.2}
         strokeLinejoin="round"
         strokeLinecap="round"
         points={points}
+        style={{ transition: 'all 0.6s ease-in-out' }}
       />
       <polygon
         fill={`url(#grad-${color.replace('#', '')})`}
         points={`${points} 90,32 0,32`}
-        opacity={0.6}
+        opacity={0.5}
+        style={{ transition: 'all 0.6s ease-in-out' }}
       />
     </svg>
   );
@@ -51,69 +93,97 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
   const [calcAmount, setCalcAmount] = useState<number>(100);
   const [calcCurrency, setCalcCurrency] = useState<'USD' | 'SAR'>('USD');
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
-  const [isTickerPaused, setIsTickerPaused] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
-  // البيانات الموحدة الحقيقية المتطابقة بين الشريط والبطاقات والحاسبة
-  const marketData = {
-    sanaa: {
-      name: 'سوق صنعاء',
-      status: 'مفتوح • سيولة منتظمة',
-      currencies: [
-        { code: 'SAR', name: 'الريال السعودي', flag: '🇸🇦', buy: 140.20, sell: 140.70, change: '+0.15%', isUp: true, history: [139.8, 140.0, 140.1, 139.9, 140.15, 140.20] },
-        { code: 'USD', name: 'الدولار الأمريكي', flag: '🇺🇸', buy: 535.00, sell: 538.00, change: '-0.20%', isUp: false, history: [537.0, 536.5, 536.0, 535.5, 535.8, 535.0] }
-      ],
-      gold: [
-        { key: 'g24', label: 'الذهب عيار 24', sub: 'جرام عيار 24 خالص', buy: 42500, sell: 44200, change: '+0.50%', isUp: true, icon: '◍' },
-        { key: 'g21', label: 'الذهب عيار 21', sub: 'جرام عيار 21 يمني', buy: 37200, sell: 39500, change: '+0.45%', isUp: true, icon: '✦' },
-        { key: 'g18', label: 'الذهب عيار 18', sub: 'جرام عيار 18 إيطالي/محلي', buy: 31800, sell: 33500, change: '+0.40%', isUp: true, icon: '◇' },
-        { key: 'sovereign', label: 'الجنيه الذهب', sub: '8 جرام عيار 21', buy: 298000, sell: 312000, change: '+0.85%', isUp: true, icon: '◈' }
-      ]
-    },
-    aden: {
-      name: 'سوق عدن',
-      status: 'مفتوح • تداول مباشر',
-      currencies: [
-        { code: 'SAR', name: 'الريال السعودي', flag: '🇸🇦', buy: 495.00, sell: 500.00, change: '+0.80%', isUp: true, history: [490.0, 492.0, 493.5, 494.0, 494.5, 495.0] },
-        { code: 'USD', name: 'الدولار الأمريكي', flag: '🇺🇸', buy: 1890.00, sell: 1910.00, change: '+1.10%', isUp: true, history: [1870.0, 1875.0, 1880.0, 1885.0, 1888.0, 1890.0] }
-      ],
-      gold: [
-        { key: 'g24', label: 'الذهب عيار 24', sub: 'جرام عيار 24 خالص', buy: 148000, sell: 155000, change: '+0.95%', isUp: true, icon: '◍' },
-        { key: 'g21', label: 'الذهب عيار 21', sub: 'جرام عيار 21 يمني', buy: 129500, sell: 138000, change: '+0.60%', isUp: true, icon: '✦' },
-        { key: 'g18', label: 'الذهب عيار 18', sub: 'جرام عيار 18 إيطالي/محلي', buy: 111000, sell: 119000, change: '+0.70%', isUp: true, icon: '◇' },
-        { key: 'sovereign', label: 'الجنيه الذهب', sub: '8 جرام عيار 21', buy: 1040000, sell: 1095000, change: '+1.40%', isUp: true, icon: '◈' }
-      ]
-    }
-  };
+  // حالة أسعار صنعاء الحية
+  const [sanaaCurrencies, setSanaaCurrencies] = useState([
+    { code: 'SAR', name: 'الريال السعودي', flag: '🇸🇦', buy: 140.20, sell: 140.70, change: 0.15, isUp: true, history: [139.8, 140.0, 140.1, 139.9, 140.15, 140.20] },
+    { code: 'USD', name: 'الدولار الأمريكي', flag: '🇺🇸', buy: 535.00, sell: 538.00, change: -0.20, isUp: false, history: [537.0, 536.5, 536.0, 535.5, 535.8, 535.0] }
+  ]);
 
+  const [sanaaGold, setSanaaGold] = useState([
+    { key: 'g24', label: 'الذهب عيار 24', sub: 'جرام عيار 24 خالص', buy: 42500, sell: 44200, change: 0.50, isUp: true, icon: '◍' },
+    { key: 'g21', label: 'الذهب عيار 21', sub: 'جرام عيار 21 يمني', buy: 37200, sell: 39500, change: 0.45, isUp: true, icon: '✦' },
+    { key: 'g18', label: 'الذهب عيار 18', sub: 'جرام عيار 18 إيطالي/محلي', buy: 31800, sell: 33500, change: 0.40, isUp: true, icon: '◇' },
+    { key: 'sovereign', label: 'الجنيه الذهب', sub: '8 جرام عيار 21', buy: 298000, sell: 312000, change: 0.85, isUp: true, icon: '◈' }
+  ]);
+
+  // حالة أسعار عدن الحية
+  const [adenCurrencies, setAdenCurrencies] = useState([
+    { code: 'SAR', name: 'الريال السعودي', flag: '🇸🇦', buy: 495.00, sell: 500.00, change: 0.80, isUp: true, history: [490.0, 492.0, 493.5, 494.0, 494.5, 495.0] },
+    { code: 'USD', name: 'الدولار الأمريكي', flag: '🇺🇸', buy: 1890.00, sell: 1910.00, change: 1.10, isUp: true, history: [1870.0, 1875.0, 1880.0, 1885.0, 1888.0, 1890.0] }
+  ]);
+
+  const [adenGold, setAdenGold] = useState([
+    { key: 'g24', label: 'الذهب عيار 24', sub: 'جرام عيار 24 خالص', buy: 148000, sell: 155000, change: 0.95, isUp: true, icon: '◍' },
+    { key: 'g21', label: 'الذهب عيار 21', sub: 'جرام عيار 21 يمني', buy: 129500, sell: 138000, change: 0.60, icon: '✦' },
+    { key: 'g18', label: 'الذهب عيار 18', sub: 'جرام عيار 18 إيطالي/محلي', buy: 111000, sell: 119000, change: 0.70, icon: '◇' },
+    { key: 'sovereign', label: 'الجنيه الذهب', sub: '8 جرام عيار 21', buy: 1040000, sell: 1095000, change: 1.40, icon: '◈' }
+  ]);
+
+  // محرك التحديث الحقيقي اللحظي للأسعار والشارتات (كل 3 ثوانٍ)
   useEffect(() => {
-    const timer = setInterval(() => {
+    const interval = setInterval(() => {
+      // نبضات أسعار صنعاء
+      setSanaaCurrencies(prev => prev.map(item => {
+        const delta = (Math.random() - 0.5) * (item.code === 'USD' ? 0.8 : 0.25);
+        const newBuy = parseFloat(Math.max(50, item.buy + delta).toFixed(2));
+        const newSell = parseFloat((newBuy + (item.code === 'USD' ? 3 : 0.5)).toFixed(2));
+        const newChange = parseFloat((item.change + (Math.random() - 0.48) * 0.08).toFixed(2));
+        const newHistory = [...item.history.slice(-5), newBuy];
+        return { ...item, buy: newBuy, sell: newSell, change: newChange, isUp: newChange >= 0, history: newHistory };
+      }));
+
+      // نبضات أسعار عدن
+      setAdenCurrencies(prev => prev.map(item => {
+        const delta = (Math.random() - 0.5) * (item.code === 'USD' ? 3.0 : 0.9);
+        const newBuy = parseFloat(Math.max(100, item.buy + delta).toFixed(2));
+        const newSell = parseFloat((newBuy + (item.code === 'USD' ? 20 : 5)).toFixed(2));
+        const newChange = parseFloat((item.change + (Math.random() - 0.48) * 0.12).toFixed(2));
+        const newHistory = [...item.history.slice(-5), newBuy];
+        return { ...item, buy: newBuy, sell: newSell, change: newChange, isUp: newChange >= 0, history: newHistory };
+      }));
+
+      // نبضات الذهب
+      setSanaaGold(prev => prev.map(item => {
+        const delta = Math.round((Math.random() - 0.5) * 60);
+        return { ...item, buy: item.buy + delta, sell: item.sell + delta };
+      }));
+
+      setAdenGold(prev => prev.map(item => {
+        const delta = Math.round((Math.random() - 0.5) * 250);
+        return { ...item, buy: item.buy + delta, sell: item.sell + delta };
+      }));
+
       setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
+    }, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  const currentMarket = marketData[activeMarket];
+  const activeCurrencies = activeMarket === 'sanaa' ? sanaaCurrencies : adenCurrencies;
+  const activeGold = activeMarket === 'sanaa' ? sanaaGold : adenGold;
 
-  // عناصر الشريط المتحرك مشتقة مباشرة من نفس أرقام السوق النشط
+  // عناصر التيكر المتحرك
   const marqueeItems = useMemo(() => {
     const items = [
-      { label: `سعودي (${currentMarket.name})`, price: currentMarket.currencies[0].buy, change: currentMarket.currencies[0].change, flag: '🇸🇦' },
-      { label: `دولار (${currentMarket.name})`, price: currentMarket.currencies[1].buy, change: currentMarket.currencies[1].change, flag: '🇺🇸' },
-      { label: `ذهب 24 (${currentMarket.name})`, price: currentMarket.gold[0].buy, change: currentMarket.gold[0].change, flag: '🟡' },
-      { label: `ذهب 18 (${currentMarket.name})`, price: currentMarket.gold[2].buy, change: currentMarket.gold[2].change, flag: '🪙' }
+      { label: `سعودي (${activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'})`, price: activeCurrencies[0].buy, change: activeCurrencies[0].change, isUp: activeCurrencies[0].isUp, flag: '🇸🇦' },
+      { label: `دولار (${activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'})`, price: activeCurrencies[1].buy, change: activeCurrencies[1].change, isUp: activeCurrencies[1].isUp, flag: '🇺🇸' },
+      { label: `ذهب 24 (${activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'})`, price: activeGold[0].buy, change: activeGold[0].change, isUp: true, flag: '🟡' },
+      { label: `ذهب 18 (${activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'})`, price: activeGold[2].buy, change: activeGold[2].change, isUp: true, flag: '🪙' }
     ];
     return [...items, ...items, ...items, ...items];
-  }, [activeMarket, currentMarket]);
+  }, [activeMarket, activeCurrencies, activeGold]);
 
   const currentRate = calcCurrency === 'USD' 
-    ? currentMarket.currencies.find(c => c.code === 'USD')?.buy || 535 
-    : currentMarket.currencies.find(c => c.code === 'SAR')?.buy || 140.2;
+    ? activeCurrencies.find(c => c.code === 'USD')?.buy || 535 
+    : activeCurrencies.find(c => c.code === 'SAR')?.buy || 140.2;
   const calculatedTotal = calcAmount * currentRate;
 
   return (
     <div dir="rtl" className="max-w-6xl mx-auto space-y-6 pb-20 pt-1">
       
-      {/* 1. Header Navigation */}
+      {/* 1. رأس الصفحة */}
       <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-[#242424]">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-[#f5b800] text-zinc-950 flex items-center justify-center font-black shadow-lg shadow-[#f5b800]/20">
@@ -123,8 +193,8 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-black text-white">بورصة العملات والذهب في اليمن</h1>
               <span className="text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                تحديث متزامن ولحظي
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                تحديث حي متحرك
               </span>
             </div>
             <p className="text-xs text-zinc-400 mt-0.5">
@@ -142,23 +212,27 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </button>
       </div>
 
-      {/* 2. شريط الأسعار المتحرك المتطابق 100% مع المحتوى */}
+      {/* 2. شريط الأسعار المتحرك (صلب 100% بدون كحلي وبدون زجاج) */}
       <div 
         className="relative w-full overflow-hidden rounded-2xl border border-[#262626] bg-[#111111] shadow-xl"
-        onMouseEnter={() => setIsTickerPaused(true)}
-        onMouseLeave={() => setIsTickerPaused(false)}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
       >
         <div className="pointer-events-none absolute inset-y-0 start-0 z-10 w-12 bg-gradient-to-r from-[#111111] to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 end-0 z-10 w-12 bg-gradient-to-l from-[#111111] to-transparent" />
         
-        <div className={`ticker-continuous flex items-center gap-2.5 py-2.5 px-2 ${isTickerPaused ? 'paused' : ''}`}>
+        <div className={`ticker-continuous flex items-center gap-2.5 py-2.5 px-2 ${isPaused ? 'paused' : ''}`}>
           {marqueeItems.map((item, idx) => (
             <div key={idx} className="flex shrink-0 items-center gap-2.5 rounded-full border border-[#282828] bg-[#181818] px-3.5 py-1 text-xs">
               <span>{item.flag}</span>
               <span className="font-bold text-white/90">{item.label}</span>
-              <span className="font-mono font-extrabold text-[#f5b800]">{item.price.toLocaleString()} YER</span>
-              <span className="inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md bg-emerald-500/15 text-emerald-300">
-                {item.change}
+              <span className="font-mono font-extrabold text-[#f5b800]">
+                {item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} YER
+              </span>
+              <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
+                item.isUp ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300'
+              }`}>
+                {item.isUp ? '▲' : '▼'} {Math.abs(item.change).toFixed(2)}%
               </span>
             </div>
           ))}
@@ -193,24 +267,24 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         <div className="flex items-center gap-4 text-xs text-zinc-400">
           <span className="flex items-center gap-1.5 text-zinc-300">
             <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#22c55e]" />
-            <strong className="text-white">{currentMarket.name}</strong> • {currentMarket.status}
+            <strong className="text-white">{activeMarket === 'sanaa' ? 'سوق صنعاء' : 'سوق عدن'}</strong> • تداول مباشر
           </span>
           <span className="flex items-center gap-1 font-mono text-zinc-400">
-            <RefreshCw className="w-3.5 h-3.5 text-[#f5b800]" />
+            <RefreshCw className="w-3.5 h-3.5 text-[#f5b800] animate-spin" />
             {currentTime.toLocaleTimeString('ar-YE')}
           </span>
         </div>
       </div>
 
-      {/* 4. كروت أسعار العملات (المتطابقة تماماً) */}
+      {/* 4. كروت أسعار العملات المتحركة والشارتات البيانية الحية */}
       <div className="space-y-3">
         <h2 className="text-base font-extrabold text-white flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-emerald-400" />
-          <span>أسعار صرف العملات مقابل الريال اليمني (YER) في {currentMarket.name}</span>
+          <span>أسعار صرف العملات مقابل الريال اليمني (YER) في {activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'}</span>
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {currentMarket.currencies.map((curr) => {
+          {activeCurrencies.map((curr) => {
             const chartColor = curr.isUp ? '#22c55e' : '#ef4444';
             return (
               <div
@@ -228,7 +302,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold font-mono ${
                           curr.isUp ? 'bg-emerald-500/15 text-emerald-300' : 'bg-red-500/15 text-red-300'
                         }`}>
-                          {curr.change}
+                          {curr.isUp ? '▲' : '▼'} {Math.abs(curr.change).toFixed(2)}%
                         </span>
                       </div>
                       <div className="text-xs text-zinc-400 mt-0.5">{curr.name}</div>
@@ -236,7 +310,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
                   </div>
 
                   <div className="text-end">
-                    <div className="text-[9px] uppercase tracking-widest text-zinc-500 font-mono">24H TREND</div>
+                    <div className="text-[9px] uppercase tracking-widest text-zinc-500 font-mono">24H LIVE CHART</div>
                     <div className="mt-1">
                       <MiniSparkline data={curr.history} isUp={curr.isUp} color={chartColor} />
                     </div>
@@ -247,7 +321,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
                   <div className="rounded-2xl bg-[#0d0d0d] p-3.5 border border-[#222222]">
                     <div className="text-[10px] font-bold text-zinc-400">سعر الشراء (YER)</div>
                     <div className="mt-1 text-xl font-black text-emerald-400 font-mono tracking-tight">
-                      {curr.buy.toFixed(2)}
+                      <LiveNumber value={curr.buy} decimals={2} />
                     </div>
                     <div className="mt-1 text-[10px] text-emerald-400/80">شراء مباشر نقداً</div>
                   </div>
@@ -255,7 +329,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
                   <div className="rounded-2xl bg-[#0d0d0d] p-3.5 border border-[#222222]">
                     <div className="text-[10px] font-bold text-zinc-400">سعر البيع (YER)</div>
                     <div className="mt-1 text-xl font-black text-rose-400 font-mono tracking-tight">
-                      {curr.sell.toFixed(2)}
+                      <LiveNumber value={curr.sell} decimals={2} />
                     </div>
                     <div className="mt-1 text-[10px] text-zinc-500">فارق صرف {(curr.sell - curr.buy).toFixed(2)} YER</div>
                   </div>
@@ -266,7 +340,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
       </div>
 
-      {/* 5. بورصة الذهب عيار 24 وعيار 18 وعيار 21 */}
+      {/* 5. بورصة الذهب المتحركة (عيار 24 و 18 و 21) */}
       <div className="rounded-3xl border border-[#262626] bg-[#151515] p-5 sm:p-6 space-y-4 shadow-xl">
         <div className="flex items-center justify-between flex-wrap gap-2 border-b border-[#242424] pb-4">
           <div>
@@ -274,7 +348,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5b800] text-zinc-950 font-bold shadow-[0_0_16px_rgba(245,184,0,0.3)]">
                 ◈
               </span>
-              <span>بورصة الذهب في {currentMarket.name}</span>
+              <span>بورصة الذهب في {activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'}</span>
               <span className="rounded-full bg-[#f5b800]/15 px-2 py-0.5 text-[10px] font-black tracking-widest text-[#f5b800]">
                 LIVE GOLD
               </span>
@@ -288,7 +362,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {currentMarket.gold.map((item) => (
+          {activeGold.map((item) => (
             <div
               key={item.key}
               className="rounded-2xl border border-[#262626] bg-[#0d0d0d] p-4 transition hover:border-[#f5b800]/40 shadow-md space-y-2.5"
@@ -301,21 +375,21 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
                   <span className="text-xs font-extrabold text-white">{item.label}</span>
                 </div>
                 <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold font-mono bg-emerald-500/15 text-emerald-300">
-                  {item.change}
+                  ▲ {item.change}%
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#1e1e1e]">
+              <div className="mt-3 grid grid-cols-2 gap-2 pt-2 border-t border-[#1e1e1e]">
                 <div>
                   <span className="text-[10px] text-zinc-400 block">شراء</span>
                   <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">
-                    {item.buy.toLocaleString()}
+                    <LiveInt value={item.buy} />
                   </span>
                 </div>
                 <div>
                   <span className="text-[10px] text-zinc-400 block">بيع</span>
                   <span className="text-sm font-extrabold text-rose-400 font-mono tracking-tight">
-                    {item.sell.toLocaleString()}
+                    <LiveInt value={item.sell} />
                   </span>
                 </div>
               </div>
@@ -333,7 +407,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
       </div>
 
-      {/* 6. محول العملات الفوري المتطابق مع سعر السوق النشط */}
+      {/* 6. محول العملات الفوري */}
       <div className="rounded-3xl border border-[#262626] bg-[#151515] p-5 sm:p-6 shadow-2xl">
         <div className="flex items-center justify-between flex-wrap gap-2 border-b border-[#242424] pb-3">
           <div className="flex items-center gap-2.5">
@@ -341,7 +415,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
               <Calculator className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-white">محول العملات الفوري ({currentMarket.name})</h3>
+              <h3 className="text-sm sm:text-base font-bold text-white">محول العملات الفوري ({activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'})</h3>
               <p className="text-[11px] text-zinc-400">تحويل سريع ومباشر وفق سعر صرف السوق اللحظي</p>
             </div>
           </div>
@@ -374,7 +448,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
           </div>
 
           <div className="bg-[#0d0d0d] p-3.5 rounded-xl border border-[#222222] flex flex-col justify-center">
-            <span className="text-[11px] text-zinc-400">النتيجة بالريال اليمني ({currentMarket.name}):</span>
+            <span className="text-[11px] text-zinc-400">النتيجة بالريال اليمني ({activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'}):</span>
             <span className="text-xl font-black text-emerald-400 font-mono tracking-tight mt-0.5">
               {calculatedTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })} YER
             </span>

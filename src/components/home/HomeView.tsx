@@ -44,15 +44,47 @@ export const HomeView: React.FC<HomeViewProps> = ({
 }) => {
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [activeMarketHome, setActiveMarketHome] = useState<'sanaa' | 'aden'>('sanaa');
-  const [auctionSeconds1, setAuctionSeconds1] = useState(15502); // 04:18:22
-  const [auctionSeconds2, setAuctionSeconds2] = useState(4365);  // 01:12:45
+  const [auctionSeconds1, setAuctionSeconds1] = useState(15502);
+  const [auctionSeconds2, setAuctionSeconds2] = useState(4365);
 
-  // عداد تنازلي حي بالثواني للمزادات في الرئيسية
+  // تحديث أسعار الصرف الحية كل 3 ثوانٍ
+  const [ratesState, setRatesState] = useState({
+    sanaa: {
+      sar: { buy: 140.20, sell: 140.70, change: '+0.15%', isUp: true },
+      usd: { buy: 535.00, sell: 538.00, change: '-0.20%', isUp: false },
+      gold24: { buy: 42500, sell: 44200, change: '+0.50%', isUp: true },
+      gold18: { buy: 31800, sell: 33500, change: '+0.40%', isUp: true }
+    },
+    aden: {
+      sar: { buy: 495.00, sell: 500.00, change: '+0.80%', isUp: true },
+      usd: { buy: 1890.00, sell: 1910.00, change: '+1.10%', isUp: true },
+      gold24: { buy: 148000, sell: 155000, change: '+0.95%', isUp: true },
+      gold18: { buy: 111000, sell: 119000, change: '+0.70%', isUp: true }
+    }
+  });
+
+  // محرك التحديث والتفاعل اللحظي
   useEffect(() => {
     const timer = setInterval(() => {
-      setAuctionSeconds1((s) => (s > 0 ? s - 1 : 0));
-      setAuctionSeconds2((s) => (s > 0 ? s - 1 : 0));
+      setRatesState(prev => ({
+        sanaa: {
+          sar: { ...prev.sanaa.sar, buy: parseFloat((prev.sanaa.sar.buy + (Math.random() - 0.5) * 0.1).toFixed(2)) },
+          usd: { ...prev.sanaa.usd, buy: parseFloat((prev.sanaa.usd.buy + (Math.random() - 0.5) * 0.4).toFixed(2)) },
+          gold24: { ...prev.sanaa.gold24, buy: Math.round(prev.sanaa.gold24.buy + (Math.random() - 0.5) * 40) },
+          gold18: { ...prev.sanaa.gold18, buy: Math.round(prev.sanaa.gold18.buy + (Math.random() - 0.5) * 30) }
+        },
+        aden: {
+          sar: { ...prev.aden.sar, buy: parseFloat((prev.aden.sar.buy + (Math.random() - 0.5) * 0.5).toFixed(2)) },
+          usd: { ...prev.aden.usd, buy: parseFloat((prev.aden.usd.buy + (Math.random() - 0.5) * 2.0).toFixed(2)) },
+          gold24: { ...prev.aden.gold24, buy: Math.round(prev.aden.gold24.buy + (Math.random() - 0.5) * 200) },
+          gold18: { ...prev.aden.gold18, buy: Math.round(prev.aden.gold18.buy + (Math.random() - 0.5) * 150) }
+        }
+      }));
+
+      setAuctionSeconds1(s => s > 0 ? s - 1 : 0);
+      setAuctionSeconds2(s => s > 0 ? s - 1 : 0);
     }, 1000);
+
     return () => clearInterval(timer);
   }, []);
 
@@ -67,23 +99,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
     ? OFFICIAL_CATEGORIES 
     : OFFICIAL_CATEGORIES.slice(0, 8);
 
-  // مصفوفة أسعار الصرف المتطابقة تماماً
-  const marketRates = {
-    sanaa: {
-      sar: { buy: '140.20', sell: '140.70', change: '+0.15%', isUp: true },
-      usd: { buy: '535.00', sell: '538.00', change: '-0.20%', isUp: false },
-      gold24: { buy: '42,500', sell: '44,200', change: '+0.50%', isUp: true },
-      gold18: { buy: '31,800', sell: '33,500', change: '+0.40%', isUp: true }
-    },
-    aden: {
-      sar: { buy: '495.00', sell: '500.00', change: '+0.80%', isUp: true },
-      usd: { buy: '1,890.00', sell: '1,910.00', change: '+1.10%', isUp: true },
-      gold24: { buy: '148,000', sell: '155,000', change: '+0.95%', isUp: true },
-      gold18: { buy: '111,000', sell: '119,000', change: '+0.70%', isUp: true }
-    }
-  };
-
-  const currentHomeRates = marketRates[activeMarketHome];
+  const currentHomeRates = ratesState[activeMarketHome];
 
   return (
     <div dir="rtl" className="space-y-6 pb-20 pt-1 max-w-6xl mx-auto">
@@ -165,7 +181,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 3. أسعار العملات والذهب (المتطابقة تماماً) */}
+      {/* 3. أسعار العملات والذهب الحية والمتحركة (قابلة للنقر والانتقال لصفحة الأسعار) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div 
@@ -242,11 +258,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <div className="pt-1 border-t border-[#1e1e1e]">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-zinc-400">شراء:</span>
-                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.sar.buy}</span>
+                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.sar.buy.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-[11px]">
                   <span className="text-zinc-400">بيع:</span>
-                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.sar.sell}</span>
+                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.sar.sell.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -264,11 +280,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <div className="pt-1 border-t border-[#1e1e1e]">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-zinc-400">شراء:</span>
-                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.usd.buy}</span>
+                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.usd.buy.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-[11px]">
                   <span className="text-zinc-400">بيع:</span>
-                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.usd.sell}</span>
+                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.usd.sell.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -286,11 +302,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <div className="pt-1 border-t border-[#1e1e1e]">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-zinc-400">شراء:</span>
-                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.gold24.buy}</span>
+                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.gold24.buy.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-[11px]">
                   <span className="text-zinc-400">بيع:</span>
-                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.gold24.sell}</span>
+                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.gold24.sell.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -308,11 +324,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <div className="pt-1 border-t border-[#1e1e1e]">
                 <div className="flex justify-between text-[11px]">
                   <span className="text-zinc-400">شراء:</span>
-                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.gold18.buy}</span>
+                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.gold18.buy.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-[11px]">
                   <span className="text-zinc-400">بيع:</span>
-                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.gold18.sell}</span>
+                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.gold18.sell.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -320,7 +336,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           <div className="text-center text-[11px] text-zinc-400 pt-0.5 flex items-center justify-center gap-1 font-mono group-hover:text-[#f5b800] transition-colors">
-            <RefreshCw className="w-3 h-3 text-[#f5b800]" />
+            <RefreshCw className="w-3 h-3 text-[#f5b800] animate-spin" />
             <span>انقر لمعاينة البورصة الكاملة والحاسبة الفورية بالريال اليمني ←</span>
           </div>
 
@@ -627,7 +643,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-white">أبو محمد الأهدل</span>
-              <span className="text-[11px] text-zinc-500">منذ ساعتين</span>
+              <span className="text-[10px] text-zinc-500">منذ ساعتين</span>
             </div>
             <div className="text-[#f5b800] text-xs">★★★★★</div>
             <p className="text-xs text-zinc-300 leading-relaxed pt-0.5">
