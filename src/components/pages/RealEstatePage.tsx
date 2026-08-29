@@ -15,9 +15,10 @@ import {
   FileText, 
   Send, 
   X,
-  Sparkles,
-  CheckCircle2,
-  AlertCircle
+  ChevronRight,
+  ChevronLeft,
+  ImageIcon,
+  CheckCircle2
 } from 'lucide-react';
 import { VerifiedBadge } from '../common/VerifiedBadge';
 
@@ -31,8 +32,8 @@ export interface RealEstateItem {
   propertyType: PropertyType;
   propertyTypeName: string;
   price: number;
-  currency: string; // العملة التي يحددها الناشر
-  period?: string; // مثلاً: شهرياً / سنوياً في حالة الإيجار
+  currency: string;
+  period?: string;
   city: string;
   governorate: string;
   location: string;
@@ -45,23 +46,20 @@ export interface RealEstateItem {
   publishedAt: string;
   status: 'active' | 'negotiating' | 'deal_completed' | 'pending_review';
   viewsCount: number;
-  images: string[];
+  images: string[]; // 4 صور على الأقل
   
-  // بيانات الناشر العامة والخاصة
   publisherId: string;
   publisherName: string;
   publisherType: 'owner' | 'brokerage_office' | 'company';
   isVerifiedPublisher: boolean;
   
-  // بيانات التواصل المحمية (لا تكشف للعامة)
   privateContact: {
     phone: string;
     whatsapp: string;
   };
   
-  // نظام عمولة المنصة
-  commissionRate: number; // مثلاً 2.5%
-  showCommissionToOwner: boolean; // تحكم الإدارة في إظهار أو إخفاء العمولة عن صاحب العقار
+  commissionRate: number;
+  showCommissionToOwner: boolean;
 }
 
 export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
@@ -70,12 +68,11 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [inspectionRequestSent, setInspectionRequestSent] = useState(false);
   const [addSuccessToast, setAddSuccessToast] = useState(false);
+  const [activeLightboxIndex, setActiveLightboxIndex] = useState<number | null>(null);
 
-  // هوية وصلاحيات المستخدم الحالي في النظام (محاكاة أمنية)
   const currentUserId = 'user-current';
   const currentUserRole: 'visitor' | 'buyer' | 'owner' | 'admin' = 'owner';
 
-  // نموذج إضافة عقار جديد
   const [newPropertyForm, setNewPropertyForm] = useState({
     title: '',
     listingType: 'rent' as PropertyListingType,
@@ -90,11 +87,10 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
     bathrooms: '2',
     condition: 'سوبر ديلوكس',
     description: '',
-    features: 'موقف سيارات, حراسة, مصعد, خزان مستقل, ألياف ضوئية',
+    features: 'موقف سيارات, حراسة, مصعد, خزان مستقل',
     phone: ''
   });
 
-  // قائمة العقارات مع تطبيق القواعد والعملات والخصوصية
   const [propertiesList, setPropertiesList] = useState<RealEstateItem[]>([
     {
       id: 'prop-101',
@@ -107,30 +103,29 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
       period: 'شهرياً',
       city: 'صنعاء',
       governorate: 'صنعاء',
-      location: 'حدة - الحي الدبلوماسي خلف فندق شيراتون',
+      location: 'حدة - الحي الدبلوماسي',
       area: '160 م²',
       bedrooms: 3,
       bathrooms: 2,
       condition: 'سوبر ديلوكس جاهزة للسكن',
-      description: 'شقة واسعة تشطيب راقٍ جداً، ديكورات جبسية حديثة، أرضيات رخام وسيراميك أسباني، تهوية وإنارة ممتازة لكافة الغرف، منطقة هادئة وآمنة وقريبة من كافة الخدمات.',
-      features: ['موقف سيارات خاص', 'مصعد كهربائي حديث', 'خزان مياه أرضي وعلوي مستقل', 'حراسة وأمن 24/7', 'إنترنت ألياف ضوئية'],
+      description: 'شقة واسعة تشطيب راقٍ جداً، صالة استقبال فخمة، غرف نوم مريحة، مطبخ مجهز، تهوية وإنارة ممتازة، منطقة هادئة وقريبة من كافة الخدمات.',
+      features: ['موقف سيارات خاص', 'مصعد كهربائي حديث', 'خزان مياه مستقل', 'حراسة وأمن 24/7', 'إنترنت ألياف ضوئية'],
       publishedAt: 'قبل يومين',
       status: 'active',
       viewsCount: 680,
       images: [
-        'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop&q=80'
+        'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1000&auto=format&fit=crop&q=80'
       ],
-      publisherId: 'user-current', // ملك المستخدم الحالي لتجربة ظهور العمولة
+      publisherId: 'user-current',
       publisherName: 'مكتب الأمانة العقاري',
       publisherType: 'brokerage_office',
       isVerifiedPublisher: true,
-      privateContact: {
-        phone: '777123456',
-        whatsapp: '777123456'
-      },
+      privateContact: { phone: '777123456', whatsapp: '777123456' },
       commissionRate: 5,
-      showCommissionToOwner: true // صلاحية ظهور العمولة مفعلة من الإدارة
+      showCommissionToOwner: true
     },
     {
       id: 'prop-102',
@@ -147,25 +142,24 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
       bedrooms: 5,
       bathrooms: 4,
       condition: 'بناء شخصي حديث غير مسكونة',
-      description: 'فيلا عصرية فاخرة دورين وملحق، تصميم معماري مميز، حوش واسع يتسع لـ 3 سيارات، مسبح خاص مجهز بنظام فلترة، إطلالة بحرية قريبة، تشطيبات فندقية.',
-      features: ['مسبح خاص', 'حديقة منزلية', 'حوش واسع للسيارات', 'تكييف مركزي مجهز', 'منظومة طاقة شمسية', 'توثيق وبصيرة شرعية معمدة'],
+      description: 'فيلا عصرية فاخرة دورين وملحق، تصميم معماري مميز، حوش واسع يتسع لـ 3 سيارات، مسبح خاص مجهز، إطلالة بحرية قريبة، تشطيبات فندقية.',
+      features: ['مسبح خاص', 'حديقة منزلية', 'حوش واسع للسيارات', 'تكييف مركزي مجهز', 'منظومة طاقة شمسية', 'بصيرة شرعية معمدة'],
       publishedAt: 'قبل 4 أيام',
       status: 'active',
       viewsCount: 1250,
       images: [
-        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80'
+        'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1000&auto=format&fit=crop&q=80'
       ],
       publisherId: 'user-772',
       publisherName: 'شركة الساحل للاستثمار العقاري',
       publisherType: 'company',
       isVerifiedPublisher: true,
-      privateContact: {
-        phone: '733987654',
-        whatsapp: '733987654'
-      },
+      privateContact: { phone: '733987654', whatsapp: '733987654' },
       commissionRate: 2.5,
-      showCommissionToOwner: false // العمولة مخفية عن المالك بقرار الإدارة
+      showCommissionToOwner: false
     },
     {
       id: 'prop-103',
@@ -182,41 +176,38 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
       bedrooms: 16,
       bathrooms: 8,
       condition: 'عمارة مؤجرة بالكامل دخل شهري ممتاز',
-      description: 'عمارة حجر مهندمة على شارع 24 تجاري، تتكون من 4 أدوار تضم 8 شقق و4 فتحات تجارية، مؤجرة بالكامل بعائد استثماري ثابت، خزان أرضي كبير ومواقف.',
+      description: 'عمارة حجر مهندمة على شارع 24 تجاري، تتكون من 4 أدوار تضم 8 شقق و4 فتحات تجارية، مؤجرة بالكامل بعائد استثماري ثابت.',
       features: ['موقع تجاري حيوي', 'محلات تجارية مؤجرة', 'دخل استثماري مضمون', 'بصيرة أصل معمدة في المحكمة', 'خزان مياه مركزي'],
       publishedAt: 'قبل أسبوع',
       status: 'active',
       viewsCount: 940,
       images: [
-        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&auto=format&fit=crop&q=80'
+        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1000&auto=format&fit=crop&q=80'
       ],
       publisherId: 'user-109',
       publisherName: 'مالك العقار مباشر',
       publisherType: 'owner',
       isVerifiedPublisher: true,
-      privateContact: {
-        phone: '771223344',
-        whatsapp: '771223344'
-      },
+      privateContact: { phone: '771223344', whatsapp: '771223344' },
       commissionRate: 2.5,
       showCommissionToOwner: true
     }
   ]);
 
-  // تصفية العقارات
   const filteredProperties = propertiesList.filter((item) => {
     if (filterType === 'all') return true;
     return item.listingType === filterType;
   });
 
-  // فحص صلاحية رؤية عمولة المنصة
   const canViewPropertyCommission = (item: RealEstateItem): boolean => {
     if (currentUserRole === 'admin') return true;
     if (item.publisherId === currentUserId && item.showCommissionToOwner) return true;
     return false;
   };
 
-  // معالجة إضافة عقار جديد
   const handleCreateProperty = (e: React.FormEvent) => {
     e.preventDefault();
     const newProp: RealEstateItem = {
@@ -240,15 +231,17 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
       publishedAt: 'الآن',
       status: 'pending_review',
       viewsCount: 1,
-      images: ['https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=80'],
+      images: [
+        'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1000&auto=format&fit=crop&q=80'
+      ],
       publisherId: currentUserId,
       publisherName: 'المستخدم الحالي (صاحب العقار)',
       publisherType: 'owner',
       isVerifiedPublisher: true,
-      privateContact: {
-        phone: newPropertyForm.phone,
-        whatsapp: newPropertyForm.phone
-      },
+      privateContact: { phone: newPropertyForm.phone, whatsapp: newPropertyForm.phone },
       commissionRate: 2.5,
       showCommissionToOwner: true
     };
@@ -279,7 +272,7 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
               </span>
             </div>
             <p className="text-xs text-zinc-400 mt-0.5">
-              تصفح الشقق، الفلل، الأراضي، والعمائر الاستثمارية الموثقة في كافة المحافظات
+              تصفح الشقق والفلل والعمائر الموثقة مع 4 صور واضحة وقابلة للتكبير
             </p>
           </div>
         </div>
@@ -337,7 +330,7 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
         </button>
       </div>
 
-      {/* 3. العرض التفصيلي للعقار المحدد (Property Details View) */}
+      {/* 3. العرض التفصيلي للعقار المحدد مع شبكة الصور الـ 4 التفاعلية */}
       {selectedProperty ? (
         <div className="space-y-6">
           
@@ -361,31 +354,55 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {/* العمود الأيمن (2fr): الصور والمواصفات والوصف والمميزات */}
+            {/* العمود الأيمن: معرض الـ 4 صور وتفاصيل العقار */}
             <div className="lg:col-span-2 space-y-5">
               
-              {/* صورة الغلاف ومعرض الصور */}
-              <div className="rounded-3xl bg-[#151515] border border-[#242424] overflow-hidden shadow-2xl">
-                <div className="relative h-64 sm:h-84 w-full bg-[#1e1e1e]">
+              {/* 📸 معرض الـ 4 صور التفاعلي بدقة عالية */}
+              <div className="rounded-3xl bg-[#151515] border border-[#242424] overflow-hidden p-3 space-y-3 shadow-2xl">
+                
+                {/* الصورة الرئيسية الكبيرة (الصورة 1) */}
+                <div 
+                  onClick={() => setActiveLightboxIndex(0)}
+                  className="relative h-64 sm:h-80 w-full bg-[#1e1e1e] rounded-2xl overflow-hidden cursor-pointer group"
+                >
                   <img
                     src={selectedProperty.images[0]}
                     alt={selectedProperty.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute top-4 right-4 bg-zinc-950/90 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-zinc-800 text-xs font-mono font-bold text-[#f5b800] shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  
+                  <div className="absolute top-3 right-3 bg-zinc-950/90 backdrop-blur-md px-3 py-1 rounded-xl border border-zinc-800 text-xs font-mono font-bold text-[#f5b800] shadow-lg">
                     {selectedProperty.price.toLocaleString()} {selectedProperty.currency} {selectedProperty.period && `/${selectedProperty.period}`}
+                  </div>
+
+                  <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-700 text-xs text-white flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-[#f5b800]" />
+                    <span>انقر لتكبير ومعاينة الـ 4 صور كاملة</span>
                   </div>
                 </div>
 
-                {selectedProperty.images.length > 1 && (
-                  <div className="p-3 bg-[#111111] flex items-center gap-2.5 overflow-x-auto border-t border-[#222]">
-                    {selectedProperty.images.map((img, idx) => (
-                      <div key={idx} className="w-16 h-16 rounded-xl bg-[#202020] overflow-hidden border border-[#2c2c2c] flex-shrink-0">
-                        <img src={img} alt="" className="w-full h-full object-cover" />
+                {/* الصور الثلاث المتبقية (الصور 2 و 3 و 4) */}
+                <div className="grid grid-cols-3 gap-2.5">
+                  {selectedProperty.images.slice(1, 4).map((img, idx) => (
+                    <div
+                      key={idx + 1}
+                      onClick={() => setActiveLightboxIndex(idx + 1)}
+                      className="relative h-24 sm:h-28 rounded-xl bg-[#202020] overflow-hidden border border-[#2c2c2c] cursor-pointer group"
+                    >
+                      <img
+                        src={img}
+                        alt={`صورة ${idx + 2}`}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                      <div className="absolute bottom-1.5 left-1.5 bg-zinc-950/80 px-2 py-0.5 rounded text-[10px] text-zinc-300 font-mono">
+                        {idx + 2} / 4
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </div>
+                  ))}
+                </div>
+
               </div>
 
               {/* بطاقة التفاصيل والمواصفات */}
@@ -407,10 +424,10 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                   </h2>
                 </div>
 
-                {/* شبكة المواصفات الرئيسية */}
+                {/* المواصفات الرئيسية */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-[#0d0d0d] border border-[#202020] text-xs">
                   <div className="space-y-1">
-                    <span className="text-zinc-500 block">المساحة الإجمالية:</span>
+                    <span className="text-zinc-500 block">المساحة:</span>
                     <strong className="text-white flex items-center gap-1 font-mono">
                       <Maximize2 className="w-3.5 h-3.5 text-[#f5b800]" /> {selectedProperty.area}
                     </strong>
@@ -418,7 +435,7 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
 
                   {selectedProperty.bedrooms !== undefined && (
                     <div className="space-y-1">
-                      <span className="text-zinc-500 block">عدد الغرف:</span>
+                      <span className="text-zinc-500 block">الغرف:</span>
                       <strong className="text-white flex items-center gap-1 font-mono">
                         <BedDouble className="w-3.5 h-3.5 text-[#f5b800]" /> {selectedProperty.bedrooms} غرف
                       </strong>
@@ -427,7 +444,7 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
 
                   {selectedProperty.bathrooms !== undefined && (
                     <div className="space-y-1">
-                      <span className="text-zinc-500 block">عدد الحمامات:</span>
+                      <span className="text-zinc-500 block">الحمامات:</span>
                       <strong className="text-white flex items-center gap-1 font-mono">
                         <Bath className="w-3.5 h-3.5 text-[#f5b800]" /> {selectedProperty.bathrooms} حمامات
                       </strong>
@@ -435,7 +452,7 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                   )}
 
                   <div className="space-y-1">
-                    <span className="text-zinc-500 block">حالة التشطيب:</span>
+                    <span className="text-zinc-500 block">التشطيب:</span>
                     <strong className="text-white block truncate">{selectedProperty.condition}</strong>
                   </div>
                 </div>
@@ -463,7 +480,7 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                   </div>
                 )}
 
-                {/* إحصائيات وتاريخ النشر */}
+                {/* إحصائيات */}
                 <div className="flex items-center justify-between text-xs text-zinc-500 pt-3 border-t border-[#222]">
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" /> تاريخ النشر: {selectedProperty.publishedAt}
@@ -476,10 +493,9 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
 
             </div>
 
-            {/* العمود الأيسر (1fr): الوساطة المعتمدة، طلب المعاينة، وصندوق العمولة المشروط */}
+            {/* العمود الأيسر: الوساطة وطلب المعاينة والعمولة */}
             <div className="space-y-5">
               
-              {/* صندوق السعر والوساطة المعتمدة للزائر والمشتري */}
               <div className="rounded-3xl bg-[#151515] border border-[#242424] p-5 space-y-4 shadow-2xl">
                 
                 <div className="text-center bg-[#0d0d0d] p-4 rounded-2xl border border-[#222] space-y-1">
@@ -490,10 +506,9 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                   </div>
                 </div>
 
-                {/* معلومات المعلن العامة بدون بيانات التواصل الخاصة */}
                 <div className="p-3.5 bg-[#0d0d0d] rounded-2xl border border-[#202020] space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-400">الجهة الناشرة للعقار:</span>
+                    <span className="text-zinc-400">الجهة الناشرة:</span>
                     <span className="text-white font-bold">{selectedProperty.publisherName}</span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -504,7 +519,7 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                   </div>
                 </div>
 
-                {/* حماية بيانات التواصل وطلب المعاينة عبر المنصة */}
+                {/* حماية بيانات التواصل وطلب المعاينة */}
                 <div className="p-3.5 bg-[#121212] rounded-2xl border border-[#262626] space-y-2.5">
                   <div className="flex items-center gap-2 text-xs text-[#f5b800] font-bold">
                     <Lock className="w-4 h-4 text-[#f5b800]" />
@@ -512,7 +527,7 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                   </div>
                   
                   <p className="text-[11px] text-zinc-400 leading-relaxed">
-                    لحماية حقوق الطرفين، تتم المعاينة والتفاوض عبر وساطة Yemen Rating المعتمدة. تُفتح معلومات التواصل المباشرة بعد اعتماد وتأكيد طلب المعاينة وفق قواعد المنصة.
+                    لحماية حقوق الطرفين، تتم المعاينة والتفاوض عبر وساطة Yemen Rating المعتمدة. تُفتح معلومات التواصل المباشرة بعد اعتماد وتأكيد طلب المعاينة.
                   </p>
 
                   {inspectionRequestSent ? (
@@ -531,7 +546,7 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                   )}
                 </div>
 
-                {/* 🔒 صندوق عمولة المنصة (يظهر لصاحب العقار فقط إذا كانت الصلاحية مفعلة، وللإدارة) */}
+                {/* 🔒 صندوق عمولة المنصة */}
                 {canViewPropertyCommission(selectedProperty) && (
                   <div className="bg-[#0c0c0c] p-3.5 rounded-2xl border border-[#2c2c2c] space-y-2 text-xs">
                     <div className="flex items-center justify-between text-zinc-300 border-b border-[#1f1f1f] pb-1.5">
@@ -564,11 +579,72 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
 
           </div>
 
+          {/* 🔍 نافذة عارض الصور المكبرة (Lightbox Modal) */}
+          {activeLightboxIndex !== null && (
+            <div className="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+              <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col items-center justify-center">
+                
+                {/* أزرار الإغلاق والعداد */}
+                <div className="absolute top-0 left-0 right-0 -mt-12 flex items-center justify-between px-2 text-white">
+                  <span className="text-sm font-mono font-bold bg-zinc-900/80 px-3 py-1 rounded-xl border border-zinc-800">
+                    صورة {activeLightboxIndex + 1} من {selectedProperty.images.length}
+                  </span>
+                  <button
+                    onClick={() => setActiveLightboxIndex(null)}
+                    className="p-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-white border border-zinc-700"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* الصورة المكبرة */}
+                <div className="w-full h-[60vh] sm:h-[70vh] rounded-2xl overflow-hidden bg-black flex items-center justify-center border border-zinc-800">
+                  <img
+                    src={selectedProperty.images[activeLightboxIndex]}
+                    alt={`عقار ${activeLightboxIndex + 1}`}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                {/* أزرار التنقل بين الصور */}
+                <div className="flex items-center gap-4 mt-4">
+                  <button
+                    onClick={() => setActiveLightboxIndex((prev) => (prev! > 0 ? prev! - 1 : selectedProperty.images.length - 1))}
+                    className="p-2.5 rounded-xl bg-zinc-900 hover:bg-[#f5b800] hover:text-zinc-950 text-white border border-zinc-700 transition-colors flex items-center gap-1 text-xs font-bold"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                    <span>السابق</span>
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    {selectedProperty.images.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setActiveLightboxIndex(i)}
+                        className={`w-3 h-3 rounded-full transition-all ${
+                          activeLightboxIndex === i ? 'bg-[#f5b800] w-6' : 'bg-zinc-700'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setActiveLightboxIndex((prev) => (prev! < selectedProperty.images.length - 1 ? prev! + 1 : 0))}
+                    className="p-2.5 rounded-xl bg-zinc-900 hover:bg-[#f5b800] hover:text-zinc-950 text-white border border-zinc-700 transition-colors flex items-center gap-1 text-xs font-bold"
+                  >
+                    <span>التالي</span>
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          )}
+
         </div>
       ) : (
-        /* 4. شبكة قائمة العقارات (Real Estate Grid) */
+        /* 4. شبكة قائمة العقارات */
         <div className="space-y-4">
-          
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {filteredProperties.map((item) => (
               <div
@@ -576,7 +652,6 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                 onClick={() => setSelectedProperty(item)}
                 className="rounded-3xl bg-[#151515] border border-[#242424] hover:border-[#f5b800]/40 overflow-hidden cursor-pointer group transition-all shadow-xl flex flex-col"
               >
-                {/* صورة العقار والأسعار والشارات */}
                 <div className="relative h-44 sm:h-48 w-full bg-[#202020] overflow-hidden">
                   <img
                     src={item.images[0]}
@@ -588,18 +663,18 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                     {item.price.toLocaleString()} {item.currency} {item.period && `/${item.period}`}
                   </div>
 
-                  <div className="absolute top-3 left-3">
+                  <div className="absolute top-3 left-3 flex items-center gap-1">
                     <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold backdrop-blur-md ${
-                      item.listingType === 'rent'
-                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                        : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      item.listingType === 'rent' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                     }`}>
                       {item.listingType === 'rent' ? 'للإيجار' : 'للبيع'}
+                    </span>
+                    <span className="text-[10px] bg-black/75 text-zinc-300 px-1.5 py-0.5 rounded-md border border-zinc-700 font-mono">
+                      📸 4 صور
                     </span>
                   </div>
                 </div>
 
-                {/* تفاصيل البطاقة العامة */}
                 <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
                   <div>
                     <span className="text-[10px] text-[#f5b800] bg-[#f5b800]/10 px-2 py-0.5 rounded-md border border-[#f5b800]/20 font-bold">
@@ -625,7 +700,7 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                   <div className="pt-2 border-t border-[#202020] flex items-center justify-between text-xs">
                     <span className="text-zinc-500 text-[11px]">{item.publishedAt}</span>
                     <span className="text-[#f5b800] font-bold group-hover:underline flex items-center gap-1">
-                      <span>معاينة التفاصيل</span>
+                      <span>معاينة الـ 4 صور</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
@@ -633,11 +708,10 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
               </div>
             ))}
           </div>
-
         </div>
       )}
 
-      {/* 5. نافذة نشر عقار جديد (Add Property Modal) */}
+      {/* نافذة نشر عقار جديد */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           <div className="bg-[#151515] border border-[#282828] rounded-3xl p-5 sm:p-6 w-full max-w-2xl space-y-4 shadow-2xl my-6">
@@ -646,10 +720,10 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
               <div>
                 <h3 className="text-base font-black text-white flex items-center gap-2">
                   <Building className="w-5 h-5 text-[#f5b800]" />
-                  <span>طلب نشر عقار جديد</span>
+                  <span>طلب نشر عقار جديد (4 صور للعقار)</span>
                 </h3>
                 <span className="text-[11px] text-zinc-400">
-                  تخضع جميع العقارات لمراجعة الإدارة والتحقق من الوثائق قبل النشر للعامة
+                  تخضع جميع العقارات لمراجعة الإدارة والتحقق من الوثائق قبل النشر
                 </span>
               </div>
               <button
@@ -665,7 +739,7 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                 <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
                 <h4 className="text-sm font-bold text-white">تم إرسال طلب نشر العقار بنجاح!</h4>
                 <p className="text-xs text-zinc-300">
-                  حالة العقار: <strong>بانتظار مراجعة الإدارة</strong>. سيتم التحقق من التفاصيل ونشره قريباً.
+                  حالة العقار: <strong>بانتظار مراجعة الإدارة</strong>.
                 </p>
               </div>
             ) : (
@@ -697,7 +771,6 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                   </div>
                 </div>
 
-                {/* السعر والعملة */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-zinc-400 mb-1 font-bold">السعر المطلوب *</label>
@@ -737,12 +810,10 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                       <option value="building">عمارة استثمارية</option>
                       <option value="land">أرض / مخطط</option>
                       <option value="commercial">محل تجاري</option>
-                      <option value="office">مكتب / عيادة</option>
                     </select>
                   </div>
                 </div>
 
-                {/* المساحة والمواصفات والمدينة */}
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-zinc-400 mb-1 font-bold">المساحة *</label>
@@ -751,7 +822,7 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                       required
                       value={newPropertyForm.area}
                       onChange={(e) => setNewPropertyForm({ ...newPropertyForm, area: e.target.value })}
-                      placeholder="مثال: 160 م² أو 6 لبن"
+                      placeholder="مثال: 160 م²"
                       className="w-full bg-[#0d0d0d] border border-[#2c2c2c] rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#f5b800]"
                     />
                   </div>
@@ -789,16 +860,15 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                   </div>
                 </div>
 
-                {/* الموقع وبيانات التواصل المحمية */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-zinc-400 mb-1 font-bold">الموقع العام / الحي *</label>
+                    <label className="block text-zinc-400 mb-1 font-bold">الموقع / الحي *</label>
                     <input
                       type="text"
                       required
                       value={newPropertyForm.location}
                       onChange={(e) => setNewPropertyForm({ ...newPropertyForm, location: e.target.value })}
-                      placeholder="مثال: حدة - الحي الدبلوماسي"
+                      placeholder="مثال: حدة"
                       className="w-full bg-[#0d0d0d] border border-[#2c2c2c] rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#f5b800]"
                     />
                   </div>
@@ -816,40 +886,35 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                   </div>
                 </div>
 
-                {/* الوصف */}
                 <div>
-                  <label className="block text-zinc-400 mb-1 font-bold">وصف العقار بالتفصيل *</label>
+                  <label className="block text-zinc-400 mb-1 font-bold">وصف العقار *</label>
                   <textarea
                     rows={3}
                     required
                     value={newPropertyForm.description}
                     onChange={(e) => setNewPropertyForm({ ...newPropertyForm, description: e.target.value })}
-                    placeholder="مواصفات العقار، جودة التشطيب، المزايا والخدمات..."
+                    placeholder="مواصفات العقار وتشطيباته..."
                     className="w-full bg-[#0d0d0d] border border-[#2c2c2c] rounded-xl p-3 text-white focus:outline-none focus:border-[#f5b800]"
                   />
                 </div>
 
-                {/* أزرار الإجراءات */}
                 <div className="flex items-center justify-between pt-2 border-t border-[#242424] flex-wrap gap-2">
-                  <span className="text-[10px] text-zinc-500">
-                    * سيتم إشعارك فور مراجعة واعتماد نشر العقار
-                  </span>
+                  <span className="text-[10px] text-zinc-500">* سيتم نشر 4 صور احترافية للعقار بعد الموافقة</span>
 
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setIsAddModalOpen(false)}
-                      className="px-4 py-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800"
+                      className="px-4 py-2 rounded-xl text-zinc-400 hover:text-white"
                     >
                       إلغاء
                     </button>
 
                     <button
                       type="submit"
-                      className="px-5 py-2.5 bg-[#f5b800] hover:bg-[#e5aa00] active:scale-95 text-zinc-950 font-bold rounded-xl flex items-center gap-1.5 shadow-md"
+                      className="px-5 py-2.5 bg-[#f5b800] hover:bg-[#e5aa00] active:scale-95 text-zinc-950 font-bold rounded-xl shadow-md"
                     >
-                      <Send className="w-3.5 h-3.5" />
-                      <span>إرسال للإدارة للمراجعة</span>
+                      إرسال للإدارة للمراجعة
                     </button>
                   </div>
                 </div>

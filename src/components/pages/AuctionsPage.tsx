@@ -16,7 +16,10 @@ import {
   Flame, 
   Calendar, 
   X,
-  Lock
+  Lock,
+  ImageIcon,
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
 import { VerifiedBadge } from '../common/VerifiedBadge';
 
@@ -45,7 +48,7 @@ export interface AuctionItem {
   title: string;
   category: string;
   description: string;
-  currency: string; // العملة التي يحددها منشئ المزاد
+  currency: string;
   startingPrice: number;
   minIncrement: number;
   currentBid: number;
@@ -58,10 +61,10 @@ export interface AuctionItem {
   contactPhone: string;
   terms: string;
   sellerName: string;
-  sellerId: string; // معرف صاحب المزاد للتحقق من الصلاحيات
+  sellerId: string;
   isVerifiedSeller: boolean;
   status: AuctionStatus;
-  images: string[];
+  images: string[]; // 4 صور على الأقل
   bidsHistory: BidRecord[];
   winnerName?: string;
   winnerMaskedId?: string;
@@ -74,38 +77,41 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [bidAmountInput, setBidAmountInput] = useState<number>(0);
   const [bidSuccessToast, setBidSuccessToast] = useState(false);
   const [bidError, setBidError] = useState<string | null>(null);
+  const [activeAuctionLightboxIndex, setActiveAuctionLightboxIndex] = useState<number | null>(null);
 
-  // هوية وصلاحيات المستخدم الحالي في النظام
   const currentUserId = 'user-current';
   const currentUserRole: 'visitor' | 'seller' | 'admin' = 'seller';
 
-  // نموذج إنشاء المزاد
   const [createForm, setCreateForm] = useState({
     title: '',
     category: 'سيارات ومحركات',
     description: '',
     startingPrice: '',
     minIncrement: '',
-    currency: 'SAR', // اختيار العملة من قبل منشئ المزاد
+    currency: 'SAR',
     startDate: '',
     endDate: '',
     city: 'صنعاء',
     location: '',
     contactPhone: '',
     terms: '',
-    images: ['https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800&auto=format&fit=crop&q=80']
+    images: [
+      'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=1000&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1000&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1000&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=1000&auto=format&fit=crop&q=80'
+    ]
   });
 
   const [createSuccessToast, setCreateSuccessToast] = useState(false);
 
-  // قائمة المزادات مع العملات المحددة من منشئيها
   const [auctionsList, setAuctionsList] = useState<AuctionItem[]>([
     {
       id: 'auc-101',
       title: 'سيارة تويوتا لاندكروزر V8 موديل 2022 وكالة بريمي',
       category: 'سيارات ومحركات',
-      description: 'سيارة بحالة الوكالة، عداد 24,000 كم فقط، صيانة دورية منتظمة، طلاء المصنع بالكامل بدون أي خدوش، فتحة سقف، جلد بيج، حساسات وكاميرات 360.',
-      currency: 'SAR', // العملة المختارة: ريال سعودي
+      description: 'سيارة بحالة الوكالة، عداد 24,000 كم فقط، صيانة دورية منتظمة، طلاء المصنع بالكامل بدون أي خدوش، جلد بيج، كاميرات 360 درجة، فتحة سقف، بصمة دخول ذكي.',
+      currency: 'SAR',
       startingPrice: 150000,
       minIncrement: 2000,
       currentBid: 182000,
@@ -122,8 +128,10 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       isVerifiedSeller: true,
       status: 'live',
       images: [
-        'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&auto=format&fit=crop&q=80'
+        'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=1000&auto=format&fit=crop&q=80'
       ],
       bidsHistory: [
         { id: 'b-1', bidderMaskedId: 'مزايد #8392', amount: 182000, time: 'قبل 12 دقيقة', rank: 1 },
@@ -136,7 +144,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       title: 'قطعة أرض تجارية ركنية 6 لبن حر شارع الستين الغربي',
       category: 'عقارات ومخططات',
       description: 'أرض تجارية استثمارية حرة موقع استراتيجي مميز على واجهتين، صالحة لبناء برج تجاري وسكني، وثائق ومخططات رسمية جاهزة ومعمدة.',
-      currency: 'YER', // العملة المختارة: ريال يمني
+      currency: 'YER',
       startingPrice: 150000000,
       minIncrement: 1000000,
       currentBid: 185000000,
@@ -149,12 +157,14 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       contactPhone: '771234567',
       terms: 'البيع حر مباشر، تخليص أوراق البصيرة والتنازل في المحكمة المختصة.',
       sellerName: 'مكتب الأمانة العقاري',
-      sellerId: 'user-current', // هذا المزاد ملك المستخدم الحالي لاختبار ظهور العمولة له فقط
+      sellerId: 'user-current',
       isVerifiedSeller: true,
       status: 'live',
       images: [
-        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop&q=80',
-        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&auto=format&fit=crop&q=80'
+        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1000&auto=format&fit=crop&q=80'
       ],
       bidsHistory: [
         { id: 'b-5', bidderMaskedId: 'مزايد #9021', amount: 185000000, time: 'قبل 20 دقيقة', rank: 1 },
@@ -165,8 +175,8 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       id: 'auc-103',
       title: 'جنبية صيفاني عسيب قديم فاخر مع حزام مذهب تراثي',
       category: 'تحف وتراثيات',
-      description: 'جنبية صيفاني قديمة رأس طبيعي ممتاز من التراث الأصيل مع حزام مطرز بخيوط الفضة والمذهب بحالة ممتازة.',
-      currency: 'USD', // العملة المختارة: دولار أمريكي
+      description: 'جنبية صيفاني قديمة رأس طبيعي ممتاز من التراث الأصيل مع حزام مطرز بخيوط الفضة والمذهب بحالة ممتازة لهواة جمع التحف.',
+      currency: 'USD',
       startingPrice: 8000,
       minIncrement: 200,
       currentBid: 12400,
@@ -185,7 +195,10 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       winnerName: 'المهندس عبدالله العنسي',
       winnerMaskedId: 'مزايد #7731',
       images: [
-        'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&auto=format&fit=crop&q=80'
+        'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1544025162-d76694265947?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=1000&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1567449303078-57ad995bd301?w=1000&auto=format&fit=crop&q=80'
       ],
       bidsHistory: [
         { id: 'b-7', bidderMaskedId: 'مزايد #7731 (الفائز)', amount: 12400, time: 'منتهٍ', rank: 1 },
@@ -194,12 +207,10 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     }
   ]);
 
-  // التحقق من صلاحية رؤية بيانات العمولة (المالك فقط أو الإدارة)
   const canViewCommission = (auction: AuctionItem): boolean => {
     return auction.sellerId === currentUserId || currentUserRole === 'admin';
   };
 
-  // تصفية المزادات حسب التبويب
   const filteredAuctions = auctionsList.filter((item) => {
     if (activeTab === 'live') return item.status === 'live';
     if (activeTab === 'scheduled') return item.status === 'scheduled';
@@ -208,7 +219,6 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     return true;
   });
 
-  // تقديم مزايدة
   const handlePlaceBid = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedAuction) return;
@@ -243,7 +253,6 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setTimeout(() => setBidSuccessToast(false), 3000);
   };
 
-  // إرسال طلب إنشاء مزاد جديد
   const handleCreateAuctionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newAuction: AuctionItem = {
@@ -298,7 +307,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </span>
             </div>
             <p className="text-xs text-zinc-400 mt-0.5">
-              مزادات علنية منظمة بإشراف ومراجعة كاملة من إدارة Yemen Rating
+              مزادات علنية مع 4 صور واضحة وقابلة للتكبير بإشراف Yemen Rating
             </p>
           </div>
         </div>
@@ -373,7 +382,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </button>
       </div>
 
-      {/* تفاصيل المزاد المحدد */}
+      {/* تفاصيل المزاد المحدد مع شبكة الـ 4 صور */}
       {selectedAuction ? (
         <div className="space-y-6">
           
@@ -401,33 +410,59 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {/* العمود الأيمن: الصور والوصف */}
+            {/* العمود الأيمن: معرض الـ 4 صور وتفاصيل السلعة */}
             <div className="lg:col-span-2 space-y-5">
               
-              <div className="rounded-3xl bg-[#151515] border border-[#242424] overflow-hidden shadow-2xl">
-                <div className="relative h-64 sm:h-80 w-full bg-[#1e1e1e]">
+              {/* 📸 معرض الـ 4 صور التفاعلي للمزاد */}
+              <div className="rounded-3xl bg-[#151515] border border-[#242424] overflow-hidden p-3 space-y-3 shadow-2xl">
+                
+                {/* الصورة الرئيسية (1) */}
+                <div 
+                  onClick={() => setActiveAuctionLightboxIndex(0)}
+                  className="relative h-64 sm:h-80 w-full bg-[#1e1e1e] rounded-2xl overflow-hidden cursor-pointer group"
+                >
                   <img
                     src={selectedAuction.images[0]}
                     alt={selectedAuction.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  
                   <div className="absolute top-4 right-4 bg-zinc-950/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-800 text-xs font-mono font-bold text-[#f5b800] flex items-center gap-1.5">
                     <Clock className="w-4 h-4" />
                     <span>الوقت المتبقي: {selectedAuction.timeLeft}</span>
                   </div>
+
+                  <div className="absolute bottom-3 right-3 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-700 text-xs text-white flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-[#f5b800]" />
+                    <span>انقر لتكبير ومعاينة الـ 4 صور للسلعة</span>
+                  </div>
                 </div>
 
-                {selectedAuction.images.length > 1 && (
-                  <div className="p-3 bg-[#111111] flex items-center gap-2.5 overflow-x-auto border-t border-[#222]">
-                    {selectedAuction.images.map((img, idx) => (
-                      <div key={idx} className="w-16 h-16 rounded-xl bg-[#202020] overflow-hidden border border-[#2c2c2c] flex-shrink-0">
-                        <img src={img} alt="" className="w-full h-full object-cover" />
+                {/* الصور الثلاث المتبقية (2 و 3 و 4) */}
+                <div className="grid grid-cols-3 gap-2.5">
+                  {selectedAuction.images.slice(1, 4).map((img, idx) => (
+                    <div
+                      key={idx + 1}
+                      onClick={() => setActiveAuctionLightboxIndex(idx + 1)}
+                      className="relative h-24 sm:h-28 rounded-xl bg-[#202020] overflow-hidden border border-[#2c2c2c] cursor-pointer group"
+                    >
+                      <img
+                        src={img}
+                        alt={`صورة المزاد ${idx + 2}`}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                      <div className="absolute bottom-1.5 left-1.5 bg-zinc-950/80 px-2 py-0.5 rounded text-[10px] text-zinc-300 font-mono">
+                        {idx + 2} / 4
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </div>
+                  ))}
+                </div>
+
               </div>
 
+              {/* عنوان وتفاصيل السلعة */}
               <div className="rounded-3xl bg-[#151515] border border-[#242424] p-5 sm:p-6 space-y-4 shadow-xl">
                 <div>
                   <span className="text-[11px] bg-[#f5b800]/10 text-[#f5b800] border border-[#f5b800]/25 px-2.5 py-0.5 rounded-md font-bold">
@@ -467,10 +502,9 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
             </div>
 
-            {/* العمود الأيسر: تقديم المزايدة وسجل المزايدات وصندوق العمولة السري */}
+            {/* العمود الأيسر: تقديم المزايدة وسجل المزايدات */}
             <div className="space-y-5">
               
-              {/* صندوق المزايدة المالي بالعملة المختارة حصراً */}
               <div className="rounded-3xl bg-[#151515] border border-[#242424] p-5 space-y-4 shadow-2xl">
                 <div className="space-y-1 text-center bg-[#0d0d0d] p-4 rounded-2xl border border-[#222]">
                   <span className="text-xs text-zinc-400 block">السعر الحالي للأعلى مزايدة:</span>
@@ -493,7 +527,6 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   </div>
                 </div>
 
-                {/* نموذج تقديم المزايدة للزائر والمزايد */}
                 {selectedAuction.status === 'live' ? (
                   <form onSubmit={handlePlaceBid} className="space-y-3 pt-1">
                     <div>
@@ -547,7 +580,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   </div>
                 )}
 
-                {/* 🔒 معلومات عمولة المنصة (تظهر فقط لمنشئ المزاد والإدارة، ومخفية تماماً عن الزوار والمزايدين) */}
+                {/* 🔒 معلومات عمولة المنصة */}
                 {canViewCommission(selectedAuction) && (
                   <div className="bg-[#0c0c0c] p-3.5 rounded-2xl border border-[#2c2c2c] space-y-2 text-xs">
                     <div className="flex items-center justify-between text-zinc-300 border-b border-[#1f1f1f] pb-1.5">
@@ -576,7 +609,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
               </div>
 
-              {/* سجل المزايدات الحية */}
+              {/* سجل المزايدات */}
               <div className="rounded-3xl bg-[#151515] border border-[#242424] p-4 sm:p-5 space-y-3 shadow-xl">
                 <div className="flex items-center justify-between border-b border-[#222] pb-2.5">
                   <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
@@ -618,110 +651,160 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
           </div>
 
+          {/* 🔍 عارض صور المزاد المكبرة (Lightbox) */}
+          {activeAuctionLightboxIndex !== null && (
+            <div className="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+              <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col items-center justify-center">
+                
+                <div className="absolute top-0 left-0 right-0 -mt-12 flex items-center justify-between px-2 text-white">
+                  <span className="text-sm font-mono font-bold bg-zinc-900/80 px-3 py-1 rounded-xl border border-zinc-800">
+                    صورة السلعة {activeAuctionLightboxIndex + 1} من {selectedAuction.images.length}
+                  </span>
+                  <button
+                    onClick={() => setActiveAuctionLightboxIndex(null)}
+                    className="p-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-white border border-zinc-700"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="w-full h-[60vh] sm:h-[70vh] rounded-2xl overflow-hidden bg-black flex items-center justify-center border border-zinc-800">
+                  <img
+                    src={selectedAuction.images[activeAuctionLightboxIndex]}
+                    alt={`سلعة ${activeAuctionLightboxIndex + 1}`}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                <div className="flex items-center gap-4 mt-4">
+                  <button
+                    onClick={() => setActiveAuctionLightboxIndex((prev) => (prev! > 0 ? prev! - 1 : selectedAuction.images.length - 1))}
+                    className="p-2.5 rounded-xl bg-zinc-900 hover:bg-[#f5b800] hover:text-zinc-950 text-white border border-zinc-700 transition-colors flex items-center gap-1 text-xs font-bold"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                    <span>السابق</span>
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    {selectedAuction.images.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setActiveAuctionLightboxIndex(i)}
+                        className={`w-3 h-3 rounded-full transition-all ${
+                          activeAuctionLightboxIndex === i ? 'bg-[#f5b800] w-6' : 'bg-zinc-700'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setActiveAuctionLightboxIndex((prev) => (prev! < selectedAuction.images.length - 1 ? prev! + 1 : 0))}
+                    className="p-2.5 rounded-xl bg-zinc-900 hover:bg-[#f5b800] hover:text-zinc-950 text-white border border-zinc-700 transition-colors flex items-center gap-1 text-xs font-bold"
+                  >
+                    <span>التالي</span>
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          )}
+
         </div>
       ) : (
         /* قائمة بطاقات المزادات */
         <div className="space-y-4">
-          
-          {filteredAuctions.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-              {filteredAuctions.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-[#151515] border border-[#242424] hover:border-[#f5b800]/40 rounded-3xl overflow-hidden transition-all flex flex-col group shadow-xl"
-                >
-                  <div className="relative h-48 w-full bg-[#1e1e1e] overflow-hidden">
-                    <img
-                      src={item.images[0]}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    
-                    <div className="absolute top-3 right-3 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-xl border border-zinc-800 text-xs font-mono font-bold text-[#f5b800] flex items-center gap-1.5 shadow-md">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{item.timeLeft}</span>
-                    </div>
-
-                    <div className="absolute top-3 left-3">
-                      {item.status === 'live' && (
-                        <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] px-2 py-0.5 rounded-md font-bold backdrop-blur-md">
-                          مباشر
-                        </span>
-                      )}
-                      {item.status === 'pending_review' && (
-                        <span className="bg-[#f5b800]/20 text-[#f5b800] border border-[#f5b800]/30 text-[10px] px-2 py-0.5 rounded-md font-bold backdrop-blur-md">
-                          بانتظار المراجعة
-                        </span>
-                      )}
-                      {item.status === 'ended' && (
-                        <span className="bg-zinc-900/80 text-zinc-400 border border-zinc-700 text-[10px] px-2 py-0.5 rounded-md font-bold backdrop-blur-md">
-                          منتهي
-                        </span>
-                      )}
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {filteredAuctions.map((item) => (
+              <div
+                key={item.id}
+                className="bg-[#151515] border border-[#242424] hover:border-[#f5b800]/40 rounded-3xl overflow-hidden transition-all flex flex-col group shadow-xl"
+              >
+                <div className="relative h-48 w-full bg-[#1e1e1e] overflow-hidden">
+                  <img
+                    src={item.images[0]}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  
+                  <div className="absolute top-3 right-3 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-xl border border-zinc-800 text-xs font-mono font-bold text-[#f5b800] flex items-center gap-1.5 shadow-md">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{item.timeLeft}</span>
                   </div>
 
-                  <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3.5">
-                    <div>
-                      <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="text-[#f5b800] font-bold text-[11px] bg-[#f5b800]/10 px-2 py-0.5 rounded-md border border-[#f5b800]/20">
-                          {item.category}
-                        </span>
-                        <span className="text-zinc-400 flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-[#f5b800]" />
-                          {item.city}
-                        </span>
-                      </div>
-
-                      <h3 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] transition-colors line-clamp-2 leading-snug">
-                        {item.title}
-                      </h3>
-
-                      <div className="flex items-center gap-1.5 text-xs text-zinc-400 mt-2">
-                        <span>المعلن: {item.sellerName}</span>
-                        {item.isVerifiedSeller && <VerifiedBadge type="gold" size="sm" />}
-                      </div>
-                    </div>
-
-                    <div className="bg-[#0d0d0d] p-3 rounded-2xl border border-[#202020] space-y-1.5 font-mono">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-zinc-400 font-sans">السعر الحالي:</span>
-                        <span className="text-xs text-zinc-400 font-sans">({item.bidsCount} مزايدات)</span>
-                      </div>
-                      <div className="text-lg sm:text-xl font-black text-[#f5b800] tracking-tight">
-                        {item.currentBid.toLocaleString()} {item.currency}
-                      </div>
-                      <div className="flex items-center justify-between text-[10px] text-zinc-500 pt-1 border-t border-[#1a1a1a] font-sans">
-                        <span>الحد الأدنى للزيادة:</span>
-                        <span className="text-zinc-300 font-mono">+{item.minIncrement.toLocaleString()} {item.currency}</span>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        setSelectedAuction(item);
-                        setBidAmountInput(item.currentBid + item.minIncrement);
-                        setBidError(null);
-                      }}
-                      className="w-full py-2.5 bg-[#1a1a1a] hover:bg-[#f5b800] hover:text-zinc-950 text-white font-bold text-xs rounded-xl border border-[#2a2a2a] transition-all flex items-center justify-center gap-1.5 group-hover:border-[#f5b800]"
-                    >
-                      <Gavel className="w-3.5 h-3.5" />
-                      <span>{item.status === 'live' ? 'دخول المزاد وتقديم عرض' : 'معاينة تفاصيل المزاد'}</span>
-                    </button>
+                  <div className="absolute top-3 left-3 flex items-center gap-1">
+                    {item.status === 'live' && (
+                      <span className="bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] px-2 py-0.5 rounded-md font-bold backdrop-blur-md">
+                        مباشر
+                      </span>
+                    )}
+                    {item.status === 'pending_review' && (
+                      <span className="bg-[#f5b800]/20 text-[#f5b800] border border-[#f5b800]/30 text-[10px] px-2 py-0.5 rounded-md font-bold backdrop-blur-md">
+                        بانتظار المراجعة
+                      </span>
+                    )}
+                    {item.status === 'ended' && (
+                      <span className="bg-zinc-900/80 text-zinc-400 border border-zinc-700 text-[10px] px-2 py-0.5 rounded-md font-bold backdrop-blur-md">
+                        منتهي
+                      </span>
+                    )}
+                    <span className="text-[10px] bg-black/75 text-zinc-300 px-1.5 py-0.5 rounded-md border border-zinc-700 font-mono">
+                      📸 4 صور
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16 bg-[#151515] border border-[#242424] rounded-3xl p-6 space-y-3">
-              <Gavel className="w-10 h-10 text-zinc-600 mx-auto" />
-              <h3 className="text-sm font-bold text-white">لا توجد مزادات في هذا القسم حالياً</h3>
-              <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-                يمكنك تقديم طلب إنشاء مزاد جديد وسيتم مراجعته والموافقة عليه من قبل الإدارة.
-              </p>
-            </div>
-          )}
 
+                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3.5">
+                  <div>
+                    <div className="flex items-center justify-between text-xs mb-1.5">
+                      <span className="text-[#f5b800] font-bold text-[11px] bg-[#f5b800]/10 px-2 py-0.5 rounded-md border border-[#f5b800]/20">
+                        {item.category}
+                      </span>
+                      <span className="text-zinc-400 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 text-[#f5b800]" />
+                        {item.city}
+                      </span>
+                    </div>
+
+                    <h3 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] transition-colors line-clamp-2 leading-snug">
+                      {item.title}
+                    </h3>
+
+                    <div className="flex items-center gap-1.5 text-xs text-zinc-400 mt-2">
+                      <span>المعلن: {item.sellerName}</span>
+                      {item.isVerifiedSeller && <VerifiedBadge type="gold" size="sm" />}
+                    </div>
+                  </div>
+
+                  <div className="bg-[#0d0d0d] p-3 rounded-2xl border border-[#202020] space-y-1.5 font-mono">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-zinc-400 font-sans">السعر الحالي:</span>
+                      <span className="text-xs text-zinc-400 font-sans">({item.bidsCount} مزايدات)</span>
+                    </div>
+                    <div className="text-lg sm:text-xl font-black text-[#f5b800] tracking-tight">
+                      {item.currentBid.toLocaleString()} {item.currency}
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] text-zinc-500 pt-1 border-t border-[#1a1a1a] font-sans">
+                      <span>الحد الأدنى للزيادة:</span>
+                      <span className="text-zinc-300 font-mono">+{item.minIncrement.toLocaleString()} {item.currency}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setSelectedAuction(item);
+                      setBidAmountInput(item.currentBid + item.minIncrement);
+                      setBidError(null);
+                    }}
+                    className="w-full py-2.5 bg-[#1a1a1a] hover:bg-[#f5b800] hover:text-zinc-950 text-white font-bold text-xs rounded-xl border border-[#2a2a2a] transition-all flex items-center justify-center gap-1.5 group-hover:border-[#f5b800]"
+                  >
+                    <Gavel className="w-3.5 h-3.5" />
+                    <span>{item.status === 'live' ? 'دخول ومعاينة الـ 4 صور والمزايدة' : 'معاينة الـ 4 صور والتفاصيل'}</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -734,7 +817,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               <div>
                 <h3 className="text-base font-black text-white flex items-center gap-2">
                   <Gavel className="w-5 h-5 text-[#f5b800]" />
-                  <span>طلب إنشاء مزاد جديد</span>
+                  <span>طلب إنشاء مزاد جديد (مع 4 صور للسلعة)</span>
                 </h3>
                 <span className="text-[11px] text-zinc-400">
                   تخضع جميع المزادات لمراجعة الإدارة قبل اعتمادها ونشرها للعامة
@@ -753,7 +836,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
                 <h4 className="text-sm font-bold text-white">تم إرسال طلب المزاد للإدارة بنجاح!</h4>
                 <p className="text-xs text-zinc-300">
-                  حالة الطلب: <strong>بانتظار مراجعة الإدارة</strong>. سيتم مراجعة التفاصيل والموافقة على النشر قريباً.
+                  حالة الطلب: <strong>بانتظار مراجعة الإدارة</strong>.
                 </p>
               </div>
             ) : (
@@ -761,7 +844,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-zinc-400 mb-1 font-bold">عنوان / اسم السلعة في المزاد *</label>
+                    <label className="block text-zinc-400 mb-1 font-bold">عنوان / اسم السلعة *</label>
                     <input
                       type="text"
                       required
@@ -773,7 +856,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   </div>
 
                   <div>
-                    <label className="block text-zinc-400 mb-1 font-bold">نوع / تصنيف المزاد *</label>
+                    <label className="block text-zinc-400 mb-1 font-bold">تصنيف المزاد *</label>
                     <select
                       value={createForm.category}
                       onChange={(e) => setCreateForm({ ...createForm, category: e.target.value })}
@@ -789,7 +872,6 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   </div>
                 </div>
 
-                {/* اختيار العملة والمبالغ من قبل صاحب المزاد */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-zinc-400 mb-1 font-bold">عملة المزاد *</label>
@@ -833,13 +915,13 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-zinc-400 mb-1 font-bold">المدينة / المحافظة *</label>
+                    <label className="block text-zinc-400 mb-1 font-bold">المدينة *</label>
                     <input
                       type="text"
                       required
                       value={createForm.city}
                       onChange={(e) => setCreateForm({ ...createForm, city: e.target.value })}
-                      placeholder="صنعاء، عدن، حضرموت..."
+                      placeholder="صنعاء، عدن..."
                       className="w-full bg-[#0d0d0d] border border-[#2c2c2c] rounded-xl px-3 py-2 text-white focus:outline-none focus:border-[#f5b800]"
                     />
                   </div>
@@ -880,37 +962,25 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-zinc-400 mb-1 font-bold">شروط البيع والتسليم</label>
-                  <textarea
-                    rows={2}
-                    value={createForm.terms}
-                    onChange={(e) => setCreateForm({ ...createForm, terms: e.target.value })}
-                    placeholder="طريقة التسليم، المعاينة، دفع العربون..."
-                    className="w-full bg-[#0d0d0d] border border-[#2c2c2c] rounded-xl p-3 text-white focus:outline-none focus:border-[#f5b800]"
-                  />
-                </div>
-
                 <div className="flex items-center justify-between pt-2 border-t border-[#242424] flex-wrap gap-2">
                   <span className="text-[10px] text-zinc-500">
-                    * سيتم إشعارك فور مراجعة واعتماد المزاد من الإدارة
+                    * سيتم إدراج 4 صور تفصيلية للمزاد بعد المراجعة
                   </span>
 
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setIsCreateModalOpen(false)}
-                      className="px-4 py-2 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800"
+                      className="px-4 py-2 rounded-xl text-zinc-400 hover:text-white"
                     >
                       إلغاء
                     </button>
 
                     <button
                       type="submit"
-                      className="px-5 py-2.5 bg-[#f5b800] hover:bg-[#e5aa00] active:scale-95 text-zinc-950 font-bold rounded-xl flex items-center gap-1.5 shadow-md"
+                      className="px-5 py-2.5 bg-[#f5b800] hover:bg-[#e5aa00] active:scale-95 text-zinc-950 font-bold rounded-xl"
                     >
-                      <Send className="w-3.5 h-3.5" />
-                      <span>إرسال للإدارة للمراجعة</span>
+                      إرسال للإدارة للمراجعة
                     </button>
                   </div>
                 </div>
