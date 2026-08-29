@@ -51,7 +51,6 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
   const [calcAmount, setCalcAmount] = useState<number>(100);
   const [calcCurrency, setCalcCurrency] = useState<'USD' | 'SAR'>('USD');
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
-  const [isPaused, setIsPaused] = useState(false);
 
   const marketData = {
     sanaa: {
@@ -76,7 +75,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         { code: 'USD', name: 'الدولار الأمريكي', flag: '🇺🇸', buy: 1890.00, sell: 1910.00, change: 1.10, isUp: true, history: [1870.0, 1875.0, 1880.0, 1885.0, 1888.0, 1890.0] }
       ],
       gold: [
-        { key: 'g24', label: 'الذهب عيار 24', sub: 'جرام عيار 24 خالص', buy: 148000, sell: 155000, change: 0.95, isUp: true, icon: '◍' },
+        { key: 'g24', label: 'الذهب عيار 24', sub: 'جرام عيار 24 خالص', buy: 148000, sell: 155000, change: 0.95, icon: '◍' },
         { key: 'g21', label: 'الذهب عيار 21', sub: 'جرام عيار 21 يمني', buy: 129500, sell: 138000, change: 0.60, icon: '✦' },
         { key: 'g18', label: 'الذهب عيار 18', sub: 'جرام عيار 18 إيطالي/محلي', buy: 111000, sell: 119000, change: 0.70, icon: '◇' },
         { key: 'sovereign', label: 'الجنيه الذهب', sub: '8 جرام عيار 21', buy: 1040000, sell: 1095000, change: 1.40, icon: '◈' }
@@ -104,7 +103,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
       { label: 'ذهب 24 عدن', price: marketData.aden.gold[0].buy, change: marketData.aden.gold[0].change, flag: '🟡' },
       { label: 'ذهب 18 عدن', price: marketData.aden.gold[2].buy, change: marketData.aden.gold[2].change, flag: '🪙' }
     ];
-    return [...items, ...items, ...items];
+    return [...items, ...items, ...items, ...items];
   }, []);
 
   const currentRate = calcCurrency === 'USD' 
@@ -115,7 +114,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
   return (
     <div dir="rtl" className="max-w-6xl mx-auto space-y-6 pb-20 pt-1">
       
-      {/* 1. رأس الصفحة */}
+      {/* 1. Header Bar */}
       <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-[#242424]">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-[#f5b800] text-zinc-950 flex items-center justify-center font-black shadow-lg shadow-[#f5b800]/20">
@@ -144,16 +143,12 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </button>
       </div>
 
-      {/* 2. شريط الأسعار المتحرك (أسود داكن بالكامل بدون كحلي وبدون زجاج) */}
-      <div 
-        className="relative w-full overflow-hidden rounded-2xl border border-[#262626] bg-[#111111] shadow-xl"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        <div className="pointer-events-none absolute inset-y-0 start-0 z-10 w-16 bg-gradient-to-r from-[#111111] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 end-0 z-10 w-16 bg-gradient-to-l from-[#111111] to-transparent" />
+      {/* 2. شريط الأسعار المتحرك (خلفية صلبة 100% بدون زجاج وبدون كحلي) */}
+      <div className="relative w-full overflow-hidden rounded-2xl border border-[#262626] bg-[#111111] shadow-xl">
+        <div className="pointer-events-none absolute inset-y-0 start-0 z-10 w-12 bg-gradient-to-r from-[#111111] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 end-0 z-10 w-12 bg-gradient-to-l from-[#111111] to-transparent" />
         
-        <div className={`animate-marquee-live flex items-center gap-2.5 py-2.5 px-2 ${isPaused ? 'paused' : ''}`}>
+        <div className="ticker-continuous flex items-center gap-2.5 py-2.5 px-2">
           {marqueeItems.map((item, idx) => (
             <div key={idx} className="flex shrink-0 items-center gap-2.5 rounded-full border border-[#282828] bg-[#181818] px-3.5 py-1 text-xs">
               <span>{item.flag}</span>
@@ -268,7 +263,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
       </div>
 
-      {/* 5. بورصة الذهب عيار 24 و 18 و 21 (تصميم أسود وزنك موحد 100% بدون تدرجات بنية أو عشوائية) */}
+      {/* 5. بورصة الذهب عيار 24 و 18 و 21 */}
       <div className="rounded-3xl border border-[#262626] bg-[#151515] p-5 sm:p-6 space-y-4 shadow-xl">
         <div className="flex items-center justify-between flex-wrap gap-2 border-b border-[#242424] pb-4">
           <div>

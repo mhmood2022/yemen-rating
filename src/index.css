@@ -33,24 +33,42 @@
   }
 }
 
-/* حركة الشريط المالي المتحرك */
-@keyframes marquee-rtl {
+/* محرك الحركة والانزلاق التلقائي المستمر للشريط المالي والمزادات */
+@-webkit-keyframes marquee-glide {
   0% {
+    -webkit-transform: translateX(0);
     transform: translateX(0);
   }
   100% {
+    -webkit-transform: translateX(50%);
     transform: translateX(50%);
   }
 }
 
-.animate-marquee-live {
-  display: flex !important;
-  width: max-content !important;
-  animation: marquee-rtl 35s linear infinite !important;
+@keyframes marquee-glide {
+  0% {
+    -webkit-transform: translateX(0);
+    transform: translateX(0);
+  }
+  100% {
+    -webkit-transform: translateX(50%);
+    transform: translateX(50%);
+  }
 }
 
-.animate-marquee-live:hover {
-  animation-play-state: paused !important;
+.ticker-continuous {
+  display: flex !important;
+  width: max-content !important;
+  -webkit-animation: marquee-glide 30s linear infinite !important;
+  animation: marquee-glide 30s linear infinite !important;
+  will-change: transform;
+}
+
+@media (hover: hover) {
+  .ticker-continuous:hover {
+    -webkit-animation-play-state: paused !important;
+    animation-play-state: paused !important;
+  }
 }
 
 .no-scrollbar::-webkit-scrollbar {

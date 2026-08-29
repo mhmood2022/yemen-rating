@@ -102,7 +102,6 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [bidSuccessToast, setBidSuccessToast] = useState(false);
   const [bidError, setBidError] = useState<string | null>(null);
   const [activeAuctionLightboxIndex, setActiveAuctionLightboxIndex] = useState<number | null>(null);
-  const [isTickerPaused, setIsTickerPaused] = useState(false);
 
   const [timer1, setTimer1] = useState(15738);
   const [timer2, setTimer2] = useState(8073);
@@ -256,7 +255,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       { text: '🏁 تم البيع: جنبية صيفاني فاخرة', bid: '12,400 USD', time: 'مكتمل الصفقة' }
     ];
   }, []);
-  const fullAuctionTicker = [...auctionTickerItems, ...auctionTickerItems, ...auctionTickerItems];
+  const fullAuctionTicker = [...auctionTickerItems, ...auctionTickerItems, ...auctionTickerItems, ...auctionTickerItems];
 
   const canViewCommission = (auction: AuctionItem): boolean => {
     return auction.sellerId === currentUserId || currentUserRole === 'admin';
@@ -343,7 +342,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   return (
     <div dir="rtl" className="max-w-6xl mx-auto space-y-6 pb-20 pt-1">
       
-      {/* 1. رأس الصفحة */}
+      {/* 1. Header Bar */}
       <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-[#242424]">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-[#f5b800] text-zinc-950 flex items-center justify-center font-black shadow-lg shadow-[#f5b800]/15">
@@ -366,7 +365,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="px-4 py-2.5 bg-[#f5b800] hover:bg-[#e5aa00] active:scale-95 text-zinc-950 font-black text-xs rounded-xl transition-all shadow-md shadow-[#f5b800]/20 flex items-center gap-1.5"
+            className="px-4 py-2.5 bg-[#f5b800] hover:bg-[#e5aa00] active:scale-95 text-zinc-950 font-bold text-xs rounded-xl transition-all shadow-md shadow-[#f5b800]/20 flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>إنشاء مزاد جديد</span>
@@ -382,16 +381,12 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* 2. شريط إحصائيات المزادات المتحرك (أسود داكن صلب #111111) */}
-      <div 
-        className="relative w-full overflow-hidden rounded-2xl border border-[#262626] bg-[#111111] shadow-xl"
-        onMouseEnter={() => setIsTickerPaused(true)}
-        onMouseLeave={() => setIsTickerPaused(false)}
-      >
-        <div className="pointer-events-none absolute inset-y-0 start-0 z-10 w-16 bg-gradient-to-r from-[#111111] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 end-0 z-10 w-16 bg-gradient-to-l from-[#111111] to-transparent" />
+      {/* 2. شريط إحصائيات المزادات المتحرك (صلب 100% بدون زجاج وبدون كحلي) */}
+      <div className="relative w-full overflow-hidden rounded-2xl border border-[#262626] bg-[#111111] shadow-xl">
+        <div className="pointer-events-none absolute inset-y-0 start-0 z-10 w-12 bg-gradient-to-r from-[#111111] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 end-0 z-10 w-12 bg-gradient-to-l from-[#111111] to-transparent" />
         
-        <div className={`animate-marquee-live flex items-center gap-3 py-2.5 px-2 ${isTickerPaused ? 'paused' : ''}`}>
+        <div className="ticker-continuous flex items-center gap-3 py-2.5 px-2">
           {fullAuctionTicker.map((item, idx) => (
             <div key={idx} className="flex shrink-0 items-center gap-2.5 rounded-full border border-[#282828] bg-[#181818] px-3.5 py-1 text-xs">
               <span className="font-bold text-white/90">{item.text}</span>
@@ -417,9 +412,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
           <div className="flex items-center gap-3" dir="ltr">
             <div className="hidden sm:flex items-center gap-2">
-              <div 
-                className="text-[12px] font-bold text-[#f5b800] tabular-nums tracking-widest bg-[#000000] border border-[#202020] rounded-full px-2.5 py-[3px]"
-              >
+              <div className="text-[12px] font-bold text-[#f5b800] tabular-nums tracking-widest bg-[#000000] border border-[#202020] rounded-full px-2.5 py-[3px]">
                 {formatTime(timer2)}
               </div>
             </div>
@@ -660,7 +653,6 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {/* العمود الأيمن: معرض الـ 4 صور وتفاصيل السلعة */}
             <div className="lg:col-span-2 space-y-5">
               
               <div className="rounded-3xl bg-[#151515] border border-[#242424] overflow-hidden p-3 space-y-3 shadow-2xl">
