@@ -33,40 +33,25 @@
   }
 }
 
-/* محرك الحركة والانزلاق التلقائي المستمر للشريط المالي والمزادات */
-@-webkit-keyframes marquee-glide {
+/* محرك انزلاق وحركة الشريط المالي والمزادات */
+@keyframes ticker-slide-rtl {
   0% {
-    -webkit-transform: translateX(0);
     transform: translateX(0);
   }
   100% {
-    -webkit-transform: translateX(50%);
     transform: translateX(50%);
   }
 }
 
-@keyframes marquee-glide {
-  0% {
-    -webkit-transform: translateX(0);
-    transform: translateX(0);
-  }
-  100% {
-    -webkit-transform: translateX(50%);
-    transform: translateX(50%);
-  }
-}
-
-.ticker-continuous {
+.ticker-track-smooth {
   display: flex !important;
   width: max-content !important;
-  -webkit-animation: marquee-glide 30s linear infinite !important;
-  animation: marquee-glide 30s linear infinite !important;
+  animation: ticker-slide-rtl 25s linear infinite !important;
   will-change: transform;
 }
 
 @media (hover: hover) {
-  .ticker-continuous:hover {
-    -webkit-animation-play-state: paused !important;
+  .ticker-track-smooth:hover {
     animation-play-state: paused !important;
   }
 }
