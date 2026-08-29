@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Star, 
   MapPin, 
@@ -44,6 +44,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
 }) => {
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [activeMarketHome, setActiveMarketHome] = useState<'sanaa' | 'aden'>('sanaa');
+  const [livePulse, setLivePulse] = useState(false);
+
+  // تحديث وميض الأسعار اللحظي كل 4 ثوانٍ
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLivePulse(true);
+      setTimeout(() => setLivePulse(false), 800);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
   const displayedCategories = showAllCategories 
     ? OFFICIAL_CATEGORIES 
@@ -146,14 +156,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 3. أسعار العملات والذهب (سعودي، دولار، ذهب 24 و 18 بالأخضر للشراء والأحمر للبيع) */}
+      {/* 3. 📈 أسعار العملات والذهب (بطاقة تفاعلية قابلة للنقر والانتقال لصفحة الأسعار) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+          <div 
+            onClick={onNavigateExchangeRates}
+            className="flex items-center gap-2 cursor-pointer group"
+          >
+            <div className="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
               <TrendingUp className="w-3.5 h-3.5" />
             </div>
-            <h3 className="text-sm sm:text-base font-bold text-white">أسعار العملات والذهب</h3>
+            <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-[#f5b800] transition-colors">
+              أسعار العملات والذهب
+            </h3>
           </div>
 
           <button
@@ -165,10 +180,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        <div className="rounded-3xl bg-[#121620]/90 border border-white/[0.08] p-3.5 sm:p-5 space-y-3.5 shadow-xl glass">
+        {/* البطاقة المالية الكبيرة - عند النقر عليها تفتح قسم الأسعار بالكامل */}
+        <div 
+          onClick={onNavigateExchangeRates}
+          className="rounded-3xl bg-[#121620]/90 border border-white/[0.08] hover:border-[#f5b800]/50 p-3.5 sm:p-5 space-y-3.5 shadow-xl glass cursor-pointer transition-all group"
+        >
           
           <div className="flex items-center justify-between gap-2 border-b border-white/[0.06] pb-2.5">
-            <div className="flex items-center gap-1.5 bg-[#090d16] p-1 rounded-xl border border-white/10">
+            <div 
+              onClick={(e) => e.stopPropagation()} 
+              className="flex items-center gap-1.5 bg-[#090d16] p-1 rounded-xl border border-white/10"
+            >
               <button
                 onClick={() => setActiveMarketHome('sanaa')}
                 className={`px-3.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
@@ -192,7 +214,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
 
             <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className={`w-1.5 h-1.5 rounded-full bg-emerald-400 ${livePulse ? 'scale-150 ring-4 ring-emerald-500/40' : 'animate-pulse'} transition-all`} />
               <span>مباشر</span>
             </div>
           </div>
@@ -200,7 +222,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             
             {/* الريال السعودي */}
-            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] space-y-1.5">
+            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] group-hover:border-[#2b354d] space-y-1.5 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1">
                   <span>🇸🇦</span>
@@ -223,7 +245,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
 
             {/* الدولار الأمريكي */}
-            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] space-y-1.5">
+            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] group-hover:border-[#2b354d] space-y-1.5 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1">
                   <span>🇺🇸</span>
@@ -246,7 +268,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
 
             {/* الذهب عيار 24 */}
-            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] space-y-1.5">
+            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] group-hover:border-[#2b354d] space-y-1.5 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1">
                   <span>🟡</span>
@@ -269,7 +291,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
 
             {/* الذهب عيار 18 */}
-            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] space-y-1.5">
+            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] group-hover:border-[#2b354d] space-y-1.5 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center gap-1">
                   <span>🪙</span>
@@ -293,9 +315,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
           </div>
 
-          <div className="text-center text-[11px] text-zinc-400 pt-0.5 flex items-center justify-center gap-1 font-mono">
-            <RefreshCw className="w-3 h-3 text-[#f5b800]" />
-            <span>الأسعار بالريال اليمني • تحديث فوري على مدار الساعة</span>
+          <div className="text-center text-[11px] text-zinc-400 pt-0.5 flex items-center justify-center gap-1 font-mono group-hover:text-[#f5b800] transition-colors">
+            <RefreshCw className={`w-3 h-3 text-[#f5b800] ${livePulse ? 'animate-spin' : ''}`} />
+            <span>انقر لمعاينة البورصة الكاملة والحاسبة الفورية بالريال اليمني ←</span>
           </div>
 
         </div>
@@ -573,6 +595,37 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <span className="text-xs font-bold text-[#f5b800] flex-shrink-0">
               دوام كامل
             </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 8. آخر التقييمات */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
+            <Star className="w-4 h-4 text-[#f5b800]" />
+            <span>آخر التقييمات والمراجعات</span>
+          </h3>
+          <span className="text-xs text-zinc-400">آراء حقيقية</span>
+        </div>
+
+        <div className="p-3.5 sm:p-4 rounded-3xl bg-[#161616] border border-[#242424] flex items-start gap-3.5 shadow-xl">
+          <div className="w-14 h-14 rounded-2xl bg-[#202020] overflow-hidden flex-shrink-0">
+            <img
+              src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop&q=80"
+              alt="مطعم رويال ستار"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="flex-1 min-w-0 space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-white">أبو محمد الأهدل</span>
+              <span className="text-[10px] text-zinc-500">منذ ساعتين</span>
+            </div>
+            <div className="text-[#f5b800] text-xs">★★★★★</div>
+            <p className="text-xs text-zinc-300 leading-relaxed pt-0.5">
+              تجربة ممتازة في مطعم رويال ستار، المأكولات البحرية طازجة والخدمة راقية جداً وسريعة.
+            </p>
           </div>
         </div>
       </div>

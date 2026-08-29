@@ -15,7 +15,6 @@ import {
   Check
 } from 'lucide-react';
 
-// مكون الرسم البياني المصغر (Sparkline Mini-Chart)
 const MiniSparkline: React.FC<{ data: number[]; isUp: boolean; color: string }> = ({ data, color }) => {
   if (data.length < 2) return null;
   const min = Math.min(...data);
@@ -57,23 +56,20 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
   const [activeMarket, setActiveMarket] = useState<'sanaa' | 'aden'>('sanaa');
   const [calcAmount, setCalcAmount] = useState<number>(100);
   const [calcCurrency, setCalcCurrency] = useState<'USD' | 'SAR'>('USD');
-  const [isPaused, setIsPaused] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<string>('الآن');
 
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
       setLastUpdate(now.toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
-    }, 5000);
+    }, 4000);
     return () => clearInterval(timer);
   }, []);
 
-  // بيانات أسعار الصرف والذهب لصنعاء وعدن (الريال السعودي، الدولار الأمريكي، الذهب عيار 24 وعيار 18 وعيار 21)
   const marketData = {
     sanaa: {
       name: 'سوق صنعاء',
-      status: 'مفتوح • سيولة منتظمة',
+      status: 'مفتوح • سيولة نقدية منتظمة',
       currencies: [
         {
           code: 'SAR',
@@ -135,7 +131,6 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
 
   const currentMarket = marketData[activeMarket];
   
-  // عناصر الشريط المتحرك Ticker
   const tickerItems = [
     { label: 'سعودي/صنعاء', buy: marketData.sanaa.currencies[0].buy, change: marketData.sanaa.currencies[0].change, flag: '🇸🇦' },
     { label: 'دولار/صنعاء', buy: marketData.sanaa.currencies[1].buy, change: marketData.sanaa.currencies[1].change, flag: '🇺🇸' },
@@ -148,7 +143,6 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
   ];
   const fullTicker = [...tickerItems, ...tickerItems, ...tickerItems];
 
-  // احتساب حاسبة العملات
   const rateForCalc = calcCurrency === 'USD' 
     ? currentMarket.currencies.find(c => c.code === 'USD')?.buy || 535 
     : currentMarket.currencies.find(c => c.code === 'SAR')?.buy || 140.2;
@@ -157,7 +151,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
   return (
     <div dir="rtl" className="max-w-7xl mx-auto space-y-6 pb-20 pt-1">
       
-      {/* 1. Header Navigation */}
+      {/* Header Navigation */}
       <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-[#242424]">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#f5b800] to-[#b8960c] text-zinc-950 flex items-center justify-center font-black shadow-lg shadow-[#f5b800]/20">
@@ -188,16 +182,12 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
       </div>
 
-      {/* 2. شريط الأسعار المالي المتحرك (Live Financial Marquee Ticker) */}
-      <div 
-        className="relative w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0c0f18]/90 backdrop-blur-xl shadow-xl"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
+      {/* 2. شريط الأسعار المالي المتحرك المباشر */}
+      <div className="relative w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0c0f18]/90 backdrop-blur-xl shadow-xl">
         <div className="pointer-events-none absolute inset-y-0 start-0 z-10 w-16 bg-gradient-to-r from-[#0c0f18] to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 end-0 z-10 w-16 bg-gradient-to-l from-[#0c0f18] to-transparent" />
         
-        <div className={`flex w-max items-center gap-2.5 py-2.5 px-2 animate-[marquee_50s_linear_infinite] will-change-transform ${isPaused ? 'animate-none' : ''}`}>
+        <div className="animate-marquee-live flex items-center gap-2.5 py-2.5 px-2">
           {fullTicker.map((item, idx) => {
             const isUp = item.change >= 0;
             return (
@@ -216,7 +206,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
       </div>
 
-      {/* 3. محدد السوق (صنعاء / عدن) وحالة التداول */}
+      {/* 3. محدد السوق (صنعاء / عدن) */}
       <div className="flex items-center justify-between flex-wrap gap-3 bg-[#121620]/80 p-4 rounded-3xl border border-white/[0.08] shadow-xl glass">
         <div className="flex items-center gap-2">
           <button
@@ -253,7 +243,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
       </div>
 
-      {/* 4. كروت أسعار العملات مع شارتات الـ Sparklines المصغرة */}
+      {/* 4. كروت أسعار العملات مع شارتات الـ Sparklines */}
       <div className="space-y-3">
         <h2 className="text-base font-extrabold text-white flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-emerald-400" />
@@ -287,7 +277,6 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
                     </div>
                   </div>
 
-                  {/* الشارت البياني المصغر */}
                   <div className="text-end">
                     <div className="text-[9px] uppercase tracking-widest text-zinc-500 font-mono">24H TREND</div>
                     <div className="mt-1">
@@ -296,14 +285,13 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
                   </div>
                 </div>
 
-                {/* أسعار الشراء بالأخضر والبيع بالأحمر فقط */}
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <div className="rounded-2xl bg-[#090d16] p-3.5 border border-[#1a2133]">
                     <div className="text-[10px] font-bold text-zinc-400">سعر الشراء (YER)</div>
                     <div className="mt-1 text-xl font-black text-emerald-400 font-mono tracking-tight">
                       {curr.buy.toFixed(2)}
                     </div>
-                    <div className="mt-1 text-[10px] text-emerald-400/80">سيولة شراء نقدية مباشرة</div>
+                    <div className="mt-1 text-[10px] text-emerald-400/80">شراء مباشر</div>
                   </div>
 
                   <div className="rounded-2xl bg-[#090d16] p-3.5 border border-[#1a2133]">
@@ -320,7 +308,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
       </div>
 
-      {/* 5. بورصة الذهب في اليمن (عيار 24 وعيار 18 وعيار 21) */}
+      {/* 5. بورصة الذهب في اليمن */}
       <div className="relative overflow-hidden rounded-[26px] border border-[#f5b800]/25 bg-[#0e0d0a] p-[1px] shadow-[0_0_40px_rgba(245,184,0,0.12)]">
         <div className="relative overflow-hidden rounded-[25px] bg-gradient-to-b from-[#17150f] to-[#0c0b08] p-5 sm:p-6 space-y-4">
           
@@ -343,7 +331,6 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
             </span>
           </div>
 
-          {/* شبكة أسعار الذهب بالأخضر للشراء والأحمر للبيع */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {currentMarket.gold.map((item) => (
               <div
@@ -381,7 +368,6 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
             ))}
           </div>
 
-          {/* شريط تنبيه الذهب */}
           <div className="rounded-2xl border border-[#f5b800]/20 bg-[#f5b800]/[0.06] p-3 flex items-center justify-between flex-wrap gap-2 text-xs">
             <span className="flex items-center gap-2 font-bold text-[#f5b800]">
               <span className="h-2 w-2 rounded-full bg-[#f5b800] animate-pulse" />
@@ -393,7 +379,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
       </div>
 
-      {/* 6. محول العملات والذهب الفوري (Live Currency & Gold Converter) */}
+      {/* 6. محول العملات والذهب الفوري */}
       <div className="relative overflow-hidden rounded-[26px] border border-white/[0.08] bg-[#121620]/80 p-5 sm:p-6 backdrop-blur-xl shadow-2xl glass">
         <div className="flex items-center justify-between flex-wrap gap-2 border-b border-white/[0.08] pb-3">
           <div className="flex items-center gap-2.5">

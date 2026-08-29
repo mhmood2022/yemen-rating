@@ -33,6 +33,26 @@
   }
 }
 
+/* حركة الشريط المالي المتحرك */
+@keyframes marquee-rtl {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(50%);
+  }
+}
+
+.animate-marquee-live {
+  display: flex !important;
+  width: max-content !important;
+  animation: marquee-rtl 35s linear infinite !important;
+}
+
+.animate-marquee-live:hover {
+  animation-play-state: paused !important;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none !important;
 }
