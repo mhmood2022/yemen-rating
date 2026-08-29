@@ -53,12 +53,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
     sanaa: {
       sar: { buy: '140.20', sell: '140.70', change: '+0.15%', isUp: true },
       usd: { buy: '535.00', sell: '538.00', change: '-0.20%', isUp: false },
-      gold24: { buy: '42,500', sell: '44,200', change: '+0.50%', isUp: true }
+      gold24: { buy: '42,500', sell: '44,200', change: '+0.50%', isUp: true },
+      gold18: { buy: '31,800', sell: '33,500', change: '+0.40%', isUp: true }
     },
     aden: {
       sar: { buy: '495.00', sell: '500.00', change: '+0.80%', isUp: true },
       usd: { buy: '1,890.00', sell: '1,910.00', change: '+1.10%', isUp: true },
-      gold24: { buy: '148,000', sell: '155,000', change: '+0.95%', isUp: true }
+      gold24: { buy: '148,000', sell: '155,000', change: '+0.95%', isUp: true },
+      gold18: { buy: '111,000', sell: '119,000', change: '+0.70%', isUp: true }
     }
   };
 
@@ -144,7 +146,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 3. أسعار العملات والذهب */}
+      {/* 3. أسعار العملات والذهب (سعودي، دولار، ذهب 24 و 18 بالأخضر للشراء والأحمر للبيع) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -158,15 +160,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
             onClick={onNavigateExchangeRates}
             className="text-xs text-[#f5b800] hover:underline font-bold flex items-center gap-1"
           >
-            <span>التفاصيل والحاسبة</span>
+            <span>البورصة والحاسبة</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div className="rounded-3xl bg-[#151515] border border-[#242424] p-3.5 sm:p-5 space-y-3.5 shadow-xl">
+        <div className="rounded-3xl bg-[#121620]/90 border border-white/[0.08] p-3.5 sm:p-5 space-y-3.5 shadow-xl glass">
           
-          <div className="flex items-center justify-between gap-2 border-b border-[#222222] pb-2.5">
-            <div className="flex items-center gap-1.5 bg-[#0d0d0d] p-1 rounded-xl border border-[#222]">
+          <div className="flex items-center justify-between gap-2 border-b border-white/[0.06] pb-2.5">
+            <div className="flex items-center gap-1.5 bg-[#090d16] p-1 rounded-xl border border-white/10">
               <button
                 onClick={() => setActiveMarketHome('sanaa')}
                 className={`px-3.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
@@ -195,92 +197,103 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             
             {/* الريال السعودي */}
-            <div className="bg-[#0d0d0d] p-3 rounded-2xl border border-[#202020] space-y-2">
+            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Coins className="w-3.5 h-3.5 text-zinc-400" />
-                  الريال السعودي (SAR)
+                <span className="text-xs font-bold text-white flex items-center gap-1">
+                  <span>🇸🇦</span>
+                  <span>السعودي</span>
                 </span>
-                <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
-                  currentHomeRates.sar.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                }`}>
-                  {currentHomeRates.sar.isUp ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-1 py-0.2 rounded">
                   {currentHomeRates.sar.change}
                 </span>
               </div>
-
-              <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-[#1a1a1a]">
-                <div>
-                  <span className="text-[10px] text-zinc-500 block">شراء (YER)</span>
-                  <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">{currentHomeRates.sar.buy}</span>
+              <div className="pt-1 border-t border-white/[0.06]">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-zinc-400">شراء:</span>
+                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.sar.buy}</span>
                 </div>
-                <div>
-                  <span className="text-[10px] text-zinc-500 block">بيع (YER)</span>
-                  <span className="text-sm font-extrabold text-rose-400 font-mono tracking-tight">{currentHomeRates.sar.sell}</span>
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-zinc-400">بيع:</span>
+                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.sar.sell}</span>
                 </div>
               </div>
             </div>
 
             {/* الدولار الأمريكي */}
-            <div className="bg-[#0d0d0d] p-3 rounded-2xl border border-[#202020] space-y-2">
+            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-zinc-400" />
-                  الدولار الأمريكي (USD)
+                <span className="text-xs font-bold text-white flex items-center gap-1">
+                  <span>🇺🇸</span>
+                  <span>الدولار</span>
                 </span>
-                <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
-                  currentHomeRates.usd.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                }`}>
-                  {currentHomeRates.usd.isUp ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                <span className="text-[10px] font-mono font-bold text-rose-400 bg-rose-500/10 px-1 py-0.2 rounded">
                   {currentHomeRates.usd.change}
                 </span>
               </div>
-
-              <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-[#1a1a1a]">
-                <div>
-                  <span className="text-[10px] text-zinc-500 block">شراء (YER)</span>
-                  <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">{currentHomeRates.usd.buy}</span>
+              <div className="pt-1 border-t border-white/[0.06]">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-zinc-400">شراء:</span>
+                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.usd.buy}</span>
                 </div>
-                <div>
-                  <span className="text-[10px] text-zinc-500 block">بيع (YER)</span>
-                  <span className="text-sm font-extrabold text-rose-400 font-mono tracking-tight">{currentHomeRates.usd.sell}</span>
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-zinc-400">بيع:</span>
+                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.usd.sell}</span>
                 </div>
               </div>
             </div>
 
             {/* الذهب عيار 24 */}
-            <div className="bg-[#0d0d0d] p-3 rounded-2xl border border-[#202020] space-y-2">
+            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Coins className="w-3.5 h-3.5 text-zinc-400" />
-                  الذهب عيار 24 (جرام)
+                <span className="text-xs font-bold text-white flex items-center gap-1">
+                  <span>🟡</span>
+                  <span>ذهب 24</span>
                 </span>
-                <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
-                  currentHomeRates.gold24.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                }`}>
-                  {currentHomeRates.gold24.isUp ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-1 py-0.2 rounded">
                   {currentHomeRates.gold24.change}
                 </span>
               </div>
-
-              <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-[#1a1a1a]">
-                <div>
-                  <span className="text-[10px] text-zinc-500 block">شراء (YER)</span>
-                  <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">{currentHomeRates.gold24.buy}</span>
+              <div className="pt-1 border-t border-white/[0.06]">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-zinc-400">شراء:</span>
+                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.gold24.buy}</span>
                 </div>
-                <div>
-                  <span className="text-[10px] text-zinc-500 block">بيع (YER)</span>
-                  <span className="text-sm font-extrabold text-rose-400 font-mono tracking-tight">{currentHomeRates.gold24.sell}</span>
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-zinc-400">بيع:</span>
+                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.gold24.sell}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* الذهب عيار 18 */}
+            <div className="bg-[#090d16] p-3 rounded-2xl border border-[#1a2133] space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-white flex items-center gap-1">
+                  <span>🪙</span>
+                  <span>ذهب 18</span>
+                </span>
+                <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-1 py-0.2 rounded">
+                  {currentHomeRates.gold18.change}
+                </span>
+              </div>
+              <div className="pt-1 border-t border-white/[0.06]">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-zinc-400">شراء:</span>
+                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.gold18.buy}</span>
+                </div>
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-zinc-400">بيع:</span>
+                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.gold18.sell}</span>
                 </div>
               </div>
             </div>
 
           </div>
 
-          <div className="text-center text-[11px] text-zinc-400 pt-0.5 flex items-center justify-center gap-1">
+          <div className="text-center text-[11px] text-zinc-400 pt-0.5 flex items-center justify-center gap-1 font-mono">
             <RefreshCw className="w-3 h-3 text-[#f5b800]" />
             <span>الأسعار بالريال اليمني • تحديث فوري على مدار الساعة</span>
           </div>
@@ -288,47 +301,47 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 4. الأعلى تقييماً */}
+      {/* 4. منشآت وخدمات مميزة */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm sm:text-base font-bold text-white">الأعلى تقييماً</h3>
-          <button
-            onClick={() => onSelectCategory('restaurants')}
-            className="text-xs text-[#f5b800] hover:underline font-semibold"
-          >
-            عرض الكل
-          </button>
+          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#f5b800]" />
+            <span>منشآت وخدمات موثقة ومميزة</span>
+          </h3>
         </div>
 
-        <div className="flex items-center gap-3.5 overflow-x-auto pb-1 no-scrollbar">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           {businesses.map((item) => (
             <div
               key={item.id}
               onClick={() => onSelectBusiness(item)}
-              className="w-44 sm:w-48 rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden flex-shrink-0 cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-lg"
+              className="bg-[#151515] hover:bg-[#181818] border border-[#242424] hover:border-[#f5b800]/40 rounded-3xl p-3.5 sm:p-4 flex gap-3.5 transition-all cursor-pointer group shadow-xl"
             >
-              <div className="relative h-28 w-full bg-[#202020] overflow-hidden">
-                <img
-                  src={item.coverImage}
-                  alt={item.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute top-2 right-2 bg-zinc-950/90 backdrop-blur-md px-2 py-0.5 rounded-lg border border-zinc-800 text-[11px] font-bold text-[#f5b800] flex items-center gap-1">
-                  <Star className="w-3 h-3 fill-[#f5b800]" />
-                  <span>{item.rating}</span>
-                </div>
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#202020] overflow-hidden flex-shrink-0 border border-[#282828]">
+                <img src={item.logo} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
               </div>
-
-              <div className="p-3 space-y-1">
-                <div className="flex items-center gap-1">
-                  <h4 className="font-bold text-xs text-white truncate group-hover:text-[#f5b800]">{item.name}</h4>
-                  {item.isVerified && <VerifiedBadge type={item.badgeType} size="sm" />}
+              <div className="flex-1 flex flex-col justify-between min-w-0">
+                <div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] transition-colors truncate">
+                      {item.name}
+                    </h4>
+                    {item.isVerified && (
+                      <VerifiedBadge type={item.badgeType} size="sm" />
+                    )}
+                  </div>
+                  <p className="text-[11px] text-zinc-400 line-clamp-2 mt-1">{item.description}</p>
                 </div>
-                <p className="text-[10px] text-zinc-400 truncate">{item.categorySlug}</p>
-                <p className="text-[10px] text-zinc-500 flex items-center gap-1 pt-0.5 truncate">
-                  <MapPin className="w-3 h-3 text-[#f5b800] flex-shrink-0" />
-                  <span>{item.address}</span>
-                </p>
+                <div className="flex items-center justify-between pt-2 border-t border-[#202020] text-xs">
+                  <span className="flex items-center gap-1 text-[#f5b800] font-bold">
+                    <Star className="w-3.5 h-3.5 fill-[#f5b800]" />
+                    {item.rating}
+                  </span>
+                  <span className="text-zinc-500 text-[11px] truncate flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-[#f5b800] flex-shrink-0" />
+                    {item.address}
+                  </span>
+                </div>
               </div>
             </div>
           ))}
@@ -377,7 +390,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   تويوتا لاندكروزر V8 2022 وكالة
                 </h4>
                 <p className="text-xs text-emerald-400 font-mono font-bold mt-1">
-                  أعلى مزايدة: 48,500 $
+                  أعلى مزايدة: 182,000 SAR
                 </p>
               </div>
               <div className="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-[#202020]">
@@ -424,7 +437,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 6. العقارات المميزة (مصفوفة مضبوطة الأبعاد بدون أي تمدد أو خروج عن الشاشة) */}
+      {/* 6. العقارات المميزة */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
@@ -441,8 +454,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          
-          {/* كارت عقار 1 */}
           <div
             onClick={onNavigateRealEstate}
             className="rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl flex flex-col"
@@ -479,7 +490,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
           </div>
 
-          {/* كارت عقار 2 */}
           <div
             onClick={onNavigateRealEstate}
             className="rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl flex flex-col"
@@ -515,7 +525,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -538,7 +547,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="space-y-2.5">
           <div
             onClick={onNavigateJobs}
-            className="p-3.5 rounded-2xl bg-[#161616] border border-[#242424] hover:border-[#f5b800]/40 transition-all flex items-center justify-between cursor-pointer group shadow-sm"
+            className="p-3.5 rounded-2xl bg-[#161616] border border-[#242424] hover:border-[#f5b800]/40 transition-all flex items-center justify-between cursor-pointer group shadow-md"
           >
             <div className="space-y-1 min-w-0">
               <h4 className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-[#f5b800]">
@@ -553,7 +562,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
           <div
             onClick={onNavigateJobs}
-            className="p-3.5 rounded-2xl bg-[#161616] border border-[#242424] hover:border-[#f5b800]/40 transition-all flex items-center justify-between cursor-pointer group shadow-sm"
+            className="p-3.5 rounded-2xl bg-[#161616] border border-[#242424] hover:border-[#f5b800]/40 transition-all flex items-center justify-between cursor-pointer group shadow-md"
           >
             <div className="space-y-1 min-w-0">
               <h4 className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-[#f5b800]">
@@ -564,37 +573,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <span className="text-xs font-bold text-[#f5b800] flex-shrink-0">
               دوام كامل
             </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 8. آخر التقييمات */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
-            <Star className="w-4 h-4 text-[#f5b800]" />
-            <span>آخر التقييمات والمراجعات</span>
-          </h3>
-          <span className="text-xs text-zinc-400">آراء حقيقية</span>
-        </div>
-
-        <div className="p-3.5 sm:p-4 rounded-2xl bg-[#161616] border border-[#242424] flex items-start gap-3.5 shadow-xl">
-          <div className="w-14 h-14 rounded-2xl bg-[#202020] overflow-hidden flex-shrink-0">
-            <img
-              src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop&q=80"
-              alt="مطعم رويال ستار"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="flex-1 min-w-0 space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-white">أبو محمد الأهدل</span>
-              <span className="text-[10px] text-zinc-500">منذ ساعتين</span>
-            </div>
-            <div className="text-[#f5b800] text-xs">★★★★★</div>
-            <p className="text-xs text-zinc-300 leading-relaxed pt-0.5">
-              تجربة ممتازة في مطعم رويال ستار، المأكولات البحرية طازجة والخدمة راقية جداً وسريعة.
-            </p>
           </div>
         </div>
       </div>

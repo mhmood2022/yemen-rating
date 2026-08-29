@@ -1,153 +1,317 @@
-import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, ArrowRight, DollarSign, Coins, RefreshCw, Calculator } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  ArrowRight, 
+  DollarSign, 
+  Coins, 
+  RefreshCw, 
+  Calculator, 
+  ShieldCheck,
+  Sparkles,
+  Layers,
+  CheckCircle2,
+  Copy,
+  Check
+} from 'lucide-react';
+
+// مكون الرسم البياني المصغر (Sparkline Mini-Chart)
+const MiniSparkline: React.FC<{ data: number[]; isUp: boolean; color: string }> = ({ data, color }) => {
+  if (data.length < 2) return null;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  
+  const points = data.map((val, i) => {
+    const x = (i / (data.length - 1)) * 90;
+    const y = 30 - ((val - min) / range) * 24 - 3;
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <svg width={90} height={32} className="overflow-visible">
+      <defs>
+        <linearGradient id={`grad-${color.replace('#', '')}`} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <polyline
+        fill="none"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        points={points}
+      />
+      <polygon
+        fill={`url(#grad-${color.replace('#', '')})`}
+        points={`${points} 90,32 0,32`}
+        opacity={0.6}
+      />
+    </svg>
+  );
+};
 
 export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [activeMarket, setActiveMarket] = useState<'sanaa' | 'aden'>('sanaa');
   const [calcAmount, setCalcAmount] = useState<number>(100);
-  const [calcCurrency, setCalcCurrency] = useState<'usd' | 'sar'>('usd');
+  const [calcCurrency, setCalcCurrency] = useState<'USD' | 'SAR'>('USD');
+  const [isPaused, setIsPaused] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<string>('الآن');
 
-  const detailedRates = {
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setLastUpdate(now.toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // بيانات أسعار الصرف والذهب لصنعاء وعدن (الريال السعودي، الدولار الأمريكي، الذهب عيار 24 وعيار 18 وعيار 21)
+  const marketData = {
     sanaa: {
+      name: 'سوق صنعاء',
+      status: 'مفتوح • سيولة منتظمة',
       currencies: [
-        { code: 'SAR', name: 'الريال السعودي', buy: 140.20, sell: 140.70, change: '+0.15%', isUp: true, icon: Coins },
-        { code: 'USD', name: 'الدولار الأمريكي', buy: 535.00, sell: 538.00, change: '-0.20%', isUp: false, icon: DollarSign }
+        {
+          code: 'SAR',
+          name: 'الريال السعودي',
+          flag: '🇸🇦',
+          buy: 140.20,
+          sell: 140.70,
+          change: 0.15,
+          history: [139.8, 140.0, 140.1, 139.9, 140.15, 140.20]
+        },
+        {
+          code: 'USD',
+          name: 'الدولار الأمريكي',
+          flag: '🇺🇸',
+          buy: 535.00,
+          sell: 538.00,
+          change: -0.20,
+          history: [537.0, 536.5, 536.0, 535.5, 535.8, 535.0]
+        }
       ],
       gold: [
-        { karat: 'الذهب عيار 24 (جرام)', buy: 42500, sell: 44200, change: '+0.50%', isUp: true },
-        { karat: 'الذهب عيار 21 (جرام)', buy: 37200, sell: 39500, change: '+0.45%', isUp: true },
-        { karat: 'الذهب عيار 18 (جرام)', buy: 31800, sell: 33500, change: '+0.40%', isUp: true }
-      ],
-      updatedAt: 'اليوم، 11:45 م (تحديث فوري)'
+        { key: 'g24', label: 'الذهب عيار 24', sub: 'جرام عيار 24 خالص', buy: 42500, sell: 44200, change: 0.50, icon: '◍' },
+        { key: 'g21', label: 'الذهب عيار 21', sub: 'جرام عيار 21 يمني', buy: 37200, sell: 39500, change: 0.45, icon: '✦' },
+        { key: 'g18', label: 'الذهب عيار 18', sub: 'جرام عيار 18 إيطالي/محلي', buy: 31800, sell: 33500, change: 0.40, icon: '◇' },
+        { key: 'sovereign', label: 'الجنيه الذهب', sub: '8 جرام عيار 21', buy: 298000, sell: 312000, change: 0.85, icon: '◈' }
+      ]
     },
     aden: {
+      name: 'سوق عدن',
+      status: 'مفتوح • تداول مباشر',
       currencies: [
-        { code: 'SAR', name: 'الريال السعودي', buy: 495.00, sell: 500.00, change: '+0.80%', isUp: true, icon: Coins },
-        { code: 'USD', name: 'الدولار الأمريكي', buy: 1890.00, sell: 1910.00, change: '+1.10%', isUp: true, icon: DollarSign }
+        {
+          code: 'SAR',
+          name: 'الريال السعودي',
+          flag: '🇸🇦',
+          buy: 495.00,
+          sell: 500.00,
+          change: 0.80,
+          history: [490.0, 492.0, 493.5, 494.0, 494.5, 495.0]
+        },
+        {
+          code: 'USD',
+          name: 'الدولار الأمريكي',
+          flag: '🇺🇸',
+          buy: 1890.00,
+          sell: 1910.00,
+          change: 1.10,
+          history: [1870.0, 1875.0, 1880.0, 1885.0, 1888.0, 1890.0]
+        }
       ],
       gold: [
-        { karat: 'الذهب عيار 24 (جرام)', buy: 148000, sell: 155000, change: '+0.95%', isUp: true },
-        { karat: 'الذهب عيار 21 (جرام)', buy: 129500, sell: 138000, change: '+0.60%', isUp: true },
-        { karat: 'الذهب عيار 18 (جرام)', buy: 111000, sell: 119000, change: '+0.70%', isUp: true }
-      ],
-      updatedAt: 'اليوم، 11:45 م (تحديث فوري)'
+        { key: 'g24', label: 'الذهب عيار 24', sub: 'جرام عيار 24 خالص', buy: 148000, sell: 155000, change: 0.95, icon: '◍' },
+        { key: 'g21', label: 'الذهب عيار 21', sub: 'جرام عيار 21 يمني', buy: 129500, sell: 138000, change: 0.60, icon: '✦' },
+        { key: 'g18', label: 'الذهب عيار 18', sub: 'جرام عيار 18 إيطالي/محلي', buy: 111000, sell: 119000, change: 0.70, icon: '◇' },
+        { key: 'sovereign', label: 'الجنيه الذهب', sub: '8 جرام عيار 21', buy: 1040000, sell: 1095000, change: 1.40, icon: '◈' }
+      ]
     }
   };
 
-  const current = detailedRates[activeMarket];
-  const usdRate = current.currencies.find(c => c.code === 'USD')?.buy || 535;
-  const sarRate = current.currencies.find(c => c.code === 'SAR')?.buy || 140.2;
-  const calculatedTotal = calcCurrency === 'usd' ? calcAmount * usdRate : calcAmount * sarRate;
+  const currentMarket = marketData[activeMarket];
+  
+  // عناصر الشريط المتحرك Ticker
+  const tickerItems = [
+    { label: 'سعودي/صنعاء', buy: marketData.sanaa.currencies[0].buy, change: marketData.sanaa.currencies[0].change, flag: '🇸🇦' },
+    { label: 'دولار/صنعاء', buy: marketData.sanaa.currencies[1].buy, change: marketData.sanaa.currencies[1].change, flag: '🇺🇸' },
+    { label: 'ذهب 24 صنعاء', buy: marketData.sanaa.gold[0].buy, change: marketData.sanaa.gold[0].change, flag: '🟡' },
+    { label: 'ذهب 18 صنعاء', buy: marketData.sanaa.gold[2].buy, change: marketData.sanaa.gold[2].change, flag: '🪙' },
+    { label: 'سعودي/عدن', buy: marketData.aden.currencies[0].buy, change: marketData.aden.currencies[0].change, flag: '🇸🇦' },
+    { label: 'دولار/عدن', buy: marketData.aden.currencies[1].buy, change: marketData.aden.currencies[1].change, flag: '🇺🇸' },
+    { label: 'ذهب 24 عدن', buy: marketData.aden.gold[0].buy, change: marketData.aden.gold[0].change, flag: '🟡' },
+    { label: 'ذهب 18 عدن', buy: marketData.aden.gold[2].buy, change: marketData.aden.gold[2].change, flag: '🪙' }
+  ];
+  const fullTicker = [...tickerItems, ...tickerItems, ...tickerItems];
+
+  // احتساب حاسبة العملات
+  const rateForCalc = calcCurrency === 'USD' 
+    ? currentMarket.currencies.find(c => c.code === 'USD')?.buy || 535 
+    : currentMarket.currencies.find(c => c.code === 'SAR')?.buy || 140.2;
+  const calculatedTotal = calcAmount * rateForCalc;
 
   return (
-    <div dir="rtl" className="space-y-6 pb-16">
+    <div dir="rtl" className="max-w-7xl mx-auto space-y-6 pb-20 pt-1">
       
-      {/* Header Bar */}
-      <div className="flex items-center justify-between flex-wrap gap-3 pb-4 border-b border-[#262626]">
+      {/* 1. Header Navigation */}
+      <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-[#242424]">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#f5c400] text-zinc-950 flex items-center justify-center font-black shadow-lg shadow-[#f5c400]/10">
-            <TrendingUp className="w-6 h-6 stroke-[2.5]" />
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#f5b800] to-[#b8960c] text-zinc-950 flex items-center justify-center font-black shadow-lg shadow-[#f5b800]/20">
+            <Coins className="w-6 h-6 stroke-[2.5]" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-              لوحة أسعار الصرف والذهب
-              <span className="text-[11px] font-normal bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-black text-white">بورصة العملات والذهب في اليمن</h1>
+              <span className="text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                تحديث لحظي
+                تحديث لحظي مباشر
               </span>
-            </h1>
+            </div>
             <p className="text-xs text-zinc-400 mt-0.5">
-              متابعة دقيقة لأسعار بيع وشراء العملات والذهب في أسواق صنعاء وعدن
+              متابعة دقيقة لأسعار الدولار الأمريكي والريال السعودي والذهب عيار 24 و 18 في صنعاء وعدن
             </p>
           </div>
         </div>
 
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#181818] border border-[#282828] text-xs text-zinc-300 hover:text-white transition-colors"
-        >
-          <ArrowRight className="w-4 h-4 text-[#f5c400]" />
-          <span>العودة للرئيسية</span>
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-[#161616] border border-[#262626] text-xs text-zinc-300 hover:text-white transition-colors"
+          >
+            <ArrowRight className="w-4 h-4 text-[#f5b800]" />
+            <span>الرئيسية</span>
+          </button>
+        </div>
       </div>
 
-      {/* Market Selector & Timestamp */}
-      <div className="flex items-center justify-between flex-wrap gap-3 bg-[#151515] p-3 rounded-2xl border border-[#262626]">
+      {/* 2. شريط الأسعار المالي المتحرك (Live Financial Marquee Ticker) */}
+      <div 
+        className="relative w-full overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0c0f18]/90 backdrop-blur-xl shadow-xl"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        <div className="pointer-events-none absolute inset-y-0 start-0 z-10 w-16 bg-gradient-to-r from-[#0c0f18] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 end-0 z-10 w-16 bg-gradient-to-l from-[#0c0f18] to-transparent" />
+        
+        <div className={`flex w-max items-center gap-2.5 py-2.5 px-2 animate-[marquee_50s_linear_infinite] will-change-transform ${isPaused ? 'animate-none' : ''}`}>
+          {fullTicker.map((item, idx) => {
+            const isUp = item.change >= 0;
+            return (
+              <div key={idx} className="flex shrink-0 items-center gap-2.5 rounded-full border border-white/[0.07] bg-white/[0.04] px-3.5 py-1 text-xs">
+                <span>{item.flag}</span>
+                <span className="font-bold text-white/90">{item.label}</span>
+                <span className="font-mono font-extrabold text-[#f5b800]">{item.buy.toLocaleString()}</span>
+                <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
+                  isUp ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300'
+                }`}>
+                  {isUp ? '▲' : '▼'} {Math.abs(item.change).toFixed(2)}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 3. محدد السوق (صنعاء / عدن) وحالة التداول */}
+      <div className="flex items-center justify-between flex-wrap gap-3 bg-[#121620]/80 p-4 rounded-3xl border border-white/[0.08] shadow-xl glass">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveMarket('sanaa')}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all ${
               activeMarket === 'sanaa'
-                ? 'bg-[#f5c400] text-zinc-950 shadow-md font-black'
-                : 'bg-[#181818] text-zinc-400 hover:text-white'
+                ? 'bg-[#f5b800] text-zinc-950 shadow-lg shadow-[#f5b800]/20 font-black'
+                : 'bg-[#181818] text-zinc-400 hover:text-white border border-[#282828]'
             }`}
           >
             سوق صنعاء
           </button>
           <button
             onClick={() => setActiveMarket('aden')}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all ${
               activeMarket === 'aden'
-                ? 'bg-[#f5c400] text-zinc-950 shadow-md font-black'
-                : 'bg-[#181818] text-zinc-400 hover:text-white'
+                ? 'bg-[#f5b800] text-zinc-950 shadow-lg shadow-[#f5b800]/20 font-black'
+                : 'bg-[#181818] text-zinc-400 hover:text-white border border-[#282828]'
             }`}
           >
             سوق عدن
           </button>
         </div>
 
-        <span className="text-xs text-zinc-400 flex items-center gap-1.5">
-          <RefreshCw className="w-3.5 h-3.5 text-zinc-400 animate-spin-slow" />
-          <span>{current.updatedAt}</span>
-        </span>
+        <div className="flex items-center gap-4 text-xs text-zinc-400">
+          <span className="flex items-center gap-1.5 text-zinc-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#22c55e]" />
+            <strong className="text-white">{currentMarket.name}</strong> • {currentMarket.status}
+          </span>
+          <span className="flex items-center gap-1 font-mono text-zinc-400">
+            <RefreshCw className="w-3.5 h-3.5 text-[#f5b800]" />
+            {lastUpdate}
+          </span>
+        </div>
       </div>
 
-      {/* 1. Currencies Rates */}
+      {/* 4. كروت أسعار العملات مع شارتات الـ Sparklines المصغرة */}
       <div className="space-y-3">
-        <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+        <h2 className="text-base font-extrabold text-white flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-emerald-400" />
-          <span>أسعار العملات الأجنبية مقابل الريال اليمني (YER)</span>
+          <span>أسعار العملات مقابل الريال اليمني (YER) في {currentMarket.name}</span>
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {current.currencies.map((curr) => {
-            const Icon = curr.icon;
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {currentMarket.currencies.map((curr) => {
+            const isUp = curr.change >= 0;
+            const chartColor = isUp ? '#22c55e' : '#ef4444';
             return (
               <div
                 key={curr.code}
-                className="bg-[#151515] border border-[#262626] rounded-2xl p-4 space-y-3 shadow-lg"
+                className="relative overflow-hidden rounded-[24px] border border-white/[0.08] bg-[#121620]/80 p-5 backdrop-blur-xl transition-all duration-300 hover:border-white/[0.18] shadow-[0_8px_24px_rgba(0,0,0,0.3)]"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-[#1e1e1e] border border-[#2e2e2e] flex items-center justify-center text-zinc-300">
-                      <Icon className="w-4 h-4" />
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.06] text-2xl ring-1 ring-white/10 shadow-inner">
+                      {curr.flag}
                     </div>
                     <div>
-                      <h3 className="text-xs font-bold text-white">{curr.name}</h3>
-                      <span className="text-[10px] text-zinc-400 font-mono">1 {curr.code}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-base font-extrabold text-white">{curr.code}</span>
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold font-mono ${
+                          isUp ? 'bg-emerald-500/15 text-emerald-300' : 'bg-red-500/15 text-red-300'
+                        }`}>
+                          {isUp ? '▲' : '▼'} {Math.abs(curr.change).toFixed(2)}%
+                        </span>
+                      </div>
+                      <div className="text-xs text-zinc-400 mt-0.5">{curr.name}</div>
                     </div>
                   </div>
 
-                  <span className={`inline-flex items-center gap-1 text-[11px] font-mono font-bold px-2 py-0.5 rounded-lg ${
-                    curr.isUp ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                  }`}>
-                    {curr.isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    {curr.change}
-                  </span>
+                  {/* الشارت البياني المصغر */}
+                  <div className="text-end">
+                    <div className="text-[9px] uppercase tracking-widest text-zinc-500 font-mono">24H TREND</div>
+                    <div className="mt-1">
+                      <MiniSparkline data={curr.history} isUp={isUp} color={chartColor} />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-[#222222]">
-                  <div className="bg-[#0f0f0f] p-2.5 rounded-xl border border-[#1e1e1e]">
-                    <span className="block text-[10px] text-zinc-400">سعر الشراء (YER)</span>
-                    <span className="text-base font-extrabold text-emerald-400 font-mono tracking-tight">
-                      {curr.buy.toLocaleString()}
-                    </span>
+                {/* أسعار الشراء بالأخضر والبيع بالأحمر فقط */}
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl bg-[#090d16] p-3.5 border border-[#1a2133]">
+                    <div className="text-[10px] font-bold text-zinc-400">سعر الشراء (YER)</div>
+                    <div className="mt-1 text-xl font-black text-emerald-400 font-mono tracking-tight">
+                      {curr.buy.toFixed(2)}
+                    </div>
+                    <div className="mt-1 text-[10px] text-emerald-400/80">سيولة شراء نقدية مباشرة</div>
                   </div>
 
-                  <div className="bg-[#0f0f0f] p-2.5 rounded-xl border border-[#1e1e1e]">
-                    <span className="block text-[10px] text-zinc-400">سعر البيع (YER)</span>
-                    <span className="text-base font-extrabold text-rose-400 font-mono tracking-tight">
-                      {curr.sell.toLocaleString()}
-                    </span>
+                  <div className="rounded-2xl bg-[#090d16] p-3.5 border border-[#1a2133]">
+                    <div className="text-[10px] font-bold text-zinc-400">سعر البيع (YER)</div>
+                    <div className="mt-1 text-xl font-black text-rose-400 font-mono tracking-tight">
+                      {curr.sell.toFixed(2)}
+                    </div>
+                    <div className="mt-1 text-[10px] text-zinc-500">فارق صرف {(curr.sell - curr.buy).toFixed(2)} YER</div>
                   </div>
                 </div>
               </div>
@@ -156,80 +320,123 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
       </div>
 
-      {/* 2. Gold 24K */}
-      <div className="space-y-3 pt-2">
-        <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-          <Coins className="w-4 h-4 text-zinc-300" />
-          <span>أسعار الذهب عيار 24 في {activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'}</span>
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {current.gold.map((item, idx) => (
-            <div
-              key={idx}
-              className="bg-[#151515] border border-[#262626] rounded-2xl p-4 space-y-3 shadow-lg"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white">{item.karat}</span>
-                <span className="inline-flex items-center gap-0.5 text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.2 rounded-md">
-                  <TrendingUp className="w-2.5 h-2.5" />
-                  {item.change}
+      {/* 5. بورصة الذهب في اليمن (عيار 24 وعيار 18 وعيار 21) */}
+      <div className="relative overflow-hidden rounded-[26px] border border-[#f5b800]/25 bg-[#0e0d0a] p-[1px] shadow-[0_0_40px_rgba(245,184,0,0.12)]">
+        <div className="relative overflow-hidden rounded-[25px] bg-gradient-to-b from-[#17150f] to-[#0c0b08] p-5 sm:p-6 space-y-4">
+          
+          <div className="flex items-center justify-between flex-wrap gap-2 border-b border-[#292314] pb-4">
+            <div>
+              <h3 className="flex items-center gap-2 text-base sm:text-lg font-black text-white">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#f5b800] to-[#b78900] text-zinc-950 font-bold shadow-[0_0_16px_rgba(245,184,0,0.5)]">
+                  ◈
                 </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#222222]">
-                <div className="bg-[#0f0f0f] p-2 rounded-xl border border-[#1e1e1e]">
-                  <span className="block text-[10px] text-zinc-400">شراء (YER)</span>
-                  <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">
-                    {item.buy.toLocaleString()}
-                  </span>
-                </div>
-                <div className="bg-[#0f0f0f] p-2 rounded-xl border border-[#1e1e1e]">
-                  <span className="block text-[10px] text-zinc-400">بيع (YER)</span>
-                  <span className="text-sm font-extrabold text-rose-400 font-mono tracking-tight">
-                    {item.sell.toLocaleString()}
-                  </span>
-                </div>
-              </div>
+                <span>بورصة الذهب في {currentMarket.name}</span>
+                <span className="rounded-full bg-[#f5b800]/15 px-2 py-0.5 text-[10px] font-black tracking-widest text-[#f5b800]">
+                  LIVE GOLD
+                </span>
+              </h3>
+              <p className="text-xs text-zinc-400 mt-0.5">أسعار جرام الذهب عيار 24 و 18 و 21 والجنيه الذهب بالريال اليمني</p>
             </div>
-          ))}
+
+            <span className="text-xs font-mono bg-[#f5b800]/10 text-[#f5b800] border border-[#f5b800]/30 px-3 py-1 rounded-xl font-bold">
+              XAU / YER
+            </span>
+          </div>
+
+          {/* شبكة أسعار الذهب بالأخضر للشراء والأحمر للبيع */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {currentMarket.gold.map((item) => (
+              <div
+                key={item.key}
+                className="group relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#12110c] p-4 backdrop-blur transition hover:border-[#f5b800]/40 shadow-md"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f5b800]/15 text-xs text-[#f5b800] font-bold">
+                      {item.icon}
+                    </span>
+                    <span className="text-xs font-extrabold text-white">{item.label}</span>
+                  </div>
+                  <span className="rounded-full px-1.5 py-0.5 text-[10px] font-bold font-mono bg-emerald-500/15 text-emerald-300">
+                    ▲ {item.change}%
+                  </span>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2 pt-2 border-t border-[#222018]">
+                  <div>
+                    <span className="text-[10px] text-zinc-400 block">شراء</span>
+                    <span className="text-sm font-extrabold text-emerald-400 font-mono tracking-tight">
+                      {item.buy.toLocaleString()}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-zinc-400 block">بيع</span>
+                    <span className="text-sm font-extrabold text-rose-400 font-mono tracking-tight">
+                      {item.sell.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[9px] text-zinc-500 mt-2 block">{item.sub}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* شريط تنبيه الذهب */}
+          <div className="rounded-2xl border border-[#f5b800]/20 bg-[#f5b800]/[0.06] p-3 flex items-center justify-between flex-wrap gap-2 text-xs">
+            <span className="flex items-center gap-2 font-bold text-[#f5b800]">
+              <span className="h-2 w-2 rounded-full bg-[#f5b800] animate-pulse" />
+              تنبيه البورصة: أسعار الذهب محتسبة وفق تسعيرة أسواق الصاغة المركزية
+            </span>
+            <span className="text-[11px] text-zinc-400">أسعار الإجرام والسبائك الصافية</span>
+          </div>
+
         </div>
       </div>
 
-      {/* 3. Currency Converter */}
-      <div className="bg-[#151515] border border-[#262626] rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl">
-        <div className="flex items-center gap-2 border-b border-[#242424] pb-3">
-          <Calculator className="w-5 h-5 text-zinc-300" />
-          <h3 className="text-sm sm:text-base font-bold text-white">حاسبة تحويل العملات بالريال اليمني</h3>
+      {/* 6. محول العملات والذهب الفوري (Live Currency & Gold Converter) */}
+      <div className="relative overflow-hidden rounded-[26px] border border-white/[0.08] bg-[#121620]/80 p-5 sm:p-6 backdrop-blur-xl shadow-2xl glass">
+        <div className="flex items-center justify-between flex-wrap gap-2 border-b border-white/[0.08] pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-[#f5b800] text-zinc-950 flex items-center justify-center font-bold">
+              <Calculator className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-white">محول العملات الفوري ({currentMarket.name})</h3>
+              <p className="text-[11px] text-zinc-400">تحويل سريع ومباشر وفق سعر صرف السوق اللحظي</p>
+            </div>
+          </div>
+          <span className="text-xs text-emerald-400 font-mono bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-xl">
+            سعر الصرف: 1 {calcCurrency} = {rateForCalc.toLocaleString()} YER
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-4">
           <div>
-            <label className="block text-xs text-zinc-400 mb-1.5">المبلغ المراد تحويله</label>
+            <label className="block text-xs font-bold text-zinc-400 mb-1.5">المبلغ المراد تحويله</label>
             <input
               type="number"
               value={calcAmount}
-              onChange={(e) => setCalcAmount(Number(e.target.value))}
-              className="w-full bg-[#0f0f0f] border border-[#282828] rounded-xl px-3 py-2.5 text-sm font-mono text-white focus:outline-none focus:border-[#f5c400] font-bold"
+              onChange={(e) => setCalcAmount(Number(e.target.value) || 0)}
+              className="w-full h-12 bg-[#090d16] border border-white/10 rounded-xl px-4 text-base font-mono font-bold text-white focus:outline-none focus:border-[#f5b800]"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-zinc-400 mb-1.5">اختر العملة</label>
+            <label className="block text-xs font-bold text-zinc-400 mb-1.5">العملة</label>
             <select
               value={calcCurrency}
               onChange={(e: any) => setCalcCurrency(e.target.value)}
-              className="w-full bg-[#0f0f0f] border border-[#282828] rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-[#f5c400] cursor-pointer"
+              className="w-full h-12 bg-[#090d16] border border-white/10 rounded-xl px-4 text-xs sm:text-sm font-bold text-white focus:outline-none focus:border-[#f5b800] cursor-pointer"
             >
-              <option value="usd">دولار أمريكي (USD)</option>
-              <option value="sar">ريال سعودي (SAR)</option>
+              <option value="USD">دولار أمريكي (USD)</option>
+              <option value="SAR">ريال سعودي (SAR)</option>
             </select>
           </div>
 
-          <div className="bg-[#0f0f0f] p-3.5 rounded-xl border border-[#282828] flex flex-col justify-center">
-            <span className="text-[11px] text-zinc-400">المبلغ المقابل بالريال اليمني ({activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'}):</span>
-            <span className="text-lg font-black text-emerald-400 font-mono tracking-tight mt-0.5">
-              {calculatedTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} YER
+          <div className="bg-[#090d16] p-3.5 rounded-xl border border-white/10 flex flex-col justify-center">
+            <span className="text-[11px] text-zinc-400">النتيجة بالريال اليمني ({activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'}):</span>
+            <span className="text-xl font-black text-emerald-400 font-mono tracking-tight mt-0.5">
+              {calculatedTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })} YER
             </span>
           </div>
         </div>
@@ -238,3 +445,5 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
     </div>
   );
 };
+
+export default ExchangeRatesPage;
