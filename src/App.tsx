@@ -8,8 +8,12 @@ import { AdGeneratorStudio } from './pages/admin/ads/AdGeneratorStudio';
 import { RealEstateManager } from './pages/admin/real-estate/RealEstateManager';
 import { CategoriesManager } from './pages/admin/categories/CategoriesManager';
 import { ClaimsManager } from './pages/admin/claims/ClaimsManager';
+import { UsersRolesManager } from './pages/admin/users/UsersRolesManager';
+import { GoldCurrencyManager } from './pages/admin/gold-currency/GoldCurrencyManager';
+import { JobsManager } from './pages/admin/jobs/JobsManager';
+import { MatchingAIManager } from './pages/admin/matching/MatchingAIManager';
+import { SettingsAuditManager } from './pages/admin/settings/SettingsAuditManager';
 
-// واجهة الموقع العام للزوار
 function PublicHomePage() {
   return (
     <div dir="rtl" className="min-h-screen bg-[#070A10] text-white flex flex-col items-center justify-center p-6 font-['Cairo',sans-serif]">
@@ -30,7 +34,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<PublicHomePage />} />
 
-        {/* لوحة التحكم الكاملة */}
+        {/* مسارات لوحة التحكم الكاملة */}
         <Route path="/admin" element={<AdminMaster />}>
           <Route index element={<AdminDashboardOverview />} />
           <Route path="companies" element={<CompaniesManager />} />
@@ -40,15 +44,15 @@ export function App() {
           <Route path="auctions" element={<AuctionsManager />} />
           <Route path="ads" element={<AdGeneratorStudio />} />
           <Route path="ads/generator" element={<AdGeneratorStudio />} />
-          <Route path="jobs" element={<div className="p-6 text-white font-bold">الوظائف والتوظيف</div>} />
+          <Route path="jobs" element={<JobsManager />} />
           <Route path="real-estate" element={<RealEstateManager />} />
           <Route path="phones" element={<div className="p-6 text-white font-bold">سوق الهواتف</div>} />
           <Route path="cleaning" element={<div className="p-6 text-white font-bold">قطاع التنظيف</div>} />
-          <Route path="users" element={<div className="p-6 text-white font-bold">المستخدمون والأدوار الـ 11</div>} />
-          <Route path="analytics" element={<div className="p-6 text-white font-bold">التقارير والمالية</div>} />
-          <Route path="gold-currency" element={<div className="p-6 text-white font-bold">الذهب والعملات والبنوك</div>} />
-          <Route path="matching" element={<div className="p-6 text-white font-bold">المطابقة الذكية YR AI</div>} />
-          <Route path="settings" element={<div className="p-6 text-white font-bold">السجل والإعدادات Audit Log</div>} />
+          <Route path="users" element={<UsersRolesManager />} />
+          <Route path="analytics" element={<div className="p-6 text-white font-bold">التقارير والتحليلات والمالية</div>} />
+          <Route path="gold-currency" element={<GoldCurrencyManager />} />
+          <Route path="matching" element={<MatchingAIManager />} />
+          <Route path="settings" element={<SettingsAuditManager />} />
         </Route>
 
         <Route path="*" element={<PublicHomePage />} />
