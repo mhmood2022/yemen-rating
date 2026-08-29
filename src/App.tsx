@@ -13,6 +13,10 @@ import { GoldCurrencyManager } from './pages/admin/gold-currency/GoldCurrencyMan
 import { JobsManager } from './pages/admin/jobs/JobsManager';
 import { MatchingAIManager } from './pages/admin/matching/MatchingAIManager';
 import { SettingsAuditManager } from './pages/admin/settings/SettingsAuditManager';
+import { MarketsManager } from './pages/admin/markets/MarketsManager';
+import { PhonesManager } from './pages/admin/phones/PhonesManager';
+import { CleaningManager } from './pages/admin/cleaning/CleaningManager';
+import { AnalyticsFinanceManager } from './pages/admin/analytics/AnalyticsFinanceManager';
 
 function PublicHomePage() {
   return (
@@ -34,22 +38,22 @@ export function App() {
       <Routes>
         <Route path="/" element={<PublicHomePage />} />
 
-        {/* مسارات لوحة التحكم الكاملة */}
+        {/* لوحة التحكم الكاملة — الأقسام الـ 16 */}
         <Route path="/admin" element={<AdminMaster />}>
           <Route index element={<AdminDashboardOverview />} />
           <Route path="companies" element={<CompaniesManager />} />
           <Route path="categories" element={<CategoriesManager />} />
           <Route path="claims" element={<ClaimsManager />} />
-          <Route path="markets" element={<div className="p-6 text-white font-bold">إدارة الأسواق والأسعار</div>} />
+          <Route path="markets" element={<MarketsManager />} />
           <Route path="auctions" element={<AuctionsManager />} />
           <Route path="ads" element={<AdGeneratorStudio />} />
           <Route path="ads/generator" element={<AdGeneratorStudio />} />
           <Route path="jobs" element={<JobsManager />} />
           <Route path="real-estate" element={<RealEstateManager />} />
-          <Route path="phones" element={<div className="p-6 text-white font-bold">سوق الهواتف</div>} />
-          <Route path="cleaning" element={<div className="p-6 text-white font-bold">قطاع التنظيف</div>} />
+          <Route path="phones" element={<PhonesManager />} />
+          <Route path="cleaning" element={<CleaningManager />} />
           <Route path="users" element={<UsersRolesManager />} />
-          <Route path="analytics" element={<div className="p-6 text-white font-bold">التقارير والتحليلات والمالية</div>} />
+          <Route path="analytics" element={<AnalyticsFinanceManager />} />
           <Route path="gold-currency" element={<GoldCurrencyManager />} />
           <Route path="matching" element={<MatchingAIManager />} />
           <Route path="settings" element={<SettingsAuditManager />} />
