@@ -1,104 +1,97 @@
 import React from 'react';
-import {
-  LayoutDashboard,
-  Layers,
-  Store,
-  Building,
-  Briefcase,
-  Gavel,
-  Users,
-  TrendingUp,
-  Settings,
-  ShieldCheck,
-  X
+import { NavLink } from 'react-router-dom';
+import { 
+  LayoutDashboard, Building2, FolderTree, ShieldCheck, 
+  Store, Gavel, Megaphone, Briefcase, 
+  Home, Smartphone, Sparkles, Users, 
+  BarChart3, Coins, Cpu, Settings
 } from 'lucide-react';
 
-interface AdminSidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-  activeSection: string;
-  onSelectSection: (section: string) => void;
-}
+const MENU_ITEMS = [
+  { id: 'dashboard', label: 'لوحة التحكم الرئيسية', icon: LayoutDashboard, path: '/admin' },
+  { id: 'companies', label: 'الشركات والأنشطة', icon: Building2, path: '/admin/companies' },
+  { id: 'categories', label: 'التصنيفات الهرمية', icon: FolderTree, path: '/admin/categories' },
+  { id: 'claims', label: 'إثبات الملكية والتوثيق', icon: ShieldCheck, path: '/admin/claims' },
+  { id: 'markets', label: 'الأسواق والأسعار', icon: Store, path: '/admin/markets' },
+  { id: 'auctions', label: 'المزادات والعمولات', icon: Gavel, path: '/admin/auctions' },
+  { id: 'ads', label: 'الإعلانات و YR Ads', icon: Megaphone, path: '/admin/ads' },
+  { id: 'jobs', label: 'الوظائف والتوظيف', icon: Briefcase, path: '/admin/jobs' },
+  { id: 'realestate', label: 'العقارات والصفقات', icon: Home, path: '/admin/real-estate' },
+  { id: 'phones', label: 'سوق الهواتف', icon: Smartphone, path: '/admin/phones' },
+  { id: 'cleaning', label: 'خدمات التنظيف', icon: Sparkles, path: '/admin/cleaning' },
+  { id: 'users', label: 'المستخدمون والأدوار', icon: Users, path: '/admin/users' },
+  { id: 'analytics', label: 'التقارير والمالية', icon: BarChart3, path: '/admin/analytics' },
+  { id: 'gold', label: 'الذهب والعملات والبنوك', icon: Coins, path: '/admin/gold-currency' },
+  { id: 'matching', label: 'المطابقة الذكية YR AI', icon: Cpu, path: '/admin/matching' },
+  { id: 'settings', label: 'السجل والإعدادات', icon: Settings, path: '/admin/settings' },
+];
 
-export const AdminSidebar: React.FC<AdminSidebarProps> = ({
-  isOpen,
-  onClose,
-  activeSection,
-  onSelectSection
-}) => {
-  const adminMenuItems = [
-    { id: 'overview', name: 'لوحة التحكم العامة', icon: LayoutDashboard },
-    { id: 'categories', name: 'إدارة التصنيفات', icon: Layers },
-    { id: 'listings', name: 'إدارة المتاجر والأنشطة', icon: Store },
-    { id: 'real-estate', name: 'إدارة العقارات', icon: Building },
-    { id: 'jobs', name: 'إدارة الوظائف', icon: Briefcase },
-    { id: 'auctions', name: 'إدارة المزادات', icon: Gavel },
-    { id: 'exchange-rates', name: 'أسعار الصرف والبنوك', icon: TrendingUp },
-    { id: 'users', name: 'إدارة المستخدمين', icon: Users },
-    { id: 'settings', name: 'إعدادات المنصة', icon: Settings },
-  ];
-
-  const handleSelect = (id: string) => {
-    onSelectSection(id);
-    onClose();
-  };
-
+export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   return (
     <>
+      {/* Mobile Backdrop */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
-          onClick={onClose}
-          aria-hidden="true"
+        <div 
+          onClick={onClose} 
+          className="fixed inset-0 bg-black/80 z-40 lg:hidden backdrop-blur-sm"
         />
       )}
 
-      <aside
-        dir="rtl"
-        className={`
-          fixed top-0 bottom-0 right-0 z-50 w-64 bg-zinc-950 border-l border-zinc-800 flex flex-col transition-transform duration-300
-          lg:static lg:translate-x-0 lg:z-auto lg:h-screen lg:sticky lg:top-0
-          ${isOpen ? 'translate-x-0' : 'translate-x-full'}
-        `}
+      <aside 
+        className={`fixed top-0 right-0 h-full w-[280px] bg-[#0B0F17] border-l border-[#1F2937] z-50 flex flex-col transition-transform duration-300 ease-in-out font-['Cairo'] ${
+          isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
+        }`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-400 flex items-center justify-center text-zinc-950 font-black">
-              <ShieldCheck className="w-5 h-5" />
+        {/* Brand Header */}
+        <div className="h-16 flex items-center justify-between px-6 border-b border-[#1F2937] bg-[#111827]">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-[#FFC500] flex items-center justify-center font-bold text-black text-lg">
+              YR
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white">لوحة الإدارة</h2>
-              <span className="text-[10px] text-amber-400">Yemen Rating Pro</span>
+              <h1 className="text-white font-bold text-sm tracking-wide">YEMEN RATING</h1>
+              <p className="text-[#9CA3AF] text-[10px]">مركز الإدارة والتحكم</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded text-zinc-400 hover:text-white lg:hidden">
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-3 space-y-1.5">
-          {adminMenuItems.map((item) => {
+        {/* 16 Sections Navigation */}
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1 custom-scrollbar">
+          {MENU_ITEMS.map((item) => {
             const Icon = item.icon;
-            const isActive = activeSection === item.id;
             return (
-              <button
+              <NavLink
                 key={item.id}
-                onClick={() => handleSelect(item.id)}
-                className={`
-                  w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs md:text-sm font-medium transition-all text-right
-                  ${
+                to={item.path}
+                end={item.path === '/admin'}
+                onClick={() => {
+                  if (window.innerWidth < 1024) onClose();
+                }}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
                     isActive
-                      ? 'bg-amber-400 text-zinc-950 font-bold shadow-md shadow-amber-400/10'
-                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
-                  }
-                `}
+                      ? 'bg-[#FFC500] text-black shadow-md shadow-[#FFC500]/10 font-bold'
+                      : 'text-[#9CA3AF] hover:text-white hover:bg-[#161D2B]'
+                  }`
+                }
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-zinc-950' : 'text-zinc-400'}`} />
-                <span>{item.name}</span>
-              </button>
+                <Icon size={18} className="shrink-0" />
+                <span>{item.label}</span>
+              </NavLink>
             );
           })}
         </nav>
+
+        {/* Admin Footer Info */}
+        <div className="p-3 border-t border-[#1F2937] bg-[#0E131F]">
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-[#161D2B]">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#16A34A] animate-pulse" />
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-xs font-bold truncate">الوضع الآمن (RLS نشط)</p>
+              <p className="text-[#9CA3AF] text-[10px]">11 Roles RBAC</p>
+            </div>
+          </div>
+        </div>
       </aside>
     </>
   );
