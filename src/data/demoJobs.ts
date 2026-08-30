@@ -1,178 +1,194 @@
-import { JobVacancy } from '../types/jobs';
+import { 
+  JobVacancy, 
+  JobSeekerProfile, 
+  JobMatchRecord, 
+  CommissionPolicy, 
+  ConfirmedHireRecord 
+} from '../types/jobs';
 
+// 1. سياسة العمولة الحالية للإدارة
+export const CURRENT_COMMISSION_POLICY: CommissionPolicy = {
+  isEnabled: true,
+  payer: 'employer_only', // العمولة على الجهة الموظفة
+  calculationType: 'percentage',
+  percentageValue: 5, // 5% من راتب الشهر الأول
+  fixedValue: 15000,
+  sectorRules: {
+    'محاسبة وبنوك': { type: 'percentage', value: 5 },
+    'هندسة ومقاولات': { type: 'fixed', value: 20000 },
+    'تقنية وبرمجيات': { type: 'percentage', value: 5 }
+  }
+};
+
+// 2. قائمة الوظائف (بيانات الاتصال مخفية في الموقع العام ومحفوظة للنظام)
 export const DEMO_JOBS: JobVacancy[] = [
   {
     id: 'job_1',
     title: 'مطور برمجيات Full-Stack Senior',
     companyId: 'comp_1',
-    companyName: 'شركة يمن سوفت للأنظمة والاستشارات',
-    companyLogo: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=500&auto=format&fit=crop&q=80',
+    companyName: 'شركة تقنية وبرمجيات رائدة',
+    contactPerson: 'م. فؤاد الصبري',
+    phone: '771234567',
+    whatsapp: '771234567',
+    email: 'hr@yemen-tech.ye',
+    locationDetails: 'صنعاء - شارع حدة',
     isVerifiedEmployer: true,
-    verifiedBadgeType: 'gold',
     city: 'صنعاء',
     sector: 'تقنية وبرمجيات',
     workType: 'دوام كامل',
     experienceLevel: 'خبير (5+ سنوات)',
-    salaryRange: '$1,200 - $1,800',
-    postedDate: 'منذ يومين',
-    deadline: '2026-09-15',
-    description: 'مطلوب مهندس برمجيات ذو خبرة عالية للانضمام إلى فريق تطوير أنظمة المؤسسات السحابية (Onyx Cloud ERP). العمل يشمل بناء واجهات تفاعلية وخدمات خلفية متطورة.',
-    requirements: [
-      'خبرة لا تقل عن 5 سنوات في React و TypeScript و Node.js',
-      'إتقان التعامل مع قواعد البيانات PostgreSQL و Redis',
-      'خبرة في معمارية المايكروسيرفس والحوسبة السحابية',
-      'مهارات تواصل ممتازة والقدرة على قيادة الفرق البرمجية'
-    ],
-    benefits: [
-      'راتب مجزٍ بالدولار الأمريكي مع حوافز أداء دورية',
-      'تأمين صحي شامل للموظف وعائلته',
-      'بيئة عمل تقنية متطورة وتدريب مستمر'
-    ],
-    matchScore: 96,
-    applicantsCount: 24
+    salaryRange: 'يحدد بعد المقابلة',
+    postedDate: '2026-08-25',
+    deadline: '2026-09-25',
+    description: 'مطلوب مهندس برمجيات ذو خبرة عالية في بناء وتطوير الأنظمة السحابية باستخدام React و Node.js.',
+    requirements: ['خبرة 5 سنوات في React و TypeScript', 'إتقان قواعد البيانات PostgreSQL', 'إدارة المشاريع البرمجية'],
+    qualifications: ['بكالوريوس هندسة برمجيات أو علوم حاسوب'],
+    skills: ['React', 'Node.js', 'PostgreSQL', 'TypeScript'],
+    status: 'active',
+    employerAgreedCommission: true,
+    applicantsCount: 6
   },
   {
     id: 'job_2',
-    title: 'محاسب مالي أول (Senior Financial Accountant)',
-    companyId: 'b1',
-    companyName: 'بنك الكريمي للتمويل الأصغر الإسلامي',
-    companyLogo: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=500&auto=format&fit=crop&q=80',
+    title: 'محاسب مالي قانوني وتدقيق حسابات',
+    companyId: 'comp_2',
+    companyName: 'مؤسسة استيراد وتوكيلات تجارية',
+    contactPerson: 'أ. طارق الشرجبي',
+    phone: '733987654',
+    whatsapp: '733987654',
+    email: 'jobs@trading-group.ye',
+    locationDetails: 'عدن - المنصورة',
     isVerifiedEmployer: true,
-    verifiedBadgeType: 'gold',
-    city: 'صنعاء',
+    city: 'عدن',
     sector: 'محاسبة وبنوك',
     workType: 'دوام كامل',
     experienceLevel: 'متوسط (2-4 سنوات)',
-    salaryRange: '550,000 - 750,000 ريال يمني',
-    postedDate: 'اليوم',
-    deadline: '2026-09-10',
-    description: 'يعلن بنك الكريمي عن حاجته إلى محاسب مالي أول للعمل في الإدارة العامة. المسؤوليات تشمل إعداد التقارير والقوائم المالية وتدقيق الحسابات المصرفية.',
-    requirements: [
-      'بكالوريوس محاسبة أو علوم مالية ومصرفية بتقدير جيد جداً',
-      'خبرة من 3 إلى 5 سنوات في المؤسسات المصرفية أو المالية',
-      'إتقان البرامج المحاسبية والأنظمة المصرفية المعتمدة',
-      'معرفة تامة بمعايير المحاسبة للمؤسسات المالية الإسلامية'
-    ],
-    benefits: [
-      'رواتب ومكافآت بنكية مجزية',
-      'تأمين صحي وبدل مواصلات وسكن',
-      'فرص ترقي وتطوير وظيفي'
-    ],
-    matchScore: 92,
-    applicantsCount: 42
+    salaryRange: 'يحدد بعد المقابلة',
+    postedDate: '2026-08-28',
+    deadline: '2026-09-28',
+    description: 'إدارة القيود اليومية والحسابات الختامية وإعداد التقارير المالية والضريبية الدورية.',
+    requirements: ['بكالوريوس محاسبة', 'خبرة 3 سنوات في الشركات التجارية', 'إتقان برامج المحاسبة ERP'],
+    qualifications: ['بكالوريوس محاسبة'],
+    skills: ['المحاسبة المالية', 'الأنظمة المصرفية', 'إكسل متقدم'],
+    status: 'active',
+    employerAgreedCommission: true,
+    applicantsCount: 4
   },
   {
     id: 'job_3',
-    title: 'طبيب عام طوارئ (Emergency Doctor)',
-    companyId: '3',
-    companyName: 'مستشفى الدكتور عبدالقادر المتخصص',
-    companyLogo: 'https://images.unsplash.com/photo-1586015555751-63c25b7b9195?w=500&auto=format&fit=crop&q=80',
+    title: 'مسؤول تسويق رقمي وحملات إعلانية',
+    companyId: 'comp_3',
+    companyName: 'وكالة تسويق ودعاية وإعلان',
+    contactPerson: 'أ. مروان اليافعي',
+    phone: '774411223',
+    whatsapp: '774411223',
+    email: 'marketing@media-agency.ye',
+    locationDetails: 'المكلا - الشرج',
     isVerifiedEmployer: true,
-    verifiedBadgeType: 'blue',
-    city: 'تعز',
-    sector: 'طب ورعاية صحية',
-    workType: 'دوام كامل',
-    experienceLevel: 'متوسط (2-4 سنوات)',
-    salaryRange: '600,000 - 900,000 ريال يمني',
-    postedDate: 'منذ 3 أيام',
-    deadline: '2026-09-20',
-    description: 'فرصة عمل لطبيب عام في قسم الطوارئ والعناية الأولية بمستشفى عبدالقادر التخصصي بتعز لتقديم الرعاية الإسعافية الفورية للمرضى.',
-    requirements: [
-      'بكالوريوس طب وجراحة عامة مع ترخيص مزاولة المهنة ساري المفعول',
-      'خبرة سنتين على الأقل في أقسام الطوارئ والإسعاف',
-      'القدرة على التعامل مع الحالات الحرجة وضغط العمل'
-    ],
-    benefits: [
-      'راتب وحوافز مناوبات ممتازة',
-      'سكن مؤثث للأطباء من خارج المحافظة',
-      'تأمين طبي كامل'
-    ],
-    matchScore: 88,
-    applicantsCount: 16
-  },
-  {
-    id: 'job_4',
-    title: 'كابتن وسائق حافلات دولية VIP',
-    companyId: 'tr_1',
-    companyName: 'شركة راحة للنقل الدولي والمحلي',
-    companyLogo: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=500&auto=format&fit=crop&q=80',
-    isVerifiedEmployer: true,
-    verifiedBadgeType: 'gray',
-    city: 'صنعاء',
-    sector: 'نقل وخدمات لوجستية',
-    workType: 'دوام كامل',
-    experienceLevel: 'خبير (5+ سنوات)',
-    salaryRange: '450,000 - 650,000 ريال يمني + بدلات',
-    postedDate: 'منذ يوم',
-    deadline: '2026-09-30',
-    description: 'تعلن شركة راحة للنقل الدولي عن رغبتها في توظيف سائقين محترفين لأسطول الحافلات الحديثة على خطوط السفر بين المحافظات والمملكة العربية السعودية.',
-    requirements: [
-      'رخصة قيادة نقل ثقيل سارية المفعول',
-      'خبرة لا تقل عن 5 سنوات في قيادة الحافلات على الطرق الطويلة',
-      'حسن السيرة والسلوك وخلو السجل من أي مخالفات جسيمة'
-    ],
-    benefits: [
-      'بدلات سفر وإقامة وإعاشة ممتازة',
-      'عقود عمل سنوية رسمية مع تأمين صحي',
-      'مكافآت شهرية للسائقين الملتزمين'
-    ],
-    matchScore: 90,
-    applicantsCount: 19
-  },
-  {
-    id: 'job_5',
-    title: 'فني صيانة جوالات وأجهزة ذكية معتمد',
-    companyId: 't5',
-    companyName: 'متجر العصرية للإلكترونيات والجوالات',
-    companyLogo: 'https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=500&auto=format&fit=crop&q=80',
-    isVerifiedEmployer: true,
-    verifiedBadgeType: 'blue',
-    city: 'عدن',
-    sector: 'تقنية وبرمجيات',
-    workType: 'دوام كامل',
-    experienceLevel: 'متوسط (2-4 سنوات)',
-    salaryRange: '400,000 - 600,000 ريال يمني + نسبة',
-    postedDate: 'منذ يومين',
-    deadline: '2026-09-12',
-    description: 'مطلوب فني هاردوير وسوفت وير محترف لصيانة أجهزة آيفون وسامسونج في الفرع الرئيسي بعدن (كريتر).',
-    requirements: [
-      'خبرة مثبتة في صيانة المذربورد وتبديل الآيسيات والشاشات',
-      'إتقان التعامل مع أجهزة المخططات والميكروسكوب واللحام الدقيق',
-      'معرفة شاملة ببرمجة وتخطي مشاكل السوفت وير'
-    ],
-    benefits: [
-      'راتب أساسي + عمولة شهرية على عمليات الصيانة',
-      'بيئة عمل مجهزة بأحدث معدات ومستلزمات الصيانة'
-    ],
-    matchScore: 94,
-    applicantsCount: 28
-  },
-  {
-    id: 'job_6',
-    title: 'مدير تسويق رقمي وحملات إعلانية (Remote)',
-    companyId: 'w1',
-    companyName: 'محفظة جيب (Jeeb Wallet)',
-    companyLogo: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=500&auto=format&fit=crop&q=80',
-    isVerifiedEmployer: true,
-    verifiedBadgeType: 'blue',
-    city: 'صنعاء',
+    city: 'حضرموت - المكلا',
     sector: 'مبيعات وتسويق',
     workType: 'عن بعد (Remote)',
     experienceLevel: 'متوسط (2-4 سنوات)',
-    salaryRange: '$700 - $1,100',
-    postedDate: 'اليوم',
-    deadline: '2026-09-18',
-    description: 'إدارة وتطوير الحملات الرقمية ونمو المستخدمين لتطبيق محفظة جيب عبر منصات التواصل الاجتماعي ومحركات البحث.',
-    requirements: [
-      'خبرة سابقة في تسويق التطبيقات المالية (FinTech Growth)',
-      'إتقان إدارة إعلانات Meta و Google Ads و TikTok',
-      'تحليل البيانات ومعدلات التحويل (CAC & LTV)'
-    ],
-    benefits: [
-      'مرونة تامة في العمل عن بعد من أي محافظة',
-      'راتب بالدولار وحوافز عند تحقيق مستهدفات النمو'
-    ],
-    matchScore: 95,
-    applicantsCount: 35
+    salaryRange: 'يحدد بعد المقابلة',
+    postedDate: '2026-08-20',
+    deadline: '2026-09-20',
+    description: 'إدارة وتصميم الحملات الإعلانية على منصات التواصل الاجتماعي وتحليل معدلات التحويل.',
+    requirements: ['خبرة موثقة في إدارة إعلانات Meta و Google', 'صناعة المحتوى الإعلاني الجذاب'],
+    qualifications: ['بكالوريوس تسويق أو إدارة أعمال'],
+    skills: ['إعلانات فيسبوك', 'تحليل الأداء', 'Copywriting'],
+    status: 'active',
+    employerAgreedCommission: true,
+    applicantsCount: 8
+  }
+];
+
+// 3. المتقدمين المسجلين في النظام
+export const DEMO_SEEKERS: JobSeekerProfile[] = [
+  {
+    id: 'seeker_1',
+    fullName: 'ياسر محمد الرازحي',
+    phone: '775551122',
+    whatsapp: '775551122',
+    email: 'yasser.code@gmail.com',
+    city: 'صنعاء',
+    qualification: 'بكالوريوس علوم حاسوب',
+    specialization: 'تقنية وبرمجيات',
+    experienceYears: '5 سنوات',
+    skills: ['React', 'Node.js', 'PostgreSQL', 'TypeScript'],
+    summary: 'مطور Full Stack بخبرة 5 سنوات في بناء الأنظمة والمواقع السحابية.',
+    createdAt: '2026-08-26',
+    applicantAgreedCommission: true
+  },
+  {
+    id: 'seeker_2',
+    fullName: 'سامي عبدالكريم الحبيشي',
+    phone: '734449988',
+    whatsapp: '734449988',
+    email: 'sami.acc@yahoo.com',
+    city: 'عدن',
+    qualification: 'بكالوريوس محاسبة',
+    specialization: 'محاسبة وبنوك',
+    experienceYears: '3 سنوات',
+    skills: ['المحاسبة المالية', 'الأنظمة المصرفية', 'إكسل متقدم'],
+    summary: 'محاسب مالي معتمد ذو كفاءة في مسك الدفاتر والقوائم المالية والضريبية.',
+    createdAt: '2026-08-29',
+    applicantAgreedCommission: true
+  }
+];
+
+// 4. سجلات التطابق الذكي (Match Records)
+export const DEMO_MATCH_RECORDS: JobMatchRecord[] = [
+  {
+    id: 'match_101',
+    orderNumber: 'YR-8041',
+    jobId: 'job_1',
+    jobTitle: 'مطور برمجيات Full-Stack Senior',
+    companyName: 'شركة تقنية وبرمجيات رائدة',
+    companyPhone: '771234567',
+    companyWhatsapp: '771234567',
+    companyLocation: 'صنعاء - شارع حدة',
+    applicantId: 'seeker_1',
+    applicantName: 'ياسر محمد الرازحي',
+    applicantPhone: '775551122',
+    matchDate: '2026-08-27',
+    matchedCriteria: ['التخصص: تقنية وبرمجيات', 'المؤهل: بكالوريوس حاسوب', 'الخبرة: 5 سنوات', 'الموقع: صنعاء'],
+    status: 'interviewing'
+  },
+  {
+    id: 'match_102',
+    orderNumber: 'YR-8042',
+    jobId: 'job_2',
+    jobTitle: 'محاسب مالي قانوني وتدقيق حسابات',
+    companyName: 'مؤسسة استيراد وتوكيلات تجارية',
+    companyPhone: '733987654',
+    companyWhatsapp: '733987654',
+    companyLocation: 'عدن - المنصورة',
+    applicantId: 'seeker_2',
+    applicantName: 'سامي عبدالكريم الحبيشي',
+    applicantPhone: '734449988',
+    matchDate: '2026-08-29',
+    matchedCriteria: ['التخصص: محاسبة وبنوك', 'المؤهل: بكالوريوس محاسبة', 'الخبرة: 3 سنوات', 'الموقع: عدن'],
+    status: 'matched'
+  }
+];
+
+// 5. سجلات التوظيف وعمولات الشهر الأول
+export const DEMO_HIRE_RECORDS: ConfirmedHireRecord[] = [
+  {
+    id: 'hire_1',
+    orderNumber: 'YR-7920',
+    jobId: 'job_prev_1',
+    jobTitle: 'مهندس شبكات وسيرفرات Cisco',
+    companyName: 'مجموعة التضامن التجارية',
+    applicantName: 'عبدالرحمن خالد باوزير',
+    applicantPhone: '770011223',
+    hiredDate: '2026-08-01',
+    startDate: '2026-08-05',
+    agreedSalary: '$1,200 USD',
+    commissionAmountText: '$60 USD (5% من راتب الشهر الأول)',
+    payer: 'employer',
+    commissionStatus: 'due', // حان وقت استحقاق الشهر الأول
+    dueDate: '2026-09-05',
+    reminderSent: true
   }
 ];
