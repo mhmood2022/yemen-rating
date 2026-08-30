@@ -1,3 +1,4 @@
+import { AdBanner } from "../common/AdBanner";
 import React, { useState, useEffect } from 'react';
 import { 
   Star, 
@@ -103,6 +104,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   return (
     <div dir="rtl" className="space-y-6 pb-20 pt-1 max-w-6xl mx-auto">
+      {/* مكوّن إعلانات YR Ads المنشورة */} 
+      <AdBanner placementId="1" className="mb-4" />
       
       {/* 1. Hero Promo Banner Card */}
       <div className="relative overflow-hidden rounded-3xl bg-[#151515] border border-[#242424] shadow-2xl">
