@@ -71,3 +71,13 @@ html, body {
 .dark ::-webkit-scrollbar-thumb {
   background: #222222;
 }
+
+/* Animation for YR Ad Progress Bar */
+@keyframes yrAdProgress {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
