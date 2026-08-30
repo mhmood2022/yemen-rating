@@ -1,164 +1,237 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Megaphone, Plus, Sparkles, Play, Pause, Archive, Eye, MousePointer, Target } from 'lucide-react';
+import { Megaphone, Sparkles, Play, Pause, Trash2, LayoutGrid, Table, ArrowRight } from 'lucide-react';
+import { PublishedAd } from './AdGeneratorStudio';
 
 export const AdsManager: React.FC = () => {
-  const [campaigns, setCampaigns] = useState([
-    {
-      id: 'CAMP-01',
-      title: 'حملة بن محفوظ — تدشين الفرع الجديد',
-      placement: 'الهيدر الرئيسي (Top Banner)',
-      cityTarget: 'صنعاء • عدن',
-      budget: '$650',
-      views: '45,200',
-      clicks: '3,840',
-      ctr: '8.5%',
-      status: 'active',
-      startDate: '2026-08-01',
-      endDate: '2026-09-01'
-    },
-    {
-      id: 'CAMP-02',
-      title: 'عروض عقارات المكلا الصيفية',
-      placement: 'أعلى صفحات الشركات (Company Top)',
-      cityTarget: 'حضرموت - المكلا',
-      budget: '$400',
-      views: '28,100',
-      clicks: '1,950',
-      ctr: '6.9%',
-      status: 'active',
-      startDate: '2026-08-10',
-      endDate: '2026-08-30'
-    },
-    {
-      id: 'CAMP-03',
-      title: 'مهرجان الهواتف الذكية وتخفيضات العيد',
-      placement: 'بين أقسام الرئيسية (In-Feed Main)',
-      cityTarget: 'كل المحافظات',
-      budget: '$900',
-      views: '89,400',
-      clicks: '7,120',
-      ctr: '7.9%',
-      status: 'paused',
-      startDate: '2026-07-15',
-      endDate: '2026-08-15'
-    }
-  ]);
+  const [ads, setAds] = useState<PublishedAd[]>([]);
+  const [viewFormat, setViewFormat] = useState<'grid' | 'table'>('grid');
 
-  const toggleCampaignStatus = (id: string, newStatus: 'active' | 'paused' | 'archived') => {
-    setCampaigns(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
+  useEffect(() => {
+    const saved = localStorage.getItem('yr_published_ads');
+    if (saved) {
+      try {
+        setAds(JSON.parse(saved));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
+  const toggleAdStatus = (id: string) => {
+    const updated = ads.map(a => a.id === id ? { ...a, status: a.status === 'active' ? 'paused' : 'active' } as PublishedAd : a);
+    setAds(updated);
+    localStorage.setItem('yr_published_ads', JSON.stringify(updated));
+  };
+
+  const deleteAd = (id: string) => {
+    const updated = ads.filter(a => a.id !== id);
+    setAds(updated);
+    localStorage.setItem('yr_published_ads', JSON.stringify(updated));
   };
 
   return (
-    <div className="space-y-6 font-['Cairo',sans-serif]">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 font-['Cairo',sans-serif] pb-16">
+      
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0B0F17] p-5 rounded-2xl border border-[#1F2937]">
         <div>
           <h2 className="text-2xl font-black text-white flex items-center gap-2">
             <Megaphone className="text-[#FFC500]" />
-            إدارة الحملات الإعلانية (YR Ads Directory)
+            معرض الإعلانات المنشورة الحقيقية (Live Ads Showcase)
           </h2>
           <p className="text-[#9CA3AF] text-xs mt-1">
-            متابعة أداء الحملات الممولة، المشاهدات، النقرات، الاستهداف الجغرافي، والتحكم بالحالة.
+            مشاهدة الإعلانات المنشورة بكامل الصورة أو بالاقتصاص المخصص بالفيديو والصور الحية.
           </p>
         </div>
 
-        <NavLink
-          to="/admin/ads/generator"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all shadow-lg shadow-[#FFC500]/10"
-        >
-          <Sparkles size={16} />
-          <span>فتح مولد الإعلانات (YR Studio)</span>
-        </NavLink>
-      </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-[#161D2B] p-1 rounded-xl border border-[#1F2937]">
+            <button onClick={() => setViewFormat('grid')} className={`p-2 rounded-lg text-xs font-bold ${viewFormat === 'grid' ? 'bg-[#FFC500] text-black' : 'text-[#9CA3AF]'}`}>
+              <LayoutGrid size={15} />
+            </button>
+            <button onClick={() => setViewFormat('table')} className={`p-2 rounded-lg text-xs font-bold ${viewFormat === 'table' ? 'bg-[#FFC500] text-black' : 'text-[#9CA3AF]'}`}>
+              <Table size={15} />
+            </button>
+          </div>
 
-      {/* ملخص إحصائيات الإعلانات */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#1F2937]">
-          <span className="text-xs text-[#9CA3AF]">الحملات النشطة</span>
-          <h3 className="text-2xl font-black text-white mt-1">18 حملة</h3>
-          <span className="text-[10px] text-[#16A34A] font-bold">10 مواضع مستهدفة</span>
-        </div>
-        <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#1F2937]">
-          <span className="text-xs text-[#9CA3AF]">إجمالي المشاهدات (Impressions)</span>
-          <h3 className="text-2xl font-black text-[#FFC500] mt-1">162.7K</h3>
-          <span className="text-[10px] text-[#9CA3AF]">خلال 30 يوم</span>
-        </div>
-        <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#1F2937]">
-          <span className="text-xs text-[#9CA3AF]">إجمالي النقرات (Clicks)</span>
-          <h3 className="text-2xl font-black text-[#3B82F6] mt-1">12.9K</h3>
-          <span className="text-[10px] text-[#3B82F6] font-bold">متوسط CTR 7.9%</span>
-        </div>
-        <div className="p-4 rounded-xl bg-[#0B0F17] border border-[#1F2937]">
-          <span className="text-xs text-[#9CA3AF]">إجمالي ميزانية الإعلانات</span>
-          <h3 className="text-2xl font-black text-[#16A34A] mt-1">$8,650</h3>
-          <span className="text-[10px] text-[#9CA3AF]">عوائد YR Ads</span>
+          <NavLink
+            to="/admin/ads/generator"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all shadow-lg shadow-[#FFC500]/20"
+          >
+            <Sparkles size={16} />
+            <span>إنشاء إعلان جديد (YR Studio)</span>
+          </NavLink>
         </div>
       </div>
 
-      {/* جدول الحملات */}
-      <div className="bg-[#0B0F17] rounded-xl border border-[#1F2937] overflow-hidden">
-        <div className="overflow-x-auto">
+      {/* المعرض المرئي */}
+      {viewFormat === 'grid' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {ads.length === 0 ? (
+            <div className="col-span-2 text-center py-12 text-[#9CA3AF] bg-[#0B0F17] rounded-2xl border border-[#1F2937]">
+              لا توجد إعلانات منشورة حالياً. اضغط على "إنشاء إعلان جديد" لتصميم ونشر أول إعلان.
+            </div>
+          ) : (
+            ads.map((ad) => (
+              <div key={ad.id} className="bg-[#0B0F17] rounded-2xl border border-[#1F2937] p-5 space-y-4 shadow-xl">
+                
+                <div className="flex items-center justify-between border-b border-[#1F2937] pb-3">
+                  <div>
+                    <span className="text-xs font-bold text-white">{ad.placementName}</span>
+                    <div className="text-[10px] text-[#9CA3AF] font-mono mt-0.5">{ad.id} • {ad.createdAt}</div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                      ad.status === 'active' ? 'bg-[#16A34A]/20 text-[#16A34A]' : 'bg-amber-500/20 text-amber-400'
+                    }`}>
+                      {ad.status === 'active' ? 'معروض نشط' : 'متوقف مؤقتاً'}
+                    </span>
+                    <button onClick={() => toggleAdStatus(ad.id)} className="p-1.5 rounded-lg bg-[#161D2B] text-white hover:text-[#FFC500]">
+                      {ad.status === 'active' ? <Pause size={14} /> : <Play size={14} />}
+                    </button>
+                    <button onClick={() => deleteAd(ad.id)} className="p-1.5 rounded-lg bg-[#DC2626]/10 text-[#DC2626]">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* مجسم الإعلان الحقيقي بالاقتصاص والتموضع الدقيق */}
+                <div
+                  style={{
+                    borderRadius: `${ad.borderRadius}px`,
+                    border: ad.hasBorder ? `${ad.borderWidth}px solid ${ad.borderColor}` : 'none',
+                    backgroundColor: ad.bgColor,
+                    backgroundImage: ad.bgStyle === 'gradient' ? `linear-gradient(135deg, ${ad.bgColor} 0%, #161D2B 100%)` : 'none',
+                    boxShadow: ad.hasGlow && ad.hasBorder ? `0 0 20px ${ad.borderColor}40` : 'none',
+                  }}
+                  className="relative overflow-hidden w-full min-h-[160px] flex flex-col justify-between p-4"
+                >
+                  {ad.hasProgressBar && (
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 z-20 overflow-hidden">
+                      <div 
+                        style={{ 
+                          backgroundColor: ad.progressBarColor,
+                          animation: `yrAdProgress ${ad.progressDuration}s linear infinite`
+                        }}
+                        className="h-full w-full origin-left"
+                      />
+                    </div>
+                  )}
+
+                  {ad.mediaUrl && (
+                    <div className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center">
+                      {ad.mediaType === 'video' ? (
+                        <video src={ad.mediaUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                      ) : (
+                        <img 
+                          src={ad.mediaUrl} 
+                          alt="Ad" 
+                          style={{ 
+                            objectFit: ad.imageFit || 'cover',
+                            objectPosition: `${ad.imgPosX ?? 50}% ${ad.imgPosY ?? 50}%`,
+                            transform: `scale(${(ad.imgScale ?? 100) / 100})`,
+                            filter: `brightness(${ad.brightness}%) contrast(${ad.contrast}%)`,
+                            imageRendering: 'crisp-edges'
+                          }}
+                          className="w-full h-full" 
+                        />
+                      )}
+                      {ad.imgOverlay > 0 && (
+                        <div className="absolute inset-0 bg-black" style={{ opacity: ad.imgOverlay / 100 }} />
+                      )}
+                    </div>
+                  )}
+
+                  <div className="relative z-10 space-y-2">
+                    {ad.showBadge && (
+                      <span style={{ backgroundColor: ad.badgeBgColor, color: ad.badgeTextColor, borderColor: ad.badgeTextColor }} className="px-2 py-0.5 rounded-full text-[10px] font-black border inline-block">
+                        {ad.badgeText}
+                      </span>
+                    )}
+                    {ad.showHeadline && (
+                      <h4 style={{ color: ad.headlineColor }} className="text-sm font-black drop-shadow-md">
+                        {ad.headline}
+                      </h4>
+                    )}
+                    {ad.showDescription && (
+                      <p style={{ color: ad.descColor }} className="text-xs drop-shadow line-clamp-2">
+                        {ad.description}
+                      </p>
+                    )}
+                  </div>
+
+                  {ad.showButton && (
+                    <div className="relative z-10 pt-2 flex items-center justify-between border-t border-white/10">
+                      <button style={{ backgroundColor: ad.btnBgColor, color: ad.btnTextColor }} className="px-3 py-1.5 rounded-lg font-black text-xs shadow-lg">
+                        {ad.ctaText}
+                      </button>
+                      <span className="text-[9px] text-white/80 font-mono">YR Verified</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-1 text-center">
+                  <div className="p-2 rounded-xl bg-[#161D2B] border border-[#1F2937]">
+                    <span className="text-[10px] text-[#9CA3AF] block">المشاهدات</span>
+                    <b className="text-sm font-mono text-white">{ad.views.toLocaleString()}</b>
+                  </div>
+                  <div className="p-2 rounded-xl bg-[#161D2B] border border-[#1F2937]">
+                    <span className="text-[10px] text-[#9CA3AF] block">النقرات</span>
+                    <b className="text-sm font-mono text-[#FFC500]">{ad.clicks.toLocaleString()}</b>
+                  </div>
+                </div>
+
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* عرض الجدول */}
+      {viewFormat === 'table' && (
+        <div className="bg-[#0B0F17] rounded-2xl border border-[#1F2937] overflow-hidden">
           <table className="w-full text-right text-xs">
             <thead className="bg-[#111827] text-[#9CA3AF] border-b border-[#1F2937]">
               <tr>
-                <th className="py-3.5 px-4">عنوان الحملة والموضع</th>
-                <th className="py-3.5 px-4">الاستهداف</th>
-                <th className="py-3.5 px-4">الميزانية</th>
+                <th className="py-3.5 px-4">الإعلان والموضع</th>
+                <th className="py-3.5 px-4">نمط العرض</th>
+                <th className="py-3.5 px-4 text-center">شريط التمرير</th>
                 <th className="py-3.5 px-4 text-center">المشاهدات / النقرات</th>
-                <th className="py-3.5 px-4 text-center">معدل CTR</th>
                 <th className="py-3.5 px-4 text-center">الحالة</th>
-                <th className="py-3.5 px-4 text-center">الإجراءات</th>
+                <th className="py-3.5 px-4 text-center">إجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1F2937] text-white">
-              {campaigns.map((c) => (
-                <tr key={c.id} className="hover:bg-[#161D2B]/50 transition-colors">
+              {ads.map(ad => (
+                <tr key={ad.id} className="hover:bg-[#161D2B]/50">
                   <td className="py-3.5 px-4">
-                    <div className="font-bold text-white text-sm">{c.title}</div>
-                    <div className="text-[10px] text-[#FFC500]">{c.placement}</div>
+                    <div className="font-bold">{ad.headline || 'إعلان صافي'}</div>
+                    <div className="text-[10px] text-[#FFC500]">{ad.placementName}</div>
                   </td>
-                  <td className="py-3.5 px-4 text-[#9CA3AF] flex items-center gap-1 mt-2">
-                    <Target size={13} className="text-[#FFC500]" /> {c.cityTarget}
+                  <td className="py-3.5 px-4 text-[#D1D5DB]">
+                    {ad.imageFit === 'contain' ? 'كامل الصورة 100%' : 'اقتصاص وتموضع مخصص'}
                   </td>
-                  <td className="py-3.5 px-4 font-mono font-bold text-[#16A34A]">{c.budget}</td>
+                  <td className="py-3.5 px-4 text-center font-mono text-[11px]">
+                    {ad.hasProgressBar ? `${ad.progressDuration} ثوانٍ` : 'معطل'}
+                  </td>
                   <td className="py-3.5 px-4 text-center font-mono">
-                    <div className="text-white font-bold">{c.views} مشاهدة</div>
-                    <div className="text-[10px] text-[#3B82F6]">{c.clicks} نقرة</div>
+                    <span className="text-white">{ad.views}</span> / <span className="text-[#FFC500]">{ad.clicks}</span>
                   </td>
-                  <td className="py-3.5 px-4 text-center font-mono font-bold text-[#FFC500]">{c.ctr}</td>
                   <td className="py-3.5 px-4 text-center">
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                      c.status === 'active' ? 'bg-[#16A34A]/20 text-[#16A34A]' :
-                      c.status === 'paused' ? 'bg-amber-500/20 text-amber-400' : 'bg-gray-700 text-gray-400'
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      ad.status === 'active' ? 'bg-[#16A34A]/20 text-[#16A34A]' : 'bg-amber-500/20 text-amber-400'
                     }`}>
-                      {c.status === 'active' ? 'نشطة' : c.status === 'paused' ? 'متوقفة مؤقتاً' : 'مؤرشفة'}
+                      {ad.status === 'active' ? 'نشط' : 'متوقف'}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-center">
-                    <div className="flex items-center justify-center gap-1.5">
-                      {c.status === 'active' ? (
-                        <button
-                          onClick={() => toggleCampaignStatus(c.id, 'paused')}
-                          className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"
-                          title="إيقاف مؤقت"
-                        >
-                          <Pause size={14} />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => toggleCampaignStatus(c.id, 'active')}
-                          className="p-1.5 rounded-lg bg-[#16A34A]/10 text-[#16A34A] hover:bg-[#16A34A]/20"
-                          title="استئناف الحملة"
-                        >
-                          <Play size={14} />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => toggleCampaignStatus(c.id, 'archived')}
-                        className="p-1.5 rounded-lg bg-[#DC2626]/10 text-[#DC2626] hover:bg-[#DC2626]/20"
-                        title="أرشفة"
-                      >
-                        <Archive size={14} />
+                    <div className="flex items-center justify-center gap-1">
+                      <button onClick={() => toggleAdStatus(ad.id)} className="p-1 rounded bg-[#161D2B] hover:text-[#FFC500]">
+                        {ad.status === 'active' ? <Pause size={13} /> : <Play size={13} />}
+                      </button>
+                      <button onClick={() => deleteAd(ad.id)} className="p-1 rounded bg-[#DC2626]/10 text-[#DC2626]">
+                        <Trash2 size={13} />
                       </button>
                     </div>
                   </td>
@@ -167,7 +240,8 @@ export const AdsManager: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      )}
+
     </div>
   );
 };
