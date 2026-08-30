@@ -1,3 +1,4 @@
+import { AdBanner } from "../common/AdBanner";
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   TrendingUp, 
@@ -171,6 +172,8 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
 
   return (
     <div dir="rtl" className="max-w-6xl mx-auto space-y-6 pb-20 pt-1">
+      {/* مكوّن إعلانات YR Ads الموضع #8 - أسعار الصرف */} 
+      <AdBanner placementId="8" className="mb-4" />
       
       {/* 1. رأس الصفحة */}
       <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-[#242424]">

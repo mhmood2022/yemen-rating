@@ -1,3 +1,4 @@
+import { AdBanner } from "../common/AdBanner";
 import React, { useState } from 'react';
 import { 
   Star, 
@@ -71,6 +72,8 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
 
   return (
     <div dir="rtl" className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-5 pb-16 px-1 sm:px-0">
+      {/* مكوّن إعلانات YR Ads الموضع #4 - أعلى صفحة الشركة */} 
+      <AdBanner placementId="4" className="mb-4" />
       
       {/* Top Back Navigation */}
       <div className="flex items-center justify-between gap-2">
