@@ -1,3 +1,4 @@
+import { AdBanner } from "../common/AdBanner";
 import React, { useState } from 'react';
 import { 
   Building, 
@@ -256,6 +257,8 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
 
   return (
     <div dir="rtl" className="max-w-6xl mx-auto space-y-6 pb-20 pt-1">
+      {/* مكوّن إعلانات YR Ads الموضع #5 */} 
+      <AdBanner placementId="5" className="mb-4" />
       
       {/* 1. Header Bar */}
       <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-[#242424]">

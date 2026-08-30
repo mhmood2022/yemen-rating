@@ -1,3 +1,4 @@
+import { AdBanner } from "../common/AdBanner";
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Gavel, 
@@ -255,6 +256,8 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
   return (
     <div dir="rtl" className="max-w-6xl mx-auto space-y-6 pb-20 pt-1">
+      {/* مكوّن إعلانات YR Ads الموضع #6 */} 
+      <AdBanner placementId="6" className="mb-4" />
       
       {/* 1. Header Bar */}
       <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-[#242424]">
