@@ -4,6 +4,7 @@ import { AdminMaster } from './pages/admin/AdminMaster';
 import { AdminDashboardOverview } from './pages/admin/AdminDashboardOverview';
 import { CompaniesManager } from './pages/admin/companies/CompaniesManager';
 import { AuctionsManager } from './pages/admin/auctions/AuctionsManager';
+import { AdsManager } from './pages/admin/ads/AdsManager';
 import { AdGeneratorStudio } from './pages/admin/ads/AdGeneratorStudio';
 import { RealEstateManager } from './pages/admin/real-estate/RealEstateManager';
 import { CategoriesManager } from './pages/admin/categories/CategoriesManager';
@@ -46,7 +47,7 @@ export function App() {
           <Route path="claims" element={<ClaimsManager />} />
           <Route path="markets" element={<MarketsManager />} />
           <Route path="auctions" element={<AuctionsManager />} />
-          <Route path="ads" element={<AdGeneratorStudio />} />
+          <Route path="ads" element={<AdsManager />} />
           <Route path="ads/generator" element={<AdGeneratorStudio />} />
           <Route path="jobs" element={<JobsManager />} />
           <Route path="real-estate" element={<RealEstateManager />} />
