@@ -1,20 +1,10 @@
-import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-// 1. مكونات وصفحات الموقع العام الأصلي
-import { Header } from './components/Header';
-import { Sidebar } from './components/Sidebar';
-import { HomePage } from './pages/HomePage';
-import { DirectoryPage } from './pages/DirectoryPage';
-import { PropertiesPage } from './pages/PropertiesPage';
-import { JobsPage } from './pages/JobsPage';
-import { PhoneMarketPage } from './pages/PhoneMarketPage';
-import { PricesPage } from './pages/PricesPage';
-import { BanksAndWalletsPage } from './pages/BanksAndWalletsPage';
-import { OffersPage } from './pages/OffersPage';
-import { NotificationsPage } from './pages/NotificationsPage';
+// 1. استيراد المنصة الأصلية بالكامل 100%
+import { MainPublicApp } from './MainPublicApp';
 
-// 2. مكونات لوحة التحكم (Admin Master & 16 Modules)
+// 2. استيراد لوحة التحكم (Admin Master & 16 Modules)
 import { AdminMaster } from './pages/admin/AdminMaster';
 import { AdminDashboardOverview } from './pages/admin/AdminDashboardOverview';
 import { CompaniesManager } from './pages/admin/companies/CompaniesManager';
@@ -34,51 +24,18 @@ import { PhonesManager } from './pages/admin/phones/PhonesManager';
 import { CleaningManager } from './pages/admin/cleaning/CleaningManager';
 import { AnalyticsFinanceManager } from './pages/admin/analytics/AnalyticsFinanceManager';
 
-// هيكل الموقع العام الحقيقي للزوار
-function PublicSiteLayout({ children }: { children: React.ReactNode }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const navigate = useNavigate();
-
-  return (
-    <div dir="rtl" className="min-h-screen bg-[#070A10] text-white flex flex-col font-['Cairo',sans-serif]">
-      {/* الهيدر الأصلي للموقع */}
-      <Header
-        onToggleSidebar={() => setIsSidebarOpen(true)}
-        onNavigateHome={() => navigate('/')}
-        onNavigateNotifications={() => navigate('/notifications')}
-        unreadNotificationsCount={3}
-      />
-
-      {/* القائمة الجانبية للموقع العام */}
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
-
-      {/* محتوى الصفحة */}
-      <main className="flex-1">
-        {children}
-      </main>
-    </div>
-  );
-}
-
 export function App() {
+  const isDashboardPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+
+  // إذا كان المستخدم في الموقع العام، يتم عرض تطبيق يمن ريتنغ الأصلي بكامل تفاصيله
+  if (!isDashboardPath) {
+    return <MainPublicApp />;
+  }
+
+  // إذا كان في مسار الإدارة، يتم فتح لوحة التحكم
   return (
     <BrowserRouter>
       <Routes>
-        {/* مسارات الموقع العام الحقيقية للزوار */}
-        <Route path="/" element={<PublicSiteLayout><HomePage onSelectBusiness={() => {}} /></PublicSiteLayout>} />
-        <Route path="/directory" element={<PublicSiteLayout><DirectoryPage /></PublicSiteLayout>} />
-        <Route path="/properties" element={<PublicSiteLayout><PropertiesPage /></PublicSiteLayout>} />
-        <Route path="/jobs" element={<PublicSiteLayout><JobsPage /></PublicSiteLayout>} />
-        <Route path="/phones" element={<PublicSiteLayout><PhoneMarketPage /></PublicSiteLayout>} />
-        <Route path="/prices" element={<PublicSiteLayout><PricesPage /></PublicSiteLayout>} />
-        <Route path="/banks" element={<PublicSiteLayout><BanksAndWalletsPage /></PublicSiteLayout>} />
-        <Route path="/offers" element={<PublicSiteLayout><OffersPage /></PublicSiteLayout>} />
-        <Route path="/notifications" element={<PublicSiteLayout><NotificationsPage /></PublicSiteLayout>} />
-
-        {/* لوحة التحكم المعزولة والسرية — 16 قسماً بكافة الأدوات */}
         <Route path="/admin" element={<AdminMaster />}>
           <Route index element={<AdminDashboardOverview />} />
           <Route path="companies" element={<CompaniesManager />} />
@@ -98,9 +55,7 @@ export function App() {
           <Route path="matching" element={<MatchingAIManager />} />
           <Route path="settings" element={<SettingsAuditManager />} />
         </Route>
-
-        {/* أي مسار مجهول يرجع للصفحة الرئيسية */}
-        <Route path="*" element={<PublicSiteLayout><HomePage onSelectBusiness={() => {}} /></PublicSiteLayout>} />
+        <Route path="*" element={<MainPublicApp />} />
       </Routes>
     </BrowserRouter>
   );
