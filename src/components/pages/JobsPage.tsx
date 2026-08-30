@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Briefcase,
   MapPin,
@@ -49,6 +49,19 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [applySummary, setApplySummary] = useState('');
   const [applicantAgreed, setApplicantAgreed] = useState(false);
   const [applyPhoneError, setApplyPhoneError] = useState(false);
+
+  // 🔒 قفل تمرير خلفية الموقع تلقائياً عند فتح أي نافذة منبثقة
+  const isAnyModalOpen = Boolean(selectedJob || isPostJobOpen || isApplyOpen);
+  useEffect(() => {
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isAnyModalOpen]);
 
   // فحص رقم الهاتف اليمني (9 أرقام ويبدأ بـ 7)
   const validateYemenPhone = (phone: string) => {
@@ -150,19 +163,19 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             <div className="flex items-center gap-3">
               <button
                 onClick={onBack}
-                className="p-2 rounded-xl bg-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-700 transition"
-                aria-label="العودة"
+                className="p-2 rounded-xl bg-zinc-800 text-yellow-400 hover:text-yellow-300 hover:bg-zinc-700 transition"
+                title="رجوع"
               >
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-5 h-5 stroke-[2.5]" />
               </button>
               <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">سوق التوظيف والوظائف المعتمدة</h1>
             </div>
-            <p className="text-xs sm:text-sm text-zinc-400 mr-9">
+            <p className="text-xs sm:text-sm text-zinc-400 mr-10">
               فرص عمل حقيقية ونظام تطابق ذكي يربط الكفاءات بالشركات مباشرة
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 mr-9 sm:mr-0">
+          <div className="flex items-center gap-2.5 mr-10 sm:mr-0">
             <button
               onClick={() => setIsApplyOpen(true)}
               className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-bold rounded-xl text-xs sm:text-sm border border-zinc-700 transition shadow"
@@ -187,7 +200,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* 2. شريط البحث والفلاتر مع عناوين ذهبية واضحة */}
+      {/* 2. شريط البحث والفلاتر */}
       <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 grid grid-cols-1 sm:grid-cols-3 gap-3 shadow-md">
         <div>
           <label className="block text-xs font-bold text-yellow-400 mb-1.5">البحث السريع:</label>
@@ -294,10 +307,10 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       </div>
 
       {/* ========================================================= */}
-      {/* نافذة تفاصيل الوظيفة (Job Modal)                            */}
+      {/* نافذة تفاصيل الوظيفة (مع زر رجوع أصفر سهمي من المكتبة)    */}
       {/* ========================================================= */}
       {selectedJob && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <div>
@@ -306,9 +319,11 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </div>
               <button
                 onClick={() => setSelectedJob(null)}
-                className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-zinc-900 text-yellow-400 hover:text-yellow-300 hover:bg-zinc-800 border border-zinc-800 transition font-bold text-xs"
+                title="رجوع"
               >
-                ✕
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                <span>رجوع</span>
               </button>
             </div>
 
@@ -356,9 +371,9 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </button>
               <button
                 onClick={() => setSelectedJob(null)}
-                className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold rounded-xl text-xs transition"
+                className="flex items-center gap-1.5 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-yellow-400 font-bold rounded-xl text-xs transition"
               >
-                إغلاق
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" /> رجوع
               </button>
             </div>
           </div>
@@ -366,10 +381,10 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       )}
 
       {/* ========================================================= */}
-      {/* نافذة إضافة وظيفة شاغرة (Post Job Modal) - عناوين ذهبية    */}
+      {/* نافذة إضافة وظيفة شاغرة (مع زر رجوع أصفر سهمي)             */}
       {/* ========================================================= */}
       {isPostJobOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <div className="flex items-center gap-2 text-yellow-400">
@@ -378,9 +393,11 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </div>
               <button
                 onClick={() => setIsPostJobOpen(false)}
-                className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-zinc-900 text-yellow-400 hover:text-yellow-300 hover:bg-zinc-800 border border-zinc-800 transition font-bold text-xs"
+                title="رجوع"
               >
-                ✕
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                <span>رجوع</span>
               </button>
             </div>
 
@@ -511,9 +528,9 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 <button
                   type="button"
                   onClick={() => setIsPostJobOpen(false)}
-                  className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold rounded-xl transition"
+                  className="flex items-center gap-1 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-yellow-400 font-bold rounded-xl transition"
                 >
-                  إلغاء
+                  <ArrowRight className="w-4 h-4 stroke-[2.5]" /> رجوع
                 </button>
                 <button
                   type="submit"
@@ -528,10 +545,10 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       )}
 
       {/* ========================================================= */}
-      {/* نافذة تقديم الباحث عن عمل (Apply Modal) - عناوين ذهبية       */}
+      {/* نافذة تقديم الباحث عن عمل (مع زر رجوع أصفر سهمي)           */}
       {/* ========================================================= */}
       {isApplyOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <div className="flex items-center gap-2 text-yellow-400">
@@ -540,9 +557,11 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </div>
               <button
                 onClick={() => setIsApplyOpen(false)}
-                className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-800 transition"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-zinc-900 text-yellow-400 hover:text-yellow-300 hover:bg-zinc-800 border border-zinc-800 transition font-bold text-xs"
+                title="رجوع"
               >
-                ✕
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                <span>رجوع</span>
               </button>
             </div>
 
@@ -643,9 +662,9 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 <button
                   type="button"
                   onClick={() => setIsApplyOpen(false)}
-                  className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold rounded-xl transition"
+                  className="flex items-center gap-1 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-yellow-400 font-bold rounded-xl transition"
                 >
-                  إلغاء
+                  <ArrowRight className="w-4 h-4 stroke-[2.5]" /> رجوع
                 </button>
                 <button
                   type="submit"
