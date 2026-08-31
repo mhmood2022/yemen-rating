@@ -13,14 +13,17 @@ import { ExchangeRatesPage } from './components/pages/ExchangeRatesPage';
 import { ProfilePage } from './components/pages/ProfilePage';
 import { NotificationsPage } from './components/pages/NotificationsPage';
 import { FavoritesPage } from './components/pages/FavoritesPage';
+import { PhoneMarketPage } from './pages/PhoneMarketPage';
+import { BottomNav } from './components/common/BottomNav';
+import { AdBanner } from './components/common/AdBanner';
 import { SAMPLE_BUSINESSES, BusinessItem } from './data/mockData';
 
 export function MainPublicApp() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessItem | null>(null);
-  const [currentPage, setCurrentPage] = useState<'home' | 'auctions' | 'markets' | 'real-estate' | 'jobs' | 'exchange-rates' | 'profile' | 'notifications' | 'favorites'>('home');
-  const [selectedGov, setSelectedGov] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState<'home' | 'auctions' | 'markets' | 'real-estate' | 'jobs' | 'exchange-rates' | 'profile' | 'notifications' | 'favorites' | 'phones'>('home');
+  const [selectedGov, setSelectedGov] = useState<string>('كل المحافظات');
   const [selectedCity, setSelectedCity] = useState<string>('all');
 
   const handleGlobalSearch = (query: string, govId: string, cityId: string) => {
@@ -32,6 +35,11 @@ export function MainPublicApp() {
   const handleSelectCategory = (slug: string) => {
     if (slug === 'all') {
       setIsSidebarOpen(true);
+      return;
+    }
+    if (slug === 'phones' || slug === 'cat-phones') {
+      setCurrentPage('phones');
+      setSelectedCategorySlug(null);
       return;
     }
     if (slug === 'auctions') {
@@ -51,11 +59,9 @@ export function MainPublicApp() {
       setSelectedCategorySlug(null);
     } else {
       setSelectedCategorySlug(slug);
+      setSelectedBusiness(null);
       setCurrentPage('home');
     }
-    setSelectedBusiness(null);
-    setIsSidebarOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectBusiness = (business: BusinessItem) => {
@@ -63,100 +69,114 @@ export function MainPublicApp() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleGoHome = () => {
-    setSelectedCategorySlug(null);
+  const handleBackToHome = () => {
     setSelectedBusiness(null);
+    setSelectedCategorySlug(null);
     setCurrentPage('home');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#0d0d0d] text-white flex flex-col font-sans selection:bg-[#f5c400] selection:text-zinc-950">
+    <div dir="rtl" className="min-h-screen bg-[#070A10] text-zinc-100 flex flex-col font-['Cairo',sans-serif]">
       
-      {/* 1. Header الأصلي الأنيق */}
-      <Header
-        onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
-        onNavigateHome={handleGoHome}
-        onNavigateProfile={() => {
-          setCurrentPage('profile');
-          setSelectedBusiness(null);
-          setSelectedCategorySlug(null);
-        }}
-        onNavigateNotifications={() => {
-          setCurrentPage('notifications');
-          setSelectedBusiness(null);
-          setSelectedCategorySlug(null);
-        }}
-      />
-
-      {/* 2. شريط البحث ومحدد المحافظات والمديريات */}
-      {currentPage === 'home' && !selectedBusiness && (
-        <SearchSection
-          onSearch={handleGlobalSearch}
-          selectedGov={selectedGov}
-          selectedCity={selectedCity}
-          onGovChange={setSelectedGov}
-          onCityChange={setSelectedCity}
+      {/* الهيدر والإعلان العلوي مثبتان معاً في الأعلى دائماً */}
+      <div className="sticky top-0 z-50 bg-[#070A10]/95 backdrop-blur-md border-b border-[#1F2937] shadow-xl">
+        <Header
+          onToggleSidebar={() => setIsSidebarOpen(true)}
+          onNavigateHome={handleBackToHome}
+          onNavigateNotifications={() => setCurrentPage('notifications')}
+          unreadNotificationsCount={3}
         />
-      )}
-
-      {/* 3. الحاوية الرئيسية (القائمة الجانبية + محتوى الصفحات) */}
-      <div className="flex-1 w-full max-w-7xl mx-auto flex">
-        
-        {/* القائمة الجانبية الـ 26 تصنيفاً */}
-        <Sidebar
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-          selectedCategorySlug={selectedCategorySlug || (currentPage !== 'home' ? currentPage : null)}
-          onSelectCategory={handleSelectCategory}
-        />
-
-        {/* عرض المحتوى التفاعلي */}
-        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
-          {selectedBusiness ? (
-            <BusinessDetails
-              business={selectedBusiness}
-              onBack={() => setSelectedBusiness(null)}
-            />
-          ) : currentPage === 'auctions' ? (
-            <AuctionsPage onBack={handleGoHome} />
-          ) : currentPage === 'markets' ? (
-            <MarketsPage onBack={handleGoHome} />
-          ) : currentPage === 'real-estate' ? (
-            <RealEstatePage onBack={handleGoHome} />
-          ) : currentPage === 'jobs' ? (
-            <JobsPage onBack={handleGoHome} />
-          ) : currentPage === 'exchange-rates' ? (
-            <ExchangeRatesPage onBack={handleGoHome} />
-          ) : currentPage === 'profile' ? (
-            <ProfilePage onBack={handleGoHome} onNavigateFavorites={() => setCurrentPage('favorites')} />
-          ) : currentPage === 'notifications' ? (
-            <NotificationsPage onBack={handleGoHome} />
-          ) : currentPage === 'favorites' ? (
-            <FavoritesPage onBack={handleGoHome} onSelectBusiness={handleSelectBusiness} />
-          ) : selectedCategorySlug ? (
-            <CategoryListing
-              categorySlug={selectedCategorySlug}
-              businesses={SAMPLE_BUSINESSES}
-              selectedGov={selectedGov}
-              selectedCity={selectedCity}
-              onSelectBusiness={handleSelectBusiness}
-              onBackHome={handleGoHome}
-            />
-          ) : (
-            <HomeView
-              onSelectCategory={handleSelectCategory}
-              onSelectBusiness={handleSelectBusiness}
-              businesses={SAMPLE_BUSINESSES}
-              onNavigateAuctions={() => setCurrentPage('auctions')}
-              onNavigateRealEstate={() => setCurrentPage('real-estate')}
-              onNavigateJobs={() => setCurrentPage('jobs')}
-              onNavigateExchangeRates={() => setCurrentPage('exchange-rates')}
-            />
-          )}
-        </main>
+        {/* إعلان البانر العلوي الثابت مع الهيدر */}
+        <div className="max-w-6xl mx-auto px-3 py-1">
+          <AdBanner placementId="1" className="mb-0" />
+        </div>
       </div>
 
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onSelectCategory={handleSelectCategory}
+        onNavigateAuctions={() => { setCurrentPage('auctions'); setIsSidebarOpen(false); }}
+        onNavigateMarkets={() => { setCurrentPage('markets'); setIsSidebarOpen(false); }}
+        onNavigateRealEstate={() => { setCurrentPage('real-estate'); setIsSidebarOpen(false); }}
+        onNavigateJobs={() => { setCurrentPage('jobs'); setIsSidebarOpen(false); }}
+        onNavigateExchangeRates={() => { setCurrentPage('exchange-rates'); setIsSidebarOpen(false); }}
+        onNavigateProfile={() => { setCurrentPage('profile'); setIsSidebarOpen(false); }}
+        onNavigateNotifications={() => { setCurrentPage('notifications'); setIsSidebarOpen(false); }}
+        onNavigateFavorites={() => { setCurrentPage('favorites'); setIsSidebarOpen(false); }}
+      />
+
+      <main className="flex-1">
+        {currentPage === 'home' && !selectedBusiness && !selectedCategorySlug && (
+          <SearchSection
+            onSearch={handleGlobalSearch}
+            selectedGov={selectedGov}
+            selectedCity={selectedCity}
+          />
+        )}
+
+        {selectedBusiness ? (
+          <BusinessDetails
+            business={selectedBusiness}
+            onBack={() => setSelectedBusiness(null)}
+          />
+        ) : selectedCategorySlug ? (
+          <CategoryListing
+            categorySlug={selectedCategorySlug}
+            onBack={handleBackToHome}
+            onSelectBusiness={handleSelectBusiness}
+            businesses={SAMPLE_BUSINESSES}
+            selectedGov={selectedGov}
+            selectedCity={selectedCity}
+          />
+        ) : currentPage === 'home' ? (
+          <HomeView
+            onSelectCategory={handleSelectCategory}
+            onSelectBusiness={handleSelectBusiness}
+            businesses={SAMPLE_BUSINESSES}
+            onNavigateAuctions={() => setCurrentPage('auctions')}
+            onNavigateRealEstate={() => setCurrentPage('real-estate')}
+            onNavigateJobs={() => setCurrentPage('jobs')}
+            onNavigateExchangeRates={() => setCurrentPage('exchange-rates')}
+            onNavigatePhones={() => setCurrentPage('phones')}
+          />
+        ) : currentPage === 'auctions' ? (
+          <AuctionsPage onBack={handleBackToHome} />
+        ) : currentPage === 'markets' ? (
+          <MarketsPage onBack={handleBackToHome} />
+        ) : currentPage === 'real-estate' ? (
+          <RealEstatePage onBack={handleBackToHome} />
+        ) : currentPage === 'jobs' ? (
+          <JobsPage onBack={handleBackToHome} />
+        ) : currentPage === 'exchange-rates' ? (
+          <ExchangeRatesPage onBack={handleBackToHome} />
+        ) : currentPage === 'phones' ? (
+          <PhoneMarketPage onNavigate={handleBackToHome} />
+        ) : currentPage === 'profile' ? (
+          <ProfilePage onBack={handleBackToHome} />
+        ) : currentPage === 'notifications' ? (
+          <NotificationsPage onBack={handleBackToHome} />
+        ) : currentPage === 'favorites' ? (
+          <FavoritesPage onBack={handleBackToHome} />
+        ) : null}
+      </main>
+
+      {/* شريط التنقل السفلي الفاخر */}
+      <BottomNav
+        activeTab={currentPage}
+        onTabChange={(tab) => {
+          if (tab === 'more') {
+            setIsSidebarOpen(true);
+          } else {
+            setCurrentPage(tab as any);
+            setSelectedCategorySlug(null);
+            setSelectedBusiness(null);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }}
+        onAddBusiness={() => { setIsSidebarOpen(true); }}
+      />
     </div>
   );
 }
