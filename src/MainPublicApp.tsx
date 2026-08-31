@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { SearchSection } from './components/common/SearchSection';
@@ -14,7 +14,6 @@ import { ProfilePage } from './components/pages/ProfilePage';
 import { NotificationsPage } from './components/pages/NotificationsPage';
 import { FavoritesPage } from './components/pages/FavoritesPage';
 import { PhoneMarketPage } from './pages/PhoneMarketPage';
-import { BottomNav } from './components/common/BottomNav';
 import { AdBanner } from './components/common/AdBanner';
 import { SAMPLE_BUSINESSES, BusinessItem } from './data/mockData';
 
@@ -26,6 +25,13 @@ export function MainPublicApp() {
   const [selectedGov, setSelectedGov] = useState<string>('كل المحافظات');
   const [selectedCity, setSelectedCity] = useState<string>('all');
 
+  // التمرير التلقائي لأعلى الصفحة فور تغيير أي قسم أو صفحة
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [currentPage, selectedBusiness, selectedCategorySlug]);
+
   const handleGlobalSearch = (query: string, govId: string, cityId: string) => {
     setSelectedGov(govId);
     setSelectedCity(cityId);
@@ -33,30 +39,32 @@ export function MainPublicApp() {
   };
 
   const handleSelectCategory = (slug: string) => {
-    if (slug === 'all') {
-      setIsSidebarOpen(true);
-      return;
-    }
     if (slug === 'phones' || slug === 'cat-phones') {
       setCurrentPage('phones');
       setSelectedCategorySlug(null);
+      setSelectedBusiness(null);
       return;
     }
     if (slug === 'auctions') {
       setCurrentPage('auctions');
       setSelectedCategorySlug(null);
+      setSelectedBusiness(null);
     } else if (slug === 'markets') {
       setCurrentPage('markets');
       setSelectedCategorySlug(null);
+      setSelectedBusiness(null);
     } else if (slug === 'real-estate') {
       setCurrentPage('real-estate');
       setSelectedCategorySlug(null);
+      setSelectedBusiness(null);
     } else if (slug === 'jobs') {
       setCurrentPage('jobs');
       setSelectedCategorySlug(null);
+      setSelectedBusiness(null);
     } else if (slug === 'exchange-rates') {
       setCurrentPage('exchange-rates');
       setSelectedCategorySlug(null);
+      setSelectedBusiness(null);
     } else {
       setSelectedCategorySlug(slug);
       setSelectedBusiness(null);
@@ -66,33 +74,37 @@ export function MainPublicApp() {
 
   const handleSelectBusiness = (business: BusinessItem) => {
     setSelectedBusiness(business);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBackToHome = () => {
     setSelectedBusiness(null);
     setSelectedCategorySlug(null);
     setCurrentPage('home');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const isAtMainHome = currentPage === 'home' && !selectedBusiness && !selectedCategorySlug;
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#070A10] text-zinc-100 flex flex-col font-['Cairo',sans-serif]">
       
-      {/* الهيدر والإعلان العلوي مثبتان معاً في الأعلى دائماً */}
-      <div className="sticky top-0 z-50 bg-[#070A10]/95 backdrop-blur-md border-b border-[#1F2937] shadow-xl">
+      {/* 1. الهيدر المثبت الدائم الحقيقي */}
+      <header className="sticky top-0 z-50 bg-[#070A10]/98 backdrop-blur-xl border-b border-[#1F2937] shadow-2xl">
         <Header
           onToggleSidebar={() => setIsSidebarOpen(true)}
           onNavigateHome={handleBackToHome}
           onNavigateNotifications={() => setCurrentPage('notifications')}
           unreadNotificationsCount={3}
         />
-        {/* إعلان البانر العلوي الثابت مع الهيدر */}
-        <div className="max-w-6xl mx-auto px-3 py-1">
-          <AdBanner placementId="1" className="mb-0" />
-        </div>
-      </div>
+        
+        {/* يظهر الإعلان العلوي #1 فقط في الصفحة الرئيسية ويختفي تماماً عند دخول أي قسم */}
+        {isAtMainHome && (
+          <div className="max-w-6xl mx-auto px-3 py-1 border-t border-[#1F2937]/30">
+            <AdBanner placementId="1" className="mb-0" />
+          </div>
+        )}
+      </header>
 
+      {/* 2. القائمة الجانبية */}
       <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
@@ -107,8 +119,9 @@ export function MainPublicApp() {
         onNavigateFavorites={() => { setCurrentPage('favorites'); setIsSidebarOpen(false); }}
       />
 
-      <main className="flex-1">
-        {currentPage === 'home' && !selectedBusiness && !selectedCategorySlug && (
+      {/* 3. جسم المحتوى الرئيسي بدون شريط سفلي */}
+      <main className="flex-1 pb-16">
+        {isAtMainHome && (
           <SearchSection
             onSearch={handleGlobalSearch}
             selectedGov={selectedGov}
@@ -119,7 +132,7 @@ export function MainPublicApp() {
         {selectedBusiness ? (
           <BusinessDetails
             business={selectedBusiness}
-            onBack={() => setSelectedBusiness(null)}
+            onBack={handleBackToHome}
           />
         ) : selectedCategorySlug ? (
           <CategoryListing
@@ -162,21 +175,6 @@ export function MainPublicApp() {
         ) : null}
       </main>
 
-      {/* شريط التنقل السفلي الفاخر */}
-      <BottomNav
-        activeTab={currentPage}
-        onTabChange={(tab) => {
-          if (tab === 'more') {
-            setIsSidebarOpen(true);
-          } else {
-            setCurrentPage(tab as any);
-            setSelectedCategorySlug(null);
-            setSelectedBusiness(null);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
-        }}
-        onAddBusiness={() => { setIsSidebarOpen(true); }}
-      />
     </div>
   );
 }

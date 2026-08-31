@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Sparkles, MessageCircle, Phone, Award, Flame, Clock, ShieldCheck, Star, QrCode } from 'lucide-react';
+import { ArrowRight, Sparkles, MessageCircle, Phone, Award, Flame, Clock, ShieldCheck, Star, QrCode, ExternalLink } from 'lucide-react';
 import { PublishedAd } from '../../pages/admin/ads/AdGeneratorStudio';
 
 interface AdBannerProps {
@@ -31,17 +31,17 @@ export const AdBanner: React.FC<AdBannerProps> = ({
   return (
     <div 
       dir="rtl"
-      className={`relative overflow-hidden transition-all duration-300 w-full ${className}`}
+      className={`relative overflow-hidden transition-all duration-300 w-full shadow-2xl ${className}`}
       style={{
-        borderRadius: `${adData.borderRadius || 16}px`,
-        border: adData.hasBorder ? `${adData.borderWidth || 2}px solid ${adData.borderColor || '#FFC500'}` : 'none',
+        borderRadius: `${adData.borderRadius || 18}px`,
+        border: adData.hasBorder ? `${adData.borderWidth || 2}px solid ${adData.borderColor || '#FFC500'}` : '1px solid rgba(255,197,0,0.25)',
         backgroundColor: adData.bgColor || '#0B0F17',
         backgroundImage: adData.bgStyle === 'gradient' ? `linear-gradient(135deg, ${adData.bgColor || '#0B0F17'} 0%, #161D2B 100%)` : 'none',
-        boxShadow: adData.hasGlow && adData.hasBorder ? `0 0 25px ${adData.borderColor || '#FFC500'}35` : 'none',
-        minHeight: '140px'
+        boxShadow: adData.hasGlow ? `0 0 30px ${adData.borderColor || '#FFC500'}40` : '0 10px 30px rgba(0,0,0,0.8)',
+        minHeight: '145px'
       }}
     >
-      {/* تضمين مباشر لمحرك الحركات الحية للموقع العام */}
+      {/* تضمين محرك الحركات الإعلانية */}
       <style>{`
         @keyframes yrContinuousSlideRight {
           0% { opacity: 0; transform: translateX(25px); }
@@ -57,7 +57,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         }
         @keyframes yrPulseGlowActive {
           0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255,197,0,0.3); }
-          50% { transform: scale(1.03); box-shadow: 0 0 25px rgba(255,197,0,0.7); }
+          50% { transform: scale(1.04); box-shadow: 0 0 25px rgba(255,197,0,0.8); }
         }
         @keyframes yrShineContinuous {
           0% { background-position: -200% 0; }
@@ -68,15 +68,10 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           50% { transform: scale(1.15) translate(-1%, -1%); }
           100% { transform: scale(1); }
         }
-        @keyframes yrFloatingBounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-4px); }
-        }
 
         .yr-live-slide-right { animation: yrContinuousSlideRight 6s ease-in-out infinite; }
         .yr-live-slide-up { animation: yrContinuousSlideUp 6s ease-in-out infinite; }
         .yr-live-pulse { animation: yrPulseGlowActive 2.5s infinite ease-in-out; }
-        .yr-live-bounce { animation: yrFloatingBounce 3s infinite ease-in-out; }
         .yr-live-shimmer {
           background-size: 200% 100% !important;
           background-image: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.45) 50%, transparent 70%) !important;
@@ -85,7 +80,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         .yr-live-kenburns { animation: yrKenBurnsMotion 18s ease-in-out infinite alternate !important; }
       `}</style>
 
-      {/* شريط التمرير الزمني */}
+      {/* شريط التمرير الزمني العلوي */}
       {adData.hasProgressBar && (
         <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 z-30 overflow-hidden">
           <div 
@@ -98,7 +93,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         </div>
       )}
 
-      {/* الوسائط مع حركة Ken Burns البطيئة والسينمائية */}
+      {/* وسائط الإعلان (صورة ناصعة أو فيديو تجاري حقيقي) */}
       {adData.mediaUrl && adData.layoutStyle !== 'text_only' && (
         <div className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center">
           {adData.imageFit === 'contain' && adData.useBlurBackground && adData.mediaType === 'image' && (
@@ -125,70 +120,53 @@ export const AdBanner: React.FC<AdBannerProps> = ({
               className={`w-full h-full relative z-10 ${adData.mediaMotion === 'kenBurns' ? 'yr-live-kenburns' : ''}`}
             />
           )}
-          {adData.imgOverlay > 0 && (
-            <div className="absolute inset-0 bg-black z-10" style={{ opacity: (adData.imgOverlay ?? 30) / 100 }} />
-          )}
+          
+          {/* طبقة التباين الإعلانية لقراءة النصوص */}
+          <div 
+            className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent z-10" 
+            style={{ opacity: Math.max((adData.imgOverlay ?? 30) / 100, 0.4) }} 
+          />
         </div>
       )}
 
-      {/* الشعار */}
-      {adData.showLogo && adData.logoUrl && (
-        <div className={`absolute z-30 p-2 ${
-          adData.logoPosition === 'top_left' ? 'top-2 left-2' :
-          adData.logoPosition === 'top_right' ? 'top-2 right-2' :
-          adData.logoPosition === 'bottom_left' ? 'bottom-2 left-2' : 'bottom-2 right-2'
-        }`}>
-          <img src={adData.logoUrl} alt="Logo" style={{ width: `${adData.logoSize || 36}px`, height: `${adData.logoSize || 36}px` }} className="object-contain rounded-lg drop-shadow-md" />
-        </div>
-      )}
-
-      {/* الملصقات الترويجية */}
-      {adData.promoSticker && adData.promoSticker !== 'none' && (
-        <div className="absolute top-3 left-3 z-30 animate-bounce">
-          {adData.promoSticker === 'discount50' && <span className="px-2.5 py-1 rounded-xl bg-[#DC2626] text-white text-[11px] font-black shadow-lg">خصم 50% 🔥</span>}
-          {adData.promoSticker === 'verified_gold' && <span className="px-2.5 py-1 rounded-xl bg-[#FFC500] text-black text-[11px] font-black shadow-lg flex items-center gap-1"><Award size={13} /> موثق ذهبي YR</span>}
-          {adData.promoSticker === 'hot_deal' && <span className="px-2.5 py-1 rounded-xl bg-orange-600 text-white text-[11px] font-black shadow-lg flex items-center gap-1"><Flame size={13} /> عرض ناري</span>}
-          {adData.promoSticker === 'limited' && <span className="px-2.5 py-1 rounded-xl bg-amber-500 text-black text-[11px] font-black shadow-lg flex items-center gap-1"><Clock size={13} /> لفترة محدودة</span>}
-          {adData.promoSticker === 'exclusive' && <span className="px-2.5 py-1 rounded-xl bg-purple-600 text-white text-[11px] font-black shadow-lg">⭐ حصري</span>}
-        </div>
-      )}
-
-      {/* المحتوى والنصوص بالحركات الحية */}
-      <div className={`relative z-20 p-4 sm:p-5 flex flex-col justify-between h-full min-h-[140px] ${
-        adData.textAlign === 'center' ? 'text-center' : adData.textAlign === 'left' ? 'text-left' : 'text-right'
-      }`}>
-        <div className="space-y-2 max-w-xl">
-          {adData.showBadge && (
-            <div className="flex items-center gap-2 flex-wrap pb-1">
+      {/* شريط الإعلان التجاري وشارة الرعاية */}
+      <div className="relative z-20 p-4 sm:p-5 flex flex-col justify-between h-full min-h-[145px]">
+        
+        {/* الجزء العلوي: شارة الإعلان الممول المعتمد */}
+        <div className="flex items-center justify-between gap-2 pb-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {adData.showBadge && (
               <span
                 style={{ backgroundColor: adData.badgeBgColor || 'rgba(255,197,0,0.25)', color: adData.badgeTextColor || '#FFC500', borderColor: adData.badgeTextColor || '#FFC500' }}
-                className="inline-flex items-center px-3 py-0.5 rounded-full text-[10px] font-black border tracking-wide whitespace-nowrap shadow-sm backdrop-blur-sm"
+                className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[9.5px] font-black border tracking-wide whitespace-nowrap shadow-md backdrop-blur-md"
               >
                 {adData.badgeText || 'إعلان ممول'}
               </span>
-              {adData.showVerifiedBadge && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#16A34A]/20 text-[#16A34A] border border-[#16A34A]/40 text-[10px] font-black whitespace-nowrap">
-                  <ShieldCheck size={12} /> موثّق YR
-                </span>
-              )}
-            </div>
-          )}
+            )}
+            {adData.showVerifiedBadge && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#16A34A]/25 text-[#16A34A] border border-[#16A34A]/40 text-[9.5px] font-black whitespace-nowrap">
+                <ShieldCheck size={12} /> موثّق YR
+              </span>
+            )}
+          </div>
 
+          <span className="text-[9px] text-white/70 font-mono bg-black/60 px-2 py-0.5 rounded border border-white/10 backdrop-blur-md flex items-center gap-1">
+            <ExternalLink size={10} /> YR Ads
+          </span>
+        </div>
+
+        {/* جسم الإعلان والنصوص البارزة */}
+        <div className="space-y-1.5 max-w-lg my-1">
           {adData.showHeadline && (
             <h3 
               style={{ 
                 color: adData.headlineColor || '#FFFFFF',
                 fontFamily: adData.headlineFont || 'Cairo',
-                textShadow: adData.hasTextShadow ? '0 2px 10px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)' : 'none'
+                textShadow: '0 2px 12px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.9)'
               }} 
-              className={`leading-snug ${
-                adData.headlineSize === 'xl' ? 'text-lg sm:text-xl font-black' :
-                adData.headlineSize === 'lg' ? 'text-base sm:text-lg font-black' :
-                adData.headlineSize === 'md' ? 'text-sm sm:text-base font-bold' : 'text-xs sm:text-sm font-semibold'
-              } ${
+              className={`leading-snug font-black text-sm sm:text-base md:text-lg ${
                 adData.headlineMotion === 'slideRight' ? 'yr-live-slide-right' :
-                adData.headlineMotion === 'slideUp' ? 'yr-live-slide-up' :
-                adData.headlineMotion === 'bounce' ? 'yr-live-bounce' : ''
+                adData.headlineMotion === 'slideUp' ? 'yr-live-slide-up' : ''
               }`}
             >
               {adData.headline}
@@ -199,77 +177,44 @@ export const AdBanner: React.FC<AdBannerProps> = ({
             <p 
               style={{ 
                 color: adData.descColor || '#E5E7EB',
-                textShadow: adData.hasTextShadow ? '0 1px 6px rgba(0,0,0,0.9)' : 'none'
+                textShadow: '0 1px 8px rgba(0,0,0,0.95)'
               }} 
-              className={`text-xs text-gray-200 mt-1 leading-relaxed ${
-                adData.descLines === 1 ? 'line-clamp-1' : adData.descLines === 2 ? 'line-clamp-2' : adData.descLines === 3 ? 'line-clamp-3' : ''
-              } ${
-                adData.descMotion === 'slideUp' ? 'yr-live-slide-up' : ''
-              }`}
+              className="text-xs text-gray-200 line-clamp-2 leading-relaxed font-medium"
             >
               {adData.description}
             </p>
           )}
+        </div>
 
-          {/* شريط الأسعار والتقييم */}
-          {(adData.showPricing || adData.showRating || adData.showLocation) && (
-            <div className="flex items-center gap-3 pt-1 flex-wrap">
-              {adData.showPricing && (
-                <div className="flex items-center gap-1.5 font-mono">
-                  <span className="text-sm font-black text-[#FFC500]">{adData.currentPrice} {adData.currency || 'YER'}</span>
-                  {adData.oldPrice && <span className="text-xs text-gray-400 line-through">{adData.oldPrice}</span>}
-                  {adData.discountPercentage && <span className="text-[10px] px-1.5 py-0.2 rounded bg-red-600 text-white font-bold">-{adData.discountPercentage}</span>}
-                </div>
-              )}
-              {adData.showRating && (
-                <span className="flex items-center gap-1 text-[11px] text-[#FFC500] font-bold">
-                  <Star size={13} fill="#FFC500" /> {adData.ratingValue || 4.9}
-                </span>
-              )}
-              {adData.showLocation && (
-                <span className="text-[10px] text-gray-300 font-medium">📍 {adData.locationText}</span>
-              )}
+        {/* زر الإجراء التجاري الصريح والأسعار إن وجدت */}
+        <div className="pt-2 flex items-center justify-between border-t border-white/15 mt-1 flex-wrap gap-2">
+          {adData.showPricing && (
+            <div className="flex items-center gap-1.5 font-mono">
+              <span className="text-xs sm:text-sm font-black text-[#FFC500] drop-shadow">{adData.currentPrice} {adData.currency || 'YER'}</span>
+              {adData.oldPrice && <span className="text-[10px] text-gray-400 line-through">{adData.oldPrice}</span>}
+              {adData.discountPercentage && <span className="text-[9px] px-1.5 py-0.2 rounded bg-red-600 text-white font-bold">-{adData.discountPercentage}</span>}
             </div>
+          )}
+
+          {adData.showButton && (
+            <a
+              href={adData.targetUrl || '#'}
+              target={adData.actionType === 'link' ? '_blank' : '_self'}
+              rel="noopener noreferrer"
+              style={{ backgroundColor: adData.btnBgColor || '#FFC500', color: adData.btnTextColor || '#000000' }}
+              className={`px-4 py-2 rounded-xl font-black text-xs shadow-2xl flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer ${
+                adData.btnAnimation === 'pulse' ? 'yr-live-pulse' :
+                adData.btnAnimation === 'shimmer' ? 'yr-live-shimmer' : ''
+              }`}
+            >
+              {adData.actionType === 'whatsapp' && <MessageCircle size={14} />}
+              {adData.actionType === 'call' && <Phone size={14} />}
+              <span>{adData.ctaText || 'اطلب الآن'}</span>
+              <ArrowRight size={13} className="rtl:rotate-180" />
+            </a>
           )}
         </div>
 
-        {/* زر الإجراء مع لمعان Shimmer أو نبض Pulse التفاعلي */}
-        {(adData.showButton || adData.showQrCode) && (
-          <div className="pt-3 flex items-center justify-between border-t border-white/10 mt-2">
-            {adData.showButton ? (
-              <a
-                href={adData.targetUrl || '#'}
-                target={adData.actionType === 'link' ? '_blank' : '_self'}
-                rel="noopener noreferrer"
-                style={{ backgroundColor: adData.btnBgColor || '#FFC500', color: adData.btnTextColor || '#000000' }}
-                className={`font-black shadow-xl flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 ${
-                  adData.btnShape === 'pill' ? 'rounded-full' : adData.btnShape === 'square' ? 'rounded-none' : 'rounded-xl'
-                } ${
-                  adData.btnSize === 'lg' ? 'px-5 py-2.5 text-sm' : adData.btnSize === 'md' ? 'px-4 py-2 text-xs' : 'px-3 py-1.5 text-[11px]'
-                } ${
-                  adData.btnAnimation === 'pulse' ? 'yr-live-pulse' :
-                  adData.btnAnimation === 'shimmer' ? 'yr-live-shimmer' :
-                  adData.btnAnimation === 'bounce' ? 'yr-live-bounce' : ''
-                }`}
-              >
-                {adData.actionType === 'whatsapp' && <MessageCircle size={14} />}
-                {adData.actionType === 'call' && <Phone size={14} />}
-                <span>{adData.ctaText || 'زيارة الرابط'}</span>
-                <ArrowRight size={13} className="rtl:rotate-180" />
-              </a>
-            ) : <div />}
-
-            {adData.showQrCode ? (
-              <div className="bg-white p-1 rounded-lg shrink-0">
-                <QrCode size={24} className="text-black" />
-              </div>
-            ) : (
-              <span className="text-[10px] text-white/80 font-mono bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm">
-                إعلان يمن ريتنغ #{placementId}
-              </span>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

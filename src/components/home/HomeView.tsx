@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Star, MapPin, Gavel, Building, Briefcase, 
-  ChevronDown, ChevronUp, Coins, ArrowRight, Smartphone,
+  ChevronDown, ChevronUp, Coins, Smartphone,
   Clock, ShieldCheck, MessageSquare
 } from 'lucide-react';
 import { OFFICIAL_CATEGORIES, CategoryItem } from '../../data/categories';
@@ -48,6 +48,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   };
 
   const currentRates = ratesData[activeMarket];
+  
+  // عرض أول 8 تصنيفات أو كامل الـ 26 تصنيفاً في مكانها بالصفحة
   const displayedCategories = showAllCategories 
     ? OFFICIAL_CATEGORIES 
     : OFFICIAL_CATEGORIES.slice(0, 8);
@@ -55,15 +57,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
   return (
     <div dir="rtl" className="space-y-4 pt-1 max-w-6xl mx-auto px-3 sm:px-4 font-['Cairo',sans-serif] text-white">
       
-      {/* 1. شبكة التصنيفات الرئيسية الفاخرة */}
+      {/* 1. شبكة التصنيفات الرئيسية الفاخرة (تتوسع في مكانها دون فتح السايدبار) */}
       <div className="space-y-2 pt-1">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black text-white flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#FFC500]" /> التصنيفات الرئيسية
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FFC500]" /> التصنيفات الرئيسية ({OFFICIAL_CATEGORIES.length})
           </h3>
           <button 
+            type="button"
             onClick={() => setShowAllCategories(!showAllCategories)}
-            className="text-[11px] font-bold text-[#FFC500] flex items-center gap-1 hover:underline cursor-pointer"
+            className="text-[11px] font-bold text-[#FFC500] flex items-center gap-1 hover:underline cursor-pointer bg-transparent border-0"
           >
             <span>{showAllCategories ? 'عرض أقل' : 'عرض الكل'}</span>
             {showAllCategories ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -151,7 +154,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 4. إعلان YR Ads الموضع #2 (شريط عريض في المنتصف) */}
+      {/* 4. إعلان YR Ads الموضع #2 (شريط عريض تجاري في المنتصف) */}
       <div className="w-full my-2">
         <AdBanner placementId="2" className="w-full" />
       </div>
@@ -407,7 +410,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   {'★'.repeat(rev.rating)}
                 </div>
               </div>
-              <p className="text-[10px] text-gray-300 line-clamp-2 leading-relaxed">
+              <p className="text-[10px] text-gray-300 line-clamp-2 leading-relaxed font-medium">
                 "{rev.comment}"
               </p>
             </div>
