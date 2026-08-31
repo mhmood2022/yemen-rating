@@ -184,12 +184,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
+      {/* مكوّن إعلانات YR Ads الموضع #2 - شريط عريض مستقل */}
+      <div className="w-full my-6">
+        <AdBanner placementId="2" className="w-full" />
+      </div>
+
       {/* 3. أسعار العملات والذهب الحية والمتحركة (قابلة للنقر والانتقال لصفحة الأسعار) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           
-      {/* مكوّن إعلانات YR Ads الموضع #2 بين الأقسام */} 
-      <AdBanner placementId="2" className="my-6" />
+      
 
       <div 
             onClick={onNavigateExchangeRates}
