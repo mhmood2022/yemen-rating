@@ -1,149 +1,51 @@
 import React, { useState } from 'react';
-import { Search, MapPin, ChevronDown, Sparkles, Navigation } from 'lucide-react';
-import { YEMEN_LOCATIONS } from '../../data/locations';
+import { Search, MapPin, SlidersHorizontal, ChevronDown } from 'lucide-react';
 
 interface SearchSectionProps {
-  onSearch: (query: string, governorateId: string, cityId: string) => void;
-  selectedGov: string;
-  selectedCity: string;
-  onGovChange: (govId: string) => void;
-  onCityChange: (cityId: string) => void;
+  onSearch: (query: string, govId: string, cityId: string) => void;
+  selectedGov?: string;
+  selectedCity?: string;
 }
 
 export const SearchSection: React.FC<SearchSectionProps> = ({
   onSearch,
-  selectedGov,
-  selectedCity,
-  onGovChange,
-  onCityChange
+  selectedGov = 'all',
+  selectedCity = 'all'
 }) => {
   const [query, setQuery] = useState('');
+  const [locationText, setLocationText] = useState('اليمن، صنعاء');
 
-  const currentGov = YEMEN_LOCATIONS.find(g => g.id === selectedGov);
-  const cities = currentGov ? currentGov.cities : [];
-
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch(query, selectedGov, selectedCity);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setQuery(val);
+    onSearch(val, selectedGov, selectedCity);
   };
 
   return (
-    <section dir="rtl" className="w-full bg-[#111111] border-b border-[#202020] py-4 sm:py-5 px-3 sm:px-6">
-      <div className="max-w-6xl mx-auto space-y-3 sm:space-y-4">
+    <div dir="rtl" className="w-full max-w-6xl mx-auto px-3 sm:px-4 pt-3 pb-1 font-['Cairo',sans-serif]">
+      {/* شريط البحث المودرن الأنيق المطابق للصورة الأولى */}
+      <div className="relative flex items-center bg-[#121215] border border-[#222226] hover:border-[#FFC500]/40 rounded-2xl p-2 px-3.5 shadow-xl transition-all">
         
-        {/* Header Title */}
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-4 bg-[#f5b800] rounded-full"></span>
-            <h2 className="text-xs sm:text-sm font-bold text-white tracking-wide">
-              محرك البحث الوطني للخدمات والأنشطة في اليمن
-            </h2>
-          </div>
-          <span className="text-[11px] text-zinc-400 flex items-center gap-1.5 bg-[#181818] px-2.5 py-0.5 rounded-lg border border-[#262626]">
-            <Sparkles className="w-3.5 h-3.5 text-[#f5b800]" />
-            <span>22 محافظة • 26 تصنيفاً</span>
-          </span>
-        </div>
+        {/* أيقونة البحث */}
+        <Search size={18} className="text-[#8E8E93] shrink-0 ml-2" />
 
-        {/* The Search Form */}
-        <form onSubmit={handleFormSubmit} className="bg-[#161616] border border-[#262626] rounded-2xl p-2 sm:p-2.5 shadow-xl flex flex-col md:flex-row items-stretch gap-2">
-          
-          {/* Text Input Field */}
-          <div className="flex-1 relative flex items-center">
-            <Search className="w-4 h-4 sm:w-5 sm:h-5 absolute right-3.5 text-zinc-400 pointer-events-none" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="ابحث عن منشأة، فندق، مطعم، بنك، مستشفى، عقار، وظيفة..."
-              className="w-full bg-[#101010] border border-[#282828] rounded-xl pr-10 pl-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#f5b800] transition-all font-medium"
-            />
-          </div>
+        {/* حقل البحث الرئيسي */}
+        <input
+          type="text"
+          value={query}
+          onChange={handleInputChange}
+          placeholder="ابحث عن نشاط، مطعم، بنك، عقار، خدمة..."
+          className="flex-1 bg-transparent text-xs sm:text-sm text-white placeholder-[#6B6B75] outline-none font-medium"
+        />
 
-          {/* Governorate Dropdown */}
-          <div className="w-full md:w-52 relative group">
-            <MapPin className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-[#f5b800] pointer-events-none" />
-            
-            <select
-              value={selectedGov}
-              onChange={(e) => {
-                onGovChange(e.target.value);
-                onCityChange('all');
-              }}
-              className="w-full appearance-none bg-[#101010] border border-[#282828] group-hover:border-zinc-700 rounded-xl pr-10 pl-8 py-2.5 sm:py-3 text-xs sm:text-sm text-zinc-100 font-medium focus:outline-none focus:border-[#f5b800] cursor-pointer transition-colors"
-            >
-              <option value="all" className="bg-[#111111] text-[#f5b800] font-bold py-2">
-                كل المحافظات
-              </option>
-              {YEMEN_LOCATIONS.map((gov) => (
-                <option key={gov.id} value={gov.id} className="bg-[#111111] text-zinc-100 py-2">
-                  {gov.name}
-                </option>
-              ))}
-            </select>
-
-            <ChevronDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-hover:text-[#f5b800] pointer-events-none transition-colors" />
-          </div>
-
-          {/* City / District Dropdown */}
-          <div className="w-full md:w-48 relative group">
-            <Navigation className="w-3.5 h-3.5 absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
-
-            <select
-              value={selectedCity}
-              onChange={(e) => onCityChange(e.target.value)}
-              disabled={selectedGov === 'all'}
-              className="w-full appearance-none bg-[#101010] border border-[#282828] group-hover:border-zinc-700 rounded-xl pr-9 pl-8 py-2.5 sm:py-3 text-xs sm:text-sm text-zinc-100 font-medium focus:outline-none focus:border-[#f5b800] disabled:opacity-40 disabled:bg-[#111111] disabled:cursor-not-allowed cursor-pointer transition-colors"
-            >
-              <option value="all" className="bg-[#111111] text-zinc-300 py-2">
-                {selectedGov === 'all' ? 'المدينة / المديرية' : 'كل المناطق'}
-              </option>
-              {cities.map((city) => (
-                <option key={city.id} value={city.id} className="bg-[#111111] text-zinc-100 py-2">
-                  {city.name}
-                </option>
-              ))}
-            </select>
-
-            <ChevronDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-hover:text-[#f5b800] pointer-events-none transition-colors" />
-          </div>
-
-          {/* Golden Yellow Search Action Button */}
-          <button
-            type="submit"
-            className="w-full md:w-auto px-6 py-2.5 sm:py-3 bg-[#f5b800] hover:bg-[#e5aa00] active:scale-95 text-zinc-950 font-black text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#f5b800]/20 flex-shrink-0"
-          >
-            <Search className="w-4 h-4 stroke-[2.5]" />
-            <span>بحث</span>
-          </button>
-        </form>
-
-        {/* Quick Tag Pills (بدون أي خط أبيض نهائياً) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs text-zinc-400 no-scrollbar">
-          <span className="text-zinc-500 text-[11px] flex-shrink-0">الأكثر بحثاً:</span>
-          {[
-            { label: 'بنوك وصرافة', query: 'بنوك وصرافة' },
-            { label: 'أسعار الصرف', query: 'أسعار الصرف' },
-            { label: 'فنادق المكلا', query: 'فنادق المكلا' },
-            { label: 'مطاعم عدن', query: 'مطاعم عدن' },
-            { label: 'مستشفيات صنعاء', query: 'مستشفيات صنعاء' },
-            { label: 'شقق للإيجار', query: 'عقارات' }
-          ].map((tag) => (
-            <button
-              key={tag.label}
-              type="button"
-              onClick={() => {
-                setQuery(tag.query);
-                onSearch(tag.query, selectedGov, selectedCity);
-              }}
-              className="bg-[#161616] hover:bg-[#202020] hover:text-[#f5b800] border border-[#262626] px-2.5 py-1 rounded-lg text-[11px] whitespace-nowrap transition-colors"
-            >
-              {tag.label}
-            </button>
-          ))}
+        {/* محدد الموقع المدمج على اليسار */}
+        <div className="flex items-center gap-1 border-r border-[#27272A] pr-2.5 mr-2 text-[#A1A1AA] hover:text-[#FFC500] cursor-pointer transition-colors">
+          <MapPin size={14} className="text-[#FFC500] shrink-0" />
+          <span className="text-[11px] font-bold whitespace-nowrap">{locationText}</span>
+          <ChevronDown size={12} className="text-[#71717A]" />
         </div>
 
       </div>
-    </section>
+    </div>
   );
 };
