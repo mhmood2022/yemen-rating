@@ -2,7 +2,8 @@ import React, { useState, useMemo, useRef } from 'react';
 import { 
   Smartphone, Tag, Wrench, Radio, Sparkles, Search, 
   MapPin, Phone, MessageCircle, ArrowRight, Plus, X, 
-  Upload, Trash2, CheckCircle2, ShieldCheck, User
+  Upload, Trash2, CheckCircle2, ShieldCheck, User, Camera,
+  Zap, Check, SlidersHorizontal, Cpu
 } from 'lucide-react';
 import { AdBanner } from '../components/common/AdBanner';
 
@@ -146,7 +147,6 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   
-  // المعاينة وعارض الصور
   const [phonesList, setPhonesList] = useState<PhoneDeviceItem[]>(INITIAL_PHONES);
   const [selectedPhone, setSelectedPhone] = useState<PhoneDeviceItem | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -163,15 +163,12 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
   const [phoneRam, setPhoneRam] = useState('8GB');
   const [phoneCondition, setPhoneCondition] = useState<PhoneDeviceItem['condition']>('جديد كرت');
   const [phonePrice, setPhonePrice] = useState<number>(300000);
-  const [phoneCurrency, setPhoneCurrency] = useState('YER'); // يمني افتراضي
+  const [phoneCurrency, setPhoneCurrency] = useState('YER');
   const [phoneCity, setPhoneCity] = useState('صنعاء');
   const [phoneColor, setPhoneColor] = useState('');
   const [phoneDesc, setPhoneDesc] = useState('');
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const [agreedToPolicy, setAgreedToPolicy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  // إحداثيات السحب باللمس
   const touchStartX = useRef<number | null>(null);
 
   const handleOpenPhone = (phone: PhoneDeviceItem) => {
@@ -180,7 +177,6 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
-  // رفع من 1 إلى 6 صور من الهاتف
   const handleImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
@@ -195,7 +191,6 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  // التمرير باللمس في المعرض
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   };
@@ -215,7 +210,6 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
     touchStartX.current = null;
   };
 
-  // إضافة هاتف للبيع
   const handleSubmitPhone = (e: React.FormEvent) => {
     e.preventDefault();
     if (!phoneModel.trim() || !sellerPhone.trim()) return;
@@ -251,7 +245,6 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
     setSellerPhone('');
     setPhoneDesc('');
     setUploadedImages([]);
-    setAgreedToPolicy(false);
     setToastMessage('تم إضافة الهاتف وعرضه في السوق بنجاح');
     setTimeout(() => setToastMessage(null), 3500);
   };
@@ -271,10 +264,10 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
   return (
     <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Cairo',sans-serif] text-white">
       
-      {/* 1. إعلان البانر المخصص لسوق الهواتف #9 */}
+      {/* 1. إعلان البانر المخصص #9 */}
       <AdBanner placementId="9" className="mb-1" />
 
-      {/* 2. رأس الصفحة الرسمي الأنيق */}
+      {/* 2. رأس الصفحة الرسمي بالأيقونات الرسمية */}
       <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
@@ -346,8 +339,8 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
                 {selectedPhone.price.toLocaleString()} {selectedPhone.currency}
               </span>
 
-              <span className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-lg bg-black/85 text-white text-[9px] font-bold border border-white/10">
-                📷 {activeImageIndex + 1} من {selectedPhone.images.length}
+              <span className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-lg bg-black/85 text-white text-[9px] font-bold border border-white/10 flex items-center gap-1">
+                <Camera size={11} /> {activeImageIndex + 1} من {selectedPhone.images.length}
               </span>
             </div>
 
@@ -375,8 +368,14 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
                   <span className="px-2 py-0.5 rounded bg-[#FFC500]/15 text-[#FFC500] text-[10px] font-bold">
                     {selectedPhone.brand}
                   </span>
-                  <span className="text-[11px] text-gray-400">📍 {selectedPhone.city}</span>
-                  {selectedPhone.isVerified && <span className="text-[9px] text-[#16A34A] font-bold">✓ موثق</span>}
+                  <span className="text-[11px] text-gray-400 flex items-center gap-1">
+                    <MapPin size={12} className="text-[#FFC500]" /> {selectedPhone.city}
+                  </span>
+                  {selectedPhone.isVerified && (
+                    <span className="text-[9px] text-[#16A34A] font-bold flex items-center gap-0.5">
+                      <ShieldCheck size={11} /> موثق
+                    </span>
+                  )}
                 </div>
                 <h2 className="text-sm sm:text-base font-black text-white leading-snug">
                   {selectedPhone.name}
@@ -472,43 +471,53 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
               )}
             </div>
 
-            {/* الأقسام السريعة */}
+            {/* الأقسام السريعة بالأيقونات الرسمية */}
             <div className="flex gap-1 overflow-x-auto pb-0.5 no-scrollbar">
               {[
-                { id: 'all', label: 'الكل' },
-                { id: 'phones', label: 'الجوالات' },
-                { id: 'accessories', label: 'الإكسسوارات' },
-                { id: 'maintenance', label: 'الصيانة والقطع' },
-                { id: 'sim_services', label: 'الشرائح' },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all ${
-                    activeTab === tab.id 
-                      ? 'bg-[#FFC500] text-black border-[#FFC500]' 
-                      : 'bg-[#18181C] text-gray-400 border-[#27272A]'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+                { id: 'all', label: 'الكل', icon: Sparkles },
+                { id: 'phones', label: 'الجوالات', icon: Smartphone },
+                { id: 'accessories', label: 'الإكسسوارات', icon: Tag },
+                { id: 'maintenance', label: 'الصيانة والقطع', icon: Wrench },
+                { id: 'sim_services', label: 'الشرائح', icon: Radio },
+              ].map(tab => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all flex items-center gap-1 ${
+                      activeTab === tab.id 
+                        ? 'bg-[#FFC500] text-black border-[#FFC500]' 
+                        : 'bg-[#18181C] text-gray-400 border-[#27272A]'
+                    }`}
+                  >
+                    <Icon size={12} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* الماركات والمحافظات */}
             <div className="flex items-center justify-between gap-1 pt-1 border-t border-[#1F2937]/50">
               <div className="flex gap-1 overflow-x-auto no-scrollbar flex-1">
-                {['all', 'Apple', 'Samsung', 'Xiaomi', 'Other'].map(b => (
+                {[
+                  { id: 'all', label: 'الماركات' },
+                  { id: 'Apple', label: 'Apple' },
+                  { id: 'Samsung', label: 'Samsung' },
+                  { id: 'Xiaomi', label: 'Xiaomi' },
+                  { id: 'Other', label: 'أخرى' },
+                ].map(b => (
                   <button
-                    key={b}
-                    onClick={() => setSelectedBrand(b)}
+                    key={b.id}
+                    onClick={() => setSelectedBrand(b.id)}
                     className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${
-                      selectedBrand === b 
+                      selectedBrand === b.id 
                         ? 'bg-[#18181C] border-[#FFC500] text-[#FFC500]' 
                         : 'bg-[#121215] border-[#222226] text-gray-400'
                     }`}
                   >
-                    {b === 'all' ? 'الماركات' : b === 'Other' ? 'أخرى' : b}
+                    {b.label}
                   </button>
                 ))}
               </div>
@@ -551,8 +560,8 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
                     {phone.price.toLocaleString()} {phone.currency}
                   </span>
 
-                  <span className="absolute bottom-2 right-2 px-1.5 py-0.2 rounded bg-black/80 text-gray-300 text-[8.5px] font-mono">
-                    {phone.storage}
+                  <span className="absolute bottom-2 right-2 px-1.5 py-0.2 rounded bg-black/80 text-gray-300 text-[8.5px] font-mono flex items-center gap-1">
+                    <Cpu size={10} /> {phone.storage}
                   </span>
                 </div>
 
@@ -561,7 +570,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
                     <div className="flex items-center gap-1.5 text-[9.5px] text-gray-400 mb-0.5">
                       <span className="text-[#FFC500] font-bold">{phone.brand}</span>
                       <span>•</span>
-                      <span>{phone.city}</span>
+                      <span className="flex items-center gap-0.5"><MapPin size={10} /> {phone.city}</span>
                     </div>
                     <h3 className="text-xs sm:text-sm font-bold text-white truncate">
                       {phone.name}
@@ -600,8 +609,8 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
           onTouchEnd={handleTouchEnd}
         >
           <div className="flex justify-between items-center pt-2" onClick={e => e.stopPropagation()}>
-            <span className="text-xs text-gray-400 font-mono">
-              {activeImageIndex + 1} من {selectedPhone.images.length}
+            <span className="text-xs text-gray-400 font-mono flex items-center gap-1">
+              <Camera size={13} /> {activeImageIndex + 1} من {selectedPhone.images.length}
             </span>
             <button
               onClick={() => setIsLightboxOpen(false)}
@@ -691,10 +700,10 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
                     onChange={(e) => setPhoneBrand(e.target.value as any)}
                     className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none font-bold"
                   >
-                    <option value="Apple">Apple (آيفون)</option>
-                    <option value="Samsung">Samsung (سامسونج)</option>
-                    <option value="Xiaomi">Xiaomi (شاومي)</option>
-                    <option value="Huawei">Huawei (هواوي)</option>
+                    <option value="Apple">Apple</option>
+                    <option value="Samsung">Samsung</option>
+                    <option value="Xiaomi">Xiaomi</option>
+                    <option value="Huawei">Huawei</option>
                     <option value="Other">ماركات أخرى</option>
                   </select>
                 </div>
@@ -775,7 +784,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
                     className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none font-bold"
                   >
                     <option value="جديد كرت">جديد كرت</option>
-                    <option value="شبه جديد">شبه جديد (استخدام بسيط)</option>
+                    <option value="شبه جديد">شبه جديد</option>
                     <option value="مستعمل نظيف">مستعمل نظيف</option>
                   </select>
                 </div>
