@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Star, MapPin, Gavel, Building, Briefcase, 
   ChevronDown, ChevronUp, Coins, ArrowRight, Smartphone,
-  Clock, ShieldCheck, Sparkles, MessageSquare, Tag, UserCheck
+  Clock, ShieldCheck, MessageSquare
 } from 'lucide-react';
 import { OFFICIAL_CATEGORIES, CategoryItem } from '../../data/categories';
 import { BusinessItem } from '../../data/mockData';
@@ -53,7 +53,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
     : OFFICIAL_CATEGORIES.slice(0, 8);
 
   return (
-    <div dir="rtl" className="space-y-4 pb-28 pt-1 max-w-6xl mx-auto px-3 sm:px-4 font-['Cairo',sans-serif] text-white">
+    <div dir="rtl" className="space-y-4 pt-1 max-w-6xl mx-auto px-3 sm:px-4 font-['Cairo',sans-serif] text-white">
       
       {/* 1. شبكة التصنيفات الرئيسية الفاخرة */}
       <div className="space-y-2 pt-1">
@@ -111,59 +111,56 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 3. المزادات الحية المعتمدة (تتسع لـ 3 بطاقات مرتبة باللمس بدون شريط أبيض) */}
+      {/* 3. المزادات الحية (3 بطاقات كاملة ومرتبة) */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black text-white flex items-center gap-1.5">
             <Gavel size={13} className="text-[#DC2626]" /> المزادات الحية المعتمدة (5% عمولة)
           </h3>
           <button onClick={onNavigateAuctions} className="text-[11px] font-bold text-[#FFC500] hover:underline cursor-pointer">
-            عرض الكل
+            عرض الكل ←
           </button>
         </div>
 
-        <div className="flex gap-2.5 overflow-x-auto pb-1 no-scrollbar">
+        <div className="grid grid-cols-3 gap-2">
           {[
-            { id: '1', title: 'تويوتا لاندكروزر V8 بريمي 2022', price: '182,000 SAR', time: '04:12:30', img: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=500&auto=format&fit=crop&q=80' },
-            { id: '2', title: 'أرض تجارية ركنية شارع الستين', price: '95,000,000 YER', time: '08:45:10', img: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=500&auto=format&fit=crop&q=80' },
-            { id: '3', title: 'شاحنة مرسيدس أكتروس 2020', price: '58,000 USD', time: '02:30:00', img: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=500&auto=format&fit=crop&q=80' }
+            { id: '1', title: 'تويوتا لاندكروزر V8', price: '182k SAR', time: '04:12', img: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=500&auto=format&fit=crop&q=80' },
+            { id: '2', title: 'أرض تجارية شارع الستين', price: '95m YER', time: '08:45', img: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=500&auto=format&fit=crop&q=80' },
+            { id: '3', title: 'شاحنة مرسيدس أكتروس', price: '58k USD', time: '02:30', img: 'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=500&auto=format&fit=crop&q=80' }
           ].map(auc => (
             <div 
               key={auc.id} 
               onClick={onNavigateAuctions}
-              className="shrink-0 w-[145px] sm:w-48 rounded-xl bg-[#0F0F12] border border-[#222226] overflow-hidden shadow-sm cursor-pointer hover:border-[#FFC500]/50 transition-all active:scale-95"
+              className="rounded-xl bg-[#0F0F12] border border-[#222226] overflow-hidden shadow-sm cursor-pointer hover:border-[#FFC500]/50 transition-all active:scale-95 flex flex-col justify-between"
             >
-              <div className="h-24 w-full relative">
+              <div className="h-20 w-full relative">
                 <img src={auc.img} alt={auc.title} className="w-full h-full object-cover" />
-                <span className="absolute top-1 right-1 px-1.5 py-0.2 rounded-full bg-[#DC2626] text-white text-[8px] font-black">
-                  🔴 مباشر
+                <span className="absolute top-1 right-1 px-1.5 py-0.2 rounded bg-[#DC2626] text-white text-[7.5px] font-black">
+                  🔴 حي
                 </span>
-                <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-black/85 text-white text-[8.5px] font-mono">
+                <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-black/85 text-white text-[7.5px] font-mono">
                   ⏳ {auc.time}
                 </span>
               </div>
-              <div className="p-2 space-y-0.5">
-                <h4 className="text-[11px] font-bold text-white truncate">{auc.title}</h4>
-                <div className="flex justify-between items-center pt-0.5">
-                  <span className="text-[8.5px] text-[#9CA3AF]">أعلى مزايدة:</span>
-                  <b className="text-[10.5px] font-mono text-[#16A34A]">{auc.price}</b>
-                </div>
+              <div className="p-1.5 space-y-0.5">
+                <h4 className="text-[10px] font-bold text-white truncate">{auc.title}</h4>
+                <div className="text-[9.5px] font-mono font-black text-[#16A34A] truncate">{auc.price}</div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 4. إعلان تجاري في المنتصف YR Ads #2 */}
+      {/* 4. إعلان YR Ads الموضع #2 (شريط عريض في المنتصف) */}
       <div className="w-full my-2">
         <AdBanner placementId="2" className="w-full" />
       </div>
 
-      {/* 5. أسعار العملات والذهب الأصلية المصغرة */}
-      <div className="bg-[#0F0F12] rounded-2xl border border-[#222226] p-3.5 sm:p-4 space-y-3 shadow-xl">
-        <div className="flex items-center justify-between border-b border-[#222226] pb-2.5">
+      {/* 5. أسعار العملات والذهب الأصلية */}
+      <div className="bg-[#0F0F12] rounded-2xl border border-[#222226] p-3 sm:p-4 space-y-2.5 shadow-xl">
+        <div className="flex items-center justify-between border-b border-[#222226] pb-2">
           <div className="flex items-center gap-1.5">
-            <Coins size={15} className="text-[#FFC500]" />
+            <Coins size={14} className="text-[#FFC500]" />
             <h3 className="text-xs sm:text-sm font-black text-white">أسعار العملات والذهب</h3>
           </div>
 
@@ -171,19 +168,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div className="flex bg-[#18181C] p-0.5 rounded-xl border border-[#27272A]">
               <button
                 onClick={() => setActiveMarket('sanaa')}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all ${
-                  activeMarket === 'sanaa' ? 'bg-[#FFC500] text-black shadow-sm' : 'text-gray-400 hover:text-white'
+                className={`px-2 py-0.5 rounded-lg text-[9.5px] font-black transition-all ${
+                  activeMarket === 'sanaa' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                أسعار صنعاء
+                صنعاء
               </button>
               <button
                 onClick={() => setActiveMarket('aden')}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all ${
-                  activeMarket === 'aden' ? 'bg-[#FFC500] text-black shadow-sm' : 'text-gray-400 hover:text-white'
+                className={`px-2 py-0.5 rounded-lg text-[9.5px] font-black transition-all ${
+                  activeMarket === 'aden' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'
                 }`}
               >
-                أسعار عدن
+                عدن
               </button>
             </div>
 
@@ -193,238 +190,226 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono">
-          <div onClick={onNavigateExchangeRates} className="p-2.5 rounded-xl bg-[#18181C] border border-[#27272A] space-y-1 cursor-pointer hover:border-[#FFC500]/40 transition-colors">
-            <div className="flex justify-between items-center text-[10px]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 font-mono">
+          <div onClick={onNavigateExchangeRates} className="p-2 rounded-xl bg-[#18181C] border border-[#27272A] space-y-0.5 cursor-pointer hover:border-[#FFC500]/40 transition-colors">
+            <div className="flex justify-between items-center text-[9.5px]">
               <span className="font-bold text-white font-['Cairo']">الدولار 🇺🇸</span>
-              <span className="text-[9px] text-[#DC2626] font-black">{currentRates.usd.change}</span>
+              <span className="text-[8.5px] text-[#DC2626] font-black">{currentRates.usd.change}</span>
             </div>
-            <div className="flex justify-between items-center text-[10px]">
-              <span className="text-gray-400 font-['Cairo'] text-[9px]">شراء: <b className="text-[#16A34A]">{currentRates.usd.buy}</b></span>
-              <span className="text-gray-400 font-['Cairo'] text-[9px]">بيع: <b className="text-[#DC2626]">{currentRates.usd.sell}</b></span>
+            <div className="flex justify-between items-center text-[9px]">
+              <span className="text-gray-400 font-['Cairo']">شراء: <b className="text-[#16A34A]">{currentRates.usd.buy}</b></span>
+              <span className="text-gray-400 font-['Cairo']">بيع: <b className="text-[#DC2626]">{currentRates.usd.sell}</b></span>
             </div>
           </div>
 
-          <div onClick={onNavigateExchangeRates} className="p-2.5 rounded-xl bg-[#18181C] border border-[#27272A] space-y-1 cursor-pointer hover:border-[#FFC500]/40 transition-colors">
-            <div className="flex justify-between items-center text-[10px]">
+          <div onClick={onNavigateExchangeRates} className="p-2 rounded-xl bg-[#18181C] border border-[#27272A] space-y-0.5 cursor-pointer hover:border-[#FFC500]/40 transition-colors">
+            <div className="flex justify-between items-center text-[9.5px]">
               <span className="font-bold text-white font-['Cairo']">السعودي 🇸🇦</span>
-              <span className="text-[9px] text-[#16A34A] font-black">{currentRates.sar.change}</span>
+              <span className="text-[8.5px] text-[#16A34A] font-black">{currentRates.sar.change}</span>
             </div>
-            <div className="flex justify-between items-center text-[10px]">
-              <span className="text-gray-400 font-['Cairo'] text-[9px]">شراء: <b className="text-[#16A34A]">{currentRates.sar.buy}</b></span>
-              <span className="text-gray-400 font-['Cairo'] text-[9px]">بيع: <b className="text-[#DC2626]">{currentRates.sar.sell}</b></span>
-            </div>
-          </div>
-
-          <div onClick={onNavigateExchangeRates} className="p-2.5 rounded-xl bg-[#18181C] border border-[#27272A] space-y-1 cursor-pointer hover:border-[#FFC500]/40 transition-colors">
-            <div className="flex justify-between items-center text-[10px]">
-              <span className="font-bold text-[#FFC500] font-['Cairo']">ذهب عيار 24 🟡</span>
-              <span className="text-[9px] text-[#16A34A] font-black">{currentRates.gold24.change}</span>
-            </div>
-            <div className="flex justify-between items-center text-[10px]">
-              <span className="text-gray-400 font-['Cairo'] text-[9px]">شراء: <b className="text-[#16A34A]">{currentRates.gold24.buy}</b></span>
-              <span className="text-gray-400 font-['Cairo'] text-[9px]">بيع: <b className="text-[#DC2626]">{currentRates.gold24.sell}</b></span>
+            <div className="flex justify-between items-center text-[9px]">
+              <span className="text-gray-400 font-['Cairo']">شراء: <b className="text-[#16A34A]">{currentRates.sar.buy}</b></span>
+              <span className="text-gray-400 font-['Cairo']">بيع: <b className="text-[#DC2626]">{currentRates.sar.sell}</b></span>
             </div>
           </div>
 
-          <div onClick={onNavigateExchangeRates} className="p-2.5 rounded-xl bg-[#18181C] border border-[#27272A] space-y-1 cursor-pointer hover:border-[#FFC500]/40 transition-colors">
-            <div className="flex justify-between items-center text-[10px]">
-              <span className="font-bold text-[#FFC500] font-['Cairo']">ذهب عيار 21 🟡</span>
-              <span className="text-[9px] text-[#16A34A] font-black">{currentRates.gold21.change}</span>
+          <div onClick={onNavigateExchangeRates} className="p-2 rounded-xl bg-[#18181C] border border-[#27272A] space-y-0.5 cursor-pointer hover:border-[#FFC500]/40 transition-colors">
+            <div className="flex justify-between items-center text-[9.5px]">
+              <span className="font-bold text-[#FFC500] font-['Cairo']">ذهب 24 🟡</span>
+              <span className="text-[8.5px] text-[#16A34A] font-black">{currentRates.gold24.change}</span>
             </div>
-            <div className="flex justify-between items-center text-[10px]">
-              <span className="text-gray-400 font-['Cairo'] text-[9px]">شراء: <b className="text-[#16A34A]">{currentRates.gold21.buy}</b></span>
-              <span className="text-gray-400 font-['Cairo'] text-[9px]">بيع: <b className="text-[#DC2626]">{currentRates.gold21.sell}</b></span>
+            <div className="flex justify-between items-center text-[9px]">
+              <span className="text-gray-400 font-['Cairo']">شراء: <b className="text-[#16A34A]">{currentRates.gold24.buy}</b></span>
+              <span className="text-gray-400 font-['Cairo']">بيع: <b className="text-[#DC2626]">{currentRates.gold24.sell}</b></span>
+            </div>
+          </div>
+
+          <div onClick={onNavigateExchangeRates} className="p-2 rounded-xl bg-[#18181C] border border-[#27272A] space-y-0.5 cursor-pointer hover:border-[#FFC500]/40 transition-colors">
+            <div className="flex justify-between items-center text-[9.5px]">
+              <span className="font-bold text-[#FFC500] font-['Cairo']">ذهب 21 🟡</span>
+              <span className="text-[8.5px] text-[#16A34A] font-black">{currentRates.gold21.change}</span>
+            </div>
+            <div className="flex justify-between items-center text-[9px]">
+              <span className="text-gray-400 font-['Cairo']">شراء: <b className="text-[#16A34A]">{currentRates.gold21.buy}</b></span>
+              <span className="text-gray-400 font-['Cairo']">بيع: <b className="text-[#DC2626]">{currentRates.gold21.sell}</b></span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 6. سوق الهواتف والأجهزة الذكية */}
+      {/* 6. سوق الهواتف والأجهزة الذكية (3 بطاقات كاملة ومرتبة) */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black text-white flex items-center gap-1.5">
             <Smartphone size={13} className="text-[#2EA5FF]" /> سوق الهواتف والأجهزة الذكية
           </h3>
           <button onClick={onNavigatePhones} className="text-[11px] font-bold text-[#FFC500] hover:underline cursor-pointer">
-            عرض الكل
+            عرض الكل ←
           </button>
         </div>
 
-        <div className="flex gap-2.5 overflow-x-auto pb-1 no-scrollbar">
+        <div className="grid grid-cols-3 gap-2">
           {[
-            { id: '1', title: 'iPhone 15 Pro Max 256GB', price: '$1,150', store: 'مركز أبل الخليج • صنعاء', condition: 'جديد كرت', img: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&auto=format&fit=crop&q=80' },
-            { id: '2', title: 'Samsung Galaxy S24 Ultra', price: '$1,080', store: 'سامسونج ستور • عدن', condition: 'جديد كرت', img: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&auto=format&fit=crop&q=80' },
-            { id: '3', title: 'Xiaomi 14 Pro 512GB', price: '$720', store: 'فون زون • تعز', condition: 'شبه جديد', img: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&auto=format&fit=crop&q=80' }
+            { id: '1', title: 'iPhone 15 Pro Max', price: '$1,150', store: 'مركز الخليج • صنعاء', img: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500&auto=format&fit=crop&q=80' },
+            { id: '2', title: 'Galaxy S24 Ultra', price: '$1,080', store: 'سامسونج • عدن', img: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500&auto=format&fit=crop&q=80' },
+            { id: '3', title: 'Xiaomi 14 Pro', price: '$720', store: 'فون زون • تعز', img: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&auto=format&fit=crop&q=80' }
           ].map(ph => (
             <div 
               key={ph.id} 
               onClick={onNavigatePhones}
-              className="shrink-0 w-[145px] sm:w-48 rounded-xl bg-[#0F0F12] border border-[#222226] overflow-hidden shadow-sm cursor-pointer hover:border-[#2EA5FF]/50 transition-all active:scale-95"
+              className="rounded-xl bg-[#0F0F12] border border-[#222226] overflow-hidden shadow-sm cursor-pointer hover:border-[#2EA5FF]/50 transition-all active:scale-95 flex flex-col justify-between"
             >
-              <div className="h-24 w-full relative">
+              <div className="h-20 w-full relative bg-[#161619]">
                 <img src={ph.img} alt={ph.title} className="w-full h-full object-cover" />
-                <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-black/85 text-[#2EA5FF] text-[9.5px] font-mono font-bold">
+                <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-black/85 text-[#2EA5FF] text-[8.5px] font-mono font-bold">
                   {ph.price}
                 </span>
-                <span className="absolute top-1 right-1 px-1.5 py-0.2 rounded bg-black/80 text-[8px] text-gray-300">
-                  {ph.condition}
-                </span>
               </div>
-              <div className="p-2 space-y-0.5">
-                <h4 className="text-[11px] font-bold text-white truncate">{ph.title}</h4>
-                <p className="text-[8.5px] text-[#9CA3AF] truncate">{ph.store}</p>
+              <div className="p-1.5 space-y-0.5">
+                <h4 className="text-[10px] font-bold text-white truncate">{ph.title}</h4>
+                <p className="text-[8px] text-[#9CA3AF] truncate">{ph.store}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 7. العقارات والفرص الاستثمارية */}
+      {/* 7. العقارات والفرص الاستثمارية (3 بطاقات كاملة ومرتبة) */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black text-white flex items-center gap-1.5">
             <Building size={13} className="text-[#3B82F6]" /> العقارات والفرص الاستثمارية
           </h3>
           <button onClick={onNavigateRealEstate} className="text-[11px] font-bold text-[#FFC500] hover:underline cursor-pointer">
-            عرض الكل
+            عرض الكل ←
           </button>
         </div>
 
-        <div className="flex gap-2.5 overflow-x-auto pb-1 no-scrollbar">
+        <div className="grid grid-cols-3 gap-2">
           {[
-            { id: '1', title: 'شقة سوبر ديلوكس مفروشة — حدة', price: '3,500 SAR / شهر', specs: '3 غرف • 2 حمام • 150 م²', img: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=500&auto=format&fit=crop&q=80' },
-            { id: '2', title: 'فيلا مستقلة فاخرة مسبح وحديقة — عدن', price: '$450,000', specs: '5 غرف • 4 حمام • 450 م²', img: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=500&auto=format&fit=crop&q=80' },
-            { id: '3', title: 'عمارة تجارية استثمارية 5 أدوار — تعز', price: '$850,000', specs: '10 شقق • 4 محلات • موقع ركني', img: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&auto=format&fit=crop&q=80' }
+            { id: '1', title: 'شقة سوبر ديلوكس — حدة', price: '3.5k SAR/ش', specs: '3 غرف • 150م²', img: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=500&auto=format&fit=crop&q=80' },
+            { id: '2', title: 'فيلا فاخرة مسبح — عدن', price: '$450,000', specs: '5 غرف • 450م²', img: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=500&auto=format&fit=crop&q=80' },
+            { id: '3', title: 'عمارة استثمارية — تعز', price: '$850,000', specs: '10 شقق • 4 محلات', img: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&auto=format&fit=crop&q=80' }
           ].map(prop => (
             <div 
               key={prop.id} 
               onClick={onNavigateRealEstate}
-              className="shrink-0 w-[145px] sm:w-48 rounded-xl bg-[#0F0F12] border border-[#222226] overflow-hidden shadow-sm cursor-pointer hover:border-[#FFC500]/50 transition-all active:scale-95"
+              className="rounded-xl bg-[#0F0F12] border border-[#222226] overflow-hidden shadow-sm cursor-pointer hover:border-[#FFC500]/50 transition-all active:scale-95 flex flex-col justify-between"
             >
-              <div className="h-24 w-full relative">
+              <div className="h-20 w-full relative">
                 <img src={prop.img} alt={prop.title} className="w-full h-full object-cover" />
-                <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-[#FFC500] text-black text-[9px] font-black">
+                <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-[#FFC500] text-black text-[8px] font-black">
                   {prop.price}
                 </span>
               </div>
-              <div className="p-2 space-y-0.5">
-                <h4 className="text-[11px] font-bold text-white truncate">{prop.title}</h4>
-                <p className="text-[8.5px] text-[#9CA3AF] truncate">{prop.specs}</p>
+              <div className="p-1.5 space-y-0.5">
+                <h4 className="text-[10px] font-bold text-white truncate">{prop.title}</h4>
+                <p className="text-[8px] text-[#9CA3AF] truncate">{prop.specs}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 8. أحدث الوظائف وفرص العمل */}
+      {/* 8. أحدث الوظائف وفرص العمل (3 بطاقات كاملة ومرتبة) */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black text-white flex items-center gap-1.5">
             <Briefcase size={13} className="text-[#16A34A]" /> أحدث الوظائف وفرص العمل
           </h3>
           <button onClick={onNavigateJobs} className="text-[11px] font-bold text-[#FFC500] hover:underline cursor-pointer">
-            عرض الكل
+            عرض الكل ←
           </button>
         </div>
 
-        <div className="flex gap-2.5 overflow-x-auto pb-1 no-scrollbar">
+        <div className="grid grid-cols-3 gap-2">
           {[
-            { id: '1', title: 'مهندس برمجيات React / Node', company: 'يمن سوفت • صنعاء', salary: '$1,200', type: 'دوام كامل' },
-            { id: '2', title: 'مدير تسويق وحملات إعلانية', company: 'مجموعة هائل سعيد • عدن', salary: '$900', type: 'دوام كامل' },
-            { id: '3', title: 'محاسب مالي قانوني معتمد', company: 'بنك الكريمي • المكلا', salary: '$800', type: 'دوام كامل' }
+            { id: '1', title: 'مهندس برمجيات React', company: 'يمن سوفت • صنعاء', salary: '$1,200' },
+            { id: '2', title: 'مدير تسويق رقمي', company: 'هائل سعيد • عدن', salary: '$900' },
+            { id: '3', title: 'محاسب مالي قانوني', company: 'الكريمي • المكلا', salary: '$800' }
           ].map(job => (
             <div 
               key={job.id} 
               onClick={onNavigateJobs}
-              className="shrink-0 w-[145px] sm:w-48 rounded-xl bg-[#0F0F12] border border-[#222226] p-2.5 space-y-1 shadow-sm cursor-pointer hover:border-[#16A34A]/50 transition-all active:scale-95"
+              className="rounded-xl bg-[#0F0F12] border border-[#222226] p-2 space-y-1 shadow-sm cursor-pointer hover:border-[#16A34A]/50 transition-all active:scale-95 flex flex-col justify-between"
             >
-              <span className="px-1.5 py-0.2 rounded bg-[#16A34A]/15 text-[#16A34A] text-[8.5px] font-bold inline-block">
-                {job.type}
-              </span>
-              <h4 className="text-[11px] font-bold text-white truncate">{job.title}</h4>
-              <p className="text-[8.5px] text-[#9CA3AF] truncate">{job.company}</p>
-              <div className="pt-1 flex justify-between items-center border-t border-[#1F2937]">
-                <span className="text-[8px] text-gray-400">الراتب:</span>
-                <b className="text-[10px] font-mono text-[#FFC500]">{job.salary}</b>
+              <h4 className="text-[10px] font-bold text-white truncate">{job.title}</h4>
+              <p className="text-[8px] text-[#9CA3AF] truncate">{job.company}</p>
+              <div className="pt-0.5 flex justify-between items-center border-t border-[#1F2937]">
+                <span className="text-[7.5px] text-gray-400">الراتب:</span>
+                <b className="text-[9.5px] font-mono text-[#FFC500]">{job.salary}</b>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 9. الشركات والأنشطة المعتمدة */}
+      {/* 9. الشركات والأنشطة المعتمدة (3 بطاقات كاملة ومرتبة) */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black text-white flex items-center gap-1.5">
             <Star size={13} className="text-[#FFC500]" fill="#FFC500" /> الشركات والأنشطة المعتمدة
           </h3>
           <button onClick={() => onSelectCategory('all')} className="text-[11px] font-bold text-[#FFC500] hover:underline cursor-pointer">
-            عرض الكل
+            عرض الكل ←
           </button>
         </div>
 
-        <div className="flex gap-2.5 overflow-x-auto pb-1 no-scrollbar">
-          {businesses.slice(0, 6).map((b) => (
+        <div className="grid grid-cols-3 gap-2">
+          {businesses.slice(0, 3).map((b) => (
             <div
               key={b.id}
               onClick={() => onSelectBusiness(b)}
-              className="shrink-0 w-[145px] sm:w-44 rounded-xl bg-[#0F0F12] border border-[#222226] hover:border-[#FFC500]/50 overflow-hidden shadow-sm cursor-pointer transition-all active:scale-95"
+              className="rounded-xl bg-[#0F0F12] border border-[#222226] hover:border-[#FFC500]/50 overflow-hidden shadow-sm cursor-pointer transition-all active:scale-95 flex flex-col justify-between"
             >
               <div className="h-20 w-full relative">
                 <img src={b.image} alt={b.name} className="w-full h-full object-cover" />
-                <span className="absolute top-1 left-1 px-1.5 py-0.2 rounded bg-black/85 text-[#FFC500] text-[8.5px] font-black flex items-center gap-0.5">
+                <span className="absolute top-1 left-1 px-1.5 py-0.2 rounded bg-black/85 text-[#FFC500] text-[8px] font-black flex items-center gap-0.5">
                   ★ {b.rating}
                 </span>
               </div>
-              <div className="p-2 space-y-0.5">
-                <h4 className="text-[11px] font-bold text-white truncate">{b.name}</h4>
-                <p className="text-[8.5px] text-[#9CA3AF] truncate">{b.category} • {b.city}</p>
+              <div className="p-1.5 space-y-0.5">
+                <h4 className="text-[10px] font-bold text-white truncate">{b.name}</h4>
+                <p className="text-[8px] text-[#9CA3AF] truncate">{b.city}</p>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 10. آخر التقييمات والمراجعات الموثقة من المجتمع */}
+      {/* 10. آخر التقييمات والمراجعات بصورة المقيم الحقيقية النظيفة */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black text-white flex items-center gap-1.5">
             <MessageSquare size={13} className="text-[#FFC500]" /> آخر التقييمات والمراجعات
           </h3>
-          <button onClick={() => onSelectCategory('all')} className="text-[11px] font-bold text-[#FFC500] hover:underline cursor-pointer">
-            عرض الكل
-          </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {[
-            { id: '1', user: 'أحمد الوصابي', business: 'مطعم البيت اليمني • صنعاء', rating: 5, comment: 'خدمة راقية جداً وأكل يمني أصيل بنكهة ممتازة، أنصح بزيارته بشدة.', time: 'منذ ساعتين' },
-            { id: '2', user: 'م. سالم الكاف', business: 'شركة عدن للتقنية والشبكات • عدن', rating: 5, comment: 'تعامل احترافي ودقة في مواعيد التسليم وخدمة ما بعد البيع ممتازة.', time: 'أمس' }
+            { id: '1', name: 'أحمد الوصابي', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80', rating: 5, comment: 'خدمة راقية جداً وأكل يمني أصيل بنكهة ممتازة، أنصح بزيارة المطعم.' },
+            { id: '2', name: 'م. سالم الكاف', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80', rating: 5, comment: 'تعامل احترافي ودقة في مواعيد التسليم وخدمة ما بعد البيع ممتازة.' }
           ].map(rev => (
             <div 
               key={rev.id} 
-              onClick={() => onSelectCategory('all')}
-              className="p-3 rounded-xl bg-[#0F0F12] border border-[#222226] space-y-1.5 shadow-sm cursor-pointer hover:border-[#FFC500]/40 transition-all"
+              className="p-3 rounded-xl bg-[#0F0F12] border border-[#222226] space-y-1.5 shadow-sm"
             >
               <div className="flex justify-between items-center">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-6 h-6 rounded-full bg-[#FFC500]/20 text-[#FFC500] font-black text-[10px] flex items-center justify-center">
-                    {rev.user.charAt(0)}
-                  </div>
-                  <div>
-                    <h5 className="text-[11px] font-bold text-white">{rev.user}</h5>
-                    <span className="text-[8.5px] text-[#9CA3AF]">{rev.business}</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={rev.avatar} 
+                    alt={rev.name} 
+                    className="w-7 h-7 rounded-full object-cover border border-[#FFC500]/40 shadow-sm" 
+                  />
+                  <h5 className="text-xs font-bold text-white">{rev.name}</h5>
                 </div>
-                <div className="flex text-[#FFC500] text-[10px]">
+                <div className="flex text-[#FFC500] text-[11px]">
                   {'★'.repeat(rev.rating)}
                 </div>
               </div>
               <p className="text-[10px] text-gray-300 line-clamp-2 leading-relaxed">
                 "{rev.comment}"
               </p>
-              <span className="text-[8px] text-gray-500 font-mono block pt-0.5">{rev.time}</span>
             </div>
           ))}
         </div>
