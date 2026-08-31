@@ -35,20 +35,10 @@ export const AdsManager: React.FC = () => {
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0B0F17] p-5 rounded-2xl border border-[#1F2937]">
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <NavLink
-              to="/admin"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#161D2B] text-yellow-400 hover:text-yellow-300 hover:bg-[#1F2937] border border-[#1F2937] transition font-bold text-xs shrink-0"
-              title="رجوع للوحة التحكم"
-            >
-              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-              <span>رجوع</span>
-            </NavLink>
-            <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
-              <Megaphone className="text-[#FFC500]" />
-              معرض الإعلانات المنشورة الحقيقية (Live Ads Showcase)
-            </h2>
-          </div>
+          <h2 className="text-2xl font-black text-white flex items-center gap-2">
+            <Megaphone className="text-[#FFC500]" />
+            معرض الإعلانات المنشورة الحقيقية (Live Ads Showcase)
+          </h2>
           <p className="text-[#9CA3AF] text-xs mt-1">
             مشاهدة الإعلانات المنشورة بكامل الصورة أو بالاقتصاص المخصص بالفيديو والصور الحية.
           </p>
