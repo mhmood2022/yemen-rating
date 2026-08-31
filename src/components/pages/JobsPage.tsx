@@ -1,552 +1,739 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Briefcase,
-  MapPin,
-  Building2,
-  Clock,
-  ArrowRight,
-  DollarSign,
-  Send,
-  CheckCircle2,
-  Plus,
-  Search,
-  Check,
-  ShieldCheck,
-  AlertCircle
+import React, { useState, useRef } from 'react';
+import { 
+  Briefcase, MapPin, ArrowRight, Plus, CheckCircle2, 
+  User, X, Upload, Trash2, ShieldCheck, Clock, 
+  DollarSign, FileText, Check, AlertCircle, Sparkles, Building2
 } from 'lucide-react';
-import { DEMO_JOBS, CURRENT_COMMISSION_POLICY } from '../../data/demoJobs';
-import { JobVacancy } from '../../types/jobs';
+import { AdBanner } from '../common/AdBanner';
+
+export interface JobItem {
+  id: string;
+  title: string;
+  category: string;
+  jobType: 'دوام كامل' | 'دوام جزئي' | 'عن بعد' | 'عقد';
+  experience: 'مبتدئ' | '1-3 سنوات' | '3-5 سنوات' | '5+ سنوات';
+  gender: 'ذكر' | 'أنثى' | 'لا يشترط';
+  education: 'ثانوية' | 'دبلوم' | 'بكالوريوس' | 'ماجستير' | 'خبرة مهنية';
+  salary: number;
+  currency: string;
+  city: string;
+  description: string;
+  requirements: string[];
+  employerName: string;
+  employerPhone: string; // محمي وسري للإدارة فقط
+  employerEmail: string; // محمي وسري للإدارة فقط
+  applicantsCount: number;
+  status: 'active' | 'closed';
+  createdAt: string;
+}
+
+const INITIAL_JOBS: JobItem[] = [
+  {
+    id: 'job-101',
+    title: 'مهندس برمجيات وتطبيقات React & Node.js',
+    category: 'تكنولوجيا ومعلومات',
+    jobType: 'دوام كامل',
+    experience: '3-5 سنوات',
+    gender: 'لا يشترط',
+    education: 'بكالوريوس',
+    salary: 650000,
+    currency: 'YER',
+    city: 'صنعاء — حدة',
+    description: 'مطلوب مهندس برمجيات ذو كفاءة عالية لتطوير وصيانة منصات الويب وقواعد البيانات والربط مع الـ API.',
+    requirements: [
+      'خبرة لا تقل عن 3 سنوات في React و TypeScript',
+      'معرفة ممتازة بقواعد بيانات PostgreSQL أو MySQL',
+      'القدرة على العمل بروح الفريق وإنجاز المهام في وقتها'
+    ],
+    employerName: 'شركة برمجيات رائدة',
+    employerPhone: '967777123456',
+    employerEmail: 'hr@tech-ye.com',
+    applicantsCount: 12,
+    status: 'active',
+    createdAt: 'اليوم'
+  },
+  {
+    id: 'job-102',
+    title: 'مدير تسويق رقمي وحملات إعلانية',
+    category: 'تسويق ومبيعات',
+    jobType: 'دوام كامل',
+    experience: '3-5 سنوات',
+    gender: 'لا يشترط',
+    education: 'بكالوريوس',
+    salary: 480000,
+    currency: 'YER',
+    city: 'عدن — المعلا',
+    description: 'إدارة وتوجيه الحملات الترويجية الممولة، كتابة المحتوى التسويقي، وإدارة منصات التواصل الاجتماعي وتحليل البيانات.',
+    requirements: [
+      'خبرة عملية في إدارة الحملات على Google Ads و Meta',
+      'مهارة عالية في تحليل العوائد ومعدلات التحويل CTR',
+      'إجادة إعداد الخطط التسويقية الشهرية والسنوية'
+    ],
+    employerName: 'مجموعة تجارية وصناعية',
+    employerPhone: '967733987654',
+    employerEmail: 'jobs@aden-group.com',
+    applicantsCount: 19,
+    status: 'active',
+    createdAt: 'أمس'
+  },
+  {
+    id: 'job-103',
+    title: 'محاسب مالي وقانوني معتمد',
+    category: 'مالية ومحاسبة',
+    jobType: 'دوام كامل',
+    experience: '1-3 سنوات',
+    gender: 'لا يشترط',
+    education: 'بكالوريوس',
+    salary: 430000,
+    currency: 'YER',
+    city: 'حضرموت — المكلا',
+    description: 'إعداد التقارير المالية الدورية، مراجعة القيود المحاسبية، ومتابعة الحسابات المدينة والدائنة والضرائب.',
+    requirements: [
+      'بكالوريوس محاسبة بتقدير جيد جداً كحد أدنى',
+      'إجادة العمل على الأنظمة المحاسبية المعتمدة (يمن سوفت/أونكس)',
+      'الدقة العالية في إعداد القوائم والميزانيات'
+    ],
+    employerName: 'مؤسسة مالية معتمدة',
+    employerPhone: '967711223344',
+    employerEmail: 'finance@mukalla.com',
+    applicantsCount: 8,
+    status: 'active',
+    createdAt: 'منذ يومين'
+  },
+  {
+    id: 'job-104',
+    title: 'فني صيانة جوالات وأجهزة ذكية',
+    category: 'صيانة وتقنية',
+    jobType: 'دوام كامل',
+    experience: '1-3 سنوات',
+    gender: 'ذكر',
+    education: 'خبرة مهنية',
+    salary: 380000,
+    currency: 'YER',
+    city: 'تعز — الحوبان',
+    description: 'صيانة وبرمجة كافة أنواع الهواتف الذكية (هاردوير وسوفت وير) وتبديل الشاشات والبطاريات بدقة عالية.',
+    requirements: [
+      'خبرة عملية مثبتة في صيانة أجهزة Apple و Samsung',
+      'مهارة في لحام المكونات الدقيقة وفحص الدوائر الإلكترونية',
+      'حسن التعامل مع العملاء والأمانة المهنية'
+    ],
+    employerName: 'مركز صيانة معتمد',
+    employerPhone: '967770554433',
+    employerEmail: 'tech@taizphone.com',
+    applicantsCount: 15,
+    status: 'active',
+    createdAt: 'منذ 3 أيام'
+  }
+];
 
 export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
-  const [jobs, setJobs] = useState<JobVacancy[]>(DEMO_JOBS);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCity, setSelectedCity] = useState<string>('all');
-  const [selectedSector, setSelectedSector] = useState<string>('all');
+  const [selectedJobType, setSelectedJobType] = useState<string>('all');
+  const [selectedExperience, setSelectedExperience] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  const [jobsList, setJobsList] = useState<JobItem[]>(INITIAL_JOBS);
+  const [selectedJob, setSelectedJob] = useState<JobItem | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // نوافذ العرض والتقديم
-  const [selectedJob, setSelectedJob] = useState<JobVacancy | null>(null);
-  const [isPostJobOpen, setIsPostJobOpen] = useState(false);
-  const [isApplyOpen, setIsApplyOpen] = useState(false);
-  const [successToast, setSuccessToast] = useState<string | null>(null);
-
-  // حقول إضافة وظيفة
-  const [postTitle, setPostTitle] = useState('');
-  const [postCompany, setPostCompany] = useState('');
-  const [postPhone, setPostPhone] = useState('');
+  // 1. نافذة نشر وظيفة جديدة (أصحاب العمل)
+  const [isPostJobModalOpen, setIsPostJobModalOpen] = useState(false);
+  const [postEmployerName, setPostEmployerName] = useState('');
+  const [postEmployerPhone, setPostEmployerPhone] = useState('');
+  const [postEmployerEmail, setPostEmployerEmail] = useState('');
+  const [postJobTitle, setPostJobTitle] = useState('');
+  const [postCategory, setPostCategory] = useState('تكنولوجيا ومعلومات');
+  const [postJobType, setPostJobType] = useState<JobItem['jobType']>('دوام كامل');
+  const [postExperience, setPostExperience] = useState<JobItem['experience']>('1-3 سنوات');
+  const [postGender, setPostGender] = useState<JobItem['gender']>('لا يشترط');
+  const [postEducation, setPostEducation] = useState<JobItem['education']>('بكالوريوس');
+  const [postSalary, setPostSalary] = useState<number>(400000);
   const [postCity, setPostCity] = useState('صنعاء');
-  const [postSector, setPostSector] = useState('تقنية وبرمجيات');
-  const [postWorkType, setPostWorkType] = useState('دوام كامل');
-  const [postSalary, setPostSalary] = useState('');
-  const [postDesc, setPostDesc] = useState('');
-  const [employerAgreed, setEmployerAgreed] = useState(false);
-  const [postPhoneError, setPostPhoneError] = useState(false);
+  const [postDescription, setPostDescription] = useState('');
+  const [postRequirements, setPostRequirements] = useState('');
+  const [agreedToEmployerPolicy, setAgreedToEmployerPolicy] = useState(false);
 
-  // حقول تقديم الباحث عن عمل
-  const [applyName, setApplyName] = useState('');
-  const [applyPhone, setApplyPhone] = useState('');
-  const [applyCity, setApplyCity] = useState('صنعاء');
-  const [applyQual, setApplyQual] = useState('');
-  const [applySummary, setApplySummary] = useState('');
-  const [applicantAgreed, setApplicantAgreed] = useState(false);
-  const [applyPhoneError, setApplyPhoneError] = useState(false);
+  // 2. نافذة التقديم على الوظيفة (الباحث عن عمل)
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+  const [applicantName, setApplicantName] = useState('');
+  const [applicantPhone, setApplicantPhone] = useState('');
+  const [applicantEmail, setApplicantEmail] = useState('');
+  const [applicantCity, setApplicantCity] = useState('صنعاء');
+  const [applicantExperience, setApplicantExperience] = useState('سنتان');
+  const [applicantGender, setApplicantGender] = useState<'ذكر' | 'أنثى'>('ذكر');
+  const [applicantQualification, setApplicantQualification] = useState('بكالوريوس');
+  const [applicantSummary, setApplicantSummary] = useState('');
+  const [cvFileName, setCvFileName] = useState<string>('');
+  const [agreedToApplicantPolicy, setAgreedToApplicantPolicy] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // 🔒 قفل تمرير خلفية الموقع عند فتح أي نافذة عبر كلاس modal-open
-  const isAnyModalOpen = Boolean(selectedJob || isPostJobOpen || isApplyOpen);
-  useEffect(() => {
-    if (isAnyModalOpen) {
-      document.documentElement.classList.add('modal-open');
-      document.body.classList.add('modal-open');
-    } else {
-      document.documentElement.classList.remove('modal-open');
-      document.body.classList.remove('modal-open');
-    }
-    return () => {
-      document.documentElement.classList.remove('modal-open');
-      document.body.classList.remove('modal-open');
-    };
-  }, [isAnyModalOpen]);
-
-  // فحص رقم الهاتف اليمني (9 أرقام ويبدأ بـ 7)
-  const validateYemenPhone = (phone: string) => {
-    return /^7[0-9]{8}$/.test(phone);
+  const handleOpenJob = (job: JobItem) => {
+    setSelectedJob(job);
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
-  // إرسال وظيفة جديدة
-  const handlePostJob = (e: React.FormEvent) => {
+  // معالجة رفع السيرة الذاتية PDF/صورة
+  const handleCvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCvFileName(file.name);
+    }
+  };
+
+  // التحقق من رقم الهاتف 9 أرقام
+  const isValidYemenPhone = (phone: string) => {
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    return cleanPhone.length >= 9;
+  };
+
+  // إرسال وظيفة جديدة للمراجعة
+  const handlePostJobSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateYemenPhone(postPhone)) {
-      setPostPhoneError(true);
+    if (!isValidYemenPhone(postEmployerPhone)) {
+      setToastMessage('يرجى إدخال رقم هاتف صحيح مكون من 9 أرقام على الأقل');
+      setTimeout(() => setToastMessage(null), 3500);
       return;
     }
-    setPostPhoneError(false);
+    if (!agreedToEmployerPolicy) return;
 
-    if (CURRENT_COMMISSION_POLICY.isEnabled && (CURRENT_COMMISSION_POLICY.payer === 'employer_only' || CURRENT_COMMISSION_POLICY.payer === 'both')) {
-      if (!employerAgreed) {
-        alert('يرجى الموافقة على شروط العمولة لإتمام نشر الشاغر.');
-        return;
-      }
-    }
+    const reqArray = postRequirements.split('\n').filter(r => r.trim().length > 0);
 
-    const newJob: JobVacancy = {
-      id: `job_${Date.now()}`,
-      title: postTitle.trim(),
-      companyName: postCompany.trim(),
-      contactPerson: 'مسؤول التوظيف',
-      phone: postPhone.trim(),
-      locationDetails: postCity,
+    const newEntry: JobItem = {
+      id: `job-${Date.now()}`,
+      title: postJobTitle,
+      category: postCategory,
+      jobType: postJobType,
+      experience: postExperience,
+      gender: postGender,
+      education: postEducation,
+      salary: Number(postSalary),
+      currency: 'YER',
       city: postCity,
-      sector: postSector as any,
-      workType: postWorkType as any,
-      experienceLevel: 'متوسط (2-4 سنوات)',
-      salaryRange: postSalary.trim() ? postSalary.trim() : 'يحدد بعد المقابلة',
-      postedDate: 'الآن',
-      deadline: 'خلال 30 يوماً',
-      description: postDesc.trim(),
-      requirements: ['الكفاءة في المهام المطلوبة', 'الالتزام بمعايير العمل المهنية'],
+      description: postDescription || 'فرصة عمل معتمدة عبر وساطة يمن ريتنغ.',
+      requirements: reqArray.length > 0 ? reqArray : ['الالتزام والجدية في العمل', 'توفر المهارات المطلوبة'],
+      employerName: postEmployerName || 'جهة عمل معتمدة',
+      employerPhone: postEmployerPhone, // سري للإدارة
+      employerEmail: postEmployerEmail, // سري للإدارة
+      applicantsCount: 0,
       status: 'active',
-      employerAgreedCommission: employerAgreed
+      createdAt: 'الآن'
     };
 
-    setJobs(prev => [newJob, ...prev]);
-    setIsPostJobOpen(false);
-    setSuccessToast('تم إرسال الشاغر بنجاح، وسيتم مطابقته مع الكفاءات المسجلة.');
-    setTimeout(() => setSuccessToast(null), 4000);
-
-    setPostTitle('');
-    setPostCompany('');
-    setPostPhone('');
-    setPostSalary('');
-    setPostDesc('');
-    setEmployerAgreed(false);
+    setJobsList(prev => [newEntry, ...prev]);
+    setIsPostJobModalOpen(false);
+    setPostJobTitle('');
+    setPostEmployerName('');
+    setPostEmployerPhone('');
+    setPostEmployerEmail('');
+    setPostDescription('');
+    setPostRequirements('');
+    setAgreedToEmployerPolicy(false);
+    setToastMessage('تم إرسال الوظيفة بنجاح وستقوم يمن ريتنغ بتوفير الكوادر المطلوبة لك');
+    setTimeout(() => setToastMessage(null), 4500);
   };
 
-  // إرسال ملف التقديم
-  const handleApply = (e: React.FormEvent) => {
+  // إرسال طلب التقديم على الوظيفة
+  const handleApplySubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateYemenPhone(applyPhone)) {
-      setApplyPhoneError(true);
+    if (!isValidYemenPhone(applicantPhone)) {
+      setToastMessage('يرجى إدخال رقم هاتف للتواصل مكون من 9 أرقام');
+      setTimeout(() => setToastMessage(null), 3500);
       return;
     }
-    setApplyPhoneError(false);
+    if (!agreedToApplicantPolicy || !selectedJob) return;
 
-    if (CURRENT_COMMISSION_POLICY.isEnabled && (CURRENT_COMMISSION_POLICY.payer === 'applicant_only' || CURRENT_COMMISSION_POLICY.payer === 'both')) {
-      if (!applicantAgreed) {
-        alert('يرجى الموافقة على شروط العمولة لإتمام التقديم.');
-        return;
-      }
+    // تحديث عدد المتقدمين
+    setJobsList(prev => prev.map(j => j.id === selectedJob.id ? { ...j, applicantsCount: j.applicantsCount + 1 } : j));
+    if (selectedJob) {
+      setSelectedJob({ ...selectedJob, applicantsCount: selectedJob.applicantsCount + 1 });
     }
 
-    setIsApplyOpen(false);
-    setSelectedJob(null);
-    setSuccessToast('تم استلام ملفك بنجاح! سيتم إشعارك فور تطابق مؤهلاتك مع متطلبات الوظيفة.');
-    setTimeout(() => setSuccessToast(null), 5000);
-
-    setApplyName('');
-    setApplyPhone('');
-    setApplyQual('');
-    setApplySummary('');
-    setApplicantAgreed(false);
+    setIsApplyModalOpen(false);
+    setApplicantName('');
+    setApplicantPhone('');
+    setApplicantEmail('');
+    setApplicantSummary('');
+    setCvFileName('');
+    setAgreedToApplicantPolicy(false);
+    setToastMessage('تم استلام طلبك وسيرتك الذاتية بنجاح، وسيتم التنسيق معك وإشعارك بالقبول');
+    setTimeout(() => setToastMessage(null), 4500);
   };
 
-  // تصفية الوظائف
-  const filteredJobs = jobs.filter(j => {
-    if (j.status !== 'active') return false;
-    const matchSearch = j.title.toLowerCase().includes(searchQuery.toLowerCase()) || j.sector.includes(searchQuery);
-    const matchCity = selectedCity === 'all' || j.city === selectedCity;
-    const matchSector = selectedSector === 'all' || j.sector === selectedSector;
-    return matchSearch && matchCity && matchSector;
-  });
+  const filteredJobs = useMemo(() => {
+    return jobsList.filter(job => {
+      const matchCity = selectedCity === 'all' || job.city.includes(selectedCity);
+      const matchType = selectedJobType === 'all' || job.jobType === selectedJobType;
+      const matchExp = selectedExperience === 'all' || job.experience === selectedExperience;
+      const matchSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          job.category.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchCity && matchType && matchExp && matchSearch;
+    });
+  }, [jobsList, selectedCity, selectedJobType, selectedExperience, searchQuery]);
 
   return (
-    <div dir="rtl" className="space-y-6 text-zinc-100 font-sans pb-12">
-      {/* 1. رأس الصفحة */}
-      <div className="bg-zinc-900 border border-zinc-800 p-5 sm:p-6 rounded-2xl shadow-lg">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onBack}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 text-yellow-400 hover:text-yellow-300 hover:bg-zinc-700 transition font-bold text-xs"
-                title="رجوع"
-              >
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-                <span>رجوع</span>
-              </button>
-              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">سوق التوظيف والوظائف المعتمدة</h1>
-            </div>
-            <p className="text-xs sm:text-sm text-zinc-400 mr-2">
-              فرص عمل حقيقية ونظام تطابق ذكي يربط الكفاءات بالشركات مباشرة
-            </p>
-          </div>
+    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Cairo',sans-serif] text-white">
+      
+      {/* 1. إعلان البانر المخصص للوظائف #7 */}
+      <AdBanner placementId="7" className="mb-1" />
 
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={() => setIsApplyOpen(true)}
-              className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-bold rounded-xl text-xs sm:text-sm border border-zinc-700 transition shadow"
-            >
-              تسجيل باحث عن عمل
-            </button>
-            <button
-              onClick={() => setIsPostJobOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-black rounded-xl text-xs sm:text-sm transition shadow-md shadow-yellow-500/10"
-            >
-              <Plus className="w-4 h-4 stroke-[3]" /> أضف وظيفة شاغرة
-            </button>
+      {/* 2. رأس الصفحة الرسمي الأنيق */}
+      <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
+            <Briefcase size={16} className="stroke-[2.5]" />
           </div>
+          <div>
+            <h1 className="text-sm sm:text-base font-black text-white leading-none">
+              الوظائف
+            </h1>
+            <span className="text-[9.5px] text-[#9CA3AF] mt-0.5 block">
+              فرص عمل معتمدة ووساطة توظيف ذكية في اليمن
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsPostJobModalOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-[#FFC500] text-black font-black text-[11px] hover:bg-[#FFC500]/90 transition-all flex items-center gap-1 cursor-pointer shadow-sm"
+          >
+            <Plus size={13} />
+            <span>نشر وظيفة</span>
+          </button>
+          
+          <button
+            onClick={selectedJob ? () => setSelectedJob(null) : onBack}
+            className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1 cursor-pointer"
+          >
+            <span>{selectedJob ? 'رجوع' : 'الرئيسية'}</span>
+            <ArrowRight size={13} className="rtl:rotate-180" />
+          </button>
         </div>
       </div>
 
-      {/* تنبيه النجاح */}
-      {successToast && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs sm:text-sm font-bold flex items-center gap-2.5 shadow-md">
-          <CheckCircle2 className="w-5 h-5 shrink-0" />
-          <span>{successToast}</span>
+      {toastMessage && (
+        <div className="p-3 rounded-xl bg-[#16A34A]/20 border border-[#16A34A] text-white text-xs font-bold flex items-center gap-2 animate-fade-in">
+          <CheckCircle2 size={16} className="text-[#16A34A] shrink-0" />
+          <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* 2. شريط البحث والفلاتر */}
-      <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 grid grid-cols-1 sm:grid-cols-3 gap-3 shadow-md">
-        <div>
-          <label className="block text-xs font-bold text-yellow-400 mb-1.5">البحث السريع:</label>
-          <div className="relative">
-            <Search className="w-4 h-4 text-zinc-500 absolute right-3.5 top-3" />
-            <input
-              type="text"
-              placeholder="ابحث بالمسمى أو التخصص..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700/80 rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-400 transition"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold text-yellow-400 mb-1.5">المحافظة / المدينة:</label>
-          <select
-            value={selectedCity}
-            onChange={e => setSelectedCity(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-700/80 text-xs sm:text-sm text-white rounded-xl px-3.5 py-2 focus:outline-none focus:border-yellow-400 transition"
-          >
-            <option value="all">جميع المحافظات</option>
-            <option value="صنعاء">صنعاء</option>
-            <option value="عدن">عدن</option>
-            <option value="تعز">تعز</option>
-            <option value="حضرموت - المكلا">حضرموت - المكلا</option>
-            <option value="الحديدة">الحديدة</option>
-            <option value="مأرب">مأرب</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold text-yellow-400 mb-1.5">مجال وقطاع العمل:</label>
-          <select
-            value={selectedSector}
-            onChange={e => setSelectedSector(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-700/80 text-xs sm:text-sm text-white rounded-xl px-3.5 py-2 focus:outline-none focus:border-yellow-400 transition"
-          >
-            <option value="all">جميع قطاعات العمل</option>
-            <option value="تقنية وبرمجيات">تقنية وبرمجيات</option>
-            <option value="محاسبة وبنوك">محاسبة وبنوك</option>
-            <option value="طب ورعاية صحية">طب ورعاية صحية</option>
-            <option value="مبيعات وتسويق">مبيعات وتسويق</option>
-            <option value="هندسة ومقاولات">هندسة ومقاولات</option>
-            <option value="إدارة وموارد بشرية">إدارة وموارد بشرية</option>
-          </select>
-        </div>
-      </div>
-
-      {/* 3. قائمة كروت الوظائف */}
-      <div className="space-y-3">
-        {filteredJobs.length === 0 ? (
-          <div className="text-center py-14 bg-zinc-950 border border-zinc-800 rounded-2xl text-zinc-400 text-sm">
-            لا توجد شواغر مطابقة لمعايير البحث حالياً.
-          </div>
-        ) : (
-          filteredJobs.map(job => (
-            <div
-              key={job.id}
-              className="p-5 rounded-2xl bg-zinc-950 border border-zinc-800/90 hover:border-zinc-700 transition-all space-y-3 shadow-lg"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-black px-2.5 py-0.5 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
-                      {job.sector}
-                    </span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-lg bg-zinc-900 text-zinc-300 border border-zinc-800">
-                      {job.workType}
-                    </span>
-                    <span className="text-xs px-2.5 py-0.5 rounded-lg bg-zinc-900 text-zinc-400">
-                      {job.experienceLevel}
-                    </span>
-                  </div>
-
-                  <h3 className="font-black text-base sm:text-lg text-white leading-snug">{job.title}</h3>
-
-                  <div className="flex items-center gap-4 text-xs text-zinc-400 pt-0.5 flex-wrap">
-                    <span className="flex items-center gap-1.5 text-zinc-300 font-semibold">
-                      <Building2 className="w-3.5 h-3.5 text-yellow-400" /> {job.companyName}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-zinc-500" /> {job.city}
-                    </span>
-                    <span className="flex items-center gap-1.5 text-yellow-400 font-bold font-mono">
-                      <DollarSign className="w-3.5 h-3.5 text-yellow-400" /> {job.salaryRange || 'يحدد بعد المقابلة'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0">
-                  <button
-                    onClick={() => setSelectedJob(job)}
-                    className="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-black rounded-xl text-xs transition shadow-md shadow-yellow-500/10"
-                  >
-                    عرض التفاصيل والتقديم
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* ========================================================= */}
-      {/* نافذة تفاصيل الوظيفة (مع زر رجوع سهمي أصفر وقفل التمرير)  */}
-      {/* ========================================================= */}
-      {selectedJob && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-          style={{ touchAction: 'pan-y' }}
-        >
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-xl max-h-[88vh] overflow-y-auto p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <div>
-                <h3 className="font-black text-lg text-white">{selectedJob.title}</h3>
-                <span className="text-xs text-yellow-400 font-bold mt-0.5 block">{selectedJob.companyName} • {selectedJob.city}</span>
-              </div>
-              <button
-                onClick={() => setSelectedJob(null)}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-zinc-900 text-yellow-400 hover:text-yellow-300 hover:bg-zinc-800 border border-zinc-800 transition font-bold text-xs"
-                title="رجوع"
-              >
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-                <span>رجوع</span>
-              </button>
-            </div>
-
-            <div className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-800">
-                <div>
-                  <span className="text-yellow-400 font-bold block text-[11px]">المحافظة:</span>
-                  <span className="font-bold text-white mt-0.5 block">{selectedJob.city}</span>
-                </div>
-                <div>
-                  <span className="text-yellow-400 font-bold block text-[11px]">نوع الدوام:</span>
-                  <span className="font-bold text-white mt-0.5 block">{selectedJob.workType}</span>
-                </div>
-                <div>
-                  <span className="text-yellow-400 font-bold block text-[11px]">الراتب المتوقع:</span>
-                  <span className="font-black text-yellow-400 mt-0.5 block font-mono">
-                    {selectedJob.salaryRange || 'يحدد بعد المقابلة'}
+      {/* ============================================================
+          عرض تفاصيل الوظيفة والتقديم الآمن
+          ============================================================ */}
+      {selectedJob ? (
+        <div className="space-y-3">
+          <div className="bg-[#0F0F12] rounded-2xl border border-[#222226] p-4 sm:p-5 space-y-4 shadow-xl">
+            
+            {/* رأس الوظيفة */}
+            <div className="border-b border-[#1F2937] pb-3 space-y-2">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-md bg-[#16A34A]/20 text-[#16A34A] text-[10px] font-black">
+                    {selectedJob.jobType}
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-md bg-[#FFC500]/15 text-[#FFC500] text-[10px] font-bold">
+                    {selectedJob.category}
                   </span>
                 </div>
+                <span className="text-[10px] text-gray-400 font-mono">نشرت: {selectedJob.createdAt}</span>
               </div>
 
-              <div>
-                <span className="font-bold text-yellow-400 block mb-1.5 text-xs">وصف الوظيفة والمهام:</span>
-                <p className="text-zinc-200 bg-zinc-900/50 p-3.5 rounded-xl border border-zinc-800 leading-relaxed">
+              <h2 className="text-base sm:text-lg font-black text-white leading-snug">
+                {selectedJob.title}
+              </h2>
+
+              <div className="flex items-center gap-3 text-xs text-gray-300 font-mono flex-wrap">
+                <span className="flex items-center gap-1 text-[#FFC500]">
+                  <MapPin size={13} /> {selectedJob.city}
+                </span>
+                <span>•</span>
+                <span>الراتب: <b className="text-white">{selectedJob.salary.toLocaleString()} {selectedJob.currency}</b></span>
+                <span>•</span>
+                <span>المتقدمون: <b className="text-gray-200">{selectedJob.applicantsCount}</b></span>
+              </div>
+            </div>
+
+            {/* شبكة المواصفات السريعة */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-center">
+              <div className="p-2.5 rounded-xl bg-[#161619] border border-[#27272A]">
+                <span className="text-[9px] text-[#9CA3AF] font-['Cairo'] block">الخبرة المطلوبة</span>
+                <b className="text-xs text-white font-bold font-['Cairo']">{selectedJob.experience}</b>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[#161619] border border-[#27272A]">
+                <span className="text-[9px] text-[#9CA3AF] font-['Cairo'] block">المؤهل العلمي</span>
+                <b className="text-xs text-white font-bold font-['Cairo']">{selectedJob.education}</b>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[#161619] border border-[#27272A]">
+                <span className="text-[9px] text-[#9CA3AF] font-['Cairo'] block">الجنس</span>
+                <b className="text-xs text-white font-bold font-['Cairo']">{selectedJob.gender}</b>
+              </div>
+              <div className="p-2.5 rounded-xl bg-[#161619] border border-[#27272A]">
+                <span className="text-[9px] text-[#9CA3AF] font-['Cairo'] block">وساطة التوظيف</span>
+                <b className="text-xs text-[#16A34A] font-bold font-['Cairo']">يمن ريتنغ ✓</b>
+              </div>
+            </div>
+
+            {/* الوصف والمتطلبات */}
+            <div className="space-y-3 pt-1">
+              <div className="space-y-1">
+                <h3 className="text-xs font-bold text-white">الوصف الوظيفي:</h3>
+                <p className="text-xs text-[#9CA3AF] leading-relaxed font-medium">
                   {selectedJob.description}
                 </p>
               </div>
 
-              <div>
-                <span className="font-bold text-yellow-400 block mb-1.5 text-xs">المتطلبات والشروط:</span>
-                <ul className="bg-zinc-900/50 p-3.5 rounded-xl border border-zinc-800 space-y-1.5 text-zinc-200 list-disc list-inside">
-                  {selectedJob.requirements.map((req, i) => (
-                    <li key={i}>{req}</li>
-                  ))}
-                </ul>
-              </div>
+              {selectedJob.requirements.length > 0 && (
+                <div className="space-y-1.5">
+                  <h3 className="text-xs font-bold text-white">الشروط والمهارات المطلوبة:</h3>
+                  <ul className="space-y-1 text-xs text-gray-300">
+                    {selectedJob.requirements.map((req, idx) => (
+                      <li key={idx} className="flex items-start gap-1.5">
+                        <Check size={13} className="text-[#FFC500] shrink-0 mt-0.5" />
+                        <span>{req}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
-            <div className="pt-3 border-t border-zinc-800 flex items-center justify-between gap-2">
+            {/* صندوق التقديم ووساطة التوظيف */}
+            <div className="p-3.5 rounded-xl bg-[#161619] border border-[#27272A] space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                <ShieldCheck size={15} className="text-[#16A34A]" />
+                <span>التقديم والمطابقة الذكية عبر وساطة يمن ريتنغ:</span>
+              </div>
+              <p className="text-[10px] text-gray-400 leading-relaxed">
+                يتم استقبال السير الذاتية ومطابقة كفاءتك مع الوظيفة وتنسيق المقابلات الرسمية مع جهة العمل مباشرة لضمان الحقوق.
+              </p>
+
               <button
-                onClick={() => setIsApplyOpen(true)}
-                className="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-black rounded-xl text-xs transition shadow-md shadow-yellow-500/10"
+                onClick={() => setIsApplyModalOpen(true)}
+                className="w-full py-3 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all shadow-lg shadow-[#FFC500]/20 flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 mt-2"
               >
-                قدّم الآن على هذه الوظيفة
-              </button>
-              <button
-                onClick={() => setSelectedJob(null)}
-                className="flex items-center gap-1.5 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-yellow-400 font-bold rounded-xl text-xs transition"
-              >
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" /> رجوع
+                <FileText size={15} />
+                <span>التقديم على الوظيفة الآن</span>
               </button>
             </div>
+
           </div>
+        </div>
+      ) : (
+        /* ============================================================
+           عرض قائمة الوظائف الرئيسية
+           ============================================================ */
+        <div className="space-y-3">
+          
+          {/* شريط البحث والفلترة */}
+          <div className="space-y-2 bg-[#0F0F12] p-2.5 rounded-2xl border border-[#222226]">
+            <div className="flex items-center bg-[#18181C] border border-[#27272A] rounded-xl px-2.5 py-1">
+              <Search size={14} className="text-gray-400 ml-2 shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="ابحث عن مسمى وظيفي (مهندس، محاسب، تسويق)..."
+                className="flex-1 bg-transparent text-xs text-white placeholder-gray-500 outline-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5">
+              <select
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                className="bg-[#18181C] border border-[#27272A] rounded-lg p-1.5 text-[10.5px] font-bold text-[#D1D5DB] outline-none cursor-pointer"
+              >
+                <option value="all">كل المحافظات</option>
+                <option value="صنعاء">صنعاء</option>
+                <option value="عدن">عدن</option>
+                <option value="تعز">تعز</option>
+                <option value="حضرموت">حضرموت</option>
+                <option value="الحديدة">الحديدة</option>
+              </select>
+
+              <select
+                value={selectedJobType}
+                onChange={(e) => setSelectedJobType(e.target.value)}
+                className="bg-[#18181C] border border-[#27272A] rounded-lg p-1.5 text-[10.5px] font-bold text-[#D1D5DB] outline-none cursor-pointer"
+              >
+                <option value="all">نوع الدوام</option>
+                <option value="دوام كامل">دوام كامل</option>
+                <option value="دوام جزئي">دوام جزئي</option>
+                <option value="عن بعد">عن بعد</option>
+              </select>
+
+              <select
+                value={selectedExperience}
+                onChange={(e) => setSelectedExperience(e.target.value)}
+                className="bg-[#18181C] border border-[#27272A] rounded-lg p-1.5 text-[10.5px] font-bold text-[#D1D5DB] outline-none cursor-pointer"
+              >
+                <option value="all">الخبرة</option>
+                <option value="مبتدئ">مبتدئ</option>
+                <option value="1-3 سنوات">1-3 سنوات</option>
+                <option value="3-5 سنوات">3-5 سنوات</option>
+                <option value="5+ سنوات">5+ سنوات</option>
+              </select>
+            </div>
+          </div>
+
+          {/* شبكة كروت الوظائف */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {filteredJobs.map((job) => (
+              <div
+                key={job.id}
+                className="bg-[#0F0F12] rounded-2xl border border-[#222226] hover:border-[#FFC500]/40 p-3 space-y-2 shadow-md transition-all flex flex-col justify-between"
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2 py-0.2 rounded bg-[#16A34A]/15 text-[#16A34A] text-[9.5px] font-bold">
+                      {job.jobType}
+                    </span>
+                    <span className="text-[9.5px] text-gray-400 flex items-center gap-0.5">
+                      <MapPin size={10} className="text-[#FFC500]" /> {job.city}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xs sm:text-sm font-bold text-white leading-snug">
+                    {job.title}
+                  </h3>
+
+                  <p className="text-[10px] text-[#9CA3AF] line-clamp-2 leading-relaxed">
+                    {job.description}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-[#1F2937] space-y-2">
+                  <div className="flex justify-between items-center text-[10px] font-mono">
+                    <span className="text-gray-400 font-['Cairo']">الراتب:</span>
+                    <b className="text-xs text-[#FFC500]">{job.salary.toLocaleString()} {job.currency}</b>
+                  </div>
+
+                  <button
+                    onClick={() => handleOpenJob(job)}
+                    className="w-full py-1.5 rounded-xl bg-[#18181C] border border-[#27272A] hover:bg-[#FFC500] hover:text-black text-xs font-bold text-gray-200 transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span>عرض التفاصيل والتقديم</span>
+                    <ArrowRight size={11} className="rtl:rotate-180" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
       )}
 
-      {/* ========================================================= */}
-      {/* نافذة إضافة وظيفة شاغرة (مع زر رجوع سهمي أصفر)            */}
-      {/* ========================================================= */}
-      {isPostJobOpen && (
+      {/* ============================================================
+          نافذة نشر وظيفة جديدة (أصحاب العمل) مع بوابة الموافقة الإلزامية
+          ============================================================ */}
+      {isPostJobModalOpen && (
         <div 
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-          style={{ touchAction: 'pan-y' }}
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+          onClick={() => setIsPostJobModalOpen(false)}
         >
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <div className="flex items-center gap-2 text-yellow-400">
-                <Briefcase className="w-5 h-5" />
-                <h3 className="font-black text-base text-white">إضافة وظيفة شاغرة للجهة</h3>
-              </div>
-              <button
-                onClick={() => setIsPostJobOpen(false)}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-zinc-900 text-yellow-400 hover:text-yellow-300 hover:bg-zinc-800 border border-zinc-800 transition font-bold text-xs"
-                title="رجوع"
+          <div 
+            className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-4 sm:p-5 space-y-3 max-h-[90vh] overflow-y-auto cursor-default shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center border-b border-[#222226] pb-2">
+              <h3 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+                <Plus size={15} className="text-[#FFC500]" /> نشر وظيفة جديدة
+              </h3>
+              <button 
+                onClick={() => setIsPostJobModalOpen(false)} 
+                className="px-2.5 py-1 rounded-lg bg-[#18181C] text-xs font-bold text-gray-300 hover:text-white cursor-pointer"
               >
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-                <span>رجوع</span>
+                رجوع
               </button>
             </div>
 
-            <form onSubmit={handlePostJob} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block text-xs font-bold text-yellow-400 mb-1.5">المسمى الوظيفي المطلوب: *</label>
-                <input
-                  type="text"
-                  placeholder="مثال: محاسب قانوني، مهندس برمجيات..."
-                  value={postTitle}
-                  onChange={e => setPostTitle(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-400 transition"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form onSubmit={handlePostJobSubmit} className="space-y-2.5 text-xs">
+              
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-yellow-400 mb-1.5">اسم الجهة / المنشأة: *</label>
+                  <label className="text-[11px] text-gray-400 block mb-1">اسم المنشأة / صاحب العمل</label>
                   <input
                     type="text"
-                    placeholder="اسم الشركة أو المؤسسة..."
-                    value={postCompany}
-                    onChange={e => setPostCompany(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-400 transition"
                     required
+                    placeholder="اسم الشركة أو الجهة..."
+                    value={postEmployerName}
+                    onChange={(e) => setPostEmployerName(e.target.value)}
+                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-xs font-bold text-yellow-400 mb-1.5">رقم هاتف الاتصال (9 أرقام): *</label>
+                  <label className="text-[11px] text-gray-400 block mb-1">رقم الهاتف (9 أرقام إجباري)</label>
                   <input
                     type="tel"
-                    placeholder="7XXXXXXXX"
-                    value={postPhone}
-                    onInput={e => {
-                      const val = (e.target as HTMLInputElement).value.replace(/[^0-9]/g, '').slice(0, 9);
-                      setPostPhone(val);
-                      if (val.length === 9 && /^7[0-9]{8}$/.test(val)) setPostPhoneError(false);
-                    }}
-                    className={`w-full bg-zinc-900 border rounded-xl px-3.5 py-2.5 text-white placeholder-zinc-500 font-mono focus:outline-none transition ${
-                      postPhoneError ? 'border-rose-500 focus:border-rose-500' : 'border-zinc-700 focus:border-yellow-400'
-                    }`}
                     required
+                    placeholder="777000111"
+                    value={postEmployerPhone}
+                    onChange={(e) => setPostEmployerPhone(e.target.value)}
+                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-[#FFC500]"
                   />
-                  {postPhoneError && (
-                    <span className="text-[11px] text-rose-400 mt-1 block font-bold">الرقم غير صالح: يجب أن يبدأ بـ 7 ويتكون من 9 أرقام</span>
-                  )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] text-gray-400 block mb-1">المسمى الوظيفي المطلوب</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="مثال: محاسب عام، مهندس شبكات..."
+                  value={postJobTitle}
+                  onChange={(e) => setPostJobTitle(e.target.value)}
+                  className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-yellow-400 mb-1.5">المحافظة: *</label>
+                  <label className="text-[11px] text-gray-400 block mb-1">نوع الدوام</label>
+                  <select
+                    value={postJobType}
+                    onChange={(e) => setPostJobType(e.target.value as any)}
+                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
+                  >
+                    <option value="دوام كامل">دوام كامل</option>
+                    <option value="دوام جزئي">دوام جزئي</option>
+                    <option value="عن بعد">عن بعد</option>
+                    <option value="عقد">عقد عمل مؤقت</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-gray-400 block mb-1">الخبرة المطلوبة</label>
+                  <select
+                    value={postExperience}
+                    onChange={(e) => setPostExperience(e.target.value as any)}
+                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
+                  >
+                    <option value="مبتدئ">مبتدئ / حديث تخرج</option>
+                    <option value="1-3 سنوات">1-3 سنوات</option>
+                    <option value="3-5 سنوات">3-5 سنوات</option>
+                    <option value="5+ سنوات">5+ سنوات خبرة</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="text-[11px] text-gray-400 block mb-1">الجنس</label>
+                  <select
+                    value={postGender}
+                    onChange={(e) => setPostGender(e.target.value as any)}
+                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
+                  >
+                    <option value="لا يشترط">لا يشترط</option>
+                    <option value="ذكر">ذكر</option>
+                    <option value="أنثى">أنثى</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-gray-400 block mb-1">المؤهل</label>
+                  <select
+                    value={postEducation}
+                    onChange={(e) => setPostEducation(e.target.value as any)}
+                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
+                  >
+                    <option value="بكالوريوس">بكالوريوس</option>
+                    <option value="دبلوم">دبلوم</option>
+                    <option value="ثانوية">ثانوية</option>
+                    <option value="خبرة مهنية">خبرة مهنية</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-gray-400 block mb-1">المحافظة</label>
                   <select
                     value={postCity}
-                    onChange={e => setPostCity(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-yellow-400"
+                    onChange={(e) => setPostCity(e.target.value)}
+                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
                   >
                     <option value="صنعاء">صنعاء</option>
                     <option value="عدن">عدن</option>
                     <option value="تعز">تعز</option>
-                    <option value="حضرموت - المكلا">حضرموت - المكلا</option>
+                    <option value="حضرموت">حضرموت</option>
                     <option value="الحديدة">الحديدة</option>
+                    <option value="إب">إب</option>
                     <option value="مأرب">مأرب</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-yellow-400 mb-1.5">قطاع التخصص: *</label>
-                  <select
-                    value={postSector}
-                    onChange={e => setPostSector(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-yellow-400"
-                  >
-                    <option value="تقنية وبرمجيات">تقنية وبرمجيات</option>
-                    <option value="محاسبة وبنوك">محاسبة وبنوك</option>
-                    <option value="طب ورعاية صحية">طب ورعاية صحية</option>
-                    <option value="مبيعات وتسويق">مبيعات وتسويق</option>
-                    <option value="هندسة ومقاولات">هندسة ومقاولات</option>
-                    <option value="إدارة وموارد بشرية">إدارة وموارد بشرية</option>
-                  </select>
-                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-yellow-400 mb-1.5">
-                  الراتب الشهري المتوقع (اختياري):
-                </label>
+                <label className="text-[11px] text-gray-400 block mb-1">الراتب التقديري (بالريال اليمني ﷼)</label>
                 <input
-                  type="text"
-                  placeholder="اتركه فارغاً إذا كان يحدد بعد المقابلة..."
+                  type="number"
+                  required
                   value={postSalary}
-                  onChange={e => setPostSalary(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-400 transition"
+                  onChange={(e) => setPostSalary(Number(e.target.value))}
+                  className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white font-mono outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-yellow-400 mb-1.5">الوصف والشروط المطلوبة: *</label>
+                <label className="text-[11px] text-gray-400 block mb-1">وصف الوظيفة والمهام</label>
                 <textarea
-                  placeholder="اكتب المهام والشروط وسنوات الخبرة المطلوبة..."
-                  value={postDesc}
-                  onChange={e => setPostDesc(e.target.value)}
-                  className="w-full h-24 bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-400 transition leading-relaxed"
-                  required
+                  rows={2}
+                  value={postDescription}
+                  onChange={(e) => setPostDescription(e.target.value)}
+                  placeholder="اكتب المهام والمسؤوليات المطلوبة..."
+                  className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
                 />
               </div>
 
-              {/* موافقة العمولة بعد الحقول */}
-              {CURRENT_COMMISSION_POLICY.isEnabled && (CURRENT_COMMISSION_POLICY.payer === 'employer_only' || CURRENT_COMMISSION_POLICY.payer === 'both') && (
-                <div className="p-3.5 rounded-xl bg-zinc-900 border border-yellow-500/40 space-y-2 mt-3">
-                  <p className="text-[11px] text-zinc-300 leading-relaxed">
-                    عمولة يمن ريتغ عند نجاح التوظيف: <strong className="text-yellow-400">{CURRENT_COMMISSION_POLICY.percentageValue}% من راتب الشهر الأول</strong>. 
-                    تستحق العمولة عند إتمام توظيف موظف عن طريق يمن ريتغ وفق شروط الوظيفة.
-                  </p>
-                  <label className="flex items-center gap-2 cursor-pointer pt-1">
-                    <input
-                      type="checkbox"
-                      checked={employerAgreed}
-                      onChange={e => setEmployerAgreed(e.target.checked)}
-                      className="w-4 h-4 accent-yellow-500 rounded cursor-pointer"
-                    />
-                    <span className="font-bold text-white text-[11px]">☑ أوافق على عمولة التوظيف وشروطها.</span>
-                  </label>
-                </div>
-              )}
+              <div>
+                <label className="text-[11px] text-gray-400 block mb-1">الشروط (سطر لكل شرط)</label>
+                <textarea
+                  rows={2}
+                  value={postRequirements}
+                  onChange={(e) => setPostRequirements(e.target.value)}
+                  placeholder="اكتب كل شرط في سطر مستقل..."
+                  className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
+                />
+              </div>
 
-              <div className="pt-2 border-t border-zinc-800 flex items-center justify-end gap-2">
+              {/* تنبيه العمولة السرية وموافقة السياسة الإلزامية لصاحب العمل */}
+              <div className="p-3 rounded-xl bg-[#18181C] border border-[#27272A] space-y-2">
+                <div className="flex items-center gap-1.5 text-[#FFC500] font-bold text-[11px]">
+                  <ShieldCheck size={14} />
+                  <span>تنبيه وساطة توظيف يمن ريتنغ:</span>
+                </div>
+                <p className="text-[10px] text-gray-300 leading-relaxed">
+                  ستوفر لك منصة يمن ريتنغ الكوادر المؤهلة وتنسيق المقابلات. تطبق عمولة المنصة المعتمدة تخصم من راتب الشهر الأول عند استقرار ونجاح التوظيف.
+                </p>
+
+                <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={agreedToEmployerPolicy}
+                    onChange={(e) => setAgreedToEmployerPolicy(e.target.checked)}
+                    className="w-4 h-4 accent-[#FFC500] rounded cursor-pointer"
+                  />
+                  <span className="text-[11px] font-bold text-white">
+                    أوافق على سياسة وشروط وساطة توظيف يمن ريتنغ
+                  </span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-1">
                 <button
                   type="button"
-                  onClick={() => setIsPostJobOpen(false)}
-                  className="flex items-center gap-1 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-yellow-400 font-bold rounded-xl transition"
+                  onClick={() => setIsPostJobModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-[#18181C] text-gray-300 text-xs font-bold cursor-pointer"
                 >
-                  <ArrowRight className="w-4 h-4 stroke-[2.5]" /> رجوع
+                  إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-black rounded-xl transition shadow-md shadow-yellow-500/10"
+                  disabled={!agreedToEmployerPolicy}
+                  className="px-5 py-2 rounded-xl bg-[#FFC500] text-black text-xs font-black hover:bg-[#FFC500]/90 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all shadow-md"
                 >
-                  نشر الوظيفة
+                  إرسال الوظيفة للاعتماد
                 </button>
               </div>
             </form>
@@ -554,144 +741,208 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* ========================================================= */}
-      {/* نافذة تقديم الباحث عن عمل (مع زر رجوع سهمي أصفر)           */}
-      {/* ========================================================= */}
-      {isApplyOpen && (
+      {/* ============================================================
+          نافذة التقديم على الوظيفة (الباحث عن عمل) مع رفع السيرة الذاتية
+          ============================================================ */}
+      {isApplyModalOpen && selectedJob && (
         <div 
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-          style={{ touchAction: 'pan-y' }}
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+          onClick={() => setIsApplyModalOpen(false)}
         >
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <div className="flex items-center gap-2 text-yellow-400">
-                <Send className="w-5 h-5" />
-                <h3 className="font-black text-base text-white">تسجيل بيانات الباحث عن عمل</h3>
+          <div 
+            className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-4 sm:p-5 space-y-3 max-h-[90vh] overflow-y-auto cursor-default shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center border-b border-[#222226] pb-2">
+              <div>
+                <h3 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+                  <FileText size={15} className="text-[#FFC500]" /> التقديم على الوظيفة
+                </h3>
+                <span className="text-[10px] text-[#9CA3AF]">{selectedJob.title}</span>
               </div>
-              <button
-                onClick={() => setIsApplyOpen(false)}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-zinc-900 text-yellow-400 hover:text-yellow-300 hover:bg-zinc-800 border border-zinc-800 transition font-bold text-xs"
-                title="رجوع"
+              <button 
+                onClick={() => setIsApplyModalOpen(false)} 
+                className="px-2.5 py-1 rounded-lg bg-[#18181C] text-xs font-bold text-gray-300 hover:text-white cursor-pointer"
               >
-                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-                <span>رجوع</span>
+                رجوع
               </button>
             </div>
 
-            <form onSubmit={handleApply} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block text-xs font-bold text-yellow-400 mb-1.5">الاسم الكامل: *</label>
-                <input
-                  type="text"
-                  placeholder="الاسم الثلاثي أو الرباعي..."
-                  value={applyName}
-                  onChange={e => setApplyName(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-400 transition"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form onSubmit={handleApplySubmit} className="space-y-2.5 text-xs">
+              
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-yellow-400 mb-1.5">رقم الهاتف (9 أرقام): *</label>
+                  <label className="text-[11px] text-gray-400 block mb-1">الاسم الكامل</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="اسمك الثلاثي..."
+                    value={applicantName}
+                    onChange={(e) => setApplicantName(e.target.value)}
+                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-gray-400 block mb-1">رقم الهاتف (9 أرقام للتواصل)</label>
                   <input
                     type="tel"
-                    placeholder="7XXXXXXXX"
-                    value={applyPhone}
-                    onInput={e => {
-                      const val = (e.target as HTMLInputElement).value.replace(/[^0-9]/g, '').slice(0, 9);
-                      setApplyPhone(val);
-                      if (val.length === 9 && /^7[0-9]{8}$/.test(val)) setApplyPhoneError(false);
-                    }}
-                    className={`w-full bg-zinc-900 border rounded-xl px-3.5 py-2.5 text-white placeholder-zinc-500 font-mono focus:outline-none transition ${
-                      applyPhoneError ? 'border-rose-500 focus:border-rose-500' : 'border-zinc-700 focus:border-yellow-400'
-                    }`}
                     required
+                    placeholder="777000111"
+                    value={applicantPhone}
+                    onChange={(e) => setApplicantPhone(e.target.value)}
+                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-[#FFC500]"
                   />
-                  {applyPhoneError && (
-                    <span className="text-[11px] text-rose-400 mt-1 block font-bold">الرقم غير صالح: يجب أن يبدأ بـ 7 ويتكون من 9 أرقام</span>
-                  )}
                 </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-yellow-400 mb-1.5">المحافظة / الإقامة: *</label>
+                  <label className="text-[11px] text-gray-400 block mb-1">المحافظة</label>
                   <select
-                    value={applyCity}
-                    onChange={e => setApplyCity(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white rounded-xl px-3.5 py-2.5 focus:outline-none focus:border-yellow-400"
+                    value={applicantCity}
+                    onChange={(e) => setApplicantCity(e.target.value)}
+                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
                   >
                     <option value="صنعاء">صنعاء</option>
                     <option value="عدن">عدن</option>
                     <option value="تعز">تعز</option>
-                    <option value="حضرموت - المكلا">حضرموت - المكلا</option>
+                    <option value="حضرموت">حضرموت</option>
                     <option value="الحديدة">الحديدة</option>
-                    <option value="مأرب">مأرب</option>
+                    <option value="إب">إب</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-gray-400 block mb-1">المؤهل</label>
+                  <select
+                    value={applicantQualification}
+                    onChange={(e) => setApplicantQualification(e.target.value)}
+                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
+                  >
+                    <option value="بكالوريوس">بكالوريوس</option>
+                    <option value="دبلوم">دبلوم</option>
+                    <option value="ثانوية">ثانوية</option>
+                    <option value="خبرة مهنية">خبرة مهنية</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-gray-400 block mb-1">الجنس</label>
+                  <select
+                    value={applicantGender}
+                    onChange={(e) => setApplicantGender(e.target.value as any)}
+                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
+                  >
+                    <option value="ذكر">ذكر</option>
+                    <option value="أنثى">أنثى</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-yellow-400 mb-1.5">المؤهل والتخصص العلمي: *</label>
+                <label className="text-[11px] text-gray-400 block mb-1">سنوات الخبرة والمسمى الحالي</label>
                 <input
                   type="text"
-                  placeholder="مثال: بكالوريوس محاسبة، دبلوم شبكات..."
-                  value={applyQual}
-                  onChange={e => setApplyQual(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-400 transition"
                   required
+                  placeholder="مثال: خبرة 3 سنوات في المحاسبة..."
+                  value={applicantExperience}
+                  onChange={(e) => setApplicantExperience(e.target.value)}
+                  className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
                 />
+              </div>
+
+              {/* رفع السيرة الذاتية PDF أو صورة */}
+              <div>
+                <label className="text-[11px] text-gray-400 block mb-1">السيرة الذاتية (ملف PDF أو صورة الشهادات)</label>
+                <input 
+                  ref={fileInputRef} 
+                  type="file" 
+                  accept=".pdf,image/*" 
+                  onChange={handleCvUpload} 
+                  className="hidden" 
+                />
+                
+                <div className="flex gap-2 items-center">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-1 py-2 px-3 rounded-xl bg-[#18181C] border border-dashed border-[#FFC500]/60 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover:border-[#FFC500]"
+                  >
+                    <Upload size={14} className="text-[#FFC500]" />
+                    <span>{cvFileName ? `الملف: ${cvFileName}` : 'رفع السيرة الذاتية (PDF/صورة)'}</span>
+                  </button>
+
+                  {cvFileName && (
+                    <button
+                      type="button"
+                      onClick={() => setCvFileName('')}
+                      className="p-2 rounded-xl bg-red-600/20 text-red-400 border border-red-600/30"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
+                <span className="text-[9px] text-gray-500 block mt-1">
+                  * ملفاتك وسيرتك الذاتية سرية ومحمية 100% ولا تظهر للعامة.
+                </span>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-yellow-400 mb-1.5">الملخص والمهارات والخبرات السابقة: *</label>
+                <label className="text-[11px] text-gray-400 block mb-1">نبذة عن خبراتك ومؤهلاتك</label>
                 <textarea
-                  placeholder="اكتب نبذة عن خبراتك والأنظمة والبرامج التي تتقنها..."
-                  value={applySummary}
-                  onChange={e => setApplySummary(e.target.value)}
-                  className="w-full h-24 bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-400 transition leading-relaxed"
-                  required
+                  rows={2}
+                  value={applicantSummary}
+                  onChange={(e) => setApplicantSummary(e.target.value)}
+                  placeholder="اكتب نبذة مختصرة عن أبرز مهاراتك وخبراتك..."
+                  className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
                 />
               </div>
 
-              {/* موافقة العمولة بعد الحقول */}
-              {CURRENT_COMMISSION_POLICY.isEnabled && (CURRENT_COMMISSION_POLICY.payer === 'applicant_only' || CURRENT_COMMISSION_POLICY.payer === 'both') && (
-                <div className="p-3.5 rounded-xl bg-zinc-900 border border-yellow-500/40 space-y-2 mt-3">
-                  <p className="text-[11px] text-zinc-300 leading-relaxed">
-                    عمولة يمن ريتغ عند نجاح التوظيف: <strong className="text-yellow-400">{CURRENT_COMMISSION_POLICY.percentageValue}% من راتب الشهر الأول</strong>. 
-                    لا تستحق العمولة إلا في حال قبولك وتوظيفك من خلال يمن ريتغ.
-                  </p>
-                  <label className="flex items-center gap-2 cursor-pointer pt-1">
-                    <input
-                      type="checkbox"
-                      checked={applicantAgreed}
-                      onChange={e => setApplicantAgreed(e.target.checked)}
-                      className="w-4 h-4 accent-yellow-500 rounded cursor-pointer"
-                    />
-                    <span className="font-bold text-white text-[11px]">☑ أوافق على عمولة التوظيف وشروطها.</span>
-                  </label>
+              {/* تنبيه العمولة وموافقة السياسة الإلزامية للمتقدم */}
+              <div className="p-3 rounded-xl bg-[#18181C] border border-[#27272A] space-y-2">
+                <div className="flex items-center gap-1.5 text-[#FFC500] font-bold text-[11px]">
+                  <ShieldCheck size={14} />
+                  <span>تنبيه وساطة توظيف يمن ريتنغ:</span>
                 </div>
-              )}
+                <p className="text-[10px] text-gray-300 leading-relaxed">
+                  ستقوم المنصة بمطابقة سيرتك الذاتية وتنسيق المقابلة وإشعارك بالقبول. تستحق عمولة المنصة المعتمدة من راتب الشهر الأول عند استلام واستقرار الوظيفة بنجاح.
+                </p>
 
-              <div className="pt-2 border-t border-zinc-800 flex items-center justify-end gap-2">
+                <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={agreedToApplicantPolicy}
+                    onChange={(e) => setAgreedToApplicantPolicy(e.target.checked)}
+                    className="w-4 h-4 accent-[#FFC500] rounded cursor-pointer"
+                  />
+                  <span className="text-[11px] font-bold text-white">
+                    أوافق على سياسة وشروط وساطة وتوظيف يمن ريتنغ
+                  </span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-1">
                 <button
                   type="button"
-                  onClick={() => setIsApplyOpen(false)}
-                  className="flex items-center gap-1 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-yellow-400 font-bold rounded-xl transition"
+                  onClick={() => setIsApplyModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-[#18181C] text-gray-300 text-xs font-bold cursor-pointer"
                 >
-                  <ArrowRight className="w-4 h-4 stroke-[2.5]" /> رجوع
+                  إلغاء
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-black rounded-xl transition shadow-md shadow-yellow-500/10"
+                  disabled={!agreedToApplicantPolicy}
+                  className="px-5 py-2 rounded-xl bg-[#FFC500] text-black text-xs font-black hover:bg-[#FFC500]/90 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all shadow-md"
                 >
-                  إرسال الملف
+                  إرسال طلب التقديم
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
     </div>
   );
 };
-
-export default JobsPage;
