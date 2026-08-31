@@ -50,23 +50,20 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [applicantAgreed, setApplicantAgreed] = useState(false);
   const [applyPhoneError, setApplyPhoneError] = useState(false);
 
-  // 🔒 قفل صارم ومطلق لتمرير الصفحة وخلفية الموقع باللمس على الهواتف
+  // 🔒 قفل تمرير خلفية الموقع عند فتح أي نافذة عبر كلاس modal-open
   const isAnyModalOpen = Boolean(selectedJob || isPostJobOpen || isApplyOpen);
   useEffect(() => {
     if (isAnyModalOpen) {
-      const originalOverflow = document.body.style.overflow;
-      const originalTouchAction = document.body.style.touchAction;
-      
-      document.documentElement.style.overflow = 'hidden';
-      document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
-
-      return () => {
-        document.documentElement.style.overflow = '';
-        document.body.style.overflow = originalOverflow || '';
-        document.body.style.touchAction = originalTouchAction || '';
-      };
+      document.documentElement.classList.add('modal-open');
+      document.body.classList.add('modal-open');
+    } else {
+      document.documentElement.classList.remove('modal-open');
+      document.body.classList.remove('modal-open');
     }
+    return () => {
+      document.documentElement.classList.remove('modal-open');
+      document.body.classList.remove('modal-open');
+    };
   }, [isAnyModalOpen]);
 
   // فحص رقم الهاتف اليمني (9 أرقام ويبدأ بـ 7)
@@ -163,25 +160,26 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   return (
     <div dir="rtl" className="space-y-6 text-zinc-100 font-sans pb-12">
       {/* 1. رأس الصفحة */}
-      <div className="bg-zinc-900/70 border border-zinc-800 p-5 sm:p-6 rounded-2xl shadow-lg">
+      <div className="bg-zinc-900 border border-zinc-800 p-5 sm:p-6 rounded-2xl shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
               <button
                 onClick={onBack}
-                className="p-2 rounded-xl bg-zinc-800 text-yellow-400 hover:text-yellow-300 hover:bg-zinc-700 transition"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 text-yellow-400 hover:text-yellow-300 hover:bg-zinc-700 transition font-bold text-xs"
                 title="رجوع"
               >
-                <ArrowRight className="w-5 h-5 stroke-[2.5]" />
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                <span>رجوع</span>
               </button>
               <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">سوق التوظيف والوظائف المعتمدة</h1>
             </div>
-            <p className="text-xs sm:text-sm text-zinc-400 mr-10">
+            <p className="text-xs sm:text-sm text-zinc-400 mr-2">
               فرص عمل حقيقية ونظام تطابق ذكي يربط الكفاءات بالشركات مباشرة
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 mr-10 sm:mr-0">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => setIsApplyOpen(true)}
               className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-bold rounded-xl text-xs sm:text-sm border border-zinc-700 transition shadow"
@@ -313,14 +311,14 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       </div>
 
       {/* ========================================================= */}
-      {/* نافذة تفاصيل الوظيفة (مع قفل التمرير وأزرار رجوع ذهبية)   */}
+      {/* نافذة تفاصيل الوظيفة (مع زر رجوع سهمي أصفر وقفل التمرير)  */}
       {/* ========================================================= */}
       {selectedJob && (
         <div 
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overscroll-contain"
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
           style={{ touchAction: 'pan-y' }}
         >
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-xl max-h-[88vh] overflow-y-auto p-6 space-y-5 shadow-2xl overscroll-contain">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-xl max-h-[88vh] overflow-y-auto p-6 space-y-5 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <div>
                 <h3 className="font-black text-lg text-white">{selectedJob.title}</h3>
@@ -390,14 +388,14 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       )}
 
       {/* ========================================================= */}
-      {/* نافذة إضافة وظيفة شاغرة (مع قفل التمرير وأزرار رجوع ذهبية) */}
+      {/* نافذة إضافة وظيفة شاغرة (مع زر رجوع سهمي أصفر)            */}
       {/* ========================================================= */}
       {isPostJobOpen && (
         <div 
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overscroll-contain"
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
           style={{ touchAction: 'pan-y' }}
         >
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-6 space-y-4 shadow-2xl overscroll-contain">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <div className="flex items-center gap-2 text-yellow-400">
                 <Briefcase className="w-5 h-5" />
@@ -557,14 +555,14 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       )}
 
       {/* ========================================================= */}
-      {/* نافذة تقديم الباحث عن عمل (مع قفل التمرير وأزرار رجوع ذهبية) */}
+      {/* نافذة تقديم الباحث عن عمل (مع زر رجوع سهمي أصفر)           */}
       {/* ========================================================= */}
       {isApplyOpen && (
         <div 
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overscroll-contain"
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
           style={{ touchAction: 'pan-y' }}
         >
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-6 space-y-4 shadow-2xl overscroll-contain">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <div className="flex items-center gap-2 text-yellow-400">
                 <Send className="w-5 h-5" />
