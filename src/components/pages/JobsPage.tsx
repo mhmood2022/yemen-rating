@@ -50,17 +50,23 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [applicantAgreed, setApplicantAgreed] = useState(false);
   const [applyPhoneError, setApplyPhoneError] = useState(false);
 
-  // 🔒 قفل تمرير خلفية الموقع تلقائياً عند فتح أي نافذة منبثقة
+  // 🔒 قفل صارم ومطلق لتمرير الصفحة وخلفية الموقع باللمس على الهواتف
   const isAnyModalOpen = Boolean(selectedJob || isPostJobOpen || isApplyOpen);
   useEffect(() => {
     if (isAnyModalOpen) {
+      const originalOverflow = document.body.style.overflow;
+      const originalTouchAction = document.body.style.touchAction;
+      
+      document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.touchAction = 'none';
+
+      return () => {
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = originalOverflow || '';
+        document.body.style.touchAction = originalTouchAction || '';
+      };
     }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
   }, [isAnyModalOpen]);
 
   // فحص رقم الهاتف اليمني (9 أرقام ويبدأ بـ 7)
@@ -307,11 +313,14 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       </div>
 
       {/* ========================================================= */}
-      {/* نافذة تفاصيل الوظيفة (مع زر رجوع أصفر سهمي من المكتبة)    */}
+      {/* نافذة تفاصيل الوظيفة (مع قفل التمرير وأزرار رجوع ذهبية)   */}
       {/* ========================================================= */}
       {selectedJob && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl">
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overscroll-contain"
+          style={{ touchAction: 'pan-y' }}
+        >
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-xl max-h-[88vh] overflow-y-auto p-6 space-y-5 shadow-2xl overscroll-contain">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <div>
                 <h3 className="font-black text-lg text-white">{selectedJob.title}</h3>
@@ -381,11 +390,14 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       )}
 
       {/* ========================================================= */}
-      {/* نافذة إضافة وظيفة شاغرة (مع زر رجوع أصفر سهمي)             */}
+      {/* نافذة إضافة وظيفة شاغرة (مع قفل التمرير وأزرار رجوع ذهبية) */}
       {/* ========================================================= */}
       {isPostJobOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overscroll-contain"
+          style={{ touchAction: 'pan-y' }}
+        >
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-6 space-y-4 shadow-2xl overscroll-contain">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <div className="flex items-center gap-2 text-yellow-400">
                 <Briefcase className="w-5 h-5" />
@@ -545,11 +557,14 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       )}
 
       {/* ========================================================= */}
-      {/* نافذة تقديم الباحث عن عمل (مع زر رجوع أصفر سهمي)           */}
+      {/* نافذة تقديم الباحث عن عمل (مع قفل التمرير وأزرار رجوع ذهبية) */}
       {/* ========================================================= */}
       {isApplyOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overscroll-contain"
+          style={{ touchAction: 'pan-y' }}
+        >
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-6 space-y-4 shadow-2xl overscroll-contain">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
               <div className="flex items-center gap-2 text-yellow-400">
                 <Send className="w-5 h-5" />

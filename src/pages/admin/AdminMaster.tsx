@@ -33,20 +33,22 @@ export const AdminMaster: React.FC = () => {
     return <div className="min-h-screen bg-[#070A10] flex items-center justify-center text-white font-['Cairo']">جارٍ التحقق من الصلاحيات...</div>;
   }
 
-  // إذا لم يسجل الدخول، اعرض شاشة الدخول الآمنة
   if (!isAuthenticated) {
     return <AdminLogin onSuccess={() => setIsAuthenticated(true)} />;
   }
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#070A10] text-white flex font-['Cairo',sans-serif]">
+      {/* القائمة الجانبية */}
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col min-w-0 lg:mr-[280px]">
-        <header className="h-16 bg-[#0B0F17]/90 backdrop-blur-md border-b border-[#1F2937] flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
+        {/* 🔒 الهيدر الثابت المطلق (Fixed Header) لا يتحرك نهائياً مع التمرير */}
+        <header className="fixed top-0 left-0 right-0 lg:right-[280px] h-16 bg-[#0B0F17] flex items-center justify-between px-4 lg:px-8 z-40">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-lg bg-[#161D2B] text-white lg:hidden hover:bg-[#1F2937]"
+            className="p-2 rounded-lg bg-[#161D2B] text-white lg:hidden hover:bg-[#1F2937] transition"
+            aria-label="فتح القائمة"
           >
             <Menu size={20} />
           </button>
@@ -56,7 +58,7 @@ export const AdminMaster: React.FC = () => {
             <span>نظام الإدارة الداخلي لمنصة Yemen Rating</span>
           </div>
 
-          <button 
+          <button
             onClick={handleLogout}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#DC2626]/10 text-[#DC2626] hover:bg-[#DC2626]/20 text-xs font-bold transition-colors cursor-pointer"
           >
@@ -65,10 +67,13 @@ export const AdminMaster: React.FC = () => {
           </button>
         </header>
 
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
+        {/* مساحة المحتوى مع تعويض ارتفاع الهيدر pt-16 */}
+        <main className="flex-1 p-4 lg:p-8 pt-20">
           <Outlet />
         </main>
       </div>
     </div>
   );
 };
+
+export default AdminMaster;
