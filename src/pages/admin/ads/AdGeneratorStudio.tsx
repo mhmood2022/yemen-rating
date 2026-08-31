@@ -1,8 +1,26 @@
 import React, { useState, useRef } from 'react';
-import { 
-  Sparkles, Smartphone, Tablet, Monitor, Image as ImageIcon, 
-  Crop, Video, Upload, Layers, Eye, CheckCircle2, 
-  ArrowRight, Trash2, Maximize2, Move, ZoomIn
+import { NavLink } from 'react-router-dom';
+import {
+  Sparkles,
+  Smartphone,
+  Tablet,
+  Monitor,
+  Image as ImageIcon,
+  Crop,
+  Video,
+  Upload,
+  Layers,
+  Eye,
+  CheckCircle2,
+  ArrowRight,
+  Trash2,
+  Maximize2,
+  Move,
+  ZoomIn,
+  Calendar,
+  Clock,
+  Palette,
+  Square
 } from 'lucide-react';
 import { YR_AD_PLACEMENTS } from '../../../utils/adGeneratorEngine';
 import { adminAuditService } from '../../../services/adminService';
@@ -35,6 +53,9 @@ export interface PublishedAd {
   btnBgColor: string;
   btnTextColor: string;
   targetUrl: string;
+  // تاريخ البدء والإيقاف
+  startDate?: string;
+  endDate?: string;
   // شريط التمرير
   hasProgressBar: boolean;
   progressBarColor: string;
@@ -65,7 +86,7 @@ export const AdGeneratorStudio: React.FC = () => {
   const [mediaFileUrl, setMediaFileUrl] = useState<string>('https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=85');
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
   const [imageFit, setImageFit] = useState<'contain' | 'cover'>('cover');
-  const [imgPosX, setImgPosX] = useState(50); // بالمنتصف افتراضياً
+  const [imgPosX, setImgPosX] = useState(50);
   const [imgPosY, setImgPosY] = useState(50);
   const [imgScale, setImgScale] = useState(100);
   const [brightness, setBrightness] = useState(100);
@@ -78,36 +99,37 @@ export const AdGeneratorStudio: React.FC = () => {
   const [badgeText, setBadgeText] = useState('إعلان ممول');
   const [badgeBgColor, setBadgeBgColor] = useState('rgba(255, 197, 0, 0.2)');
   const [badgeTextColor, setBadgeTextColor] = useState('#FFC500');
-
   const [showHeadline, setShowHeadline] = useState(true);
   const [headline, setHeadline] = useState('أحدث عروض يمن ريتنغ الحصرية');
   const [headlineColor, setHeadlineColor] = useState('#FFFFFF');
-
   const [showDescription, setShowDescription] = useState(false);
   const [description, setDescription] = useState('تخفيضات كبرى على جميع الخدمات والأنشطة التجارية في اليمن.');
   const [descColor, setDescColor] = useState('#E5E7EB');
-
   const [showButton, setShowButton] = useState(true);
   const [ctaText, setCtaText] = useState('اطلب الآن');
   const [btnBgColor, setBtnBgColor] = useState('#FFC500');
   const [btnTextColor, setBtnTextColor] = useState('#000000');
   const [targetUrl, setTargetUrl] = useState('https://yemen-rating.com');
 
+  // تاريخ البدء وتاريخ الإيقاف
+  const [startDate, setStartDate] = useState('2026-08-31');
+  const [endDate, setEndDate] = useState('2026-09-30');
+
   // شريط التمرير
   const [hasProgressBar, setHasProgressBar] = useState(true);
   const [progressBarColor, setProgressBarColor] = useState('#FFC500');
   const [progressDuration, setProgressDuration] = useState(8);
 
-  // الحواف
+  // الحواف والمظهر
   const [hasBorder, setHasBorder] = useState(false);
   const [borderWidth, setBorderWidth] = useState(2);
   const [borderColor, setBorderColor] = useState('#FFC500');
-  const [borderRadius, setBorderRadius] = useState(12);
+  const [borderRadius, setBorderRadius] = useState(16);
   const [hasGlow, setHasGlow] = useState(false);
   const [bgColor, setBgColor] = useState('#0B0F17');
   const [bgStyle, setBgStyle] = useState<'gradient' | 'solid' | 'transparent'>('solid');
 
-  const [activeTab, setActiveTab] = useState<'crop' | 'elements' | 'timer' | 'colors' | 'border'>('crop');
+  const [activeTab, setActiveTab] = useState<'crop' | 'elements' | 'dates' | 'colors' | 'border'>('crop');
   const [publishedAlert, setPublishedAlert] = useState(false);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,6 +170,8 @@ export const AdGeneratorStudio: React.FC = () => {
       btnBgColor,
       btnTextColor,
       targetUrl,
+      startDate,
+      endDate,
       hasProgressBar,
       progressBarColor,
       progressDuration,
@@ -169,27 +193,74 @@ export const AdGeneratorStudio: React.FC = () => {
 
     const existing = JSON.parse(localStorage.getItem('yr_published_ads') || '[]');
     localStorage.setItem('yr_published_ads', JSON.stringify([newAd, ...existing]));
-    adminAuditService.logAction('نشر إعلان باقتصاص وتموضع مخصص', 'ad_campaign', newAd.id, { headline, imageFit });
+    adminAuditService.logAction('نشر إعلان باقتصاص وتموضع مخصص', 'ad_campaign', newAd.id, { headline, imageFit, startDate, endDate });
 
     setPublishedAlert(true);
-    setTimeout(() => setPublishedAlert(false), 4000);
+    setTimeout(() => setPublishedAlert(false), 5000);
   };
 
   return (
-    <div className="space-y-6 font-['Cairo',sans-serif] pb-16">
-      
-      {/* 1. المعاينة المباشرة في الأعلى */}
-      <div className="sticky top-16 z-30 bg-[#070A10]/95 backdrop-blur-md p-4 rounded-2xl border border-[#1F2937] shadow-2xl">
-        <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#1F2937]">
+    <div dir="rtl" className="space-y-6 font-['Cairo',sans-serif] pb-16">
+      {/* 1. رأس الصفحة مع زر الرجوع الذهبي البارز */}
+      <div className="flex items-center justify-between gap-4 bg-[#0B0F17] p-4 sm:p-5 rounded-2xl border border-[#1F2937] shadow-lg">
+        <div className="flex items-center gap-3">
+          <NavLink
+            to="/admin/ads"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#161D2B] text-yellow-400 hover:text-yellow-300 hover:bg-[#1F2937] border border-[#1F2937] transition font-bold text-xs shrink-0 shadow-sm"
+            title="رجوع لمعرض الإعلانات"
+          >
+            <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+            <span>رجوع لمعرض الإعلانات</span>
+          </NavLink>
+          <div>
+            <h1 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
+              <Sparkles className="text-yellow-400 w-5 h-5" />
+              استوديو تصميم ومولد الإعلانات YR Studio
+            </h1>
+            <p className="text-zinc-400 text-xs mt-0.5">
+              تخصيص أبعاد التموضع، النصوص، وتحديد فترة ظهور الإعلان
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={handleSaveAndPublish}
+          className="px-5 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-black rounded-xl text-xs transition shadow-lg shadow-yellow-500/20 shrink-0"
+        >
+          نشر وحفظ الإعلان
+        </button>
+      </div>
+
+      {/* 2. شاشة المعاينة الحية المثبتة في الأعلى أثناء التمرير (Sticky Preview) */}
+      <div className="sticky top-20 z-30 bg-[#070A10] p-4 rounded-2xl border border-[#1F2937] shadow-2xl space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-[#1F2937]">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#16A34A] animate-ping" />
-            <span className="text-xs font-black text-white">المعاينة الحية الفورية (Live Studio)</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-black text-white">المعاينة الحية الفورية (Live Studio Preview)</span>
           </div>
 
           <div className="flex items-center gap-1 bg-[#161D2B] p-1 rounded-xl">
-            <button onClick={() => setViewMode('mobile')} className={`p-1.5 rounded-lg text-xs ${viewMode === 'mobile' ? 'bg-[#FFC500] text-black font-bold' : 'text-[#9CA3AF]'}`}><Smartphone size={14} /></button>
-            <button onClick={() => setViewMode('tablet')} className={`p-1.5 rounded-lg text-xs ${viewMode === 'tablet' ? 'bg-[#FFC500] text-black font-bold' : 'text-[#9CA3AF]'}`}><Tablet size={14} /></button>
-            <button onClick={() => setViewMode('desktop')} className={`p-1.5 rounded-lg text-xs ${viewMode === 'desktop' ? 'bg-[#FFC500] text-black font-bold' : 'text-[#9CA3AF]'}`}><Monitor size={14} /></button>
+            <button
+              onClick={() => setViewMode('mobile')}
+              className={`p-1.5 rounded-lg text-xs transition ${viewMode === 'mobile' ? 'bg-yellow-500 text-black font-bold' : 'text-zinc-400'}`}
+              title="عرض الهاتف"
+            >
+              <Smartphone size={14} />
+            </button>
+            <button
+              onClick={() => setViewMode('tablet')}
+              className={`p-1.5 rounded-lg text-xs transition ${viewMode === 'tablet' ? 'bg-yellow-500 text-black font-bold' : 'text-zinc-400'}`}
+              title="عرض التابلت"
+            >
+              <Tablet size={14} />
+            </button>
+            <button
+              onClick={() => setViewMode('desktop')}
+              className={`p-1.5 rounded-lg text-xs transition ${viewMode === 'desktop' ? 'bg-yellow-500 text-black font-bold' : 'text-zinc-400'}`}
+              title="عرض الشاشة"
+            >
+              <Monitor size={14} />
+            </button>
           </div>
         </div>
 
@@ -204,13 +275,13 @@ export const AdGeneratorStudio: React.FC = () => {
                 backgroundImage: bgStyle === 'gradient' ? `linear-gradient(135deg, ${bgColor} 0%, #161D2B 100%)` : 'none',
                 boxShadow: hasGlow && hasBorder ? `0 0 25px ${borderColor}40` : 'none',
               }}
-              className="relative overflow-hidden w-full min-h-[150px] flex flex-col justify-between"
+              className="relative overflow-hidden w-full min-h-[140px] flex flex-col justify-between"
             >
               {/* شريط التمرير الزمني */}
               {hasProgressBar && (
                 <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 z-20 overflow-hidden">
-                  <div 
-                    style={{ 
+                  <div
+                    style={{
                       backgroundColor: progressBarColor,
                       animation: `yrAdProgress ${progressDuration}s linear infinite`
                     }}
@@ -219,23 +290,23 @@ export const AdGeneratorStudio: React.FC = () => {
                 </div>
               )}
 
-              {/* الوسائط مع التحكم في (كامل الصورة أو جزء محدد) */}
+              {/* الوسائط */}
               {mediaFileUrl && (
                 <div className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center">
                   {mediaType === 'video' ? (
                     <video src={mediaFileUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
                   ) : (
-                    <img 
-                      src={mediaFileUrl} 
-                      alt="Ad" 
-                      style={{ 
+                    <img
+                      src={mediaFileUrl}
+                      alt="Ad"
+                      style={{
                         objectFit: imageFit,
                         objectPosition: `${imgPosX}% ${imgPosY}%`,
                         transform: `scale(${imgScale / 100})`,
                         filter: `brightness(${brightness}%) contrast(${contrast}%)`,
                         imageRendering: 'crisp-edges'
                       }}
-                      className="w-full h-full transition-all duration-150" 
+                      className="w-full h-full transition-all duration-150"
                     />
                   )}
                   {imgOverlay > 0 && (
@@ -244,66 +315,76 @@ export const AdGeneratorStudio: React.FC = () => {
                 </div>
               )}
 
-              {/* المحتوى الاختياري */}
-              {(showBadge || showHeadline || showDescription) && (
-                <div className="relative z-10 p-4 space-y-2">
-                  {showBadge && (
-                    <span style={{ backgroundColor: badgeBgColor, color: badgeTextColor, borderColor: badgeTextColor }} className="px-2.5 py-0.5 rounded-full text-[10px] font-black border inline-block backdrop-blur-sm">
-                      {badgeText}
-                    </span>
-                  )}
-                  {showHeadline && (
-                    <h3 style={{ color: headlineColor }} className="text-base font-black drop-shadow-md leading-tight">
-                      {headline}
-                    </h3>
-                  )}
-                  {showDescription && (
-                    <p style={{ color: descColor }} className="text-xs drop-shadow line-clamp-2 leading-relaxed">
-                      {description}
-                    </p>
-                  )}
-                </div>
-              )}
+              {/* محتوى الإعلان */}
+              <div className="relative z-10 p-4 flex flex-col justify-between h-full min-h-[140px]">
+                {(showBadge || showHeadline || showDescription) && (
+                  <div className="space-y-1.5 max-w-xl">
+                    {showBadge && (
+                      <span
+                        style={{ backgroundColor: badgeBgColor, color: badgeTextColor, borderColor: badgeTextColor }}
+                        className="px-2.5 py-0.5 rounded-full text-[10px] font-black border inline-block backdrop-blur-sm"
+                      >
+                        {badgeText}
+                      </span>
+                    )}
 
-              {/* زر الإجراء */}
-              {showButton && (
-                <div className="relative z-10 p-4 pt-0 flex justify-between items-center">
-                  <button style={{ backgroundColor: btnBgColor, color: btnTextColor }} className="px-4 py-2 rounded-xl font-black text-xs shadow-xl flex items-center gap-1.5 cursor-pointer">
-                    <span>{ctaText}</span>
-                    <ArrowRight size={13} className="rtl:rotate-180" />
-                  </button>
-                  <span className="text-[9px] text-white/80 font-mono bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm">
-                    {selectedPlacement.name.split(' ')[0]}
-                  </span>
-                </div>
-              )}
+                    {showHeadline && (
+                      <h3 style={{ color: headlineColor }} className="text-sm sm:text-base font-black leading-snug drop-shadow-md">
+                        {headline}
+                      </h3>
+                    )}
+
+                    {showDescription && (
+                      <p style={{ color: descColor }} className="text-xs text-gray-200 line-clamp-2 drop-shadow leading-relaxed">
+                        {description}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {showButton && (
+                  <div className="pt-2 flex items-center justify-end mt-2">
+                    <button
+                      type="button"
+                      style={{ backgroundColor: btnBgColor, color: btnTextColor }}
+                      className="px-4 py-1.5 rounded-xl font-black text-xs shadow-xl flex items-center gap-1.5"
+                    >
+                      <span>{ctaText}</span>
+                      <ArrowRight size={13} className="rtl:rotate-180" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* تنبيه النجاح بعد الحفظ مع زر رجوع مباشر */}
       {publishedAlert && (
-        <div className="p-4 rounded-xl bg-[#16A34A]/20 border border-[#16A34A] text-white text-xs font-bold flex items-center justify-between">
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-white text-xs font-bold flex items-center justify-between shadow-lg">
           <div className="flex items-center gap-2">
-            <CheckCircle2 size={18} className="text-[#16A34A]" />
-            <span>تم حفظ ونشر الإعلان بنجاح مع أبعاد التموضع المحددة!</span>
+            <CheckCircle2 size={18} className="text-emerald-400" />
+            <span>تم حفظ ونشر الإعلان وتحديد فترته بنجاح!</span>
           </div>
-          <a href="/admin/ads" className="px-3 py-1.5 rounded-lg bg-[#FFC500] text-black font-black text-xs">
-            مشاهدة في المعرض المرئي
-          </a>
+          <NavLink to="/admin/ads" className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-yellow-500 text-black font-black text-xs">
+            <ArrowRight className="w-3.5 h-3.5" /> رجوع لمعرض الإعلانات
+          </NavLink>
         </div>
       )}
 
-      {/* 2. شريط المواضع الـ 10 */}
-      <div className="bg-[#0B0F17] p-3 rounded-2xl border border-[#1F2937] space-y-2">
-        <label className="text-xs font-bold text-[#FFC500]">موضع العرض (10 مواضع):</label>
+      {/* 3. شريط المواضع الـ 10 */}
+      <div className="bg-[#0B0F17] p-3.5 rounded-2xl border border-[#1F2937] space-y-2">
+        <label className="text-xs font-bold text-yellow-400 block">موضع الإعلان المختار في المنصة (10 مواضع):</label>
         <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
           {YR_AD_PLACEMENTS.map((p) => (
             <button
               key={p.id}
               onClick={() => setSelectedPlacement(p)}
-              className={`shrink-0 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
-                selectedPlacement.id === p.id ? 'bg-[#FFC500] text-black border-[#FFC500] shadow-md' : 'bg-[#161D2B] text-[#9CA3AF] border-[#1F2937]'
+              className={`shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${
+                selectedPlacement.id === p.id
+                  ? 'bg-yellow-500 text-black border-yellow-500 shadow-md font-black'
+                  : 'bg-[#161D2B] text-zinc-400 border-[#1F2937] hover:text-white'
               }`}
             >
               #{p.id} {p.name}
@@ -312,272 +393,233 @@ export const AdGeneratorStudio: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. أدوات الاستوديو */}
-      <div className="bg-[#0B0F17] p-5 rounded-2xl border border-[#1F2937] space-y-5">
-        
-        <div className="grid grid-cols-5 gap-1 p-1 bg-[#161D2B] rounded-xl border border-[#1F2937] text-xs font-black">
-          <button onClick={() => setActiveTab('crop')} className={`py-2 rounded-lg transition-all ${activeTab === 'crop' ? 'bg-[#FFC500] text-black' : 'text-[#9CA3AF]'}`}>
+      {/* 4. أدوات ولوحة تحكم الاستوديو والتبويبات */}
+      <div className="bg-[#0B0F17] p-5 rounded-2xl border border-[#1F2937] space-y-5 shadow-xl">
+        <div className="grid grid-cols-5 gap-1.5 p-1 bg-[#161D2B] rounded-xl border border-[#1F2937] text-xs font-black">
+          <button
+            onClick={() => setActiveTab('crop')}
+            className={`py-2 rounded-lg transition-all ${activeTab === 'crop' ? 'bg-yellow-500 text-black' : 'text-zinc-400'}`}
+          >
             قص وتموضع
           </button>
-          <button onClick={() => setActiveTab('elements')} className={`py-2 rounded-lg transition-all ${activeTab === 'elements' ? 'bg-[#FFC500] text-black' : 'text-[#9CA3AF]'}`}>
-            العناصر/صافي
+          <button
+            onClick={() => setActiveTab('elements')}
+            className={`py-2 rounded-lg transition-all ${activeTab === 'elements' ? 'bg-yellow-500 text-black' : 'text-zinc-400'}`}
+          >
+            النصوص والأزرار
           </button>
-          <button onClick={() => setActiveTab('timer')} className={`py-2 rounded-lg transition-all ${activeTab === 'timer' ? 'bg-[#FFC500] text-black' : 'text-[#9CA3AF]'}`}>
-            شريط التمرير
+          <button
+            onClick={() => setActiveTab('dates')}
+            className={`py-2 rounded-lg transition-all ${activeTab === 'dates' ? 'bg-yellow-500 text-black' : 'text-zinc-400'}`}
+          >
+            فترة الإعلان
           </button>
-          <button onClick={() => setActiveTab('colors')} className={`py-2 rounded-lg transition-all ${activeTab === 'colors' ? 'bg-[#FFC500] text-black' : 'text-[#9CA3AF]'}`}>
+          <button
+            onClick={() => setActiveTab('colors')}
+            className={`py-2 rounded-lg transition-all ${activeTab === 'colors' ? 'bg-yellow-500 text-black' : 'text-zinc-400'}`}
+          >
             الألوان
           </button>
-          <button onClick={() => setActiveTab('border')} className={`py-2 rounded-lg transition-all ${activeTab === 'border' ? 'bg-[#FFC500] text-black' : 'text-[#9CA3AF]'}`}>
+          <button
+            onClick={() => setActiveTab('border')}
+            className={`py-2 rounded-lg transition-all ${activeTab === 'border' ? 'bg-yellow-500 text-black' : 'text-zinc-400'}`}
+          >
             الحواف
           </button>
         </div>
 
-        {/* تبويب القص والتموضع (كامل الصورة أو أي جزء محدد) */}
+        {/* تبويب 1: القص والتموضع */}
         {activeTab === 'crop' && (
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-white block mb-2">تحميل صورة أو فيديو:</label>
-              <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileUpload} className="hidden" />
+              <label className="text-xs font-bold text-yellow-400 block mb-2">تحميل وسائط الإعلان (صورة أو فيديو):</label>
               <div className="flex gap-2">
-                <button onClick={() => fileInputRef.current?.click()} className="flex-1 py-3 px-4 rounded-xl bg-[#161D2B] border-2 border-dashed border-[#FFC500] text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer">
-                  <Upload size={16} className="text-[#FFC500]" />
-                  <span>تحميل من الهاتف</span>
+                <input
+                  type="text"
+                  value={mediaFileUrl}
+                  onChange={(e) => setMediaFileUrl(e.target.value)}
+                  placeholder="أدخل رابط الصورة أو الفيديو المباشر..."
+                  className="flex-1 bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-400 font-mono"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3.5 py-2 bg-zinc-800 hover:bg-zinc-700 text-yellow-400 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-zinc-700"
+                >
+                  <Upload size={14} /> ملف محلي
                 </button>
-                {mediaFileUrl && (
-                  <button onClick={() => setMediaFileUrl('')} className="p-3 rounded-xl bg-[#DC2626]/10 text-[#DC2626] border border-[#DC2626]/30">
-                    <Trash2 size={16} />
-                  </button>
-                )}
+                <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileUpload} className="hidden" />
               </div>
             </div>
 
-            {/* وضع العرض: كامل الصورة أو ملء واقتصاص */}
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] space-y-3">
-              <label className="text-xs font-bold text-[#FFC500] block">نمط عرض الصورة:</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => { setImageFit('contain'); setImgScale(100); setImgPosX(50); setImgPosY(50); }}
-                  className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
-                    imageFit === 'contain' ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#0B0F17] text-white border-[#1F2937]'
-                  }`}
-                >
-                  <Maximize2 size={15} />
-                  <span>عرض كامل الصورة (بدون قص)</span>
-                </button>
-                <button
-                  onClick={() => setImageFit('cover')}
-                  className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
-                    imageFit === 'cover' ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#0B0F17] text-white border-[#1F2937]'
-                  }`}
-                >
-                  <Crop size={15} />
-                  <span>ملء الإطار وتحديد موضع القص</span>
-                </button>
-              </div>
-            </div>
-
-            {/* أدوات التحكم في اختيار أي جزء من الصورة */}
-            {imageFit === 'cover' && (
-              <div className="p-4 bg-[#161D2B] rounded-xl border border-[#1F2937] space-y-4">
-                <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Move size={15} className="text-[#FFC500]" />
-                  <span>تحديد الجزء المعروض من الصورة:</span>
-                </div>
-
-                {/* أزرار تركيز سريعة */}
-                <div className="flex gap-1.5 overflow-x-auto pb-1">
-                  {[
-                    { label: 'الوسط', x: 50, y: 50 },
-                    { label: 'أعلى الصورة', x: 50, y: 0 },
-                    { label: 'أسفل الصورة', x: 50, y: 100 },
-                    { label: 'يمين الصورة', x: 100, y: 50 },
-                    { label: 'يسار الصورة', x: 0, y: 50 },
-                  ].map((p, i) => (
-                    <button
-                      key={i}
-                      onClick={() => { setImgPosX(p.x); setImgPosY(p.y); }}
-                      className="px-3 py-1 rounded-lg bg-[#0B0F17] text-[11px] font-bold text-gray-300 border border-[#1F2937] hover:border-[#FFC500]"
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* سلايدرات التحكم الدقيق X / Y / Zoom */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                  <div>
-                    <label className="text-[11px] text-[#9CA3AF] block mb-1">التقريب (Zoom): {imgScale}%</label>
-                    <input type="range" min="100" max="250" value={imgScale} onChange={(e) => setImgScale(Number(e.target.value))} className="w-full accent-[#FFC500]" />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-[#9CA3AF] block mb-1">إزاحة أفقية (X): {imgPosX}%</label>
-                    <input type="range" min="0" max="100" value={imgPosX} onChange={(e) => setImgPosX(Number(e.target.value))} className="w-full accent-[#FFC500]" />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-[#9CA3AF] block mb-1">إزاحة رأسية (Y): {imgPosY}%</label>
-                    <input type="range" min="0" max="100" value={imgPosY} onChange={(e) => setImgPosY(Number(e.target.value))} className="w-full accent-[#FFC500]" />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* السطوع والتباين */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-[#161D2B] rounded-xl border border-[#1F2937]">
               <div>
-                <label className="text-[11px] text-[#9CA3AF] block mb-1">السطوع والنقاء: {brightness}%</label>
-                <input type="range" min="50" max="150" value={brightness} onChange={(e) => setBrightness(Number(e.target.value))} className="w-full accent-[#FFC500]" />
+                <label className="text-[11px] text-yellow-400 font-bold block mb-1">التقريب (Zoom): {imgScale}%</label>
+                <input type="range" min="100" max="250" value={imgScale} onChange={(e) => setImgScale(Number(e.target.value))} className="w-full accent-yellow-500" />
               </div>
               <div>
-                <label className="text-[11px] text-[#9CA3AF] block mb-1">التباين اللوني: {contrast}%</label>
-                <input type="range" min="50" max="150" value={contrast} onChange={(e) => setContrast(Number(e.target.value))} className="w-full accent-[#FFC500]" />
+                <label className="text-[11px] text-yellow-400 font-bold block mb-1">إزاحة أفقية (X): {imgPosX}%</label>
+                <input type="range" min="0" max="100" value={imgPosX} onChange={(e) => setImgPosX(Number(e.target.value))} className="w-full accent-yellow-500" />
               </div>
               <div>
-                <label className="text-[11px] text-[#9CA3AF] block mb-1">تعتيم الخلفية: {imgOverlay}%</label>
-                <input type="range" min="0" max="90" value={imgOverlay} onChange={(e) => setImgOverlay(Number(e.target.value))} className="w-full accent-[#FFC500]" />
+                <label className="text-[11px] text-yellow-400 font-bold block mb-1">إزاحة رأسية (Y): {imgPosY}%</label>
+                <input type="range" min="0" max="100" value={imgPosY} onChange={(e) => setImgPosY(Number(e.target.value))} className="w-full accent-yellow-500" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-[#161D2B] rounded-xl border border-[#1F2937]">
+              <div>
+                <label className="text-[11px] text-yellow-400 font-bold block mb-1">السطوع: {brightness}%</label>
+                <input type="range" min="50" max="150" value={brightness} onChange={(e) => setBrightness(Number(e.target.value))} className="w-full accent-yellow-500" />
+              </div>
+              <div>
+                <label className="text-[11px] text-yellow-400 font-bold block mb-1">التباين: {contrast}%</label>
+                <input type="range" min="50" max="150" value={contrast} onChange={(e) => setContrast(Number(e.target.value))} className="w-full accent-yellow-500" />
+              </div>
+              <div>
+                <label className="text-[11px] text-yellow-400 font-bold block mb-1">تعتيم الخلفية: {imgOverlay}%</label>
+                <input type="range" min="0" max="90" value={imgOverlay} onChange={(e) => setImgOverlay(Number(e.target.value))} className="w-full accent-yellow-500" />
               </div>
             </div>
           </div>
         )}
 
-        {/* تبويب العناصر (صافي) */}
+        {/* تبويب 2: العناصر والنصوص */}
         {activeTab === 'elements' && (
           <div className="space-y-4">
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] flex items-center justify-between">
-              <span className="text-xs font-bold text-white">شارة الإعلان (Badge)</span>
-              <button onClick={() => setShowBadge(!showBadge)} className={`px-3 py-1 rounded-lg text-xs font-bold ${showBadge ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-400'}`}>
-                {showBadge ? 'ظاهر' : 'مخفي'}
-              </button>
+            <div>
+              <label className="text-xs font-bold text-yellow-400 block mb-1">عنوان الإعلان الرئيسي:</label>
+              <input
+                type="text"
+                value={headline}
+                onChange={(e) => setHeadline(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-400"
+              />
             </div>
-            {showBadge && <input type="text" value={badgeText} onChange={(e) => setBadgeText(e.target.value)} className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white outline-none" />}
 
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] flex items-center justify-between">
-              <span className="text-xs font-bold text-white">العنوان الرئيسي</span>
-              <button onClick={() => setShowHeadline(!showHeadline)} className={`px-3 py-1 rounded-lg text-xs font-bold ${showHeadline ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-400'}`}>
-                {showHeadline ? 'ظاهر' : 'مخفي (صافي)'}
-              </button>
+            <div>
+              <label className="text-xs font-bold text-yellow-400 block mb-1">نص زر التحويل (CTA):</label>
+              <input
+                type="text"
+                value={ctaText}
+                onChange={(e) => setCtaText(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-400"
+              />
             </div>
-            {showHeadline && <input type="text" value={headline} onChange={(e) => setHeadline(e.target.value)} className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white outline-none" />}
 
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] flex items-center justify-between">
-              <span className="text-xs font-bold text-white">نص الوصف</span>
-              <button onClick={() => setShowDescription(!showDescription)} className={`px-3 py-1 rounded-lg text-xs font-bold ${showDescription ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-400'}`}>
-                {showDescription ? 'ظاهر' : 'مخفي (صافي)'}
-              </button>
+            <div>
+              <label className="text-xs font-bold text-yellow-400 block mb-1">رابط التوجيه عند النقر (Target URL):</label>
+              <input
+                type="text"
+                value={targetUrl}
+                onChange={(e) => setTargetUrl(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-400 font-mono"
+              />
             </div>
-            {showDescription && <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white outline-none" />}
-
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] flex items-center justify-between">
-              <span className="text-xs font-bold text-white">زر الإجراء (CTA)</span>
-              <button onClick={() => setShowButton(!showButton)} className={`px-3 py-1 rounded-lg text-xs font-bold ${showButton ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-400'}`}>
-                {showButton ? 'ظاهر' : 'مخفي (صافي)'}
-              </button>
-            </div>
-            {showButton && (
-              <div className="grid grid-cols-2 gap-2">
-                <input type="text" value={ctaText} onChange={(e) => setCtaText(e.target.value)} placeholder="نص الزر..." className="bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white outline-none" />
-                <input type="text" value={targetUrl} onChange={(e) => setTargetUrl(e.target.value)} placeholder="الرابط..." className="bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white outline-none font-mono" />
-              </div>
-            )}
           </div>
         )}
 
-        {/* تبويب شريط التمرير */}
-        {activeTab === 'timer' && (
+        {/* تبويب 3: فترة ظهور الإعلان (تاريخ البدء وتاريخ الإيقاف) */}
+        {activeTab === 'dates' && (
           <div className="space-y-4">
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] flex items-center justify-between">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <span className="text-xs font-bold text-white block">شريط التمرير والتقدم الزمني</span>
-                <span className="text-[10px] text-[#9CA3AF]">يتحرك من بداية الإعلان لنهايته</span>
+                <label className="text-xs font-bold text-yellow-400 block mb-1.5 flex items-center gap-1.5">
+                  <Calendar size={14} /> تاريخ بدء ظهور الإعلان:
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-400"
+                />
               </div>
-              <button onClick={() => setHasProgressBar(!hasProgressBar)} className={`px-3 py-1 rounded-lg text-xs font-bold ${hasProgressBar ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-400'}`}>
+
+              <div>
+                <label className="text-xs font-bold text-yellow-400 block mb-1.5 flex items-center gap-1.5">
+                  <Clock size={14} /> تاريخ إيقاف / انتهاء الإعلان:
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-yellow-400"
+                />
+              </div>
+            </div>
+
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] flex items-center justify-between">
+              <span className="text-xs font-bold text-yellow-400">شريط التمرير الزمني المتحرك:</span>
+              <button
+                type="button"
+                onClick={() => setHasProgressBar(!hasProgressBar)}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                  hasProgressBar ? 'bg-yellow-500 text-black' : 'bg-zinc-800 text-zinc-400'
+                }`}
+              >
                 {hasProgressBar ? 'مفعل' : 'معطل'}
               </button>
             </div>
-
-            {hasProgressBar && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-[#161D2B] rounded-xl border border-[#1F2937]">
-                <div>
-                  <label className="text-[11px] text-[#9CA3AF] block mb-1">مدة الإعلان: {progressDuration} ثوانٍ</label>
-                  <input type="range" min="3" max="30" value={progressDuration} onChange={(e) => setProgressDuration(Number(e.target.value))} className="w-full accent-[#FFC500]" />
-                </div>
-                <div>
-                  <label className="text-[11px] text-[#9CA3AF] block mb-1">لون شريط التمرير</label>
-                  <div className="flex items-center gap-2">
-                    <input type="color" value={progressBarColor} onChange={(e) => setProgressBarColor(e.target.value)} className="w-8 h-8 rounded border-0 cursor-pointer bg-transparent" />
-                    <span className="text-xs font-mono text-white">{progressBarColor}</span>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
-        {/* تبويب الألوان */}
+        {/* تبويب 4: الألوان */}
         {activeTab === 'colors' && (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#1F2937]">
-                <label className="text-[10px] text-[#9CA3AF] block mb-1 font-bold">خلفية الزر</label>
-                <input type="color" value={btnBgColor} onChange={(e) => setBtnBgColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
-              </div>
-              <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#1F2937]">
-                <label className="text-[10px] text-[#9CA3AF] block mb-1 font-bold">نص الزر</label>
-                <input type="color" value={btnTextColor} onChange={(e) => setBtnTextColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
-              </div>
-              <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#1F2937]">
-                <label className="text-[10px] text-[#9CA3AF] block mb-1 font-bold">لون العنوان</label>
-                <input type="color" value={headlineColor} onChange={(e) => setHeadlineColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
-              </div>
-              <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#1F2937]">
-                <label className="text-[10px] text-[#9CA3AF] block mb-1 font-bold">خلفية الإعلان</label>
-                <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-bold text-yellow-400 block mb-1">لون زر التحويل (Button):</label>
+              <input
+                type="color"
+                value={btnBgColor}
+                onChange={(e) => setBtnBgColor(e.target.value)}
+                className="w-full h-10 bg-zinc-900 rounded-xl cursor-pointer border border-zinc-700"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-yellow-400 block mb-1">لون خلفية الإعلان:</label>
+              <input
+                type="color"
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+                className="w-full h-10 bg-zinc-900 rounded-xl cursor-pointer border border-zinc-700"
+              />
             </div>
           </div>
         )}
 
-        {/* تبويب الحواف */}
+        {/* تبويب 5: الحواف */}
         {activeTab === 'border' && (
           <div className="space-y-4">
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] flex items-center justify-between">
-              <div>
-                <span className="text-xs font-bold text-white block">تفعيل الإطار والحواف</span>
-                <span className="text-[10px] text-[#9CA3AF]">إلغاؤه يجعل الإعلان صافياً مفتوحاً</span>
-              </div>
-              <button onClick={() => setHasBorder(!hasBorder)} className={`px-3 py-1 rounded-lg text-xs font-bold ${hasBorder ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-400'}`}>
-                {hasBorder ? 'مفعل' : 'ملغي (بدون حواف)'}
-              </button>
+            <div>
+              <label className="text-xs font-bold text-yellow-400 block mb-1">انحناء الزوايا: {borderRadius}px</label>
+              <input
+                type="range"
+                min="0"
+                max="30"
+                value={borderRadius}
+                onChange={(e) => setBorderRadius(Number(e.target.value))}
+                className="w-full accent-yellow-500"
+              />
             </div>
-
-            {hasBorder && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-[#161D2B] rounded-xl border border-[#1F2937]">
-                <div>
-                  <label className="text-[10px] text-[#9CA3AF] block mb-1">السماكة: {borderWidth}px</label>
-                  <input type="range" min="1" max="8" value={borderWidth} onChange={(e) => setBorderWidth(Number(e.target.value))} className="w-full accent-[#FFC500]" />
-                </div>
-                <div>
-                  <label className="text-[10px] text-[#9CA3AF] block mb-1">انحناء الزوايا: {borderRadius}px</label>
-                  <input type="range" min="0" max="32" value={borderRadius} onChange={(e) => setBorderRadius(Number(e.target.value))} className="w-full accent-[#FFC500]" />
-                </div>
-                <div>
-                  <label className="text-[10px] text-[#9CA3AF] block mb-1">لون الإطار</label>
-                  <input type="color" value={borderColor} onChange={(e) => setBorderColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
-                </div>
-              </div>
-            )}
           </div>
         )}
 
-        <button
-          onClick={handleSaveAndPublish}
-          className="w-full py-4 rounded-xl bg-[#FFC500] text-black font-black text-sm hover:bg-[#FFC500]/90 transition-all shadow-xl shadow-[#FFC500]/20 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-        >
-          <Sparkles size={18} />
-          <span>حفظ ونشر الإعلان فوراً في المعرض المرئي</span>
-        </button>
+        <div className="pt-3 border-t border-[#1F2937] flex items-center justify-between gap-3">
+          <NavLink
+            to="/admin/ads"
+            className="flex items-center gap-1 px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-yellow-400 font-bold rounded-xl text-xs transition"
+          >
+            <ArrowRight className="w-4 h-4 stroke-[2.5]" /> رجوع لمعرض الإعلانات
+          </NavLink>
+          <button
+            onClick={handleSaveAndPublish}
+            className="px-6 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-black rounded-xl text-xs transition shadow-lg shadow-yellow-500/20"
+          >
+            حفظ ونشر الإعلان الآن
+          </button>
+        </div>
       </div>
-
     </div>
   );
 };
+
+export default AdGeneratorStudio;
