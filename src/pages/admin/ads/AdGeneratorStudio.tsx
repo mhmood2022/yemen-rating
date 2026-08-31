@@ -1,10 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   Sparkles, Smartphone, Tablet, Monitor, Image as ImageIcon, 
   Crop, Video, Upload, Layers, Eye, CheckCircle2, 
   ArrowRight, Trash2, Maximize2, Move, MessageCircle, Phone, 
   Link as LinkIcon, Calendar, Flame, Award, Clock, Type, Palette as PaletteIcon,
-  Tag, QrCode, Star, ShieldCheck, DollarSign, Layout, Play, Sliders, Shield, AlertCircle
+  Tag, QrCode, Star, ShieldCheck, DollarSign, Layout, Play, RefreshCw, Sliders, Shield
 } from 'lucide-react';
 import { YR_AD_PLACEMENTS } from '../../../utils/adGeneratorEngine';
 import { adminAuditService } from '../../../services/adminService';
@@ -52,9 +52,8 @@ export interface PublishedAd {
   descColor: string;
   descLines: 1 | 2 | 3 | 4;
   textAlign: 'right' | 'center' | 'left';
-  textVerticalPos: 'top' | 'center' | 'bottom';
 
-  // العناصر الإضافية والأسعار
+  // الأسعار
   showPricing: boolean;
   currentPrice: string;
   oldPrice: string;
@@ -66,11 +65,9 @@ export interface PublishedAd {
   locationText: string;
   showVerifiedBadge: boolean;
   showQrCode: boolean;
-
-  // ملصقات ترويجية
   promoSticker: 'none' | 'discount50' | 'verified_gold' | 'hot_deal' | 'limited' | 'exclusive';
 
-  // الزر والتحويل
+  // الزر
   showButton: boolean;
   ctaText: string;
   btnBgColor: string;
@@ -84,24 +81,22 @@ export interface PublishedAd {
   whatsappMessage: string;
   callPhone: string;
 
-  // الاستهداف والجدولة
+  // الاستهداف
   targetCity: string;
   targetCategory: string;
   endDate: string;
 
-  // الحركات المستقلة والأنماط
+  // الحركات
   motionPreset: 'calm' | 'balanced' | 'engaging' | 'custom';
   headlineMotion: 'none' | 'fadeIn' | 'slideRight' | 'slideLeft' | 'slideUp' | 'bounce' | 'pulse';
   descMotion: 'none' | 'fadeIn' | 'slideUp' | 'slideRight';
   btnMotion: 'none' | 'fadeIn' | 'slideUp' | 'bounce' | 'pulse' | 'shine';
   mediaMotion: 'none' | 'fadeIn' | 'kenBurns' | 'slowZoom';
 
-  // شريط التمرير
   hasProgressBar: boolean;
   progressBarColor: string;
   progressDuration: number;
 
-  // الحواف والمظهر
   hasBorder: boolean;
   borderWidth: number;
   borderColor: string;
@@ -120,14 +115,12 @@ export interface PublishedAd {
 }
 
 export const AdGeneratorStudio: React.FC = () => {
-  // المستوى والأنماط
   const [adTier, setAdTier] = useState<'basic' | 'professional' | 'premium'>('professional');
   const [adCategoryType, setAdCategoryType] = useState<PublishedAd['adCategoryType']>('image_text');
   const [designTheme, setDesignTheme] = useState<PublishedAd['designTheme']>('modern');
   const [layoutStyle, setLayoutStyle] = useState<PublishedAd['layoutStyle']>('full_overlay');
   const [selectedPlacement, setSelectedPlacement] = useState(YR_AD_PLACEMENTS[0]);
   const [viewMode, setViewMode] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
-  const [previewContext, setPreviewContext] = useState<'standalone' | 'home_feed' | 'search_results'>('standalone');
 
   // الوسائط
   const [mediaFileUrl, setMediaFileUrl] = useState<string>('https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=85');
@@ -139,7 +132,7 @@ export const AdGeneratorStudio: React.FC = () => {
   const [imgScale, setImgScale] = useState(100);
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
-  const [imgOverlay, setImgOverlay] = useState(25);
+  const [imgOverlay, setImgOverlay] = useState(30);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -149,10 +142,10 @@ export const AdGeneratorStudio: React.FC = () => {
   const [logoPosition, setLogoPosition] = useState<PublishedAd['logoPosition']>('top_left');
   const [logoSize, setLogoSize] = useState(36);
 
-  // النصوص والعناوين
+  // النصوص
   const [showBadge, setShowBadge] = useState(true);
   const [badgeText, setBadgeText] = useState('عرض خاص — يمن ريتنغ');
-  const [badgeBgColor, setBadgeBgColor] = useState('rgba(255, 197, 0, 0.2)');
+  const [badgeBgColor, setBadgeBgColor] = useState('rgba(255, 197, 0, 0.25)');
   const [badgeTextColor, setBadgeTextColor] = useState('#FFC500');
 
   const [showHeadline, setShowHeadline] = useState(true);
@@ -164,13 +157,12 @@ export const AdGeneratorStudio: React.FC = () => {
   const [hasTextShadow, setHasTextShadow] = useState(true);
 
   const [showDescription, setShowDescription] = useState(true);
-  const [description, setDescription] = useState('تغطية شاملة لأفضل الشركات الموثقة وخدمات رجال الأعمال مع خصومات حصرية.');
+  const [description, setDescription] = useState('تغطية شاملة لأفضل الشركات والخدمات مع خصومات حصرية لكافة العملاء.');
   const [descColor, setDescColor] = useState('#E5E7EB');
   const [descLines, setDescLines] = useState<PublishedAd['descLines']>(2);
   const [textAlign, setTextAlign] = useState<PublishedAd['textAlign']>('right');
-  const [textVerticalPos, setTextVerticalPos] = useState<PublishedAd['textVerticalPos']>('bottom');
 
-  // الأسعار والعناصر الإضافية
+  // الأسعار
   const [showPricing, setShowPricing] = useState(false);
   const [currentPrice, setCurrentPrice] = useState('45,000');
   const [oldPrice, setOldPrice] = useState('60,000');
@@ -198,17 +190,18 @@ export const AdGeneratorStudio: React.FC = () => {
   const [whatsappMessage, setWhatsappMessage] = useState('مرحباً، أرغب بالاستفسار عن العرض المعلن في منصة يمن ريتنغ');
   const [callPhone, setCallPhone] = useState('967777000111');
 
-  // الاستهداف والجدولة
+  // الاستهداف
   const [targetCity, setTargetCity] = useState('كل المحافظات');
   const [targetCategory, setTargetCategory] = useState('الجميع');
   const [endDate, setEndDate] = useState('2026-12-31');
 
-  // محرك الحركات
+  // الحركات والتحكم بها
   const [motionPreset, setMotionPreset] = useState<PublishedAd['motionPreset']>('balanced');
   const [headlineMotion, setHeadlineMotion] = useState<PublishedAd['headlineMotion']>('slideRight');
   const [descMotion, setDescMotion] = useState<PublishedAd['descMotion']>('fadeIn');
   const [btnMotion, setBtnMotion] = useState<PublishedAd['btnMotion']>('bounce');
   const [mediaMotion, setMediaMotion] = useState<PublishedAd['mediaMotion']>('kenBurns');
+  const [animTriggerKey, setAnimTriggerKey] = useState(1);
 
   // شريط التمرير والحواف
   const [hasProgressBar, setHasProgressBar] = useState(true);
@@ -217,7 +210,7 @@ export const AdGeneratorStudio: React.FC = () => {
   const [hasBorder, setHasBorder] = useState(false);
   const [borderWidth, setBorderWidth] = useState(2);
   const [borderColor, setBorderColor] = useState('#FFC500');
-  const [borderRadius, setBorderRadius] = useState(14);
+  const [borderRadius, setBorderRadius] = useState(16);
   const [hasGlow, setHasGlow] = useState(false);
   const [bgColor, setBgColor] = useState('#0B0F17');
   const [bgStyle, setBgStyle] = useState<'gradient' | 'solid' | 'transparent'>('solid');
@@ -225,7 +218,11 @@ export const AdGeneratorStudio: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'layout' | 'media' | 'typography' | 'pricing' | 'action' | 'motion' | 'colors' | 'border' | 'target'>('layout');
   const [publishedAlert, setPublishedAlert] = useState(false);
 
-  // معالجة رفع الملفات
+  // إعادة تشغيل الحركة في المعاينة
+  const replayAnimation = () => {
+    setAnimTriggerKey(prev => prev + 1);
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -244,7 +241,6 @@ export const AdGeneratorStudio: React.FC = () => {
     }
   };
 
-  // تطبيق نمط الحركة المسبق
   const applyMotionPreset = (preset: 'calm' | 'balanced' | 'engaging' | 'custom') => {
     setMotionPreset(preset);
     if (preset === 'calm') {
@@ -266,9 +262,9 @@ export const AdGeneratorStudio: React.FC = () => {
       setMediaMotion('kenBurns');
       setBtnAnimation('pulse');
     }
+    replayAnimation();
   };
 
-  // حفظ ونشر الإعلان
   const handleSaveAndPublish = () => {
     const finalTarget = actionType === 'whatsapp' 
       ? `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`
@@ -309,7 +305,6 @@ export const AdGeneratorStudio: React.FC = () => {
       descColor,
       descLines,
       textAlign,
-      textVerticalPos,
       showPricing,
       currentPrice,
       oldPrice,
@@ -363,7 +358,7 @@ export const AdGeneratorStudio: React.FC = () => {
 
     const existing = JSON.parse(localStorage.getItem('yr_published_ads') || '[]');
     localStorage.setItem('yr_published_ads', JSON.stringify([newAd, ...existing]));
-    adminAuditService.logAction('نشر إعلان كامل المواصفات مع الحركات والأسعار', 'ad_campaign', newAd.id, { headline, layoutStyle, adTier });
+    adminAuditService.logAction('نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
 
     setPublishedAlert(true);
     setTimeout(() => setPublishedAlert(false), 4000);
@@ -372,33 +367,56 @@ export const AdGeneratorStudio: React.FC = () => {
   return (
     <div className="space-y-6 font-['Cairo',sans-serif] pb-16">
       
-      {/* 1. المعاينة المباشرة التفاعلية في الأعلى */}
+      {/* تضمين مباشر لـ CSS Animations لضمان عملها فوراً */}
+      <style>{`
+        @keyframes yrSlideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes yrSlideInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes yrSlideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes yrFade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes yrBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes yrPulseGlow { 0%, 100% { box-shadow: 0 0 10px rgba(255,197,0,0.3); } 50% { box-shadow: 0 0 25px rgba(255,197,0,0.8); } }
+        @keyframes yrShimmerEffect { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes yrKenBurnsZoom { 0% { transform: scale(1); } 50% { transform: scale(1.15) translate(-1%, -1%); } 100% { transform: scale(1); } }
+        
+        .anim-slide-right { animation: yrSlideInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .anim-slide-left { animation: yrSlideInLeft 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .anim-slide-up { animation: yrSlideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .anim-fade { animation: yrFade 0.8s ease forwards; }
+        .anim-bounce { animation: yrBounce 2s infinite ease-in-out; }
+        .anim-pulse-glow { animation: yrPulseGlow 2.5s infinite ease-in-out; }
+        .anim-shimmer { background-size: 200% 100% !important; background-image: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%) !important; animation: yrShimmerEffect 3s infinite linear !important; }
+        .anim-kenburns { animation: yrKenBurnsZoom 16s ease-in-out infinite alternate !important; }
+      `}</style>
+
+      {/* 1. منطقة المعاينة العلوية المثبتة للموبايل بتنسيق محكم وجميل */}
       <div className="sticky top-16 z-30 bg-[#070A10]/95 backdrop-blur-md p-4 rounded-2xl border border-[#1F2937] shadow-2xl">
-        <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#1F2937]">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#1F2937]">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[#16A34A] animate-ping" />
-            <span className="text-xs font-black text-white">المعاينة الحية الفورية (Live Render Studio)</span>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-              adTier === 'premium' ? 'bg-[#FFC500]/20 text-[#FFC500] border border-[#FFC500]/30' :
-              adTier === 'professional' ? 'bg-blue-500/20 text-blue-400' : 'bg-zinc-800 text-zinc-300'
-            }`}>
-              {adTier.toUpperCase()}
-            </span>
+            <span className="text-xs font-black text-white">المعاينة الحية الفورية (Live Studio Render)</span>
+            <button
+              onClick={replayAnimation}
+              className="p-1 rounded-lg bg-[#161D2B] text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all text-[11px] font-bold flex items-center gap-1"
+              title="إعادة تشغيل الحركة"
+            >
+              <RefreshCw size={12} />
+              <span className="hidden sm:inline">تشغيل الحركة</span>
+            </button>
           </div>
 
-          {/* محدد حجم الجهاز وسياق المعاينة */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-[#161D2B] p-1 rounded-xl">
-              <button onClick={() => setViewMode('mobile')} className={`p-1.5 rounded-lg text-xs ${viewMode === 'mobile' ? 'bg-[#FFC500] text-black font-bold' : 'text-[#9CA3AF]'}`}><Smartphone size={14} /></button>
-              <button onClick={() => setViewMode('tablet')} className={`p-1.5 rounded-lg text-xs ${viewMode === 'tablet' ? 'bg-[#FFC500] text-black font-bold' : 'text-[#9CA3AF]'}`}><Tablet size={14} /></button>
-              <button onClick={() => setViewMode('desktop')} className={`p-1.5 rounded-lg text-xs ${viewMode === 'desktop' ? 'bg-[#FFC500] text-black font-bold' : 'text-[#9CA3AF]'}`}><Monitor size={14} /></button>
-            </div>
+          <div className="flex items-center gap-1 bg-[#161D2B] p-1 rounded-xl">
+            <button onClick={() => setViewMode('mobile')} className={`p-1.5 rounded-lg text-xs ${viewMode === 'mobile' ? 'bg-[#FFC500] text-black font-bold' : 'text-[#9CA3AF]'}`}><Smartphone size={14} /></button>
+            <button onClick={() => setViewMode('tablet')} className={`p-1.5 rounded-lg text-xs ${viewMode === 'tablet' ? 'bg-[#FFC500] text-black font-bold' : 'text-[#9CA3AF]'}`}><Tablet size={14} /></button>
+            <button onClick={() => setViewMode('desktop')} className={`p-1.5 rounded-lg text-xs ${viewMode === 'desktop' ? 'bg-[#FFC500] text-black font-bold' : 'text-[#9CA3AF]'}`}><Monitor size={14} /></button>
           </div>
         </div>
 
-        {/* جسم الإعلان الحي التفاعلي */}
+        {/* مجسم الإعلان الحقيقي — هندسة تصميم محكمة 100% */}
         <div className="w-full flex justify-center overflow-x-auto py-1">
-          <div className={`w-full transition-all duration-300 ${viewMode === 'mobile' ? 'max-w-[390px]' : viewMode === 'tablet' ? 'max-w-[560px]' : 'max-w-[850px]'}`}>
+          <div 
+            key={animTriggerKey}
+            className={`w-full transition-all duration-300 ${viewMode === 'mobile' ? 'max-w-[390px]' : viewMode === 'tablet' ? 'max-w-[560px]' : 'max-w-[850px]'}`}
+          >
             <div
               style={{
                 borderRadius: `${borderRadius}px`,
@@ -407,11 +425,7 @@ export const AdGeneratorStudio: React.FC = () => {
                 backgroundImage: bgStyle === 'gradient' ? `linear-gradient(135deg, ${bgColor} 0%, #161D2B 100%)` : 'none',
                 boxShadow: hasGlow && hasBorder ? `0 0 25px ${borderColor}40` : 'none',
               }}
-              className={`relative overflow-hidden w-full min-h-[160px] flex transition-all ${
-                layoutStyle === 'image_left' ? 'flex-row-reverse items-center p-3' :
-                layoutStyle === 'image_right' ? 'flex-row items-center p-3' :
-                layoutStyle === 'image_top' ? 'flex-col p-3' : 'flex-col justify-between'
-              }`}
+              className="relative overflow-hidden w-full min-h-[160px] p-4 sm:p-5 flex flex-col justify-between"
             >
               {/* شريط التمرير الزمني */}
               {hasProgressBar && (
@@ -426,7 +440,7 @@ export const AdGeneratorStudio: React.FC = () => {
                 </div>
               )}
 
-              {/* الوسائط مع حركات Ken Burns أو Zoom */}
+              {/* الوسائط مع حركات Ken Burns */}
               {mediaFileUrl && layoutStyle !== 'text_only' && (
                 <div className={`overflow-hidden flex items-center justify-center ${
                   layoutStyle === 'image_left' || layoutStyle === 'image_right' ? 'w-1/3 h-28 rounded-xl shrink-0 relative z-10' :
@@ -449,7 +463,7 @@ export const AdGeneratorStudio: React.FC = () => {
                         filter: `brightness(${brightness}%) contrast(${contrast}%)`,
                         imageRendering: 'crisp-edges'
                       }}
-                      className={`w-full h-full relative z-10 transition-all duration-300 ${mediaMotion === 'kenBurns' ? 'yr-anim-kenburns' : ''}`} 
+                      className={`w-full h-full relative z-10 transition-all duration-300 ${mediaMotion === 'kenBurns' ? 'anim-kenburns' : mediaMotion === 'fadeIn' ? 'anim-fade' : ''}`} 
                     />
                   )}
                   {imgOverlay > 0 && layoutStyle === 'full_overlay' && (
@@ -458,7 +472,7 @@ export const AdGeneratorStudio: React.FC = () => {
                 </div>
               )}
 
-              {/* الشعار المرفوع (Logo) */}
+              {/* الشعار */}
               {showLogo && logoUrl && (
                 <div className={`absolute z-30 p-2 ${
                   logoPosition === 'top_left' ? 'top-2 left-2' :
@@ -469,9 +483,9 @@ export const AdGeneratorStudio: React.FC = () => {
                 </div>
               )}
 
-              {/* الملصق الترويجي */}
+              {/* الملصقات الترويجية */}
               {promoSticker !== 'none' && (
-                <div className="absolute top-3 left-3 z-30 animate-bounce">
+                <div className="absolute top-3 left-3 z-30">
                   {promoSticker === 'discount50' && <span className="px-2.5 py-1 rounded-xl bg-[#DC2626] text-white text-[11px] font-black shadow-lg">خصم 50% 🔥</span>}
                   {promoSticker === 'verified_gold' && <span className="px-2.5 py-1 rounded-xl bg-[#FFC500] text-black text-[11px] font-black shadow-lg flex items-center gap-1"><Award size={13} /> موثق ذهبي</span>}
                   {promoSticker === 'hot_deal' && <span className="px-2.5 py-1 rounded-xl bg-orange-600 text-white text-[11px] font-black shadow-lg flex items-center gap-1"><Flame size={13} /> عرض ناري</span>}
@@ -480,21 +494,28 @@ export const AdGeneratorStudio: React.FC = () => {
                 </div>
               )}
 
-              {/* كتلة المحتوى والنصوص والأسعار */}
-              <div className={`relative z-20 p-4 space-y-2 flex-1 ${textAlign === 'center' ? 'text-center' : textAlign === 'left' ? 'text-left' : 'text-right'}`}>
-                {showBadge && (
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span style={{ backgroundColor: badgeBgColor, color: badgeTextColor, borderColor: badgeTextColor }} className="px-2.5 py-0.5 rounded-full text-[10px] font-black border inline-block backdrop-blur-sm">
-                      {badgeText}
-                    </span>
+              {/* المحتوى والنصوص والشارات — توزيع أفقي سليم يمنع التشوّه */}
+              <div className={`relative z-20 space-y-2 max-w-xl ${textAlign === 'center' ? 'text-center' : textAlign === 'left' ? 'text-left' : 'text-right'}`}>
+                {/* شريط الشارات العلوية كبسولات أفقية أنيقة */}
+                {(showBadge || showVerifiedBadge) && (
+                  <div className="flex items-center gap-2 flex-wrap pb-1">
+                    {showBadge && (
+                      <span 
+                        style={{ backgroundColor: badgeBgColor, color: badgeTextColor, borderColor: badgeTextColor }} 
+                        className="inline-flex items-center px-3 py-0.5 rounded-full text-[10px] font-black border tracking-wide whitespace-nowrap shadow-sm backdrop-blur-sm"
+                      >
+                        {badgeText}
+                      </span>
+                    )}
                     {showVerifiedBadge && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#16A34A]/20 text-[#16A34A] border border-[#16A34A]/30 text-[10px] font-bold">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#16A34A]/20 text-[#16A34A] border border-[#16A34A]/40 text-[10px] font-black whitespace-nowrap">
                         <ShieldCheck size={12} /> موثّق YR
                       </span>
                     )}
                   </div>
                 )}
 
+                {/* العنوان مع حركة مخصصة */}
                 {showHeadline && (
                   <h3 
                     style={{ 
@@ -502,23 +523,35 @@ export const AdGeneratorStudio: React.FC = () => {
                       fontFamily: headlineFont,
                       textShadow: hasTextShadow ? '0 2px 10px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)' : 'none'
                     }} 
-                    className={`leading-tight ${
+                    className={`leading-snug ${
                       headlineSize === 'xl' ? 'text-lg sm:text-xl font-black' :
                       headlineSize === 'lg' ? 'text-base sm:text-lg font-black' :
                       headlineSize === 'md' ? 'text-sm sm:text-base font-bold' : 'text-xs sm:text-sm font-semibold'
-                    } ${headlineMotion === 'slideRight' ? 'yr-slide-right' : headlineMotion === 'bounce' ? 'yr-bounce-soft' : ''}`}
+                    } ${
+                      headlineMotion === 'slideRight' ? 'anim-slide-right' :
+                      headlineMotion === 'slideLeft' ? 'anim-slide-left' :
+                      headlineMotion === 'slideUp' ? 'anim-slide-up' :
+                      headlineMotion === 'bounce' ? 'anim-bounce' :
+                      headlineMotion === 'fadeIn' ? 'anim-fade' : ''
+                    }`}
                   >
                     {headline}
                   </h3>
                 )}
 
+                {/* الوصف مع حركة مخصصة */}
                 {showDescription && (
                   <p 
                     style={{ 
                       color: descColor,
                       textShadow: hasTextShadow ? '0 1px 6px rgba(0,0,0,0.9)' : 'none'
                     }} 
-                    className={`text-xs text-gray-200 mt-1 leading-relaxed ${descLines === 1 ? 'line-clamp-1' : descLines === 2 ? 'line-clamp-2' : descLines === 3 ? 'line-clamp-3' : ''}`}
+                    className={`text-xs text-gray-200 mt-1 leading-relaxed ${
+                      descLines === 1 ? 'line-clamp-1' : descLines === 2 ? 'line-clamp-2' : descLines === 3 ? 'line-clamp-3' : ''
+                    } ${
+                      descMotion === 'slideUp' ? 'anim-slide-up' :
+                      descMotion === 'fadeIn' ? 'anim-fade' : ''
+                    }`}
                   >
                     {description}
                   </p>
@@ -546,17 +579,21 @@ export const AdGeneratorStudio: React.FC = () => {
                 )}
               </div>
 
-              {/* زر الإجراء الذكي و QR Code */}
+              {/* زر الإجراء السفلي والـ QR Code */}
               {(showButton || showQrCode) && (
-                <div className="relative z-20 p-4 pt-0 flex justify-between items-center border-t border-white/10 mt-2">
+                <div className="relative z-20 pt-3 mt-2 flex justify-between items-center border-t border-white/10">
                   {showButton ? (
                     <button 
                       style={{ backgroundColor: btnBgColor, color: btnTextColor }} 
-                      className={`font-black shadow-xl flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105 ${
+                      className={`font-black shadow-xl flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95 ${
                         btnShape === 'pill' ? 'rounded-full' : btnShape === 'square' ? 'rounded-none' : 'rounded-xl'
                       } ${
                         btnSize === 'lg' ? 'px-5 py-2.5 text-sm' : btnSize === 'md' ? 'px-4 py-2 text-xs' : 'px-3 py-1.5 text-[11px]'
-                      } ${btnAnimation === 'pulse' ? 'yr-glow-pulse' : btnAnimation === 'shimmer' ? 'yr-btn-shine' : ''}`}
+                      } ${
+                        btnAnimation === 'pulse' ? 'anim-pulse-glow' :
+                        btnAnimation === 'shimmer' ? 'anim-shimmer' :
+                        btnAnimation === 'bounce' ? 'anim-bounce' : ''
+                      }`}
                     >
                       {actionType === 'whatsapp' && <MessageCircle size={14} />}
                       {actionType === 'call' && <Phone size={14} />}
@@ -565,10 +602,14 @@ export const AdGeneratorStudio: React.FC = () => {
                     </button>
                   ) : <div />}
 
-                  {showQrCode && (
-                    <div className="bg-white p-1 rounded-lg shrink-0" title="QR Code للطلب السريع">
-                      <QrCode size={28} className="text-black" />
+                  {showQrCode ? (
+                    <div className="bg-white p-1 rounded-lg shrink-0">
+                      <QrCode size={24} className="text-black" />
                     </div>
+                  ) : (
+                    <span className="text-[10px] text-white/80 font-mono bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm">
+                      {selectedPlacement.name.split(' ')[0]}
+                    </span>
                   )}
                 </div>
               )}
@@ -581,7 +622,7 @@ export const AdGeneratorStudio: React.FC = () => {
         <div className="p-4 rounded-xl bg-[#16A34A]/20 border border-[#16A34A] text-white text-xs font-bold flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CheckCircle2 size={18} className="text-[#16A34A]" />
-            <span>تم حفظ ونشر الإعلان بنجاح مع كافة الخصائص والحركات المختارة!</span>
+            <span>تم حفظ ونشر الإعلان بنجاح مع كافة الحركات والتنسيق المطور!</span>
           </div>
           <a href="/admin/ads" className="px-3 py-1.5 rounded-lg bg-[#FFC500] text-black font-black text-xs">مشاهدة المعرض</a>
         </div>
@@ -738,7 +779,7 @@ export const AdGeneratorStudio: React.FC = () => {
         {activeTab === 'media' && (
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-white block mb-2">تحميل صورة أو فيديو الإعلان:</label>
+              <label className="text-xs font-bold text-white block mb-2">تحميل صورة أو فيديو الإعلان من هاتفك:</label>
               <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileUpload} className="hidden" />
               <div className="flex gap-2">
                 <button onClick={() => fileInputRef.current?.click()} className="flex-1 py-3 px-4 rounded-xl bg-[#161D2B] border-2 border-dashed border-[#FFC500] text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer">
@@ -822,7 +863,13 @@ export const AdGeneratorStudio: React.FC = () => {
               </div>
               {showHeadline && (
                 <div className="space-y-2">
-                  <input type="text" value={headline} onChange={(e) => setHeadline(e.target.value)} className="w-full bg-[#0B0F17] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white font-bold" />
+                  <div className="flex gap-2">
+                    <input type="text" value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="اكتب العنوان..." className="flex-1 bg-[#0B0F17] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white font-bold" />
+                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#1F2937] px-2 rounded-xl">
+                      <input type="color" value={headlineColor} onChange={(e) => setHeadlineColor(e.target.value)} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer" />
+                      <span className="text-[10px] text-[#9CA3AF]">لون</span>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-3 gap-2">
                     <select value={headlineSize} onChange={(e) => setHeadlineSize(e.target.value as any)} className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white">
                       <option value="sm">حجم صغير</option>
@@ -835,10 +882,9 @@ export const AdGeneratorStudio: React.FC = () => {
                       <option value="medium">خط متوسط</option>
                       <option value="bold">خط عريض</option>
                     </select>
-                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#1F2937] px-2 rounded-lg">
-                      <input type="color" value={headlineColor} onChange={(e) => setHeadlineColor(e.target.value)} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer" />
-                      <span className="text-[10px] text-[#9CA3AF]">لون العنوان</span>
-                    </div>
+                    <button onClick={() => setHasTextShadow(!hasTextShadow)} className={`p-2 rounded-xl text-xs font-bold border ${hasTextShadow ? 'border-[#FFC500] text-[#FFC500]' : 'border-[#1F2937] text-[#9CA3AF]'}`}>
+                      {hasTextShadow ? 'الظل مفعل' : 'بدون ظل'}
+                    </button>
                   </div>
                 </div>
               )}
@@ -859,10 +905,9 @@ export const AdGeneratorStudio: React.FC = () => {
                       <option value={1}>سطر واحد</option>
                       <option value={2}>سطران</option>
                       <option value={3}>3 أسطر</option>
-                      <option value={4}>4 أسطر</option>
                     </select>
                     <select value={textAlign} onChange={(e) => setTextAlign(e.target.value as any)} className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white">
-                      <option value="right">محاذاة يمين (افتراضي)</option>
+                      <option value="right">محاذاة يمين</option>
                       <option value="center">محاذاة وسط</option>
                       <option value="left">محاذاة يسار</option>
                     </select>
@@ -959,7 +1004,6 @@ export const AdGeneratorStudio: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* نصوص جاهزة سريعة */}
                   <div>
                     <label className="text-[11px] text-[#9CA3AF] block mb-1">نصوص جاهزة سريعة للزر:</label>
                     <div className="flex gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
@@ -988,7 +1032,12 @@ export const AdGeneratorStudio: React.FC = () => {
         {activeTab === 'motion' && (
           <div className="space-y-4">
             <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] space-y-2">
-              <label className="text-xs font-bold text-[#FFC500] block">أنماط الحركات الجاهزة:</label>
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-[#FFC500] block">أنماط الحركات الجاهزة:</label>
+                <button onClick={replayAnimation} className="text-xs text-[#FFC500] flex items-center gap-1 font-bold">
+                  <RefreshCw size={13} /> معاينة الحركة
+                </button>
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
                   { id: 'calm', label: 'هادئ (بسيط واحترافي)' },
@@ -1009,11 +1058,14 @@ export const AdGeneratorStudio: React.FC = () => {
               </div>
             </div>
 
-            {/* الحركات المخصصة لكل عنصر */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-[#161D2B] rounded-xl border border-[#1F2937]">
               <div>
                 <label className="text-xs text-white font-bold block mb-1">حركة العنوان الرئيسي:</label>
-                <select value={headlineMotion} onChange={(e) => setHeadlineMotion(e.target.value as any)} className="w-full bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white">
+                <select 
+                  value={headlineMotion} 
+                  onChange={(e) => { setHeadlineMotion(e.target.value as any); replayAnimation(); }} 
+                  className="w-full bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white"
+                >
                   <option value="none">بدون حركة</option>
                   <option value="fadeIn">Fade In تدريجي</option>
                   <option value="slideRight">Slide From Right (انزلاق من اليمين)</option>
@@ -1026,17 +1078,25 @@ export const AdGeneratorStudio: React.FC = () => {
 
               <div>
                 <label className="text-xs text-white font-bold block mb-1">حركة زر الإجراء CTA:</label>
-                <select value={btnAnimation} onChange={(e) => setBtnAnimation(e.target.value as any)} className="w-full bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white">
+                <select 
+                  value={btnAnimation} 
+                  onChange={(e) => { setBtnAnimation(e.target.value as any); replayAnimation(); }} 
+                  className="w-full bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white"
+                >
                   <option value="none">ثابت عادي</option>
                   <option value="shimmer">لمعان متحرك (Shine / Shimmer)</option>
-                  <option value="pulse">نبضة متكررة (Pulse)</option>
-                  <option value="glow">إضاءة وتوهج (Glow)</option>
+                  <option value="pulse">نبضة متكررة (Pulse Glow)</option>
+                  <option value="bounce">Bounce قفزة لطيفة</option>
                 </select>
               </div>
 
               <div>
                 <label className="text-xs text-white font-bold block mb-1">حركة الصورة / الخلفية:</label>
-                <select value={mediaMotion} onChange={(e) => setMediaMotion(e.target.value as any)} className="w-full bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white">
+                <select 
+                  value={mediaMotion} 
+                  onChange={(e) => { setMediaMotion(e.target.value as any); replayAnimation(); }} 
+                  className="w-full bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white"
+                >
                   <option value="none">ثابتة بدون حركة</option>
                   <option value="kenBurns">Ken Burns (تكبير بطيء وسلس)</option>
                   <option value="fadeIn">Fade In</option>
@@ -1055,7 +1115,7 @@ export const AdGeneratorStudio: React.FC = () => {
           </div>
         )}
 
-        {/* تبويب 7: الألوان والسمة */}
+        {/* تبويب 7: الألوان */}
         {activeTab === 'colors' && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#1F2937]">
@@ -1077,7 +1137,7 @@ export const AdGeneratorStudio: React.FC = () => {
           </div>
         )}
 
-        {/* تبويب 8: الحواف والإطار */}
+        {/* تبويب 8: الحواف */}
         {activeTab === 'border' && (
           <div className="space-y-3">
             <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] flex items-center justify-between">
@@ -1105,7 +1165,7 @@ export const AdGeneratorStudio: React.FC = () => {
           </div>
         )}
 
-        {/* تبويب 9: الاستهداف والجدولة */}
+        {/* تبويب 9: الاستهداف */}
         {activeTab === 'target' && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
@@ -1134,7 +1194,7 @@ export const AdGeneratorStudio: React.FC = () => {
           </div>
         )}
 
-        {/* زر الحفظ والنشر النهائي */}
+        {/* زر النشر النهائي */}
         <button
           onClick={handleSaveAndPublish}
           className="w-full py-4 rounded-xl bg-[#FFC500] text-black font-black text-sm hover:bg-[#FFC500]/90 transition-all shadow-xl shadow-[#FFC500]/20 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
