@@ -27,16 +27,25 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onNavigateExchangeRates
 }) => {
   const [showAllCategories, setShowAllCategories] = useState(false);
-  const [calcAmount, setCalcAmount] = useState<number>(100);
-  const [calcCurrency, setCalcCurrency] = useState<'USD' | 'SAR'>('USD');
+  const [activeMarket, setActiveMarket] = useState<'sanaa' | 'aden'>('sanaa');
 
-  // حساب محول الصرف المباشر
-  const sanaaRate = calcCurrency === 'USD' ? 538 : 140.8;
-  const adenRate = calcCurrency === 'USD' ? 1925 : 504;
-  const sanaaTotal = Math.round(calcAmount * sanaaRate);
-  const adenTotal = Math.round(calcAmount * adenRate);
-  const diffTotal = adenTotal - sanaaTotal;
+  // بيانات أسعار الصرف والذهب الأصلية لصنعاء وعدن
+  const ratesData = {
+    sanaa: {
+      usd: { buy: '534.76', sell: '538.00', change: '-0.20%' },
+      sar: { buy: '140.43', sell: '140.70', change: '+0.15%' },
+      gold24: { buy: '42,500', sell: '43,500', change: '+0.40%' },
+      gold21: { buy: '37,200', sell: '38,100', change: '+0.35%' },
+    },
+    aden: {
+      usd: { buy: '1,910.00', sell: '1,925.00', change: '+0.80%' },
+      sar: { buy: '501.50', sell: '504.00', change: '+0.65%' },
+      gold24: { buy: '132,000', sell: '135,000', change: '+1.10%' },
+      gold21: { buy: '115,500', sell: '118,000', change: '+0.95%' },
+    }
+  };
 
+  const currentRates = ratesData[activeMarket];
   const displayedCategories = showAllCategories 
     ? OFFICIAL_CATEGORIES 
     : OFFICIAL_CATEGORIES.slice(0, 8);
@@ -44,11 +53,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
   return (
     <div dir="rtl" className="space-y-4 pb-28 pt-1 max-w-6xl mx-auto px-3 sm:px-4 font-['Cairo',sans-serif] text-white">
       
-      {/* 1. إعلان البانر العلوي YR Ads #1 */}
+      {/* 1. إعلان البانر التجاري العلوي YR Ads #1 */}
       <AdBanner placementId="1" className="mb-1" />
 
-      {/* 2. بطاقة البانر الترويجي الفاخر (Hero Card — أنيق ومضغوط) */}
-      <div className="relative overflow-hidden rounded-2xl bg-[#0F0F12] border border-[#222226] p-4 sm:p-6 shadow-xl flex flex-col justify-between">
+      {/* 2. بطاقة البانر الترويجي الفاخر (Hero Card) */}
+      <div className="relative overflow-hidden rounded-2xl bg-[#0F0F12] border border-[#222226] p-4 sm:p-5 shadow-xl flex flex-col justify-between">
         <div className="space-y-1 max-w-lg z-10">
           <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#FFC500]/15 border border-[#FFC500]/30 text-[#FFC500] text-[10px] font-bold">
             <Sparkles size={12} /> دليل اليمن الشامل
@@ -69,16 +78,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <span>استكشف الدليل الآن</span>
             <ArrowRight size={12} className="rtl:rotate-180" />
           </button>
-
-          <div className="flex gap-1 items-center">
-            <span className="w-3.5 h-1 rounded-full bg-[#FFC500]" />
-            <span className="w-1 h-1 rounded-full bg-[#333338]" />
-            <span className="w-1 h-1 rounded-full bg-[#333338]" />
-          </div>
         </div>
       </div>
 
-      {/* 3. شبكة التصنيفات الرئيسية الفاخرة */}
+      {/* 3. شبكة التصنيفات الرئيسية */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black text-white flex items-center gap-1.5">
@@ -114,28 +117,105 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 4. بطاقة العروض والخصومات */}
-      <div className="bg-[#0F0F12] p-3 rounded-2xl border border-[#222226] shadow-md flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5">
-          <div className="px-2 py-0.5 rounded-lg bg-[#DC2626]/20 text-[#DC2626] border border-[#DC2626]/30 font-black text-[10px] shrink-0">
-            خصم 20%
+      {/* 4. إعلان تجاري في المنتصف YR Ads #2 */}
+      <div className="w-full my-2">
+        <AdBanner placementId="2" className="w-full" />
+      </div>
+
+      {/* 5. جدول أسعار العملات والذهب الأصلي المصغر والأنيق */}
+      <div className="bg-[#0F0F12] rounded-2xl border border-[#222226] p-3.5 sm:p-4 space-y-3 shadow-xl">
+        <div className="flex items-center justify-between border-b border-[#222226] pb-2.5">
+          <div className="flex items-center gap-1.5">
+            <Coins size={15} className="text-[#FFC500]" />
+            <h3 className="text-xs sm:text-sm font-black text-white">أسعار العملات والذهب</h3>
           </div>
-          <div>
-            <h4 className="text-xs font-black text-white">عروض متجر العصرية للجوالات</h4>
-            <p className="text-[9.5px] text-[#9CA3AF]">ضمان سنة كاملة + شاحن مجاني</p>
+
+          <div className="flex items-center gap-2">
+            {/* تبويب صنعاء / عدن */}
+            <div className="flex bg-[#18181C] p-0.5 rounded-xl border border-[#27272A]">
+              <button
+                onClick={() => setActiveMarket('sanaa')}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all ${
+                  activeMarket === 'sanaa' ? 'bg-[#FFC500] text-black shadow-sm' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                أسعار صنعاء
+              </button>
+              <button
+                onClick={() => setActiveMarket('aden')}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all ${
+                  activeMarket === 'aden' ? 'bg-[#FFC500] text-black shadow-sm' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                أسعار عدن
+              </button>
+            </div>
+
+            <button onClick={onNavigateExchangeRates} className="text-[10px] font-bold text-[#FFC500] hover:underline">
+              البورصة ←
+            </button>
           </div>
         </div>
-        <div className="border border-dashed border-[#FFC500]/60 bg-[#161619] px-2.5 py-0.5 rounded-xl text-center shrink-0">
-          <span className="text-[7.5px] text-[#9CA3AF] block">كود الخصم</span>
-          <b className="text-[11px] font-mono text-[#FFC500]">YR20</b>
+
+        {/* شبكة البطاقات الأربع الأصلية المصغرة بدقة */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono">
+          
+          {/* الدولار الأمريكي */}
+          <div className="p-2.5 rounded-xl bg-[#18181C] border border-[#27272A] space-y-1">
+            <div className="flex justify-between items-center text-[10px]">
+              <span className="font-bold text-white font-['Cairo']">الدولار 🇺🇸</span>
+              <span className="text-[9px] text-[#DC2626] font-black">{currentRates.usd.change}</span>
+            </div>
+            <div className="flex justify-between items-center text-[10px]">
+              <span className="text-gray-400 font-['Cairo'] text-[9px]">شراء: <b className="text-[#16A34A]">{currentRates.usd.buy}</b></span>
+              <span className="text-gray-400 font-['Cairo'] text-[9px]">بيع: <b className="text-[#DC2626]">{currentRates.usd.sell}</b></span>
+            </div>
+          </div>
+
+          {/* الريال السعودي */}
+          <div className="p-2.5 rounded-xl bg-[#18181C] border border-[#27272A] space-y-1">
+            <div className="flex justify-between items-center text-[10px]">
+              <span className="font-bold text-white font-['Cairo']">السعودي 🇸🇦</span>
+              <span className="text-[9px] text-[#16A34A] font-black">{currentRates.sar.change}</span>
+            </div>
+            <div className="flex justify-between items-center text-[10px]">
+              <span className="text-gray-400 font-['Cairo'] text-[9px]">شراء: <b className="text-[#16A34A]">{currentRates.sar.buy}</b></span>
+              <span className="text-gray-400 font-['Cairo'] text-[9px]">بيع: <b className="text-[#DC2626]">{currentRates.sar.sell}</b></span>
+            </div>
+          </div>
+
+          {/* ذهب عيار 24 */}
+          <div className="p-2.5 rounded-xl bg-[#18181C] border border-[#27272A] space-y-1">
+            <div className="flex justify-between items-center text-[10px]">
+              <span className="font-bold text-[#FFC500] font-['Cairo']">ذهب عيار 24 🟡</span>
+              <span className="text-[9px] text-[#16A34A] font-black">{currentRates.gold24.change}</span>
+            </div>
+            <div className="flex justify-between items-center text-[10px]">
+              <span className="text-gray-400 font-['Cairo'] text-[9px]">شراء: <b className="text-[#16A34A]">{currentRates.gold24.buy}</b></span>
+              <span className="text-gray-400 font-['Cairo'] text-[9px]">بيع: <b className="text-[#DC2626]">{currentRates.gold24.sell}</b></span>
+            </div>
+          </div>
+
+          {/* ذهب عيار 21 */}
+          <div className="p-2.5 rounded-xl bg-[#18181C] border border-[#27272A] space-y-1">
+            <div className="flex justify-between items-center text-[10px]">
+              <span className="font-bold text-[#FFC500] font-['Cairo']">ذهب عيار 21 🟡</span>
+              <span className="text-[9px] text-[#16A34A] font-black">{currentRates.gold21.change}</span>
+            </div>
+            <div className="flex justify-between items-center text-[10px]">
+              <span className="text-gray-400 font-['Cairo'] text-[9px]">شراء: <b className="text-[#16A34A]">{currentRates.gold21.buy}</b></span>
+              <span className="text-gray-400 font-['Cairo'] text-[9px]">بيع: <b className="text-[#DC2626]">{currentRates.gold21.sell}</b></span>
+            </div>
+          </div>
+
         </div>
       </div>
 
-      {/* 5. الشركات الأعلى تقييماً (كروت رشيقة ومصغرة بدون شريط أبيض) */}
+      {/* 6. الشركات الأعلى تقييماً (كروت مصغرة وسلسة بدون شريط أبيض) */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black text-white flex items-center gap-1.5">
-            <Star size={13} className="text-[#FFC500]" fill="#FFC500" /> الشركات الأعلى تقييماً
+            <Star size={13} className="text-[#FFC500]" fill="#FFC500" /> الشركات والأنشطة المعتمدة
           </h3>
           <button onClick={() => onSelectCategory('all')} className="text-[11px] font-bold text-[#FFC500]">عرض الكل</button>
         </div>
@@ -162,7 +242,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 6. المزادات الحية (كروت مصغرة ومرتبة) */}
+      {/* 7. المزادات الحية */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black text-white flex items-center gap-1.5">
@@ -203,58 +283,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 7. إعلان YR Ads الموضع #2 (شريط عريض مستقل في المنتصف) */}
-      <div className="w-full my-2">
-        <AdBanner placementId="2" className="w-full" />
-      </div>
-
-      {/* 8. حاسبة ومحول الصرف المباشر (أسود فاخر ومضغوط) */}
-      <div className="bg-[#0F0F12] rounded-2xl border border-[#222226] p-3.5 sm:p-5 space-y-2.5 shadow-lg">
-        <div className="flex items-center justify-between border-b border-[#222226] pb-2">
-          <div className="flex items-center gap-1.5">
-            <Coins size={14} className="text-[#FFC500]" />
-            <h3 className="text-xs font-black text-white">الأسعار ومحول الصرف المباشر</h3>
-          </div>
-          <button onClick={onNavigateExchangeRates} className="text-[10px] font-bold text-[#FFC500] hover:underline">
-            البورصة الكاملة ←
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <div className="sm:col-span-2 space-y-1">
-            <label className="text-[9.5px] text-[#9CA3AF] block font-bold">المبلغ المراد تحويله:</label>
-            <div className="flex gap-1.5">
-              <input
-                type="number"
-                value={calcAmount}
-                onChange={(e) => setCalcAmount(Number(e.target.value))}
-                className="flex-1 bg-[#18181C] border border-[#27272A] rounded-xl p-1.5 text-xs font-bold text-white font-mono outline-none"
-              />
-              <select
-                value={calcCurrency}
-                onChange={(e) => setCalcCurrency(e.target.value as any)}
-                className="bg-[#18181C] border border-[#27272A] rounded-xl p-1.5 text-[11px] text-white font-bold"
-              >
-                <option value="USD">دولار ($)</option>
-                <option value="SAR">سعودي (SAR)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="p-2 bg-[#18181C] rounded-xl border border-[#27272A] space-y-0.5">
-            <span className="text-[8.5px] text-[#9CA3AF] block">فارق الصرف بين السوقين:</span>
-            <div className="text-xs font-black font-mono text-[#FFC500]">
-              +{diffTotal.toLocaleString()} YER
-            </div>
-            <div className="flex justify-between text-[8.5px] text-gray-300">
-              <span>صنعاء: <b className="font-mono text-white">{sanaaTotal.toLocaleString()}</b></span>
-              <span>عدن: <b className="font-mono text-[#16A34A]">{adenTotal.toLocaleString()}</b></span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 9. قسم العقارات المميزة (كروت رشيقة ومصغرة) */}
+      {/* 8. قسم العقارات المميزة */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black text-white flex items-center gap-1.5">
