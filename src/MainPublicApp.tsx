@@ -14,7 +14,6 @@ import { ProfilePage } from './components/pages/ProfilePage';
 import { NotificationsPage } from './components/pages/NotificationsPage';
 import { FavoritesPage } from './components/pages/FavoritesPage';
 import { PhoneMarketPage } from './pages/PhoneMarketPage';
-import { AdBanner } from './components/common/AdBanner';
 import { SAMPLE_BUSINESSES, BusinessItem } from './data/mockData';
 
 export function MainPublicApp() {
@@ -25,7 +24,7 @@ export function MainPublicApp() {
   const [selectedGov, setSelectedGov] = useState<string>('كل المحافظات');
   const [selectedCity, setSelectedCity] = useState<string>('all');
 
-  // التمرير التلقائي لأعلى الصفحة فور تغيير أي قسم أو صفحة
+  // التمرير التلقائي لأعلى الصفحة فوراً عند فتح أي قسم
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
@@ -87,22 +86,15 @@ export function MainPublicApp() {
   return (
     <div dir="rtl" className="min-h-screen bg-[#070A10] text-zinc-100 flex flex-col font-['Cairo',sans-serif]">
       
-      {/* 1. الهيدر المثبت الدائم الحقيقي */}
-      <header className="sticky top-0 z-50 bg-[#070A10]/98 backdrop-blur-xl border-b border-[#1F2937] shadow-2xl">
+      {/* 1. الهيدر المثبت الدائم الثابت (Fixed Top - لا يختفي أبداً أثناء التمرير) */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-[#070A10]/98 backdrop-blur-md border-b border-[#1F2937] shadow-xl">
         <Header
           onToggleSidebar={() => setIsSidebarOpen(true)}
           onNavigateHome={handleBackToHome}
           onNavigateNotifications={() => setCurrentPage('notifications')}
           unreadNotificationsCount={3}
         />
-        
-        {/* يظهر الإعلان العلوي #1 فقط في الصفحة الرئيسية ويختفي تماماً عند دخول أي قسم */}
-        {isAtMainHome && (
-          <div className="max-w-6xl mx-auto px-3 py-1 border-t border-[#1F2937]/30">
-            <AdBanner placementId="1" className="mb-0" />
-          </div>
-        )}
-      </header>
+      </div>
 
       {/* 2. القائمة الجانبية */}
       <Sidebar
@@ -119,8 +111,8 @@ export function MainPublicApp() {
         onNavigateFavorites={() => { setCurrentPage('favorites'); setIsSidebarOpen(false); }}
       />
 
-      {/* 3. جسم المحتوى الرئيسي بدون شريط سفلي */}
-      <main className="flex-1 pb-16">
+      {/* 3. جسم المحتوى الرئيسي مع مسافة علوية pt-16 للهيدر الثابت وبدون شريط سفلي */}
+      <main className="flex-1 pt-16 pb-12">
         {isAtMainHome && (
           <SearchSection
             onSearch={handleGlobalSearch}
