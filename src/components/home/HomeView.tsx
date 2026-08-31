@@ -1,28 +1,13 @@
-import { AdBanner } from "../common/AdBanner";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
-  Star, 
-  MapPin, 
-  Clock, 
-  Gavel, 
-  Building, 
-  Briefcase, 
-  TrendingUp, 
-  TrendingDown, 
-  Sparkles, 
-  ChevronDown, 
-  ChevronUp, 
-  RefreshCw, 
-  Coins, 
-  DollarSign, 
-  ArrowRight,
-  BedDouble,
-  Bath,
-  Maximize2
+  Star, MapPin, Clock, Gavel, Building, Briefcase, 
+  TrendingUp, TrendingDown, Sparkles, ChevronDown, ChevronUp, 
+  RefreshCw, Coins, ArrowRight, BedDouble, Bath, Maximize2, 
+  Flame, Tag, Smartphone, ShieldCheck, ChevronLeft, Search
 } from 'lucide-react';
 import { OFFICIAL_CATEGORIES, CategoryItem } from '../../data/categories';
 import { BusinessItem } from '../../data/mockData';
-import { VerifiedBadge } from '../common/VerifiedBadge';
+import { AdBanner } from '../common/AdBanner';
 
 interface HomeViewProps {
   onSelectCategory: (slug: string) => void;
@@ -44,138 +29,80 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onNavigateExchangeRates
 }) => {
   const [showAllCategories, setShowAllCategories] = useState(false);
-  const [activeMarketHome, setActiveMarketHome] = useState<'sanaa' | 'aden'>('sanaa');
-  const [auctionSeconds1, setAuctionSeconds1] = useState(15502);
-  const [auctionSeconds2, setAuctionSeconds2] = useState(4365);
+  const [activeMarket, setActiveMarket] = useState<'sanaa' | 'aden'>('sanaa');
+  const [calcAmount, setCalcAmount] = useState<number>(100);
+  const [calcCurrency, setCalcCurrency] = useState<'USD' | 'SAR'>('USD');
 
-  // تحديث أسعار الصرف الحية كل 3 ثوانٍ
-  const [ratesState, setRatesState] = useState({
-    sanaa: {
-      sar: { buy: 140.20, sell: 140.70, change: '+0.15%', isUp: true },
-      usd: { buy: 535.00, sell: 538.00, change: '-0.20%', isUp: false },
-      gold24: { buy: 42500, sell: 44200, change: '+0.50%', isUp: true },
-      gold18: { buy: 31800, sell: 33500, change: '+0.40%', isUp: true }
-    },
-    aden: {
-      sar: { buy: 495.00, sell: 500.00, change: '+0.80%', isUp: true },
-      usd: { buy: 1890.00, sell: 1910.00, change: '+1.10%', isUp: true },
-      gold24: { buy: 148000, sell: 155000, change: '+0.95%', isUp: true },
-      gold18: { buy: 111000, sell: 119000, change: '+0.70%', isUp: true }
-    }
-  });
-
-  // محرك التحديث والتفاعل اللحظي
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setRatesState(prev => ({
-        sanaa: {
-          sar: { ...prev.sanaa.sar, buy: parseFloat((prev.sanaa.sar.buy + (Math.random() - 0.5) * 0.1).toFixed(2)) },
-          usd: { ...prev.sanaa.usd, buy: parseFloat((prev.sanaa.usd.buy + (Math.random() - 0.5) * 0.4).toFixed(2)) },
-          gold24: { ...prev.sanaa.gold24, buy: Math.round(prev.sanaa.gold24.buy + (Math.random() - 0.5) * 40) },
-          gold18: { ...prev.sanaa.gold18, buy: Math.round(prev.sanaa.gold18.buy + (Math.random() - 0.5) * 30) }
-        },
-        aden: {
-          sar: { ...prev.aden.sar, buy: parseFloat((prev.aden.sar.buy + (Math.random() - 0.5) * 0.5).toFixed(2)) },
-          usd: { ...prev.aden.usd, buy: parseFloat((prev.aden.usd.buy + (Math.random() - 0.5) * 2.0).toFixed(2)) },
-          gold24: { ...prev.aden.gold24, buy: Math.round(prev.aden.gold24.buy + (Math.random() - 0.5) * 200) },
-          gold18: { ...prev.aden.gold18, buy: Math.round(prev.aden.gold18.buy + (Math.random() - 0.5) * 150) }
-        }
-      }));
-
-      setAuctionSeconds1(s => s > 0 ? s - 1 : 0);
-      setAuctionSeconds2(s => s > 0 ? s - 1 : 0);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatCountdown = (totalSeconds: number) => {
-    const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-    const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-    const s = (totalSeconds % 60).toString().padStart(2, '0');
-    return `${h}:${m}:${s}`;
-  };
+  // حساب محول الصرف المباشر
+  const sanaaRate = calcCurrency === 'USD' ? 538 : 140.8;
+  const adenRate = calcCurrency === 'USD' ? 1925 : 504;
+  const sanaaTotal = Math.round(calcAmount * sanaaRate);
+  const adenTotal = Math.round(calcAmount * adenRate);
+  const diffTotal = adenTotal - sanaaTotal;
 
   const displayedCategories = showAllCategories 
     ? OFFICIAL_CATEGORIES 
     : OFFICIAL_CATEGORIES.slice(0, 8);
 
-  const currentHomeRates = ratesState[activeMarketHome];
-
   return (
-    <div dir="rtl" className="space-y-6 pb-20 pt-1 max-w-6xl mx-auto">
-      {/* مكوّن إعلانات YR Ads المنشورة */} 
-      <AdBanner placementId="1" className="mb-4" />
+    <div dir="rtl" className="space-y-6 pb-28 pt-2 max-w-6xl mx-auto px-3 sm:px-4 font-['Cairo',sans-serif]">
       
-      {/* 1. Hero Promo Banner Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-[#151515] border border-[#242424] shadow-2xl">
-        <div className="relative min-h-[180px] sm:min-h-[220px] w-full flex items-center">
-          <img
-            src="https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=1400&auto=format&fit=crop&q=80"
-            alt="صنعاء القديمة"
-            className="absolute inset-0 w-full h-full object-cover opacity-30"
-          />
-          <div className="absolute inset-0 bg-gradient-to-l from-[#151515] via-[#151515]/90 to-transparent" />
-          
-          <div className="relative p-5 sm:p-7 flex flex-col justify-between z-10 max-w-lg space-y-3">
-            <div className="space-y-1.5">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#f5b800]/10 border border-[#f5b800]/30 text-[#f5b800] text-[11px] font-bold">
-                <Sparkles className="w-3 h-3" />
-                <span>دليل اليمن الشامل</span>
-              </div>
-              <h2 className="text-lg sm:text-2xl font-black text-white leading-snug">
-                اكتشف أفضل الأنشطة والخدمات في مدينتك
-              </h2>
-              <p className="text-xs text-zinc-300 leading-relaxed line-clamp-2">
-                تقييمات حقيقية من المجتمع لأفضل الشركات والمطاعم والخدمات
-              </p>
-            </div>
+      {/* 1. إعلان البانر العلوي YR Ads #1 */}
+      <AdBanner placementId="1" className="mb-2" />
 
-            <div>
-              <button
-                onClick={() => onSelectCategory('restaurants')}
-                className="px-5 py-2 bg-[#f5b800] hover:bg-[#e5aa00] text-zinc-950 font-bold text-xs rounded-xl transition-transform active:scale-95 shadow-md shadow-[#f5b800]/20"
-              >
-                استكشف الدليل الآن
-              </button>
-            </div>
+      {/* 2. بطاقة البانر الترويجي الفاخر (Hero Card) */}
+      <div className="relative overflow-hidden rounded-3xl bg-[#0B0F17] border border-[#1F2937] p-6 sm:p-8 shadow-2xl flex flex-col justify-between">
+        <div className="space-y-2 max-w-lg z-10">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFC500]/15 border border-[#FFC500]/30 text-[#FFC500] text-xs font-bold">
+            <Sparkles size={14} /> دليل اليمن الشامل
           </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+            اكتشف الأفضل في مدينتك
+          </h2>
+          <p className="text-xs sm:text-sm text-[#9CA3AF]">
+            تقييمات حقيقية من المجتمع الموثق لأفضل الشركات والخدمات والمزادات في اليمن.
+          </p>
+        </div>
+
+        <div className="pt-4 z-10">
+          <button 
+            onClick={() => onSelectCategory('all')}
+            className="px-6 py-2.5 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all shadow-lg shadow-[#FFC500]/20 cursor-pointer flex items-center gap-2"
+          >
+            <span>استكشف الدليل الآن</span>
+            <ArrowRight size={14} className="rtl:rotate-180" />
+          </button>
         </div>
       </div>
 
-      {/* 2. التصنيفات الرئيسية */}
+      {/* 3. شبكة التصنيفات الرئيسية الفاخرة */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-4 bg-[#f5b800] rounded-full" />
-            <h3 className="text-sm sm:text-base font-bold text-white">التصنيفات الرئيسية</h3>
-            <span className="text-[10px] bg-[#181818] border border-[#262626] text-[#f5b800] px-2 py-0.5 rounded-md font-mono font-bold">
-              26
-            </span>
-          </div>
-
-          <button
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-sm font-black text-white flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#FFC500]" /> التصنيفات الرئيسية
+          </h3>
+          <button 
             onClick={() => setShowAllCategories(!showAllCategories)}
-            className="text-xs text-[#f5b800] hover:underline font-bold flex items-center gap-1"
+            className="text-xs font-bold text-[#FFC500] flex items-center gap-1 hover:underline"
           >
             <span>{showAllCategories ? 'عرض أقل' : 'عرض الكل'}</span>
-            {showAllCategories ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            {showAllCategories ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </button>
         </div>
 
-        <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2.5">
           {displayedCategories.map((cat: CategoryItem) => {
             const Icon = cat.icon;
             return (
               <button
                 key={cat.id}
                 onClick={() => onSelectCategory(cat.slug)}
-                className="h-20 sm:h-24 rounded-2xl bg-[#161616] border border-[#242424] hover:border-[#f5b800]/50 p-2 flex flex-col items-center justify-center gap-1.5 transition-all group shadow-sm active:scale-95"
+                className="h-20 sm:h-24 rounded-2xl bg-[#0B0F17] border border-[#1F2937] hover:border-[#FFC500]/50 p-2 flex flex-col items-center justify-center gap-1.5 transition-all group shadow-sm active:scale-95 cursor-pointer"
               >
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#202020] group-hover:bg-[#f5b800] text-[#f5b800] group-hover:text-zinc-950 flex items-center justify-center transition-colors flex-shrink-0">
-                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className="w-8 h-8 rounded-xl bg-[#161D2B] group-hover:bg-[#FFC500] text-[#FFC500] group-hover:text-black flex items-center justify-center transition-all">
+                  <Icon size={18} />
                 </div>
-                <span className="text-[10px] sm:text-xs font-bold text-zinc-200 group-hover:text-[#f5b800] truncate w-full text-center">
+                <span className="text-[10px] font-bold text-gray-300 group-hover:text-white truncate max-w-full">
                   {cat.name}
                 </span>
               </button>
@@ -184,216 +111,88 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* مكوّن إعلانات YR Ads الموضع #2 - شريط عريض مستقل */}
-      <div className="w-full my-6">
-        <AdBanner placementId="2" className="w-full" />
-      </div>
-
-      {/* 3. أسعار العملات والذهب الحية والمتحركة (قابلة للنقر والانتقال لصفحة الأسعار) */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          
-      
-
-      <div 
-            onClick={onNavigateExchangeRates}
-            className="flex items-center gap-2 cursor-pointer group"
-          >
-            <div className="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
-              <TrendingUp className="w-3.5 h-3.5" />
-            </div>
-            <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-[#f5b800] transition-colors">
-              أسعار العملات والذهب
-            </h3>
+      {/* 4. بطاقة أقوى العروض والخصومات (Coupons & Offers Card) */}
+      <div className="bg-gradient-to-r from-[#161D2B] via-[#0B0F17] to-[#161D2B] p-4 rounded-2xl border border-[#FFC500]/30 shadow-xl flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#DC2626]/20 text-[#DC2626] flex items-center justify-center font-black text-xs shrink-0">
+            خصم 20%
           </div>
-
-          <button
-            onClick={onNavigateExchangeRates}
-            className="text-xs text-[#f5b800] hover:underline font-bold flex items-center gap-1"
-          >
-            <span>البورصة والحاسبة</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          <div>
+            <h4 className="text-xs sm:text-sm font-black text-white">عروض متجر العصرية للجوالات</h4>
+            <p className="text-[10px] text-[#9CA3AF]">ضمان سنة كاملة + شاحن مجاني لجميع الأجهزة</p>
+          </div>
         </div>
-
-        <div 
-          onClick={onNavigateExchangeRates}
-          className="rounded-3xl bg-[#151515] border border-[#242424] hover:border-[#f5b800]/50 p-3.5 sm:p-5 space-y-3.5 shadow-xl cursor-pointer transition-all group"
-        >
-          
-          <div className="flex items-center justify-between gap-2 border-b border-[#202020] pb-2.5">
-            <div 
-              onClick={(e) => e.stopPropagation()} 
-              className="flex items-center gap-1.5 bg-[#0d0d0d] p-1 rounded-xl border border-[#222]"
-            >
-              <button
-                onClick={() => setActiveMarketHome('sanaa')}
-                className={`px-3.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                  activeMarketHome === 'sanaa'
-                    ? 'bg-[#f5b800] text-zinc-950 shadow-sm'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                أسعار صنعاء
-              </button>
-              <button
-                onClick={() => setActiveMarketHome('aden')}
-                className={`px-3.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                  activeMarketHome === 'aden'
-                    ? 'bg-[#f5b800] text-zinc-950 shadow-sm'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                أسعار عدن
-              </button>
-            </div>
-
-            <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>مباشر</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            
-            <div className="bg-[#0d0d0d] p-3 rounded-2xl border border-[#202020] space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white flex items-center gap-1">
-                  <span>🇸🇦</span>
-                  <span>السعودي</span>
-                </span>
-                <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-1 py-0.2 rounded">
-                  {currentHomeRates.sar.change}
-                </span>
-              </div>
-              <div className="pt-1 border-t border-[#1e1e1e]">
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-zinc-400">شراء:</span>
-                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.sar.buy.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-zinc-400">بيع:</span>
-                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.sar.sell.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-[#0d0d0d] p-3 rounded-2xl border border-[#202020] space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white flex items-center gap-1">
-                  <span>🇺🇸</span>
-                  <span>الدولار</span>
-                </span>
-                <span className="text-[10px] font-mono font-bold text-rose-400 bg-rose-500/10 px-1 py-0.2 rounded">
-                  {currentHomeRates.usd.change}
-                </span>
-              </div>
-              <div className="pt-1 border-t border-[#1e1e1e]">
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-zinc-400">شراء:</span>
-                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.usd.buy.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-zinc-400">بيع:</span>
-                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.usd.sell.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-[#0d0d0d] p-3 rounded-2xl border border-[#202020] space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white flex items-center gap-1">
-                  <span>🟡</span>
-                  <span>ذهب 24</span>
-                </span>
-                <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-1 py-0.2 rounded">
-                  {currentHomeRates.gold24.change}
-                </span>
-              </div>
-              <div className="pt-1 border-t border-[#1e1e1e]">
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-zinc-400">شراء:</span>
-                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.gold24.buy.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-zinc-400">بيع:</span>
-                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.gold24.sell.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-[#0d0d0d] p-3 rounded-2xl border border-[#202020] space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white flex items-center gap-1">
-                  <span>🪙</span>
-                  <span>ذهب 18</span>
-                </span>
-                <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-1 py-0.2 rounded">
-                  {currentHomeRates.gold18.change}
-                </span>
-              </div>
-              <div className="pt-1 border-t border-[#1e1e1e]">
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-zinc-400">شراء:</span>
-                  <span className="font-mono font-extrabold text-emerald-400">{currentHomeRates.gold18.buy.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-zinc-400">بيع:</span>
-                  <span className="font-mono font-extrabold text-rose-400">{currentHomeRates.gold18.sell.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          <div className="text-center text-[11px] text-zinc-400 pt-0.5 flex items-center justify-center gap-1 font-mono group-hover:text-[#f5b800] transition-colors">
-            <RefreshCw className="w-3 h-3 text-[#f5b800] animate-spin" />
-            <span>انقر لمعاينة البورصة الكاملة والحاسبة الفورية بالريال اليمني ←</span>
-          </div>
-
+        <div className="border border-dashed border-[#FFC500] px-3 py-1.5 rounded-xl text-center shrink-0">
+          <span className="text-[9px] text-[#9CA3AF] block">كود الخصم</span>
+          <b className="text-xs font-mono text-[#FFC500]">YR20</b>
         </div>
       </div>
 
-      {/* 4. منشآت وخدمات مميزة */}
+      {/* 5. قسم الشركات الأعلى تقييماً (Horizontal Carousel) */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#f5b800]" />
-            <span>منشآت وخدمات موثقة ومميزة</span>
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-sm font-black text-white flex items-center gap-1.5">
+            <Star size={16} className="text-[#FFC500]" fill="#FFC500" /> الأعلى تقييماً
           </h3>
+          <button onClick={() => onSelectCategory('all')} className="text-xs font-bold text-[#FFC500]">عرض الكل</button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          {businesses.map((item) => (
+        <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
+          {businesses.slice(0, 6).map((b) => (
             <div
-              key={item.id}
-              onClick={() => onSelectBusiness(item)}
-              className="bg-[#151515] hover:bg-[#181818] border border-[#242424] hover:border-[#f5b800]/40 rounded-3xl p-3.5 sm:p-4 flex gap-3.5 transition-all cursor-pointer group shadow-xl"
+              key={b.id}
+              onClick={() => onSelectBusiness(b)}
+              className="shrink-0 w-44 rounded-2xl bg-[#0B0F17] border border-[#1F2937] hover:border-[#FFC500]/50 overflow-hidden shadow-lg cursor-pointer transition-all active:scale-95"
             >
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#202020] overflow-hidden flex-shrink-0 border border-[#282828]">
-                <img src={item.logo} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+              <div className="h-24 w-full relative">
+                <img src={b.image} alt={b.name} className="w-full h-full object-cover" />
+                <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/80 text-[#FFC500] text-[10px] font-black flex items-center gap-0.5">
+                  ★ {b.rating}
+                </span>
               </div>
-              <div className="flex-1 flex flex-col justify-between min-w-0">
-                <div>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] transition-colors truncate">
-                      {item.name}
-                    </h4>
-                    {item.isVerified && (
-                      <VerifiedBadge type={item.badgeType} size="sm" />
-                    )}
-                  </div>
-                  <p className="text-[11px] text-zinc-400 line-clamp-2 mt-1">{item.description}</p>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t border-[#202020] text-xs">
-                  <span className="flex items-center gap-1 text-[#f5b800] font-bold">
-                    <Star className="w-3.5 h-3.5 fill-[#f5b800]" />
-                    {item.rating}
-                  </span>
-                  <span className="text-zinc-500 text-[11px] truncate flex items-center gap-1">
-                    <MapPin className="w-3 h-3 text-[#f5b800] flex-shrink-0" />
-                    {item.address}
-                  </span>
+              <div className="p-3 space-y-1">
+                <h4 className="text-xs font-bold text-white truncate">{b.name}</h4>
+                <p className="text-[10px] text-[#9CA3AF] truncate">{b.category} • {b.city}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 6. قسم المزادات الحية الفاخر (Live Auctions Carousel) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-sm font-black text-white flex items-center gap-1.5">
+            <Gavel size={16} className="text-[#DC2626]" /> المزادات الحية المعتمدة (5% عمولة)
+          </h3>
+          <button onClick={onNavigateAuctions} className="text-xs font-bold text-[#FFC500]">عرض الكل</button>
+        </div>
+
+        <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
+          {[
+            { id: '1', title: 'تويوتا لاندكروزر V8 بريمي 2022', price: '182,000 SAR', time: '04:12:30', img: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&auto=format&fit=crop&q=80' },
+            { id: '2', title: 'أرض تجارية ركنية شارع الستين', price: '95,000,000 YER', time: '08:45:10', img: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=600&auto=format&fit=crop&q=80' },
+            { id: '3', title: 'شاحنة مرسيدس أكتروس 2020', price: '58,000 USD', time: '02:30:00', img: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&auto=format&fit=crop&q=80' }
+          ].map(auc => (
+            <div 
+              key={auc.id} 
+              onClick={onNavigateAuctions}
+              className="shrink-0 w-64 rounded-2xl bg-[#0B0F17] border border-[#1F2937] overflow-hidden shadow-lg cursor-pointer hover:border-[#FFC500]/50 transition-all"
+            >
+              <div className="h-32 w-full relative">
+                <img src={auc.img} alt={auc.title} className="w-full h-full object-cover" />
+                <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#DC2626] text-white text-[10px] font-black animate-pulse flex items-center gap-1">
+                  🔴 جارٍ المزاد
+                </span>
+                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/80 text-white text-[10px] font-mono">
+                  ⏳ {auc.time}
+                </span>
+              </div>
+              <div className="p-3 space-y-1">
+                <h4 className="text-xs font-bold text-white truncate">{auc.title}</h4>
+                <div className="flex justify-between items-center pt-1">
+                  <span className="text-[10px] text-[#9CA3AF]">أعلى مزايدة:</span>
+                  <b className="text-xs font-mono text-[#16A34A] font-bold">{auc.price}</b>
                 </div>
               </div>
             </div>
@@ -401,266 +200,88 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
-      {/* 5. المزادات الحية (الأرقام والعداد متطابقة تماماً) */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
-            <Gavel className="w-4 h-4 text-[#f5b800]" />
-            <span>المزادات الحية</span>
-          </h3>
-          <button
-            onClick={onNavigateAuctions}
-            className="text-xs text-[#f5b800] hover:underline font-bold flex items-center gap-1"
-          >
-            <span>عرض الكل</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+      {/* 7. إعلان YR Ads الموضع #2 (شريط عريض مستقل بين الأقسام) */}
+      <div className="w-full my-4">
+        <AdBanner placementId="2" className="w-full shadow-xl" />
+      </div>
+
+      {/* 8. حاسبة ومحول الصرف المباشر (Interactive Currency Converter) */}
+      <div className="bg-[#0B0F17] rounded-3xl border border-[#1F2937] p-5 sm:p-6 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-[#1F2937] pb-3">
+          <div className="flex items-center gap-2">
+            <Coins size={18} className="text-[#FFC500]" />
+            <h3 className="text-sm font-black text-white">الأسعار ومحول الصرف المباشر</h3>
+          </div>
+          <button onClick={onNavigateExchangeRates} className="text-xs font-bold text-[#FFC500] hover:underline">
+            البورصة الكاملة ←
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          
-          {/* مزاد 1: لاندكروزر */}
-          <div
-            onClick={onNavigateAuctions}
-            className="rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl flex flex-col"
-          >
-            <div className="relative h-40 sm:h-44 w-full bg-[#202020] overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800&auto=format&fit=crop&q=80"
-                alt="مزاد سيارة"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="sm:col-span-2 space-y-2">
+            <label className="text-[11px] text-[#9CA3AF] block font-bold">المبلغ المراد تحويله:</label>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                value={calcAmount}
+                onChange={(e) => setCalcAmount(Number(e.target.value))}
+                className="flex-1 bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-sm font-bold text-white font-mono outline-none"
               />
-              <div className="absolute top-2.5 right-2.5 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-mono font-bold text-[#f5b800] flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{formatCountdown(auctionSeconds1)}</span>
-              </div>
-              <div className="absolute top-2.5 left-2.5 bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                مباشر
-              </div>
-            </div>
-
-            <div className="p-3.5 flex flex-col justify-between flex-1 space-y-2">
-              <div>
-                <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] truncate">
-                  تويوتا لاندكروزر V8 2022 وكالة بريمي
-                </h4>
-                <p className="text-xs text-emerald-400 font-mono font-bold mt-1">
-                  أعلى مزايدة: 182,000 SAR
-                </p>
-              </div>
-              <div className="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-[#202020]">
-                <span>صنعاء</span>
-                <span className="text-[#f5b800] font-bold">دخول المزاد ←</span>
-              </div>
+              <select
+                value={calcCurrency}
+                onChange={(e) => setCalcCurrency(e.target.value as any)}
+                className="bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white font-bold"
+              >
+                <option value="USD">دولار ($)</option>
+                <option value="SAR">سعودي (SAR)</option>
+              </select>
             </div>
           </div>
 
-          {/* مزاد 2: أرض تجارية */}
-          <div
-            onClick={onNavigateAuctions}
-            className="rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl flex flex-col"
-          >
-            <div className="relative h-40 sm:h-44 w-full bg-[#202020] overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop&q=80"
-                alt="مزاد عقار"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute top-2.5 right-2.5 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-mono font-bold text-[#f5b800] flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{formatCountdown(auctionSeconds2)}</span>
-              </div>
-              <div className="absolute top-2.5 left-2.5 bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                مباشر
-              </div>
+          <div className="p-3 bg-[#161D2B] rounded-2xl border border-[#1F2937] space-y-1.5">
+            <span className="text-[10px] text-[#9CA3AF] block">فارق الصرف بين السوقين:</span>
+            <div className="text-sm font-black font-mono text-[#FFC500]">
+              +{diffTotal.toLocaleString()} YER
             </div>
-
-            <div className="p-3.5 flex flex-col justify-between flex-1 space-y-2">
-              <div>
-                <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] truncate">
-                  أرض تجارية 6 لبن شارع الستين الغربي
-                </h4>
-                <p className="text-xs text-emerald-400 font-mono font-bold mt-1">
-                  أعلى مزايدة: 185,000,000 YER
-                </p>
-              </div>
-              <div className="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-[#202020]">
-                <span>صنعاء</span>
-                <span className="text-[#f5b800] font-bold">دخول المزاد ←</span>
-              </div>
+            <div className="flex justify-between text-[10px] text-gray-300">
+              <span>صنعاء: <b className="font-mono text-white">{sanaaTotal.toLocaleString()}</b></span>
+              <span>عدن: <b className="font-mono text-[#16A34A]">{adenTotal.toLocaleString()}</b></span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 6. العقارات المميزة */}
+      {/* 9. قسم العقارات المميزة (Featured Properties Carousel) */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
-            <Building className="w-4 h-4 text-[#f5b800]" />
-            <span>العقارات المميزة</span>
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-sm font-black text-white flex items-center gap-1.5">
+            <Building size={16} className="text-[#3B82F6]" /> العقارات والفرص الاستثمارية
           </h3>
-          <button
-            onClick={onNavigateRealEstate}
-            className="text-xs text-[#f5b800] hover:underline font-bold flex items-center gap-1"
-          >
-            <span>عرض الكل</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          <button onClick={onNavigateRealEstate} className="text-xs font-bold text-[#FFC500]">عرض الكل</button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <div
-            onClick={onNavigateRealEstate}
-            className="rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl flex flex-col"
-          >
-            <div className="relative h-40 sm:h-44 w-full bg-[#202020] overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=80"
-                alt="شقة للإيجار"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute top-2.5 right-2.5 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-mono font-bold text-[#f5b800]">
-                400 $/شهر
+        <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar">
+          {[
+            { id: '1', title: 'شقة سوبر ديلوكس مفروشة — حدة', price: '3,500 SAR / شهرياً', specs: '3 غرف • 2 حمام • 150 م²', img: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&auto=format&fit=crop&q=80' },
+            { id: '2', title: 'فيلا مستقلة فاخرة مسبح وحديقة — عدن', price: '450,000 USD', specs: '5 غرف • 4 حمام • 450 م²', img: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=600&auto=format&fit=crop&q=80' }
+          ].map(prop => (
+            <div 
+              key={prop.id} 
+              onClick={onNavigateRealEstate}
+              className="shrink-0 w-64 rounded-2xl bg-[#0B0F17] border border-[#1F2937] overflow-hidden shadow-lg cursor-pointer hover:border-[#FFC500]/50 transition-all"
+            >
+              <div className="h-32 w-full relative">
+                <img src={prop.img} alt={prop.title} className="w-full h-full object-cover" />
+                <span className="absolute bottom-2 left-2 px-2.5 py-1 rounded-lg bg-[#FFC500] text-black text-xs font-black">
+                  {prop.price}
+                </span>
               </div>
-              <div className="absolute top-2.5 left-2.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                للإيجار
-              </div>
-            </div>
-
-            <div className="p-3.5 flex flex-col justify-between flex-1 space-y-2">
-              <div>
-                <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] truncate">
-                  شقة سوبر ديلوكس حدة - صنعاء
-                </h4>
-                <div className="flex items-center gap-3 text-[11px] text-zinc-400 mt-1.5">
-                  <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5 text-[#f5b800]" /> 3 غرف</span>
-                  <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5 text-[#f5b800]" /> 2 حمام</span>
-                  <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5 text-[#f5b800]" /> 160 م²</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-[#202020]">
-                <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-[#f5b800]" /> صنعاء، حدة</span>
-                <span className="text-[#f5b800] font-bold">معاينة العقار ←</span>
+              <div className="p-3 space-y-1">
+                <h4 className="text-xs font-bold text-white truncate">{prop.title}</h4>
+                <p className="text-[10px] text-[#9CA3AF] truncate">{prop.specs}</p>
               </div>
             </div>
-          </div>
-
-          <div
-            onClick={onNavigateRealEstate}
-            className="rounded-2xl bg-[#161616] border border-[#242424] overflow-hidden cursor-pointer group hover:border-[#f5b800]/40 transition-all shadow-xl flex flex-col"
-          >
-            <div className="relative h-40 sm:h-44 w-full bg-[#202020] overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=80"
-                alt="فيلا للبيع"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute top-2.5 right-2.5 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-mono font-bold text-[#f5b800]">
-                280,000 $
-              </div>
-              <div className="absolute top-2.5 left-2.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                للبيع
-              </div>
-            </div>
-
-            <div className="p-3.5 flex flex-col justify-between flex-1 space-y-2">
-              <div>
-                <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#f5b800] truncate">
-                  فيلا مستقلة مودرن إنماء عدن
-                </h4>
-                <div className="flex items-center gap-3 text-[11px] text-zinc-400 mt-1.5">
-                  <span className="flex items-center gap-1"><BedDouble className="w-3.5 h-3.5 text-[#f5b800]" /> 5 غرف</span>
-                  <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5 text-[#f5b800]" /> 4 حمام</span>
-                  <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5 text-[#f5b800]" /> 450 م²</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-xs text-zinc-400 pt-2 border-t border-[#202020]">
-                <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-[#f5b800]" /> عدن، إنماء</span>
-                <span className="text-[#f5b800] font-bold">معاينة العقار ←</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 7. أحدث الوظائف */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
-            <Briefcase className="w-4 h-4 text-[#f5b800]" />
-            <span>أحدث الوظائف</span>
-          </h3>
-          <button
-            onClick={onNavigateJobs}
-            className="text-xs text-[#f5b800] hover:underline font-bold flex items-center gap-1"
-          >
-            <span>عرض الكل</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        <div className="space-y-2.5">
-          <div
-            onClick={onNavigateJobs}
-            className="p-3.5 rounded-2xl bg-[#161616] border border-[#242424] hover:border-[#f5b800]/40 transition-all flex items-center justify-between cursor-pointer group shadow-md"
-          >
-            <div className="space-y-1 min-w-0">
-              <h4 className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-[#f5b800]">
-                مطور واجهات أمامية (React / TypeScript)
-              </h4>
-              <p className="text-[11px] text-zinc-400">شركة يمن سوفت للحلول البرمجية · صنعاء</p>
-            </div>
-            <span className="text-xs font-bold text-[#f5b800] font-mono flex-shrink-0">
-              800$ - 1200$
-            </span>
-          </div>
-
-          <div
-            onClick={onNavigateJobs}
-            className="p-3.5 rounded-2xl bg-[#161616] border border-[#242424] hover:border-[#f5b800]/40 transition-all flex items-center justify-between cursor-pointer group shadow-md"
-          >
-            <div className="space-y-1 min-w-0">
-              <h4 className="text-xs sm:text-sm font-bold text-white truncate group-hover:text-[#f5b800]">
-                محاسب مالي أول (Senior Accountant)
-              </h4>
-              <p className="text-[11px] text-zinc-400">مجموعة هائل سعيد أنعم · عدن</p>
-            </div>
-            <span className="text-xs font-bold text-[#f5b800] flex-shrink-0">
-              دوام كامل
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 8. آخر التقييمات */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
-            <Star className="w-4 h-4 text-[#f5b800]" />
-            <span>آخر التقييمات والمراجعات</span>
-          </h3>
-          <span className="text-xs text-zinc-400">آراء حقيقية</span>
-        </div>
-
-        <div className="p-3.5 sm:p-4 rounded-3xl bg-[#151515] border border-[#242424] flex items-start gap-3.5 shadow-xl">
-          <div className="w-14 h-14 rounded-2xl bg-[#202020] overflow-hidden flex-shrink-0">
-            <img
-              src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop&q=80"
-              alt="مطعم رويال ستار"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="flex-1 min-w-0 space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-white">أبو محمد الأهدل</span>
-              <span className="text-[10px] text-zinc-500">منذ ساعتين</span>
-            </div>
-            <div className="text-[#f5b800] text-xs">★★★★★</div>
-            <p className="text-xs text-zinc-300 leading-relaxed pt-0.5">
-              تجربة ممتازة في مطعم رويال ستار، المأكولات البحرية طازجة والخدمة راقية جداً وسريعة.
-            </p>
-          </div>
+          ))}
         </div>
       </div>
 
