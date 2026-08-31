@@ -23,7 +23,7 @@ export const FavoritesPage: React.FC<{ onBack: () => void; onSelectBusiness: (b:
           onClick={onBack}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300"
         >
-          <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
+          <ArrowRight className="w-3.5 h-3.5 text-yellow-400" />
           <span>رجوع</span>
         </button>
       </div>
@@ -41,17 +41,17 @@ export const FavoritesPage: React.FC<{ onBack: () => void; onSelectBusiness: (b:
             <div className="flex-1 flex flex-col justify-between min-w-0">
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-xs sm:text-sm text-white group-hover:text-amber-400 truncate">{item.name}</h3>
+                  <h3 className="font-bold text-xs sm:text-sm text-white group-hover:text-yellow-400 truncate">{item.name}</h3>
                   {item.isVerified && <VerifiedBadge type={item.badgeType} size="sm" />}
                 </div>
                 <p className="text-[11px] text-zinc-400 mt-1 line-clamp-1">{item.address}</p>
               </div>
               <div className="flex items-center justify-between pt-2 border-t border-zinc-800/80 text-xs">
-                <span className="flex items-center gap-1 text-amber-400 font-bold">
+                <span className="flex items-center gap-1 text-yellow-400 font-bold">
                   <Star className="w-3.5 h-3.5 fill-amber-400" />
                   {item.rating}
                 </span>
-                <span className="text-amber-400 font-semibold text-[11px]">عرض المنشأة ←</span>
+                <span className="text-yellow-400 font-semibold text-[11px]">عرض المنشأة ←</span>
               </div>
             </div>
           </div>

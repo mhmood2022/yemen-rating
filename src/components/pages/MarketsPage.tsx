@@ -58,9 +58,9 @@ export const MarketsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors"
+          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-yellow-400 hover:text-yellow-300 hover:border-zinc-700 transition-colors"
         >
-          <ArrowRight className="w-4 h-4 text-amber-400" />
+          <ArrowRight className="w-4 h-4 text-yellow-400" />
           <span>العودة للرئيسية</span>
         </button>
       </div>
@@ -73,7 +73,7 @@ export const MarketsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           >
             <div className="relative h-48 w-full bg-zinc-800 overflow-hidden">
               <img src={market.image} alt={market.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-              <div className="absolute top-3 right-3 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-bold text-amber-400 flex items-center gap-1">
+              <div className="absolute top-3 right-3 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-bold text-yellow-400 flex items-center gap-1">
                 <ShoppingBag className="w-3.5 h-3.5" />
                 <span>{market.shopsCount} محل تجاري</span>
               </div>
@@ -89,11 +89,11 @@ export const MarketsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 <span className="text-[10px] text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700">
                   {market.type}
                 </span>
-                <h3 className="font-bold text-sm text-white mt-2 group-hover:text-amber-400 transition-colors">
+                <h3 className="font-bold text-sm text-white mt-2 group-hover:text-yellow-400 transition-colors">
                   {market.name}
                 </h3>
                 <p className="text-xs text-zinc-400 flex items-center gap-1 mt-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                  <MapPin className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" />
                   <span>{market.location}</span>
                 </p>
                 <p className="text-xs text-zinc-300 mt-2 line-clamp-2 leading-relaxed">

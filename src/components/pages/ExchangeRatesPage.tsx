@@ -197,9 +197,9 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
 
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-[#161616] border border-[#262626] text-xs text-zinc-300 hover:text-white transition-colors"
+          className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-[#161616] border border-[#262626] text-xs text-yellow-400 hover:text-yellow-300 transition-colors"
         >
-          <ArrowRight className="w-4 h-4 text-[#f5b800]" />
+          <ArrowRight className="w-4 h-4 text-yellow-400" />
           <span>الرئيسية</span>
         </button>
       </div>
@@ -214,7 +214,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
             <div key={idx} className="flex shrink-0 items-center gap-2.5 rounded-full border border-[#282828] bg-[#181818] px-3.5 py-1 text-xs">
               <span>{item.flag}</span>
               <span className="font-bold text-white/90">{item.label}</span>
-              <span className="font-mono font-extrabold text-[#f5b800]">
+              <span className="font-mono font-extrabold text-yellow-400">
                 {item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} YER
               </span>
               <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md ${
@@ -258,7 +258,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
             <strong className="text-white">{activeMarket === 'sanaa' ? 'سوق صنعاء' : 'سوق عدن'}</strong> • تداول مباشر
           </span>
           <span className="flex items-center gap-1 font-mono text-zinc-400">
-            <RefreshCw className="w-3.5 h-3.5 text-[#f5b800] animate-spin" />
+            <RefreshCw className="w-3.5 h-3.5 text-yellow-400 animate-spin" />
             {currentTime.toLocaleTimeString('ar-YE')}
           </span>
         </div>
@@ -337,14 +337,14 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
                 ◈
               </span>
               <span>بورصة الذهب في {activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'}</span>
-              <span className="rounded-full bg-[#f5b800]/15 px-2 py-0.5 text-[10px] font-black tracking-widest text-[#f5b800]">
+              <span className="rounded-full bg-[#f5b800]/15 px-2 py-0.5 text-[10px] font-black tracking-widest text-yellow-400">
                 LIVE GOLD
               </span>
             </h3>
             <p className="text-xs text-zinc-400 mt-0.5">أسعار جرام الذهب عيار 24 و 18 و 21 والجنيه الذهب بالريال اليمني</p>
           </div>
 
-          <span className="text-xs font-mono bg-[#f5b800]/10 text-[#f5b800] border border-[#f5b800]/30 px-3 py-1 rounded-xl font-bold">
+          <span className="text-xs font-mono bg-[#f5b800]/10 text-yellow-400 border border-[#f5b800]/30 px-3 py-1 rounded-xl font-bold">
             XAU / YER
           </span>
         </div>
@@ -357,7 +357,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f5b800]/15 text-xs text-[#f5b800] font-bold">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#f5b800]/15 text-xs text-yellow-400 font-bold">
                     {item.icon}
                   </span>
                   <span className="text-xs font-extrabold text-white">{item.label}</span>
@@ -387,7 +387,7 @@ export const ExchangeRatesPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         </div>
 
         <div className="rounded-2xl border border-[#262626] bg-[#0d0d0d] p-3 flex items-center justify-between flex-wrap gap-2 text-xs">
-          <span className="flex items-center gap-2 font-bold text-[#f5b800]">
+          <span className="flex items-center gap-2 font-bold text-yellow-400">
             <span className="h-2 w-2 rounded-full bg-[#f5b800] animate-pulse" />
             تنبيه البورصة: أسعار الذهب محتسبة وفق تسعيرة أسواق الصاغة المركزية
           </span>

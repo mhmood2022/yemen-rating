@@ -28,7 +28,7 @@ export const NotificationsPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
         <div className="flex items-center gap-2">
           <button
             onClick={markAllAsRead}
-            className="text-xs text-amber-400 hover:underline px-2 py-1"
+            className="text-xs text-yellow-400 hover:underline px-2 py-1"
           >
             تحديد الكل كمقروء
           </button>
@@ -36,7 +36,7 @@ export const NotificationsPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
             onClick={onBack}
             className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-300"
           >
-            <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
+            <ArrowRight className="w-3.5 h-3.5 text-yellow-400" />
             <span>رجوع</span>
           </button>
         </div>
@@ -52,7 +52,7 @@ export const NotificationsPage: React.FC<{ onBack: () => void }> = ({ onBack }) 
                 n.isRead ? 'bg-zinc-900/30 border-zinc-800/80 text-zinc-400' : 'bg-zinc-900/80 border-amber-400/30 text-zinc-200'
               }`}
             >
-              <div className="w-8 h-8 rounded-lg bg-zinc-800 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-8 h-8 rounded-lg bg-zinc-800 text-yellow-400 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Icon className="w-4 h-4" />
               </div>
               <div className="flex-1 space-y-1">

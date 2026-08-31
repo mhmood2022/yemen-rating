@@ -57,7 +57,7 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
 
         <button
           onClick={onBackHome}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-yellow-400 hover:text-yellow-300 transition-colors"
         >
           <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
           <span>العودة للرئيسية</span>
