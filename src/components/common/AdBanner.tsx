@@ -33,7 +33,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
       dir="rtl"
       className={`relative overflow-hidden transition-all duration-300 w-full ${className}`}
       style={{
-        borderRadius: `${adData.borderRadius || 14}px`,
+        borderRadius: `${adData.borderRadius || 16}px`,
         border: adData.hasBorder ? `${adData.borderWidth || 2}px solid ${adData.borderColor || '#FFC500'}` : 'none',
         backgroundColor: adData.bgColor || '#0B0F17',
         backgroundImage: adData.bgStyle === 'gradient' ? `linear-gradient(135deg, ${adData.bgColor || '#0B0F17'} 0%, #161D2B 100%)` : 'none',
@@ -41,6 +41,50 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         minHeight: '140px'
       }}
     >
+      {/* تضمين مباشر لمحرك الحركات الحية للموقع العام */}
+      <style>{`
+        @keyframes yrContinuousSlideRight {
+          0% { opacity: 0; transform: translateX(25px); }
+          15% { opacity: 1; transform: translateX(0); }
+          85% { opacity: 1; transform: translateX(0); }
+          100% { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes yrContinuousSlideUp {
+          0% { opacity: 0; transform: translateY(15px); }
+          15% { opacity: 1; transform: translateY(0); }
+          85% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes yrPulseGlowActive {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255,197,0,0.3); }
+          50% { transform: scale(1.03); box-shadow: 0 0 25px rgba(255,197,0,0.7); }
+        }
+        @keyframes yrShineContinuous {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        @keyframes yrKenBurnsMotion {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.15) translate(-1%, -1%); }
+          100% { transform: scale(1); }
+        }
+        @keyframes yrFloatingBounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+
+        .yr-live-slide-right { animation: yrContinuousSlideRight 6s ease-in-out infinite; }
+        .yr-live-slide-up { animation: yrContinuousSlideUp 6s ease-in-out infinite; }
+        .yr-live-pulse { animation: yrPulseGlowActive 2.5s infinite ease-in-out; }
+        .yr-live-bounce { animation: yrFloatingBounce 3s infinite ease-in-out; }
+        .yr-live-shimmer {
+          background-size: 200% 100% !important;
+          background-image: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.45) 50%, transparent 70%) !important;
+          animation: yrShineContinuous 2.8s infinite linear !important;
+        }
+        .yr-live-kenburns { animation: yrKenBurnsMotion 18s ease-in-out infinite alternate !important; }
+      `}</style>
+
       {/* شريط التمرير الزمني */}
       {adData.hasProgressBar && (
         <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 z-30 overflow-hidden">
@@ -54,7 +98,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         </div>
       )}
 
-      {/* الوسائط مع تأثير Ken Burns والخلفية الضبابية */}
+      {/* الوسائط مع حركة Ken Burns البطيئة والسينمائية */}
       {adData.mediaUrl && adData.layoutStyle !== 'text_only' && (
         <div className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center">
           {adData.imageFit === 'contain' && adData.useBlurBackground && adData.mediaType === 'image' && (
@@ -78,16 +122,16 @@ export const AdBanner: React.FC<AdBannerProps> = ({
                 filter: `brightness(${adData.brightness ?? 100}%) contrast(${adData.contrast ?? 100}%)`,
                 imageRendering: 'crisp-edges'
               }}
-              className={`w-full h-full relative z-10 ${adData.mediaMotion === 'kenBurns' ? 'yr-anim-kenburns' : ''}`}
+              className={`w-full h-full relative z-10 ${adData.mediaMotion === 'kenBurns' ? 'yr-live-kenburns' : ''}`}
             />
           )}
           {adData.imgOverlay > 0 && (
-            <div className="absolute inset-0 bg-black z-10" style={{ opacity: (adData.imgOverlay ?? 25) / 100 }} />
+            <div className="absolute inset-0 bg-black z-10" style={{ opacity: (adData.imgOverlay ?? 30) / 100 }} />
           )}
         </div>
       )}
 
-      {/* الشعار Logo */}
+      {/* الشعار */}
       {adData.showLogo && adData.logoUrl && (
         <div className={`absolute z-30 p-2 ${
           adData.logoPosition === 'top_left' ? 'top-2 left-2' :
@@ -109,22 +153,22 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         </div>
       )}
 
-      {/* المحتوى والنصوص والأسعار */}
+      {/* المحتوى والنصوص بالحركات الحية */}
       <div className={`relative z-20 p-4 sm:p-5 flex flex-col justify-between h-full min-h-[140px] ${
         adData.textAlign === 'center' ? 'text-center' : adData.textAlign === 'left' ? 'text-left' : 'text-right'
       }`}>
         <div className="space-y-2 max-w-xl">
           {adData.showBadge && (
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap pb-1">
               <span
-                style={{ backgroundColor: adData.badgeBgColor || 'rgba(255,197,0,0.2)', color: adData.badgeTextColor || '#FFC500', borderColor: adData.badgeTextColor || '#FFC500' }}
-                className="px-2.5 py-0.5 rounded-full text-[10px] font-black border inline-block backdrop-blur-sm"
+                style={{ backgroundColor: adData.badgeBgColor || 'rgba(255,197,0,0.25)', color: adData.badgeTextColor || '#FFC500', borderColor: adData.badgeTextColor || '#FFC500' }}
+                className="inline-flex items-center px-3 py-0.5 rounded-full text-[10px] font-black border tracking-wide whitespace-nowrap shadow-sm backdrop-blur-sm"
               >
                 {adData.badgeText || 'إعلان ممول'}
               </span>
               {adData.showVerifiedBadge && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#16A34A]/20 text-[#16A34A] border border-[#16A34A]/30 text-[10px] font-bold">
-                  <ShieldCheck size={12} /> موثّق
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#16A34A]/20 text-[#16A34A] border border-[#16A34A]/40 text-[10px] font-black whitespace-nowrap">
+                  <ShieldCheck size={12} /> موثّق YR
                 </span>
               )}
             </div>
@@ -137,11 +181,15 @@ export const AdBanner: React.FC<AdBannerProps> = ({
                 fontFamily: adData.headlineFont || 'Cairo',
                 textShadow: adData.hasTextShadow ? '0 2px 10px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)' : 'none'
               }} 
-              className={`leading-tight ${
+              className={`leading-snug ${
                 adData.headlineSize === 'xl' ? 'text-lg sm:text-xl font-black' :
                 adData.headlineSize === 'lg' ? 'text-base sm:text-lg font-black' :
                 adData.headlineSize === 'md' ? 'text-sm sm:text-base font-bold' : 'text-xs sm:text-sm font-semibold'
-              } ${adData.headlineMotion === 'slideRight' ? 'yr-slide-right' : adData.headlineMotion === 'bounce' ? 'yr-bounce-soft' : ''}`}
+              } ${
+                adData.headlineMotion === 'slideRight' ? 'yr-live-slide-right' :
+                adData.headlineMotion === 'slideUp' ? 'yr-live-slide-up' :
+                adData.headlineMotion === 'bounce' ? 'yr-live-bounce' : ''
+              }`}
             >
               {adData.headline}
             </h3>
@@ -155,6 +203,8 @@ export const AdBanner: React.FC<AdBannerProps> = ({
               }} 
               className={`text-xs text-gray-200 mt-1 leading-relaxed ${
                 adData.descLines === 1 ? 'line-clamp-1' : adData.descLines === 2 ? 'line-clamp-2' : adData.descLines === 3 ? 'line-clamp-3' : ''
+              } ${
+                adData.descMotion === 'slideUp' ? 'yr-live-slide-up' : ''
               }`}
             >
               {adData.description}
@@ -173,7 +223,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
               )}
               {adData.showRating && (
                 <span className="flex items-center gap-1 text-[11px] text-[#FFC500] font-bold">
-                  <Star size={13} fill="#FFC500" /> {adData.ratingValue || 5.0}
+                  <Star size={13} fill="#FFC500" /> {adData.ratingValue || 4.9}
                 </span>
               )}
               {adData.showLocation && (
@@ -183,7 +233,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           )}
         </div>
 
-        {/* زر الإجراء الذكي و QR */}
+        {/* زر الإجراء مع لمعان Shimmer أو نبض Pulse التفاعلي */}
         {(adData.showButton || adData.showQrCode) && (
           <div className="pt-3 flex items-center justify-between border-t border-white/10 mt-2">
             {adData.showButton ? (
@@ -192,11 +242,15 @@ export const AdBanner: React.FC<AdBannerProps> = ({
                 target={adData.actionType === 'link' ? '_blank' : '_self'}
                 rel="noopener noreferrer"
                 style={{ backgroundColor: adData.btnBgColor || '#FFC500', color: adData.btnTextColor || '#000000' }}
-                className={`font-black shadow-xl flex items-center gap-1.5 hover:scale-105 transition-all ${
+                className={`font-black shadow-xl flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 ${
                   adData.btnShape === 'pill' ? 'rounded-full' : adData.btnShape === 'square' ? 'rounded-none' : 'rounded-xl'
                 } ${
                   adData.btnSize === 'lg' ? 'px-5 py-2.5 text-sm' : adData.btnSize === 'md' ? 'px-4 py-2 text-xs' : 'px-3 py-1.5 text-[11px]'
-                } ${adData.btnAnimation === 'pulse' ? 'yr-glow-pulse' : adData.btnAnimation === 'shimmer' ? 'yr-btn-shine' : ''}`}
+                } ${
+                  adData.btnAnimation === 'pulse' ? 'yr-live-pulse' :
+                  adData.btnAnimation === 'shimmer' ? 'yr-live-shimmer' :
+                  adData.btnAnimation === 'bounce' ? 'yr-live-bounce' : ''
+                }`}
               >
                 {adData.actionType === 'whatsapp' && <MessageCircle size={14} />}
                 {adData.actionType === 'call' && <Phone size={14} />}
