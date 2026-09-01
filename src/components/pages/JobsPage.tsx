@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { 
   Briefcase, MapPin, ArrowRight, Plus, CheckCircle2, 
   User, X, Upload, Trash2, ShieldCheck, Clock, 
