@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef } from 'react';
 import { 
   Briefcase, MapPin, ArrowRight, Plus, CheckCircle2, 
   User, X, Upload, Trash2, ShieldCheck, Clock, 
-  DollarSign, FileText, Check, AlertCircle, Sparkles, Building2
+  FileText, Check, AlertCircle, Sparkles, Building2, Search
 } from 'lucide-react';
 import { AdBanner } from '../common/AdBanner';
 
@@ -20,8 +20,8 @@ export interface JobItem {
   description: string;
   requirements: string[];
   employerName: string;
-  employerPhone: string; // محمي وسري للإدارة فقط
-  employerEmail: string; // محمي وسري للإدارة فقط
+  employerPhone: string;
+  employerEmail: string;
   applicantsCount: number;
   status: 'active' | 'closed';
   createdAt: string;
@@ -63,7 +63,7 @@ const INITIAL_JOBS: JobItem[] = [
     salary: 480000,
     currency: 'YER',
     city: 'عدن — المعلا',
-    description: 'إدارة وتوجيه الحملات الترويجية الممولة، كتابة المحتوى التسويقي، وإدارة منصات التواصل الاجتماعي وتحليل البيانات.',
+    description: 'إدارة وتوجيه الحملات الترويجية الممولة، كتابة المحتوى التسويقي، وإدارة منصات التواصل الاجتماعي.',
     requirements: [
       'خبرة عملية في إدارة الحملات على Google Ads و Meta',
       'مهارة عالية في تحليل العوائد ومعدلات التحويل CTR',
@@ -136,7 +136,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [selectedJob, setSelectedJob] = useState<JobItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // 1. نافذة نشر وظيفة جديدة (أصحاب العمل)
+  // نافذة نشر وظيفة
   const [isPostJobModalOpen, setIsPostJobModalOpen] = useState(false);
   const [postEmployerName, setPostEmployerName] = useState('');
   const [postEmployerPhone, setPostEmployerPhone] = useState('');
@@ -153,7 +153,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [postRequirements, setPostRequirements] = useState('');
   const [agreedToEmployerPolicy, setAgreedToEmployerPolicy] = useState(false);
 
-  // 2. نافذة التقديم على الوظيفة (الباحث عن عمل)
+  // نافذة التقديم
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [applicantName, setApplicantName] = useState('');
   const [applicantPhone, setApplicantPhone] = useState('');
@@ -172,7 +172,6 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
-  // معالجة رفع السيرة الذاتية PDF/صورة
   const handleCvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -180,17 +179,15 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     }
   };
 
-  // التحقق من رقم الهاتف 9 أرقام
   const isValidYemenPhone = (phone: string) => {
-    const cleanPhone = phone.replace(/[^0-9]/g, '');
-    return cleanPhone.length >= 9;
+    const clean = phone.replace(/[^0-9]/g, '');
+    return clean.length >= 9;
   };
 
-  // إرسال وظيفة جديدة للمراجعة
   const handlePostJobSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidYemenPhone(postEmployerPhone)) {
-      setToastMessage('يرجى إدخال رقم هاتف صحيح مكون من 9 أرقام على الأقل');
+      setToastMessage('يرجى إدخال رقم هاتف للتواصل مكون من 9 أرقام');
       setTimeout(() => setToastMessage(null), 3500);
       return;
     }
@@ -210,10 +207,10 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       currency: 'YER',
       city: postCity,
       description: postDescription || 'فرصة عمل معتمدة عبر وساطة يمن ريتنغ.',
-      requirements: reqArray.length > 0 ? reqArray : ['الالتزام والجدية في العمل', 'توفر المهارات المطلوبة'],
+      requirements: reqArray.length > 0 ? reqArray : ['الالتزام والجدية في العمل'],
       employerName: postEmployerName || 'جهة عمل معتمدة',
-      employerPhone: postEmployerPhone, // سري للإدارة
-      employerEmail: postEmployerEmail, // سري للإدارة
+      employerPhone: postEmployerPhone,
+      employerEmail: postEmployerEmail,
       applicantsCount: 0,
       status: 'active',
       createdAt: 'الآن'
@@ -228,25 +225,21 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setPostDescription('');
     setPostRequirements('');
     setAgreedToEmployerPolicy(false);
-    setToastMessage('تم إرسال الوظيفة بنجاح وستقوم يمن ريتنغ بتوفير الكوادر المطلوبة لك');
-    setTimeout(() => setToastMessage(null), 4500);
+    setToastMessage('تم إرسال الوظيفة بنجاح وستقوم يمن ريتنغ بتوفير الكوادر لك');
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
-  // إرسال طلب التقديم على الوظيفة
   const handleApplySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidYemenPhone(applicantPhone)) {
-      setToastMessage('يرجى إدخال رقم هاتف للتواصل مكون من 9 أرقام');
+      setToastMessage('يرجى إدخال رقم هاتف صحيح مكون من 9 أرقام');
       setTimeout(() => setToastMessage(null), 3500);
       return;
     }
     if (!agreedToApplicantPolicy || !selectedJob) return;
 
-    // تحديث عدد المتقدمين
     setJobsList(prev => prev.map(j => j.id === selectedJob.id ? { ...j, applicantsCount: j.applicantsCount + 1 } : j));
-    if (selectedJob) {
-      setSelectedJob({ ...selectedJob, applicantsCount: selectedJob.applicantsCount + 1 });
-    }
+    setSelectedJob(prev => prev ? { ...prev, applicantsCount: prev.applicantsCount + 1 } : null);
 
     setIsApplyModalOpen(false);
     setApplicantName('');
@@ -255,8 +248,8 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setApplicantSummary('');
     setCvFileName('');
     setAgreedToApplicantPolicy(false);
-    setToastMessage('تم استلام طلبك وسيرتك الذاتية بنجاح، وسيتم التنسيق معك وإشعارك بالقبول');
-    setTimeout(() => setToastMessage(null), 4500);
+    setToastMessage('تم استلام طلبك وسيرتك الذاتية بنجاح، وسيتم التنسيق معك');
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
   const filteredJobs = useMemo(() => {
@@ -276,7 +269,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       {/* 1. إعلان البانر المخصص للوظائف #7 */}
       <AdBanner placementId="7" className="mb-1" />
 
-      {/* 2. رأس الصفحة الرسمي الأنيق */}
+      {/* 2. رأس الصفحة الرسمي */}
       <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
@@ -312,20 +305,19 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       </div>
 
       {toastMessage && (
-        <div className="p-3 rounded-xl bg-[#16A34A]/20 border border-[#16A34A] text-white text-xs font-bold flex items-center gap-2 animate-fade-in">
+        <div className="p-3 rounded-xl bg-[#16A34A]/20 border border-[#16A34A] text-white text-xs font-bold flex items-center gap-2">
           <CheckCircle2 size={16} className="text-[#16A34A] shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* ============================================================
-          عرض تفاصيل الوظيفة والتقديم الآمن
+          عرض تفاصيل الوظيفة والتقديم
           ============================================================ */}
       {selectedJob ? (
         <div className="space-y-3">
           <div className="bg-[#0F0F12] rounded-2xl border border-[#222226] p-4 sm:p-5 space-y-4 shadow-xl">
             
-            {/* رأس الوظيفة */}
             <div className="border-b border-[#1F2937] pb-3 space-y-2">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
@@ -354,7 +346,6 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </div>
             </div>
 
-            {/* شبكة المواصفات السريعة */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-center">
               <div className="p-2.5 rounded-xl bg-[#161619] border border-[#27272A]">
                 <span className="text-[9px] text-[#9CA3AF] font-['Cairo'] block">الخبرة المطلوبة</span>
@@ -374,7 +365,6 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </div>
             </div>
 
-            {/* الوصف والمتطلبات */}
             <div className="space-y-3 pt-1">
               <div className="space-y-1">
                 <h3 className="text-xs font-bold text-white">الوصف الوظيفي:</h3>
@@ -398,14 +388,13 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               )}
             </div>
 
-            {/* صندوق التقديم ووساطة التوظيف */}
             <div className="p-3.5 rounded-xl bg-[#161619] border border-[#27272A] space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-bold text-white">
                 <ShieldCheck size={15} className="text-[#16A34A]" />
                 <span>التقديم والمطابقة الذكية عبر وساطة يمن ريتنغ:</span>
               </div>
               <p className="text-[10px] text-gray-400 leading-relaxed">
-                يتم استقبال السير الذاتية ومطابقة كفاءتك مع الوظيفة وتنسيق المقابلات الرسمية مع جهة العمل مباشرة لضمان الحقوق.
+                يتم استقبال السير الذاتية ومطابقة كفاءتك مع متطلبات الوظيفة وتنسيق المقابلات الرسمية مع جهة العمل مباشرة.
               </p>
 
               <button
@@ -421,11 +410,10 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </div>
       ) : (
         /* ============================================================
-           عرض قائمة الوظائف الرئيسية
+           عرض قائمة الوظائف
            ============================================================ */
         <div className="space-y-3">
           
-          {/* شريط البحث والفلترة */}
           <div className="space-y-2 bg-[#0F0F12] p-2.5 rounded-2xl border border-[#222226]">
             <div className="flex items-center bg-[#18181C] border border-[#27272A] rounded-xl px-2.5 py-1">
               <Search size={14} className="text-gray-400 ml-2 shrink-0" />
@@ -477,7 +465,6 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             </div>
           </div>
 
-          {/* شبكة كروت الوظائف */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
             {filteredJobs.map((job) => (
               <div
@@ -525,7 +512,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       )}
 
       {/* ============================================================
-          نافذة نشر وظيفة جديدة (أصحاب العمل) مع بوابة الموافقة الإلزامية
+          نافذة نشر وظيفة (أصحاب العمل)
           ============================================================ */}
       {isPostJobModalOpen && (
         <div 
@@ -549,7 +536,6 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             </div>
 
             <form onSubmit={handlePostJobSubmit} className="space-y-2.5 text-xs">
-              
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[11px] text-gray-400 block mb-1">اسم المنشأة / صاحب العمل</label>
@@ -697,7 +683,6 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 />
               </div>
 
-              {/* تنبيه العمولة السرية وموافقة السياسة الإلزامية لصاحب العمل */}
               <div className="p-3 rounded-xl bg-[#18181C] border border-[#27272A] space-y-2">
                 <div className="flex items-center gap-1.5 text-[#FFC500] font-bold text-[11px]">
                   <ShieldCheck size={14} />
@@ -742,7 +727,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       )}
 
       {/* ============================================================
-          نافذة التقديم على الوظيفة (الباحث عن عمل) مع رفع السيرة الذاتية
+          نافذة التقديم على الوظيفة (الباحث عن عمل)
           ============================================================ */}
       {isApplyModalOpen && selectedJob && (
         <div 
@@ -769,7 +754,6 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             </div>
 
             <form onSubmit={handleApplySubmit} className="space-y-2.5 text-xs">
-              
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[11px] text-gray-400 block mb-1">الاسم الكامل</label>
@@ -852,7 +836,6 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 />
               </div>
 
-              {/* رفع السيرة الذاتية PDF أو صورة */}
               <div>
                 <label className="text-[11px] text-gray-400 block mb-1">السيرة الذاتية (ملف PDF أو صورة الشهادات)</label>
                 <input 
@@ -899,7 +882,6 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 />
               </div>
 
-              {/* تنبيه العمولة وموافقة السياسة الإلزامية للمتقدم */}
               <div className="p-3 rounded-xl bg-[#18181C] border border-[#27272A] space-y-2">
                 <div className="flex items-center gap-1.5 text-[#FFC500] font-bold text-[11px]">
                   <ShieldCheck size={14} />
