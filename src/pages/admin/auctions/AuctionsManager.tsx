@@ -1,542 +1,320 @@
-import React, { useState, useMemo } from 'react';
-import {
-  Gavel,
-  Search,
-  Filter,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Coins,
-  Percent,
-  DollarSign,
-  Eye,
-  AlertTriangle,
-  ArrowUpRight,
-  TrendingUp,
-  User,
-  MapPin,
-  Calendar,
-  Check,
-  Edit3
+import React, { useState, useEffect } from 'react';
+import { 
+  Gavel, AlertCircle, CheckCircle2, ShieldAlert, 
+  CreditCard, Search, User, Filter, AlertTriangle, 
+  Settings, Check, X, ExternalLink
 } from 'lucide-react';
-
-export interface AuctionBid {
-  id: string;
-  bidderName: string;
-  bidderPhone: string;
-  amount: number;
-  time: string;
-}
-
-export interface AdminAuctionItem {
-  id: string;
-  title: string;
-  category: string;
-  sellerName: string;
-  sellerPhone: string;
-  city: string;
-  currency: 'YER' | 'SAR' | 'USD';
-  startPrice: number;
-  currentBid: number;
-  minStep: number;
-  totalBids: number;
-  status: 'active' | 'pending' | 'completed' | 'cancelled';
-  endDate: string;
-  commissionType: 'percentage' | 'fixed';
-  commissionValue: number; // إما نسبة % أو مبلغ ثابت
-  bids: AuctionBid[];
-}
-
-const INITIAL_AUCTIONS: AdminAuctionItem[] = [
-  {
-    id: 'AUC-101',
-    title: 'معدة صناعية وثقيلة - مولد كهربائي كاتربيلر 500KVA',
-    category: 'معدات وآلات',
-    sellerName: 'مجموعة النور التجارية',
-    sellerPhone: '771234567',
-    city: 'صنعاء',
-    currency: 'USD',
-    startPrice: 15000,
-    currentBid: 19500,
-    minStep: 500,
-    totalBids: 9,
-    status: 'active',
-    endDate: '2026-09-05',
-    commissionType: 'percentage',
-    commissionValue: 3.5, // 3.5%
-    bids: [
-      { id: 'b1', bidderName: 'شركة السعيد للمقاولات', bidderPhone: '770011223', amount: 19500, time: 'منذ ساعتين' },
-      { id: 'b2', bidderName: 'مؤسسة البركة للخدمات', bidderPhone: '773344556', amount: 19000, time: 'منذ 5 ساعات' },
-    ]
-  },
-  {
-    id: 'AUC-102',
-    title: 'سيارة تويوتا لاندكروزر V8 موديل 2023 نظيفة جداً',
-    category: 'سيارات ومركبات',
-    sellerName: 'معرض الفخامة للسيارات',
-    sellerPhone: '733987654',
-    city: 'عدن',
-    currency: 'SAR',
-    startPrice: 120000,
-    currentBid: 145000,
-    minStep: 2000,
-    totalBids: 14,
-    status: 'active',
-    endDate: '2026-09-02',
-    commissionType: 'fixed',
-    commissionValue: 2500, // 2500 ريال سعودي ثابت
-    bids: [
-      { id: 'b3', bidderName: 'أحمد صالح المهدي', bidderPhone: '735556677', amount: 145000, time: 'منذ 30 دقيقة' },
-    ]
-  },
-  {
-    id: 'AUC-103',
-    title: 'أرضية تجارية استثمارية مساحة 10 لبن على شارع 24',
-    category: 'عقارات وأراضي',
-    sellerName: 'مكتب الأفق للعقارات',
-    sellerPhone: '711223344',
-    city: 'صنعاء',
-    currency: 'YER',
-    startPrice: 80000000,
-    currentBid: 92000000,
-    minStep: 1000000,
-    totalBids: 6,
-    status: 'completed',
-    endDate: '2026-08-28',
-    commissionType: 'percentage',
-    commissionValue: 2.0, // 2%
-    bids: [
-      { id: 'b4', bidderName: 'التاجر محمد اليافعي', bidderPhone: '778899001', amount: 92000000, time: 'منتهي' },
-    ]
-  },
-  {
-    id: 'AUC-104',
-    title: 'صفقة هواتف ذكية بالجملة (50 جهاز iPhone 15 Pro)',
-    category: 'إلكترونيات وهواتف',
-    sellerName: 'متجر تكنو ستور',
-    sellerPhone: '774411882',
-    city: 'حضرموت - المكلا',
-    currency: 'USD',
-    startPrice: 35000,
-    currentBid: 35000,
-    minStep: 500,
-    totalBids: 0,
-    status: 'pending',
-    endDate: '2026-09-10',
-    commissionType: 'fixed',
-    commissionValue: 500, // 500 دولار ثابت
-    bids: []
-  }
-];
+import { adminAuctionsService, adminAuditService } from '../../../services/adminService';
 
 export const AuctionsManager: React.FC = () => {
-  const [auctions, setAuctions] = useState<AdminAuctionItem[]>(INITIAL_AUCTIONS);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [currencyFilter, setCurrencyFilter] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<'listings' | 'commissions' | 'disputes' | 'settings'>('listings');
+  const [filterType, setFilterType] = useState<'all' | 'auction' | 'fixed_price'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [settings, setSettings] = useState<any>({
+    default_fixed_commission_amount: 20000,
+    default_auction_commission_rate: 5.0,
+    bank_name: 'بنك الكريمي للتمويل الأصغر الإسلامي',
+    account_holder_name: 'منصة يمن ريتغ للوساطة والتسويق',
+    account_number: '3001234567',
+    wallet_provider: 'محفظة جوالي / كاش',
+    wallet_number: '777000111',
+    payment_instructions: 'يرجى توريد مبلغ العمولة باسم المنصة وإرفاق صورة واضحة من إشعار أو إيصال التحويل ورقم العملية.'
+  });
 
-  // إعدادات العمولة العامة الافتراضية
-  const [globalCommissionType, setGlobalCommissionType] = useState<'percentage' | 'fixed'>('percentage');
-  const [globalCommissionValue, setGlobalCommissionValue] = useState<number>(2.5);
-  const [isSavedSettings, setIsSavedSettings] = useState(false);
+  const [settingsSavedToast, setSettingsSavedToast] = useState(false);
 
-  // نافذة تفاصيل وسجل المزايدات
-  const [selectedAuction, setSelectedAuction] = useState<AdminAuctionItem | null>(null);
-
-  // حساب العمولة لمزاد محدد
-  const calculateCommission = (auction: AdminAuctionItem): { text: string; amount: number } => {
-    if (auction.commissionType === 'percentage') {
-      const amount = (auction.currentBid * auction.commissionValue) / 100;
-      return {
-        text: `${auction.commissionValue}% (${amount.toLocaleString()} ${auction.currency})`,
-        amount
-      };
-    } else {
-      return {
-        text: `${auction.commissionValue.toLocaleString()} ${auction.currency} (مبلغ ثابت)`,
-        amount: auction.commissionValue
-      };
+  const [listings, setListings] = useState<any[]>([
+    {
+      id: 'AUC-201',
+      title: 'تويوتا لاندكروزر V8 موديل 2022 وكالة',
+      saleType: 'auction',
+      currency: 'YER',
+      currentBid: 34500000,
+      finalPrice: 34500000,
+      sellerName: 'معرض النخبة',
+      winnerName: 'مزايد #9700',
+      status: 'deal_confirmed_commission_due',
+      commissionStatus: 'pending_admin_verification',
+      commissionAmount: 1725000,
+      transferNumber: 'TRX-884129',
+      receiptUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop&q=80',
+      disputeStatus: 'no_dispute'
+    },
+    {
+      id: 'AUC-202',
+      title: 'iPhone 15 Pro Max 256GB تيتانيوم',
+      saleType: 'fixed_price',
+      currency: 'YER',
+      fixedPrice: 620000,
+      finalPrice: 620000,
+      sellerName: 'العصرية للإلكترونيات',
+      winnerName: 'أحمد الوصابي',
+      status: 'deal_completed',
+      commissionStatus: 'paid',
+      commissionAmount: 20000,
+      transferNumber: 'TRX-110293',
+      disputeStatus: 'no_dispute'
+    },
+    {
+      id: 'AUC-203',
+      title: 'أرض تجارية 6 لبن شارع الستين',
+      saleType: 'auction',
+      currency: 'YER',
+      currentBid: 185000000,
+      finalPrice: 185000000,
+      sellerName: 'مكتب الأمانة العقاري',
+      winnerName: 'مزايد #8812',
+      status: 'dispute_opened',
+      commissionStatus: 'due',
+      commissionAmount: 9250000,
+      disputeStatus: 'open',
+      disputeReason: 'اختلاف المعروض عن الوصف: لم يتم الاتفاق على حدود الأرض الشمالية'
     }
+  ]);
+
+  const handleVerifyCommission = (id: string, isApproved: boolean) => {
+    setListings(prev => prev.map(item => {
+      if (item.id === id) {
+        return {
+          ...item,
+          commissionStatus: isApproved ? 'paid' : 'rejected',
+          status: isApproved ? 'deal_completed' : 'deal_confirmed_commission_due'
+        };
+      }
+      return item;
+    }));
+    adminAuditService.logAction(isApproved ? 'اعتماد إيصال سداد العمولة' : 'رفض إيصال سداد العمولة', 'auctions', id, { isApproved });
   };
 
-  // تغيير حالة المزاد
-  const handleStatusChange = (id: string, newStatus: AdminAuctionItem['status']) => {
-    setAuctions(prev =>
-      prev.map(auc => (auc.id === id ? { ...auc, status: newStatus } : auc))
-    );
-    if (selectedAuction && selectedAuction.id === id) {
-      setSelectedAuction(prev => (prev ? { ...prev, status: newStatus } : null));
-    }
+  const handleResolveDispute = (id: string, decision: 'deal_completed' | 'cancelled') => {
+    setListings(prev => prev.map(item => {
+      if (item.id === id) {
+        return {
+          ...item,
+          disputeStatus: 'closed',
+          status: decision
+        };
+      }
+      return item;
+    }));
+    adminAuditService.logAction('إغلاق النزاع التجاري واعتماد القرار الإداري', 'auctions', id, { decision });
   };
 
-  // تعديل عمولة مزاد محدد
-  const handleUpdateItemCommission = (id: string, type: 'percentage' | 'fixed', val: number) => {
-    setAuctions(prev =>
-      prev.map(auc => (auc.id === id ? { ...auc, commissionType: type, commissionValue: val } : auc))
-    );
-  };
-
-  // حفظ الإعدادات العامة للعمولة
-  const handleSaveGlobalCommission = (e: React.FormEvent) => {
+  const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSavedSettings(true);
-    setTimeout(() => setIsSavedSettings(false), 2500);
+    adminAuctionsService.updateCommissionSettings(settings);
+    setSettingsSavedToast(true);
+    setTimeout(() => setSettingsSavedToast(false), 3500);
   };
-
-  // الفلترة والبحث
-  const filteredAuctions = useMemo(() => {
-    return auctions.filter(auc => {
-      const matchSearch =
-        auc.title.includes(searchQuery) ||
-        auc.sellerName.includes(searchQuery) ||
-        auc.id.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchStatus = statusFilter === 'all' || auc.status === statusFilter;
-      const matchCurrency = currencyFilter === 'all' || auc.currency === currencyFilter;
-      return matchSearch && matchStatus && matchCurrency;
-    });
-  }, [auctions, searchQuery, statusFilter, currencyFilter]);
-
-  // إجمالي الإحصائيات
-  const activeCount = auctions.filter(a => a.status === 'active').length;
-  const pendingCount = auctions.filter(a => a.status === 'pending').length;
-  const completedCount = auctions.filter(a => a.status === 'completed').length;
 
   return (
-    <div dir="rtl" className="space-y-6 text-zinc-100 font-sans">
-      {/* 1. رأس الصفحة */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-900/80 border border-zinc-800 p-5 rounded-2xl">
-        <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
-            <Gavel className="w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-white">إدارة المزادات والعمولات</h1>
-            <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">متابعة العطاءات، التحكم بالعمولات المخصصة، والموافقة على المزادات</p>
-          </div>
+    <div className="space-y-5 font-['Cairo',sans-serif] text-white">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0B0F17] p-4 rounded-2xl border border-[#1F2937]">
+        <div>
+          <h2 className="text-xl font-black text-white flex items-center gap-2">
+            <Gavel className="text-[#FFC500]" />
+            مركز إدارة المزادات وعروض البيع والعمولات والنزاعات
+          </h2>
+          <p className="text-xs text-[#9CA3AF] mt-0.5">
+            متابعة دورة الصفقات، التحقق من إيصالات التحويل، فض النزاعات، والتحكم بحساب تحصيل عمولات يمن ريتغ
+          </p>
         </div>
 
-        {/* مؤشرات سريعة */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            {activeCount} مزاد نشط
-          </span>
-          <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            {pendingCount} بانتظار المراجعة
-          </span>
-          <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
-            {completedCount} مكتمل
-          </span>
+        <div className="flex gap-1 bg-[#161D2B] p-1 rounded-xl border border-[#1F2937]">
+          <button onClick={() => setActiveTab('listings')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'listings' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'}`}>المعروضات ({listings.length})</button>
+          <button onClick={() => setActiveTab('commissions')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'commissions' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'}`}>إثباتات السداد ({listings.filter(l => l.commissionStatus === 'pending_admin_verification').length})</button>
+          <button onClick={() => setActiveTab('disputes')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'disputes' ? 'bg-[#DC2626] text-white' : 'text-gray-400 hover:text-white'}`}>النزاعات ({listings.filter(l => l.disputeStatus === 'open').length})</button>
+          <button onClick={() => setActiveTab('settings')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'settings' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'}`}>حساب التحصيل</button>
         </div>
       </div>
 
-      {/* 2. صندوق إعدادات العمولة المخصصة (نسبة أو مبلغ ثابت) */}
-      <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 shadow-lg">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800/80">
-          <div className="flex items-center gap-2 text-yellow-400">
-            <Coins className="w-5 h-5" />
-            <h2 className="text-sm sm:text-base font-bold text-white">إعدادات سياسة عمولة المنصة</h2>
-          </div>
-          <span className="text-xs text-zinc-400">خيارات مرنة: نسبة مئوية أو مبلغ ثابت</span>
+      {settingsSavedToast && (
+        <div className="p-3 bg-[#16A34A]/20 border border-[#16A34A] rounded-xl text-xs font-bold text-white flex items-center gap-2">
+          <CheckCircle2 size={16} className="text-[#16A34A]" />
+          <span>تم حفظ وتحديث إعدادات وبيانات حساب تحصيل عمولات يمن ريتغ بنجاح</span>
         </div>
+      )}
 
-        <form onSubmit={handleSaveGlobalCommission} className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-          <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-2">نوع احتساب العمولة:</label>
-            <div className="grid grid-cols-2 gap-2 bg-zinc-900 p-1 rounded-xl border border-zinc-800">
-              <button
-                type="button"
-                onClick={() => setGlobalCommissionType('percentage')}
-                className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition ${
-                  globalCommissionType === 'percentage'
-                    ? 'bg-yellow-500 text-zinc-950 shadow-md'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                <Percent className="w-3.5 h-3.5" /> نسبة مئوية %
-              </button>
-              <button
-                type="button"
-                onClick={() => setGlobalCommissionType('fixed')}
-                className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold transition ${
-                  globalCommissionType === 'fixed'
-                    ? 'bg-yellow-500 text-zinc-950 shadow-md'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                <DollarSign className="w-3.5 h-3.5" /> مبلغ مقطوع ثابت
-              </button>
+      {activeTab === 'listings' && (
+        <div className="bg-[#0B0F17] rounded-2xl border border-[#1F2937] overflow-hidden shadow-xl space-y-3 p-4">
+          <div className="flex justify-between items-center gap-2 flex-wrap">
+            <div className="flex items-center bg-[#161D2B] border border-[#1F2937] rounded-xl px-3 py-1.5 text-xs flex-1 max-w-md">
+              <Search size={14} className="text-gray-400 ml-2" />
+              <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="بحث برقم المزاد، السلعة، أو البائع..." className="bg-transparent text-white outline-none w-full" />
+            </div>
+
+            <div className="flex gap-1">
+              {(['all', 'auction', 'fixed_price'] as const).map(t => (
+                <button key={t} onClick={() => setFilterType(t)} className={`px-3 py-1 rounded-lg text-xs font-bold border transition-all ${filterType === t ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#161D2B] text-gray-400 border-[#1F2937]'}`}>
+                  {t === 'all' ? 'الكل' : t === 'auction' ? 'المزادات' : 'سعر ثابت'}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-zinc-300 mb-2">
-              قيمة العمولة الافتراضية ({globalCommissionType === 'percentage' ? 'نسبة % من قيمة الترسية' : 'مبلغ مقطوع'}):
-            </label>
-            <div className="relative">
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                value={globalCommissionValue}
-                onChange={e => setGlobalCommissionValue(parseFloat(e.target.value) || 0)}
-                className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-yellow-500 font-mono"
-              />
-              <span className="absolute left-3 top-2.5 text-xs text-zinc-500 font-bold">
-                {globalCommissionType === 'percentage' ? '%' : 'حسب العملة'}
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              className="w-full py-2.5 px-4 bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-md shadow-yellow-500/10"
-            >
-              {isSavedSettings ? (
-                <>
-                  <Check className="w-4 h-4 text-zinc-950" /> تم حفظ السياسة بنجاح
-                </>
-              ) : (
-                'حفظ سياسة العمولة'
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* 3. أدوات البحث والفلترة */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-zinc-400 absolute right-3.5 top-3" />
-          <input
-            type="text"
-            placeholder="بحث برقم المزاد، العنوان، أو البائع..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 sm:pb-0">
-          <div className="flex items-center gap-1 bg-zinc-900 p-1 rounded-xl border border-zinc-800">
-            {['all', 'active', 'pending', 'completed', 'cancelled'].map(st => (
-              <button
-                key={st}
-                onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition ${
-                  statusFilter === st
-                    ? 'bg-yellow-500 text-zinc-950'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                {st === 'all' && 'جميع الحالات'}
-                {st === 'active' && 'النشطة'}
-                {st === 'pending' && 'معلق'}
-                {st === 'completed' && 'مكتمل'}
-                {st === 'cancelled' && 'ملغي'}
-              </button>
-            ))}
-          </div>
-
-          <select
-            value={currencyFilter}
-            onChange={e => setCurrencyFilter(e.target.value)}
-            className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
-          >
-            <option value="all">كل العملات</option>
-            <option value="YER">ريال يمني (YER)</option>
-            <option value="SAR">ريال سعودي (SAR)</option>
-            <option value="USD">دولار أمريكي (USD)</option>
-          </select>
-        </div>
-      </div>
-
-      {/* 4. قائمة المزادات */}
-      <div className="space-y-3">
-        {filteredAuctions.length === 0 ? (
-          <div className="text-center py-12 bg-zinc-950 border border-zinc-800/80 rounded-2xl text-zinc-400 text-sm">
-            لا توجد مزادات مطابقة لمعايير البحث الحالية.
-          </div>
-        ) : (
-          filteredAuctions.map(auc => {
-            const comm = calculateCommission(auc);
-
-            return (
-              <div
-                key={auc.id}
-                className="p-4 sm:p-5 rounded-2xl bg-zinc-950 border border-zinc-800/90 hover:border-zinc-700 transition space-y-4"
-              >
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                  {/* بيانات المزاد الأساسية */}
-                  <div className="space-y-1.5 flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-md bg-zinc-800 text-yellow-400 border border-zinc-700">
-                        {auc.id}
+          <div className="overflow-x-auto">
+            <table className="w-full text-right text-xs">
+              <thead className="bg-[#111827] text-[#9CA3AF] border-b border-[#1F2937]">
+                <tr>
+                  <th className="py-3 px-3">رقم العرض والسلعة</th>
+                  <th className="py-3 px-3">طريقة البيع</th>
+                  <th className="py-3 px-3">البائع</th>
+                  <th className="py-3 px-3">المشتري / الفائز</th>
+                  <th className="py-3 px-3">السعر النهائي</th>
+                  <th className="py-3 px-3 text-[#FFC500]">عمولة المنصة</th>
+                  <th className="py-3 px-3 text-center">حالة العمولة</th>
+                  <th className="py-3 px-3 text-center">حالة الصفقة</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1F2937] text-white font-mono">
+                {listings.map(item => (
+                  <tr key={item.id} className="hover:bg-[#161D2B]/50 font-['Cairo']">
+                    <td className="py-3 px-3 font-bold">
+                      <div>{item.title}</div>
+                      <span className="text-[10px] text-gray-400 font-mono">{item.id}</span>
+                    </td>
+                    <td className="py-3 px-3">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.saleType === 'fixed_price' ? 'bg-blue-500/15 text-blue-400' : 'bg-red-500/15 text-red-400'}`}>
+                        {item.saleType === 'fixed_price' ? 'سعر ثابت' : 'مزاد علني'}
                       </span>
-                      <span className="text-xs text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
-                        {auc.category}
+                    </td>
+                    <td className="py-3 px-3 text-gray-300">{item.sellerName}</td>
+                    <td className="py-3 px-3 text-gray-300">{item.winnerName || '—'}</td>
+                    <td className="py-3 px-3 font-mono font-bold text-white">{(item.finalPrice || item.currentBid || item.fixedPrice)?.toLocaleString()} {item.currency}</td>
+                    <td className="py-3 px-3 font-mono font-bold text-[#FFC500]">{item.commissionAmount?.toLocaleString()} YER</td>
+                    <td className="py-3 px-3 text-center">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.commissionStatus === 'paid' ? 'bg-[#16A34A]/20 text-[#16A34A]' : item.commissionStatus === 'pending_admin_verification' ? 'bg-amber-500/20 text-amber-400' : 'bg-gray-800 text-gray-400'}`}>
+                        {item.commissionStatus === 'paid' ? 'تم السداد ✓' : item.commissionStatus === 'pending_admin_verification' ? 'بانتظار التحقق' : 'مستحقة'}
                       </span>
-                      <span className="flex items-center gap-1 text-xs text-zinc-400">
-                        <MapPin className="w-3 h-3 text-zinc-500" /> {auc.city}
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.status === 'deal_completed' ? 'bg-[#16A34A]/20 text-[#16A34A]' : item.status === 'dispute_opened' ? 'bg-[#DC2626]/20 text-[#DC2626]' : 'bg-gray-800 text-gray-300'}`}>
+                        {item.status === 'deal_completed' ? 'مكتملة' : item.status === 'dispute_opened' ? 'نزاع' : 'نشط'}
                       </span>
-                      <span
-                        className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
-                          auc.status === 'active'
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : auc.status === 'pending'
-                            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                            : auc.status === 'completed'
-                            ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                            : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                        }`}
-                      >
-                        {auc.status === 'active' && '● مزاد نشط'}
-                        {auc.status === 'pending' && '⏳ بانتظار الموافقة'}
-                        {auc.status === 'completed' && '✓ منتهي وتم الترسية'}
-                        {auc.status === 'cancelled' && '✕ ملغي'}
-                      </span>
-                    </div>
-
-                    <h3 className="font-bold text-sm sm:text-base text-white">{auc.title}</h3>
-
-                    <div className="flex items-center gap-4 text-xs text-zinc-400 pt-1">
-                      <span className="flex items-center gap-1">
-                        <User className="w-3.5 h-3.5 text-zinc-500" /> البائع: <strong className="text-zinc-300">{auc.sellerName}</strong> ({auc.sellerPhone})
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-zinc-500" /> ينتهي في: {auc.endDate}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* الأسعار والعطاءات والعمولة */}
-                  <div className="flex items-center gap-3 sm:gap-6 bg-zinc-900/60 p-3 sm:p-4 rounded-xl border border-zinc-800 shrink-0 flex-wrap sm:flex-nowrap justify-between">
-                    <div>
-                      <span className="text-[11px] text-zinc-500 block">أعلى عطاء حالي</span>
-                      <span className="font-black text-sm sm:text-lg text-yellow-400 font-mono">
-                        {auc.currentBid.toLocaleString()} {auc.currency}
-                      </span>
-                      <span className="text-[10px] text-zinc-400 block mt-0.5">
-                        {auc.totalBids} مزايدات مسجلة
-                      </span>
-                    </div>
-
-                    <div className="border-r border-zinc-800 pr-3 sm:pr-4">
-                      <span className="text-[11px] text-zinc-500 block">عمولة المنصة</span>
-                      <span className="font-bold text-xs sm:text-sm text-emerald-400">
-                        {comm.text}
-                      </span>
-                      <span className="text-[10px] text-zinc-500 block mt-0.5">
-                        {auc.commissionType === 'percentage' ? 'حساب نسبي' : 'مبلغ ثابت مقطوع'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* أزرار الإجراءات */}
-                <div className="flex items-center justify-between pt-3 border-t border-zinc-800/80 flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    {auc.status === 'pending' && (
-                      <button
-                        onClick={() => handleStatusChange(auc.id, 'active')}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold rounded-lg text-xs transition"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" /> قبول وبدء المزاد
-                      </button>
-                    )}
-                    {auc.status === 'active' && (
-                      <button
-                        onClick={() => handleStatusChange(auc.id, 'completed')}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-lg text-xs transition"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5" /> إنهاء وترسية المزاد
-                      </button>
-                    )}
-                    {auc.status !== 'cancelled' && (
-                      <button
-                        onClick={() => handleStatusChange(auc.id, 'cancelled')}
-                        className="flex items-center gap-1 px-2.5 py-1.5 bg-zinc-800 hover:bg-rose-500/20 text-zinc-400 hover:text-rose-400 rounded-lg text-xs transition"
-                      >
-                        <XCircle className="w-3.5 h-3.5" /> إلغاء المزاد
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setSelectedAuction(auc)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-semibold rounded-lg text-xs transition"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-yellow-400" /> سجل المزايدات ({auc.bids.length})
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
-
-      {/* 5. نافذة تفاصيل سجل العطاءات والمزايدات */}
-      {selectedAuction && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <div className="flex items-center gap-2 text-yellow-400">
-                <Gavel className="w-5 h-5" />
-                <h3 className="font-bold text-sm sm:text-base text-white">سجل مزايدات: {selectedAuction.id}</h3>
-              </div>
-              <button
-                onClick={() => setSelectedAuction(null)}
-                className="text-zinc-400 hover:text-white p-1"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-xs text-zinc-300 font-semibold">{selectedAuction.title}</p>
-              <div className="bg-zinc-900/60 p-3 rounded-xl border border-zinc-800 flex justify-between text-xs">
-                <span>أعلى سوم: <strong className="text-yellow-400 font-mono">{selectedAuction.currentBid.toLocaleString()} {selectedAuction.currency}</strong></span>
-                <span>العمولة المقررة: <strong className="text-emerald-400">{calculateCommission(selectedAuction).text}</strong></span>
-              </div>
-            </div>
-
-            <div className="space-y-2 max-h-60 overflow-y-auto">
-              <span className="text-xs font-bold text-zinc-400 block">العطاءات المسجلة:</span>
-              {selectedAuction.bids.length === 0 ? (
-                <p className="text-xs text-zinc-500 py-4 text-center">لا توجد مزايدات حتى الآن على هذا المزاد.</p>
-              ) : (
-                selectedAuction.bids.map(bid => (
-                  <div
-                    key={bid.id}
-                    className="flex items-center justify-between p-2.5 rounded-lg bg-zinc-900 border border-zinc-800/80 text-xs"
-                  >
-                    <div>
-                      <p className="font-bold text-zinc-200">{bid.bidderName}</p>
-                      <span className="text-[10px] text-zinc-500 font-mono">{bid.bidderPhone} • {bid.time}</span>
-                    </div>
-                    <span className="font-black text-yellow-400 font-mono">
-                      {bid.amount.toLocaleString()} {selectedAuction.currency}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="pt-3 border-t border-zinc-800">
-              <button
-                onClick={() => setSelectedAuction(null)}
-                className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-bold transition"
-              >
-                إغلاق
-              </button>
-            </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
+
+      {activeTab === 'commissions' && (
+        <div className="bg-[#0B0F17] rounded-2xl border border-[#1F2937] p-4 space-y-3">
+          <h3 className="text-sm font-bold text-white flex items-center gap-1.5 border-b border-[#1F2937] pb-2">
+            <CreditCard size={16} className="text-[#FFC500]" /> إثباتات سداد عمولات يمن ريتغ المرفوعة للتحقق
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {listings.filter(l => l.commissionStatus === 'pending_admin_verification').map(item => (
+              <div key={item.id} className="p-3.5 bg-[#161D2B] rounded-xl border border-[#1F2937] space-y-2.5">
+                <div className="flex justify-between items-center text-xs">
+                  <div>
+                    <h4 className="font-bold text-white">{item.title}</h4>
+                    <span className="text-[10px] text-gray-400">البائع: {item.sellerName}</span>
+                  </div>
+                  <b className="text-[#FFC500] text-sm font-mono">{item.commissionAmount?.toLocaleString()} YER</b>
+                </div>
+                <div className="p-2.5 bg-[#0F0F12] rounded-lg text-xs space-y-1 font-mono">
+                  <div>رقم الحوالة: <b className="text-white">{item.transferNumber}</b></div>
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button onClick={() => handleVerifyCommission(item.id, true)} className="flex-1 py-2 bg-[#16A34A] text-white rounded-lg text-xs font-black hover:bg-[#16A34A]/90 flex items-center justify-center gap-1 cursor-pointer">
+                    <Check size={14} /> اعتماد السداد وإغلاق الصفقة
+                  </button>
+                  <button onClick={() => handleVerifyCommission(item.id, false)} className="px-3 py-2 bg-[#DC2626]/20 text-[#DC2626] border border-[#DC2626]/40 rounded-lg text-xs font-bold hover:bg-[#DC2626]/30 cursor-pointer">
+                    رفض
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'disputes' && (
+        <div className="bg-[#0B0F17] rounded-2xl border border-[#1F2937] p-4 space-y-3">
+          <h3 className="text-sm font-bold text-white flex items-center gap-1.5 border-b border-[#1F2937] pb-2">
+            <AlertTriangle size={16} className="text-[#DC2626]" /> النزاعات التجارية وقرارات الإدارة
+          </h3>
+          <div className="space-y-3">
+            {listings.filter(l => l.disputeStatus === 'open').map(item => (
+              <div key={item.id} className="p-4 bg-[#161D2B] rounded-xl border border-[#DC2626]/40 space-y-3">
+                <div className="flex justify-between items-center text-xs">
+                  <div>
+                    <h4 className="font-bold text-white text-sm">{item.title}</h4>
+                    <span className="text-[10px] text-gray-400">البائع: {item.sellerName} • المشتري: {item.winnerName}</span>
+                  </div>
+                  <span className="px-2.5 py-1 rounded bg-[#DC2626]/20 text-[#DC2626] text-xs font-bold">نزاع مفتوح</span>
+                </div>
+                <div className="p-3 bg-[#0F0F12] rounded-xl border border-[#27272A] text-xs space-y-1">
+                  <b className="text-red-400 block">سبب النزاع المرفوع:</b>
+                  <p className="text-gray-300 leading-relaxed">{item.disputeReason}</p>
+                </div>
+                <div className="flex justify-end gap-2 pt-2 border-t border-[#1F2937]">
+                  <button onClick={() => handleResolveDispute(item.id, 'cancelled')} className="px-4 py-2 bg-[#DC2626] text-white rounded-xl text-xs font-bold">إلغاء الصفقة</button>
+                  <button onClick={() => handleResolveDispute(item.id, 'deal_completed')} className="px-4 py-2 bg-[#16A34A] text-white rounded-xl text-xs font-bold">تثبيت إتمام الصفقة</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'settings' && (
+        <div className="bg-[#0B0F17] rounded-2xl border border-[#1F2937] p-5 space-y-4 max-w-2xl">
+          <div>
+            <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+              <Settings size={16} className="text-[#FFC500]" /> إعدادات وبيانات حساب تحصيل عمولات يمن ريتغ
+            </h3>
+            <p className="text-xs text-gray-400 mt-0.5">
+              هذه البيانات مشفرة وسرية، ولا تظهر لصاحب العرض إلا عندما تصبح العمولة مستحقة الدفع بعد تأكيد الصفقة.
+            </p>
+          </div>
+
+          <form onSubmit={handleSaveSettings} className="space-y-3 text-xs">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] text-gray-400 block mb-1">عمولة البيع بسعر ثابت (YER)</label>
+                <input type="number" value={settings.default_fixed_commission_amount} onChange={(e) => setSettings({ ...settings, default_fixed_commission_amount: Number(e.target.value) })} className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white font-mono outline-none" />
+              </div>
+              <div>
+                <label className="text-[11px] text-gray-400 block mb-1">نسبة عمولة المزاد (%)</label>
+                <input type="number" step="0.1" value={settings.default_auction_commission_rate} onChange={(e) => setSettings({ ...settings, default_auction_commission_rate: Number(e.target.value) })} className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white font-mono outline-none" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] text-gray-400 block mb-1">اسم البنك المعتمد</label>
+                <input type="text" value={settings.bank_name} onChange={(e) => setSettings({ ...settings, bank_name: e.target.value })} className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white outline-none" />
+              </div>
+              <div>
+                <label className="text-[11px] text-gray-400 block mb-1">اسم صاحب الحساب</label>
+                <input type="text" value={settings.account_holder_name} onChange={(e) => setSettings({ ...settings, account_holder_name: e.target.value })} className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white outline-none" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] text-gray-400 block mb-1">رقم الحساب البنكي</label>
+                <input type="text" value={settings.account_number} onChange={(e) => setSettings({ ...settings, account_number: e.target.value })} className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white font-mono outline-none" />
+              </div>
+              <div>
+                <label className="text-[11px] text-gray-400 block mb-1">المحفظة الإلكترونية ورقمها</label>
+                <input type="text" value={settings.wallet_number} onChange={(e) => setSettings({ ...settings, wallet_number: e.target.value })} className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white font-mono outline-none" />
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button type="submit" className="px-6 py-2.5 bg-[#FFC500] text-black font-black text-xs rounded-xl hover:bg-[#FFC500]/90 transition-all shadow-md cursor-pointer">
+                حفظ وتحديث بيانات حساب التحصيل
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
     </div>
   );
 };
-
-export default AuctionsManager;

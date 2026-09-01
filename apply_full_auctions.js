@@ -1,9 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+const fs = require('fs');
+
+// 1. كتابة كود صفحة المزادات والبيع المباشر في الموقع العام
+const auctionsPageCode = `import React, { useState, useEffect, useRef } from 'react';
 import { 
   Gavel, Clock, ArrowRight, Plus, MapPin, 
   CheckCircle2, User, X, Upload, Trash2, ShieldCheck,
-  MessageSquare, Send, AlertTriangle, CreditCard,
-  Check, ShoppingCart
+  Tag, MessageSquare, Send, AlertTriangle, CreditCard,
+  Check, FileText, ChevronRight, ChevronLeft, Building2,
+  DollarSign, ShoppingCart, Eye, Lock
 } from 'lucide-react';
 import { AdBanner } from '../common/AdBanner';
 import { adminAuctionsService } from '../../services/adminService';
@@ -28,12 +32,17 @@ export interface AuctionListing {
   minIncrement?: number;
   currentBid?: number;
   bidsCount?: number;
+  startTime?: string;
+  endTime?: string;
   timeLeftSeconds?: number;
   currency: string;
   winnerBuyerName?: string;
   winnerBuyerPhone?: string;
+  winnerBuyerId?: string;
   finalPrice?: number;
   status: 'active' | 'scheduled' | 'ended_with_winner' | 'ended_no_bids' | 'deal_pending_confirmation' | 'deal_confirmed_commission_due' | 'deal_completed' | 'dispute_opened';
+  dealConfirmedBySeller?: boolean;
+  dealConfirmedByBuyer?: boolean;
   commissionAmount?: number;
   commissionStatus: 'not_due' | 'due' | 'pending_admin_verification' | 'paid' | 'rejected';
   transferNumber?: string;
@@ -113,7 +122,7 @@ function formatTimer(seconds: number) {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
   const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
   const s = (seconds % 60).toString().padStart(2, '0');
-  return `${h}:${m}:${s}`;
+  return \`\${h}:\${m}:\${s}\`;
 }
 
 export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
@@ -227,7 +236,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     const imagesToUse = uploadedImages.length > 0 ? uploadedImages : ['https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=900&auto=format&fit=crop&q=85'];
 
     const newListing: AuctionListing = {
-      id: `auc-${Date.now()}`,
+      id: \`auc-\${Date.now()}\`,
       itemType,
       itemName: itemName || title,
       title,
@@ -260,7 +269,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setIsAddModalOpen(false);
     setConsentListing(false);
     setUploadedImages([]);
-    setToastMessage(`تم نشر ${isFixed ? 'عرض البيع بسعر ثابت' : 'المزاد العلني'} بنجاح`);
+    setToastMessage(\`تم نشر \${isFixed ? 'عرض البيع بسعر ثابت' : 'المزاد العلني'} بنجاح وتوثيق الإقرار\`);
     setTimeout(() => setToastMessage(null), 4000);
   };
 
@@ -275,7 +284,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       status: 'deal_pending_confirmation',
       messages: [
         {
-          id: `msg-${Date.now()}`,
+          id: \`msg-\${Date.now()}\`,
           senderRole: 'admin',
           senderName: 'وساطة يمن ريتغ',
           text: 'تم إنشاء هذه المحادثة الخاصة بين البائع والمشتري للاتفاق على طريقة الدفع ومكان وموعد استلام وتسليم المعروض.',
@@ -288,7 +297,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setListings(prev => prev.map(l => l.id === updated.id ? updated : l));
     setIsBuyModalOpen(false);
     setConsentBuyerPurchase(false);
-    setToastMessage('تم تأكيد رغبة الشراء وفتح المحادثة الخاصة مع البائع');
+    setToastMessage('تم تأكيد رغبة الشراء بنجاح وفتح المحادثة الخاصة مع البائع');
     setTimeout(() => setToastMessage(null), 4000);
   };
 
@@ -298,14 +307,14 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
     const minAllowed = (selectedListing.currentBid || selectedListing.startingPrice || 0) + (selectedListing.minIncrement || 1000);
     if (bidInput < minAllowed) {
-      setToastMessage(`الحد الأدنى للمزايدة التالية هو ${minAllowed.toLocaleString()} ${selectedListing.currency}`);
+      setToastMessage(\`الحد الأدنى للمزايدة التالية هو \${minAllowed.toLocaleString()} \${selectedListing.currency}\`);
       setTimeout(() => setToastMessage(null), 3000);
       return;
     }
 
     const newBid = {
-      id: `b-${Date.now()}`,
-      bidderCode: `مزايد #${Math.floor(1000 + Math.random() * 9000)}`,
+      id: \`b-\${Date.now()}\`,
+      bidderCode: \`مزايد #\${Math.floor(1000 + Math.random() * 9000)}\`,
       amount: bidInput,
       time: 'الآن'
     };
@@ -364,7 +373,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setListings(prev => prev.map(l => l.id === updated.id ? updated : l));
     setIsPaymentModalOpen(false);
     setConsentPaymentProof(false);
-    setToastMessage('تم إرسال إثبات السداد بنجاح — بانتظار مراجعة وتحقق الإدارة');
+    setToastMessage('تم إرسال إثبات السداد بنجاح — العملية قيد مراجعة وتحقق الإدارة');
     setTimeout(() => setToastMessage(null), 5000);
   };
 
@@ -376,7 +385,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       ...selectedListing,
       status: 'dispute_opened',
       disputeStatus: 'open',
-      disputeReason: `${disputeCategory}: ${disputeDetails}`
+      disputeReason: \`\${disputeCategory}: \${disputeDetails}\`
     };
 
     setSelectedListing(updated);
@@ -392,7 +401,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     if (!selectedListing || !chatMessage.trim()) return;
 
     const newMsg = {
-      id: `msg-${Date.now()}`,
+      id: \`msg-\${Date.now()}\`,
       senderRole: 'seller' as const,
       senderName: selectedListing.sellerName,
       text: chatMessage.trim(),
@@ -479,7 +488,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               onClick={() => setIsLightboxOpen(true)}
             >
               <img src={selectedListing.images[activeImageIndex]} alt={selectedListing.title} className="w-full h-full object-cover" />
-              <span className={`absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-lg text-[10px] font-black shadow-md ${selectedListing.saleType === 'fixed_price' ? 'bg-[#2EA5FF] text-white' : 'bg-[#DC2626] text-white'}`}>
+              <span className={\`absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-lg text-[10px] font-black shadow-md \${selectedListing.saleType === 'fixed_price' ? 'bg-[#2EA5FF] text-white' : 'bg-[#DC2626] text-white'}\`}>
                 {selectedListing.saleType === 'fixed_price' ? 'بيع بسعر ثابت' : 'مزاد مباشر'}
               </span>
               {selectedListing.saleType === 'auction' && selectedListing.timeLeftSeconds !== undefined && (
@@ -495,7 +504,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   <span className="px-2 py-0.5 rounded bg-[#FFC500]/15 text-[#FFC500] text-[10px] font-bold">
                     {selectedListing.itemType}
                   </span>
-                  <span className="text-[11px] text-gray-400">📍 {selectedListing.city} {selectedListing.areaLocation ? `• ${selectedListing.areaLocation}` : ''}</span>
+                  <span className="text-[11px] text-gray-400">📍 {selectedListing.city} {selectedListing.areaLocation ? \`• \${selectedListing.areaLocation}\` : ''}</span>
                 </div>
                 <h2 className="text-sm sm:text-base font-black text-white leading-snug">
                   {selectedListing.title}
@@ -659,9 +668,9 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       ) : (
         <div className="space-y-3">
           <div className="flex gap-1 bg-[#0F0F12] p-1 rounded-xl border border-[#222226]">
-            <button onClick={() => setActiveTab('all')} className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all ${activeTab === 'all' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'}`}>الكل ({listings.length})</button>
-            <button onClick={() => setActiveTab('auction')} className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all ${activeTab === 'auction' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'}`}>المزادات</button>
-            <button onClick={() => setActiveTab('fixed_price')} className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all ${activeTab === 'fixed_price' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'}`}>بيع بسعر ثابت</button>
+            <button onClick={() => setActiveTab('all')} className={\`flex-1 py-1.5 rounded-lg text-xs font-black transition-all \${activeTab === 'all' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'}\`}>الكل ({listings.length})</button>
+            <button onClick={() => setActiveTab('auction')} className={\`flex-1 py-1.5 rounded-lg text-xs font-black transition-all \${activeTab === 'auction' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'}\`}>المزادات</button>
+            <button onClick={() => setActiveTab('fixed_price')} className={\`flex-1 py-1.5 rounded-lg text-xs font-black transition-all \${activeTab === 'fixed_price' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'}\`}>بيع بسعر ثابت</button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
@@ -669,7 +678,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               <div key={item.id} className="bg-[#0F0F12] rounded-2xl border border-[#222226] hover:border-[#FFC500]/40 overflow-hidden shadow-md transition-all flex flex-col justify-between">
                 <div className="h-40 w-full relative bg-[#161619]">
                   <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover" />
-                  <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-md text-[9px] font-black ${item.saleType === 'fixed_price' ? 'bg-[#2EA5FF] text-white' : 'bg-[#DC2626] text-white'}`}>
+                  <span className={\`absolute top-2 right-2 px-2 py-0.5 rounded-md text-[9px] font-black \${item.saleType === 'fixed_price' ? 'bg-[#2EA5FF] text-white' : 'bg-[#DC2626] text-white'}\`}>
                     {item.saleType === 'fixed_price' ? 'سعر ثابت' : 'مزاد مباشر'}
                   </span>
                   {item.saleType === 'auction' && item.timeLeftSeconds !== undefined && (
@@ -721,8 +730,8 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               <div>
                 <label className="text-[11px] text-[#FFC500] block mb-1 font-bold">طريقة البيع المعتمدة*</label>
                 <div className="grid grid-cols-2 gap-2">
-                  <button type="button" onClick={() => setSaleType('fixed_price')} className={`py-2 rounded-xl border text-xs font-bold transition-all ${saleType === 'fixed_price' ? 'bg-[#2EA5FF] text-white border-[#2EA5FF]' : 'bg-[#18181C] text-gray-400 border-[#27272A]'}`}>بيع بسعر ثابت</button>
-                  <button type="button" onClick={() => setSaleType('auction')} className={`py-2 rounded-xl border text-xs font-bold transition-all ${saleType === 'auction' ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#18181C] text-gray-400 border-[#27272A]'}`}>مزاد (مزايدة)</button>
+                  <button type="button" onClick={() => setSaleType('fixed_price')} className={\`py-2 rounded-xl border text-xs font-bold transition-all \${saleType === 'fixed_price' ? 'bg-[#2EA5FF] text-white border-[#2EA5FF]' : 'bg-[#18181C] text-gray-400 border-[#27272A]'}\`}>بيع بسعر ثابت</button>
+                  <button type="button" onClick={() => setSaleType('auction')} className={\`py-2 rounded-xl border text-xs font-bold transition-all \${saleType === 'auction' ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#18181C] text-gray-400 border-[#27272A]'}\`}>مزاد (مزايدة)</button>
                 </div>
               </div>
 
