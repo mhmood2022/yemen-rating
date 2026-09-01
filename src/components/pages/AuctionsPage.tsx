@@ -278,7 +278,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           id: `msg-${Date.now()}`,
           senderRole: 'admin',
           senderName: 'وساطة يمن ريتغ',
-          text: 'تم إنشاء هذه المحادثة الخاصة بين البائع والمشتري للاتفاق على طريقة الدفع ومكان وموعد استلام وتسليم المعروض.',
+          text: 'تم إنشاء هذه المحادثة الخاصة بين البائع والمشتري لتنسيق الاستلام والتسليم والدفع.',
           time: 'الآن'
         }
       ]
@@ -288,7 +288,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setListings(prev => prev.map(l => l.id === updated.id ? updated : l));
     setIsBuyModalOpen(false);
     setConsentBuyerPurchase(false);
-    setToastMessage('تم تأكيد رغبة الشراء وفتح المحادثة الخاصة مع البائع');
+    setToastMessage('تم تأكيد رغبة الشراء وفتح المحادثة الخاصة');
     setTimeout(() => setToastMessage(null), 4000);
   };
 
@@ -298,7 +298,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
     const minAllowed = (selectedListing.currentBid || selectedListing.startingPrice || 0) + (selectedListing.minIncrement || 1000);
     if (bidInput < minAllowed) {
-      setToastMessage(`الحد الأدنى للمزايدة التالية هو ${minAllowed.toLocaleString()} ${selectedListing.currency}`);
+      setToastMessage(`الحد الأدنى للمزايدة القادمة هو ${minAllowed.toLocaleString()} ${selectedListing.currency}`);
       setTimeout(() => setToastMessage(null), 3000);
       return;
     }
@@ -364,7 +364,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setListings(prev => prev.map(l => l.id === updated.id ? updated : l));
     setIsPaymentModalOpen(false);
     setConsentPaymentProof(false);
-    setToastMessage('تم إرسال إثبات السداد بنجاح — بانتظار مراجعة وتحقق الإدارة');
+    setToastMessage('تم إرسال إثبات السداد — قيد مراجعة وتحقق الإدارة');
     setTimeout(() => setToastMessage(null), 5000);
   };
 
@@ -383,7 +383,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setListings(prev => prev.map(l => l.id === updated.id ? updated : l));
     setIsDisputeModalOpen(false);
     setDisputeDetails('');
-    setToastMessage('تم فتح النزاع وتجميد إغلاق العملية حتى صدور قرار الإدارة');
+    setToastMessage('تم فتح النزاع وتجميد إغلاق العملية حتى قرار الإدارة');
     setTimeout(() => setToastMessage(null), 5000);
   };
 
@@ -409,6 +409,25 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setChatMessage('');
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartX.current || !selectedListing) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+
+    if (Math.abs(diff) > 35) {
+      if (diff > 0) {
+        setActiveImageIndex(prev => (prev + 1) % selectedListing.images.length);
+      } else {
+        setActiveImageIndex(prev => (prev - 1 + selectedListing.images.length) % selectedListing.images.length);
+      }
+    }
+    touchStartX.current = null;
+  };
+
   const filteredListings = listings.filter(item => {
     if (activeTab === 'auction') return item.saleType === 'auction';
     if (activeTab === 'fixed_price') return item.saleType === 'fixed_price';
@@ -420,6 +439,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       
       <AdBanner placementId="6" className="mb-1" />
 
+      {/* رأس الصفحة */}
       <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
@@ -474,8 +494,11 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           )}
 
           <div className="bg-[#0F0F12] rounded-2xl border border-[#222226] overflow-hidden shadow-xl">
+            {/* معرض الصور باللمس */}
             <div 
               className="relative h-56 sm:h-72 w-full bg-[#161619] overflow-hidden cursor-pointer select-none"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
               onClick={() => setIsLightboxOpen(true)}
             >
               <img src={selectedListing.images[activeImageIndex]} alt={selectedListing.title} className="w-full h-full object-cover" />
@@ -488,6 +511,22 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 </span>
               )}
             </div>
+
+            {selectedListing.images.length > 1 && (
+              <div className="flex gap-1.5 p-2 bg-[#121215] border-t border-[#1F2937] overflow-x-auto no-scrollbar">
+                {selectedListing.images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`w-12 h-9 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                      activeImageIndex === idx ? 'border-[#FFC500]' : 'border-transparent opacity-60'
+                    }`}
+                  >
+                    <img src={img} alt="thumb" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="p-3.5 sm:p-4 space-y-3">
               <div>
@@ -505,6 +544,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 </p>
               </div>
 
+              {/* صندوق البيع بسعر ثابت */}
               {selectedListing.saleType === 'fixed_price' && (
                 <div className="bg-[#161619] p-3.5 rounded-xl border border-[#27272A] space-y-2.5">
                   <div className="flex justify-between items-center border-b border-[#27272A] pb-2">
@@ -529,57 +569,81 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 </div>
               )}
 
+              {/* صندوق المزاد والمزايدة المطور بهندسة نظيفة */}
               {selectedListing.saleType === 'auction' && (
-                <div className="bg-[#161619] p-3.5 rounded-xl border border-[#27272A] space-y-2.5">
-                  <div className="flex justify-between items-center border-b border-[#27272A] pb-2">
+                <div className="bg-[#161619] p-3.5 rounded-xl border border-[#27272A] space-y-3">
+                  
+                  {/* رأس السعر الحالي والمزايدة */}
+                  <div className="flex justify-between items-center border-b border-[#27272A] pb-2.5">
                     <div>
-                      <span className="text-[10px] text-[#9CA3AF] block font-bold">أعلى مزايدة:</span>
+                      <span className="text-[10px] text-[#9CA3AF] block font-bold">أعلى مزايدة حالياً:</span>
                       <div className="text-xl sm:text-2xl font-mono font-black text-[#FFC500]">
                         {selectedListing.currentBid?.toLocaleString()} <span className="text-xs">{selectedListing.currency}</span>
                       </div>
                     </div>
-                    <span className="text-xs text-gray-400 font-mono">الابتدائي: {selectedListing.startingPrice?.toLocaleString()} {selectedListing.currency}</span>
+                    <div className="text-left font-mono">
+                      <span className="text-[9px] text-[#9CA3AF] block font-['Cairo']">الابتدائي:</span>
+                      <span className="text-xs text-gray-300 font-bold">{selectedListing.startingPrice?.toLocaleString()} {selectedListing.currency}</span>
+                      <span className="text-[9px] text-gray-400 block font-['Cairo']">({selectedListing.bidsCount || 0} مزايدات)</span>
+                    </div>
                   </div>
 
                   {selectedListing.status === 'active' && (
-                    <form onSubmit={handlePlaceBid} className="space-y-2 pt-1">
-                      <div className="flex gap-1.5">
+                    <form onSubmit={handlePlaceBid} className="space-y-2.5">
+                      
+                      {/* حقل مبلغ المزايدة كامل العرض */}
+                      <div>
+                        <label className="text-[10px] text-[#9CA3AF] block mb-1 font-bold">
+                          مبلغ المزايدة القادمة ({selectedListing.currency}) — الحد الأدنى للزيادة: +{selectedListing.minIncrement?.toLocaleString()}
+                        </label>
                         <input
                           type="number"
                           min={(selectedListing.currentBid || 0) + (selectedListing.minIncrement || 1000)}
                           step={selectedListing.minIncrement || 1000}
                           value={bidInput}
                           onChange={(e) => setBidInput(Number(e.target.value))}
-                          className="flex-1 bg-[#0F0F12] border border-[#27272A] focus:border-[#FFC500] rounded-xl p-2 text-sm font-mono font-bold text-white outline-none"
+                          className="w-full bg-[#0F0F12] border border-[#27272A] focus:border-[#FFC500] rounded-xl p-2.5 text-base font-mono font-bold text-white outline-none"
                         />
-                        <button
-                          type="submit"
-                          disabled={!consentBidder}
-                          className="px-5 py-2 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md flex items-center gap-1 cursor-pointer"
-                        >
-                          <Gavel size={14} />
-                          <span>تأكيد المزايدة</span>
-                        </button>
                       </div>
 
-                      <div className="p-2.5 rounded-lg bg-[#0F0F12] border border-[#27272A] space-y-1">
-                        <label className="flex items-start gap-2 cursor-pointer select-none">
+                      {/* الإقرار الثاني للمزايد بخلفية خضراء شفافة */}
+                      <div className="p-3 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/40 space-y-1.5 text-right">
+                        <div className="flex items-center gap-1.5 text-[#16A34A] font-bold text-xs">
+                          <ShieldCheck size={15} />
+                          <span>تنبيه إلزامي:</span>
+                        </div>
+                        <p className="text-[10.5px] text-emerald-100 leading-relaxed">
+                          بتأكيد المزايدة، يقرّ المزايد بموافقته على شروط المزاد، ويقرّ بأن المزايدة التي يقدمها ملزمة له في حال فوزه، ويلتزم بالسعر النهائي الذي ترسو عليه المزايدة وإتمام عملية الشراء وفق شروط المزاد.
+                        </p>
+
+                        <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
                           <input
                             type="checkbox"
                             checked={consentBidder}
                             onChange={(e) => setConsentBidder(e.target.checked)}
-                            className="w-3.5 h-3.5 accent-[#FFC500] rounded mt-0.5 cursor-pointer shrink-0"
+                            className="w-4 h-4 accent-[#16A34A] rounded cursor-pointer"
                           />
-                          <span className="text-[10px] text-gray-300 leading-snug">
-                            <b>تنبيه إلزامي:</b> بتأكيد المزايدة، يقرّ المزايد بموافقته على شروط المزاد، وأن مزايدته ملزمة له ويلتزم بإتمام الشراء في حال فوزه.
+                          <span className="text-[11px] font-bold text-white">
+                            أوافق وأؤكد المزايدة
                           </span>
                         </label>
                       </div>
+
+                      {/* زر تأكيد المزايدة كامل العرض */}
+                      <button
+                        type="submit"
+                        disabled={!consentBidder}
+                        className="w-full py-3 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
+                      >
+                        <Gavel size={15} />
+                        <span>تأكيد المزايدة</span>
+                      </button>
                     </form>
                   )}
                 </div>
               )}
 
+              {/* المحادثة الخاصة وتأكيد إتمام الصفقة */}
               {(selectedListing.status === 'deal_pending_confirmation' || selectedListing.status === 'deal_confirmed_commission_due' || selectedListing.status === 'deal_completed' || selectedListing.status === 'dispute_opened') && (
                 <div className="p-3.5 rounded-xl bg-[#161619] border border-[#27272A] space-y-3">
                   <div className="flex justify-between items-center border-b border-[#27272A] pb-2">
@@ -593,7 +657,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     )}
                   </div>
 
-                  <div className="space-y-1.5 max-h-40 overflow-y-auto p-2 bg-[#0F0F12] rounded-xl border border-[#27272A] text-xs">
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto p-2 bg-[#0F0F12] rounded-xl border border-[#27272A] text-xs no-scrollbar">
                     {selectedListing.messages && selectedListing.messages.length > 0 ? (
                       selectedListing.messages.map((m) => (
                         <div key={m.id} className="p-2 rounded-lg bg-[#18181C] space-y-0.5">
@@ -617,7 +681,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                       value={chatMessage}
                       onChange={(e) => setChatMessage(e.target.value)}
                       placeholder="اكتب تفاصيل الاتفاق أو موعد التسليم..."
-                      className="flex-1 bg-[#0F0F12] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
+                      className="flex-1 bg-[#0F0F12] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]"
                     />
                     <button type="submit" className="p-2 bg-[#FFC500] text-black rounded-xl font-bold">
                       <Send size={14} />
@@ -653,6 +717,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   </div>
                 </div>
               )}
+
             </div>
           </div>
         </div>
@@ -669,7 +734,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               <div key={item.id} className="bg-[#0F0F12] rounded-2xl border border-[#222226] hover:border-[#FFC500]/40 overflow-hidden shadow-md transition-all flex flex-col justify-between">
                 <div className="h-40 w-full relative bg-[#161619]">
                   <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover" />
-                  <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-md text-[9px] font-black ${item.saleType === 'fixed_price' ? 'bg-[#2EA5FF] text-white' : 'bg-[#DC2626] text-white'}`}>
+                  <span className={`absolute top-2 right-2 px-2.5 py-0.5 rounded-md text-[9px] font-black ${item.saleType === 'fixed_price' ? 'bg-[#2EA5FF] text-white' : 'bg-[#DC2626] text-white'}`}>
                     {item.saleType === 'fixed_price' ? 'سعر ثابت' : 'مزاد مباشر'}
                   </span>
                   {item.saleType === 'auction' && item.timeLeftSeconds !== undefined && (
@@ -708,10 +773,10 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* نافذة إضافة معروض */}
+      {/* نافذة إضافة معروض جديد مع الإقرار الأخضر الشفاف */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer" onClick={() => setIsAddModalOpen(false)}>
-          <div className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-4 sm:p-5 space-y-3 max-h-[90vh] overflow-y-auto cursor-default shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-4 sm:p-5 space-y-3 max-h-[90vh] overflow-y-auto no-scrollbar cursor-default shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center border-b border-[#222226] pb-2">
               <h3 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5"><Plus size={15} className="text-[#FFC500]" /> إضافة معروض جديد</h3>
               <button onClick={() => setIsAddModalOpen(false)} className="px-2.5 py-1 rounded-lg bg-[#18181C] text-xs font-bold text-gray-300 hover:text-white cursor-pointer">رجوع</button>
@@ -789,20 +854,55 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 </div>
               </div>
 
+              {/* صور المعروض (1-6) */}
+              <div>
+                <label className="text-[11px] text-gray-400 block mb-1">صور المعروض* (من 1 إلى 6 صور)</label>
+                <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImagesUpload} className="hidden" />
+                <div className="flex gap-2 items-center flex-wrap">
+                  {uploadedImages.length < 6 && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="py-2 px-3 rounded-xl bg-[#18181C] border border-dashed border-[#FFC500]/60 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:border-[#FFC500]"
+                    >
+                      <Upload size={14} className="text-[#FFC500]" />
+                      <span>اختيار صور من الهاتف</span>
+                    </button>
+                  )}
+
+                  {uploadedImages.map((img, idx) => (
+                    <div key={idx} className="relative w-12 h-12 rounded-lg overflow-hidden border border-[#27272A] shrink-0">
+                      <img src={img} alt="upload" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setUploadedImages(prev => prev.filter((_, i) => i !== idx))}
+                        className="absolute top-0.5 right-0.5 p-0.5 rounded bg-red-600 text-white text-[9px]"
+                      >
+                        <Trash2 size={10} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <label className="text-[11px] text-gray-400 block mb-1">وصف المعروض*</label>
                 <textarea rows={2} required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="اكتب مواصفات وتفاصيل المعروض..." className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none" />
               </div>
 
-              <div className="p-3 rounded-xl bg-[#18181C] border border-[#27272A] space-y-2">
-                <div className="flex items-center gap-1.5 text-[#FFC500] font-bold text-[11px]"><ShieldCheck size={14} /><span>تنبيه إلزامي:</span></div>
-                <p className="text-[10px] text-gray-300 leading-relaxed">
+              {/* الإقرار الأول الإلزامي بخلفية خضراء شفافة */}
+              <div className="p-3.5 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/40 space-y-2 text-right">
+                <div className="flex items-center gap-1.5 text-[#16A34A] font-bold text-xs">
+                  <ShieldCheck size={16} />
+                  <span>تنبيه إلزامي:</span>
+                </div>
+                <p className="text-[11px] text-emerald-100 leading-relaxed">
                   {saleType === 'fixed_price'
                     ? 'بتقديم هذا العرض، يقرّ صاحب العرض بصحة جميع البيانات والسعر المحدد، ويوافق على شروط وساطة يمن ريتغ، ويلتزم بإتمام البيع وسداد عمولة يمن ريتغ البالغة (20,000 ريال يمني) عند إتمام الصفقة.'
                     : 'بتقديم المعروض للمزاد، يقرّ صاحب المزاد بصحة جميع البيانات والسعر الابتدائي، ويوافق على نظام المزايدة، ويلتزم بسداد عمولة يمن ريتغ المستحقة عند إتمام الصفقة.'}
                 </p>
                 <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
-                  <input type="checkbox" checked={consentListing} onChange={(e) => setConsentListing(e.target.checked)} className="w-4 h-4 accent-[#FFC500] rounded cursor-pointer" />
+                  <input type="checkbox" checked={consentListing} onChange={(e) => setConsentListing(e.target.checked)} className="w-4 h-4 accent-[#16A34A] rounded cursor-pointer" />
                   <span className="text-[11px] font-bold text-white">أوافق على الإقرار والشروط المعتمدة</span>
                 </label>
               </div>
@@ -816,10 +916,10 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* نافذة تأكيد الشراء بالسعر الثابت */}
+      {/* نافذة تأكيد الشراء بالسعر الثابت مع الإقرار الأخضر الشفاف */}
       {isBuyModalOpen && selectedListing && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer" onClick={() => setIsBuyModalOpen(false)}>
-          <div className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-4 space-y-3 shadow-2xl cursor-default" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-4 space-y-3 shadow-2xl cursor-default no-scrollbar" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center border-b border-[#222226] pb-2">
               <h3 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5"><ShoppingCart size={15} className="text-[#2EA5FF]" /> تأكيد الشراء والتواصل مع البائع</h3>
               <button onClick={() => setIsBuyModalOpen(false)} className="text-gray-400 hover:text-white"><X size={16} /></button>
@@ -837,14 +937,17 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 <label className="text-[11px] text-gray-400 block mb-1">رقم الهاتف للتواصل*</label>
                 <input type="tel" required placeholder="777000111" value={buyerPhone} onChange={(e) => setBuyerPhone(e.target.value)} className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-[#FFC500]" />
               </div>
-              <div className="p-3 rounded-xl bg-[#18181C] border border-[#27272A] space-y-2">
-                <div className="flex items-center gap-1.5 text-[#2EA5FF] font-bold text-[11px]"><ShieldCheck size={14} /><span>تنبيه إلزامي:</span></div>
-                <p className="text-[10px] text-gray-300 leading-relaxed">بتأكيد الشراء، يقرّ المشتري بموافقته على السعر المعلن وشروط البيع، ويلتزم بإتمام عملية الشراء وفق الاتفاق مع صاحب العرض.</p>
+
+              {/* الإقرار الثاني للمشتري بخلفية خضراء شفافة */}
+              <div className="p-3.5 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/40 space-y-1.5 text-right">
+                <div className="flex items-center gap-1.5 text-[#16A34A] font-bold text-xs"><ShieldCheck size={15} /><span>تنبيه إلزامي:</span></div>
+                <p className="text-[10.5px] text-emerald-100 leading-relaxed">بتأكيد الشراء، يقرّ المشتري بموافقته على السعر المعلن وشروط البيع، ويلتزم بإتمام عملية الشراء وفق الاتفاق مع صاحب العرض.</p>
                 <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
-                  <input type="checkbox" checked={consentBuyerPurchase} onChange={(e) => setConsentBuyerPurchase(e.target.checked)} className="w-4 h-4 accent-[#2EA5FF] rounded cursor-pointer" />
+                  <input type="checkbox" checked={consentBuyerPurchase} onChange={(e) => setConsentBuyerPurchase(e.target.checked)} className="w-4 h-4 accent-[#16A34A] rounded cursor-pointer" />
                   <span className="text-[11px] font-bold text-white">أوافق وأؤكد الشراء</span>
                 </label>
               </div>
+
               <div className="flex justify-end gap-2 pt-1">
                 <button type="button" onClick={() => setIsBuyModalOpen(false)} className="px-4 py-2 rounded-xl bg-[#18181C] text-gray-300 text-xs font-bold">إلغاء</button>
                 <button type="submit" disabled={!consentBuyerPurchase} className="px-5 py-2 rounded-xl bg-[#2EA5FF] text-white text-xs font-black hover:bg-[#2EA5FF]/90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md">تأكيد وفتح المحادثة</button>
@@ -854,21 +957,21 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* نافذة تأكيد إتمام الصفقة واستحقاق العمولة */}
+      {/* نافذة تأكيد إتمام الصفقة واستحقاق العمولة مع الإقرار الأخضر الشفاف */}
       {isConfirmDealModalOpen && selectedListing && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer" onClick={() => setIsConfirmDealModalOpen(false)}>
-          <div className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-4 space-y-3 shadow-2xl cursor-default" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-4 space-y-3 shadow-2xl cursor-default no-scrollbar" onClick={e => e.stopPropagation()}>
             <h3 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 border-b border-[#222226] pb-2">
               <CheckCircle2 size={16} className="text-[#16A34A]" /> إقرار وتأكيد إتمام الصفقة
             </h3>
-            <div className="p-3 rounded-xl bg-[#18181C] border border-[#27272A] space-y-2 text-xs">
-              <div className="flex items-center gap-1.5 text-[#FFC500] font-bold text-[11px]"><ShieldCheck size={14} /><span>إقرار إلزامي لصاحب العرض/المزاد:</span></div>
-              <p className="text-[10px] text-gray-300 leading-relaxed">
+            <div className="p-3.5 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/40 space-y-2 text-right text-xs">
+              <div className="flex items-center gap-1.5 text-[#16A34A] font-bold text-xs"><ShieldCheck size={15} /><span>إقرار إلزامي لصاحب العرض/المزاد:</span></div>
+              <p className="text-[10.5px] text-emerald-100 leading-relaxed">
                 {selectedListing.saleType === 'fixed_price'
                   ? 'أقرّ بأن عملية البيع قد تمت، وأنني استلمت قيمة المعروض وفق الاتفاق مع المشتري، وألتزم بسداد عمولة يمن ريتغ البالغة (20,000 ريال يمني) وفق بيانات الدفع المعتمدة.'
                   : 'أقرّ بأن المزاد قد انتهى بفائز وأن الصفقة قد تمت، وألتزم بسداد عمولة يمن ريتغ المستحقة عند إتمام الصفقة.'}
               </p>
-              <label className="flex items-center gap-2 pt-2 cursor-pointer select-none border-t border-[#27272A]">
+              <label className="flex items-center gap-2 pt-2 cursor-pointer select-none border-t border-emerald-500/30">
                 <input type="checkbox" checked={consentDealCompletion} onChange={(e) => setConsentDealCompletion(e.target.checked)} className="w-4 h-4 accent-[#16A34A] rounded cursor-pointer" />
                 <span className="text-[11px] font-bold text-white">أقرّ وألتزم بسداد العمولة</span>
               </label>
@@ -881,10 +984,10 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* نافذة سداد العمولة المعتمدة */}
+      {/* نافذة سداد العمولة المعتمدة مع الإقرار الأخضر الشفاف */}
       {isPaymentModalOpen && selectedListing && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer" onClick={() => setIsPaymentModalOpen(false)}>
-          <div className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-4 sm:p-5 space-y-3 shadow-2xl cursor-default max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-4 sm:p-5 space-y-3 shadow-2xl cursor-default max-h-[90vh] overflow-y-auto no-scrollbar" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center border-b border-[#222226] pb-2">
               <h3 className="text-xs sm:text-sm font-bold text-[#FFC500] flex items-center gap-1.5"><CreditCard size={15} /> سداد عمولة وساطة يمن ريتغ</h3>
               <button onClick={() => setIsPaymentModalOpen(false)} className="text-gray-400 hover:text-white"><X size={16} /></button>
@@ -907,14 +1010,17 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 <label className="text-[11px] text-gray-400 block mb-1">رقم عملية التحويل / الإشعار*</label>
                 <input type="text" required placeholder="أدخل رقم الحوالة..." value={transferNumber} onChange={(e) => setTransferNumber(e.target.value)} className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-[#FFC500]" />
               </div>
-              <div className="p-3 rounded-xl bg-[#18181C] border border-[#27272A] space-y-2">
-                <div className="flex items-center gap-1.5 text-[#FFC500] font-bold text-[11px]"><ShieldCheck size={14} /><span>إقرار إلزامي:</span></div>
-                <p className="text-[10px] text-gray-300 leading-relaxed">أقرّ بأن بيانات الدفع وإثبات التحويل المقدم صحيحان، وأتحمل مسؤولية صحة المعلومات المقدمة.</p>
+
+              {/* الإقرار الرابع بخلفية خضراء شفافة */}
+              <div className="p-3.5 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/40 space-y-1.5 text-right">
+                <div className="flex items-center gap-1.5 text-[#16A34A] font-bold text-xs"><ShieldCheck size={15} /><span>إقرار إلزامي:</span></div>
+                <p className="text-[10.5px] text-emerald-100 leading-relaxed">أقرّ بأن بيانات الدفع وإثبات التحويل المقدم صحيحان، وأتحمل مسؤولية صحة المعلومات المقدمة.</p>
                 <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
-                  <input type="checkbox" checked={consentPaymentProof} onChange={(e) => setConsentPaymentProof(e.target.checked)} className="w-4 h-4 accent-[#FFC500] rounded cursor-pointer" />
+                  <input type="checkbox" checked={consentPaymentProof} onChange={(e) => setConsentPaymentProof(e.target.checked)} className="w-4 h-4 accent-[#16A34A] rounded cursor-pointer" />
                   <span className="text-[11px] font-bold text-white">أقرّ بصحة البيانات وإثبات الدفع</span>
                 </label>
               </div>
+
               <div className="flex justify-end gap-2 pt-1">
                 <button type="button" onClick={() => setIsPaymentModalOpen(false)} className="px-4 py-2 rounded-xl bg-[#18181C] text-gray-300 text-xs font-bold">إلغاء</button>
                 <button type="submit" disabled={!consentPaymentProof} className="px-5 py-2 rounded-xl bg-[#FFC500] text-black text-xs font-black hover:bg-[#FFC500]/90 disabled:opacity-40 shadow-md">إرسال للتحقق</button>
@@ -927,7 +1033,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       {/* نافذة فتح نزاع */}
       {isDisputeModalOpen && selectedListing && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer" onClick={() => setIsDisputeModalOpen(false)}>
-          <div className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-4 space-y-3 shadow-2xl cursor-default" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-4 space-y-3 shadow-2xl cursor-default no-scrollbar" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center border-b border-[#222226] pb-2">
               <h3 className="text-xs sm:text-sm font-bold text-[#DC2626] flex items-center gap-1.5"><AlertTriangle size={15} /> فتح نزاع في الصفقة</h3>
               <button onClick={() => setIsDisputeModalOpen(false)} className="text-gray-400 hover:text-white"><X size={16} /></button>
@@ -956,7 +1062,7 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* عارض الصور باللمس */}
+      {/* عارض الصور باللمس مع إغلاق بالنقر في المساحة الفارغة */}
       {isLightboxOpen && selectedListing && (
         <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col justify-between p-4 select-none cursor-pointer" onClick={() => setIsLightboxOpen(false)}>
           <div className="flex justify-between items-center pt-2" onClick={e => e.stopPropagation()}>
