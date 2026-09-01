@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   Landmark, Coins, Wallet, Search, 
   MapPin, Phone, Globe, ArrowRight, 
-  Plus, Building2, ShieldCheck, ChevronRight
+  Plus, Building2, ShieldCheck, Star, ChevronLeft
 } from 'lucide-react';
 import { AdBanner } from '../components/common/AdBanner';
 import { YRBadge, BadgeType } from '../components/common/YRBadge';
@@ -11,12 +11,12 @@ import { BankProfileView, BankProfileData } from '../components/banks/BankProfil
 const FINANCIAL_ENTITIES: BankProfileData[] = [
   {
     id: 'bank-1',
-    name: 'بنك الكريمي للتمويل الأصغر الإسلامي',
+    name: 'بنك الكريمي',
     type: 'bank',
-    categoryLabel: 'بنوك ومصارف',
+    categoryLabel: 'بنك ومصرف',
     badgeType: 'gold',
-    city: 'صنعاء — المركز الرئيسي',
-    address: 'شارع حدة — جوار تقاطع الرويشان',
+    city: 'صنعاء — حدة',
+    address: 'شارع حدة — تقاطع الرويشان',
     branchesCount: 185,
     atmsCount: 220,
     rating: 4.9,
@@ -25,7 +25,9 @@ const FINANCIAL_ENTITIES: BankProfileData[] = [
     whatsapp: '967777000111',
     email: 'info@kuraimibank.com',
     website: 'https://kuraimibank.com',
-    services: ['حسابات جارية وتوفير إسلامية', 'تطبيق كريمي جوال المالي', 'حوالات مُميّز الفورية', 'تمويل مشاريع صغيرة وأصغر', 'صراف آلي واسع الانتشار'],
+    logoImage: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=200&auto=format&fit=crop&q=85',
+    coverImage: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=1400&auto=format&fit=crop&q=85',
+    services: ['حسابات جارية وتوفير إسلامية', 'تطبيق كريمي جوال', 'حوالات مُميّز الفورية', 'تمويل مشاريع صغيرة', 'صراف آلي واسع الانتشار'],
     usdBuy: 535.0,
     usdSell: 538.0,
     sarBuy: 140.4,
@@ -33,16 +35,15 @@ const FINANCIAL_ENTITIES: BankProfileData[] = [
     galleryImages: [
       'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=900&auto=format&fit=crop&q=85',
       'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=900&auto=format&fit=crop&q=85',
-      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&auto=format&fit=crop&q=85',
-      'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=900&auto=format&fit=crop&q=85'
+      'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&auto=format&fit=crop&q=85'
     ],
-    description: 'أكبر شبكة فروع وصرافات آلية في الجمهورية اليمنية، رائد الخدمات المالية الرقمية وتطبيق كريمي جوال والتمويل الإسلامي المعتمد.'
+    description: 'أكبر شبكة فروع وصرافات آلية في الجمهورية اليمنية، رائد الخدمات المالية الرقمية والتمويل الإسلامي المعتمد.'
   },
   {
     id: 'bank-2',
-    name: 'بنك التسليف التعاوني والزراعي (CAC Bank)',
+    name: 'بنك التسليف (CAC Bank)',
     type: 'bank',
-    categoryLabel: 'بنوك ومصارف',
+    categoryLabel: 'بنك ومصرف',
     badgeType: 'gold',
     city: 'عدن / صنعاء',
     address: 'شارع الزبيري / المعلا',
@@ -53,6 +54,8 @@ const FINANCIAL_ENTITIES: BankProfileData[] = [
     phone: '8002222',
     whatsapp: '967733987654',
     website: 'https://cacbank.com.ye',
+    logoImage: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=200&auto=format&fit=crop&q=85',
+    coverImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1400&auto=format&fit=crop&q=85',
     services: ['خدمات مصرفية للأفراد والشركات', 'تطبيق كاك بنك موبايل', 'حسابات دولية وسويفت', 'دعم المشاريع التنموية'],
     usdBuy: 534.5,
     usdSell: 538.0,
@@ -62,22 +65,51 @@ const FINANCIAL_ENTITIES: BankProfileData[] = [
       'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=900&auto=format&fit=crop&q=85',
       'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&auto=format&fit=crop&q=85'
     ],
-    description: 'يقدم خدمات مصرفية متطورة للقطاعين العام والخاص، ودعم المبادرات الزراعية والتجارية.'
+    description: 'يقدم خدمات مصرفية متطورة للأفراد والشركات، ودعم المبادرات الزراعية والتجارية.'
+  },
+  {
+    id: 'bank-3',
+    name: 'بنك التضامن',
+    type: 'bank',
+    categoryLabel: 'بنك ومصرف',
+    badgeType: 'gold',
+    city: 'صنعاء — الزبيري',
+    address: 'شارع الزبيري الرئيسي',
+    branchesCount: 60,
+    atmsCount: 75,
+    rating: 4.8,
+    reviewsCount: 160,
+    phone: '8005555',
+    whatsapp: '967711223344',
+    website: 'https://tadhamonbank.com',
+    logoImage: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=200&auto=format&fit=crop&q=85',
+    coverImage: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=1400&auto=format&fit=crop&q=85',
+    services: ['محفظة محفظتي الرقمية', 'اعتمادات مستندية', 'حسابات استثمار إسلامي', 'تحويلات ويسترن يونيون'],
+    usdBuy: 535.0,
+    usdSell: 538.5,
+    sarBuy: 140.5,
+    sarSell: 140.8,
+    galleryImages: [
+      'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=900&auto=format&fit=crop&q=85'
+    ],
+    description: 'أحد أكبر البنوك الإسلامية في اليمن مع شراكات دولية وتحويلات مالية عالمية موثوقة.'
   },
   {
     id: 'wallet-1',
-    name: 'محفظة جوالي (Jawali Wallet)',
+    name: 'محفظة جوالي',
     type: 'wallet',
-    categoryLabel: 'محافظ إلكترونية',
+    categoryLabel: 'محفظة إلكترونية',
     badgeType: 'blue',
     city: 'كل المحافظات',
-    address: 'خدمة رقمية واسعة الانتشار',
+    address: 'نقاط وكلاء في كل المحافظات',
     branchesCount: 1200,
     rating: 4.7,
     reviewsCount: 450,
     phone: '8000000',
     website: 'https://jawali.ye',
-    services: ['دفع فواتير الماء والكهرباء والإنترنت', 'شحن رصيد الموبايل', 'تحويل فوري بدون حساب بنكي', 'شراء من المتاجر عبر QR'],
+    logoImage: 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=200&auto=format&fit=crop&q=85',
+    coverImage: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=1400&auto=format&fit=crop&q=85',
+    services: ['دفع فواتير الخدمات', 'شحن رصيد الموبايل', 'تحويل فوري بدون حساب بنكي', 'شراء عبر QR'],
     usdBuy: 534.8,
     usdSell: 537.9,
     sarBuy: 140.4,
@@ -89,9 +121,9 @@ const FINANCIAL_ENTITIES: BankProfileData[] = [
   },
   {
     id: 'exchange-1',
-    name: 'شركة القطيبي للصرافة والتحويلات',
+    name: 'شركة القطيبي للصرافة',
     type: 'exchange',
-    categoryLabel: 'شركات الصرافة',
+    categoryLabel: 'شركة صرافة',
     badgeType: 'gold',
     city: 'عدن — الشيخ عثمان',
     address: 'جولة القاهرة',
@@ -100,7 +132,9 @@ const FINANCIAL_ENTITIES: BankProfileData[] = [
     reviewsCount: 140,
     phone: '8004040',
     website: 'https://al-qutaibi.com',
-    services: ['شبكة القطيبي إكسبرس', 'صرافة العملات الأجنبية', 'حوالات داخلية وخارجية', 'تطبيق القطيبي موبايل'],
+    logoImage: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=200&auto=format&fit=crop&q=85',
+    coverImage: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=1400&auto=format&fit=crop&q=85',
+    services: ['شبكة القطيبي إكسبرس', 'صرافة العملات الأجنبية', 'حوالات داخلية وخارجية', 'تطبيق القطيبي'],
     usdBuy: 1910.0,
     usdSell: 1925.0,
     sarBuy: 501.5,
@@ -109,6 +143,31 @@ const FINANCIAL_ENTITIES: BankProfileData[] = [
       'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=900&auto=format&fit=crop&q=85'
     ],
     description: 'شبكة صرافة وتحويلات واسعة الانتشار تتميز بالسرعة والانتشار في المحافظات الجنوبية والشرقية.'
+  },
+  {
+    id: 'exchange-2',
+    name: 'شركة النجم للصرافة',
+    type: 'exchange',
+    categoryLabel: 'شركة صرافة',
+    badgeType: 'blue',
+    city: 'صنعاء — الدائري',
+    address: 'شارع الدائري الغربي',
+    branchesCount: 90,
+    rating: 4.7,
+    reviewsCount: 110,
+    phone: '8009999',
+    website: 'https://alnajm.ye',
+    logoImage: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=200&auto=format&fit=crop&q=85',
+    coverImage: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=1400&auto=format&fit=crop&q=85',
+    services: ['شبكة النجم إكسبرس', 'صرف العملات', 'حوالات تجارية فورية'],
+    usdBuy: 535.0,
+    usdSell: 538.0,
+    sarBuy: 140.4,
+    sarSell: 140.7,
+    galleryImages: [
+      'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=900&auto=format&fit=crop&q=85'
+    ],
+    description: 'شبكة تحويلات محلية تغطي كافة مديريات ومناطق الجمهورية اليمنية.'
   }
 ];
 
@@ -128,21 +187,29 @@ export const BanksAndWalletsPage: React.FC<{ onNavigate?: (path: string) => void
     });
   }, [activeTab, selectedCity, searchQuery]);
 
-  // إذا تم اختيار بنك، يتم عرض صفحة البنك الكاملة للزائر
+  const handleOpenBank = (bank: BankProfileData) => {
+    setSelectedBank(bank);
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  };
+
+  // إذا تم اختيار بنك، يتم فتح صفحة البنك الكاملة للزائر
   if (selectedBank) {
     return (
       <BankProfileView
         bank={selectedBank}
-        onBack={() => setSelectedBank(null)}
+        onBack={() => {
+          setSelectedBank(null);
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        }}
         onNavigateAd={() => onNavigate('ads')}
       />
     );
   }
 
   return (
-    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3.5 font-['Cairo',sans-serif] text-white">
+    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Cairo',sans-serif] text-white">
       
-      {/* 1. إعلان البانر المخصص #8 */}
+      {/* 1. إعلان البانر #8 */}
       <AdBanner placementId="8" className="mb-1" />
 
       {/* 2. رأس الصفحة الرسمي */}
@@ -156,7 +223,7 @@ export const BanksAndWalletsPage: React.FC<{ onNavigate?: (path: string) => void
               البنوك والصرافة والمحافظ
             </h1>
             <span className="text-[9.5px] text-[#9CA3AF] mt-0.5 block">
-              دليل البنوك اليمنية، شركات الصرافة المعتمدة، والمحافظ الرقمية
+              دليل البنوك اليمنية، شركات الصرافة، والمحافظ الرقمية
             </span>
           </div>
         </div>
@@ -194,10 +261,10 @@ export const BanksAndWalletsPage: React.FC<{ onNavigate?: (path: string) => void
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all ${
+                className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   activeTab === tab.id 
-                    ? 'bg-[#FFC500] text-black border-[#FFC500]' 
-                    : 'bg-[#18181C] text-gray-400 border-[#27272A]'
+                    ? 'bg-[#FFC500] text-black shadow-md shadow-[#FFC500]/20' 
+                    : 'bg-[#18181C] text-gray-400 border border-[#27272A]'
                 }`}
               >
                 {tab.label}
@@ -219,52 +286,72 @@ export const BanksAndWalletsPage: React.FC<{ onNavigate?: (path: string) => void
         </div>
       </div>
 
-      {/* 4. شبكة كروت البنوك والمحافظ */}
+      {/* 4. بطاقات البنوك الفاخرة — الشعار + الاسم المباشر مع الشارة الملتصقة */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
         {filteredEntities.map((item) => (
           <div
             key={item.id}
-            onClick={() => handleOpenEntity(item)}
-            className="bg-[#0F0F12] rounded-2xl border border-[#222226] hover:border-[#FFC500]/50 p-3.5 space-y-2.5 shadow-md transition-all flex flex-col justify-between cursor-pointer active:scale-98"
+            onClick={() => handleOpenBank(item)}
+            className="bg-[#0F0F12] rounded-2xl border border-[#222226] hover:border-[#FFC500]/50 p-3 space-y-2.5 shadow-md transition-all flex flex-col justify-between cursor-pointer active:scale-98"
           >
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 rounded-md bg-[#FFC500]/15 text-[#FFC500] text-[9.5px] font-bold">
-                  {item.categoryLabel}
-                </span>
-                <YRBadge type={item.badgeType} size={16} />
+            <div className="space-y-2">
+              
+              {/* رأس البطاقة: الشعار + الاسم ومعه الشارة مباشرة + الفئة */}
+              <div className="flex items-center gap-2.5">
+                {/* شعار البنك الرسمي المدمج */}
+                <div className="w-12 h-12 rounded-xl bg-[#18181C] border border-[#27272A] p-1 shrink-0 overflow-hidden flex items-center justify-center">
+                  <img 
+                    src={item.logoImage || 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=100&auto=format&fit=crop&q=80'} 
+                    alt={item.name} 
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  {/* اسم البنك ومعه الشارة ملتصقة مباشرة */}
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="text-xs sm:text-sm font-black text-white truncate">
+                      {item.name}
+                    </h3>
+                    <YRBadge type={item.badgeType} size={16} />
+                  </div>
+
+                  <div className="flex items-center gap-2 text-[9.5px] text-gray-400 mt-0.5">
+                    <span className="px-1.5 py-0.2 rounded bg-[#FFC500]/10 text-[#FFC500] font-bold">
+                      {item.categoryLabel}
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-0.5 text-gray-300">
+                      <MapPin size={10} className="text-[#FFC500]" /> {item.city.split('—')[0]}
+                    </span>
+                    <span>•</span>
+                    <span className="text-[#FFC500] font-bold">★ {item.rating.toFixed(1)}</span>
+                  </div>
+                </div>
               </div>
 
-              <h3 className="text-xs sm:text-sm font-bold text-white leading-snug">
-                {item.name}
-              </h3>
-
-              <div className="flex items-center gap-2 text-[10px] text-gray-400 font-mono">
-                <span className="flex items-center gap-1 text-gray-300">
-                  <Building2 size={11} className="text-[#FFC500]" /> {item.branchesCount} فرع
-                </span>
-                <span>•</span>
-                <span className="text-gray-300">{item.city.split('—')[0]}</span>
-                <span>•</span>
-                <span className="text-[#FFC500] font-bold">★ {item.rating.toFixed(1)}</span>
-              </div>
-
-              {/* أسعار الصرف السريعة */}
+              {/* أسعار الصرف السريعة لدى الجهة */}
               {(item.usdBuy || item.sarBuy) && (
                 <div className="bg-[#18181C] p-2 rounded-xl border border-[#27272A] font-mono text-[10px] space-y-0.5">
                   {item.usdBuy && (
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-baseline">
                       <span className="text-gray-400 font-['Cairo']">الدولار:</span>
-                      <div>
-                        <span className="text-[#16A34A] font-bold">{item.usdBuy}</span> / <span className="text-[#DC2626] font-bold">{item.usdSell}</span> <span className="text-[#FFC500] font-black text-[9px]">﷼</span>
+                      <div className="flex items-baseline gap-0.5">
+                        <span className="text-[#16A34A] font-bold">{item.usdBuy}</span>
+                        <span>/</span>
+                        <span className="text-[#DC2626] font-bold">{item.usdSell}</span>
+                        <span className="text-[#FFC500] font-black text-[9px]">﷼</span>
                       </div>
                     </div>
                   )}
                   {item.sarBuy && (
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-baseline">
                       <span className="text-gray-400 font-['Cairo']">السعودي:</span>
-                      <div>
-                        <span className="text-[#16A34A] font-bold">{item.sarBuy}</span> / <span className="text-[#DC2626] font-bold">{item.sarSell}</span> <span className="text-[#FFC500] font-black text-[9px]">﷼</span>
+                      <div className="flex items-baseline gap-0.5">
+                        <span className="text-[#16A34A] font-bold">{item.sarBuy}</span>
+                        <span>/</span>
+                        <span className="text-[#DC2626] font-bold">{item.sarSell}</span>
+                        <span className="text-[#FFC500] font-black text-[9px]">﷼</span>
                       </div>
                     </div>
                   )}
@@ -272,10 +359,25 @@ export const BanksAndWalletsPage: React.FC<{ onNavigate?: (path: string) => void
               )}
             </div>
 
-            <div className="pt-2 border-t border-[#1F2937] flex items-center justify-between text-xs text-[#FFC500] font-bold">
-              <span>عرض صفحة البنك والفروع والخدمات</span>
-              <ChevronRight size={14} className="rtl:rotate-180" />
+            {/* زر الإجراء المختصر والأنيق */}
+            <div className="pt-2 border-t border-[#1F2937] flex items-center justify-between">
+              <span className="text-[10.5px] text-gray-400 font-mono">
+                {item.branchesCount} فرع معتمد
+              </span>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenBank(item);
+                }}
+                className="px-3 py-1.5 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+              >
+                <span>عرض التفاصيل</span>
+                <ArrowRight size={12} className="rtl:rotate-180" />
+              </button>
             </div>
+
           </div>
         ))}
       </div>
