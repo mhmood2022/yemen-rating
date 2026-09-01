@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { 
   Briefcase, MapPin, ArrowRight, Plus, CheckCircle2, 
-  User, X, Upload, Trash2, ShieldCheck, Clock, 
-  FileText, Check, AlertCircle, Sparkles, Building2, Search
+  User, X, Upload, Trash2, ShieldCheck, 
+  FileText, Check, Search, AlertCircle
 } from 'lucide-react';
 import { AdBanner } from '../common/AdBanner';
 
@@ -136,7 +136,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [selectedJob, setSelectedJob] = useState<JobItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // نافذة نشر وظيفة
+  // نافذة نشر وظيفة (صاحب العمل)
   const [isPostJobModalOpen, setIsPostJobModalOpen] = useState(false);
   const [postEmployerName, setPostEmployerName] = useState('');
   const [postEmployerPhone, setPostEmployerPhone] = useState('');
@@ -153,7 +153,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [postRequirements, setPostRequirements] = useState('');
   const [agreedToEmployerPolicy, setAgreedToEmployerPolicy] = useState(false);
 
-  // نافذة التقديم
+  // نافذة التقديم (الباحث عن عمل)
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [applicantName, setApplicantName] = useState('');
   const [applicantPhone, setApplicantPhone] = useState('');
@@ -187,7 +187,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const handlePostJobSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidYemenPhone(postEmployerPhone)) {
-      setToastMessage('يرجى إدخال رقم هاتف للتواصل مكون من 9 أرقام');
+      setToastMessage('يرجى إدخال رقم هاتف صحيح مكون من 9 أرقام');
       setTimeout(() => setToastMessage(null), 3500);
       return;
     }
@@ -225,14 +225,14 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setPostDescription('');
     setPostRequirements('');
     setAgreedToEmployerPolicy(false);
-    setToastMessage('تم إرسال الوظيفة بنجاح وستقوم يمن ريتنغ بتوفير الكوادر لك');
+    setToastMessage('تم إرسال طلب التوظيف بنجاح وستوفر لك يمن ريتنغ الكوادر المناسبة');
     setTimeout(() => setToastMessage(null), 4000);
   };
 
   const handleApplySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidYemenPhone(applicantPhone)) {
-      setToastMessage('يرجى إدخال رقم هاتف صحيح مكون من 9 أرقام');
+      setToastMessage('يرجى إدخال رقم هاتف للتواصل مكون من 9 أرقام');
       setTimeout(() => setToastMessage(null), 3500);
       return;
     }
@@ -248,7 +248,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     setApplicantSummary('');
     setCvFileName('');
     setAgreedToApplicantPolicy(false);
-    setToastMessage('تم استلام طلبك وسيرتك الذاتية بنجاح، وسيتم التنسيق معك');
+    setToastMessage('تم استلام طلبك وسيرتك الذاتية بنجاح، وسيتم إشعارك عند القبول');
     setTimeout(() => setToastMessage(null), 4000);
   };
 
@@ -305,19 +305,20 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       </div>
 
       {toastMessage && (
-        <div className="p-3 rounded-xl bg-[#16A34A]/20 border border-[#16A34A] text-white text-xs font-bold flex items-center gap-2">
+        <div className="p-3 rounded-xl bg-[#16A34A]/20 border border-[#16A34A] text-white text-xs font-bold flex items-center gap-2 animate-fade-in">
           <CheckCircle2 size={16} className="text-[#16A34A] shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* ============================================================
-          عرض تفاصيل الوظيفة والتقديم
+          عرض تفاصيل الوظيفة والتقديم الآمن
           ============================================================ */}
       {selectedJob ? (
         <div className="space-y-3">
           <div className="bg-[#0F0F12] rounded-2xl border border-[#222226] p-4 sm:p-5 space-y-4 shadow-xl">
             
+            {/* رأس الوظيفة */}
             <div className="border-b border-[#1F2937] pb-3 space-y-2">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
@@ -346,6 +347,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </div>
             </div>
 
+            {/* شبكة المواصفات */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-center">
               <div className="p-2.5 rounded-xl bg-[#161619] border border-[#27272A]">
                 <span className="text-[9px] text-[#9CA3AF] font-['Cairo'] block">الخبرة المطلوبة</span>
@@ -365,6 +367,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               </div>
             </div>
 
+            {/* الوصف والمتطلبات */}
             <div className="space-y-3 pt-1">
               <div className="space-y-1">
                 <h3 className="text-xs font-bold text-white">الوصف الوظيفي:</h3>
@@ -388,18 +391,11 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
               )}
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#161619] border border-[#27272A] space-y-2">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-white">
-                <ShieldCheck size={15} className="text-[#16A34A]" />
-                <span>التقديم والمطابقة الذكية عبر وساطة يمن ريتنغ:</span>
-              </div>
-              <p className="text-[10px] text-gray-400 leading-relaxed">
-                يتم استقبال السير الذاتية ومطابقة كفاءتك مع متطلبات الوظيفة وتنسيق المقابلات الرسمية مع جهة العمل مباشرة.
-              </p>
-
+            {/* زر فتح نافذة التقديم */}
+            <div className="pt-2">
               <button
                 onClick={() => setIsApplyModalOpen(true)}
-                className="w-full py-3 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all shadow-lg shadow-[#FFC500]/20 flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 mt-2"
+                className="w-full py-3 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all shadow-lg shadow-[#FFC500]/20 flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
               >
                 <FileText size={15} />
                 <span>التقديم على الوظيفة الآن</span>
@@ -414,6 +410,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
            ============================================================ */
         <div className="space-y-3">
           
+          {/* شريط البحث والفلترة */}
           <div className="space-y-2 bg-[#0F0F12] p-2.5 rounded-2xl border border-[#222226]">
             <div className="flex items-center bg-[#18181C] border border-[#27272A] rounded-xl px-2.5 py-1">
               <Search size={14} className="text-gray-400 ml-2 shrink-0" />
@@ -465,6 +462,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             </div>
           </div>
 
+          {/* شبكة كروت الوظائف */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
             {filteredJobs.map((job) => (
               <div
@@ -512,7 +510,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       )}
 
       {/* ============================================================
-          نافذة نشر وظيفة (أصحاب العمل)
+          نافذة نشر وظيفة جديدة (صاحب العمل) — مع الشرط الإلزامي بخلفية خضراء شفافة
           ============================================================ */}
       {isPostJobModalOpen && (
         <div 
@@ -683,13 +681,14 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 />
               </div>
 
-              <div className="p-3 rounded-xl bg-[#18181C] border border-[#27272A] space-y-2">
-                <div className="flex items-center gap-1.5 text-[#FFC500] font-bold text-[11px]">
-                  <ShieldCheck size={14} />
-                  <span>تنبيه وساطة توظيف يمن ريتنغ:</span>
+              {/* شرط مقدم التوظيف الإلزامي بالخلفية الخضراء الشفافة */}
+              <div className="p-3.5 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/40 space-y-2 text-right">
+                <div className="flex items-center gap-1.5 text-[#16A34A] font-bold text-xs">
+                  <ShieldCheck size={16} />
+                  <span>تنبيه إلزامي:</span>
                 </div>
-                <p className="text-[10px] text-gray-300 leading-relaxed">
-                  ستوفر لك منصة يمن ريتنغ الكوادر المؤهلة وتنسيق المقابلات. تطبق عمولة المنصة المعتمدة تخصم من راتب الشهر الأول عند استقرار ونجاح التوظيف.
+                <p className="text-[11px] text-gray-200 leading-relaxed">
+                  توفر منصة يمن ريتغ خدمة الوساطة والتوظيف للوصول إلى المتقدمين المناسبين، ويتم إشعار صاحب العمل عند قبول المتقدم وبدء عمله. وبتقديم طلب التوظيف، يقرّ صاحب العمل بموافقته على شروط الوساطة، ويلتزم بإبلاغ الموظف وإلزامه بسداد عمولة الوساطة المستحقة للمنصة والبالغة (20,000 ريال يمني) من راتب الشهر الأول، عند إتمام التوظيف وبدء العمل.
                 </p>
 
                 <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
@@ -697,10 +696,10 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     type="checkbox"
                     checked={agreedToEmployerPolicy}
                     onChange={(e) => setAgreedToEmployerPolicy(e.target.checked)}
-                    className="w-4 h-4 accent-[#FFC500] rounded cursor-pointer"
+                    className="w-4 h-4 accent-[#16A34A] rounded cursor-pointer"
                   />
                   <span className="text-[11px] font-bold text-white">
-                    أوافق على سياسة وشروط وساطة توظيف يمن ريتنغ
+                    أوافق على شروط الوساطة وإلزام سداد عمولة المنصة (20,000 ريال يمني)
                   </span>
                 </label>
               </div>
@@ -727,7 +726,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       )}
 
       {/* ============================================================
-          نافذة التقديم على الوظيفة (الباحث عن عمل)
+          نافذة التقديم على الوظيفة (الباحث عن عمل) — مع الشرط الإلزامي بالخلفية الخضراء الشفافة
           ============================================================ */}
       {isApplyModalOpen && selectedJob && (
         <div 
@@ -836,6 +835,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 />
               </div>
 
+              {/* رفع السيرة الذاتية PDF أو صورة */}
               <div>
                 <label className="text-[11px] text-gray-400 block mb-1">السيرة الذاتية (ملف PDF أو صورة الشهادات)</label>
                 <input 
@@ -882,13 +882,14 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                 />
               </div>
 
-              <div className="p-3 rounded-xl bg-[#18181C] border border-[#27272A] space-y-2">
-                <div className="flex items-center gap-1.5 text-[#FFC500] font-bold text-[11px]">
-                  <ShieldCheck size={14} />
-                  <span>تنبيه وساطة توظيف يمن ريتنغ:</span>
+              {/* شرط المتقدم للوظيفة الإلزامي بالخلفية الخضراء الشفافة */}
+              <div className="p-3.5 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/40 space-y-2 text-right">
+                <div className="flex items-center gap-1.5 text-[#16A34A] font-bold text-xs">
+                  <ShieldCheck size={16} />
+                  <span>تنبيه إلزامي :</span>
                 </div>
-                <p className="text-[10px] text-gray-300 leading-relaxed">
-                  ستقوم المنصة بمطابقة سيرتك الذاتية وتنسيق المقابلة وإشعارك بالقبول. تستحق عمولة المنصة المعتمدة من راتب الشهر الأول عند استلام واستقرار الوظيفة بنجاح.
+                <p className="text-[11px] text-gray-200 leading-relaxed">
+                  توفر لك منصة يمن ريتغ خدمة الوساطة والتوظيف، ويتم إشعارك عند حصولك على الوظيفة. بتقديم الطلب، يقرّ المتقدم بموافقته على شروط الوساطة ويلتزم بسداد عمولة الوساطة البالغة (20,000 ريال يمني) من راتب الشهر الأول عند استلام الوظيفة.
                 </p>
 
                 <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
@@ -896,10 +897,10 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                     type="checkbox"
                     checked={agreedToApplicantPolicy}
                     onChange={(e) => setAgreedToApplicantPolicy(e.target.checked)}
-                    className="w-4 h-4 accent-[#FFC500] rounded cursor-pointer"
+                    className="w-4 h-4 accent-[#16A34A] rounded cursor-pointer"
                   />
                   <span className="text-[11px] font-bold text-white">
-                    أوافق على سياسة وشروط وساطة وتوظيف يمن ريتنغ
+                    أوافق على شروط الوساطة والالتزام بسداد العمولة (20,000 ريال يمني)
                   </span>
                 </label>
               </div>
