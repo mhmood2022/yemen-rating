@@ -3,7 +3,7 @@ import {
   Building2, MapPin, Phone, Globe, Mail, 
   MessageCircle, Star, ShieldCheck, ArrowRight, 
   Check, Camera, X, ExternalLink, 
-  Coins, Sparkles, Megaphone, Send, Clock, User
+  Sparkles, Megaphone, Send, Clock, User
 } from 'lucide-react';
 import { YRBadge, BadgeType } from '../common/YRBadge';
 import { AdBanner } from '../common/AdBanner';
@@ -27,10 +27,6 @@ export interface BankProfileData {
   email?: string;
   website?: string;
   services: string[];
-  usdBuy?: number;
-  usdSell?: number;
-  sarBuy?: number;
-  sarSell?: number;
   galleryImages: string[];
   description: string;
 }
@@ -83,8 +79,7 @@ export const BankProfileView: React.FC<{
     : [
         'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=900&auto=format&fit=crop&q=85',
         'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=900&auto=format&fit=crop&q=85',
-        'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&auto=format&fit=crop&q=85',
-        'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=900&auto=format&fit=crop&q=85'
+        'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&auto=format&fit=crop&q=85'
       ];
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -128,40 +123,42 @@ export const BankProfileView: React.FC<{
   };
 
   return (
-    <div dir="rtl" className="max-w-5xl mx-auto px-3 sm:px-4 py-2 space-y-4 font-['Cairo',sans-serif] text-white">
+    <div dir="rtl" className="max-w-5xl mx-auto px-3 sm:px-4 py-2 space-y-3.5 font-['Cairo',sans-serif] text-white">
       
       {/* إعلان البانر #4 */}
       <AdBanner placementId="4" className="mb-1" />
 
-      {/* شريط الرجوع */}
-      <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
+      {/* شريط الرجوع وزر أعلن هنا */}
+      <div className="flex items-center justify-between border-b border-[#1F2937] pb-2">
         <button
           onClick={onBack}
-          className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+          className="px-3 py-1 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
         >
-          <ArrowRight size={14} className="rtl:rotate-180" />
+          <ArrowRight size={13} className="rtl:rotate-180" />
           <span>الرجوع للبنوك والمحافظ</span>
         </button>
 
         <button
           onClick={onNavigateAd}
-          className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#FFC500] to-yellow-400 text-black font-black text-[11px] hover:opacity-90 transition-all flex items-center gap-1.5 shadow-md shadow-[#FFC500]/20 cursor-pointer"
+          className="px-3 py-1 rounded-xl bg-gradient-to-r from-[#FFC500] to-yellow-400 text-black font-black text-[11px] hover:opacity-90 transition-all flex items-center gap-1.5 shadow-md shadow-[#FFC500]/20 cursor-pointer"
         >
-          <Megaphone size={13} />
+          <Megaphone size={12} />
           <span>أعلن هنا (YR Ads)</span>
         </button>
       </div>
 
       {reviewSubmittedToast && (
-        <div className="p-3 bg-[#16A34A]/20 border border-[#16A34A] rounded-xl text-xs font-bold text-white flex items-center gap-2 animate-fade-in">
-          <Sparkles size={16} className="text-[#16A34A]" />
+        <div className="p-2.5 bg-[#16A34A]/20 border border-[#16A34A] rounded-xl text-xs font-bold text-white flex items-center gap-2 animate-fade-in">
+          <Sparkles size={15} className="text-[#16A34A]" />
           <span>تم إرسال تقييمك بنجاح ونشره في صفحة {bank.name}</span>
         </div>
       )}
 
-      {/* كرت الغلاف والشعار */}
+      {/* كرت الغلاف والشعار ومعلومات البنك الأساسية (بدون أسعار صرف) */}
       <div className="bg-[#0F0F12] rounded-3xl border border-[#222226] overflow-hidden shadow-2xl relative">
-        <div className="relative h-44 sm:h-64 w-full bg-[#161619] overflow-hidden">
+        
+        {/* الغلاف العريض */}
+        <div className="relative h-40 sm:h-60 w-full bg-[#161619] overflow-hidden">
           <img 
             src={bank.coverImage || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=1400&auto=format&fit=crop&q=85'} 
             alt={bank.name} 
@@ -170,10 +167,12 @@ export const BankProfileView: React.FC<{
           <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F12] via-transparent to-black/30" />
         </div>
 
-        <div className="p-4 sm:p-6 relative -mt-14 sm:-mt-16 z-10 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-            <div className="flex items-end gap-3.5">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#0F0F12] border-2 border-[#FFC500] p-1.5 shadow-2xl shrink-0 overflow-hidden">
+        {/* الشعار واسم البنك ملتصقة به الشارة */}
+        <div className="p-3.5 sm:p-5 relative -mt-12 sm:-mt-14 z-10 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2.5">
+            
+            <div className="flex items-end gap-3">
+              <div className="w-18 h-18 sm:w-22 sm:h-22 rounded-2xl bg-[#0F0F12] border-2 border-[#FFC500] p-1 shadow-2xl shrink-0 overflow-hidden">
                 <img 
                   src={bank.logoImage || 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=200&auto=format&fit=crop&q=85'} 
                   alt="Logo" 
@@ -181,47 +180,47 @@ export const BankProfileView: React.FC<{
                 />
               </div>
 
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-base sm:text-xl font-black text-white leading-tight">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h1 className="text-sm sm:text-lg font-black text-white leading-tight">
                     {bank.name}
                   </h1>
-                  <YRBadge type={bank.badgeType || 'gold'} size={20} showTooltip />
+                  <YRBadge type={bank.badgeType || 'gold'} size={18} showTooltip />
                 </div>
 
-                <div className="flex items-center gap-2 text-xs text-[#9CA3AF] flex-wrap">
-                  <span className="px-2 py-0.5 rounded-md bg-[#FFC500]/15 text-[#FFC500] text-[10px] font-bold">
+                <div className="flex items-center gap-2 text-[10px] text-[#9CA3AF] flex-wrap">
+                  <span className="px-1.5 py-0.2 rounded bg-[#FFC500]/15 text-[#FFC500] font-bold">
                     {bank.categoryLabel}
                   </span>
                   <span>•</span>
-                  <span className="flex items-center gap-1"><MapPin size={12} className="text-[#FFC500]" /> {bank.city}</span>
+                  <span className="flex items-center gap-0.5"><MapPin size={11} className="text-[#FFC500]" /> {bank.city}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 bg-[#161619] p-2 px-3 rounded-2xl border border-[#27272A] w-fit">
-              <Star size={16} className="text-[#FFC500] fill-[#FFC500]" />
-              <div className="text-right font-mono">
-                <b className="text-sm font-black text-white">{bank.rating.toFixed(1)}</b>
-                <span className="text-[10px] text-[#9CA3AF] mr-1">({bank.reviewsCount} تقييم)</span>
-              </div>
+            {/* التقييم */}
+            <div className="flex items-center gap-1.5 bg-[#161619] p-1.5 px-2.5 rounded-xl border border-[#27272A] w-fit">
+              <Star size={14} className="text-[#FFC500] fill-[#FFC500]" />
+              <b className="text-xs font-black text-white font-mono">{bank.rating.toFixed(1)}</b>
+              <span className="text-[9px] text-[#9CA3AF]">({bank.reviewsCount} تقييم)</span>
             </div>
+
           </div>
 
           {bank.description && (
-            <p className="text-xs text-[#D1D5DB] leading-relaxed pt-1 font-medium">
+            <p className="text-xs text-[#D1D5DB] leading-relaxed pt-0.5 font-medium">
               {bank.description}
             </p>
           )}
 
-          {/* وسائل التواصل */}
-          <div className="pt-3 border-t border-[#222226] flex items-center gap-2 flex-wrap">
+          {/* وسائل التواصل السريع */}
+          <div className="pt-2.5 border-t border-[#222226] flex items-center gap-2 flex-wrap">
             {bank.phone && (
               <a
                 href={`tel:${bank.phone}`}
-                className="px-3.5 py-2 rounded-xl bg-[#161619] border border-[#27272A] hover:border-[#FFC500] text-xs font-bold text-white flex items-center gap-1.5 transition-all active:scale-95"
+                className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#27272A] hover:border-[#FFC500] text-xs font-bold text-white flex items-center gap-1.5 transition-all active:scale-95"
               >
-                <Phone size={14} className="text-[#FFC500]" />
+                <Phone size={13} className="text-[#FFC500]" />
                 <span>اتصال: {bank.phone}</span>
               </a>
             )}
@@ -231,9 +230,9 @@ export const BankProfileView: React.FC<{
                 href={`https://wa.me/${bank.whatsapp}?text=${encodeURIComponent(`مرحباً، أرغب بالاستفسار عن خدمات ${bank.name} عبر منصة يمن ريتغ`)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="px-3.5 py-2 rounded-xl bg-[#16A34A]/20 border border-[#16A34A]/40 text-xs font-bold text-[#16A34A] hover:bg-[#16A34A] hover:text-white flex items-center gap-1.5 transition-all active:scale-95"
+                className="px-3 py-1.5 rounded-xl bg-[#16A34A]/20 border border-[#16A34A]/40 text-xs font-bold text-[#16A34A] hover:bg-[#16A34A] hover:text-white flex items-center gap-1.5 transition-all active:scale-95"
               >
-                <MessageCircle size={14} />
+                <MessageCircle size={13} />
                 <span>WhatsApp</span>
               </a>
             )}
@@ -243,167 +242,103 @@ export const BankProfileView: React.FC<{
                 href={bank.website}
                 target="_blank"
                 rel="noreferrer"
-                className="px-3.5 py-2 rounded-xl bg-[#161619] border border-[#27272A] hover:border-[#2EA5FF] text-xs font-bold text-[#2EA5FF] flex items-center gap-1.5 transition-all"
+                className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#27272A] hover:border-[#2EA5FF] text-xs font-bold text-[#2EA5FF] flex items-center gap-1.5 transition-all"
               >
-                <Globe size={14} />
+                <Globe size={13} />
                 <span>الموقع الرسمي</span>
-                <ExternalLink size={11} />
-              </a>
-            )}
-
-            {bank.email && (
-              <a
-                href={`mailto:${bank.email}`}
-                className="px-3 py-2 rounded-xl bg-[#161619] border border-[#27272A] hover:border-gray-400 text-xs text-gray-300 flex items-center gap-1.5"
-              >
-                <Mail size={14} />
-                <span>البريد</span>
+                <ExternalLink size={10} />
               </a>
             )}
           </div>
+
         </div>
       </div>
 
-      {/* أسعار الصرف الخاصة بالبنك */}
-      {(bank.usdBuy || bank.sarBuy) && (
-        <div className="bg-[#0F0F12] p-4 rounded-2xl border border-[#222226] space-y-3 shadow-xl">
-          <div className="flex items-center justify-between border-b border-[#222226] pb-2">
-            <h3 className="text-xs sm:text-sm font-black text-white flex items-center gap-1.5">
-              <Coins size={15} className="text-[#FFC500]" />
-              أسعار الصرف المعتمدة لدى {bank.name}
-            </h3>
-            <span className="text-[10px] text-emerald-400 font-mono">تحديث مباشر</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono text-xs">
-            {bank.usdBuy && (
-              <div className="p-3 bg-[#161619] rounded-xl border border-[#27272A] space-y-1">
-                <div className="flex justify-between items-center text-[11px] font-['Cairo']">
-                  <span className="font-bold text-white">الدولار الأمريكي (USD)</span>
-                  <span className="text-[9px] text-gray-400">USD/YER</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#222226]">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-[9px] text-gray-400 font-['Cairo']">شراء:</span>
-                    <div className="flex items-baseline gap-0.5">
-                      <b className="text-[#16A34A] text-sm">{bank.usdBuy.toFixed(2)}</b>
-                      <span className="text-[#FFC500] font-black text-[10px]">﷼</span>
-                    </div>
-                  </div>
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-[9px] text-gray-400 font-['Cairo']">بيع:</span>
-                    <div className="flex items-baseline gap-0.5">
-                      <b className="text-[#DC2626] text-sm">{bank.usdSell?.toFixed(2)}</b>
-                      <span className="text-[#FFC500] font-black text-[10px]">﷼</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {bank.sarBuy && (
-              <div className="p-3 bg-[#161619] rounded-xl border border-[#27272A] space-y-1">
-                <div className="flex justify-between items-center text-[11px] font-['Cairo']">
-                  <span className="font-bold text-white">الريال السعودي (SAR)</span>
-                  <span className="text-[9px] text-gray-400">SAR/YER</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#222226]">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-[9px] text-gray-400 font-['Cairo']">شراء:</span>
-                    <div className="flex items-baseline gap-0.5">
-                      <b className="text-[#16A34A] text-sm">{bank.sarBuy.toFixed(2)}</b>
-                      <span className="text-[#FFC500] font-black text-[10px]">﷼</span>
-                    </div>
-                  </div>
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-[9px] text-gray-400 font-['Cairo']">بيع:</span>
-                    <div className="flex items-baseline gap-0.5">
-                      <b className="text-[#DC2626] text-sm">{bank.sarSell?.toFixed(2)}</b>
-                      <span className="text-[#FFC500] font-black text-[10px]">﷼</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+      {/* شبكة أرقام الفروع والصرافات الآلية */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 font-mono text-center">
+        <div className="p-2.5 rounded-xl bg-[#0F0F12] border border-[#222226]">
+          <span className="text-[8.5px] text-[#9CA3AF] font-['Cairo'] block">شبكة الفروع المعتمدة</span>
+          <b className="text-xs text-white font-bold">{bank.branchesCount} فرع</b>
         </div>
-      )}
+        <div className="p-2.5 rounded-xl bg-[#0F0F12] border border-[#222226]">
+          <span className="text-[8.5px] text-[#9CA3AF] font-['Cairo'] block">أجهزة الصراف ATM</span>
+          <b className="text-xs text-white font-bold">{bank.atmsCount ? `${bank.atmsCount} صراف` : 'متوفر لدى الوكلاء'}</b>
+        </div>
+        <div className="p-2.5 rounded-xl bg-[#0F0F12] border border-[#222226] col-span-2 sm:col-span-1">
+          <span className="text-[8.5px] text-[#9CA3AF] font-['Cairo'] block">المركز الرئيسي</span>
+          <b className="text-xs text-gray-200 font-bold font-['Cairo']">{bank.city.split('—')[0]}</b>
+        </div>
+      </div>
 
-      {/* قسم الخدمات المصرفية */}
-      <div className="bg-[#0F0F12] p-4 rounded-2xl border border-[#222226] space-y-3 shadow-xl">
+      {/* قسم الخدمات المصرفية والحلول */}
+      <div className="bg-[#0F0F12] p-3.5 rounded-2xl border border-[#222226] space-y-2.5 shadow-xl">
         <h3 className="text-xs sm:text-sm font-black text-white flex items-center gap-1.5 border-b border-[#222226] pb-2">
-          <Building2 size={15} className="text-[#FFC500]" />
+          <Building2 size={14} className="text-[#FFC500]" />
           الخدمات المصرفية والحلول المتاحة
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
           {bank.services.map((srv, idx) => (
-            <div key={idx} className="p-2.5 rounded-xl bg-[#161619] border border-[#27272A] flex items-center gap-2 text-xs text-gray-200">
-              <Check size={14} className="text-[#FFC500] shrink-0" />
+            <div key={idx} className="p-2 rounded-xl bg-[#161619] border border-[#27272A] flex items-center gap-2 text-xs text-gray-200">
+              <Check size={13} className="text-[#FFC500] shrink-0" />
               <span>{srv}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* معرض الصور باللمس (Gallery) */}
-      <div className="bg-[#0F0F12] p-4 rounded-2xl border border-[#222226] space-y-3 shadow-xl">
-        <div className="flex justify-between items-center border-b border-[#222226] pb-2">
+      {/* معرض الصور باللمس */}
+      <div className="bg-[#0F0F12] p-3.5 rounded-2xl border border-[#222226] space-y-2.5 shadow-xl">
+        <div className="flex justify-between items-center border-b border-[#222226] pb-1.5">
           <h3 className="text-xs sm:text-sm font-black text-white flex items-center gap-1.5">
-            <Camera size={15} className="text-[#FFC500]" />
+            <Camera size={14} className="text-[#FFC500]" />
             معرض الصور والفروع ({displayGallery.length} صور)
           </h3>
-          <span className="text-[10px] text-[#9CA3AF]">اضغط على الصورة للتكبير</span>
+          <span className="text-[9.5px] text-[#9CA3AF]">اضغط للتكبير</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {displayGallery.map((img, idx) => (
             <div
               key={idx}
               onClick={() => { setActiveGalleryIndex(idx); setIsLightboxOpen(true); }}
-              className="h-28 sm:h-36 rounded-xl overflow-hidden border border-[#27272A] hover:border-[#FFC500] cursor-pointer transition-all active:scale-95 relative group"
+              className="h-24 sm:h-32 rounded-xl overflow-hidden border border-[#27272A] hover:border-[#FFC500] cursor-pointer transition-all active:scale-95 relative"
             >
-              <img src={img} alt="Gallery" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Camera size={18} className="text-white drop-shadow" />
-              </div>
+              <img src={img} alt="Gallery" className="w-full h-full object-cover" />
             </div>
           ))}
         </div>
       </div>
 
       {/* قسم التقييمات والمراجعات */}
-      <div className="bg-[#0F0F12] p-4 sm:p-5 rounded-2xl border border-[#222226] space-y-4 shadow-xl">
-        <div className="flex justify-between items-center border-b border-[#222226] pb-2.5">
+      <div className="bg-[#0F0F12] p-3.5 sm:p-4 rounded-2xl border border-[#222226] space-y-3 shadow-xl">
+        <div className="flex justify-between items-center border-b border-[#222226] pb-2">
           <div>
             <h3 className="text-xs sm:text-sm font-black text-white flex items-center gap-1.5">
-              <Star size={15} className="text-[#FFC500] fill-[#FFC500]" />
+              <Star size={14} className="text-[#FFC500]" fill="#FFC500" />
               التقييمات والمراجعات ({reviews.length})
             </h3>
-            <span className="text-[10px] text-[#9CA3AF]">تقييمات موثقة من زوار وعملاء المنصة</span>
           </div>
-
-          <div className="flex items-center gap-1 font-mono text-sm text-[#FFC500] font-black">
-            <Star size={15} fill="#FFC500" />
+          <div className="flex items-center gap-1 font-mono text-xs text-[#FFC500] font-black">
+            <Star size={13} fill="#FFC500" />
             <span>{bank.rating.toFixed(1)} / 5.0</span>
           </div>
         </div>
 
         {/* نموذج إضافة تقييم */}
-        <form onSubmit={handleReviewSubmit} className="p-3.5 bg-[#161619] rounded-2xl border border-[#27272A] space-y-3">
+        <form onSubmit={handleReviewSubmit} className="p-3 bg-[#161619] rounded-xl border border-[#27272A] space-y-2.5">
           <div className="flex justify-between items-center">
-            <span className="text-xs font-bold text-white">أضف تقييمك وتجربتك:</span>
-            
+            <span className="text-xs font-bold text-white">أضف تقييمك:</span>
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
                   type="button"
                   onClick={() => setUserRating(star)}
-                  className="text-lg transition-transform hover:scale-125 focus:outline-none cursor-pointer"
+                  className="focus:outline-none cursor-pointer"
                 >
                   <Star 
-                    size={18} 
+                    size={16} 
                     className={star <= userRating ? 'text-[#FFC500] fill-[#FFC500]' : 'text-gray-600'} 
                   />
                 </button>
@@ -411,21 +346,19 @@ export const BankProfileView: React.FC<{
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <input
-              type="text"
-              required
-              placeholder="اسمك الكامل..."
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              className="w-full bg-[#0F0F12] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]"
-            />
-          </div>
+          <input
+            type="text"
+            required
+            placeholder="اسمك الكامل..."
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            className="w-full bg-[#0F0F12] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]"
+          />
 
           <textarea
             rows={2}
             required
-            placeholder="اكتب تفاصيل تجربتك مع البنك أو الخدمة..."
+            placeholder="اكتب تجربتك ورأيك..."
             value={userComment}
             onChange={(e) => setUserComment(e.target.value)}
             className="w-full bg-[#0F0F12] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]"
@@ -434,31 +367,28 @@ export const BankProfileView: React.FC<{
           <div className="flex justify-end">
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all flex items-center gap-1.5 shadow-md cursor-pointer active:scale-95"
+              className="px-4 py-1.5 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all flex items-center gap-1 shadow-md cursor-pointer active:scale-95"
             >
-              <Send size={13} />
+              <Send size={12} />
               <span>إرسال التقييم</span>
             </button>
           </div>
         </form>
 
-        {/* استعراض التقييمات */}
-        <div className="space-y-2.5">
+        {/* استعراض التقييمات المنشورة بالصور الحقيقية */}
+        <div className="space-y-2">
           {reviews.map(rev => (
-            <div key={rev.id} className="p-3 bg-[#161619] rounded-xl border border-[#27272A] space-y-1.5">
+            <div key={rev.id} className="p-2.5 bg-[#161619] rounded-xl border border-[#27272A] space-y-1">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <img src={rev.authorAvatar} alt={rev.authorName} className="w-7 h-7 rounded-full object-cover border border-[#FFC500]/40" />
-                  <div>
-                    <h5 className="text-xs font-bold text-white">{rev.authorName}</h5>
-                    <span className="text-[9px] text-gray-400 font-mono">{rev.createdAt}</span>
-                  </div>
+                  <img src={rev.authorAvatar} alt={rev.authorName} className="w-6 h-6 rounded-full object-cover border border-[#FFC500]/40" />
+                  <h5 className="text-[11px] font-bold text-white">{rev.authorName}</h5>
                 </div>
-                <div className="flex text-[#FFC500]">
+                <div className="flex text-[#FFC500] text-[10px]">
                   {'★'.repeat(rev.rating)}
                 </div>
               </div>
-              <p className="text-xs text-gray-300 leading-relaxed font-medium pr-9">
+              <p className="text-[11px] text-gray-300 leading-relaxed font-medium pr-8">
                 "{rev.comment}"
               </p>
             </div>
