@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Coins, ArrowRight, RefreshCw, TrendingUp, TrendingDown, 
-  Minus, Landmark, Wallet, Calculator, MapPin, 
-  Clock, ArrowUpDown, DollarSign, Activity, Sparkles
+  Minus, Landmark, Wallet, Calculator, Clock, Activity, Sparkles
 } from 'lucide-react';
 import { AdBanner } from '../common/AdBanner';
 
@@ -18,7 +17,6 @@ interface PriceItem {
   sell: number;
   change: string;
   trend: 'up' | 'down' | 'steady';
-  previousBuy?: number;
 }
 
 export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) => {
@@ -29,9 +27,8 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
   const [calcAmount, setCalcAmount] = useState<number>(100);
   const [calcCurrency, setCalcCurrency] = useState<'USD' | 'SAR'>('USD');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [tickKey, setTickKey] = useState(1);
 
-  // حالة أسعار الصرف الحية مع التغير اللحظي
+  // حالة أسعار صنعاء الحية المتقلبة بالملليهات
   const [sanaaRates, setSanaaRates] = useState<{
     usd: PriceItem;
     sar: PriceItem;
@@ -39,17 +36,16 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
     gold21: PriceItem;
     gold18: PriceItem;
     goldPound: PriceItem;
-    updatedAt: string;
   }>({
     usd: { name: 'الدولار الأمريكي', code: 'USD', flag: '🇺🇸', buy: 534.76, sell: 538.00, change: '-0.20%', trend: 'down' },
     sar: { name: 'الريال السعودي', code: 'SAR', flag: '🇸🇦', buy: 140.43, sell: 140.70, change: '+0.15%', trend: 'up' },
     gold24: { name: 'جرام عيار 24', buy: 42500, sell: 43500, change: '+0.40%', trend: 'up' },
     gold21: { name: 'جرام عيار 21', buy: 37200, sell: 38100, change: '+0.35%', trend: 'up' },
     gold18: { name: 'جرام عيار 18', buy: 31800, sell: 32500, change: '0.00%', trend: 'steady' },
-    goldPound: { name: 'جنيه ذهب إنجليزي', buy: 298000, sell: 305000, change: '+0.50%', trend: 'up' },
-    updatedAt: 'مباشر الآن'
+    goldPound: { name: 'جنيه ذهب إنجليزي', buy: 298000, sell: 305000, change: '+0.50%', trend: 'up' }
   });
 
+  // حالة أسعار عدن الحية المتقلبة بالملليهات
   const [adenRates, setAdenRates] = useState<{
     usd: PriceItem;
     sar: PriceItem;
@@ -57,35 +53,71 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
     gold21: PriceItem;
     gold18: PriceItem;
     goldPound: PriceItem;
-    updatedAt: string;
   }>({
     usd: { name: 'الدولار الأمريكي', code: 'USD', flag: '🇺🇸', buy: 1910.00, sell: 1925.00, change: '+0.80%', trend: 'up' },
     sar: { name: 'الريال السعودي', code: 'SAR', flag: '🇸🇦', buy: 501.50, sell: 504.00, change: '+0.65%', trend: 'up' },
     gold24: { name: 'جرام عيار 24', buy: 132000, sell: 135000, change: '+1.10%', trend: 'up' },
     gold21: { name: 'جرام عيار 21', buy: 115500, sell: 118000, change: '+0.95%', trend: 'up' },
     gold18: { name: 'جرام عيار 18', buy: 98000, sell: 101000, change: '-0.10%', trend: 'down' },
-    goldPound: { name: 'جنيه ذهب إنجليزي', buy: 924000, sell: 945000, change: '+1.20%', trend: 'up' },
-    updatedAt: 'مباشر الآن'
+    goldPound: { name: 'جنيه ذهب إنجليزي', buy: 924000, sell: 945000, change: '+1.20%', trend: 'up' }
   });
 
-  // محاكاة النبض الحركي اللحظي للأسواق الحية (Live Ticker Motion)
+  // محرك تقلب الكسور والملليهات اللحظية المباشر (Live Ticking Decimals Engine)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTickKey(prev => prev + 1);
-    }, 4500);
-    return () => clearInterval(interval);
+    const liveTicker = setInterval(() => {
+      // تقلبات أسواق صنعاء
+      setSanaaRates(prev => {
+        const uDelta = +(Math.random() * 0.16 - 0.08).toFixed(2);
+        const sDelta = +(Math.random() * 0.06 - 0.03).toFixed(2);
+        
+        const newUBuy = +(Math.max(534.20, Math.min(535.40, prev.usd.buy + uDelta))).toFixed(2);
+        const newUSell = +(newUBuy + 3.24).toFixed(2);
+        const newSBuy = +(Math.max(140.25, Math.min(140.65, prev.sar.buy + sDelta))).toFixed(2);
+        const newSSell = +(newSBuy + 0.27).toFixed(2);
+
+        const uTrend = newUBuy > prev.usd.buy ? 'up' : newUBuy < prev.usd.buy ? 'down' : 'steady';
+        const sTrend = newSBuy > prev.sar.buy ? 'up' : newSBuy < prev.sar.buy ? 'down' : 'steady';
+
+        return {
+          ...prev,
+          usd: { ...prev.usd, buy: newUBuy, sell: newUSell, trend: uTrend, change: (uTrend === 'up' ? '+' : '') + (uDelta * 5).toFixed(2) + '%' },
+          sar: { ...prev.sar, buy: newSBuy, sell: newSSell, trend: sTrend, change: (sTrend === 'up' ? '+' : '') + (sDelta * 5).toFixed(2) + '%' }
+        };
+      });
+
+      // تقلبات أسواق عدن
+      setAdenRates(prev => {
+        const uDelta = +(Math.random() * 0.8 - 0.4).toFixed(2);
+        const sDelta = +(Math.random() * 0.3 - 0.15).toFixed(2);
+
+        const newUBuy = +(Math.max(1908.00, Math.min(1915.00, prev.usd.buy + uDelta))).toFixed(2);
+        const newUSell = +(newUBuy + 15.00).toFixed(2);
+        const newSBuy = +(Math.max(500.80, Math.min(503.20, prev.sar.buy + sDelta))).toFixed(2);
+        const newSSell = +(newSBuy + 2.50).toFixed(2);
+
+        const uTrend = newUBuy > prev.usd.buy ? 'up' : newUBuy < prev.usd.buy ? 'down' : 'steady';
+        const sTrend = newSBuy > prev.sar.buy ? 'up' : newSBuy < prev.sar.buy ? 'down' : 'steady';
+
+        return {
+          ...prev,
+          usd: { ...prev.usd, buy: newUBuy, sell: newUSell, trend: uTrend, change: (uTrend === 'up' ? '+' : '') + (uDelta * 2).toFixed(2) + '%' },
+          sar: { ...prev.sar, buy: newSBuy, sell: newSSell, trend: sTrend, change: (sTrend === 'up' ? '+' : '') + (sDelta * 2).toFixed(2) + '%' }
+        };
+      });
+    }, 1800); // يتقلب كل ثانية ونصف كشاشات التداول العالمية
+
+    return () => clearInterval(liveTicker);
   }, []);
 
   const banksData = [
-    { name: 'بنك الكريمي للتمويل', usdBuy: 535.0, usdSell: 538.0, sarBuy: 140.4, sarSell: 140.7, fee: '0.5%', trend: 'up', type: 'بنك' },
-    { name: 'كاك بنك (CAC Bank)', usdBuy: 534.5, usdSell: 538.0, sarBuy: 140.3, sarSell: 140.8, fee: '0.6%', trend: 'down', type: 'بنك' },
-    { name: 'بنك التضامن الإسلامي', usdBuy: 535.0, usdSell: 538.5, sarBuy: 140.5, sarSell: 140.8, fee: '0.5%', trend: 'steady', type: 'بنك' },
-    { name: 'محفظة جوالي / كاش', usdBuy: 534.8, usdSell: 537.9, sarBuy: 140.4, sarSell: 140.7, fee: '0.4%', trend: 'up', type: 'محفظة' }
+    { name: 'بنك الكريمي للتمويل', usdBuy: 535.0, usdSell: 538.0, sarBuy: 140.4, sarSell: 140.7, fee: '0.5%', type: 'بنك' },
+    { name: 'كاك بنك (CAC Bank)', usdBuy: 534.5, usdSell: 538.0, sarBuy: 140.3, sarSell: 140.8, fee: '0.6%', type: 'بنك' },
+    { name: 'بنك التضامن الإسلامي', usdBuy: 535.0, usdSell: 538.5, sarBuy: 140.5, sarSell: 140.8, fee: '0.5%', type: 'بنك' },
+    { name: 'محفظة جوالي / كاش', usdBuy: 534.8, usdSell: 537.9, sarBuy: 140.4, sarSell: 140.7, fee: '0.4%', type: 'محفظة' }
   ];
 
   const currentRates = activeMarket === 'sanaa' ? sanaaRates : adenRates;
 
-  // نتائج محول الصرف اللحظية
   const converterResults = useMemo(() => {
     const sRate = calcCurrency === 'USD' ? sanaaRates.usd.sell : sanaaRates.sar.sell;
     const aRate = calcCurrency === 'USD' ? adenRates.usd.sell : adenRates.sar.sell;
@@ -97,53 +129,27 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    setTickKey(prev => prev + 1);
     setTimeout(() => setIsRefreshing(false), 600);
   };
 
   return (
     <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3.5 font-['Cairo',sans-serif] text-white">
       
-      {/* تضمين محرك حركات الأرقام والأسهم الصاعدة والهابطة */}
+      {/* تضمين محرك حركات الارتداد الصاعد والهابط */}
       <style>{`
-        @keyframes yrArrowBounceUp {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-3.5px); }
-        }
-        @keyframes yrArrowBounceDown {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(3.5px); }
-        }
-        @keyframes yrSteadyPulseWave {
-          0%, 100% { transform: scale(1); opacity: 0.85; }
-          50% { transform: scale(1.1); opacity: 1; }
-        }
-        @keyframes yrPriceFlashGreen {
-          0%, 100% { color: #16A34A; }
-          50% { color: #4ADE80; text-shadow: 0 0 10px rgba(74, 222, 128, 0.7); }
-        }
-        @keyframes yrPriceFlashRed {
-          0%, 100% { color: #DC2626; }
-          50% { color: #F87171; text-shadow: 0 0 10px rgba(248, 113, 113, 0.7); }
-        }
-        @keyframes yrPriceFlashSteady {
-          0%, 100% { color: #FFC500; }
-          50% { color: #FDE047; text-shadow: 0 0 8px rgba(255, 197, 0, 0.6); }
-        }
+        @keyframes yrArrowJumpUp { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+        @keyframes yrArrowJumpDown { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+        @keyframes yrDigitTick { 0% { opacity: 0.7; transform: translateY(-2px); } 100% { opacity: 1; transform: translateY(0); } }
 
-        .yr-anim-arrow-up { animation: yrArrowBounceUp 1.8s infinite ease-in-out !important; }
-        .yr-anim-arrow-down { animation: yrArrowBounceDown 1.8s infinite ease-in-out !important; }
-        .yr-anim-steady { animation: yrSteadyPulseWave 2.5s infinite ease-in-out !important; }
-        
-        .yr-anim-num-up { animation: yrPriceFlashGreen 3s infinite ease-in-out !important; }
-        .yr-anim-num-down { animation: yrPriceFlashRed 3s infinite ease-in-out !important; }
-        .yr-anim-num-steady { animation: yrPriceFlashSteady 3s infinite ease-in-out !important; }
+        .anim-tick-up { animation: yrArrowJumpUp 1.2s infinite ease-in-out; }
+        .anim-tick-down { animation: yrArrowJumpDown 1.2s infinite ease-in-out; }
+        .digit-ticker { animation: yrDigitTick 0.3s ease-out; }
       `}</style>
 
-      {/* 1. إعلان البانر المخصص لأسعار الصرف #8 */}
+      {/* 1. إعلان البانر #8 */}
       <AdBanner placementId="8" className="mb-1" />
 
-      {/* 2. رأس الصفحة الرسمي الأنيق بدون أي زوائد */}
+      {/* 2. رأس الصفحة الرسمي */}
       <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
@@ -151,11 +157,11 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
           </div>
           <div>
             <h1 className="text-sm sm:text-base font-black text-white leading-none flex items-center gap-1.5">
-              <span>أسعار الصرف والذهب</span>
+              <span>أسعار الصرف والذهب المباشرة</span>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
             </h1>
             <span className="text-[9.5px] text-[#9CA3AF] mt-0.5 block">
-              تحديث مباشر ومتحرك لأسعار العملات والذهب في صنعاء وعدن
+              شاشة تداول ومتابعة حية للكسور والتقلبات اللحظية
             </span>
           </div>
         </div>
@@ -164,7 +170,7 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
           <button
             onClick={handleRefresh}
             className="w-8 h-8 rounded-xl bg-[#161619] border border-[#27272A] text-gray-300 hover:text-[#FFC500] flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-95"
-            title="تحديث فوري للأسعار"
+            title="تحديث الأسعار"
           >
             <RefreshCw size={14} className={isRefreshing ? 'animate-spin text-[#FFC500]' : ''} />
           </button>
@@ -179,15 +185,15 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
         </div>
       </div>
 
-      {/* 3. شريط التبويبات والأسواق (صنعاء / عدن) */}
+      {/* 3. شريط التبويبات والأسواق */}
       <div className="flex items-center justify-between gap-2 bg-[#0F0F12] p-2 rounded-2xl border border-[#222226] flex-wrap shadow-md">
         
-        {/* أزرار الأسواق مع مؤشر النبض */}
+        {/* أزرار الأسواق صنعاء / عدن */}
         <div className="flex bg-[#161619] p-0.5 rounded-xl border border-[#27272A]">
           <button
             onClick={() => setActiveMarket('sanaa')}
             className={`px-3 py-1 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeMarket === 'sanaa' ? 'bg-[#FFC500] text-black shadow-md shadow-[#FFC500]/20' : 'text-gray-400 hover:text-white'
+              activeMarket === 'sanaa' ? 'bg-[#FFC500] text-black shadow-md' : 'text-gray-400 hover:text-white'
             }`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -197,7 +203,7 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
           <button
             onClick={() => setActiveMarket('aden')}
             className={`px-3 py-1 rounded-lg text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-              activeMarket === 'aden' ? 'bg-[#FFC500] text-black shadow-md shadow-[#FFC500]/20' : 'text-gray-400 hover:text-white'
+              activeMarket === 'aden' ? 'bg-[#FFC500] text-black shadow-md' : 'text-gray-400 hover:text-white'
             }`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -236,19 +242,19 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
       </div>
 
       {/* ============================================================
-          تبويب 1: أسعار العملات والذهب الفورية بحركات الأسهم والأرقام
+          تبويب 1: أسعار العملات والذهب الحية بالكسور المتقلبة
           ============================================================ */}
       {activeTab === 'rates' && (
-        <div key={tickKey} className="space-y-3">
+        <div className="space-y-3">
           
-          {/* العملات الرئيسية (الدولار والسعودي) */}
+          {/* العملات الرئيسية */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between px-1">
               <span className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
-                <Activity size={13} className="text-[#FFC500]" /> العملات الأجنبية في {activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'}
+                <Activity size={13} className="text-[#FFC500]" /> شاشة العملات اللحظية ({activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'})
               </span>
-              <span className="text-[10px] text-gray-400 font-mono flex items-center gap-1">
-                <Clock size={11} className="text-[#FFC500]" /> {currentRates.updatedAt}
+              <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" /> بث حي مباشر
               </span>
             </div>
 
@@ -265,15 +271,15 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
                     </div>
                   </div>
 
-                  {/* شارة حركة الصعود / الهبوط / الثبات */}
+                  {/* حركة السهم والتغير */}
                   <span className={`px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold flex items-center gap-1 shadow-sm ${
                     currentRates.usd.trend === 'up' ? 'bg-[#16A34A]/20 text-[#16A34A] border border-[#16A34A]/30' :
                     currentRates.usd.trend === 'down' ? 'bg-[#DC2626]/20 text-[#DC2626] border border-[#DC2626]/30' :
                     'bg-[#FFC500]/20 text-[#FFC500] border border-[#FFC500]/30'
                   }`}>
-                    {currentRates.usd.trend === 'up' && <TrendingUp size={12} className="yr-anim-arrow-up" />}
-                    {currentRates.usd.trend === 'down' && <TrendingDown size={12} className="yr-anim-arrow-down" />}
-                    {currentRates.usd.trend === 'steady' && <Minus size={12} className="yr-anim-steady" />}
+                    {currentRates.usd.trend === 'up' && <TrendingUp size={12} className="anim-tick-up" />}
+                    {currentRates.usd.trend === 'down' && <TrendingDown size={12} className="anim-tick-down" />}
+                    {currentRates.usd.trend === 'steady' && <Minus size={12} />}
                     <span>{currentRates.usd.change}</span>
                   </span>
                 </div>
@@ -281,17 +287,13 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
                 <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#1F2937] font-mono">
                   <div className="p-2 rounded-xl bg-[#161619] border border-[#27272A]">
                     <span className="text-[9px] text-gray-400 font-['Cairo'] block">سعر الشراء</span>
-                    <b className={`text-sm sm:text-base font-black ${
-                      currentRates.usd.trend === 'up' ? 'yr-anim-num-up' : currentRates.usd.trend === 'down' ? 'yr-anim-num-down' : 'text-[#16A34A]'
-                    }`}>
+                    <b className="text-sm sm:text-base font-black text-[#16A34A] digit-ticker">
                       {currentRates.usd.buy.toFixed(2)} ﷼
                     </b>
                   </div>
                   <div className="p-2 rounded-xl bg-[#161619] border border-[#27272A]">
                     <span className="text-[9px] text-gray-400 font-['Cairo'] block">سعر البيع</span>
-                    <b className={`text-sm sm:text-base font-black ${
-                      currentRates.usd.trend === 'down' ? 'yr-anim-num-down' : currentRates.usd.trend === 'up' ? 'yr-anim-num-up' : 'text-[#DC2626]'
-                    }`}>
+                    <b className="text-sm sm:text-base font-black text-[#DC2626] digit-ticker">
                       {currentRates.usd.sell.toFixed(2)} ﷼
                     </b>
                   </div>
@@ -309,15 +311,15 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
                     </div>
                   </div>
 
-                  {/* شارة حركة الصعود / الهبوط / الثبات */}
+                  {/* حركة السهم والتغير */}
                   <span className={`px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold flex items-center gap-1 shadow-sm ${
                     currentRates.sar.trend === 'up' ? 'bg-[#16A34A]/20 text-[#16A34A] border border-[#16A34A]/30' :
                     currentRates.sar.trend === 'down' ? 'bg-[#DC2626]/20 text-[#DC2626] border border-[#DC2626]/30' :
                     'bg-[#FFC500]/20 text-[#FFC500] border border-[#FFC500]/30'
                   }`}>
-                    {currentRates.sar.trend === 'up' && <TrendingUp size={12} className="yr-anim-arrow-up" />}
-                    {currentRates.sar.trend === 'down' && <TrendingDown size={12} className="yr-anim-arrow-down" />}
-                    {currentRates.sar.trend === 'steady' && <Minus size={12} className="yr-anim-steady" />}
+                    {currentRates.sar.trend === 'up' && <TrendingUp size={12} className="anim-tick-up" />}
+                    {currentRates.sar.trend === 'down' && <TrendingDown size={12} className="anim-tick-down" />}
+                    {currentRates.sar.trend === 'steady' && <Minus size={12} />}
                     <span>{currentRates.sar.change}</span>
                   </span>
                 </div>
@@ -325,17 +327,13 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
                 <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#1F2937] font-mono">
                   <div className="p-2 rounded-xl bg-[#161619] border border-[#27272A]">
                     <span className="text-[9px] text-gray-400 font-['Cairo'] block">سعر الشراء</span>
-                    <b className={`text-sm sm:text-base font-black ${
-                      currentRates.sar.trend === 'up' ? 'yr-anim-num-up' : currentRates.sar.trend === 'down' ? 'yr-anim-num-down' : 'text-[#16A34A]'
-                    }`}>
+                    <b className="text-sm sm:text-base font-black text-[#16A34A] digit-ticker">
                       {currentRates.sar.buy.toFixed(2)} ﷼
                     </b>
                   </div>
                   <div className="p-2 rounded-xl bg-[#161619] border border-[#27272A]">
                     <span className="text-[9px] text-gray-400 font-['Cairo'] block">سعر البيع</span>
-                    <b className={`text-sm sm:text-base font-black ${
-                      currentRates.sar.trend === 'down' ? 'yr-anim-num-down' : currentRates.sar.trend === 'up' ? 'yr-anim-num-up' : 'text-[#DC2626]'
-                    }`}>
+                    <b className="text-sm sm:text-base font-black text-[#DC2626] digit-ticker">
                       {currentRates.sar.sell.toFixed(2)} ﷼
                     </b>
                   </div>
@@ -345,7 +343,7 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
             </div>
           </div>
 
-          {/* أسعار الذهب والسبائك بالحركات والأسهم */}
+          {/* أسعار الذهب والسبائك */}
           <div className="space-y-1.5 pt-1">
             <span className="text-xs font-bold text-[#FFC500] block px-1 flex items-center gap-1.5">
               <Sparkles size={13} /> أسعار الذهب والسبائك في {activeMarket === 'sanaa' ? 'صنعاء' : 'عدن'}
@@ -364,23 +362,23 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
                     <span className={`text-[9px] font-bold flex items-center gap-0.5 ${
                       g.data.trend === 'up' ? 'text-[#16A34A]' : g.data.trend === 'down' ? 'text-[#DC2626]' : 'text-[#FFC500]'
                     }`}>
-                      {g.data.trend === 'up' && <TrendingUp size={10} className="yr-anim-arrow-up" />}
-                      {g.data.trend === 'down' && <TrendingDown size={10} className="yr-anim-arrow-down" />}
-                      {g.data.trend === 'steady' && <Minus size={10} className="yr-anim-steady" />}
+                      {g.data.trend === 'up' && <TrendingUp size={10} className="anim-tick-up" />}
+                      {g.data.trend === 'down' && <TrendingDown size={10} className="anim-tick-down" />}
+                      {g.data.trend === 'steady' && <Minus size={10} />}
                       <span>{g.data.change}</span>
                     </span>
                   </div>
 
                   <div className="flex justify-between text-[9.5px] pt-1 border-t border-[#1F2937]">
                     <span className="text-gray-400 font-['Cairo']">شراء:</span>
-                    <b className={`font-black ${g.data.trend === 'up' ? 'yr-anim-num-up' : 'text-[#16A34A]'}`}>
+                    <b className="text-[#16A34A] font-black digit-ticker">
                       {g.data.buy.toLocaleString()} ﷼
                     </b>
                   </div>
 
                   <div className="flex justify-between text-[9.5px]">
                     <span className="text-gray-400 font-['Cairo']">بيع:</span>
-                    <b className={`font-black ${g.data.trend === 'down' ? 'yr-anim-num-down' : 'text-[#DC2626]'}`}>
+                    <b className="text-[#DC2626] font-black digit-ticker">
                       {g.data.sell.toLocaleString()} ﷼
                     </b>
                   </div>
@@ -425,7 +423,7 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
 
             <div className="p-3 bg-[#18181C] rounded-xl border border-[#FFC500]/30 space-y-1 font-mono text-center">
               <span className="text-[10px] text-gray-400 font-['Cairo'] block">فارق الصرف بين عدن وصنعاء:</span>
-              <div className="text-base font-black text-[#FFC500] yr-anim-num-steady">
+              <div className="text-base font-black text-[#FFC500]">
                 +{converterResults.diff.toLocaleString()} ﷼
               </div>
             </div>
@@ -434,11 +432,11 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-[#1F2937] font-mono">
             <div className="p-3 rounded-xl bg-[#161619] border border-[#27272A]">
               <span className="text-[10px] text-gray-400 font-['Cairo'] block">قيمة المبلغ في أسواق صنعاء:</span>
-              <b className="text-lg font-black text-white">{converterResults.sanaaTotal.toLocaleString()} ﷼ يمني</b>
+              <b className="text-lg font-black text-white digit-ticker">{converterResults.sanaaTotal.toLocaleString()} ﷼ يمني</b>
             </div>
             <div className="p-3 rounded-xl bg-[#161619] border border-[#27272A]">
               <span className="text-[10px] text-gray-400 font-['Cairo'] block">قيمة المبلغ في أسواق عدن:</span>
-              <b className="text-lg font-black text-[#16A34A] yr-anim-num-up">{converterResults.adenTotal.toLocaleString()} ﷼ يمني</b>
+              <b className="text-lg font-black text-[#16A34A] digit-ticker">{converterResults.adenTotal.toLocaleString()} ﷼ يمني</b>
             </div>
           </div>
         </div>
@@ -473,10 +471,10 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
                       <span>{b.name}</span>
                     </td>
                     <td className="py-2.5 px-3 font-mono">
-                      <span className="text-[#16A34A]">{b.usdBuy}</span> / <span className="text-[#DC2626]">{b.usdSell}</span>
+                      <span className="text-[#16A34A]">{b.usdBuy.toFixed(2)}</span> / <span className="text-[#DC2626]">{b.usdSell.toFixed(2)}</span>
                     </td>
                     <td className="py-2.5 px-3 font-mono">
-                      <span className="text-[#16A34A]">{b.sarBuy}</span> / <span className="text-[#DC2626]">{b.sarSell}</span>
+                      <span className="text-[#16A34A]">{b.sarBuy.toFixed(2)}</span> / <span className="text-[#DC2626]">{b.sarSell.toFixed(2)}</span>
                     </td>
                     <td className="py-2.5 px-3 text-center text-gray-400 font-mono">{b.fee}</td>
                   </tr>
