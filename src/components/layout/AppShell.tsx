@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
-  Menu, Bell, Search, MapPin, X, ChevronLeft, ChevronDown
+  Menu, Bell, Search, MapPin, X, ChevronLeft
 } from 'lucide-react';
 import { PLATFORM_NAVIGATION } from '../../config/navigationConfig';
 import { YEMEN_CITIES } from '../../config/citiesConfig';
@@ -34,23 +34,26 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   return (
     <div dir="rtl" className="min-h-screen bg-[#070A10] text-zinc-100 flex flex-col font-['Cairo',sans-serif]">
       
-      {/* 1. هيدر حقيقي ثابت في أعلى الشاشة */}
-      <header className="sticky top-0 z-40 bg-[#0B0F17]/95 backdrop-blur-md border-b border-[#1F2937] shadow-lg">
+      {/* 1. الهيدر الثابت + الوحدة الإعلانية المنزلقة من جذره مباشرة */}
+      <header className="sticky top-0 z-40 bg-[#0B0F17]/98 backdrop-blur-md border-b border-[#1F2937] shadow-xl">
         <Header
           onToggleSidebar={() => setIsSidebarOpen(true)}
           onNavigateHome={() => navigate('/')}
           onNavigateNotifications={() => navigate('/notifications')}
           unreadNotificationsCount={3}
         />
+
+        {/* الوحدة الإعلانية المنزلقة من جذر الهيدر تماماً في الصفحة الرئيسية */}
+        {isMainHome && (
+          <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pb-2 pt-0.5 yr-header-ad-slide overflow-hidden border-t border-[#1F2937]/40">
+            <AdBanner placementId="1" className="mb-0 shadow-lg" />
+          </div>
+        )}
       </header>
 
-      {/* 2. الإعلان العلوي وشريط البحث تحته بمسافات مريحة في الصفحة الرئيسية */}
+      {/* 2. شريط البحث المستقل بمسافة مريحة تحت الهيدر والإعلان */}
       {isMainHome && (
-        <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pt-3 space-y-3">
-          {/* الإعلان */}
-          <AdBanner placementId="1" className="mb-0 shadow-md" />
-
-          {/* شريط البحث تحت الإعلان بمسافة طبيعية */}
+        <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pt-3 pb-1">
           <div 
             onClick={() => setIsSearchModalOpen(true)}
             className="flex items-center bg-[#121215] border border-[#242428] hover:border-[#FFC500]/40 rounded-2xl p-2.5 px-3.5 shadow-lg cursor-pointer transition-all"
@@ -67,7 +70,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         </div>
       )}
 
-      {/* 3. القائمة الجانبية من اليمين */}
+      {/* 3. القائمة الجانبية الموحدة المفتوحة من اليمين */}
       {isSidebarOpen && (
         <div 
           onClick={() => setIsSidebarOpen(false)}

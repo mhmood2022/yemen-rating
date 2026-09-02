@@ -101,3 +101,20 @@ html, body {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
+
+/* حركة انزلاق الوحدة الإعلانية من جذر الهيدر مباشرة في وضع الهاتف */
+@keyframes yrHeaderSlideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px) scaleY(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+.yr-header-ad-slide {
+  animation: yrHeaderSlideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top center;
+}
