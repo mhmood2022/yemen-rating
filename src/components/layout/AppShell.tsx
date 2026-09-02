@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
-  Menu, Bell, Star, Search, MapPin, X, ChevronDown, 
-  ChevronLeft, ShieldCheck, User, LogIn, ExternalLink
+  Menu, Bell, Search, MapPin, X, ChevronLeft, 
+  ExternalLink, ChevronDown
 } from 'lucide-react';
 import { PLATFORM_NAVIGATION } from '../../config/navigationConfig';
 import { YEMEN_CITIES } from '../../config/citiesConfig';
 import { searchService, TypedSearchResult, SearchResultType } from '../../services/searchService';
 import { YRBadge } from '../common/YRBadge';
+import { YRLogo } from '../common/YRLogo';
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCity, setSelectedCity] = useState('all');
+  const [selectedCity, setSelectedCity] = useState('كل المحافظات');
   const [selectedType, setSelectedType] = useState<SearchResultType | 'all'>('all');
   
   const navigate = useNavigate();
   const location = useLocation();
 
-  // نتائج البحث المصنفة الحية
   const searchResults = React.useMemo(() => {
     return searchService.search(searchQuery, selectedCity, selectedType);
   }, [searchQuery, selectedCity, selectedType]);
@@ -30,69 +30,64 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#070A10] text-zinc-100 flex flex-col font-['Cairo',sans-serif] selection:bg-[#FFC500] selection:text-black">
+    <div dir="rtl" className="min-h-screen bg-[#070A10] text-zinc-100 flex flex-col font-['Cairo',sans-serif]">
       
       {/* 1. الهيدر الموحد الثابت في الأعلى */}
-      <header className="sticky top-0 z-40 bg-[#070A10]/95 backdrop-blur-xl border-b border-[#1F2937] shadow-xl">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-3">
+      <header className="sticky top-0 z-40 bg-[#070A10]/98 backdrop-blur-xl border-b border-[#1F2937] shadow-xl">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-3">
           
-          {/* الشعار الرسمي لمنصة يمن ريتغ */}
-          <div 
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2.5 cursor-pointer group select-none shrink-0"
-          >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#FFC500] to-yellow-300 flex items-center justify-center text-black font-black shadow-lg shadow-[#FFC500]/20 group-hover:scale-105 transition-transform">
-              <Star size={20} className="fill-black" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-white font-black text-sm sm:text-base tracking-wide leading-none">
-                  يمن ريتغ
-                </span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#FFC500]/15 text-[#FFC500] font-black border border-[#FFC500]/30">
-                  الرسمي
-                </span>
-              </div>
-              <span className="text-zinc-400 text-[9px] font-mono tracking-widest block mt-0.5">
-                YEMEN RATING
-              </span>
-            </div>
-          </div>
-
-          {/* شريط البحث المصنف المدمج في الهيدر */}
-          <div 
-            onClick={() => setIsSearchModalOpen(true)}
-            className="flex-1 max-w-lg hidden sm:flex items-center bg-[#121215] border border-[#242428] hover:border-[#FFC500]/40 rounded-xl px-3 py-1.5 text-xs text-zinc-400 cursor-pointer shadow-inner transition-colors"
-          >
-            <Search size={15} className="text-zinc-500 ml-2 shrink-0" />
-            <span className="flex-1 truncate">ابحث في البنوك، الشركات، الوظائف، العقارات، المزادات...</span>
-            <kbd className="hidden lg:inline-block px-1.5 py-0.5 rounded bg-zinc-800 text-[10px] text-zinc-400 font-mono">بحث عام</kbd>
-          </div>
-
-          {/* أزرار الإجراءات */}
-          <div className="flex items-center gap-2">
-            {/* زر البحث في الموبايل */}
+          {/* اليمين: زر القائمة الجانبية (☰) + الشعار الرسمي المعتمد */}
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <button
-              onClick={() => setIsSearchModalOpen(true)}
-              className="sm:hidden w-9 h-9 rounded-xl bg-[#121215] border border-[#222226] text-zinc-300 hover:text-[#FFC500] flex items-center justify-center cursor-pointer"
-            >
-              <Search size={17} />
-            </button>
-
-            {/* القائمة الجانبية */}
-            <button
+              type="button"
               onClick={() => setIsSidebarOpen(true)}
-              className="w-9 h-9 rounded-xl bg-[#121215] border border-[#222226] text-white hover:text-[#FFC500] hover:border-[#FFC500]/40 flex items-center justify-center transition-all cursor-pointer"
+              className="w-9 h-9 rounded-xl bg-[#121215] border border-[#222226] text-white hover:text-[#FFC500] hover:border-[#FFC500]/40 flex items-center justify-center transition-all cursor-pointer active:scale-95"
               title="القائمة"
             >
               <Menu size={20} />
             </button>
+
+            <div onClick={() => navigate('/')} className="cursor-pointer">
+              <YRLogo />
+            </div>
+          </div>
+
+          {/* اليسار: جرس الإشعارات */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => navigate('/notifications')}
+              className="w-9 h-9 rounded-xl bg-[#121215] border border-[#222226] text-zinc-300 hover:text-[#FFC500] flex items-center justify-center relative transition-all active:scale-95 cursor-pointer"
+              title="الإشعارات"
+            >
+              <Bell size={17} />
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#DC2626] text-white text-[9px] font-black flex items-center justify-center border-2 border-[#070A10]">
+                3
+              </span>
+            </button>
           </div>
 
         </div>
+
+        {/* 2. شريط البحث المستقل الموضوع تحت الهيدر مباشرة */}
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 pb-2.5 pt-1">
+          <div 
+            onClick={() => setIsSearchModalOpen(true)}
+            className="flex items-center bg-[#121215] border border-[#242428] hover:border-[#FFC500]/40 rounded-2xl p-2 px-3.5 shadow-lg cursor-pointer transition-all"
+          >
+            <Search size={16} className="text-[#8E8E93] ml-2 shrink-0" />
+            <span className="flex-1 text-xs text-zinc-400 font-medium truncate">
+              ابحث عن بنك، شركة، عقار، مزاد، وظيفة...
+            </span>
+            <div className="flex items-center gap-1 border-r border-[#27272A] pr-2.5 mr-1 text-[#D1D5DB]">
+              <MapPin size={13} className="text-[#FFC500]" />
+              <span className="text-[11px] font-bold whitespace-nowrap">{selectedCity}</span>
+            </div>
+          </div>
+        </div>
       </header>
 
-      {/* 2. القائمة الجانبية الموحدة للكمبيوتر والموبايل */}
+      {/* 3. القائمة الجانبية الموحدة المفتوحة من اليمين */}
       {isSidebarOpen && (
         <div 
           onClick={() => setIsSidebarOpen(false)}
@@ -104,15 +99,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
         <div className="h-16 flex items-center justify-between px-5 border-b border-[#1F2937] bg-[#111827]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#FFC500] text-black flex items-center justify-center font-black text-base">
-              YR
-            </div>
-            <div>
-              <h3 className="text-white font-black text-xs leading-none">أقسام يمن ريتغ</h3>
-              <span className="text-[10px] text-zinc-400">الدليل الوطني الشامل</span>
-            </div>
-          </div>
+          <YRLogo size="sm" />
           <button onClick={() => setIsSidebarOpen(false)} className="text-zinc-400 hover:text-white cursor-pointer">
             <X size={20} />
           </button>
@@ -144,7 +131,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         </nav>
       </aside>
 
-      {/* 3. نافذة البحث العام المصنف (Global Search Modal) */}
+      {/* 4. نافذة البحث العام المصنف عند الضغط */}
       {isSearchModalOpen && (
         <div 
           onClick={() => setIsSearchModalOpen(false)}
@@ -154,7 +141,6 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             onClick={e => e.stopPropagation()}
             className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-2xl p-4 sm:p-5 space-y-3.5 shadow-2xl max-h-[85vh] flex flex-col"
           >
-            {/* حقل البحث */}
             <div className="flex items-center bg-[#18181C] border border-[#27272A] focus-within:border-[#FFC500] rounded-xl px-3 py-2">
               <Search size={18} className="text-[#FFC500] ml-2 shrink-0" />
               <input
@@ -172,7 +158,6 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
               )}
             </div>
 
-            {/* أزرار الفلترة حسب نوع الكيان (Typed Filters) والمدينة */}
             <div className="flex items-center justify-between gap-2 flex-wrap border-b border-[#222226] pb-2.5">
               <div className="flex gap-1 overflow-x-auto no-scrollbar">
                 {[
@@ -206,11 +191,10 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
               </select>
             </div>
 
-            {/* قائمة النتائج المصنفة الصريحة */}
             <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-0.5">
               {searchResults.length === 0 ? (
                 <div className="text-center py-12 text-zinc-500 text-xs">
-                  لا توجد نتائج مطابقة لبحثك. جرب كتابة كلمة أخرى.
+                  لا توجد نتائج مطابقة لبحثك.
                 </div>
               ) : (
                 searchResults.map(res => (
@@ -258,7 +242,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         </div>
       )}
 
-      {/* 4. المحتوى الرئيسي */}
+      {/* 5. المحتوى الرئيسي */}
       <main className="flex-1 pb-16">
         {children}
       </main>
