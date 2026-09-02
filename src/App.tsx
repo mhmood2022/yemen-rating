@@ -7,6 +7,7 @@ import { AppShell } from './components/layout/AppShell';
 // الصفحات الرئيسية والأدلة
 import { HomeView } from './components/home/HomeView';
 import { BanksPage } from './pages/public/banks/BanksPage';
+import { BusinessesPage } from './pages/public/businesses/BusinessesPage';
 import { PhoneMarketPage } from './pages/PhoneMarketPage';
 import { AuctionsPage } from './components/pages/AuctionsPage';
 import { RealEstatePage } from './components/pages/RealEstatePage';
@@ -20,6 +21,9 @@ import { BusinessProfilePage } from './pages/templates/BusinessProfilePage';
 import { JobDetailsPage } from './pages/templates/JobDetailsPage';
 import { PropertyDetailsPage } from './pages/templates/PropertyDetailsPage';
 import { AuctionDetailsPage } from './pages/templates/AuctionDetailsPage';
+
+// لوحة تحكم مالك المنشأة المعتمد
+import { OwnerDashboardPage } from './pages/owner/OwnerDashboardPage';
 
 // لوحة التحكم الإدارية
 import { AdminMaster } from './pages/admin/AdminMaster';
@@ -54,8 +58,8 @@ export function App() {
         <Route path="/banks" element={<AppShell><BanksPage /></AppShell>} />
         <Route path="/banks/:slug" element={<AppShell><BankProfilePage /></AppShell>} />
 
-        {/* مسارات المنشآت والشركات (دليل + قالب ديناميكي) */}
-        <Route path="/businesses" element={<AppShell><div className="p-4 text-center">دليل المنشآت والشركات</div></AppShell>} />
+        {/* مسارات المنشآت والشركات (دليل + قالب ديناميكي موحد) */}
+        <Route path="/businesses" element={<AppShell><BusinessesPage /></AppShell>} />
         <Route path="/businesses/:slug" element={<AppShell><BusinessProfilePage /></AppShell>} />
 
         {/* مسارات الوظائف (دليل + قالب ديناميكي) */}
@@ -73,6 +77,9 @@ export function App() {
         {/* مسارات سوق الهواتف وأسعار الصرف */}
         <Route path="/phones" element={<AppShell><PhoneMarketPage onNavigate={() => window.history.back()} /></AppShell>} />
         <Route path="/exchange-rates" element={<AppShell><ExchangeRatesPage onBack={() => window.history.back()} /></AppShell>} />
+
+        {/* لوحة تحكم مالك المنشأة */}
+        <Route path="/owner" element={<AppShell><OwnerDashboardPage /></AppShell>} />
 
         {/* لوحة التحكم المعزولة والمحمية /admin */}
         <Route path="/admin" element={<AdminMaster />}>

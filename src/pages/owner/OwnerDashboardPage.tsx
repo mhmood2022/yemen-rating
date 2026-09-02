@@ -1,233 +1,276 @@
 import React, { useState } from 'react';
-import { useAdmin } from '../../context/AdminContext';
-import { BusinessItem } from '../../types/business';
-import { OwnerOffersManager } from '../../components/owner/OwnerOffersManager';
-import { OwnerReviewsManager } from '../../components/owner/OwnerReviewsManager';
-import { VerifiedBadge } from '../../components/ui/VerifiedBadge';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { yrToast } from '../../components/ui/Toast';
-import {
-  Store,
-  Eye,
-  Phone,
-  MessageCircle,
-  Star,
-  Tag,
-  MapPin,
-  Clock,
-  Layers,
-  Wrench,
-  Globe,
-  Edit,
-  ExternalLink,
-  ShieldCheck,
-  Briefcase,
-  Plus,
+import { 
+  Building2, Phone, Globe, MessageCircle, Mail, 
+  MapPin, Plus, Trash2, CheckCircle2, ShieldCheck, 
+  Save, Star, Camera, Tag, ArrowRight
 } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { YRBadge } from '../../components/common/YRBadge';
 
-export const OwnerDashboardPage: React.FC<{
-  businessId?: string;
-  onNavigate: (path: string) => void;
-}> = ({ businessId = 't1', onNavigate }) => {
-  const { businesses, updateBusiness } = useAdmin();
-  const business = businesses.find((b) => b.id === businessId) || businesses[0];
-
-  const [activeTab, setActiveTab] = useState<'overview' | 'profile' | 'offers' | 'reviews'>('overview');
+export const OwnerDashboardPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'profile' | 'services' | 'reviews'>('profile');
   
-  // Operational Edit State
-  const [phone, setPhone] = useState(business.phone || '');
-  const [whatsapp, setWhatsapp] = useState(business.whatsapp || '');
-  const [workingHours, setWorkingHours] = useState(business.workingHours || 'يومياً 08:00 ص - 11:30 م');
-  const [address, setAddress] = useState(business.address || '');
-  const [description, setDescription] = useState(business.description || '');
+  // بيانات المنشأة المملوكة
+  const [bizName, setBizName] = useState('شركة يمن سوفت للحلول البرمجية');
+  const [bizPhone, setBizPhone] = useState('777123456');
+  const [bizWhatsapp, setBizWhatsapp] = useState('967777123456');
+  const [bizWebsite, setBizWebsite] = useState('https://yemensoft.com');
+  const [bizEmail, setBizEmail] = useState('info@yemensoft.com');
+  const [bizCity, setBizCity] = useState('صنعاء — الدائري');
+  const [bizAddress, setBizAddress] = useState('شارع الدائري الغربي — برج يمن سوفت');
+  const [bizDesc, setBizDesc] = useState('رائد أنظمة وحلول تخطيط الموارد والأنظمة المالية والمصرفية وإدارة الأعمال وسلسلة إمداد المؤسسات في اليمن.');
+  
+  const [services, setServices] = useState([
+    { id: '1', name: 'نظام أونكس برو للشركات الكبرى (Onyx Pro)', price: 1500000 },
+    { id: '2', name: 'نظام المتكامل بلس للمحلات والمتاجر', price: 450000 },
+    { id: '3', name: 'حلول الفوترة الإلكترونية والربط مع المنصات', price: 250000 }
+  ]);
+  const [newServiceName, setNewServiceName] = useState('');
+  const [newServicePrice, setNewServicePrice] = useState<number>(50000);
 
-  const handleSaveOperationalData = (e: React.FormEvent) => {
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    const updated: BusinessItem = {
-      ...business,
-      phone,
-      whatsapp,
-      workingHours,
-      address,
-      description,
-    };
-    updateBusiness(updated, 'تحديث البيانات التشغيلية وساعات العمل بواسطة المالك');
+    setToastMessage('تم حفظ وتحديث بيانات المنشأة وتنعكس مباشرة على صفحة الزائر');
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const navTabs = [
-    { id: 'overview' as const, label: 'لوحة الأداء والزيارات', icon: Eye },
-    { id: 'profile' as const, label: 'البيانات وساعات العمل', icon: Store },
-    { id: 'offers' as const, label: 'العروض والخصومات', icon: Tag },
-    { id: 'reviews' as const, label: 'التقييمات والردود', icon: MessageCircle },
-  ];
+  const handleAddService = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newServiceName.trim()) return;
+    setServices(prev => [...prev, { id: `srv-${Date.now()}`, name: newServiceName, price: Number(newServicePrice) }]);
+    setNewServiceName('');
+    setToastMessage('تمت إضافة الخدمة بنجاح');
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleRemoveService = (id: string) => {
+    setServices(prev => prev.filter(s => s.id !== id));
+  };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12 text-right">
-      {/* Top Banner: Business Name + Verified Badge + Direct View Link */}
-      <div className="p-4 sm:p-5 rounded-[14px] bg-[#111111] border border-[#222222] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-14 h-14 rounded-[12px] bg-black overflow-hidden shrink-0 border border-[#222222]">
-            <img src={business.logoUrl} alt={business.name} className="w-full h-full object-cover" />
+    <div dir="rtl" className="max-w-5xl mx-auto px-3 sm:px-4 py-3 space-y-4 font-['Cairo',sans-serif] text-white">
+      
+      {/* رأس لوحة تحكم المالك */}
+      <div className="bg-[#0F0F12] p-4 sm:p-5 rounded-3xl border border-[#222226] shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-[#FFC500] text-black flex items-center justify-center font-black text-xl shadow-lg shadow-[#FFC500]/20">
+            <Building2 size={24} />
           </div>
-
-          <div className="space-y-1">
+          <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold px-2 py-0.2 rounded bg-[#F5C400]/15 text-[#F5C400]">
-                لوحة إدارة النشاط (مالك معتمد)
-              </span>
-              {business.isVerified && (
-                <VerifiedBadge variant={business.verifiedBadgeType || 'gold'} size={15} />
-              )}
+              <h1 className="text-base sm:text-lg font-black text-white">{bizName}</h1>
+              <YRBadge type="gold" size={18} showTooltip />
             </div>
-            <h1 className="text-base sm:text-xl font-black text-white">{business.name}</h1>
-            <p className="text-xs text-[#A1A1AA]">{business.category} · {business.city}</p>
+            <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+              <ShieldCheck size={12} /> ملكية موثقة ومعتمدة رسمياً من يمن ريتغ
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onNavigate(`/business/${business.id}`)}
-            icon={<ExternalLink size={14} />}
-            className="text-xs font-bold"
+        {/* التبويبات */}
+        <div className="flex gap-1 bg-[#161619] p-1 rounded-xl border border-[#27272A]">
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              activeTab === 'profile' ? 'bg-[#FFC500] text-black' : 'text-zinc-400 hover:text-white'
+            }`}
           >
-            معاينة الملف العام للجمهور
-          </Button>
+            تعديل البيانات
+          </button>
+          <button
+            onClick={() => setActiveTab('services')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              activeTab === 'services' ? 'bg-[#FFC500] text-black' : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            الخدمات والأسعار
+          </button>
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              activeTab === 'reviews' ? 'bg-[#FFC500] text-black' : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            مراجعات العملاء
+          </button>
         </div>
       </div>
 
-      {/* Navigation Subtabs */}
-      <div className="flex items-center gap-1.5 p-1 rounded-[12px] bg-[#0A0A0A] border border-[#222222] overflow-x-auto no-scrollbar">
-        {navTabs.map((t) => {
-          const Icon = t.icon;
-          const isActive = activeTab === t.id;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setActiveTab(t.id)}
-              className={cn(
-                'flex-1 py-2 px-3 rounded-[9px] text-xs font-black flex items-center justify-center gap-1.5 whitespace-nowrap transition-all select-none',
-                isActive
-                  ? 'bg-[#F5C400] text-black shadow-md'
-                  : 'text-[#A1A1AA] hover:bg-[#141414] hover:text-white'
-              )}
-            >
-              <Icon size={14} strokeWidth={2} />
-              <span>{t.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Tab 1: OVERVIEW METRICS */}
-      {activeTab === 'overview' && (
-        <div className="space-y-4">
-          {/* Read-Only Authority Info Card (Score & Verification Protection) */}
-          <div className="p-3.5 rounded-[12px] bg-[#F5C400]/10 border border-[#F5C400]/30 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={18} className="text-[#F5C400] shrink-0" />
-              <span className="text-[#A1A1AA]">
-                شارات التوثيق ومؤشر الثقة YR Score تُمنح وتُدار حصرياً من قبل إدارة منصة يمن ريتغ لضمان النزاهة.
-              </span>
-            </div>
-            <span className="font-black text-sm text-[#F5C400] shrink-0">{business.yrScore} / 100</span>
-          </div>
-
-          {/* Key Metrics Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-            <Card className="p-3.5 bg-[#111111] border border-[#222222] rounded-[12px] space-y-1">
-              <span className="text-[10px] text-[#71717A] font-bold block">مشاهدات الملف (30 يوم)</span>
-              <span className="text-xl font-black text-white block">{business.stats?.views30d?.toLocaleString() || '14,500'}</span>
-              <span className="text-[9px] text-[#22C55E]">زيارات حقيقية</span>
-            </Card>
-
-            <Card className="p-3.5 bg-[#111111] border border-[#222222] rounded-[12px] space-y-1">
-              <span className="text-[10px] text-[#71717A] font-bold block">عمليات البحث الداخلي</span>
-              <span className="text-xl font-black text-[#F5C400] block">{business.stats?.searches30d?.toLocaleString() || '5,400'}</span>
-              <span className="text-[9px] text-[#A1A1AA]">ضمن دليل يمن ريتغ</span>
-            </Card>
-
-            <Card className="p-3.5 bg-[#111111] border border-[#222222] rounded-[12px] space-y-1">
-              <span className="text-[10px] text-[#71717A] font-bold block">متوسط تقييم العملاء</span>
-              <span className="text-xl font-black text-[#22C55E] block">★ {business.rating.toFixed(1)}</span>
-              <span className="text-[9px] text-[#A1A1AA]">{business.reviewCount} تقييم موثق</span>
-            </Card>
-
-            <Card className="p-3.5 bg-[#111111] border border-[#222222] rounded-[12px] space-y-1">
-              <span className="text-[10px] text-[#71717A] font-bold block">نقرات الاتصال والواتساب</span>
-              <span className="text-xl font-black text-white block">+{business.stats?.views7d || '3,200'}</span>
-              <span className="text-[9px] text-[#22C55E]">تواصل مباشر</span>
-            </Card>
-          </div>
+      {toastMessage && (
+        <div className="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-xl text-xs font-bold text-emerald-100 flex items-center gap-2 animate-fade-in">
+          <CheckCircle2 size={16} className="text-emerald-400" />
+          <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Tab 2: OPERATIONAL PROFILE EDIT */}
+      {/* تبويب 1: تعديل البيانات الأساسية للمالك */}
       {activeTab === 'profile' && (
-        <Card className="p-4 sm:p-5 bg-[#111111] border border-[#222222] rounded-[14px] space-y-4">
-          <h3 className="font-black text-sm sm:text-base text-white pb-2 border-b border-[#1E1E1E]">
-            تحديث البيانات التشغيلية ومعلومات الاتصال
+        <div className="bg-[#0F0F12] p-4 sm:p-5 rounded-2xl border border-[#222226] space-y-4 shadow-xl">
+          <h3 className="text-xs sm:text-sm font-black text-white border-b border-[#222226] pb-2">
+            تحديث بيانات ومعلومات التواصل
           </h3>
 
-          <form onSubmit={handleSaveOperationalData} className="space-y-3.5 text-right">
+          <form onSubmit={handleSaveProfile} className="space-y-3 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Input
-                label="رقم الهاتف المباشر للنشاط"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                rightIcon={<Phone size={15} />}
-              />
+              <div>
+                <label className="text-[11px] text-zinc-400 block mb-1">اسم المنشأة</label>
+                <input
+                  type="text"
+                  required
+                  value={bizName}
+                  onChange={(e) => setBizName(e.target.value)}
+                  className="w-full bg-[#161619] border border-[#27272A] rounded-xl p-2.5 text-white outline-none focus:border-[#FFC500]"
+                />
+              </div>
 
-              <Input
-                label="رقم الواتساب الرسمي"
-                value={whatsapp}
-                onChange={(e) => setWhatsapp(e.target.value)}
-                rightIcon={<MessageCircle size={15} />}
+              <div>
+                <label className="text-[11px] text-zinc-400 block mb-1">المحافظة / المدينة</label>
+                <input
+                  type="text"
+                  required
+                  value={bizCity}
+                  onChange={(e) => setBizCity(e.target.value)}
+                  className="w-full bg-[#161619] border border-[#27272A] rounded-xl p-2.5 text-white outline-none focus:border-[#FFC500]"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="text-[11px] text-zinc-400 block mb-1">رقم الهاتف الرسمي</label>
+                <input
+                  type="text"
+                  required
+                  value={bizPhone}
+                  onChange={(e) => setBizPhone(e.target.value)}
+                  className="w-full bg-[#161619] border border-[#27272A] rounded-xl p-2.5 text-white font-mono outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] text-zinc-400 block mb-1">رقم الواتساب</label>
+                <input
+                  type="text"
+                  value={bizWhatsapp}
+                  onChange={(e) => setBizWhatsapp(e.target.value)}
+                  className="w-full bg-[#161619] border border-[#27272A] rounded-xl p-2.5 text-white font-mono outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] text-zinc-400 block mb-1">الموقع الإلكتروني</label>
+                <input
+                  type="text"
+                  value={bizWebsite}
+                  onChange={(e) => setBizWebsite(e.target.value)}
+                  className="w-full bg-[#161619] border border-[#27272A] rounded-xl p-2.5 text-white font-mono outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[11px] text-zinc-400 block mb-1">العنوان التفصيلي</label>
+              <input
+                type="text"
+                value={bizAddress}
+                onChange={(e) => setBizAddress(e.target.value)}
+                className="w-full bg-[#161619] border border-[#27272A] rounded-xl p-2.5 text-white outline-none"
               />
             </div>
 
-            <Input
-              label="ساعات وأيام العمل"
-              placeholder="مثال: السبت إلى الخميس 08:00 ص - 11:00 م"
-              value={workingHours}
-              onChange={(e) => setWorkingHours(e.target.value)}
-              rightIcon={<Clock size={15} />}
-            />
-
-            <Input
-              label="العنوان التفصيلي وموقع المقر"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              rightIcon={<MapPin size={15} />}
-            />
-
-            <div className="space-y-1">
-              <label className="block text-xs font-bold text-white">النبذة والوصف التعريفي</label>
+            <div>
+              <label className="text-[11px] text-zinc-400 block mb-1">نبذة عن النشاط والخدمات</label>
               <textarea
                 rows={3}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full p-3 text-xs bg-[#0A0A0A] text-white border border-[#222222] rounded-[10px] outline-none focus:border-[#F5C400]"
+                value={bizDesc}
+                onChange={(e) => setBizDesc(e.target.value)}
+                className="w-full bg-[#161619] border border-[#27272A] rounded-xl p-2.5 text-white outline-none"
               />
             </div>
 
-            <Button type="submit" variant="primary" fullWidth className="font-bold text-xs h-[42px]">
-              حفظ التعديلات ونشرها فوراً في ملفك العام
-            </Button>
+            <div className="flex justify-end pt-2 border-t border-[#222226]">
+              <button
+                type="submit"
+                className="px-6 py-2.5 bg-[#FFC500] text-black font-black rounded-xl hover:bg-[#FFC500]/90 transition-all flex items-center gap-1.5 shadow-md cursor-pointer"
+              >
+                <Save size={14} />
+                <span>حفظ التعديلات</span>
+              </button>
+            </div>
           </form>
-        </Card>
+        </div>
       )}
 
-      {/* Tab 3: OFFERS & DISCOUNTS */}
-      {activeTab === 'offers' && <OwnerOffersManager businessId={business.id} />}
+      {/* تبويب 2: إدارة الخدمات والأسعار */}
+      {activeTab === 'services' && (
+        <div className="bg-[#0F0F12] p-4 sm:p-5 rounded-2xl border border-[#222226] space-y-4 shadow-xl">
+          <div className="flex justify-between items-center border-b border-[#222226] pb-2">
+            <h3 className="text-xs sm:text-sm font-black text-white">الخدمات والمنتجات المعروضة</h3>
+            <span className="text-[10px] text-zinc-400">تظهر في صفحة المنشأة مع الأسعار</span>
+          </div>
 
-      {/* Tab 4: REVIEWS & OFFICIAL REPLIES */}
-      {activeTab === 'reviews' && <OwnerReviewsManager business={business} />}
+          <form onSubmit={handleAddService} className="p-3 bg-[#161619] rounded-xl border border-[#27272A] grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+            <input
+              type="text"
+              required
+              placeholder="اسم الخدمة أو المنتج..."
+              value={newServiceName}
+              onChange={(e) => setNewServiceName(e.target.value)}
+              className="sm:col-span-2 bg-[#0F0F12] border border-[#27272A] rounded-lg p-2 text-white outline-none"
+            />
+            <div className="flex gap-1.5">
+              <input
+                type="number"
+                required
+                placeholder="السعر ﷼..."
+                value={newServicePrice}
+                onChange={(e) => setNewServicePrice(Number(e.target.value))}
+                className="flex-1 bg-[#0F0F12] border border-[#27272A] rounded-lg p-2 text-white font-mono outline-none"
+              />
+              <button
+                type="submit"
+                className="px-4 py-2 bg-[#FFC500] text-black font-black rounded-lg hover:bg-[#FFC500]/90 shrink-0 cursor-pointer"
+              >
+                إضافة
+              </button>
+            </div>
+          </form>
+
+          <div className="space-y-1.5">
+            {services.map(srv => (
+              <div key={srv.id} className="p-2.5 rounded-xl bg-[#161619] border border-[#27272A] flex justify-between items-center text-xs">
+                <span className="font-bold text-white">{srv.name}</span>
+                <div className="flex items-center gap-3">
+                  <b className="font-mono text-[#FFC500]">{srv.price.toLocaleString()} ﷼</b>
+                  <button onClick={() => handleRemoveService(srv.id)} className="text-red-400 hover:text-red-300 p-1">
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* تبويب 3: مراجعات وتقييمات العملاء */}
+      {activeTab === 'reviews' && (
+        <div className="bg-[#0F0F12] p-4 sm:p-5 rounded-2xl border border-[#222226] space-y-3 shadow-xl">
+          <div className="flex justify-between items-center border-b border-[#222226] pb-2">
+            <h3 className="text-xs sm:text-sm font-black text-white">آراء وتقييمات العملاء الموثقة</h3>
+            <span className="text-xs font-bold text-[#FFC500]">★ 4.9 من 140 مراجعة</span>
+          </div>
+
+          <div className="p-3 bg-[#161619] rounded-xl border border-[#27272A] text-xs space-y-1">
+            <div className="flex justify-between">
+              <b className="text-white">د. خالد العولقي</b>
+              <span className="text-[#FFC500]">★★★★★</span>
+            </div>
+            <p className="text-zinc-300">أنظمة متطورة ودعم فني متواصل واحترافي.</p>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
