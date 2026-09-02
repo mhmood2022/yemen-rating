@@ -16,48 +16,39 @@ export const Header: React.FC<HeaderProps> = ({
   unreadNotificationsCount = 3
 }) => {
   return (
-    <header dir="rtl" className="w-full bg-[#070A10]/98 backdrop-blur-md px-3 sm:px-4 py-2 font-['Cairo',sans-serif]">
-      <div className="max-w-6xl mx-auto flex items-center justify-between">
-        
-        {/* اليمين: زر القائمة الجانبية (☰) + الشعار الرسمي المعتمد */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* 1. زر القائمة الجانبية في اليمين */}
-          <button
-            type="button"
-            onClick={onToggleSidebar}
-            className="w-9 h-9 rounded-xl bg-[#121215] border border-[#222226] text-white hover:text-[#FFC500] hover:border-[#FFC500]/40 flex items-center justify-center transition-all cursor-pointer active:scale-95"
-            title="القائمة"
-          >
-            <Menu size={20} />
-          </button>
+    <div dir="rtl" className="w-full max-w-6xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between font-['Cairo',sans-serif]">
+      
+      {/* اليمين: زر القائمة الجانبية الحر (بدون أطر) + الشعار الرسمي بالدرع أولاً */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onToggleSidebar}
+          className="text-white hover:text-[#FFC500] transition-colors p-1 cursor-pointer bg-transparent border-0 outline-none active:scale-95"
+          title="القائمة"
+        >
+          <Menu size={24} className="stroke-[2.5]" />
+        </button>
 
-          {/* 2. الشعار الرسمي المعتمد */}
-          <div 
-            onClick={onNavigateHome}
-            className="cursor-pointer group flex items-center"
-          >
-            <YRLogo />
-          </div>
+        <div onClick={onNavigateHome} className="cursor-pointer">
+          <YRLogo />
         </div>
-
-        {/* اليسار: جرس الإشعارات */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onNavigateNotifications}
-            className="w-9 h-9 rounded-xl bg-[#121215] border border-[#222226] text-zinc-300 hover:text-[#FFC500] hover:border-[#FFC500]/40 flex items-center justify-center relative transition-all active:scale-95 cursor-pointer"
-            title="الإشعارات"
-          >
-            <Bell size={17} />
-            {unreadNotificationsCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#DC2626] text-white text-[9px] font-black flex items-center justify-center border-2 border-[#070A10]">
-                {unreadNotificationsCount}
-              </span>
-            )}
-          </button>
-        </div>
-
       </div>
-    </header>
+
+      {/* اليسار: جرس الإشعارات الحر (بدون أطر) */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onNavigateNotifications}
+          className="text-zinc-200 hover:text-[#FFC500] transition-colors p-1 relative cursor-pointer bg-transparent border-0 outline-none active:scale-95"
+          title="الإشعارات"
+        >
+          <Bell size={21} className="stroke-[2.2]" />
+          {unreadNotificationsCount > 0 && (
+            <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-[#DC2626] animate-pulse" />
+          )}
+        </button>
+      </div>
+
+    </div>
   );
 };
