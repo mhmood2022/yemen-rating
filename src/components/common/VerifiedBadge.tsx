@@ -17,44 +17,53 @@ export const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
 }) => {
   if (type === 'none') return null;
 
-  const sizeClasses = {
-    sm: 'w-3.5 h-3.5',
-    md: 'w-4 h-4 sm:w-5 sm:h-5',
-    lg: 'w-5 h-5 sm:w-6 sm:h-6'
+  const sizeDimensions = {
+    sm: { w: 16, h: 16 },
+    md: { w: 20, h: 20 },
+    lg: { w: 24, h: 24 }
   };
 
-  const colorFills = {
+  const dim = sizeDimensions[size] || sizeDimensions.md;
+
+  const badgeColors = {
+    gold: '#F5C400',
     blue: '#1D9BF0',
-    gold: '#f5b800', // الأصفر الذهبي المعتمد
     gray: '#71717A'
   };
 
-  const defaultTooltips = {
-    blue: 'منشأة موثقة رسمياً',
-    gold: 'شريك ذهبي معتمد - يمن ريتينغ',
-    gray: 'جهة معتمدة'
-  };
+  const fill = badgeColors[type] || badgeColors.gold;
+  const defaultLabel = type === 'gold' ? 'موثق رسمياً (Gold)' : type === 'blue' ? 'موثق بالسجل التجاري (Blue)' : 'حساب معتمد';
 
   return (
     <span
-      className={`inline-flex items-center justify-center flex-shrink-0 align-middle ${className}`}
-      title={tooltipText || defaultTooltips[type]}
+      className={`inline-flex items-center justify-center shrink-0 align-middle ${className}`}
+      title={tooltipText || defaultLabel}
+      aria-label={tooltipText || defaultLabel}
     >
       <svg
+        width={dim.w}
+        height={dim.h}
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className={`${sizeClasses[size]} drop-shadow-sm transition-transform hover:scale-110`}
+        className="transition-transform hover:scale-110"
       >
+        {/* رسمة الشارة المتموجة الرسمية 12-Point Wavy Star Burst */}
         <path
-          d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6c-1.58 0-2.95.875-3.6 2.148-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 0 .495.084.965.238 1.4C1.475 9.55.6 10.92.6 12.5c0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.79 4 4 4 .495 0 .965-.084 1.4-.238.65 1.273 2.02 2.148 3.6 2.148 1.58 0 2.95-.875 3.6-2.148.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6z"
-          fill={colorFills[type]}
+          d="M10.29 2.308a2.5 2.5 0 013.42 0l.66.626a2.5 2.5 0 002.327.624l.89-.228a2.5 2.5 0 013.064 1.768l.243.886a2.5 2.5 0 001.768 1.768l.886.243a2.5 2.5 0 011.768 3.064l-.228.89a2.5 2.5 0 00.624 2.327l.626.66a2.5 2.5 0 010 3.42l-.626.66a2.5 2.5 0 00-.624 2.327l.228.89a2.5 2.5 0 01-1.768 3.064l-.886.243a2.5 2.5 0 00-1.768 1.768l-.243.886a2.5 2.5 0 01-3.064 1.768l-.89-.228a2.5 2.5 0 00-2.327.624l-.66.626a2.5 2.5 0 01-3.42 0l-.66-.626a2.5 2.5 0 00-2.327-.624l-.89.228a2.5 2.5 0 01-3.064-1.768l-.243-.886a2.5 2.5 0 00-1.768-1.768l-.886-.243a2.5 2.5 0 01-1.768-3.064l.228-.89a2.5 2.5 0 00-.624-2.327l-.626-.66a2.5 2.5 0 010-3.42l.626-.66a2.5 2.5 0 00.624-2.327l-.228-.89a2.5 2.5 0 011.768-3.064l.886-.243a2.5 2.5 0 001.768-1.768l.243-.886a2.5 2.5 0 013.064-1.768l.89.228a2.5 2.5 0 002.327-.624l.66-.626z"
+          fill={fill}
         />
+        {/* علامة الصح البيضاء النقية */}
         <path
-          d="M10.2 16.2L6 12l1.4-1.4 2.8 2.8 6.4-6.4 1.4 1.4z"
-          fill="#FFFFFF"
+          d="M8.5 12.2l2.3 2.3 4.8-4.8"
+          stroke="#FFFFFF"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
       </svg>
     </span>
   );
 };
+
+export default VerifiedBadge;
