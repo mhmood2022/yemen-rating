@@ -7,7 +7,7 @@ import { PLATFORM_NAVIGATION } from '../../config/navigationConfig';
 import { YEMEN_CITIES } from '../../config/citiesConfig';
 import { searchService, TypedSearchResult, SearchResultType } from '../../services/searchService';
 import { YRBadge } from '../common/YRBadge';
-import { YRLogo } from '../common/YRLogo';
+import { Header } from '../Header';
 import { AdBanner } from '../common/AdBanner';
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -34,65 +34,40 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   return (
     <div dir="rtl" className="min-h-screen bg-[#070A10] text-zinc-100 flex flex-col font-['Cairo',sans-serif]">
       
-      {/* 1. الحاوية العلوية المثبتة */}
-      <header className="sticky top-0 z-40 bg-[#070A10]/98 backdrop-blur-xl border-b border-[#1F2937] shadow-xl">
-        
-        {/* أ) الهيدر النقي بدون أي أطر حول الأيقونات */}
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setIsSidebarOpen(true)}
-              className="text-white hover:text-[#FFC500] transition-colors p-1 cursor-pointer bg-transparent border-0 outline-none active:scale-95"
-              title="القائمة"
-            >
-              <Menu size={24} className="stroke-[2.5]" />
-            </button>
-
-            <div onClick={() => navigate('/')} className="cursor-pointer">
-              <YRLogo />
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => navigate('/notifications')}
-            className="text-zinc-200 hover:text-[#FFC500] transition-colors p-1 relative cursor-pointer bg-transparent border-0 outline-none"
-            title="الإشعارات"
-          >
-            <Bell size={21} className="stroke-[2.2]" />
-            <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-[#DC2626] animate-pulse" />
-          </button>
-        </div>
-
-        {/* ب) الوحدة الإعلانية الواقعة بين الهيدر وشريط البحث */}
-        {isMainHome && (
-          <div className="max-w-6xl mx-auto px-3 py-1 border-t border-[#1F2937]/30">
-            <AdBanner placementId="1" className="mb-0" />
-          </div>
-        )}
-
-        {/* ج) شريط البحث المستقل الموضوع تحت الوحدة الإعلانية مباشرة */}
-        {isMainHome && (
-          <div className="max-w-6xl mx-auto px-3 pb-2 pt-1">
-            <div 
-              onClick={() => setIsSearchModalOpen(true)}
-              className="flex items-center bg-[#121215] border border-[#242428] hover:border-[#FFC500]/40 rounded-2xl p-2 px-3.5 shadow-lg cursor-pointer transition-all"
-            >
-              <Search size={16} className="text-[#8E8E93] ml-2 shrink-0" />
-              <span className="flex-1 text-xs text-zinc-400 font-medium truncate">
-                ابحث عن بنك، شركة، عقار، مزاد، وظيفة...
-              </span>
-              <div className="flex items-center gap-1 border-r border-[#27272A] pr-2.5 mr-1 text-[#D1D5DB]">
-                <MapPin size={13} className="text-[#FFC500]" />
-                <span className="text-[11px] font-bold whitespace-nowrap">{selectedCity}</span>
-              </div>
-            </div>
-          </div>
-        )}
+      {/* 1. هيدر حقيقي ثابت في أعلى الشاشة */}
+      <header className="sticky top-0 z-40 bg-[#0B0F17]/95 backdrop-blur-md border-b border-[#1F2937] shadow-lg">
+        <Header
+          onToggleSidebar={() => setIsSidebarOpen(true)}
+          onNavigateHome={() => navigate('/')}
+          onNavigateNotifications={() => navigate('/notifications')}
+          unreadNotificationsCount={3}
+        />
       </header>
 
-      {/* 2. القائمة الجانبية المفتوحة من اليمين */}
+      {/* 2. الإعلان العلوي وشريط البحث تحته بمسافات مريحة في الصفحة الرئيسية */}
+      {isMainHome && (
+        <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pt-3 space-y-3">
+          {/* الإعلان */}
+          <AdBanner placementId="1" className="mb-0 shadow-md" />
+
+          {/* شريط البحث تحت الإعلان بمسافة طبيعية */}
+          <div 
+            onClick={() => setIsSearchModalOpen(true)}
+            className="flex items-center bg-[#121215] border border-[#242428] hover:border-[#FFC500]/40 rounded-2xl p-2.5 px-3.5 shadow-lg cursor-pointer transition-all"
+          >
+            <Search size={16} className="text-[#8E8E93] ml-2 shrink-0" />
+            <span className="flex-1 text-xs text-zinc-400 font-medium truncate">
+              ابحث عن بنك، شركة، عقار، مزاد، وظيفة...
+            </span>
+            <div className="flex items-center gap-1 border-r border-[#27272A] pr-2.5 mr-1 text-[#D1D5DB]">
+              <MapPin size={13} className="text-[#FFC500]" />
+              <span className="text-[11px] font-bold whitespace-nowrap">{selectedCity}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. القائمة الجانبية من اليمين */}
       {isSidebarOpen && (
         <div 
           onClick={() => setIsSidebarOpen(false)}
@@ -103,9 +78,9 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       <aside className={`fixed top-0 right-0 h-full w-[280px] sm:w-[300px] bg-[#0B0F17] border-l border-[#1F2937] z-50 flex flex-col transition-transform duration-300 ease-in-out ${
         isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
-        <div className="h-16 flex items-center justify-between px-5 border-b border-[#1F2937] bg-[#111827]">
-          <YRLogo size="sm" />
-          <button onClick={() => setIsSidebarOpen(false)} className="text-zinc-400 hover:text-white cursor-pointer bg-transparent border-0">
+        <div className="h-14 sm:h-16 flex items-center justify-between px-4 border-b border-[#1F2937] bg-[#111827]">
+          <span className="text-xs font-black text-white">القائمة الرئيسية</span>
+          <button onClick={() => setIsSidebarOpen(false)} className="text-zinc-400 hover:text-white cursor-pointer bg-transparent border-0 p-1">
             <X size={20} />
           </button>
         </div>
@@ -136,11 +111,11 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         </nav>
       </aside>
 
-      {/* 3. نافذة البحث العام */}
+      {/* 4. نافذة البحث العام */}
       {isSearchModalOpen && (
         <div 
           onClick={() => setIsSearchModalOpen(false)}
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-start justify-center p-3 sm:p-6 pt-16 sm:pt-20 select-none"
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-start justify-center p-3 sm:p-6 pt-16 select-none"
         >
           <div 
             onClick={e => e.stopPropagation()}
@@ -247,7 +222,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         </div>
       )}
 
-      {/* 4. المحتوى الرئيسي */}
+      {/* 5. جسم الصفحة الرئيسي */}
       <main className="flex-1 pb-16">
         {children}
       </main>

@@ -16,9 +16,9 @@ export const Header: React.FC<HeaderProps> = ({
   unreadNotificationsCount = 3
 }) => {
   return (
-    <div dir="rtl" className="w-full max-w-6xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between font-['Cairo',sans-serif]">
+    <div dir="rtl" className="w-full max-w-6xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between font-['Cairo',sans-serif]">
       
-      {/* اليمين: زر القائمة الجانبية الحر (بدون أطر) + الشعار الرسمي بالدرع أولاً */}
+      {/* اليمين: زر القائمة الجانبية (☰) + الشعار الرسمي */}
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -34,8 +34,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* اليسار: جرس الإشعارات الحر (بدون أطر) */}
-      <div className="flex items-center gap-2">
+      {/* اليسار: جرس الإشعارات */}
+      <div className="flex items-center">
         <button
           type="button"
           onClick={onNavigateNotifications}
