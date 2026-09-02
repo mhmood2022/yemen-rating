@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>بنك اليمن الدولي - مرجع بصري | Yemen Rating</title>
+  
+  <!-- Google Fonts: Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* ==========================================================================
+       1. Design Tokens & Root Variables
+       ========================================================================== */
+    :root {
+      --bg-base: #050505;
+      --bg-surface-1: #121212;
+      --bg-surface-2: #181818;
+      --bg-surface-3: #222222;
+      --border-color: #262626;
+      --border-subtle: #1c1c1c;
+      
+      --color-gold: #F5C400;
+      --color-gold-hover: #e0b300;
+      --color-gold-dim: rgba(245, 196, 0, 0.12);
+      --color-gold-border: rgba(245, 196, 0, 0.25);
+      
+      --text-main: #FFFFFF;
+      --text-muted: #A7A7A7;
+      --text-dim: #737373;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-full: 9999px;
+      
+      --container-max: 1240px;
+      --transition-fast: 0.18s ease;
+    }
+
+    /* ==========================================================================
+       2. Global Reset & Base
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      line-height: 1.5;
+      direction: rtl;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    .container {
+      width: 100%;
+      max-width: var(--container-max);
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    /* ==========================================================================
+       3. Header
+       ========================================================================== */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background-color: #0A0A0A;
+      border-bottom: 1px solid var(--border-color);
+      height: 68px;
+    }
+
+    .header-inner {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .logo-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .logo-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background-color: var(--color-gold);
+      color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+    }
+
+    .logo-text-wrap h1 {
+      font-size: 15px;
+      font-weight: 900;
+      line-height: 1.1;
+      color: var(--text-main);
+    }
+
+    .logo-text-wrap span {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--color-gold);
+      letter-spacing: 0.5px;
+    }
+
+    .header-search {
+      flex: 1;
+      max-width: 440px;
+      position: relative;
+    }
+
+    .header-search input {
+      width: 100%;
+      height: 40px;
+      background-color: var(--bg-surface-1);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 0 38px 0 14px;
+      font-size: 13px;
+      color: var(--text-main);
+      font-family: inherit;
+      outline: none;
+      transition: border-color var(--transition-fast);
+    }
+
+    .header-search input:focus {
+      border-color: var(--color-gold);
+    }
+
+    .header-search i {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      width: 16px;
+      height: 16px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-surface-1);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: background-color var(--transition-fast);
+    }
+
+    .icon-btn:hover {
+      background-color: var(--bg-surface-3);
+    }
+
+    .notif-badge {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--color-gold);
+    }
+
+    .user-profile-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px 4px 4px;
+      border-radius: var(--radius-full);
+      background-color: var(--bg-surface-1);
+      border: 1px solid var(--border-color);
+    }
+
+    .user-avatar-sm {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: var(--bg-surface-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-gold);
+    }
+
+    /* ==========================================================================
+       4. Cover & Identity Block
+       ========================================================================== */
+    .hero-section {
+      margin-top: 16px;
+    }
+
+    .cover-wrapper {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-surface-1);
+    }
+
+    .cover-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cover-gradient-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(5,5,5,0) 40%, rgba(5,5,5,0.85) 100%);
+    }
+
+    .identity-container {
+      position: relative;
+      margin-top: -55px;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .identity-main-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 20px;
+    }
+
+    .bank-logo-wrap {
+      width: 110px;
+      height: 110px;
+      border-radius: var(--radius-lg);
+      background-color: #FFFFFF;
+      border: 3px solid var(--bg-base);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .bank-logo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .bank-info-meta {
+      flex: 1;
+      padding-bottom: 4px;
+    }
+
+    .bank-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .bank-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .badge-verified {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background-color: var(--color-gold-dim);
+      border: 1px solid var(--color-gold-border);
+      color: var(--color-gold);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+    }
+
+    .badge-verified i {
+      width: 13px;
+      height: 13px;
+    }
+
+    .bank-sub-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .meta-item i {
+      width: 15px;
+      height: 15px;
+      color: var(--color-gold);
+    }
+
+    /* Rating Box */
+    .rating-badge-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background-color: var(--bg-surface-1);
+      border: 1px solid var(--border-color);
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      align-self: flex-start;
+      margin-top: 6px;
+    }
+
+    .rating-number {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--text-main);
+      font-family: monospace;
+    }
+
+    .stars-group {
+      display: flex;
+      gap: 2px;
+      color: var(--color-gold);
+    }
+
+    .stars-group i {
+      width: 15px;
+      height: 15px;
+      fill: var(--color-gold);
+    }
+
+    .rating-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      border-right: 1px solid var(--border-color);
+      padding-right: 10px;
+    }
+
+    /* ==========================================================================
+       5. Actions Row
+       ========================================================================== */
+    .actions-strip {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      height: 42px;
+      padding: 0 16px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all var(--transition-fast);
+      cursor: pointer;
+    }
+
+    .btn i {
+      width: 17px;
+      height: 17px;
+    }
+
+    .btn-gold {
+      background-color: var(--color-gold);
+      color: #000000;
+      box-shadow: 0 4px 14px rgba(245, 196, 0, 0.2);
+    }
+
+    .btn-gold:hover {
+      background-color: var(--color-gold-hover);
+    }
+
+    .btn-surface {
+      background-color: var(--bg-surface-1);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+
+    .btn-surface:hover {
+      background-color: var(--bg-surface-3);
+      border-color: #333333;
+    }
+
+    .btn-claim-outline {
+      background-color: transparent;
+      border: 1px dashed var(--border-color);
+      color: var(--text-muted);
+      margin-right: auto;
+    }
+
+    .btn-claim-outline:hover {
+      border-color: var(--color-gold);
+      color: var(--color-gold);
+      background-color: var(--color-gold-dim);
+    }
+
+    /* ==========================================================================
+       6. Advertisement Strip
+       ========================================================================== */
+    .ad-banner-section {
+      margin-top: 20px;
+    }
+
+    .ad-box {
+      width: 100%;
+      height: 120px;
+      background: linear-gradient(135deg, #181818 0%, #101010 100%);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ad-tag {
+      position: absolute;
+      top: 8px;
+      left: 12px;
+      font-size: 10px;
+      color: var(--text-dim);
+      border: 1px solid var(--border-subtle);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .ad-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .ad-icon-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background-color: var(--color-gold-dim);
+      color: var(--color-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .ad-text-wrap h4 {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .ad-text-wrap p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ==========================================================================
+       7. Main Layout: 2 Columns Grid
+       ========================================================================== */
+    .content-grid-layout {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: 1fr 330px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .main-col {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .sidebar-col {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: sticky;
+      top: 88px;
+    }
+
+    /* Card Surfaces */
+    .card {
+      background-color: var(--bg-surface-1);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .card-heading {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-heading i {
+      width: 18px;
+      height: 18px;
+      color: var(--color-gold);
+    }
+
+    /* About Body */
+    .about-paragraph {
+      font-size: 14px;
+      color: #d1d1d1;
+      line-height: 1.8;
+    }
+
+    /* Contact Details (Sidebar or Main) */
+    .contact-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .contact-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background-color: var(--bg-surface-2);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      gap: 12px;
+    }
+
+    .contact-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .contact-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background-color: var(--bg-surface-3);
+      color: var(--color-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .contact-icon i {
+      width: 16px;
+      height: 16px;
+    }
+
+    .contact-text {
+      min-width: 0;
+    }
+
+    .contact-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      display: block;
+    }
+
+    .contact-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      font-family: monospace;
+      direction: ltr;
+      text-align: right;
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .contact-action-btn {
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      background-color: var(--bg-surface-3);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      flex-shrink: 0;
+      transition: background-color var(--transition-fast);
+    }
+
+    .contact-action-btn:hover {
+      background-color: var(--color-gold);
+      color: #000;
+      border-color: var(--color-gold);
+    }
+
+    /* ==========================================================================
+       8. Services Section
+       ========================================================================== */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .service-card {
+      background-color: var(--bg-surface-2);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color var(--transition-fast);
+    }
+
+    .service-card:hover {
+      border-color: var(--color-gold-border);
+    }
+
+    .service-icon-wrap {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      background-color: var(--color-gold-dim);
+      color: var(--color-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .service-icon-wrap i {
+      width: 18px;
+      height: 18px;
+    }
+
+    .service-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .service-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ==========================================================================
+       9. Branches Section
+       ========================================================================== */
+    .branches-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .branch-card {
+      background-color: var(--bg-surface-2);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .branch-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .branch-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .branch-city-pill {
+      font-size: 10px;
+      font-weight: 700;
+      background-color: var(--bg-surface-3);
+      color: var(--color-gold);
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-color);
+    }
+
+    .branch-details {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .branch-detail-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .branch-detail-row i {
+      width: 14px;
+      height: 14px;
+      color: var(--text-dim);
+    }
+
+    .branch-action {
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    /* ==========================================================================
+       10. Photo Gallery
+       ========================================================================== */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .gallery-item {
+      aspect-ratio: 1/1;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+      background-color: var(--bg-surface-2);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.05);
+    }
+
+    /* ==========================================================================
+       11. Reviews Section
+       ========================================================================== */
+    .reviews-overview-box {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 24px;
+      background-color: var(--bg-surface-2);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    .score-summary {
+      text-align: center;
+      border-left: 1px solid var(--border-color);
+      padding-left: 20px;
+    }
+
+    .score-giant {
+      font-size: 46px;
+      font-weight: 900;
+      color: var(--color-gold);
+      line-height: 1;
+      font-family: monospace;
+    }
+
+    .distribution-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .dist-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .dist-label {
+      width: 28px;
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 6px;
+      background-color: var(--bg-surface-3);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: var(--color-gold);
+      border-radius: var(--radius-full);
+    }
+
+    .dist-count {
+      width: 30px;
+      text-align: left;
+      font-family: monospace;
+    }
+
+    .reviews-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .review-card {
+      background-color: var(--bg-surface-2);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .review-author-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .author-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .author-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: var(--bg-surface-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--color-gold);
+      font-size: 13px;
+    }
+
+    .author-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .review-date {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .review-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-gold);
+    }
+
+    .review-text {
+      font-size: 13px;
+      color: #cccccc;
+      line-height: 1.6;
+    }
+
+    /* ==========================================================================
+       12. Claim Ownership Box
+       ========================================================================== */
+    .claim-box {
+      background: linear-gradient(135deg, #181818 0%, #121212 100%);
+      border: 1px solid var(--color-gold-border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      text-align: right;
+    }
+
+    .claim-header-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .claim-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      background-color: var(--color-gold-dim);
+      color: var(--color-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .claim-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .claim-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ==========================================================================
+       13. Footer
+       ========================================================================== */
+    .site-footer {
+      margin-top: 60px;
+      background-color: #0A0A0A;
+      border-top: 1px solid var(--border-color);
+      padding: 30px 0;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-dim);
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 16px;
+    }
+
+    .footer-links a:hover {
+      color: var(--color-gold);
+    }
+
+    /* ==========================================================================
+       14. Responsive Breakpoints
+       ========================================================================== */
+    @media (max-width: 1024px) {
+      .content-grid-layout {
+        grid-template-columns: 1fr;
+      }
+      .sidebar-col {
+        position: static;
+      }
+      .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .gallery-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .cover-wrapper {
+        height: 190px;
+        border-radius: var(--radius-lg);
+      }
+      .identity-container {
+        margin-top: -46px;
+        padding: 0 10px;
+      }
+      .bank-logo-wrap {
+        width: 92px;
+        height: 92px;
+        border-radius: var(--radius-md);
+      }
+      .bank-title {
+        font-size: 20px;
+      }
+      .header-search {
+        display: none;
+      }
+      .branches-grid {
+        grid-template-columns: 1fr;
+      }
+      .reviews-overview-box {
+        grid-template-columns: 1fr;
+      }
+      .score-summary {
+        border-left: none;
+        border-bottom: 1px solid var(--border-color);
+        padding-left: 0;
+        padding-bottom: 16px;
+      }
+      .ad-box {
+        height: auto;
+        min-height: 90px;
+        padding: 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .services-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .actions-strip {
+        gap: 8px;
+      }
+      .btn {
+        flex: 1 1 calc(50% - 8px);
+        font-size: 12px;
+        padding: 0 10px;
+      }
+      .btn-claim-outline {
+        flex: 1 1 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Header -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="logo-brand">
+        <div class="logo-icon-box">
+          <i data-lucide="star" style="fill: #000; width: 20px; height: 20px;"></i>
+        </div>
+        <div class="logo-text-wrap">
+          <h1>يمن ريتنغ</h1>
+          <span>YEMEN RATING</span>
+        </div>
+      </div>
+
+      <div class="header-search">
+        <i data-lucide="search"></i>
+        <input type="text" placeholder="ابحث عن بنك، شركة، أو خدمة في اليمن..." />
+      </div>
+
+      <div class="header-actions">
+        <button class="icon-btn" aria-label="الإشعارات">
+          <i data-lucide="bell"></i>
+          <span class="notif-badge"></span>
+        </button>
+        <div class="user-profile-btn">
+          <div class="user-avatar-sm">
+            <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container Wrapper -->
+  <div class="container">
+
+    <!-- 2. Cover Section -->
+    <section class="hero-section">
+      <div class="cover-wrapper">
+        <img 
+          src="https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=1600&auto=format&fit=crop&q=80" 
+          alt="غلاف بنك اليمن الدولي" 
+          class="cover-img"
+        />
+        <div class="cover-gradient-overlay"></div>
+      </div>
+
+      <!-- 3. Bank Identity -->
+      <div class="identity-container">
+        <div class="identity-main-row">
+          <div class="bank-logo-wrap">
+            <img 
+              src="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=300&auto=format&fit=crop&q=80" 
+              alt="شعار البنك" 
+            />
+          </div>
+
+          <div class="bank-info-meta">
+            <div class="bank-title-row">
+              <h2 class="bank-title">بنك اليمن الدولي</h2>
+              <span class="badge-verified">
+                <i data-lucide="badge-check"></i> موثق رسمياً
+              </span>
+            </div>
+
+            <div class="bank-sub-meta">
+              <div class="meta-item">
+                <i data-lucide="landmark"></i>
+                <span>البنوك والصرافة</span>
+              </div>
+              <div class="meta-item">
+                <i data-lucide="map-pin"></i>
+                <span>صنعاء، اليمن</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rating Box -->
+        <div class="rating-badge-card">
+          <span class="rating-number">4.6</span>
+          <div class="stars-group">
+            <i data-lucide="star"></i>
+            <i data-lucide="star"></i>
+            <i data-lucide="star"></i>
+            <i data-lucide="star"></i>
+            <i data-lucide="star" style="fill: transparent;"></i>
+          </div>
+          <span class="rating-count">128 تقييم حقيقي</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Actions Strip -->
+    <section class="actions-strip">
+      <a href="tel:+9671200000" class="btn btn-gold">
+        <i data-lucide="phone-call"></i>
+        <span>اتصال مباشر</span>
+      </a>
+
+      <a href="https://wa.me/967770000000" target="_blank" class="btn btn-surface">
+        <i data-lucide="message-circle" style="color: #25D366;"></i>
+        <span>WhatsApp</span>
+      </a>
+
+      <a href="https://example.com" target="_blank" class="btn btn-surface">
+        <i data-lucide="globe"></i>
+        <span>الموقع الإلكتروني</span>
+      </a>
+
+      <button class="btn btn-surface">
+        <i data-lucide="navigation"></i>
+        <span>الاتجاهات</span>
+      </button>
+
+      <button class="btn btn-surface">
+        <i data-lucide="share-2"></i>
+        <span>مشاركة</span>
+      </button>
+
+      <button class="btn btn-claim-outline">
+        <i data-lucide="shield-check"></i>
+        <span>المطالبة بالملكية</span>
+      </button>
+    </section>
+
+    <!-- 5. Advertisement Banner -->
+    <section class="ad-banner-section">
+      <div class="ad-box">
+        <span class="ad-tag">إعلان ممول</span>
+        <div class="ad-content">
+          <div class="ad-icon-wrap">
+            <i data-lucide="sparkles"></i>
+          </div>
+          <div class="ad-text-wrap">
+            <h4>عروض التحويل السريع وخدمات المحفظة الإلكترونية</h4>
+            <p>استفد من أقل عمولة تحويل فوري مع نقاط الخدمة المعتمدة في كافة المحافظات اليمنية.</p>
+          </div>
+        </div>
+        <button class="btn btn-gold" style="height: 38px; font-size: 12px;">
+          <span>اكتشف المزيد</span>
+          <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- 6. Main 2-Columns Layout (Content + Sidebar) -->
+    <div class="content-grid-layout">
+      
+      <!-- Main Column -->
+      <main class="main-col">
+
+        <!-- About -->
+        <section class="card">
+          <div class="card-title-row">
+            <h3 class="card-heading">
+              <i data-lucide="info"></i>
+              <span>نبذة عن البنك</span>
+            </h3>
+          </div>
+          <p class="about-paragraph">
+            يُعد بنك اليمن الدولي من أعرق المؤسسات المصرفية الرائدة في الجمهورية اليمنية، حيث تأسس بهدف تقديم أرقى الحلول المالية والخدمات المصرفية المتوافقة مع أحدث المعايير الدولية. يلتزم البنك بتمكين الأفراد والمؤسسات والشركات التجارية عبر شبكة واسعة من الفروع وأجهزة الصراف الآلي المنتشرة في عموم المحافظات، إلى جانب منظومة رقمية متطورة تلبي تطلعات عملاء القطاع المصرفي.
+          </p>
+        </section>
+
+        <!-- Services -->
+        <section class="card">
+          <div class="card-title-row">
+            <h3 class="card-heading">
+              <i data-lucide="layers"></i>
+              <span>الخدمات المصرفية والحلول المالية</span>
+            </h3>
+          </div>
+          
+          <div class="services-grid">
+            <div class="service-card">
+              <div class="service-icon-wrap">
+                <i data-lucide="credit-card"></i>
+              </div>
+              <h4 class="service-name">الحسابات الجارية والتوفير</h4>
+              <p class="service-desc">إدارة سهلة لمدخراتك اليومية بالعملة المحلية والعملات الأجنبية.</p>
+            </div>
+
+            <div class="service-card">
+              <div class="service-icon-wrap">
+                <i data-lucide="smartphone"></i>
+              </div>
+              <h4 class="service-name">الخدمات المصرفية الرقمية</h4>
+              <p class="service-desc">تطبيق هاتف وبوابة إلكترونية متكاملة للتحويل وسداد الفواتير 24/7.</p>
+            </div>
+
+            <div class="service-card">
+              <div class="service-icon-wrap">
+                <i data-lucide="arrow-left-right"></i>
+              </div>
+              <h4 class="service-name">الحوالات السريعة</h4>
+              <p class="service-desc">إرسال واستقبال الحوالات المالية داخلياً ودولياً بأمان وسرعة فائقة.</p>
+            </div>
+
+            <div class="service-card">
+              <div class="service-icon-wrap">
+                <i data-lucide="briefcase"></i>
+              </div>
+              <h4 class="service-name">تمويل الشركات والمشاريع</h4>
+              <p class="service-desc">حلول اعتمادات مستندية وتسهيلات تمويلية لدعم قطاع الأعمال الوطني.</p>
+            </div>
+
+            <div class="service-card">
+              <div class="service-icon-wrap">
+                <i data-lucide="coins"></i>
+              </div>
+              <h4 class="service-name">صرف العملات والذهب</h4>
+              <p class="service-desc">أسعار صرف منافسة ومعتمدة وفق المؤشرات الرسمية المحدثة.</p>
+            </div>
+
+            <div class="service-card">
+              <div class="service-icon-wrap">
+                <i data-lucide="shield-check"></i>
+              </div>
+              <h4 class="service-name">الخزائن والأمانات</h4>
+              <p class="service-desc">صناديق أمانات مؤمنة لحفظ الوثائق والمقتنيات الثمينة.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Branches -->
+        <section class="card">
+          <div class="card-title-row">
+            <h3 class="card-heading">
+              <i data-lucide="building-2"></i>
+              <span>الفروع وأجهزة الصراف الآلي</span>
+            </h3>
+          </div>
+
+          <div class="branches-grid">
+            <!-- Branch 1 -->
+            <div class="branch-card">
+              <div class="branch-header">
+                <h4 class="branch-title">الفرع الرئيسي - حدة</h4>
+                <span class="branch-city-pill">صنعاء</span>
+              </div>
+              <div class="branch-details">
+                <div class="branch-detail-row">
+                  <i data-lucide="map-pin"></i>
+                  <span>شارع حدة، أمام برج النعمان</span>
+                </div>
+                <div class="branch-detail-row">
+                  <i data-lucide="phone"></i>
+                  <span style="font-family: monospace;">+967 1 445566</span>
+                </div>
+                <div class="branch-detail-row">
+                  <i data-lucide="clock"></i>
+                  <span>السبت - الأربعاء: 08:30 ص - 02:00 م</span>
+                </div>
+              </div>
+              <div class="branch-action">
+                <button class="btn btn-surface" style="width: 100%; height: 36px; font-size: 12px;">
+                  <i data-lucide="navigation"></i>
+                  <span>الاتجاهات على الخريطة</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Branch 2 -->
+            <div class="branch-card">
+              <div class="branch-header">
+                <h4 class="branch-title">فرع المعلا</h4>
+                <span class="branch-city-pill">عدن</span>
+              </div>
+              <div class="branch-details">
+                <div class="branch-detail-row">
+                  <i data-lucide="map-pin"></i>
+                  <span>الشارع الرئيسي، بجانب فندق المعلا</span>
+                </div>
+                <div class="branch-detail-row">
+                  <i data-lucide="phone"></i>
+                  <span style="font-family: monospace;">+967 2 240111</span>
+                </div>
+                <div class="branch-detail-row">
+                  <i data-lucide="clock"></i>
+                  <span>السبت - الأربعاء: 08:30 ص - 02:00 م</span>
+                </div>
+              </div>
+              <div class="branch-action">
+                <button class="btn btn-surface" style="width: 100%; height: 36px; font-size: 12px;">
+                  <i data-lucide="navigation"></i>
+                  <span>الاتجاهات على الخريطة</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Gallery -->
+        <section class="card">
+          <div class="card-title-row">
+            <h3 class="card-heading">
+              <i data-lucide="image"></i>
+              <span>معرض الصور</span>
+            </h3>
+          </div>
+
+          <div class="gallery-grid">
+            <div class="gallery-item">
+              <img src="https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=500&auto=format&fit=crop&q=80" alt="صورة البنك" />
+            </div>
+            <div class="gallery-item">
+              <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&auto=format&fit=crop&q=80" alt="المبنى الرئيسي" />
+            </div>
+            <div class="gallery-item">
+              <img src="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&auto=format&fit=crop&q=80" alt="خدمة العملاء" />
+            </div>
+            <div class="gallery-item">
+              <img src="https://images.unsplash.com/photo-1601597111158-2fceff292cdc?w=500&auto=format&fit=crop&q=80" alt="صالة المعاملات" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Reviews Section -->
+        <section class="card">
+          <div class="card-title-row">
+            <h3 class="card-heading">
+              <i data-lucide="star"></i>
+              <span>تقييمات وآراء العملاء</span>
+            </h3>
+            <button class="btn btn-gold" style="height: 36px; font-size: 12px;">
+              <i data-lucide="plus"></i>
+              <span>أضف تقييمك</span>
+            </button>
+          </div>
+
+          <!-- Reviews Overview -->
+          <div class="reviews-overview-box">
+            <div class="score-summary">
+              <div class="score-giant">4.6</div>
+              <div class="stars-group" style="justify-content: center; margin: 4px 0;">
+                <i data-lucide="star"></i>
+                <i data-lucide="star"></i>
+                <i data-lucide="star"></i>
+                <i data-lucide="star"></i>
+                <i data-lucide="star" style="fill: transparent;"></i>
+              </div>
+              <span style="font-size: 11px; color: var(--text-muted);">بناءً على 128 تقييم</span>
+            </div>
+
+            <!-- Distribution -->
+            <div class="distribution-bars">
+              <div class="dist-row">
+                <span class="dist-label">5 ★</span>
+                <div class="progress-track"><div class="progress-fill" style="width: 78%;"></div></div>
+                <span class="dist-count">100</span>
+              </div>
+              <div class="dist-row">
+                <span class="dist-label">4 ★</span>
+                <div class="progress-track"><div class="progress-fill" style="width: 15%;"></div></div>
+                <span class="dist-count">20</span>
+              </div>
+              <div class="dist-row">
+                <span class="dist-label">3 ★</span>
+                <div class="progress-track"><div class="progress-fill" style="width: 4%;"></div></div>
+                <span class="dist-count">5</span>
+              </div>
+              <div class="dist-row">
+                <span class="dist-label">2 ★</span>
+                <div class="progress-track"><div class="progress-fill" style="width: 2%;"></div></div>
+                <span class="dist-count">2</span>
+              </div>
+              <div class="dist-row">
+                <span class="dist-label">1 ★</span>
+                <div class="progress-track"><div class="progress-fill" style="width: 1%;"></div></div>
+                <span class="dist-count">1</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reviews List -->
+          <div class="reviews-list">
+            <!-- Review Item 1 -->
+            <div class="review-card">
+              <div class="review-author-row">
+                <div class="author-meta">
+                  <div class="author-avatar">ع.م</div>
+                  <div>
+                    <h5 class="author-name">عبدالله محمد الرازحي</h5>
+                    <span class="review-date">منذ 3 أيام</span>
+                  </div>
+                </div>
+                <div class="stars-group">
+                  <i data-lucide="star"></i>
+                  <i data-lucide="star"></i>
+                  <i data-lucide="star"></i>
+                  <i data-lucide="star"></i>
+                  <i data-lucide="star"></i>
+                </div>
+              </div>
+              <h6 class="review-title">خدمة سريعة وتعامل راقٍ جداً</h6>
+              <p class="review-text">
+                زرت الفرع الرئيسي لتحديث بيانات الحساب وتفعيل الخدمة الإلكترونية، وكان الموظفون في غاية التعاون والسرعة.
+              </p>
+            </div>
+
+            <!-- Review Item 2 -->
+            <div class="review-card">
+              <div class="review-author-row">
+                <div class="author-meta">
+                  <div class="author-avatar">س.ع</div>
+                  <div>
+                    <h5 class="author-name">سارة علي باوزير</h5>
+                    <span class="review-date">منذ أسبوع</span>
+                  </div>
+                </div>
+                <div class="stars-group">
+                  <i data-lucide="star"></i>
+                  <i data-lucide="star"></i>
+                  <i data-lucide="star"></i>
+                  <i data-lucide="star"></i>
+                  <i data-lucide="star" style="fill: transparent;"></i>
+                </div>
+              </div>
+              <h6 class="review-title">تطبيق مصرفي ممتاز وتجربة مريحة</h6>
+              <p class="review-text">
+                التحويلات عبر التطبيق فورية وسهلة الاستخدام، ونتمنى افتتاح فروع إضافية في المناطق الغربية.
+              </p>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Sidebar Column -->
+      <aside class="sidebar-col">
+
+        <!-- Contact Card -->
+        <section class="card">
+          <div class="card-title-row">
+            <h3 class="card-heading">
+              <i data-lucide="phone"></i>
+              <span>معلومات التواصل المباشر</span>
+            </h3>
+          </div>
+
+          <div class="contact-list">
+            <div class="contact-row">
+              <div class="contact-left">
+                <div class="contact-icon"><i data-lucide="phone-call"></i></div>
+                <div class="contact-text">
+                  <span class="contact-label">الهاتف الموحد</span>
+                  <span class="contact-value">+967 1 200000</span>
+                </div>
+              </div>
+              <a href="tel:+9671200000" class="contact-action-btn">اتصال</a>
+            </div>
+
+            <div class="contact-row">
+              <div class="contact-left">
+                <div class="contact-icon"><i data-lucide="message-circle" style="color: #25D366;"></i></div>
+                <div class="contact-text">
+                  <span class="contact-label">خدمة العملاء WhatsApp</span>
+                  <span class="contact-value">+967 770000000</span>
+                </div>
+              </div>
+              <a href="https://wa.me/967770000000" target="_blank" class="contact-action-btn">مراسلة</a>
+            </div>
+
+            <div class="contact-row">
+              <div class="contact-left">
+                <div class="contact-icon"><i data-lucide="mail"></i></div>
+                <div class="contact-text">
+                  <span class="contact-label">البريد الإلكتروني</span>
+                  <span class="contact-value">info@ibyemen.com</span>
+                </div>
+              </div>
+              <a href="mailto:info@ibyemen.com" class="contact-action-btn">إرسال</a>
+            </div>
+
+            <div class="contact-row">
+              <div class="contact-left">
+                <div class="contact-icon"><i data-lucide="globe"></i></div>
+                <div class="contact-text">
+                  <span class="contact-label">الموقع الرسمي</span>
+                  <span class="contact-value">www.ibyemen.com</span>
+                </div>
+              </div>
+              <a href="https://example.com" target="_blank" class="contact-action-btn">زيارة</a>
+            </div>
+
+            <div class="contact-row">
+              <div class="contact-left">
+                <div class="contact-icon"><i data-lucide="map-pin"></i></div>
+                <div class="contact-text">
+                  <span class="contact-label">المقر الرئيسي</span>
+                  <span class="contact-value" style="font-family: inherit; direction: rtl;">صنعاء - شارع حدة</span>
+                </div>
+              </div>
+              <button class="contact-action-btn">الخريطة</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Claim Ownership Box -->
+        <section class="claim-box">
+          <div class="claim-header-wrap">
+            <div class="claim-icon">
+              <i data-lucide="badge-check"></i>
+            </div>
+            <h4 class="claim-title">هل أنت مالك هذه الصفحة؟</h4>
+          </div>
+          <p class="claim-desc">
+            وثّق صفحة منشأتك الرسمية على منصة Yemen Rating لتتمكن من تحديث البيانات، الرد على تقييمات العملاء، وإدارة الفروع والحملات الإعلانية.
+          </p>
+          <button class="btn btn-gold" style="width: 100%; margin-top: 4px;">
+            <i data-lucide="shield-check"></i>
+            <span>المطالبة بالملكية الآن</span>
+          </button>
+        </section>
+
+      </aside>
+
+    </div>
+
+  </div>
+
+  <!-- 14. Footer -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div>
+        <span>جميع الحقوق محفوظة منصة يمن ريتنغ © 2026</span>
+      </div>
+      <div class="footer-links">
+        <a href="#">عن المنصة</a>
+        <a href="#">شروط الاستخدام</a>
+        <a href="#">سياسة الخصوصية</a>
+        <a href="#">مركز الدعم</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Initialize Lucide Icons -->
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
