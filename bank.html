@@ -326,14 +326,18 @@
     </div>
 
   
-    <!-- نافذة طلب إثبات الملكية التفاعلية -->
-    <div id="claim-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4" onclick="closeClaimModal()">
-      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl" onclick="event.stopPropagation()">
+        <!-- نافذة طلب إثبات الملكية التفاعلية (مستقرة وثابتة تماماً على شاشات اللمس) -->
+    <div id="claim-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+      <!-- خلفية التعتيم المستقلة -->
+      <div class="fixed inset-0 bg-black/85 backdrop-blur-sm" onclick="closeClaimModal()"></div>
+
+      <!-- صندوق النافذة المستقل تماماً -->
+      <div class="relative z-10 bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl">
         <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
           <h4 class="text-sm font-bold text-[#EF4444] flex items-center gap-1.5">
             <i class="fa-solid fa-shield-halved"></i> طلب إثبات ملكية المنشأة
           </h4>
-          <button type="button" onclick="closeClaimModal()" class="text-zinc-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+          <button type="button" onclick="closeClaimModal()" class="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <form id="claim-form" onsubmit="submitClaim(event)" class="space-y-3 text-xs">
@@ -358,8 +362,8 @@
           </div>
 
           <div class="flex justify-end gap-2 pt-1 border-t border-zinc-800">
-            <button type="button" onclick="closeClaimModal()" class="px-3 py-1.5 rounded-lg bg-zinc-900 text-zinc-300">إلغاء</button>
-            <button type="submit" id="claim-submit-btn" class="px-4 py-1.5 rounded-lg bg-[#EF4444] text-white font-bold hover:bg-red-700">إرسال الطلب</button>
+            <button type="button" onclick="closeClaimModal()" class="px-3.5 py-1.5 rounded-lg bg-zinc-900 text-zinc-300 cursor-pointer">إلغاء</button>
+            <button type="submit" id="claim-submit-btn" class="px-4 py-1.5 rounded-lg bg-[#EF4444] hover:bg-red-700 text-white font-bold cursor-pointer transition">إرسال الطلب</button>
           </div>
         </form>
       </div>
