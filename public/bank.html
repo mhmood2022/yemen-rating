@@ -508,12 +508,19 @@
 
       if (sbClient) {
         try {
-          // استعلام جدول banks
-          const { data: b, error } = await sbClient
-            .from('banks')
-            .select('*')
-            .or(`slug.eq.${bankId},id.eq.${bankId}`)
-            .single();
+          // استعلام مباشر وسريع من Supabase REST API
+          const isUUID = /^[0-9a-f-]{36}$/i.test(bankId);
+          const filterCol = isUUID ? 'id' : 'slug';
+          const apiUrl = `${SUPABASE_URL}/rest/v1/banks?${filterCol}=eq.${bankId}&select=*`;
+          const resp = await fetch(apiUrl, {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          });
+          const rows = await resp.json();
+          const b = (rows && rows.length > 0) ? rows[0] : null;
+          const error = !b;
 
           if (b && !error) {
             bankData.id = b.id;
