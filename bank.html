@@ -75,14 +75,12 @@
 
     <!-- 2. الشعار متداخل في اليمين + زر إثبات الملكية في اليسار -->
     <div class="px-4 relative flex items-end justify-between -mt-10 mb-2">
-      <!-- الشعار في اليمين -->
       <div class="relative order-1">
         <div class="w-20 h-20 rounded-2xl bg-white p-2 shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden">
           <img id="bank-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Tadhamon_Bank_Logo.png/640px-Tadhamon_Bank_Logo.png" onerror="this.outerHTML='<i class=\'fa-solid fa-dharmachakra text-[#0055A5] text-4xl\'></i>'" class="w-full h-full object-contain" alt="شعار البنك" />
         </div>
       </div>
 
-      <!-- زر إثبات الملكية المباشر -->
       <div class="order-2 mb-1">
         <button type="button" id="claim-btn" onclick="openClaimModal()" class="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg transition active:scale-95 cursor-pointer">
           <i class="fa-solid fa-shield-halved text-xs"></i>
@@ -271,7 +269,7 @@
       </div>
     </div>
 
-    <!-- 9. نافذة التقييم (ثابتة تماماً وتغلق فقط من أزرارها) -->
+    <!-- 9. نافذة التقييم -->
     <div id="review-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
       <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl">
         <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
@@ -312,7 +310,7 @@
       </div>
     </div>
 
-    <!-- 10. نافذة إثبات الملكية (ثابتة تماماً وتغلق فقط من أزرارها) -->
+    <!-- 10. نافذة إثبات الملكية -->
     <div id="claim-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
       <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl">
         <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
@@ -353,7 +351,7 @@
 
   </main>
 
-  <!-- سكربت المحرك البرمجي المتكامل 100% -->
+  <!-- محرك الصفحة البرمجي المتكامل والخالي من أي أخطاء -->
   <script>
     const SUPABASE_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
@@ -523,7 +521,6 @@
           bankData.website_url = b.website || b.website_url;
           bankData.address = b.address || b.city || bankData.address;
 
-          // جلب التقييمات من جدول reviews
           const revUrl = `${SUPABASE_URL}/rest/v1/reviews?entity_type=eq.bank&entity_id=eq.${b.id}&order=created_at.desc&select=*`;
           const revResp = await fetch(revUrl, {
             headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
@@ -553,7 +550,6 @@
       document.getElementById('contact-wa').href = currentBank.whatsapp ? (currentBank.whatsapp.startsWith('http') ? currentBank.whatsapp : `https://wa.me/${currentBank.whatsapp}`) : "#";
       document.getElementById('contact-mail').href = currentBank.email ? `mailto:${currentBank.email}` : "#";
 
-      // حقن المنشورات
       const postsContainer = document.getElementById('posts-container');
       postsContainer.innerHTML = currentPosts.map((post, index) => `
         <article onclick="openLightbox(${index})" class="group relative bg-[#0D0D0D] rounded-xl overflow-hidden border border-zinc-800/80 aspect-square cursor-pointer active:scale-98 transition">
@@ -571,7 +567,6 @@
         </article>
       `).join('');
 
-      // حقن العروض
       const offersContainer = document.getElementById('offers-container');
       offersContainer.innerHTML = (currentBank.offers || FALLBACK_BANK.offers).map(offer => `
         <div class="bg-[#0D0D0D] border border-zinc-800 p-3.5 rounded-xl text-right">
@@ -584,7 +579,6 @@
         </div>
       `).join('');
 
-      // حقن الخدمات
       const servicesContainer = document.getElementById('services-container');
       servicesContainer.innerHTML = (currentBank.services || FALLBACK_BANK.services).map(service => `
         <div class="bg-[#0D0D0D] border border-zinc-800 p-3 rounded-xl flex items-center justify-between text-right">
@@ -596,7 +590,6 @@
         </div>
       `).join('');
 
-      // حقن التقييمات
       const revs = currentBank.reviews || FALLBACK_BANK.reviews;
       updateRatingsDisplay(revs);
 
@@ -717,17 +710,20 @@
           },
           body: JSON.stringify(newRev)
         });
-      } catch (err) {
-        console.warn("Review insert error:", err);
-      }
 
-      currentBank.reviews = [newRev, ...(currentBank.reviews || [])];
-      updateRatingsDisplay(currentBank.reviews);
-      renderUI();
-      closeReviewModal();
-      btn.disabled = false;
-      btn.innerText = "إرسال التقييم";
-      alert("شكراً لك! تم تسجيل تقييمك بنجاح.");
+        currentBank.reviews = [newRev, ...(currentBank.reviews || [])];
+        updateRatingsDisplay(currentBank.reviews);
+        renderUI();
+        closeReviewModal();
+        document.getElementById('review-form').reset();
+        alert("شكراً لك! تم تسجيل تقييمك بنجاح.");
+      } catch (err) {
+        console.error("Review insert error:", err);
+        alert("حدث خطأ أثناء حفظ التقييم");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "إرسال التقييم";
+      }
     }
 
     // دوال نافذة إثبات الملكية
@@ -740,29 +736,41 @@
     }
 
     async function submitClaim(e) {
+      e.preventDefault();
+      const name = document.getElementById('claim-applicant-name').value.trim();
+      const role = document.getElementById('claim-applicant-role').value.trim();
+      const phone = document.getElementById('claim-phone').value.trim();
+      const notes = document.getElementById('claim-notes').value.trim();
+      const btn = document.getElementById('claim-submit-btn');
+
+      btn.disabled = true;
+      btn.innerText = 'جاري الإرسال...';
+
       try {
+        const payload = {
+          entity_id: currentBank.id,
+          entity_type: 'bank',
+          applicant_name: name,
+          applicant_role: role,
+          phone: phone,
+          notes: notes,
+          status: 'PENDING'
+        };
+
         const resp = await fetch(`${SUPABASE_URL}/rest/v1/verification_requests`, {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
             'Authorization': `Bearer ${SUPABASE_KEY}`,
             'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
+            'Prefer': 'return=minimal'
           },
-          body: JSON.stringify({
-            entity_type: 'bank',
-            entity_id: currentBank.id,
-            applicant_name: name,
-            applicant_role: role,
-            phone: phone,
-            notes: notes,
-            status: 'pending'
-          })
+          body: JSON.stringify(payload)
         });
 
         if (!resp.ok) {
-          const errData = await resp.json();
-          throw new Error(errData.message || 'فشل الحفظ');
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData.message || 'فشل إرسال الطلب');
         }
 
         alert('تم إرسال طلب إثبات الملكية بنجاح! سيتم مراجعته واعتماده من قبل إدارة يمن ريتنغ.');
@@ -771,9 +779,9 @@
       } catch (err) {
         console.error('Claim submit error:', err);
         alert('تنبيه: ' + (err.message || 'حدث خطأ أثناء إرسال الطلب'));
-      }
+      } finally {
         btn.disabled = false;
-        btn.innerText = "إرسال الطلب";
+        btn.innerText = 'إرسال الطلب';
       }
     }
 
