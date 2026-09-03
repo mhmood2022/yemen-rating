@@ -265,7 +265,7 @@
     </footer>
 
     <!-- 8. عارض الصور (Lightbox) -->
-    <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex flex-col justify-between p-4" onclick="closeLightbox()">
+    <div id="lightbox-modal" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4" onclick="closeLightbox(event)">
       <div class="flex items-center justify-between text-white border-b border-zinc-800 pb-3" onclick="event.stopPropagation()">
         <span id="lightbox-title" class="text-xs font-bold text-brand-gold">عرض الصورة</span>
         <button onclick="closeLightbox()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 cursor-pointer">
@@ -285,7 +285,7 @@
     </div>
 
     <!-- 9. نافذة إضافة تقييم ومراجعة جديدة تفاعلية -->
-    <div id="review-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div id="review-modal" style="display: none;" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4" onclick="closeReviewModal(event)">
       <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
           <h4 class="text-sm font-bold text-brand-gold flex items-center gap-1.5">
@@ -327,7 +327,7 @@
 
   
         <!-- نافذة طلب إثبات الملكية التفاعلية (مستقرة وثابتة تماماً على شاشات اللمس) -->
-    <div id="claim-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4">
+    <div id="claim-modal" style="display: none;" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4" onclick="closeClaimModal(event)">
       <!-- خلفية التعتيم المستقلة -->
       <div class="fixed inset-0 bg-black/85 backdrop-blur-sm" onclick="closeClaimModal()"></div>
 
