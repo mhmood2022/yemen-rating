@@ -87,10 +87,10 @@
 
       <!-- زر إثبات الملكية مربوط بلوحة المالك الحقيقية -->
       <div class="order-2 mb-1">
-        <a id="claim-btn" href="owner.html?type=bank&id=tadhamon" class="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg transition active:scale-95">
+        <button type="button" id="claim-btn" onclick="openClaimModal()" class="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg transition active:scale-95">
           <i class="fa-solid fa-shield-halved text-xs"></i>
           <span id="claim-btn-text">إثبات الملكية</span>
-        </a>
+        </button>
       </div>
     </div>
 
@@ -256,11 +256,11 @@
     <footer class="pt-8 pb-4 text-center">
       <h4 class="text-sm font-bold text-white underline underline-offset-8 decoration-zinc-700 mb-4">تواصل معنا</h4>
       <div id="footer-contacts" class="flex items-center justify-center gap-5 text-brand-gold text-xl">
-        <a id="contact-hours" href="#hours" title="ساعات العمل والفروع" class="hover:scale-110 transition"><i class="fa-solid fa-user-clock"></i></a>
-        <a id="contact-map" href="#" target="_blank" title="الموقع الجغرافي" class="hover:scale-110 transition"><i class="fa-solid fa-location-dot"></i></a>
-        <a id="contact-web" href="#" target="_blank" title="الموقع الإلكتروني" class="hover:scale-110 transition"><i class="fa-solid fa-globe"></i></a>
-        <a id="contact-wa" href="#" target="_blank" title="واتساب" class="hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></a>
-        <a id="contact-mail" href="#" title="البريد الإلكتروني" class="hover:scale-110 transition"><i class="fa-regular fa-envelope"></i></a>
+        <a id="contact-hours" href="#hours" title="ساعات العمل والفروع" class="hover:scale-110 transition"><i class="fa-solid fa-user-clock"></i></button>
+        <a id="contact-map" href="#" target="_blank" title="الموقع الجغرافي" class="hover:scale-110 transition"><i class="fa-solid fa-location-dot"></i></button>
+        <a id="contact-web" href="#" target="_blank" title="الموقع الإلكتروني" class="hover:scale-110 transition"><i class="fa-solid fa-globe"></i></button>
+        <a id="contact-wa" href="#" target="_blank" title="واتساب" class="hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></button>
+        <a id="contact-mail" href="#" title="البريد الإلكتروني" class="hover:scale-110 transition"><i class="fa-regular fa-envelope"></i></button>
       </div>
     </footer>
 
@@ -320,6 +320,46 @@
           <div class="flex justify-end gap-2 pt-1 border-t border-zinc-800">
             <button type="button" onclick="closeReviewModal()" class="px-3 py-1.5 rounded-lg bg-zinc-900 text-zinc-300">إلغاء</button>
             <button type="submit" id="review-submit-btn" class="px-4 py-1.5 rounded-lg bg-brand-gold text-black font-bold hover:bg-brand-goldHover">إرسال التقييم</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  
+    <!-- نافذة طلب إثبات الملكية التفاعلية -->
+    <div id="claim-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4" onclick="closeClaimModal()">
+      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+          <h4 class="text-sm font-bold text-[#EF4444] flex items-center gap-1.5">
+            <i class="fa-solid fa-shield-halved"></i> طلب إثبات ملكية المنشأة
+          </h4>
+          <button type="button" onclick="closeClaimModal()" class="text-zinc-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <form id="claim-form" onsubmit="submitClaim(event)" class="space-y-3 text-xs">
+          <div>
+            <label class="block text-zinc-400 mb-1">اسم المفوض / ممثل البنك*</label>
+            <input type="text" id="claim-applicant-name" required placeholder="مثال: صالح المقطري" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EF4444]" />
+          </div>
+
+          <div>
+            <label class="block text-zinc-400 mb-1">الصفة أو المسمى الوظيفي*</label>
+            <input type="text" id="claim-applicant-role" required placeholder="مثال: مدير العلاقات العامة / الممثل القانوني" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EF4444]" />
+          </div>
+
+          <div>
+            <label class="block text-zinc-400 mb-1">رقم الهاتف / الواتساب للتواصل*</label>
+            <input type="tel" id="claim-phone" required placeholder="مثال: 777888999" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EF4444]" />
+          </div>
+
+          <div>
+            <label class="block text-zinc-400 mb-1">ملاحظات أو رقم السجل التجاري</label>
+            <textarea id="claim-notes" rows="2" placeholder="اكتب أي بيانات أو رقم السجل للتحقق..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EF4444]"></textarea>
+          </div>
+
+          <div class="flex justify-end gap-2 pt-1 border-t border-zinc-800">
+            <button type="button" onclick="closeClaimModal()" class="px-3 py-1.5 rounded-lg bg-zinc-900 text-zinc-300">إلغاء</button>
+            <button type="submit" id="claim-submit-btn" class="px-4 py-1.5 rounded-lg bg-[#EF4444] text-white font-bold hover:bg-red-700">إرسال الطلب</button>
           </div>
         </form>
       </div>
@@ -755,6 +795,55 @@
       btn.disabled = false;
       btn.innerText = "إرسال التقييم";
       alert("شكراً لك! تم تسجيل تقييمك بنجاح.");
+    }
+
+    
+    function openClaimModal() {
+      document.getElementById('claim-modal').classList.remove('hidden');
+    }
+    function closeClaimModal() {
+      document.getElementById('claim-modal').classList.add('hidden');
+    }
+    async function submitClaim(e) {
+      e.preventDefault();
+      const name = document.getElementById('claim-applicant-name').value.trim();
+      const role = document.getElementById('claim-applicant-role').value.trim();
+      const phone = document.getElementById('claim-phone').value.trim();
+      const notes = document.getElementById('claim-notes').value.trim();
+      const btn = document.getElementById('claim-submit-btn');
+
+      btn.disabled = true;
+      btn.innerText = 'جاري الإرسال...';
+
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/verification_requests`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            entity_type: 'bank',
+            entity_id: currentBank.id,
+            applicant_name: name,
+            applicant_role: role,
+            phone: phone,
+            notes: notes,
+            status: 'PENDING'
+          })
+        });
+        alert('تم إرسال طلب إثبات الملكية بنجاح! سيتم مراجعته واعتماده من قبل إدارة يمن ريتنغ.');
+        closeClaimModal();
+        document.getElementById('claim-form').reset();
+      } catch (err) {
+        console.error('Claim submit error:', err);
+        alert('حدث خطأ أثناء إرسال الطلب، يرجى المحاولة مرة أخرى.');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'إرسال الطلب';
+      }
     }
 
     window.addEventListener('DOMContentLoaded', loadBankProfile);
