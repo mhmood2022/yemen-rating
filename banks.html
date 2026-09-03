@@ -62,7 +62,7 @@
 
   <main class="w-full max-w-md min-h-screen bg-black flex flex-col pb-20 px-4 select-none">
 
-    <!-- 1. رأس الصفحة النظيف (بدون أي نصوص زائدة أو شارات غير متفق عليها) -->
+    <!-- 1. رأس الصفحة النظيف -->
     <header class="py-4 border-b border-zinc-900 flex items-center justify-between">
       <a href="index.html" class="w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-brand-gold transition" title="الرئيسية">
         <i class="fa-solid fa-arrow-right text-xs"></i>
@@ -85,10 +85,11 @@
           id="search-input"
           oninput="handleSearch()"
           placeholder="ابحث عن بنك..."
-          class="w-full bg-[#0B0F17] border border-zinc-800 rounded-xl py-2 pr-9 pl-4 text-xs text-white placeholder-zinc-500 outline-none focus:border-brand-gold transition"
+          class="w-full bg-[#0B0F17] border border-zinc-800 rounded-xl py-2 pr-9 pl-4 text-xs text-white placeholder-zinc-500 outline-none focus:border-brand-gold transition text-right"
         />
       </div>
 
+      <!-- شرائح الفلترة السريعة -->
       <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 text-xs">
         <button type="button" onclick="setCityFilter('all', this)" class="filter-chip filter-chip-active shrink-0 px-3 py-1.5 rounded-lg bg-[#0B0F17] border border-zinc-800 text-zinc-300 transition cursor-pointer text-[11px]">
           الكل
@@ -106,9 +107,9 @@
       </div>
     </div>
 
-    <!-- 3. شبكة بطاقات البنوك المطابقة للصورة المرجعية تماماً -->
+    <!-- 3. شبكة بطاقات البنوك المضبوطة بدقة بالغة (من اليمين إلى اليسار) -->
     <section id="banks-grid" class="space-y-4 pt-2">
-      <!-- الكروت الحقيقية تُحقن هنا -->
+      <!-- الكروت تُحقن هنا -->
     </section>
 
     <!-- 4. نافذة طلب إثبات الملكية -->
@@ -129,19 +130,19 @@
           <input type="hidden" id="claim-bank-id" value="" />
           <div>
             <label class="block text-zinc-400 mb-1 text-[11px]">اسم المفوض / ممثل البنك*</label>
-            <input type="text" id="claim-name" required placeholder="مثال: صالح المقطري" class="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-brand-gold text-xs" />
+            <input type="text" id="claim-name" required placeholder="مثال: صالح المقطري" class="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-brand-gold text-xs text-right" />
           </div>
           <div>
             <label class="block text-zinc-400 mb-1 text-[11px]">الصفة أو المسمى الوظيفي*</label>
-            <input type="text" id="claim-role" required placeholder="مثال: مدير العلاقات العامة / الممثل القانوني" class="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-brand-gold text-xs" />
+            <input type="text" id="claim-role" required placeholder="مثال: مدير العلاقات العامة / الممثل القانوني" class="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-brand-gold text-xs text-right" />
           </div>
           <div>
             <label class="block text-zinc-400 mb-1 text-[11px]">رقم الهاتف / الواتساب للتواصل*</label>
-            <input type="tel" id="claim-phone" required placeholder="مثال: 777888999" class="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-brand-gold text-xs" />
+            <input type="tel" id="claim-phone" required placeholder="مثال: 777888999" class="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-brand-gold text-xs text-right" />
           </div>
           <div>
             <label class="block text-zinc-400 mb-1 text-[11px]">ملاحظات أو رقم السجل التجاري</label>
-            <textarea id="claim-notes" rows="2" placeholder="اكتب رقم السجل أو ملاحظاتك..." class="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-brand-gold text-xs"></textarea>
+            <textarea id="claim-notes" rows="2" placeholder="اكتب رقم السجل أو ملاحظاتك..." class="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-brand-gold text-xs text-right"></textarea>
           </div>
 
           <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
@@ -164,7 +165,7 @@
     let onlyVerified = false;
     let searchKeyword = '';
 
-    // دالة توليد شارة التوثيق الدائرية المعتمدة (الوردة الزرقاء / الذهبية)
+    // دالة شارة التوثيق الدائرية المعتمدة
     function renderVerifiedRosette(color) {
       return `
         <svg class="w-4 h-4 fill-current inline-block select-none shrink-0" style="color: ${color || '#1D9BF0'}" viewBox="0 0 24 24" title="موثق رسمياً">
@@ -174,7 +175,7 @@
       `;
     }
 
-    // جلب بيانات البنكين الحقيقيين فقط من قاعدة البيانات
+    // جلب بيانات البنكين الحقيقيين فقط
     async function fetchRealBanks() {
       try {
         const resp = await fetch(
@@ -190,10 +191,10 @@
         if (!resp.ok) throw new Error('فشل جلب قائمة البنوك');
         const rows = await resp.json();
 
-        // تصفية صارمة: لا يظهر إلا البنوك الحقيقية المعتمدة (تضامن وكريمي)
+        // تصفية صارمة للبنوك الحقيقية التي أدخلتها بنفسك فقط
         const validRows = rows.filter(b => b.slug === 'tadhamon' || b.slug === 'kuraimi');
 
-        // جلب التقييمات الحقيقية فقط
+        // جلب التقييمات الحقيقية
         const revResp = await fetch(
           `${SUPABASE_URL}/rest/v1/reviews?entity_type=eq.bank&select=entity_id,stars`,
           {
@@ -281,11 +282,10 @@
         return;
       }
 
-      // بناء البطاقات المطابقة للصورة المرجعية تماماً دون أي خطأ
       container.innerHTML = filtered.map(bank => {
         const isTadhamon = bank.slug === 'tadhamon';
 
-        // 1. غلاف نقي 100% بدون أي كود مكسور
+        // 1. الغلاف الرسمي النظيف
         const coverHtml = isTadhamon ? `
           <div class="relative w-full h-40 bg-[#0055A5] flex items-center justify-between px-6 select-none overflow-hidden">
             <div class="opacity-15"><i class="fa-solid fa-shapes text-white text-5xl"></i></div>
@@ -310,22 +310,22 @@
           </div>
         `;
 
-        // 2. شعار نقي متداخل مع الغلاف
+        // 2. الشعار في اليمين متداخل
         const logoHtml = isTadhamon ? `
-          <div class="w-16 h-16 rounded-xl bg-white p-2 shadow-2xl border-2 border-[#0B0F17] flex items-center justify-center overflow-hidden shrink-0">
+          <div class="w-16 h-16 rounded-2xl bg-white p-2 shadow-2xl border-2 border-[#0B0F17] flex items-center justify-center overflow-hidden shrink-0">
             <i class="fa-solid fa-dharmachakra text-[#0055A5] text-4xl"></i>
           </div>
         ` : `
-          <div class="w-16 h-16 rounded-xl bg-white p-2 shadow-2xl border-2 border-[#0B0F17] flex items-center justify-center overflow-hidden shrink-0">
+          <div class="w-16 h-16 rounded-2xl bg-white p-2 shadow-2xl border-2 border-[#0B0F17] flex items-center justify-center overflow-hidden shrink-0">
             <i class="fa-solid fa-landmark text-[#0D2137] text-3xl"></i>
           </div>
         `;
 
-        // 3. حالة إثبات الملكية المطابقة للصورة المرجعية تماماً
+        // 3. شارة / زر التوثيق بأسلوب جوجل الراقي (منفصل ونازل عن الغلاف بأناقة)
         let claimBadgeHtml = '';
         if (bank.verified) {
           claimBadgeHtml = `
-            <div class="inline-flex items-center gap-1.5 bg-[#4ADE80] text-black font-black text-xs px-3 py-1.5 rounded-lg shadow-md">
+            <div class="inline-flex items-center gap-1.5 bg-[#0A2618] border border-[#185332] text-[#4ADE80] text-xs font-bold px-3 py-1.5 rounded-full shadow-md mt-3">
               <span class="w-4 h-4 rounded-full bg-[#EAB308] border border-black flex items-center justify-center text-black text-[9px]">
                 <i class="fa-solid fa-check"></i>
               </span>
@@ -337,26 +337,26 @@
             <button
               type="button"
               onclick="event.stopPropagation(); openClaimModal('${bank.id}', '${bank.name}')"
-              class="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-md transition active:scale-95 cursor-pointer"
+              class="inline-flex items-center gap-1.5 bg-[#2A0E0E] hover:bg-[#3D1414] border border-[#661F1F] text-[#F87171] text-xs font-bold px-3 py-1.5 rounded-full shadow-md transition active:scale-95 cursor-pointer mt-3"
             >
-              <i class="fa-solid fa-shield-halved text-xs"></i>
+              <i class="fa-solid fa-shield-halved text-xs text-[#EF4444]"></i>
               <span>إثبات ملكية الصفحة</span>
             </button>
           `;
         }
 
-        // 4. سطر التقييم المطابق للصورة المرجعية تماماً: (8 تقييم) 2.9 ★
+        // 4. سطر التقييم يبدأ من اليمين
         let ratingHtml = '';
         if (bank.ratingAvg && bank.ratingCount > 0) {
           ratingHtml = `
-            <div class="flex items-center justify-end gap-1.5 text-xs font-bold pt-1">
-              <span class="text-zinc-400 text-[11px] font-normal">(${bank.ratingCount} تقييم)</span>
-              <span class="text-white font-mono">${bank.ratingAvg}</span>
+            <div class="flex items-center justify-start gap-1.5 text-xs font-bold pt-0.5">
               <i class="fa-solid fa-star text-brand-gold text-xs"></i>
+              <span class="text-white font-mono">${bank.ratingAvg}</span>
+              <span class="text-zinc-400 text-[11px] font-normal">(${bank.ratingCount} تقييم)</span>
             </div>
           `;
         } else {
-          ratingHtml = `<div class="text-right pt-1"><span class="text-zinc-500 text-xs">لا توجد تقييمات بعد</span></div>`;
+          ratingHtml = `<div class="text-right pt-0.5"><span class="text-zinc-500 text-xs">لا توجد تقييمات بعد</span></div>`;
         }
 
         return `
@@ -365,53 +365,53 @@
             class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer"
           >
             <div>
-              <!-- أ. الغلاف الرسمي النظيف -->
+              <!-- أ. الغلاف الرسمي -->
               ${coverHtml}
 
-              <!-- ب. سطر التداخل (الشعار باليمين متداخل، وحالة الملكية باليسار) -->
-              <div class="px-4 relative flex items-end justify-between -mt-8 mb-2">
-                <!-- شارة التوثيق باليسار -->
-                <div class="mb-1 order-1">
-                  ${claimBadgeHtml}
+              <!-- ب. سطر التداخل النظيف: الشعار في اليمين بالبداية، والزر في اليسار نازل بأناقة -->
+              <div class="px-4 relative flex items-start justify-between -mt-7 mb-2">
+                <!-- الشعار أولاً (في اليمين الطبيعي لـ RTL) -->
+                <div class="relative z-10">
+                  ${logoHtml}
                 </div>
 
-                <!-- الشعار باليمين -->
-                <div class="relative order-2">
-                  ${logoHtml}
+                <!-- زر/شارة التوثيق ثانياً (في اليسار الطبيعي لـ RTL ونازل بمسافة كافية عن الغلاف) -->
+                <div>
+                  ${claimBadgeHtml}
                 </div>
               </div>
 
-              <!-- ج. تفاصيل البنك في اليمين بالترتيب الصارم المطابق للصورة المرجعية -->
-              <div class="px-4 pt-1 pb-3 text-right space-y-1">
+              <!-- ج. تفاصيل البنك في اليمين بالكامل (justify-start لضمان المحاذاة لليمين) -->
+              <div class="px-4 pt-1 pb-3 text-right space-y-1.5">
                 
-                <!-- اسم البنك + شارة التوثيق -->
-                <div class="flex items-center justify-end gap-1.5">
-                  ${bank.verified ? renderVerifiedRosette(bank.badgeColor) : ''}
+                <!-- اسم البنك وشارة التوثيق في اليمين -->
+                <div class="flex items-center justify-start gap-1.5">
                   <h2 class="text-base font-black text-white leading-tight">
                     ${bank.name}
                   </h2>
+                  ${bank.verified ? renderVerifiedRosette(bank.badgeColor) : ''}
                 </div>
 
-                <!-- المقر والمدينة -->
+                <!-- المقر والمدينة في اليمين -->
                 ${bank.city ? `
-                  <div class="flex items-center justify-end gap-1 text-xs text-zinc-400">
-                    <span>${bank.city}</span>
+                  <div class="flex items-center justify-start gap-1 text-xs text-zinc-400">
                     <i class="fa-solid fa-location-dot text-brand-gold text-[11px]"></i>
+                    <span>${bank.city}</span>
                   </div>
                 ` : ''}
 
-                <!-- التقييم الحقيقي -->
+                <!-- التقييم الحقيقي في اليمين -->
                 ${ratingHtml}
 
-                <!-- النبذة والوصف الحقيقي -->
-                <p class="text-xs text-zinc-300 leading-relaxed pt-1.5 line-clamp-2">
+                <!-- النبذة والوصف الحقيقي في اليمين -->
+                <p class="text-xs text-zinc-300 leading-relaxed pt-1 line-clamp-2">
                   ${bank.description}
                 </p>
               </div>
             </div>
 
-            <!-- د. زر عرض صفحة البنك الأصفر المطابق للصورة المرجعية تماماً -->
-            <div class="p-4 pt-0">
+            <!-- د. زر عرض صفحة البنك الأصفر المتناسق -->
+            <div class="p-4 pt-1">
               <button
                 type="button"
                 onclick="window.location.href='/bank?slug=${bank.slug}'"
