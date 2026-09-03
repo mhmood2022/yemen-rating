@@ -4,7 +4,11 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/bank",
+      "destination": "/bank.html"
+    },
+    {
+      "source": "/((?!.*\\..*).*)",
       "destination": "/index.html"
     }
   ]
