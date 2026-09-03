@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>بنك التضامن - Tadhamon Bank</title>
 
-  <!-- Google Fonts: Tajawal -->
+  <!-- الخط العربي الأصيل Tajawal -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
   
-  <!-- Tailwind CSS CDN -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Font Awesome 6 Icons -->
@@ -22,13 +22,15 @@
         extend: {
           colors: {
             brand: {
-              gold: '#F59E0B',
-              goldLight: '#FBBF24',
+              gold: '#FFB800',       /* اللون الأصفر الذهبي الدقيق المطابق للهوية والشارة */
+              goldHover: '#FFA000',
+              goldLight: '#FFD54F',
               badgeBlue: '#1D9BF0',
-              badgeGold: '#F59E0B',
+              badgeGold: '#FFB800',
               badgeGray: '#8E8E93',
               dark: '#000000',
-              card: '#0a0a0a'
+              card: '#0D0D0D',
+              cardBorder: '#1A1A1A'
             }
           },
           fontFamily: {
@@ -47,26 +49,37 @@
       margin: 0;
       padding: 0;
       overflow-x: hidden;
-      touch-action: manipulation;
+      touch-action: pan-y;
+      -webkit-tap-highlight-color: transparent;
     }
     .tab-active {
       color: #FFFFFF !important;
       border-bottom: 2px solid #FFFFFF;
+    }
+    /* عارض الصور المنبثق */
+    .lightbox-enter {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    .lightbox-enter-active {
+      opacity: 1;
+      transform: scale(1);
+      transition: opacity 250ms ease, transform 250ms ease;
     }
   </style>
 </head>
 
 <body class="min-h-screen bg-black text-white flex justify-center selection:bg-brand-gold selection:text-black">
 
-  <!-- الحاوية العمودية للهاتف -->
-  <main class="w-full max-w-md min-h-screen bg-black flex flex-col pb-12 select-none">
+  <!-- الحاوية الأساسية للهاتف -->
+  <main class="w-full max-w-md min-h-screen bg-black flex flex-col pb-12 select-none relative">
 
-    <!-- 1. غلاف البنك (Cover) -->
+    <!-- 1. غلاف البنك (ديناميكي) -->
     <div id="bank-cover" class="relative w-full h-44 bg-gradient-to-r from-[#003B73] via-[#0055A5] to-[#0A6EB8] flex items-center justify-center overflow-hidden">
       <div class="flex items-center gap-2">
         <div class="text-right">
-          <h1 id="bank-name-cover" class="text-2xl font-black text-white tracking-wide leading-tight">بنك التضامن</h1>
-          <p id="bank-name-en-cover" class="text-xs font-bold text-blue-100 tracking-wider uppercase">Tadhamon Bank</p>
+          <h1 id="bank-cover-title" class="text-2xl font-black text-white tracking-wide leading-tight">بنك التضامن</h1>
+          <p id="bank-cover-subtitle" class="text-xs font-bold text-blue-100 tracking-wider uppercase">Tadhamon Bank</p>
         </div>
         <div class="w-10 h-10 flex items-center justify-center">
           <i class="fa-solid fa-shapes text-white text-3xl"></i>
@@ -74,9 +87,9 @@
       </div>
     </div>
 
-    <!-- 2. الشعار متداخل باليمين + زر إثبات الملكية في اليسار (مضبوط بالملي) -->
+    <!-- 2. الشعار متداخل باليمين + زر إثبات الملكية في اليسار -->
     <div class="px-4 relative flex items-end justify-between -mt-10 mb-2">
-      <!-- الشعار في اليمين -->
+      <!-- الشعار في أقصى اليمين -->
       <div class="relative order-1">
         <div class="w-20 h-20 rounded-2xl bg-white p-2 shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden">
           <img id="bank-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Tadhamon_Bank_Logo.png/640px-Tadhamon_Bank_Logo.png" onerror="this.outerHTML='<i class=\'fa-solid fa-dharmachakra text-[#0055A5] text-4xl\'></i>'" class="w-full h-full object-contain" alt="شعار البنك" />
@@ -85,7 +98,7 @@
 
       <!-- زر إثبات الملكية في اليسار -->
       <div class="order-2 mb-1">
-        <a href="#claim" class="inline-flex items-center gap-1.5 bg-[#FF0037] hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg transition active:scale-95">
+        <a href="#claim" class="inline-flex items-center gap-1.5 bg-[#FF0037] hover:bg-red-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg transition active:scale-95">
           <i class="fa-solid fa-shield-check text-xs"></i>
           <span>إثبات الملكية</span>
         </a>
@@ -95,34 +108,27 @@
     <!-- 3. بيانات البنك الأساسية (محاذاة كاملة لليمين) -->
     <div class="px-4 space-y-1.5 text-right">
       
-      <!-- الاسم وشارة التوثيق في اليمين -->
+      <!-- الاسم وشارة التوثيق -->
       <div class="flex items-center justify-start gap-1.5">
-        <h2 id="bank-title" class="text-xl font-black text-white">بنك التضامن</h2>
-        
-        <!-- شارة التوثيق الذهبية المطابقة للصورة 2 -->
-        <span id="verification-badge-container" class="inline-flex items-center" title="حساب موثق">
-          <svg class="w-5 h-5 text-brand-gold fill-current" viewBox="0 0 24 24">
-            <path d="M22.5 12.5c0-1.58-.88-2.95-2.15-3.6.15-.44.24-.91.24-1.4 0-2.21-1.79-4-4-4-.49 0-.96.08-1.4.24C14.55 2.48 13.18 1.6 11.6 1.6c-1.58 0-2.95.88-3.6 2.15-.44-.16-.91-.25-1.4-.25-2.21 0-4 1.79-4 4 0 .49.08.96.24 1.4C1.58 9.55.7 10.92.7 12.5c0 1.58.88 2.95 2.15 3.6-.16.44-.25.91-.25 1.4 0 2.21 1.79 4 4 4 .49 0 .96-.08 1.4-.24.65 1.27 2.02 2.14 3.6 2.14 1.58 0 2.95-.87 3.6-2.14.44.16.91.24 1.4.24 2.21 0 4-1.79 4-4 0-.49-.08-.96-.24-1.4 1.27-.65 2.14-2.02 2.14-3.6z"/>
-            <path d="M10.2 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z" fill="#000000"/>
-          </svg>
-        </span>
+        <h2 id="bank-name" class="text-xl font-black text-white">بنك التضامن</h2>
+        <span id="bank-badge-slot" class="inline-flex items-center"></span>
       </div>
 
-      <!-- سطر التقييم السريع في اليمين -->
+      <!-- التقييم السريع في الرأس -->
       <div class="flex items-center justify-start gap-1.5 text-brand-gold text-xs font-bold">
         <span class="text-white font-medium text-[11px]">★التقييمات</span>
-        <div class="flex text-[10px]">
+        <div class="flex text-[10px]" id="header-stars-slot">
           <i class="fa-solid fa-star"></i>
           <i class="fa-solid fa-star"></i>
           <i class="fa-solid fa-star"></i>
           <i class="fa-solid fa-star"></i>
           <i class="fa-solid fa-star-half-stroke"></i>
         </div>
-        <span class="text-white text-sm font-black" id="header-rating-val">4.5</span>
-        <span class="text-zinc-400 font-normal" id="header-reviews-count">47 تقييم</span>
+        <span class="text-white text-sm font-black" id="header-rating-num">4.5</span>
+        <span class="text-zinc-400 font-normal" id="header-rating-count">47 تقييم</span>
       </div>
 
-      <!-- الوصف المختصر -->
+      <!-- الوصف -->
       <p id="bank-bio" class="text-zinc-300 text-xs leading-snug font-medium pt-1">
         أكبر بنك في اليمن يقدم خدمات مالية ومصرفية إسلامية تلبي تطلعات عملائه بجودة عالية
       </p>
@@ -140,133 +146,56 @@
       </div>
     </div>
 
-    <!-- 4. تبويبات التصفح الثلاثة (من اليمين: المنشورات -> العروض -> الخدمات) -->
+    <!-- 4. تبويبات التصفح الثلاثة (المنشورات -> العروض -> الخدمات) -->
     <div class="border-b border-zinc-800 flex items-center justify-around text-zinc-400 text-sm font-bold mt-2">
-      <!-- 1. المنشورات -->
       <button onclick="switchTab('posts')" id="tab-posts-btn" class="tab-active py-2.5 px-3 flex items-center gap-1.5 transition">
         <i class="fa-solid fa-table-cells text-brand-gold text-sm"></i>
         <span>المنشورات</span>
       </button>
 
-      <!-- 2. العروض -->
       <button onclick="switchTab('offers')" id="tab-offers-btn" class="py-2.5 px-3 flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition">
         <i class="fa-solid fa-clipboard-check text-brand-gold text-sm"></i>
         <span>العروض</span>
       </button>
 
-      <!-- 3. الخدمات -->
       <button onclick="switchTab('services')" id="tab-services-btn" class="py-2.5 px-3 flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition">
         <i class="fa-solid fa-briefcase text-brand-gold text-sm"></i>
         <span>الخدمات</span>
       </button>
     </div>
 
-    <!-- محتوى التبويبات -->
+    <!-- 5. حاوية التبويبات المتبدلة ديناميكياً -->
     <div class="p-3">
 
       <!-- تبويب المنشورات -->
       <div id="tab-posts" class="space-y-3">
-        <div class="grid grid-cols-2 gap-2.5">
-
-          <!-- كارت منشور 1 -->
-          <article class="bg-[#0e0e0e] rounded-xl overflow-hidden border border-zinc-800/80 flex flex-col justify-between">
-            <div class="relative w-full aspect-square bg-gradient-to-b from-[#0c2a4d] to-[#041224] p-2.5 flex flex-col justify-between select-none">
-              <div class="text-right">
-                <span class="inline-block bg-[#0055A5] text-[9px] font-bold px-1.5 py-0.5 rounded text-white">تسوق أونلاين بأمان</span>
-                <p class="text-[8px] text-blue-200 mt-0.5">مع بطاقة الإنترنت الافتراضية</p>
-              </div>
-              <div class="my-auto flex justify-center">
-                <i class="fa-solid fa-mobile-screen text-4xl text-blue-300"></i>
-              </div>
-              <div class="flex items-center justify-between text-[7px] text-zinc-400 border-t border-white/10 pt-1">
-                <span class="text-brand-gold font-bold">بنك التضامن</span>
-                <span>3D SECURE V2</span>
-              </div>
-            </div>
-
-            <!-- أزرار التفاعل: التفاعلات في اليمين والمشاهدات/الحفظ في اليسار -->
-            <div class="p-2 flex items-center justify-between text-zinc-400 text-xs">
-              <div class="flex items-center gap-2">
-                <span class="flex items-center gap-0.5 text-[10px]"><i class="fa-regular fa-heart"></i> 4</span>
-                <span class="flex items-center gap-0.5 text-[10px]"><i class="fa-solid fa-retweet"></i> 2</span>
-                <span class="flex items-center gap-0.5 text-[10px]"><i class="fa-regular fa-comment"></i> 0</span>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <span class="text-[10px] font-mono">292 <i class="fa-solid fa-chart-simple text-[9px]"></i></span>
-                <i class="fa-regular fa-bookmark text-[10px]"></i>
-                <i class="fa-solid fa-share-nodes text-[10px]"></i>
-              </div>
-            </div>
-          </article>
-
-          <!-- كارت منشور 2 -->
-          <article class="bg-[#0e0e0e] rounded-xl overflow-hidden border border-zinc-800/80 flex flex-col justify-between">
-            <div class="relative w-full aspect-square bg-gradient-to-b from-[#0c2a4d] to-[#041224] p-2.5 flex flex-col justify-between select-none">
-              <div class="text-right">
-                <span class="inline-block bg-[#0055A5] text-[9px] font-bold px-1.5 py-0.5 rounded text-white">بطاقات تناسب</span>
-                <p class="text-[8px] text-blue-200 mt-0.5">جميع احتياجاتك</p>
-              </div>
-              <div class="my-auto flex justify-center">
-                <i class="fa-solid fa-credit-card text-4xl text-amber-500"></i>
-              </div>
-              <div class="flex items-center justify-between text-[7px] text-zinc-400 border-t border-white/10 pt-1">
-                <span class="text-brand-gold font-bold">بنك التضامن</span>
-                <span class="font-bold text-white">VISA</span>
-              </div>
-            </div>
-
-            <div class="p-2 flex items-center justify-between text-zinc-400 text-xs">
-              <div class="flex items-center gap-2">
-                <span class="flex items-center gap-0.5 text-[10px]"><i class="fa-regular fa-heart"></i> 4</span>
-                <span class="flex items-center gap-0.5 text-[10px]"><i class="fa-solid fa-retweet"></i> 2</span>
-                <span class="flex items-center gap-0.5 text-[10px]"><i class="fa-regular fa-comment"></i> 0</span>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <span class="text-[10px] font-mono">292 <i class="fa-solid fa-chart-simple text-[9px]"></i></span>
-                <i class="fa-regular fa-bookmark text-[10px]"></i>
-                <i class="fa-solid fa-share-nodes text-[10px]"></i>
-              </div>
-            </div>
-          </article>
-
+        <div id="posts-container" class="grid grid-cols-2 gap-2.5">
+          <!-- المنشورات تُحقن ديناميكياً بواسطة جافاسكربت -->
         </div>
       </div>
 
-      <!-- تبويب العروض (يفتح عند الضغط) -->
-      <div id="tab-offers" class="hidden space-y-2.5">
-        <div class="bg-[#0e0e0e] border border-zinc-800 p-3.5 rounded-xl text-right">
-          <span class="bg-brand-gold text-black font-extrabold text-[10px] px-2 py-0.5 rounded inline-block mb-1">عرض حصري</span>
-          <h4 class="text-sm font-bold text-white">إصدار مجاني للبطاقات الافتراضية عبر تطبيق تضامن</h4>
-          <p class="text-xs text-zinc-400 mt-1">تسوق إلكترونياً بدون رسوم إصدار لأول 1,000 عميل هذا الشهر.</p>
+      <!-- تبويب العروض الحقيقية -->
+      <div id="tab-offers" class="hidden space-y-3">
+        <div id="offers-container" class="space-y-2.5">
+          <!-- العروض تُحقن ديناميكياً بواسطة جافاسكربت -->
         </div>
       </div>
 
-      <!-- تبويب الخدمات (يفتح عند الضغط) -->
+      <!-- تبويب الخدمات المصرفية الحقيقية -->
       <div id="tab-services" class="hidden space-y-2.5">
-        <div class="bg-[#0e0e0e] border border-zinc-800 p-3 rounded-xl flex items-center justify-between text-right">
-          <i class="fa-solid fa-hand-holding-dollar text-brand-gold text-xl ml-2"></i>
-          <div>
-            <h4 class="text-sm font-bold text-white">التمويل والاستثمار الإسلامي</h4>
-            <p class="text-xs text-zinc-400">حلول مرابحة واستصناع تلبي احتياجات الشركات والأفراد.</p>
-          </div>
-        </div>
-        <div class="bg-[#0e0e0e] border border-zinc-800 p-3 rounded-xl flex items-center justify-between text-right">
-          <i class="fa-solid fa-money-bill-transfer text-brand-gold text-xl ml-2"></i>
-          <div>
-            <h4 class="text-sm font-bold text-white">خدمات التحويل السريع (تضامن باي)</h4>
-            <p class="text-xs text-zinc-400">إرسال واستلام الحوالات محلياً ودولياً بأقل عمولة.</p>
-          </div>
+        <div id="services-container" class="space-y-2">
+          <!-- الخدمات تُحقن ديناميكياً بواسطة جافاسكربت -->
         </div>
       </div>
 
     </div>
 
-    <!-- 5. قسم التقييمات: مضبوط بالاتجاه العربي (تقييم الزوار في اليمين، الأشرطة في اليسار) -->
+    <!-- 6. قسم التقييمات: مضبوط بالاتجاه العربي (تقييم الزوار في اليمين، الأشرطة في اليسار) -->
     <section class="px-4 pt-4 space-y-3">
       <h3 class="text-right text-sm font-bold text-white">التقييمات</h3>
 
       <div class="flex items-center justify-between bg-black">
-        <!-- 1. تقييم الزوار والنجوم في اليمين (Order 1) -->
+        <!-- 1. ملخص تقييم الزوار في اليمين -->
         <div class="text-right">
           <span class="text-[10px] text-zinc-400 block">تقييم الزوار</span>
           <div class="text-3xl font-black text-white leading-tight">
@@ -282,7 +211,7 @@
           <span class="text-[10px] text-zinc-400 block">128 تقييم</span>
         </div>
 
-        <!-- 2. أشرطة النسب من 5 إلى 1 في اليسار (Order 2) -->
+        <!-- 2. أشرطة النسب من 5 إلى 1 في اليسار -->
         <div class="w-6/12 space-y-1 text-[10px]">
           <div class="flex items-center gap-1.5 justify-start">
             <span class="text-zinc-300">★ 5</span>
@@ -324,13 +253,11 @@
 
       <!-- هل تعاملت مع هذه المنشأة؟ في اليمين، والزر الأصفر في اليسار -->
       <div class="flex items-center justify-between pt-2">
-        <!-- النص في اليمين -->
         <div class="text-right">
           <p class="text-xs font-bold text-white">هل تعاملت مع هذه المنشأة؟</p>
           <p class="text-[10px] text-zinc-400">شارك تجربتك وساعد الآخرين في اتخاذ القرار.</p>
         </div>
-        <!-- الزر في اليسار -->
-        <button class="bg-brand-gold text-black font-extrabold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1 shadow hover:bg-brand-goldLight transition active:scale-95">
+        <button class="bg-brand-gold hover:bg-brand-goldHover text-black font-extrabold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1 shadow transition active:scale-95">
           <span>★ قيّم هذه المنشأة</span>
         </button>
       </div>
@@ -338,58 +265,298 @@
       <!-- آخر التقييمات: صورة المعلق في اليمين، والنجوم في اليسار -->
       <div class="space-y-2 pt-2">
         <h4 class="text-right text-xs font-bold text-zinc-300">اخر التقييمات</h4>
-
-        <!-- مراجعة 1 -->
-        <div class="border border-zinc-800 rounded-full py-1.5 px-3 flex items-center justify-between bg-black">
-          <!-- الصورة في اليمين وبجانبها نص التعليق -->
-          <div class="flex items-center gap-2.5">
-            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full border border-zinc-700 object-cover" alt="User" />
-            <span class="text-xs text-zinc-200 font-medium">افضل بنك في التعامل</span>
-          </div>
-          <!-- النجوم في أقصى اليسار -->
-          <div class="flex text-brand-gold text-[10px]">
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-regular fa-star text-zinc-600"></i>
-          </div>
-        </div>
-
-        <!-- مراجعة 2 -->
-        <div class="border border-zinc-800 rounded-full py-1.5 px-3 flex items-center justify-between bg-black">
-          <!-- الصورة في اليمين وبجانبها نص التعليق -->
-          <div class="flex items-center gap-2.5">
-            <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80&auto=format&fit=crop&q=80" class="w-8 h-8 rounded-full border border-zinc-700 object-cover" alt="User" />
-            <span class="text-xs text-zinc-200 font-medium">خدمات مميز وتعامل راقي</span>
-          </div>
-          <!-- النجوم في أقصى اليسار -->
-          <div class="flex text-brand-gold text-[10px]">
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-regular fa-star text-zinc-600"></i>
-            <i class="fa-regular fa-star text-zinc-600"></i>
-          </div>
+        <div id="reviews-container" class="space-y-2">
+          <!-- المراجعات تُحقن ديناميكياً -->
         </div>
       </div>
     </section>
 
-    <!-- 6. تواصل معنا في الأسفل (الأيقونات الذهبية الـ 5 المحددة بالصورة) -->
+    <!-- 7. تواصل معنا (الأيقونات الذهبية الـ 5 المعتمدة) -->
     <footer class="pt-8 pb-4 text-center">
       <h4 class="text-sm font-bold text-white underline underline-offset-8 decoration-zinc-700 mb-4">تواصل معنا</h4>
-      <div class="flex items-center justify-center gap-5 text-brand-gold text-xl">
-        <a href="#hours" title="ساعات العمل والفروع"><i class="fa-solid fa-user-clock"></i></a>
-        <a href="#location" title="الموقع"><i class="fa-solid fa-location-dot"></i></a>
-        <a href="https://tadhamonbank.com" target="_blank" title="الموقع الإلكتروني"><i class="fa-solid fa-globe"></i></a>
-        <a href="https://wa.me/967777777777" target="_blank" title="واتساب"><i class="fa-brands fa-whatsapp"></i></a>
-        <a href="mailto:info@tadhamonbank.com" title="البريد الإلكتروني"><i class="fa-regular fa-envelope"></i></a>
+      <div id="footer-contacts" class="flex items-center justify-center gap-5 text-brand-gold text-xl">
+        <a href="#hours" title="ساعات العمل والفروع" class="hover:scale-110 transition"><i class="fa-solid fa-user-clock"></i></a>
+        <a href="#location" title="الموقع الجغرافي" class="hover:scale-110 transition"><i class="fa-solid fa-location-dot"></i></a>
+        <a id="contact-web" href="#" target="_blank" title="الموقع الإلكتروني" class="hover:scale-110 transition"><i class="fa-solid fa-globe"></i></a>
+        <a id="contact-wa" href="#" target="_blank" title="واتساب" class="hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></a>
+        <a id="contact-mail" href="#" title="البريد الإلكتروني" class="hover:scale-110 transition"><i class="fa-regular fa-envelope"></i></a>
       </div>
     </footer>
 
+    <!-- 8. نافذة عارض الصور باللمس (Touch-Friendly Lightbox) -->
+    <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex flex-col justify-between p-4">
+      <div class="flex items-center justify-between text-white border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-info text-brand-gold text-sm"></i>
+          <span id="lightbox-title" class="text-xs font-bold">عرض المنشور</span>
+        </div>
+        <button onclick="closeLightbox()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 active:scale-90 transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div id="lightbox-touch-area" class="relative my-auto flex items-center justify-center w-full max-h-[75vh] overflow-hidden">
+        <img id="lightbox-img" src="" class="max-w-full max-h-[70vh] rounded-xl object-contain shadow-2xl transition duration-300" alt="عرض مكبر" />
+      </div>
+
+      <div class="text-center text-zinc-400 text-xs flex items-center justify-between border-t border-zinc-800 pt-3">
+        <button onclick="navLightbox(-1)" class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs active:scale-95">السابق</button>
+        <span id="lightbox-counter" class="font-mono text-brand-gold">1 / 4</span>
+        <button onclick="navLightbox(1)" class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs active:scale-95">التالي</button>
+      </div>
+    </div>
+
   </main>
 
+  <!-- المحرك البرمجي الديناميكي للبيانات (Data-Driven Architecture) -->
   <script>
+    // كائن البيانات المركزي الذي تعتمده الإدارة أو قاعدة البيانات (Supabase لاحقاً)
+    const BANK_DATA = {
+      name: "بنك التضامن",
+      nameEn: "Tadhamon Bank",
+      badgeType: "gold", // خيارات الشارة المعتمدة: 'gold' | 'blue' | 'gray'
+      rating: 4.5,
+      reviewsCount: "47 تقييم",
+      bio: "أكبر بنك في اليمن يقدم خدمات مالية ومصرفية إسلامية تلبي تطلعات عملائه بجودة عالية",
+      category: "خدمات مالية",
+      location: "Taiz - Yemen",
+      website: "https://tadhamonbank.com",
+      whatsapp: "https://wa.me/967777777777",
+      email: "mailto:info@tadhamonbank.com",
+
+      // 1. منشورات البنك
+      posts: [
+        {
+          id: 1,
+          title: "تسوق أونلاين بأمان",
+          subtitle: "مع بطاقة الإنترنت الافتراضية",
+          tag: "3D SECURE V2",
+          badgeColor: "bg-[#0055A5]",
+          icon: "fa-solid fa-mobile-screen",
+          iconColor: "text-blue-300",
+          gradient: "from-[#0c2a4d] to-[#041224]",
+          likes: 4,
+          reposts: 2,
+          comments: 0,
+          views: 292,
+          previewImg: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&auto=format&fit=crop&q=80"
+        },
+        {
+          id: 2,
+          title: "بطاقات تناسب",
+          subtitle: "جميع احتياجاتك",
+          tag: "VISA",
+          badgeColor: "bg-[#0055A5]",
+          icon: "fa-solid fa-credit-card",
+          iconColor: "text-amber-500",
+          gradient: "from-[#0a2342] to-[#040d1a]",
+          likes: 4,
+          reposts: 2,
+          comments: 0,
+          views: 292,
+          previewImg: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=600&auto=format&fit=crop&q=80"
+        },
+        {
+          id: 3,
+          title: "تطبيق تضامن موبايل",
+          subtitle: "خدماتك المصرفية بكل سهولة",
+          tag: "SMART APP",
+          badgeColor: "bg-[#0055A5]",
+          icon: "fa-solid fa-wallet",
+          iconColor: "text-brand-gold",
+          gradient: "from-[#0b2b48] to-[#031526]",
+          likes: 6,
+          reposts: 3,
+          comments: 1,
+          views: 415,
+          previewImg: "https://images.unsplash.com/photo-1556742049-0a67c5574f73?w=600&auto=format&fit=crop&q=80"
+        },
+        {
+          id: 4,
+          title: "تمويل الطاقة البديلة",
+          subtitle: "حلول مستدامة للمنازل والمزارع",
+          tag: "مرابحة إسلامية",
+          badgeColor: "bg-[#0055A5]",
+          icon: "fa-solid fa-solar-panel",
+          iconColor: "text-emerald-400",
+          gradient: "from-[#0c2e3d] to-[#02131a]",
+          likes: 8,
+          reposts: 4,
+          comments: 2,
+          views: 520,
+          previewImg: "https://images.unsplash.com/photo-1509391365360-2e959784a276?w=600&auto=format&fit=crop&q=80"
+        }
+      ],
+
+      // 2. العروض المصرفية الحقيقية (Real Banking Offers)
+      offers: [
+        {
+          id: 1,
+          tag: "عرض حصري",
+          title: "تمويل منظومات الطاقة الشمسية بنظام المرابحة",
+          desc: "هامش ربح مخفض 3.5% وفترة سداد مرنة تصل إلى 36 شهراً للمزارعين والمشاريع الصغيرة والمنازل.",
+          expiry: "ساري حتى نهاية الربع الحالي"
+        },
+        {
+          id: 2,
+          tag: "خصم خاص",
+          title: "إصدار مجاني لبطاقات الإنترنت الافتراضية",
+          desc: "تسوق إلكترونياً بأمان تام مع إعفاء كامل من رسوم الإصدار عبر تطبيق تضامن موبايل.",
+          expiry: "ساري للعملاء الجدد والمشتركين بالتطبيق"
+        },
+        {
+          id: 3,
+          tag: "للشركات والتجار",
+          title: "إعفاء 100% من رسوم تركيب نقاط البيع (POS)",
+          desc: "زوّد متجرك بأحدث أجهزة الدفع الإلكتروني ونقاط البيع السريعة مع دعم فني مجاني.",
+          expiry: "عرض محدود للأنشطة التجارية في تعز وصنعاء وعدن"
+        }
+      ],
+
+      // 3. الخدمات المصرفية المعتمدة (Banking Services)
+      services: [
+        {
+          title: "التمويل والاستثمار الإسلامي",
+          desc: "حلول تمويلية معتمدة وفق أحكام الشريعة (مرابحة، إجارة منتهية بالتمليك، وتمويل استصناع).",
+          icon: "fa-solid fa-hand-holding-dollar"
+        },
+        {
+          title: "تطبيق تضامن موبايل وتضامن باي",
+          desc: "تحويلات لحظية، دفع فواتير المياه والكهرباء والاتصالات، وخدمة السحب النقدي بدون بطاقة.",
+          icon: "fa-solid fa-mobile-screen-button"
+        },
+        {
+          title: "الحسابات المصرفية المتنوعة",
+          desc: "فتح الحساب الجاري، وحسابات التوفير الاستثمارية بالريال اليمني والعملات الأجنبية بعوائد مجزية.",
+          icon: "fa-solid fa-building-columns"
+        },
+        {
+          title: "الحوالات السريعة والدولية",
+          desc: "استلام وإرسال الحوالات المالية العالمية عبر ويسترن يونيون وموني جرام بسرعة وأمان.",
+          icon: "fa-solid fa-money-bill-transfer"
+        }
+      ],
+
+      // 4. المراجعات الحقيقية
+      reviews: [
+        {
+          name: "افضل بنك في التعامل",
+          avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=80",
+          stars: 4
+        },
+        {
+          name: "خدمات مميز وتعامل راقي",
+          avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80&auto=format&fit=crop&q=80",
+          stars: 3
+        }
+      ]
+    };
+
+    // نظام توليد شارات التوثيق الثلاث (مطابقة للصورة 2 تماماً)
+    function renderVerificationBadge(type) {
+      let color = '#FFB800'; // الأصفر الافتراضي
+      if (type === 'blue') color = '#1D9BF0'; // أزرق
+      if (type === 'gray') color = '#8E8E93'; // رمادي
+
+      return `
+        <svg class="w-5 h-5 fill-current inline-block select-none" style="color: ${color}" viewBox="0 0 24 24">
+          <path d="M22.5 12.5c0-1.58-.88-2.95-2.15-3.6.15-.44.24-.91.24-1.4 0-2.21-1.79-4-4-4-.49 0-.96.08-1.4.24C14.55 2.48 13.18 1.6 11.6 1.6c-1.58 0-2.95.88-3.6 2.15-.44-.16-.91-.25-1.4-.25-2.21 0-4 1.79-4 4 0 .49.08.96.24 1.4C1.58 9.55.7 10.92.7 12.5c0 1.58.88 2.95 2.15 3.6-.16.44-.25.91-.25 1.4 0 2.21 1.79 4 4 4 .49 0 .96-.08 1.4-.24.65 1.27 2.02 2.14 3.6 2.14 1.58 0 2.95-.87 3.6-2.14.44.16.91.24 1.4.24 2.21 0 4-1.79 4-4 0-.49-.08-.96-.24-1.4 1.27-.65 2.14-2.02 2.14-3.6z"/>
+          <path d="M10.2 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z" fill="#000000"/>
+        </svg>
+      `;
+    }
+
+    // بناء الواجهة عند التحميل
+    function initializePage() {
+      // شارة التوثيق
+      document.getElementById('bank-badge-slot').innerHTML = renderVerificationBadge(BANK_DATA.badgeType);
+
+      // روابط التواصل
+      document.getElementById('contact-web').href = BANK_DATA.website;
+      document.getElementById('contact-wa').href = BANK_DATA.whatsapp;
+      document.getElementById('contact-mail').href = BANK_DATA.email;
+
+      // 1. حقن المنشورات
+      const postsContainer = document.getElementById('posts-container');
+      postsContainer.innerHTML = BANK_DATA.posts.map((post, index) => `
+        <article class="bg-[#0D0D0D] rounded-xl overflow-hidden border border-zinc-800/80 flex flex-col justify-between">
+          <div onclick="openLightbox(${index})" class="relative w-full aspect-square bg-gradient-to-b ${post.gradient} p-2.5 flex flex-col justify-between cursor-pointer active:opacity-90">
+            <div class="text-right">
+              <span class="inline-block ${post.badgeColor} text-[9px] font-bold px-1.5 py-0.5 rounded text-white">${post.title}</span>
+              <p class="text-[8px] text-blue-200 mt-0.5">${post.subtitle}</p>
+            </div>
+            <div class="my-auto flex justify-center">
+              <i class="${post.icon} text-4xl ${post.iconColor}"></i>
+            </div>
+            <div class="flex items-center justify-between text-[7px] text-zinc-400 border-t border-white/10 pt-1">
+              <span class="text-brand-gold font-bold">بنك التضامن</span>
+              <span>${post.tag}</span>
+            </div>
+          </div>
+
+          <div class="p-2 flex items-center justify-between text-zinc-400 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="flex items-center gap-0.5 text-[10px]"><i class="fa-regular fa-heart"></i> ${post.likes}</span>
+              <span class="flex items-center gap-0.5 text-[10px]"><i class="fa-solid fa-retweet"></i> ${post.reposts}</span>
+              <span class="flex items-center gap-0.5 text-[10px]"><i class="fa-regular fa-comment"></i> ${post.comments}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] font-mono">${post.views} <i class="fa-solid fa-chart-simple text-[9px]"></i></span>
+              <i class="fa-regular fa-bookmark text-[10px]"></i>
+              <i class="fa-solid fa-share-nodes text-[10px]"></i>
+            </div>
+          </div>
+        </article>
+      `).join('');
+
+      // 2. حقن العروض
+      const offersContainer = document.getElementById('offers-container');
+      offersContainer.innerHTML = BANK_DATA.offers.map(offer => `
+        <div class="bg-[#0D0D0D] border border-zinc-800 p-3.5 rounded-xl text-right">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] text-zinc-500 font-mono">${offer.expiry}</span>
+            <span class="bg-brand-gold text-black font-black text-[10px] px-2 py-0.5 rounded">${offer.tag}</span>
+          </div>
+          <h4 class="text-sm font-bold text-white mt-1">${offer.title}</h4>
+          <p class="text-xs text-zinc-400 mt-1 leading-relaxed">${offer.desc}</p>
+        </div>
+      `).join('');
+
+      // 3. حقن الخدمات
+      const servicesContainer = document.getElementById('services-container');
+      servicesContainer.innerHTML = BANK_DATA.services.map(service => `
+        <div class="bg-[#0D0D0D] border border-zinc-800 p-3 rounded-xl flex items-center justify-between text-right">
+          <i class="${service.icon} text-brand-gold text-2xl ml-3 shrink-0"></i>
+          <div>
+            <h4 class="text-sm font-bold text-white">${service.title}</h4>
+            <p class="text-xs text-zinc-400 mt-0.5 leading-snug">${service.desc}</p>
+          </div>
+        </div>
+      `).join('');
+
+      // 4. حقن المراجعات
+      const reviewsContainer = document.getElementById('reviews-container');
+      reviewsContainer.innerHTML = BANK_DATA.reviews.map(rev => {
+        let starsHtml = '';
+        for (let i = 1; i <= 5; i++) {
+          if (i <= rev.stars) starsHtml += '<i class="fa-solid fa-star"></i>';
+          else starsHtml += '<i class="fa-regular fa-star text-zinc-600"></i>';
+        }
+        return `
+          <div class="border border-zinc-800 rounded-full py-1.5 px-3 flex items-center justify-between bg-black">
+            <div class="flex items-center gap-2.5">
+              <img src="${rev.avatar}" class="w-8 h-8 rounded-full border border-zinc-700 object-cover" alt="User" />
+              <span class="text-xs text-zinc-200 font-medium">${rev.name}</span>
+            </div>
+            <div class="flex text-brand-gold text-[10px] gap-0.5">
+              ${starsHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // التبديل بين التبويبات
     function switchTab(tabName) {
       const tabs = ['posts', 'offers', 'services'];
       tabs.forEach(t => {
@@ -407,23 +574,55 @@
       });
     }
 
-    function setBadge(type) {
-      const container = document.getElementById('verification-badge-container');
-      if (!container) return;
+    // نظام عارض الصور باللمس (Touch Lightbox)
+    let currentLightboxIdx = 0;
+    function openLightbox(index) {
+      currentLightboxIdx = index;
+      const post = BANK_DATA.posts[index];
+      const modal = document.getElementById('lightbox-modal');
+      const img = document.getElementById('lightbox-img');
+      const title = document.getElementById('lightbox-title');
+      const counter = document.getElementById('lightbox-counter');
 
-      let colorClass = 'text-brand-gold';
-      if (type === 'blue') colorClass = 'text-[#1D9BF0]';
-      if (type === 'gray') colorClass = 'text-[#8E8E93]';
-
-      container.innerHTML = `
-        <svg class="w-5 h-5 ${colorClass} fill-current" viewBox="0 0 24 24">
-          <path d="M22.5 12.5c0-1.58-.88-2.95-2.15-3.6.15-.44.24-.91.24-1.4 0-2.21-1.79-4-4-4-.49 0-.96.08-1.4.24C14.55 2.48 13.18 1.6 11.6 1.6c-1.58 0-2.95.88-3.6 2.15-.44-.16-.91-.25-1.4-.25-2.21 0-4 1.79-4 4 0 .49.08.96.24 1.4C1.58 9.55.7 10.92.7 12.5c0 1.58.88 2.95 2.15 3.6-.16.44-.25.91-.25 1.4 0 2.21 1.79 4 4 4 .49 0 .96-.08 1.4-.24.65 1.27 2.02 2.14 3.6 2.14 1.58 0 2.95-.87 3.6-2.14.44.16.91.24 1.4.24 2.21 0 4-1.79 4-4 0-.49-.08-.96-.24-1.4 1.27-.65 2.14-2.02 2.14-3.6z"/>
-          <path d="M10.2 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z" fill="#000000"/>
-        </svg>
-      `;
+      img.src = post.previewImg;
+      title.innerText = post.title;
+      counter.innerText = `${index + 1} / ${BANK_DATA.posts.length}`;
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
     }
 
-    setBadge('gold');
+    function closeLightbox() {
+      const modal = document.getElementById('lightbox-modal');
+      modal.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+
+    function navLightbox(direction) {
+      currentLightboxIdx += direction;
+      if (currentLightboxIdx < 0) currentLightboxIdx = BANK_DATA.posts.length - 1;
+      if (currentLightboxIdx >= BANK_DATA.posts.length) currentLightboxIdx = 0;
+      openLightbox(currentLightboxIdx);
+    }
+
+    // كشف السحب باللمس على شاشة الهاتف (Swipe gestures)
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const touchArea = document.getElementById('lightbox-touch-area');
+    touchArea.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    touchArea.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      if (touchStartX - touchEndX > 50) {
+        navLightbox(1); // سحب لليسار
+      } else if (touchEndX - touchStartX > 50) {
+        navLightbox(-1); // سحب لليمين
+      }
+    }, { passive: true });
+
+    // تشغيل التهيئة
+    window.addEventListener('DOMContentLoaded', initializePage);
   </script>
 
 </body>
