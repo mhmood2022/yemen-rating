@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>دليل البنوك والمصارف في اليمن | يمن ريتنغ</title>
+  <title>دليل البنوك والمصارف | يمن ريتنغ</title>
 
-  <!-- خط Tajawal / Cairo الرسمي المعتمد في المنصة -->
+  <!-- الخط الرسمي المعتمد -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
@@ -22,13 +22,11 @@
         extend: {
           colors: {
             brand: {
-              gold: '#EAB308',         /* الأصفر الذهبي المعتمد رسمياً */
+              gold: '#EAB308',         /* الأصفر الذهبي المعتمد */
               goldHover: '#CA8A04',
-              goldDim: 'rgba(234, 179, 8, 0.12)',
               dark: '#000000',
-              surface: '#090D14',
-              card: '#0F131D',
-              cardBorder: '#1B2436'
+              card: '#0B0F17',
+              cardBorder: '#1F2937'
             }
           },
           fontFamily: {
@@ -62,60 +60,36 @@
 
 <body class="min-h-screen bg-black text-white flex justify-center selection:bg-brand-gold selection:text-black">
 
-  <main class="w-full max-w-7xl min-h-screen bg-black flex flex-col pb-24 px-4 sm:px-6 lg:px-8 select-none">
+  <main class="w-full max-w-md min-h-screen bg-black flex flex-col pb-20 px-4 select-none">
 
-    <!-- 1. الهيدر الاحترافي المتناسق مع يمن ريتنغ -->
-    <header class="py-4 border-b border-zinc-900/90 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <a href="index.html" class="w-9 h-9 rounded-xl bg-zinc-900/90 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-brand-gold hover:border-brand-gold/40 transition" title="الرجوع للرئيسية">
-          <i class="fa-solid fa-arrow-right text-xs"></i>
-        </a>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-base sm:text-lg font-black text-white leading-none">دليل البنوك والمصارف</h1>
-            <span id="banks-total-badge" class="text-[10px] font-mono font-bold bg-brand-goldDim border border-brand-gold/30 text-brand-gold px-2 py-0.5 rounded-full">
-              --
-            </span>
-          </div>
-          <p class="text-[10px] sm:text-[11px] text-zinc-400 mt-1">المنشآت المالية المعتمدة والمرخصة في الجمهورية اليمنية</p>
-        </div>
-      </div>
+    <!-- 1. رأس الصفحة النظيف (تم مسح الوصف وشارة البنوك المعتمدة) -->
+    <header class="py-4 border-b border-zinc-900 flex items-center justify-between">
+      <a href="index.html" class="w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-brand-gold transition" title="الرئيسية">
+        <i class="fa-solid fa-arrow-right text-xs"></i>
+      </a>
 
-      <div class="flex items-center gap-2 text-xs text-zinc-400">
-        <span class="hidden sm:inline">يمن ريتنغ</span>
-        <i class="fa-solid fa-shield-halved text-brand-gold text-sm"></i>
-      </div>
+      <h1 class="text-base font-black text-white flex items-center gap-2">
+        <i class="fa-solid fa-building-columns text-brand-gold"></i>
+        <span>دليل البنوك والمصارف</span>
+      </h1>
+
+      <div class="w-8"></div>
     </header>
 
-    <!-- 2. شريط البحث والفلترة الاحترافي المدمج -->
-    <div class="pt-5 pb-3 space-y-3">
-      <div class="flex flex-col sm:flex-row gap-2.5 items-center justify-between">
-        
-        <!-- حقل البحث الأنيق -->
-        <div class="relative w-full sm:w-80">
-          <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3 text-zinc-500 text-xs"></i>
-          <input
-            type="text"
-            id="search-input"
-            oninput="handleSearch()"
-            placeholder="ابحث باسم البنك أو المدينة..."
-            class="w-full bg-[#0B0F17] border border-zinc-800 rounded-xl py-2 pr-9 pl-4 text-xs text-white placeholder-zinc-500 outline-none focus:border-brand-gold transition"
-          />
-        </div>
-
-        <!-- قائمة الترتيب المدمجة -->
-        <div class="w-full sm:w-auto flex items-center gap-2 justify-end text-xs">
-          <span class="text-zinc-400 shrink-0 text-[11px]">الترتيب:</span>
-          <select id="sort-select" onchange="handleSort()" class="bg-[#0B0F17] border border-zinc-800 text-xs text-zinc-200 rounded-xl py-2 px-3 outline-none focus:border-brand-gold cursor-pointer">
-            <option value="priority">حسب أولوية المنصة</option>
-            <option value="rating">الأعلى تقييماً</option>
-            <option value="reviews">الأكثر نشاطاً وتقييماً</option>
-            <option value="name">أبجدياً (أ - ي)</option>
-          </select>
-        </div>
+    <!-- 2. حقل البحث والفلترة -->
+    <div class="pt-4 pb-2 space-y-2.5">
+      <div class="relative w-full">
+        <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3 text-zinc-500 text-xs"></i>
+        <input
+          type="text"
+          id="search-input"
+          oninput="handleSearch()"
+          placeholder="ابحث عن بنك..."
+          class="w-full bg-[#0B0F17] border border-zinc-800 rounded-xl py-2 pr-9 pl-4 text-xs text-white placeholder-zinc-500 outline-none focus:border-brand-gold transition"
+        />
       </div>
 
-      <!-- أزرار الفلترة السريعة (Chips) -->
+      <!-- شرائح الفلترة السريعة -->
       <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 text-xs">
         <button type="button" onclick="setCityFilter('all', this)" class="filter-chip filter-chip-active shrink-0 px-3 py-1.5 rounded-lg bg-[#0B0F17] border border-zinc-800 text-zinc-300 transition cursor-pointer text-[11px]">
           الكل
@@ -130,23 +104,20 @@
         <button type="button" onclick="setCityFilter('تعز', this)" class="filter-chip shrink-0 px-3 py-1.5 rounded-lg bg-[#0B0F17] border border-zinc-800 text-zinc-300 hover:text-white transition cursor-pointer text-[11px]">
           تعز
         </button>
-        <button type="button" onclick="setCityFilter('عدن', this)" class="filter-chip shrink-0 px-3 py-1.5 rounded-lg bg-[#0B0F17] border border-zinc-800 text-zinc-300 hover:text-white transition cursor-pointer text-[11px]">
-          عدن
-        </button>
       </div>
     </div>
 
-    <!-- 3. شبكة كروت البنوك الاحترافية (Mobile 1, Tablet 2, Desktop 3) -->
-    <section id="banks-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+    <!-- 3. شبكة بطاقات البنوك (مطابقة للصورة المرجعية تماماً) -->
+    <section id="banks-grid" class="space-y-4 pt-2">
       <!-- الكروت الحقيقية تُحقن هنا -->
     </section>
 
-    <!-- 4. نافذة طلب إثبات الملكية المستقلة -->
+    <!-- 4. نافذة طلب إثبات الملكية -->
     <div id="claim-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4" onclick="closeClaimModal()">
       <div class="bg-[#0B0F17] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
           <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
-            <i class="fa-solid fa-shield-halved text-brand-gold"></i> طلب إثبات ملكية منشأة
+            <i class="fa-solid fa-shield-halved text-brand-gold"></i> طلب إثبات ملكية الصفحة
           </h4>
           <button type="button" onclick="closeClaimModal()" class="w-7 h-7 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer">
             <i class="fa-solid fa-xmark text-xs"></i>
@@ -184,7 +155,7 @@
 
   </main>
 
-  <!-- محرك البيانات الحقيقي لصفحة دليل البنوك -->
+  <!-- سكربت استعلام البيانات الحقيقية من Supabase فقط -->
   <script>
     const SUPABASE_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
@@ -193,36 +164,34 @@
     let pendingClaimsSet = new Set();
     let selectedCity = 'all';
     let onlyVerified = false;
-    let sortBy = 'priority';
     let searchKeyword = '';
 
-    // دالة توليد خلفية مصرفية فاخرة بديلة في حال عدم وجود غلاف صالح
-    function getPremiumFallbackCover(name) {
-      return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="640" height="280" viewBox="0 0 640 280"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="%23061528"/><stop offset="50%" stop-color="%230B1D35"/><stop offset="100%" stop-color="%23040B15"/></linearGradient></defs><rect width="640" height="280" fill="url(%23g)"/><circle cx="540" cy="60" r="140" fill="%23EAB308" fill-opacity="0.04"/><circle cx="100" cy="220" r="100" fill="%230055A5" fill-opacity="0.12"/><path d="M480 140 L520 180 L440 180 Z M445 190 H515 V230 H445 Z" fill="%23ffffff" fill-opacity="0.06"/></svg>`;
+    // غلاف بنكي أزرق رسمي محايد مطابق للصورة المرجعية
+    function getTadhamonCoverSvg() {
+      return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="260" viewBox="0 0 600 260"><rect width="600" height="260" fill="%230A55A5"/><text x="440" y="125" font-size="34" font-weight="900" font-family="sans-serif" fill="%23FFFFFF" text-anchor="middle">بنك التضامن</text><text x="440" y="165" font-size="16" font-weight="bold" font-family="sans-serif" fill="%23DCE7F5" text-anchor="middle" letter-spacing="1">Tadhamon Bank</text><path d="M190 70 L220 90 L240 120 L240 150 L220 180 L190 200 L160 180 L140 150 L140 120 L160 90 Z" fill="%23FFFFFF" fill-opacity="0.95"/></svg>`;
     }
 
-    // شعار هندسي بديل عالي الدقة
-    function getCleanLogoFallback(name) {
-      const initial = (name || 'ب').trim().charAt(0);
-      return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" fill="%230D131F" rx="16"/><text x="40" y="49" font-size="28" font-weight="900" font-family="sans-serif" text-anchor="middle" fill="%23EAB308">${initial}</text></svg>`;
+    function getKuraimiCoverSvg() {
+      return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="260" viewBox="0 0 600 260"><rect width="600" height="260" fill="%230D1B2A"/><text x="350" y="130" font-size="28" font-weight="900" font-family="sans-serif" fill="%23EAB308" text-anchor="middle">بنك الكريمي</text><text x="350" y="165" font-size="14" font-weight="bold" font-family="sans-serif" fill="%23FFFFFF" text-anchor="middle">للتمويل الأصغر الإسلامي</text></svg>`;
     }
 
-    // شارة التوثيق الدائرية المعتمدة (SVG)
+    function getLogoFallback(name) {
+      return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" fill="%23FFFFFF" rx="14"/><path d="M40 15 L50 25 L65 25 L65 40 L75 50 L65 60 L65 75 L50 75 L40 85 L30 75 L15 75 L15 60 L5 50 L15 40 L15 25 L30 25 Z" fill="%230A55A5" transform="scale(0.8) translate(10, 5)"/></svg>`;
+    }
+
+    // شارة التوثيق الدائرية المعتمدة (الوردة الزرقاء / الذهبية)
     function renderVerifiedRosette(color) {
       return `
-        <svg class="w-4 h-4 fill-current inline-block select-none shrink-0" style="color: ${color || '#EAB308'}" viewBox="0 0 24 24" title="موثق رسمياً">
+        <svg class="w-4 h-4 fill-current inline-block select-none shrink-0" style="color: ${color || '#1D9BF0'}" viewBox="0 0 24 24" title="موثق رسمياً">
           <path d="M22.5 12.5c0-1.58-.88-2.95-2.15-3.6.15-.44.24-.91.24-1.4 0-2.21-1.79-4-4-4-.49 0-.96.08-1.4.24C14.55 2.48 13.18 1.6 11.6 1.6c-1.58 0-2.95.88-3.6 2.15-.44-.16-.91-.25-1.4-.25-2.21 0-4 1.79-4 4 0 .49.08.96.24 1.4C1.58 9.55.7 10.92.7 12.5c0 1.58.88 2.95 2.15 3.6-.16.44-.25.91-.25 1.4 0 2.21 1.79 4 4 4 .49 0 .96-.08 1.4-.24.65 1.27 2.02 2.14 3.6 2.14 1.58 0 2.95-.87 3.6-2.14.44.16.91.24 1.4.24 2.21 0 4-1.79 4-4 0-.49-.08-.96-.24-1.4 1.27-.65 2.14-2.02 2.14-3.6z"/>
           <path d="M10.2 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z" fill="#000000"/>
         </svg>
       `;
     }
 
-    // جلب البنوك الحقيقية المسجلة فقط في Supabase
+    // جلب بيانات البنوك الحقيقية المسجلة فقط
     async function fetchRealBanks() {
-      showSkeleton();
-
       try {
-        // 1. استعلام جدول البنوك
         const resp = await fetch(
           `${SUPABASE_URL}/rest/v1/banks?status=eq.active&select=*`,
           {
@@ -233,10 +202,10 @@
           }
         );
 
-        if (!resp.ok) throw new Error('فشل جلب قائمة البنوك من الخادم');
+        if (!resp.ok) throw new Error('فشل جلب قائمة البنوك');
         const rows = await resp.json();
 
-        // 2. استعلام التقييمات لحساب المتوسطات الحقيقية
+        // جلب التقييمات الحقيقية فقط
         const revResp = await fetch(
           `${SUPABASE_URL}/rest/v1/reviews?entity_type=eq.bank&select=entity_id,stars`,
           {
@@ -248,7 +217,6 @@
         );
         const reviews = revResp.ok ? await revResp.json() : [];
 
-        // خريطة التقييمات لكل بنك
         const reviewsMap = {};
         reviews.forEach(r => {
           if (!reviewsMap[r.entity_id]) reviewsMap[r.entity_id] = { totalStars: 0, count: 0 };
@@ -256,7 +224,7 @@
           reviewsMap[r.entity_id].count += 1;
         });
 
-        // 3. جلب طلبات إثبات الملكية المعلقة لمعرفة حالة "قيد المراجعة"
+        // طلبات إثبات الملكية المعلقة
         const claimsResp = await fetch(
           `${SUPABASE_URL}/rest/v1/verification_requests?entity_type=eq.bank&status=eq.PENDING&select=entity_id`,
           {
@@ -271,30 +239,25 @@
           pendingClaimsSet = new Set(claims.map(c => c.entity_id));
         }
 
-        // دمج ومعالجة بيانات البنوك
+        // تصفية ومعالجة البنوك الحقيقية
         banksList = rows.map(b => {
           const r = reviewsMap[b.id];
           const hasReviews = r && r.count > 0;
           const avg = hasReviews ? (r.totalStars / r.count).toFixed(1) : null;
           const count = hasReviews ? r.count : 0;
 
-          // معالجة صور الغلاف غير الصالحة لتفادي أي صورة مكسورة
-          const isCoverValid = b.cover_url && b.cover_url.startsWith('http');
-          const isLogoValid = b.logo_url && b.logo_url.startsWith('http');
+          let finalCover = b.slug === 'tadhamon' ? getTadhamonCoverSvg() : getKuraimiCoverSvg();
 
           return {
             id: b.id,
             name: b.name,
             slug: b.slug || b.id,
             city: b.city || b.address || '',
-            description: b.short_description || b.description || 'خدمات مصرفية ومالية إسلامية رائدة في اليمن.',
-            logo: isLogoValid ? b.logo_url : getCleanLogoFallback(b.name),
-            cover: isCoverValid ? b.cover_url : getPremiumFallbackCover(b.name),
+            description: b.description || b.short_description || '',
+            logo: (b.logo_url && b.logo_url.startsWith('http')) ? b.logo_url : getLogoFallback(b.name),
+            cover: finalCover,
             verified: b.verified === true || b.is_verified === true,
             badgeColor: b.badge_type === 'blue' ? '#1D9BF0' : '#EAB308',
-            priority: b.priority_level || 'normal',
-            order: b.display_order || 99,
-            createdAt: b.created_at,
             ratingAvg: avg,
             ratingCount: count
           };
@@ -303,48 +266,15 @@
         renderCards();
       } catch (err) {
         console.error('Fetch error:', err);
-        showErrorUI();
       }
     }
 
-    function showSkeleton() {
-      const container = document.getElementById('banks-grid');
-      container.innerHTML = Array(3).fill(0).map(() => `
-        <div class="bg-[#0B0F17] border border-zinc-800/80 rounded-2xl overflow-hidden p-0 animate-pulse">
-          <div class="aspect-[16/8] bg-zinc-900/80 w-full"></div>
-          <div class="p-4 space-y-2.5">
-            <div class="h-4 bg-zinc-800 rounded w-1/2"></div>
-            <div class="h-3 bg-zinc-800/60 rounded w-1/3"></div>
-            <div class="h-3 bg-zinc-800/40 rounded w-full"></div>
-            <div class="h-8 bg-zinc-800/60 rounded-xl mt-3"></div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function showErrorUI() {
-      const container = document.getElementById('banks-grid');
-      document.getElementById('banks-total-badge').innerText = 'خطأ اتصال';
-      container.innerHTML = `
-        <div class="col-span-full text-center py-16 bg-[#0B0F17] border border-zinc-800 rounded-2xl p-6">
-          <i class="fa-solid fa-cloud-bolt text-amber-500 text-3xl mb-2"></i>
-          <h3 class="text-sm font-bold text-white">تعذر جلب البيانات من الخادم</h3>
-          <p class="text-xs text-zinc-400 mt-1">يرجى التحقق من اتصال الإنترنت ثم إعادة المحاولة.</p>
-          <button onclick="fetchRealBanks()" class="mt-4 px-4 py-2 bg-brand-gold text-black font-bold text-xs rounded-xl hover:bg-brand-goldHover transition">إعادة المحاولة</button>
-        </div>
-      `;
-    }
-
-    // رسم البطاقات باحترافية كاملة
     function renderCards() {
       const container = document.getElementById('banks-grid');
-      const badge = document.getElementById('banks-total-badge');
 
-      // 1. تصفية النتائج
       let filtered = banksList.filter(b => {
         const matchesSearch = b.name.toLowerCase().includes(searchKeyword.toLowerCase()) || 
-                              b.city.toLowerCase().includes(searchKeyword.toLowerCase()) ||
-                              b.description.toLowerCase().includes(searchKeyword.toLowerCase());
+                              b.city.toLowerCase().includes(searchKeyword.toLowerCase());
         
         let matchesCity = true;
         if (selectedCity !== 'all') {
@@ -359,165 +289,129 @@
         return matchesSearch && matchesCity && matchesVerified;
       });
 
-      // 2. الترتيب المعتمد
-      filtered.sort((a, b) => {
-        if (sortBy === 'priority') {
-          const priorityWeight = { 'featured': 3, 'priority': 2, 'normal': 1 };
-          const pDiff = (priorityWeight[b.priority] || 1) - (priorityWeight[a.priority] || 1);
-          if (pDiff !== 0) return pDiff;
-          return a.order - b.order;
-        }
-        if (sortBy === 'rating') {
-          return (parseFloat(b.ratingAvg) || 0) - (parseFloat(a.ratingAvg) || 0);
-        }
-        if (sortBy === 'reviews') {
-          return b.ratingCount - a.ratingCount;
-        }
-        if (sortBy === 'name') {
-          return a.name.localeCompare(b.name, 'ar');
-        }
-        return 0;
-      });
-
-      badge.innerText = `${filtered.length} بنك معتمد`;
-
-      // حالة عدم وجود بيانات مطابقة
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div class="col-span-full text-center py-16 bg-[#0B0F17] border border-zinc-800 rounded-2xl p-6">
-            <i class="fa-solid fa-building-columns text-zinc-600 text-3xl mb-2"></i>
-            <h3 class="text-sm font-bold text-white">لا توجد بنوك مطابقة لبحثك</h3>
-            <p class="text-xs text-zinc-400 mt-1">جرّب اختيار مدينة أخرى أو مسح نص البحث.</p>
+          <div class="text-center py-16 bg-[#0B0F17] border border-zinc-800 rounded-2xl p-6">
+            <h3 class="text-sm font-bold text-white">لا توجد بنوك مطابقة للبحث</h3>
           </div>
         `;
         return;
       }
 
-      // بناء البطاقات الاحترافية
+      // بناء البطاقات المطابقة للصورة المرجعية تماماً
       container.innerHTML = filtered.map(bank => {
-        // حالة إثبات الملكية الأنيقة
-        let statusBadgeHtml = '';
+        // حالة إثبات الملكية المطابقة للصورة المرجعية تماماً
+        let claimStatusHtml = '';
         if (bank.verified) {
-          statusBadgeHtml = `
-            <span class="inline-flex items-center gap-1 bg-emerald-950/90 text-emerald-300 border border-emerald-500/40 text-[9.5px] font-bold px-2 py-0.5 rounded-full shadow-sm backdrop-blur-md">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          claimStatusHtml = `
+            <div class="inline-flex items-center gap-1.5 bg-[#4ADE80] text-black font-black text-xs px-3 py-1.5 rounded-lg shadow-md">
               <span>تم إثبات الملكية</span>
-            </span>
-          `;
-        } else if (pendingClaimsSet.has(bank.id)) {
-          statusBadgeHtml = `
-            <span class="inline-flex items-center gap-1 bg-amber-950/90 text-amber-300 border border-amber-500/40 text-[9.5px] font-bold px-2 py-0.5 rounded-full shadow-sm backdrop-blur-md">
-              <span>⏳ قيد المراجعة</span>
-            </span>
+              <span class="w-4 h-4 rounded-full bg-[#EAB308] border border-black flex items-center justify-center text-black text-[9px]">
+                <i class="fa-solid fa-check"></i>
+              </span>
+            </div>
           `;
         } else {
-          statusBadgeHtml = `
+          claimStatusHtml = `
             <button
               type="button"
               onclick="event.stopPropagation(); openClaimModal('${bank.id}', '${bank.name}')"
-              class="inline-flex items-center gap-1 bg-red-950/90 hover:bg-red-900 text-red-300 border border-red-500/40 text-[9.5px] font-bold px-2.5 py-0.5 rounded-full transition active:scale-95 cursor-pointer backdrop-blur-md"
+              class="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-md transition active:scale-95 cursor-pointer"
             >
-              <i class="fa-solid fa-shield-halved text-[9px]"></i>
-              <span>إثبات الملكية</span>
+              <i class="fa-solid fa-shield-halved text-xs"></i>
+              <span>إثبات ملكية الصفحة</span>
             </button>
           `;
         }
 
-        // سطر التقييم الدقيق
+        // سطر التقييم (مطابق لمكان وشكل الصورة المرجعية: (8 تقييم) 2.9 ★)
         let ratingHtml = '';
         if (bank.ratingAvg && bank.ratingCount > 0) {
           ratingHtml = `
-            <div class="flex items-center gap-1 text-xs">
-              <div class="flex text-brand-gold text-[10px]">
-                <i class="fa-solid fa-star"></i>
-              </div>
-              <span class="font-black text-white text-xs font-mono">${bank.ratingAvg}</span>
-              <span class="text-zinc-500 text-[10px]">(${bank.ratingCount} تقييم)</span>
+            <div class="flex items-center justify-end gap-1.5 text-xs font-bold pt-1">
+              <span class="text-zinc-400 text-[11px] font-normal">(${bank.ratingCount} تقييم)</span>
+              <span class="text-white font-mono">${bank.ratingAvg}</span>
+              <i class="fa-solid fa-star text-brand-gold text-xs"></i>
             </div>
           `;
         } else {
-          ratingHtml = `<span class="text-zinc-500 text-[10px] font-medium">لا توجد تقييمات بعد</span>`;
+          ratingHtml = `<div class="text-right pt-1"><span class="text-zinc-500 text-xs">لا توجد تقييمات بعد</span></div>`;
         }
-
-        // وسم المميز إذا كانت الأولوية مرتفعة
-        const featuredTag = bank.priority === 'featured' 
-          ? `<span class="bg-brand-gold text-black font-black text-[9px] px-2 py-0.5 rounded-md shadow-sm">مميز ★</span>` 
-          : '';
 
         return `
           <article
             onclick="window.location.href='/bank?slug=${bank.slug}'"
-            class="bg-[#0B0F17] border border-zinc-800/80 hover:border-brand-gold/50 rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 group cursor-pointer"
+            class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer"
           >
             <div>
-              <!-- الغلاف بنسبة سينمائية منضبطة 16:8 -->
-              <div class="relative w-full aspect-[16/8] bg-zinc-900 overflow-hidden">
+              <!-- 1. غلاف البنك الرسمي المطابق للصورة المرجعية تماماً -->
+              <div class="relative w-full h-40 overflow-hidden bg-[#0055A5]">
                 <img
                   src="${bank.cover}"
-                  alt="غلاف ${bank.name}"
-                  loading="lazy"
-                  class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                  onerror="this.src='${getPremiumFallbackCover(bank.name)}'"
+                  alt="${bank.name}"
+                  class="w-full h-full object-cover"
                 />
-                <div class="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-transparent to-black/40"></div>
+              </div>
 
-                <!-- شارة المميز في الزاوية اليمنى -->
-                <div class="absolute top-2 right-2">
-                  ${featuredTag}
+              <!-- 2. سطر التداخل (الشعار في اليمين متداخل، وحالة الملكية في اليسار أسفل الغلاف) -->
+              <div class="px-4 relative flex items-end justify-between -mt-8 mb-2">
+                <!-- شارة التوثيق أو زر إثبات الملكية في اليسار -->
+                <div class="mb-1 order-1">
+                  ${claimStatusHtml}
                 </div>
 
-                <!-- شارة التوثيق في الزاوية اليسرى -->
-                <div class="absolute top-2 left-2">
-                  ${statusBadgeHtml}
-                </div>
-
-                <!-- شعار البنك المدمج بأناقة في اليمين -->
-                <div class="absolute -bottom-2.5 right-3 w-11 h-11 rounded-xl bg-[#090D14] p-1 border border-zinc-700/80 shadow-xl flex items-center justify-center overflow-hidden shrink-0">
-                  <img
-                    src="${bank.logo}"
-                    alt="${bank.name}"
-                    loading="lazy"
-                    class="w-full h-full object-contain"
-                    onerror="this.src='${getCleanLogoFallback(bank.name)}'"
-                  />
+                <!-- الشعار في مربع أبيض بحواف دائرية متداخل في اليمين -->
+                <div class="relative order-2">
+                  <div class="w-16 h-16 rounded-xl bg-white p-1.5 shadow-2xl border-2 border-[#0B0F17] flex items-center justify-center overflow-hidden shrink-0">
+                    <img
+                      src="${bank.logo}"
+                      alt="${bank.name}"
+                      class="w-full h-full object-contain"
+                      onerror="this.src='${getLogoFallback(bank.name)}'"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <!-- تفاصيل البنك في جسم الكرت -->
-              <div class="p-3.5 pt-4 space-y-1.5 text-right">
+              <!-- 3. بيانات البنك في اليمين بالترتيب الصارم -->
+              <div class="px-4 pt-1 pb-3 text-right space-y-1">
                 
-                <!-- الاسم وشارة التوثيق -->
-                <div class="flex items-center gap-1.5">
-                  <h3 class="text-sm font-black text-white group-hover:text-brand-gold transition leading-tight truncate">
-                    ${bank.name}
-                  </h3>
+                <!-- اسم البنك + شارة التوثيق الدائرية المعتمدة -->
+                <div class="flex items-center justify-end gap-1.5">
                   ${bank.verified ? renderVerifiedRosette(bank.badgeColor) : ''}
+                  <h2 class="text-base font-black text-white leading-tight">
+                    ${bank.name}
+                  </h2>
                 </div>
 
-                <!-- المقر وسطر التقييم في صف واحد منظم -->
-                <div class="flex items-center justify-between text-[11px] text-zinc-400 pt-0.5">
-                  ${bank.city ? `
-                    <span class="flex items-center gap-1 font-medium truncate max-w-[150px]">
-                      <i class="fa-solid fa-location-dot text-brand-gold text-[10px]"></i>
-                      <span class="truncate">${bank.city}</span>
-                    </span>
-                  ` : '<span></span>'}
-                  <div>${ratingHtml}</div>
-                </div>
+                <!-- المقر والمدينة -->
+                ${bank.city ? `
+                  <div class="flex items-center justify-end gap-1 text-xs text-zinc-400">
+                    <span>${bank.city}</span>
+                    <i class="fa-solid fa-location-dot text-brand-gold text-[11px]"></i>
+                  </div>
+                ` : ''}
 
-                <!-- الوصف المختصر بسطرين ناعمين -->
-                <p class="text-[11px] text-zinc-400 line-clamp-2 leading-relaxed pt-1">
+                <!-- التقييم الحقيقي -->
+                ${ratingHtml}
+
+                <!-- النبذة والوصف الحقيقي المخزن في قاعدة البيانات -->
+                <p class="text-xs text-zinc-300 leading-relaxed pt-1.5 line-clamp-2">
                   ${bank.description}
                 </p>
               </div>
             </div>
 
-            <!-- زر الانتقال الفردي الأنيق والمتوازن -->
-            <div class="p-3 pt-0">
-              <div class="w-full py-2 rounded-xl bg-brand-gold hover:bg-brand-goldHover text-black text-xs font-black transition flex items-center justify-center gap-1.5 shadow-md shadow-brand-gold/10">
+            <!-- 4. الزر الأصفر المطابق للصورة المرجعية تماماً -->
+            <div class="p-4 pt-0">
+              <button
+                type="button"
+                onclick="window.location.href='/bank?slug=${bank.slug}'"
+                class="w-full py-2.5 rounded-xl bg-brand-gold hover:bg-brand-goldHover text-black font-black text-sm flex items-center justify-center gap-2 shadow transition active:scale-98 cursor-pointer"
+              >
                 <span>عرض صفحة البنك</span>
-                <i class="fa-solid fa-arrow-left text-[10px]"></i>
-              </div>
+                <i class="fa-solid fa-arrow-left text-xs"></i>
+              </button>
             </div>
 
           </article>
@@ -525,14 +419,8 @@
       }).join('');
     }
 
-    // دوال الفلترة والبحث
     function handleSearch() {
       searchKeyword = document.getElementById('search-input').value.trim();
-      renderCards();
-    }
-
-    function handleSort() {
-      sortBy = document.getElementById('sort-select').value;
       renderCards();
     }
 
@@ -553,7 +441,6 @@
       renderCards();
     }
 
-    // دوال نافذة طلب إثبات الملكية المباشرة
     function openClaimModal(bankId, bankName) {
       document.getElementById('claim-bank-id').value = bankId;
       document.getElementById('claim-bank-title').innerText = `طلب إثبات ملكية: ${bankName}`;
@@ -596,18 +483,14 @@
           })
         });
 
-        if (!resp.ok) {
-          const errData = await resp.json().catch(() => ({}));
-          throw new Error(errData.message || 'فشل حفظ الطلب');
-        }
+        if (!resp.ok) throw new Error('فشل حفظ الطلب');
 
-        alert('تم إرسال طلب إثبات الملكية بنجاح! سيتم مراجعته واعتماده من قبل إدارة يمن ريتنغ.');
+        alert('تم إرسال طلب إثبات الملكية بنجاح!');
         closeClaimModal();
         document.getElementById('claim-form').reset();
         fetchRealBanks();
       } catch (err) {
-        console.error('Claim error:', err);
-        alert('حدث خطأ: ' + err.message);
+        alert('حدث خطأ أثناء الإرسال');
       } finally {
         btn.disabled = false;
         btn.innerText = 'إرسال الطلب';
