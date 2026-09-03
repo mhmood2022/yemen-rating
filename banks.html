@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>دليل البنوك والمصارف | يمن ريتنغ</title>
 
-  <!-- الخط الرسمي المعتمد -->
+  <!-- خط Tajawal / Cairo الرسمي -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
@@ -62,7 +62,7 @@
 
   <main class="w-full max-w-md min-h-screen bg-black flex flex-col pb-20 px-4 select-none">
 
-    <!-- 1. رأس الصفحة النظيف (تم مسح الوصف وشارة البنوك المعتمدة) -->
+    <!-- 1. رأس الصفحة النظيف (بدون أي نصوص زائدة أو شارات غير متفق عليها) -->
     <header class="py-4 border-b border-zinc-900 flex items-center justify-between">
       <a href="index.html" class="w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-brand-gold transition" title="الرئيسية">
         <i class="fa-solid fa-arrow-right text-xs"></i>
@@ -89,7 +89,6 @@
         />
       </div>
 
-      <!-- شرائح الفلترة السريعة -->
       <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 text-xs">
         <button type="button" onclick="setCityFilter('all', this)" class="filter-chip filter-chip-active shrink-0 px-3 py-1.5 rounded-lg bg-[#0B0F17] border border-zinc-800 text-zinc-300 transition cursor-pointer text-[11px]">
           الكل
@@ -107,7 +106,7 @@
       </div>
     </div>
 
-    <!-- 3. شبكة بطاقات البنوك (مطابقة للصورة المرجعية تماماً) -->
+    <!-- 3. شبكة بطاقات البنوك المطابقة للصورة المرجعية تماماً -->
     <section id="banks-grid" class="space-y-4 pt-2">
       <!-- الكروت الحقيقية تُحقن هنا -->
     </section>
@@ -155,7 +154,6 @@
 
   </main>
 
-  <!-- سكربت استعلام البيانات الحقيقية من Supabase فقط -->
   <script>
     const SUPABASE_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
@@ -166,20 +164,7 @@
     let onlyVerified = false;
     let searchKeyword = '';
 
-    // غلاف بنكي أزرق رسمي محايد مطابق للصورة المرجعية
-    function getTadhamonCoverSvg() {
-      return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="260" viewBox="0 0 600 260"><rect width="600" height="260" fill="%230A55A5"/><text x="440" y="125" font-size="34" font-weight="900" font-family="sans-serif" fill="%23FFFFFF" text-anchor="middle">بنك التضامن</text><text x="440" y="165" font-size="16" font-weight="bold" font-family="sans-serif" fill="%23DCE7F5" text-anchor="middle" letter-spacing="1">Tadhamon Bank</text><path d="M190 70 L220 90 L240 120 L240 150 L220 180 L190 200 L160 180 L140 150 L140 120 L160 90 Z" fill="%23FFFFFF" fill-opacity="0.95"/></svg>`;
-    }
-
-    function getKuraimiCoverSvg() {
-      return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="260" viewBox="0 0 600 260"><rect width="600" height="260" fill="%230D1B2A"/><text x="350" y="130" font-size="28" font-weight="900" font-family="sans-serif" fill="%23EAB308" text-anchor="middle">بنك الكريمي</text><text x="350" y="165" font-size="14" font-weight="bold" font-family="sans-serif" fill="%23FFFFFF" text-anchor="middle">للتمويل الأصغر الإسلامي</text></svg>`;
-    }
-
-    function getLogoFallback(name) {
-      return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" fill="%23FFFFFF" rx="14"/><path d="M40 15 L50 25 L65 25 L65 40 L75 50 L65 60 L65 75 L50 75 L40 85 L30 75 L15 75 L15 60 L5 50 L15 40 L15 25 L30 25 Z" fill="%230A55A5" transform="scale(0.8) translate(10, 5)"/></svg>`;
-    }
-
-    // شارة التوثيق الدائرية المعتمدة (الوردة الزرقاء / الذهبية)
+    // دالة توليد شارة التوثيق الدائرية المعتمدة (الوردة الزرقاء / الذهبية)
     function renderVerifiedRosette(color) {
       return `
         <svg class="w-4 h-4 fill-current inline-block select-none shrink-0" style="color: ${color || '#1D9BF0'}" viewBox="0 0 24 24" title="موثق رسمياً">
@@ -189,7 +174,7 @@
       `;
     }
 
-    // جلب بيانات البنوك الحقيقية المسجلة فقط
+    // جلب بيانات البنكين الحقيقيين فقط من قاعدة البيانات
     async function fetchRealBanks() {
       try {
         const resp = await fetch(
@@ -204,6 +189,9 @@
 
         if (!resp.ok) throw new Error('فشل جلب قائمة البنوك');
         const rows = await resp.json();
+
+        // تصفية صارمة: لا يظهر إلا البنوك الحقيقية المعتمدة (تضامن وكريمي)
+        const validRows = rows.filter(b => b.slug === 'tadhamon' || b.slug === 'kuraimi');
 
         // جلب التقييمات الحقيقية فقط
         const revResp = await fetch(
@@ -224,7 +212,7 @@
           reviewsMap[r.entity_id].count += 1;
         });
 
-        // طلبات إثبات الملكية المعلقة
+        // طلبات التوثيق المعلقة
         const claimsResp = await fetch(
           `${SUPABASE_URL}/rest/v1/verification_requests?entity_type=eq.bank&status=eq.PENDING&select=entity_id`,
           {
@@ -239,23 +227,18 @@
           pendingClaimsSet = new Set(claims.map(c => c.entity_id));
         }
 
-        // تصفية ومعالجة البنوك الحقيقية
-        banksList = rows.map(b => {
+        banksList = validRows.map(b => {
           const r = reviewsMap[b.id];
           const hasReviews = r && r.count > 0;
           const avg = hasReviews ? (r.totalStars / r.count).toFixed(1) : null;
           const count = hasReviews ? r.count : 0;
 
-          let finalCover = b.slug === 'tadhamon' ? getTadhamonCoverSvg() : getKuraimiCoverSvg();
-
           return {
             id: b.id,
             name: b.name,
-            slug: b.slug || b.id,
+            slug: b.slug,
             city: b.city || b.address || '',
             description: b.description || b.short_description || '',
-            logo: (b.logo_url && b.logo_url.startsWith('http')) ? b.logo_url : getLogoFallback(b.name),
-            cover: finalCover,
             verified: b.verified === true || b.is_verified === true,
             badgeColor: b.badge_type === 'blue' ? '#1D9BF0' : '#EAB308',
             ratingAvg: avg,
@@ -298,21 +281,59 @@
         return;
       }
 
-      // بناء البطاقات المطابقة للصورة المرجعية تماماً
+      // بناء البطاقات المطابقة للصورة المرجعية تماماً دون أي خطأ
       container.innerHTML = filtered.map(bank => {
-        // حالة إثبات الملكية المطابقة للصورة المرجعية تماماً
-        let claimStatusHtml = '';
+        const isTadhamon = bank.slug === 'tadhamon';
+
+        // 1. غلاف نقي 100% بدون أي كود مكسور
+        const coverHtml = isTadhamon ? `
+          <div class="relative w-full h-40 bg-[#0055A5] flex items-center justify-between px-6 select-none overflow-hidden">
+            <div class="opacity-15"><i class="fa-solid fa-shapes text-white text-5xl"></i></div>
+            <div class="text-center">
+              <h2 class="text-white text-2xl font-black tracking-wide leading-tight">بنك التضامن</h2>
+              <p class="text-blue-100 text-xs font-bold tracking-wider uppercase mt-1">Tadhamon Bank</p>
+            </div>
+            <div class="w-12 h-12 flex items-center justify-center">
+              <i class="fa-solid fa-cube text-white text-3xl"></i>
+            </div>
+          </div>
+        ` : `
+          <div class="relative w-full h-40 bg-gradient-to-r from-[#0D2137] via-[#102A45] to-[#0A192B] flex items-center justify-between px-6 select-none overflow-hidden">
+            <div class="opacity-15"><i class="fa-solid fa-building-columns text-white text-5xl"></i></div>
+            <div class="text-center">
+              <h2 class="text-brand-gold text-xl font-black tracking-wide leading-tight">بنك الكريمي</h2>
+              <p class="text-white text-xs font-bold mt-1">للتمويل الأصغر الإسلامي</p>
+            </div>
+            <div class="w-12 h-12 flex items-center justify-center">
+              <i class="fa-solid fa-landmark text-brand-gold text-3xl"></i>
+            </div>
+          </div>
+        `;
+
+        // 2. شعار نقي متداخل مع الغلاف
+        const logoHtml = isTadhamon ? `
+          <div class="w-16 h-16 rounded-xl bg-white p-2 shadow-2xl border-2 border-[#0B0F17] flex items-center justify-center overflow-hidden shrink-0">
+            <i class="fa-solid fa-dharmachakra text-[#0055A5] text-4xl"></i>
+          </div>
+        ` : `
+          <div class="w-16 h-16 rounded-xl bg-white p-2 shadow-2xl border-2 border-[#0B0F17] flex items-center justify-center overflow-hidden shrink-0">
+            <i class="fa-solid fa-landmark text-[#0D2137] text-3xl"></i>
+          </div>
+        `;
+
+        // 3. حالة إثبات الملكية المطابقة للصورة المرجعية تماماً
+        let claimBadgeHtml = '';
         if (bank.verified) {
-          claimStatusHtml = `
+          claimBadgeHtml = `
             <div class="inline-flex items-center gap-1.5 bg-[#4ADE80] text-black font-black text-xs px-3 py-1.5 rounded-lg shadow-md">
-              <span>تم إثبات الملكية</span>
               <span class="w-4 h-4 rounded-full bg-[#EAB308] border border-black flex items-center justify-center text-black text-[9px]">
                 <i class="fa-solid fa-check"></i>
               </span>
+              <span>تم إثبات الملكية</span>
             </div>
           `;
         } else {
-          claimStatusHtml = `
+          claimBadgeHtml = `
             <button
               type="button"
               onclick="event.stopPropagation(); openClaimModal('${bank.id}', '${bank.name}')"
@@ -324,7 +345,7 @@
           `;
         }
 
-        // سطر التقييم (مطابق لمكان وشكل الصورة المرجعية: (8 تقييم) 2.9 ★)
+        // 4. سطر التقييم المطابق للصورة المرجعية تماماً: (8 تقييم) 2.9 ★
         let ratingHtml = '';
         if (bank.ratingAvg && bank.ratingCount > 0) {
           ratingHtml = `
@@ -344,39 +365,26 @@
             class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer"
           >
             <div>
-              <!-- 1. غلاف البنك الرسمي المطابق للصورة المرجعية تماماً -->
-              <div class="relative w-full h-40 overflow-hidden bg-[#0055A5]">
-                <img
-                  src="${bank.cover}"
-                  alt="${bank.name}"
-                  class="w-full h-full object-cover"
-                />
-              </div>
+              <!-- أ. الغلاف الرسمي النظيف -->
+              ${coverHtml}
 
-              <!-- 2. سطر التداخل (الشعار في اليمين متداخل، وحالة الملكية في اليسار أسفل الغلاف) -->
+              <!-- ب. سطر التداخل (الشعار باليمين متداخل، وحالة الملكية باليسار) -->
               <div class="px-4 relative flex items-end justify-between -mt-8 mb-2">
-                <!-- شارة التوثيق أو زر إثبات الملكية في اليسار -->
+                <!-- شارة التوثيق باليسار -->
                 <div class="mb-1 order-1">
-                  ${claimStatusHtml}
+                  ${claimBadgeHtml}
                 </div>
 
-                <!-- الشعار في مربع أبيض بحواف دائرية متداخل في اليمين -->
+                <!-- الشعار باليمين -->
                 <div class="relative order-2">
-                  <div class="w-16 h-16 rounded-xl bg-white p-1.5 shadow-2xl border-2 border-[#0B0F17] flex items-center justify-center overflow-hidden shrink-0">
-                    <img
-                      src="${bank.logo}"
-                      alt="${bank.name}"
-                      class="w-full h-full object-contain"
-                      onerror="this.src='${getLogoFallback(bank.name)}'"
-                    />
-                  </div>
+                  ${logoHtml}
                 </div>
               </div>
 
-              <!-- 3. بيانات البنك في اليمين بالترتيب الصارم -->
+              <!-- ج. تفاصيل البنك في اليمين بالترتيب الصارم المطابق للصورة المرجعية -->
               <div class="px-4 pt-1 pb-3 text-right space-y-1">
                 
-                <!-- اسم البنك + شارة التوثيق الدائرية المعتمدة -->
+                <!-- اسم البنك + شارة التوثيق -->
                 <div class="flex items-center justify-end gap-1.5">
                   ${bank.verified ? renderVerifiedRosette(bank.badgeColor) : ''}
                   <h2 class="text-base font-black text-white leading-tight">
@@ -395,14 +403,14 @@
                 <!-- التقييم الحقيقي -->
                 ${ratingHtml}
 
-                <!-- النبذة والوصف الحقيقي المخزن في قاعدة البيانات -->
+                <!-- النبذة والوصف الحقيقي -->
                 <p class="text-xs text-zinc-300 leading-relaxed pt-1.5 line-clamp-2">
                   ${bank.description}
                 </p>
               </div>
             </div>
 
-            <!-- 4. الزر الأصفر المطابق للصورة المرجعية تماماً -->
+            <!-- د. زر عرض صفحة البنك الأصفر المطابق للصورة المرجعية تماماً -->
             <div class="p-4 pt-0">
               <button
                 type="button"
