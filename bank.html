@@ -16,9 +16,6 @@
   <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-  <!-- Supabase JS CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <script>
     tailwind.config = {
       theme: {
@@ -63,7 +60,7 @@
 
   <main class="w-full max-w-md min-h-screen bg-black flex flex-col pb-12 select-none relative">
 
-    <!-- 1. غلاف البنك المعتمد -->
+    <!-- 1. غلاف البنك -->
     <div id="bank-cover" class="relative w-full h-44 bg-gradient-to-r from-[#003B73] via-[#0055A5] to-[#0A6EB8] flex items-center justify-center overflow-hidden">
       <div class="flex items-center gap-2">
         <div class="text-right">
@@ -85,25 +82,22 @@
         </div>
       </div>
 
-      <!-- زر إثبات الملكية مربوط بلوحة المالك الحقيقية -->
+      <!-- زر إثبات الملكية المباشر -->
       <div class="order-2 mb-1">
-        <button type="button" id="claim-btn" onclick="openClaimModal()" class="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg transition active:scale-95">
+        <button type="button" id="claim-btn" onclick="openClaimModal()" class="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg transition active:scale-95 cursor-pointer">
           <i class="fa-solid fa-shield-halved text-xs"></i>
-          <span id="claim-btn-text">إثبات الملكية</span>
+          <span>إثبات الملكية</span>
         </button>
       </div>
     </div>
 
     <!-- 3. بيانات البنك الأساسية -->
     <div class="px-4 space-y-1.5 text-right">
-      
-      <!-- الاسم وشارة التوثيق -->
       <div class="flex items-center justify-start gap-1.5">
         <h2 id="bank-name" class="text-xl font-black text-white">بنك التضامن</h2>
         <span id="bank-badge-slot" class="inline-flex items-center" title="منشأة موثقة"></span>
       </div>
 
-      <!-- التقييم السريع -->
       <div class="flex items-center justify-start gap-1.5 text-brand-gold text-xs font-bold">
         <span class="text-white font-medium text-[11px]">★التقييمات</span>
         <div class="flex text-[10px]" id="header-stars-slot">
@@ -114,15 +108,13 @@
           <i class="fa-solid fa-star-half-stroke"></i>
         </div>
         <span class="text-white text-sm font-black" id="header-rating-num">4.5</span>
-        <span class="text-zinc-400 font-normal" id="header-rating-count">47 تقييم</span>
+        <span class="text-zinc-400 font-normal" id="header-rating-count">2 تقييم</span>
       </div>
 
-      <!-- الوصف -->
       <p id="bank-bio" class="text-zinc-300 text-xs leading-snug font-medium pt-1">
         أكبر بنك في اليمن يقدم خدمات مالية ومصرفية إسلامية تلبي تطلعات عملائه بجودة عالية
       </p>
 
-      <!-- الموقع والتصنيف -->
       <div class="flex items-center justify-start gap-3 text-xs font-semibold text-zinc-400 pt-1 pb-1">
         <div class="flex items-center gap-1">
           <i class="fa-solid fa-briefcase text-brand-gold text-xs"></i>
@@ -137,17 +129,17 @@
 
     <!-- 4. تبويبات التصفح الثلاثة -->
     <div class="border-b border-zinc-800 flex items-center justify-around text-zinc-400 text-sm font-bold mt-2">
-      <button onclick="switchTab('posts')" id="tab-posts-btn" class="tab-active py-2.5 px-3 flex items-center gap-1.5 transition">
+      <button type="button" onclick="switchTab('posts')" id="tab-posts-btn" class="tab-active py-2.5 px-3 flex items-center gap-1.5 transition cursor-pointer">
         <i class="fa-solid fa-table-cells text-brand-gold text-sm"></i>
         <span>المنشورات</span>
       </button>
 
-      <button onclick="switchTab('offers')" id="tab-offers-btn" class="py-2.5 px-3 flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition">
+      <button type="button" onclick="switchTab('offers')" id="tab-offers-btn" class="py-2.5 px-3 flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition cursor-pointer">
         <i class="fa-solid fa-clipboard-check text-brand-gold text-sm"></i>
         <span>العروض</span>
       </button>
 
-      <button onclick="switchTab('services')" id="tab-services-btn" class="py-2.5 px-3 flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition">
+      <button type="button" onclick="switchTab('services')" id="tab-services-btn" class="py-2.5 px-3 flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition cursor-pointer">
         <i class="fa-solid fa-briefcase text-brand-gold text-sm"></i>
         <span>الخدمات</span>
       </button>
@@ -155,7 +147,6 @@
 
     <!-- 5. المحتوى الديناميكي للتبويبات -->
     <div class="p-3">
-
       <!-- المنشورات -->
       <div id="tab-posts" class="space-y-3">
         <div id="posts-container" class="grid grid-cols-2 gap-2.5"></div>
@@ -170,82 +161,78 @@
       <div id="tab-services" class="hidden space-y-2.5">
         <div id="services-container" class="space-y-2"></div>
       </div>
-
     </div>
 
-    <!-- 6. قسم التقييمات التفاعلي المربوط بقاعدة البيانات -->
+    <!-- 6. قسم التقييمات التفاعلي -->
     <section id="reviews-section" class="px-4 pt-4 space-y-3 border-t border-zinc-900 mt-2">
       <h3 class="text-right text-sm font-bold text-white">التقييمات</h3>
 
       <div class="flex items-center justify-between bg-black">
-        <!-- متوسط التقييم الحقيقي -->
         <div class="text-right">
           <span class="text-[10px] text-zinc-400 block">تقييم الزوار</span>
           <div class="text-3xl font-black text-white leading-tight">
-            <span id="calc-avg-rating">4.7</span> <span class="text-xs text-zinc-400 font-normal">/ 5</span>
+            <span id="calc-avg-rating">4.5</span> <span class="text-xs text-zinc-400 font-normal">/ 5</span>
           </div>
           <div class="flex text-brand-gold text-xs my-0.5 justify-start" id="calc-avg-stars">
             <i class="fa-solid fa-star"></i>
             <i class="fa-solid fa-star"></i>
             <i class="fa-solid fa-star"></i>
             <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star-half-stroke"></i>
           </div>
-          <span class="text-[10px] text-zinc-400 block" id="calc-total-reviews">128 تقييم</span>
+          <span class="text-[10px] text-zinc-400 block" id="calc-total-reviews">2 تقييم</span>
         </div>
 
-        <!-- أشرطة نسب النجوم المحسوبة ديناميكياً -->
+        <!-- أشرطة نسب النجوم -->
         <div class="w-6/12 space-y-1 text-[10px]">
           <div class="flex items-center gap-1.5 justify-start">
             <span class="text-zinc-300">★ 5</span>
             <div class="w-20 bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-              <div id="bar-star-5" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 82%"></div>
+              <div id="bar-star-5" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 50%"></div>
             </div>
-            <span id="pct-star-5" class="w-6 text-zinc-400 font-mono text-left">82%</span>
+            <span id="pct-star-5" class="w-6 text-zinc-400 font-mono text-left">50%</span>
           </div>
           <div class="flex items-center gap-1.5 justify-start">
             <span class="text-zinc-300">★ 4</span>
             <div class="w-20 bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-              <div id="bar-star-4" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 12%"></div>
+              <div id="bar-star-4" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 50%"></div>
             </div>
-            <span id="pct-star-4" class="w-6 text-zinc-400 font-mono text-left">12%</span>
+            <span id="pct-star-4" class="w-6 text-zinc-400 font-mono text-left">50%</span>
           </div>
           <div class="flex items-center gap-1.5 justify-start">
             <span class="text-zinc-300">★ 3</span>
             <div class="w-20 bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-              <div id="bar-star-3" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 4%"></div>
+              <div id="bar-star-3" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
-            <span id="pct-star-3" class="w-6 text-zinc-400 font-mono text-left">4%</span>
+            <span id="pct-star-3" class="w-6 text-zinc-400 font-mono text-left">0%</span>
           </div>
           <div class="flex items-center gap-1.5 justify-start">
             <span class="text-zinc-300">★ 2</span>
             <div class="w-20 bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-              <div id="bar-star-2" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 1%"></div>
+              <div id="bar-star-2" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
-            <span id="pct-star-2" class="w-6 text-zinc-400 font-mono text-left">1%</span>
+            <span id="pct-star-2" class="w-6 text-zinc-400 font-mono text-left">0%</span>
           </div>
           <div class="flex items-center gap-1.5 justify-start">
             <span class="text-zinc-300">★ 1</span>
             <div class="w-20 bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-              <div id="bar-star-1" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 1%"></div>
+              <div id="bar-star-1" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 0%"></div>
             </div>
-            <span id="pct-star-1" class="w-6 text-zinc-400 font-mono text-left">1%</span>
+            <span id="pct-star-1" class="w-6 text-zinc-400 font-mono text-left">0%</span>
           </div>
         </div>
       </div>
 
-      <!-- دعوة التقييم + زر فتح نافذة التقييم -->
       <div class="flex items-center justify-between pt-2">
         <div class="text-right">
           <p class="text-xs font-bold text-white">هل تعاملت مع هذه المنشأة؟</p>
           <p class="text-[10px] text-zinc-400">شارك تجربتك وساعد الآخرين في اتخاذ القرار.</p>
         </div>
-        <button onclick="openReviewModal()" class="bg-brand-gold hover:bg-brand-goldHover text-black font-extrabold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1 shadow transition active:scale-95 cursor-pointer">
+        <button type="button" onclick="openReviewModal()" class="bg-brand-gold hover:bg-brand-goldHover text-black font-extrabold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1 shadow transition active:scale-95 cursor-pointer">
           <span>★ قيّم هذه المنشأة</span>
         </button>
       </div>
 
-      <!-- آخر التقييمات -->
       <div class="space-y-2 pt-2">
         <h4 class="text-right text-xs font-bold text-zinc-300">اخر التقييمات</h4>
         <div id="reviews-container" class="space-y-2"></div>
@@ -256,42 +243,42 @@
     <footer class="pt-8 pb-4 text-center">
       <h4 class="text-sm font-bold text-white underline underline-offset-8 decoration-zinc-700 mb-4">تواصل معنا</h4>
       <div id="footer-contacts" class="flex items-center justify-center gap-5 text-brand-gold text-xl">
-        <a id="contact-hours" href="#hours" title="ساعات العمل والفروع" class="hover:scale-110 transition"><i class="fa-solid fa-user-clock"></i></button>
-        <a id="contact-map" href="#" target="_blank" title="الموقع الجغرافي" class="hover:scale-110 transition"><i class="fa-solid fa-location-dot"></i></button>
-        <a id="contact-web" href="#" target="_blank" title="الموقع الإلكتروني" class="hover:scale-110 transition"><i class="fa-solid fa-globe"></i></button>
-        <a id="contact-wa" href="#" target="_blank" title="واتساب" class="hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></button>
-        <a id="contact-mail" href="#" title="البريد الإلكتروني" class="hover:scale-110 transition"><i class="fa-regular fa-envelope"></i></button>
+        <a id="contact-hours" href="#hours" title="ساعات العمل والفروع" class="hover:scale-110 transition"><i class="fa-solid fa-user-clock"></i></a>
+        <a id="contact-map" href="#" target="_blank" title="الموقع الجغرافي" class="hover:scale-110 transition"><i class="fa-solid fa-location-dot"></i></a>
+        <a id="contact-web" href="#" target="_blank" title="الموقع الإلكتروني" class="hover:scale-110 transition"><i class="fa-solid fa-globe"></i></a>
+        <a id="contact-wa" href="#" target="_blank" title="واتساب" class="hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></a>
+        <a id="contact-mail" href="#" title="البريد الإلكتروني" class="hover:scale-110 transition"><i class="fa-regular fa-envelope"></i></a>
       </div>
     </footer>
 
     <!-- 8. عارض الصور (Lightbox) -->
-    <div id="lightbox-modal" style="display: none;" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4" onclick="closeLightbox(event)">
-      <div class="flex items-center justify-between text-white border-b border-zinc-800 pb-3" onclick="event.stopPropagation()">
+    <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex flex-col justify-between p-4">
+      <div class="flex items-center justify-between text-white border-b border-zinc-800 pb-3">
         <span id="lightbox-title" class="text-xs font-bold text-brand-gold">عرض الصورة</span>
-        <button onclick="closeLightbox()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 cursor-pointer">
+        <button type="button" onclick="closeLightbox()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 cursor-pointer">
           <i class="fa-solid fa-xmark text-sm"></i>
         </button>
       </div>
 
-      <div class="relative my-auto flex items-center justify-center w-full max-h-[75vh]" onclick="event.stopPropagation()">
+      <div class="relative my-auto flex items-center justify-center w-full max-h-[75vh]">
         <img id="lightbox-img" src="" class="max-w-full max-h-[70vh] rounded-xl object-contain shadow-2xl transition duration-300" alt="عرض مكبر" />
       </div>
 
-      <div class="text-center text-zinc-400 text-xs flex items-center justify-between border-t border-zinc-800 pt-3" onclick="event.stopPropagation()">
-        <button onclick="navLightbox(-1)" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs cursor-pointer">السابق</button>
+      <div class="text-center text-zinc-400 text-xs flex items-center justify-between border-t border-zinc-800 pt-3">
+        <button type="button" onclick="navLightbox(-1)" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs cursor-pointer">السابق</button>
         <span id="lightbox-counter" class="font-mono text-brand-gold">1 / 4</span>
-        <button onclick="navLightbox(1)" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs cursor-pointer">التالي</button>
+        <button type="button" onclick="navLightbox(1)" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs cursor-pointer">التالي</button>
       </div>
     </div>
 
-    <!-- 9. نافذة إضافة تقييم ومراجعة جديدة تفاعلية -->
-    <div id="review-modal" style="display: none;" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4" onclick="closeReviewModal(event)">
-      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl" onclick="event.stopPropagation()">
+    <!-- 9. نافذة التقييم (ثابتة تماماً وتغلق فقط من أزرارها) -->
+    <div id="review-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl">
         <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
           <h4 class="text-sm font-bold text-brand-gold flex items-center gap-1.5">
             <i class="fa-solid fa-star"></i> إضافة تقييمك للمنشأة
           </h4>
-          <button onclick="closeReviewModal()" class="text-zinc-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+          <button type="button" onclick="closeReviewModal()" class="text-zinc-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <form id="review-form" onsubmit="submitReview(event)" class="space-y-3 text-xs">
@@ -318,21 +305,16 @@
           </div>
 
           <div class="flex justify-end gap-2 pt-1 border-t border-zinc-800">
-            <button type="button" onclick="closeReviewModal()" class="px-3 py-1.5 rounded-lg bg-zinc-900 text-zinc-300">إلغاء</button>
-            <button type="submit" id="review-submit-btn" class="px-4 py-1.5 rounded-lg bg-brand-gold text-black font-bold hover:bg-brand-goldHover">إرسال التقييم</button>
+            <button type="button" onclick="closeReviewModal()" class="px-3 py-1.5 rounded-lg bg-zinc-900 text-zinc-300 cursor-pointer">إلغاء</button>
+            <button type="submit" id="review-submit-btn" class="px-4 py-1.5 rounded-lg bg-brand-gold text-black font-bold hover:bg-brand-goldHover cursor-pointer">إرسال التقييم</button>
           </div>
         </form>
       </div>
     </div>
 
-  
-        <!-- نافذة طلب إثبات الملكية التفاعلية (مستقرة وثابتة تماماً على شاشات اللمس) -->
-    <div id="claim-modal" style="display: none;" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4" onclick="closeClaimModal(event)">
-      <!-- خلفية التعتيم المستقلة -->
-      <div class="fixed inset-0 bg-black/85 backdrop-blur-sm" onclick="closeClaimModal()"></div>
-
-      <!-- صندوق النافذة المستقل تماماً -->
-      <div class="relative z-10 bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl">
+    <!-- 10. نافذة إثبات الملكية (ثابتة تماماً وتغلق فقط من أزرارها) -->
+    <div id="claim-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl">
         <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
           <h4 class="text-sm font-bold text-[#EF4444] flex items-center gap-1.5">
             <i class="fa-solid fa-shield-halved"></i> طلب إثبات ملكية المنشأة
@@ -371,34 +353,23 @@
 
   </main>
 
-  <!-- سكربت الربط المزدوج مع Supabase + Fallback الآمن -->
+  <!-- سكربت المحرك البرمجي المتكامل 100% -->
   <script>
-    // إعدادات اتصال Supabase الرسمية المعتمدة
     const SUPABASE_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
-    
-    let sbClient = null;
-    try {
-      if (window.supabase) {
-        sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      }
-    } catch (e) {
-      console.warn("Supabase client init error, running fallback:", e);
-    }
 
-    // بيانات احتياطية كاملة (Fallback) تضمن عمل الصفحة 100% في كل الظروف
     const FALLBACK_BANK = {
-      id: "tadhamon",
+      id: "1d6d2164-edc6-492c-b73d-af60c973ef4a",
       name: "بنك التضامن",
       nameEn: "Tadhamon Bank",
-      badge_type: "gold",
+      badge_type: "blue",
       is_verified: true,
       description: "أكبر بنك في اليمن يقدم خدمات مالية ومصرفية إسلامية تلبي تطلعات عملائه بجودة عالية",
       category: "خدمات مالية",
       location: "Taiz - Yemen",
       phone: "+9674200000",
-      whatsapp: "https://wa.me/967777777777",
-      email: "mailto:info@tadhamonbank.com",
+      whatsapp: "967777777777",
+      email: "info@tadhamonbank.com",
       website_url: "https://tadhamonbank.com",
       address: "شارع جمال - تعز",
       posts: [
@@ -441,13 +412,6 @@
           title: "إصدار مجاني لبطاقات الإنترنت الافتراضية",
           desc: "تسوق إلكترونياً بأمان تام مع إعفاء كامل من رسوم الإصدار عبر تطبيق تضامن موبايل.",
           expiry: "ساري للعملاء الجدد والمشتركين بالتطبيق"
-        },
-        {
-          id: 3,
-          tag: "للشركات والتجار",
-          title: "إعفاء 100% من رسوم تركيب نقاط البيع (POS)",
-          desc: "زوّد متجرك بأحدث أجهزة الدفع الإلكتروني ونقاط البيع السريعة مع دعم فني مجاني.",
-          expiry: "عرض محدود للأنشطة التجارية في تعز وصنعاء وعدن"
         }
       ],
       services: [
@@ -460,44 +424,33 @@
           service_name: "تطبيق تضامن موبايل وتضامن باي",
           description: "تحويلات لحظية، دفع فواتير المياه والكهرباء والاتصالات، وخدمة السحب النقدي بدون بطاقة.",
           icon: "fa-solid fa-mobile-screen-button"
-        },
-        {
-          service_name: "الحسابات المصرفية المتنوعة",
-          description: "فتح الحساب الجاري، وحسابات التوفير الاستثمارية بالريال اليمني والعملات الأجنبية بعوائد مجزية.",
-          icon: "fa-solid fa-building-columns"
-        },
-        {
-          service_name: "الحوالات السريعة والدولية",
-          description: "استلام وإرسال الحوالات المالية العالمية عبر ويسترن يونيون وموني جرام بسرعة وأمان.",
-          icon: "fa-solid fa-money-bill-transfer"
         }
       ],
       reviews: [
         {
-          user_name: "افضل بنك في التعامل",
+          user_name: "م. وليد الشميري",
           user_avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=80",
-          rating: 5,
-          comment: "خدمات سريعة وتعامل راقي وتطبيق الموبايل ممتاز جداً."
+          stars: 5,
+          comment: "خدمة إلكترونية ممتازة وسرعة عالية في فتح الحساب وتفعيل البطاقات."
         },
         {
-          user_name: "خدمات مميز وتعامل راقي",
+          user_name: "أحمد المخلافي",
           user_avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80&auto=format&fit=crop&q=80",
-          rating: 4,
-          comment: "تسهيلات ممتازة في فتح الحساب وإصدار البطاقات."
+          stars: 4,
+          comment: "تعامل راقٍ من موظفي فرع تعز وتسهيلات ملموسة في التحويلات."
         }
       ]
     };
 
     let currentBank = FALLBACK_BANK;
     let currentPosts = FALLBACK_BANK.posts;
+    let currentLightboxIdx = 0;
 
-    // استخراج معرّف البنك من الرابط (?id=... أو ?slug=...)
     function getBankIdentifier() {
       const p = new URLSearchParams(window.location.search);
       return p.get('id') || p.get('slug') || 'tadhamon';
     }
 
-    // شارة التوثيق (أصفر / أزرق / رمادي)
     function renderVerificationBadge(type) {
       let color = '#EAB308';
       if (type === 'blue') color = '#1D9BF0';
@@ -511,7 +464,6 @@
       `;
     }
 
-    // حساب نسب ومتوسط النجوم الخمس بمعادلة رياضية دقيقة
     function updateRatingsDisplay(reviewsList) {
       if (!reviewsList || reviewsList.length === 0) {
         document.getElementById('calc-avg-rating').innerText = '0.0';
@@ -535,7 +487,6 @@
       document.getElementById('calc-total-reviews').innerText = `${total} تقييم`;
       document.getElementById('header-rating-count').innerText = `${total} تقييم`;
 
-      // تحديث أشرطة النسب المئوية الخمسة
       for (let star = 1; star <= 5; star++) {
         const pct = Math.round(((counts[star] || 0) / total) * 100);
         const barEl = document.getElementById(`bar-star-${star}`);
@@ -545,58 +496,45 @@
       }
     }
 
-    // جلب البيانات من Supabase مع الرجوع التلقائي للبيانات الاحتياطية
     async function loadBankProfile() {
       const bankId = getBankIdentifier();
       let bankData = { ...FALLBACK_BANK };
 
-      if (sbClient) {
-        try {
-          // استعلام مباشر وسريع من Supabase REST API
-          const isUUID = /^[0-9a-f-]{36}$/i.test(bankId);
-          const filterCol = isUUID ? 'id' : 'slug';
-          const apiUrl = `${SUPABASE_URL}/rest/v1/banks?${filterCol}=eq.${bankId}&select=*`;
-          const resp = await fetch(apiUrl, {
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`
-            }
-          });
-          const rows = await resp.json();
-          const b = (rows && rows.length > 0) ? rows[0] : null;
-          const error = !b;
-
-          if (b && !error) {
-            bankData.id = b.id;
-            bankData.name = b.name || bankData.name;
-            bankData.description = b.description || b.short_description || bankData.description;
-            bankData.badge_type = b.badge_type || 'gold';
-            bankData.phone = b.phone || bankData.phone;
-            bankData.whatsapp = b.whatsapp || bankData.whatsapp;
-            bankData.website_url = b.website_url || bankData.website_url;
-            bankData.address = b.address || bankData.address;
-
-            // جلب الخدمات الحقيقية من جدول bank_services
-            const { data: srvs } = await sbClient
-              .from('bank_services')
-              .select('*')
-              .eq('bank_id', b.id)
-              .eq('status', 'active');
-            if (srvs && srvs.length > 0) bankData.services = srvs;
-
-            // جلب التقييمات الحقيقية عبر REST API
-            const revUrl = `${SUPABASE_URL}/rest/v1/reviews?entity_type=eq.bank&entity_id=eq.${b.id}&order=created_at.desc&select=*`;
-            const revResp = await fetch(revUrl, {
-              headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-            });
-            const revRows = await revResp.json();
-            if (Array.isArray(revRows) && revRows.length > 0) {
-              bankData.reviews = revRows;
-            }
+      try {
+        const isUUID = /^[0-9a-f-]{36}$/i.test(bankId);
+        const filterCol = isUUID ? 'id' : 'slug';
+        const apiUrl = `${SUPABASE_URL}/rest/v1/banks?${filterCol}=eq.${bankId}&select=*`;
+        const resp = await fetch(apiUrl, {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
           }
-        } catch (err) {
-          console.warn("Supabase fetch failed, using fallback:", err);
+        });
+        const rows = await resp.json();
+        const b = (rows && rows.length > 0) ? rows[0] : null;
+
+        if (b) {
+          bankData.id = b.id;
+          bankData.name = b.name || bankData.name;
+          bankData.description = b.description || b.short_description || bankData.description;
+          bankData.badge_type = b.badge_type || 'gold';
+          bankData.phone = b.phone || bankData.phone;
+          bankData.whatsapp = b.whatsapp || bankData.whatsapp;
+          bankData.website_url = b.website || b.website_url;
+          bankData.address = b.address || b.city || bankData.address;
+
+          // جلب التقييمات من جدول reviews
+          const revUrl = `${SUPABASE_URL}/rest/v1/reviews?entity_type=eq.bank&entity_id=eq.${b.id}&order=created_at.desc&select=*`;
+          const revResp = await fetch(revUrl, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+          });
+          const revRows = await revResp.json();
+          if (Array.isArray(revRows) && revRows.length > 0) {
+            bankData.reviews = revRows;
+          }
         }
+      } catch (err) {
+        console.warn("Fetch fallback activated:", err);
       }
 
       currentBank = bankData;
@@ -604,7 +542,6 @@
       renderUI();
     }
 
-    // رسم عناصر الصفحة
     function renderUI() {
       document.getElementById('bank-name').innerText = currentBank.name;
       document.getElementById('bank-cover-title').innerText = currentBank.name;
@@ -612,15 +549,11 @@
       document.getElementById('bank-location').innerText = currentBank.address || "اليمن";
       document.getElementById('bank-badge-slot').innerHTML = renderVerificationBadge(currentBank.badge_type);
 
-      // زر إثبات الملكية ولوحة المالك
-      document.getElementById('claim-btn').href = `owner.html?type=bank&id=${currentBank.id || 'tadhamon'}`;
-
-      // روابط التواصل
       document.getElementById('contact-web').href = currentBank.website_url || "#";
       document.getElementById('contact-wa').href = currentBank.whatsapp ? (currentBank.whatsapp.startsWith('http') ? currentBank.whatsapp : `https://wa.me/${currentBank.whatsapp}`) : "#";
       document.getElementById('contact-mail').href = currentBank.email ? `mailto:${currentBank.email}` : "#";
 
-      // 1. حقن المنشورات
+      // حقن المنشورات
       const postsContainer = document.getElementById('posts-container');
       postsContainer.innerHTML = currentPosts.map((post, index) => `
         <article onclick="openLightbox(${index})" class="group relative bg-[#0D0D0D] rounded-xl overflow-hidden border border-zinc-800/80 aspect-square cursor-pointer active:scale-98 transition">
@@ -638,7 +571,7 @@
         </article>
       `).join('');
 
-      // 2. حقن العروض
+      // حقن العروض
       const offersContainer = document.getElementById('offers-container');
       offersContainer.innerHTML = (currentBank.offers || FALLBACK_BANK.offers).map(offer => `
         <div class="bg-[#0D0D0D] border border-zinc-800 p-3.5 rounded-xl text-right">
@@ -651,7 +584,7 @@
         </div>
       `).join('');
 
-      // 3. حقن الخدمات
+      // حقن الخدمات
       const servicesContainer = document.getElementById('services-container');
       servicesContainer.innerHTML = (currentBank.services || FALLBACK_BANK.services).map(service => `
         <div class="bg-[#0D0D0D] border border-zinc-800 p-3 rounded-xl flex items-center justify-between text-right">
@@ -663,15 +596,16 @@
         </div>
       `).join('');
 
-      // 4. حقن التقييمات والمراجعات وحساب النسب
+      // حقن التقييمات
       const revs = currentBank.reviews || FALLBACK_BANK.reviews;
       updateRatingsDisplay(revs);
 
       const reviewsContainer = document.getElementById('reviews-container');
       reviewsContainer.innerHTML = revs.map(rev => {
         let starsHtml = '';
+        const rVal = parseInt(rev.stars || rev.rating) || 5;
         for (let i = 1; i <= 5; i++) {
-          const rVal = parseInt(rev.stars || rev.rating) || 5; if (i <= rVal) starsHtml += '<i class="fa-solid fa-star"></i>';
+          if (i <= rVal) starsHtml += '<i class="fa-solid fa-star"></i>';
           else starsHtml += '<i class="fa-regular fa-star text-zinc-600"></i>';
         }
         return `
@@ -688,7 +622,6 @@
       }).join('');
     }
 
-    // التبديل بين التبويبات
     function switchTab(tabName) {
       const tabs = ['posts', 'offers', 'services'];
       const reviewsSection = document.getElementById('reviews-section');
@@ -714,22 +647,18 @@
       }
     }
 
-    // عارض الصور (Lightbox)
-    let currentLightboxIdx = 0;
+    // دوال عارض الصور
     function openLightbox(index) {
       currentLightboxIdx = index;
       const post = currentPosts[index];
-      const modal = document.getElementById('lightbox-modal');
       document.getElementById('lightbox-img').src = post.image;
       document.getElementById('lightbox-title').innerText = post.title;
       document.getElementById('lightbox-counter').innerText = `${index + 1} / ${currentPosts.length}`;
-      modal.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
+      document.getElementById('lightbox-modal').classList.remove('hidden');
     }
 
     function closeLightbox() {
       document.getElementById('lightbox-modal').classList.add('hidden');
-      document.body.style.overflow = 'auto';
     }
 
     function navLightbox(direction) {
@@ -739,7 +668,7 @@
       openLightbox(currentLightboxIdx);
     }
 
-    // نافذة ونظام إضافة التقييم التفاعلي
+    // دوال نافذة التقييم
     function openReviewModal() {
       document.getElementById('review-modal').classList.remove('hidden');
       setRating(5);
@@ -769,12 +698,12 @@
       btn.innerText = "جاري الإرسال...";
 
       const newRev = {
+        entity_type: 'bank',
+        entity_id: currentBank.id,
         user_name: name,
         user_avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=80",
         stars: rating,
-        comment: comment,
-        entity_type: 'bank',
-        entity_id: currentBank.id
+        comment: comment
       };
 
       try {
@@ -801,13 +730,15 @@
       alert("شكراً لك! تم تسجيل تقييمك بنجاح.");
     }
 
-    
+    // دوال نافذة إثبات الملكية
     function openClaimModal() {
       document.getElementById('claim-modal').classList.remove('hidden');
     }
+
     function closeClaimModal() {
       document.getElementById('claim-modal').classList.add('hidden');
     }
+
     async function submitClaim(e) {
       e.preventDefault();
       const name = document.getElementById('claim-applicant-name').value.trim();
@@ -838,7 +769,7 @@
             status: 'PENDING'
           })
         });
-        alert('تم إرسال طلب إثبات الملكية بنجاح! سيتم مراجعته واعتماده من قبل إدارة يمن ريتنغ.');
+        alert('تم إرسال طلب إثبات الملكية بنجاح! سيتم مراجعته واعتماده من قبل الإدارة.');
         closeClaimModal();
         document.getElementById('claim-form').reset();
       } catch (err) {
