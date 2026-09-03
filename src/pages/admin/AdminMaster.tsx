@@ -2,18 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { AdminSidebar } from '../../components/admin/AdminSidebar';
 import { AdminLogin } from './auth/AdminLogin';
-import { Menu, ShieldAlert, LogOut, Bell } from 'lucide-react';
+import { 
+  Menu, ShieldAlert, LogOut, Bell, 
+  ShieldCheck, AlertTriangle, DollarSign, Gavel, Star, CheckCheck 
+} from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+
+interface SystemNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  link?: string;
+  is_read: boolean;
+  created_at: string;
+}
 
 export const AdminMaster: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [checking, setChecking] = useState<boolean>(true);
   
-  // حالات الإشعارات التفاعلية
-  const [pendingCount, setPendingCount] = useState<number>(0);
+  // حالات مركز الإشعارات الشامل
+  const [notifications, setNotifications] = useState<SystemNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
   const [notificationsOpen, setNotificationsOpen] = useState<boolean>(false);
-  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,29 +44,50 @@ export const AdminMaster: React.FC = () => {
     setChecking(false);
   }, []);
 
-  // جلب الإشعارات والطلبات المعلقة من قاعدة البيانات
-  const fetchPendingNotifications = async () => {
+  // جلب كل أنشطة وإشعارات الموقع (توثيق، بلاغات، عمولات، مزادات)
+  const fetchAllNotifications = async () => {
     try {
-      const { data, error } = await supabase
+      // 1. جلب الإشعارات العامة من admin_notifications
+      const { data: generalNotes } = await supabase
+        .from('admin_notifications')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      // 2. جلب طلبات إثبات الملكية المعلقة من verification_requests
+      const { data: pendingClaims } = await supabase
         .from('verification_requests')
-        .select('id, applicant_name, applicant_role, entity_type, notes, created_at')
+        .select('id, applicant_name, applicant_role, notes, created_at')
         .eq('status', 'PENDING')
         .order('created_at', { ascending: false });
 
-      if (data) {
-        setPendingRequests(data);
-        setPendingCount(data.length);
-      }
+      const claimsMapped: SystemNotification[] = (pendingClaims || []).map((c: any) => ({
+        id: `claim-${c.id}`,
+        title: '🛡️ طلب إثبات ملكية جديد',
+        message: `مقدم الطلب: ${c.applicant_name} (${c.applicant_role || 'مفوض'}) - ${c.notes || ''}`,
+        type: 'claim',
+        link: '/admin/claims',
+        is_read: false,
+        created_at: c.created_at
+      }));
+
+      // دمج وترتيب كل الأنشطة زمنياً
+      const combined: SystemNotification[] = [
+        ...claimsMapped,
+        ...((generalNotes as SystemNotification[]) || [])
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setNotifications(combined);
+      setUnreadCount(combined.filter(n => !n.is_read).length);
     } catch (err) {
-      console.error('Error fetching admin notifications:', err);
+      console.error('Error fetching admin hub notifications:', err);
     }
   };
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchPendingNotifications();
-      // تحديث تلقائي دوري كل 20 ثانية لتنبيه الإدارة بأي طلب جديد
-      const interval = setInterval(fetchPendingNotifications, 20000);
+      fetchAllNotifications();
+      const interval = setInterval(fetchAllNotifications, 15000); // فحص دوري كل 15 ثانية
       return () => clearInterval(interval);
     }
   }, [isAuthenticated]);
@@ -61,6 +95,44 @@ export const AdminMaster: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem('yr_admin_session');
     setIsAuthenticated(false);
+  };
+
+  // أيقونة ولون مخصص لكل نشاط
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'claim':
+      case 'verification':
+        return <ShieldCheck className="text-[#FFC500] shrink-0" size={16} />;
+      case 'report':
+      case 'dispute':
+        return <AlertTriangle className="text-[#EF4444] shrink-0" size={16} />;
+      case 'commission':
+        return <DollarSign className="text-[#10B981] shrink-0" size={16} />;
+      case 'auction':
+        return <Gavel className="text-[#3B82F6] shrink-0" size={16} />;
+      case 'review':
+        return <Star className="text-[#F59E0B] shrink-0" size={16} />;
+      default:
+        return <Bell className="text-gray-400 shrink-0" size={16} />;
+    }
+  };
+
+  const handleNotificationClick = async (item: SystemNotification) => {
+    setNotificationsOpen(false);
+
+    // إذا كان إشعاراً في جدول admin_notifications يتم تعليمه كمقروء
+    if (!item.id.startsWith('claim-')) {
+      await supabase
+        .from('admin_notifications')
+        .update({ is_read: true })
+        .eq('id', item.id);
+    }
+
+    if (item.link) {
+      navigate(item.link);
+    } else {
+      navigate('/admin/claims');
+    }
   };
 
   if (checking) {
@@ -81,7 +153,7 @@ export const AdminMaster: React.FC = () => {
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col min-w-0 lg:mr-[280px]">
-        {/* الهيدر الثابت مع جرس الإشعارات */}
+        {/* الشريط العلوي مع مركز الإشعارات الشامل */}
         <header className="fixed top-0 left-0 right-0 lg:right-[280px] h-16 bg-[#0B0F17] flex items-center justify-between px-4 lg:px-8 z-40 border-b border-[#1F2937]/50">
           <div className="flex items-center gap-3">
             <button
@@ -94,79 +166,82 @@ export const AdminMaster: React.FC = () => {
 
             <div className="flex items-center gap-2 text-xs font-semibold text-[#9CA3AF]">
               <ShieldAlert size={16} className="text-[#FFC500]" />
-              <span className="hidden sm:inline">نظام الإدارة الداخلي لمنصة Yemen Rating</span>
+              <span className="hidden sm:inline">لوحة التحكم والإدارة — Yemen Rating</span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            {/* زر جرس الإشعارات التفاعلي */}
+            {/* جرس الإشعارات الشامل */}
             <div className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
                 className="relative p-2 rounded-lg bg-[#161D2B] text-gray-300 hover:text-white hover:bg-[#1F2937] transition cursor-pointer"
-                title="إشعارات النظام"
+                title="مركز إشعارات المنصة"
               >
                 <Bell size={18} />
-                {pendingCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#EF4444] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                    {pendingCount}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-[#EF4444] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                    {unreadCount}
                   </span>
                 )}
               </button>
 
-              {/* القائمة المنسدلة للإشعارات */}
+              {/* القائمة المنسدلة الشاملة */}
               {notificationsOpen && (
-                <div className="absolute left-0 mt-2 w-80 bg-[#0B0F17] border border-[#1F2937] rounded-xl shadow-2xl p-3 z-50 text-right">
+                <div className="absolute left-0 mt-2 w-80 sm:w-96 bg-[#0B0F17] border border-[#1F2937] rounded-xl shadow-2xl p-3 z-50 text-right">
                   <div className="flex justify-between items-center pb-2 border-b border-[#1F2937] mb-2">
                     <span className="text-xs font-bold text-[#FFC500] flex items-center gap-1.5">
-                      <Bell size={14} /> إشعارات طلبات التوثيق
+                      <Bell size={14} /> مركز تنبيهات وأنشطة المنصة
                     </span>
                     <span className="text-[10px] text-gray-400 font-mono">
-                      {pendingCount} طلب معلق
+                      {unreadCount} تنبيه نشط
                     </span>
                   </div>
 
-                  {pendingRequests.length === 0 ? (
-                    <div className="text-center py-5 text-xs text-gray-400">
-                      لا توجد طلبات إثبات ملكية معلقة حالياً.
+                  {notifications.length === 0 ? (
+                    <div className="text-center py-6 text-xs text-gray-400">
+                      لا توجد أنشطة أو تنبيهات جديدة حالياً.
                     </div>
                   ) : (
-                    <div className="space-y-2 max-h-60 overflow-y-auto no-scrollbar">
-                      {pendingRequests.map((req) => (
+                    <div className="space-y-2 max-h-80 overflow-y-auto no-scrollbar">
+                      {notifications.map((item) => (
                         <div
-                          key={req.id}
-                          onClick={() => {
-                            setNotificationsOpen(false);
-                            navigate('/admin/claims');
-                          }}
-                          className="p-2.5 rounded-lg bg-[#161D2B]/80 hover:bg-[#1F2937] transition cursor-pointer border border-[#1F2937]"
+                          key={item.id}
+                          onClick={() => handleNotificationClick(item)}
+                          className={`p-2.5 rounded-lg transition cursor-pointer border ${
+                            item.is_read 
+                              ? 'bg-[#121620] border-[#1F2937]/50 opacity-75' 
+                              : 'bg-[#161D2B] border-[#1F2937] hover:border-[#FFC500]/50'
+                          }`}
                         >
-                          <div className="flex justify-between items-center text-[10px] text-[#FFC500] font-bold">
-                            <span>طلب إثبات ملكية جديد</span>
-                            <span className="text-gray-400 text-[9px]">
-                              {new Date(req.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
+                          <div className="flex items-start gap-2.5">
+                            <div className="mt-0.5">{getNotificationIcon(item.type)}</div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex justify-between items-center text-[10px]">
+                                <span className="font-bold text-white truncate">{item.title}</span>
+                                <span className="text-gray-400 text-[9px] shrink-0 mr-1">
+                                  {new Date(item.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+                              <p className="text-xs text-[#D1D5DB] mt-1 leading-snug line-clamp-2">
+                                {item.message}
+                              </p>
+                            </div>
                           </div>
-                          <p className="text-xs font-bold text-white mt-1">
-                            {req.applicant_name} ({req.applicant_role || 'مفوض رسمي'})
-                          </p>
-                          <p className="text-[10px] text-gray-400 truncate mt-0.5">
-                            {req.notes || 'بانتظار مراجعة الإدارة والاعتماد'}
-                          </p>
                         </div>
                       ))}
                     </div>
                   )}
 
-                  <button
-                    onClick={() => {
-                      setNotificationsOpen(false);
-                      navigate('/admin/claims');
-                    }}
-                    className="w-full mt-2.5 py-1.5 rounded-lg bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition cursor-pointer"
-                  >
-                    عرض كل طلبات التوثيق والاعتماد
-                  </button>
+                  <div className="pt-2 border-t border-[#1F2937] mt-2 flex justify-between items-center text-[11px]">
+                    <span className="text-gray-400">تحديث لحظي لجميع الأنشطة</span>
+                    <button
+                      onClick={() => { setNotificationsOpen(false); navigate('/admin/claims'); }}
+                      className="text-[#FFC500] hover:underline font-bold"
+                    >
+                      إدارة التوثيق ⬅️
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
