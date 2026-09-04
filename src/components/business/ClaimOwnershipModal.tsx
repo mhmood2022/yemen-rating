@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { businessService } from '../../services/businessService';
+import { supabase } from '../../lib/supabase';
 
 interface Props {
   businessId: string;
@@ -29,23 +29,23 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
     e.preventDefault();
     setLoading(true);
 
-    const res = await businessService.submitOwnershipClaim({
+    const { error } = await supabase.from('business_claims').insert([{
       business_id: businessId,
-      applicant_name: applicantName,
-      position,
-      phone,
-      official_email: email,
-    });
+      claimant_name: applicantName,
+      claimant_phone: phone,
+      notes: `الصفة: ${position} ${email ? ' | البريد: ' + email : ''}`,
+      status: 'PENDING'
+    }]);
 
     setLoading(false);
-    if (res.success) {
+    if (!error) {
       setSubmitted(true);
       setTimeout(() => {
         onSuccess();
         onClose();
       }, 2000);
     } else {
-      alert('حدث خطأ أثناء إرسال الطلب: ' + res.error);
+      alert('حدث خطأ أثناء إرسال الطلب: ' + error.message);
     }
   };
 
@@ -55,7 +55,7 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
         <div className="flex justify-between items-center pb-4 mb-4 border-b border-[#242432]">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl bg-amber-400/10 text-amber-400 flex items-center justify-center font-bold text-base">
-              <i className="fa-solid fa-shield-halved"></i>
+              🛡️
             </div>
             <div>
               <h3 className="text-base font-black text-white">طلب إثبات ملكية منشأة</h3>
@@ -68,7 +68,7 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
         {submitted ? (
           <div className="text-center py-8 space-y-3">
             <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto text-2xl border border-emerald-500/30">
-              <i className="fa-solid fa-check"></i>
+              ✅
             </div>
             <h4 className="text-base font-bold text-white">تم إرسال طلب إثبات الملكية بنجاح!</h4>
             <p className="text-xs text-neutral-400 leading-relaxed max-w-xs mx-auto">

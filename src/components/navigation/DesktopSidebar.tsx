@@ -21,7 +21,7 @@ export const sidebarItems: NavItem[] = [
   { id: 'jobs', label: 'الوظائف', href: '/jobs', icon: Briefcase },
   { id: 'phones', label: 'سوق الجوالات', href: '/phones', icon: Smartphone },
   { id: 'prices', label: 'الأسعار', href: '/prices', icon: Coins },
-  { id: 'banks-wallets', label: 'البنوك والمحافظ', href: '/banks-wallets', icon: Landmark },
+  { id: 'banks-wallets', label: 'البنوك والمحافظ', href: '/banks', icon: Landmark },
   { id: 'trend', label: 'الترند', href: '/trend', icon: TrendingUp },
   { id: 'rating', label: 'التقييم والتصنيف', href: '/directory', icon: Star },
   { id: 'ads', label: 'الإعلانات', href: '/directory', icon: Megaphone },

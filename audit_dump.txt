@@ -1,0 +1,941 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+// الهيكل الموحد App Shell
+import { AppShell } from './components/layout/AppShell';
+
+// الصفحات الرئيسية والأدلة
+import { HomeView } from './components/home/HomeView';
+import { BanksPage } from './pages/public/banks/BanksPage';
+import { BusinessesPage } from './pages/public/businesses/BusinessesPage';
+import { PhoneMarketPage } from './pages/PhoneMarketPage';
+import { AuctionsPage } from './components/pages/AuctionsPage';
+import { RealEstatePage } from './components/pages/RealEstatePage';
+import { JobsPage } from './components/pages/JobsPage';
+import { ExchangeRatesPage } from './components/pages/ExchangeRatesPage';
+import { SAMPLE_BUSINESSES } from './data/mockData';
+
+// القوالب الديناميكية الموحدة Master Templates
+import { BankProfilePage } from './pages/templates/BankProfilePage';
+import { BusinessProfilePage } from './pages/templates/BusinessProfilePage';
+import { JobDetailsPage } from './pages/templates/JobDetailsPage';
+import { PropertyDetailsPage } from './pages/templates/PropertyDetailsPage';
+import { AuctionDetailsPage } from './pages/templates/AuctionDetailsPage';
+
+// لوحة تحكم مالك المنشأة المعتمد
+import { OwnerDashboardPage } from './pages/owner/OwnerDashboardPage';
+
+// لوحة التحكم الإدارية
+import { AdminMaster } from './pages/admin/AdminMaster';
+import { AdminDashboardOverview } from './pages/admin/AdminDashboardOverview';
+import { CompaniesManager } from './pages/admin/companies/CompaniesManager';
+import { AuctionsManager } from './pages/admin/auctions/AuctionsManager';
+import { AuctionLiveMonitor } from './pages/admin/auctions/AuctionLiveMonitor';
+import { AdsManager } from './pages/admin/ads/AdsManager';
+import { AdGeneratorStudio } from './pages/admin/ads/AdGeneratorStudio';
+import { RealEstateManager } from './pages/admin/real-estate/RealEstateManager';
+import { CategoriesManager } from './pages/admin/categories/CategoriesManager';
+import { ClaimsManager } from './pages/admin/claims/ClaimsManager';
+import { UsersRolesManager } from './pages/admin/users/UsersRolesManager';
+import { GoldCurrencyManager } from './pages/admin/gold-currency/GoldCurrencyManager';
+import { JobsManager } from './pages/admin/jobs/JobsManager';
+import { MatchingAIManager } from './pages/admin/matching/MatchingAIManager';
+import { SettingsAuditManager } from './pages/admin/settings/SettingsAuditManager';
+import { MarketsManager } from './pages/admin/markets/MarketsManager';
+import { PhonesManager } from './pages/admin/phones/PhonesManager';
+import { CleaningManager } from './pages/admin/cleaning/CleaningManager';
+import { AnalyticsFinanceManager } from './pages/admin/analytics/AnalyticsFinanceManager';
+
+export function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        
+        {/* المسارات العامة الموحدة داخل الـ App Shell */}
+        <Route path="/" element={<AppShell><HomeView onSelectCategory={() => {}} onSelectBusiness={() => {}} businesses={SAMPLE_BUSINESSES} onNavigateAuctions={() => {}} onNavigateRealEstate={() => {}} onNavigateJobs={() => {}} onNavigateExchangeRates={() => {}} /></AppShell>} />
+        
+        {/* مسارات البنوك (دليل + قالب ديناميكي) */}
+        <Route path="/banks" element={<AppShell><BanksPage /></AppShell>} />
+        <Route path="/banks/:slug" element={<AppShell><BankProfilePage /></AppShell>} />
+
+        {/* مسارات المنشآت والشركات (دليل + قالب ديناميكي موحد) */}
+        <Route path="/businesses" element={<AppShell><BusinessesPage /></AppShell>} />
+        <Route path="/businesses/:slug" element={<AppShell><BusinessProfilePage /></AppShell>} />
+
+        {/* مسارات الوظائف (دليل + قالب ديناميكي) */}
+        <Route path="/jobs" element={<AppShell><JobsPage onBack={() => window.history.back()} /></AppShell>} />
+        <Route path="/jobs/:slug" element={<AppShell><JobDetailsPage /></AppShell>} />
+
+        {/* مسارات العقارات (دليل + قالب ديناميكي) */}
+        <Route path="/properties" element={<AppShell><RealEstatePage onBack={() => window.history.back()} /></AppShell>} />
+        <Route path="/properties/:slug" element={<AppShell><PropertyDetailsPage /></AppShell>} />
+
+        {/* مسارات المزادات (دليل + قالب ديناميكي) */}
+        <Route path="/auctions" element={<AppShell><AuctionsPage onBack={() => window.history.back()} /></AppShell>} />
+        <Route path="/auctions/:slug" element={<AppShell><AuctionDetailsPage /></AppShell>} />
+
+        {/* مسارات سوق الهواتف وأسعار الصرف */}
+        <Route path="/phones" element={<AppShell><PhoneMarketPage onNavigate={() => window.history.back()} /></AppShell>} />
+        <Route path="/exchange-rates" element={<AppShell><ExchangeRatesPage onBack={() => window.history.back()} /></AppShell>} />
+
+        {/* لوحة تحكم مالك المنشأة */}
+        <Route path="/owner" element={<AppShell><OwnerDashboardPage /></AppShell>} />
+
+        {/* لوحة التحكم المعزولة والمحمية /admin */}
+        <Route path="/admin" element={<AdminMaster />}>
+          <Route index element={<AdminDashboardOverview />} />
+          <Route path="companies" element={<CompaniesManager />} />
+          <Route path="categories" element={<CategoriesManager />} />
+          <Route path="claims" element={<ClaimsManager />} />
+          <Route path="markets" element={<MarketsManager />} />
+          <Route path="auctions" element={<AuctionsManager />} />
+          <Route path="auctions/:id" element={<AuctionLiveMonitor />} />
+          <Route path="ads" element={<AdsManager />} />
+          <Route path="ads/generator" element={<AdGeneratorStudio />} />
+          <Route path="jobs" element={<JobsManager />} />
+          <Route path="real-estate" element={<RealEstateManager />} />
+          <Route path="phones" element={<PhonesManager />} />
+          <Route path="cleaning" element={<CleaningManager />} />
+          <Route path="users" element={<UsersRolesManager />} />
+          <Route path="analytics" element={<AnalyticsFinanceManager />} />
+          <Route path="gold-currency" element={<GoldCurrencyManager />} />
+          <Route path="matching" element={<MatchingAIManager />} />
+          <Route path="settings" element={<SettingsAuditManager />} />
+        </Route>
+
+        {/* إعادة التوجيه للرئيسية */}
+        <Route path="*" element={<AppShell><HomeView onSelectCategory={() => {}} onSelectBusiness={() => {}} businesses={SAMPLE_BUSINESSES} onNavigateAuctions={() => {}} onNavigateRealEstate={() => {}} onNavigateJobs={() => {}} onNavigateExchangeRates={() => {}} /></AppShell>} />
+
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+import React, { useState, useEffect } from 'react';
+import { Header } from './components/Header';
+import { Sidebar } from './components/Sidebar';
+import { SearchSection } from './components/common/SearchSection';
+import { HomeView } from './components/home/HomeView';
+import { CategoryListing } from './components/category/CategoryListing';
+import { BusinessDetails } from './components/business/BusinessDetails';
+import { AuctionsPage } from './components/pages/AuctionsPage';
+import { MarketsPage } from './components/pages/MarketsPage';
+import { RealEstatePage } from './components/pages/RealEstatePage';
+import { JobsPage } from './components/pages/JobsPage';
+import { ExchangeRatesPage } from './components/pages/ExchangeRatesPage';
+import { ProfilePage } from './components/pages/ProfilePage';
+import { NotificationsPage } from './components/pages/NotificationsPage';
+import { FavoritesPage } from './components/pages/FavoritesPage';
+import { PhoneMarketPage } from './pages/PhoneMarketPage';
+import { BanksAndWalletsPage } from './pages/BanksAndWalletsPage';
+import { AdBanner } from './components/common/AdBanner';
+import { SAMPLE_BUSINESSES, BusinessItem } from './data/mockData';
+
+export function MainPublicApp() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
+  const [selectedBusiness, setSelectedBusiness] = useState<BusinessItem | null>(null);
+  const [currentPage, setCurrentPage] = useState<'home' | 'auctions' | 'markets' | 'real-estate' | 'jobs' | 'exchange-rates' | 'profile' | 'notifications' | 'favorites' | 'phones' | 'banks'>('home');
+  const [selectedGov, setSelectedGov] = useState<string>('كل المحافظات');
+  const [selectedCity, setSelectedCity] = useState<string>('all');
+
+  // التمرير التلقائي لأعلى الصفحة فوراً عند فتح أي قسم
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [currentPage, selectedBusiness, selectedCategorySlug]);
+
+  const handleGlobalSearch = (query: string, govId: string, cityId: string) => {
+    setSelectedGov(govId);
+    setSelectedCity(cityId);
+    if (selectedBusiness) setSelectedBusiness(null);
+  };
+
+  const handleSelectCategory = (slug: string) => {
+    if (slug === 'all') {
+      setIsSidebarOpen(true);
+      return;
+    }
+    // توجيه قسم البنوك والمصارف والمحافظ
+    if (slug === 'banks' || slug === 'banks-and-wallets' || slug === 'wallets') {
+      setCurrentPage('banks');
+      setSelectedCategorySlug(null);
+      setSelectedBusiness(null);
+      return;
+    }
+    // توجيه سوق الهواتف
+    if (slug === 'phones' || slug === 'cat-phones') {
+      setCurrentPage('phones');
+      setSelectedCategorySlug(null);
+      setSelectedBusiness(null);
+      return;
+    }
+    // توجيه المزادات
+    if (slug === 'auctions') {
+      setCurrentPage('auctions');
+      setSelectedCategorySlug(null);
+      setSelectedBusiness(null);
+    } else if (slug === 'markets') {
+      setCurrentPage('markets');
+      setSelectedCategorySlug(null);
+      setSelectedBusiness(null);
+    } else if (slug === 'real-estate') {
+      setCurrentPage('real-estate');
+      setSelectedCategorySlug(null);
+      setSelectedBusiness(null);
+    } else if (slug === 'jobs') {
+      setCurrentPage('jobs');
+      setSelectedCategorySlug(null);
+      setSelectedBusiness(null);
+    } else if (slug === 'exchange-rates') {
+      setCurrentPage('exchange-rates');
+      setSelectedCategorySlug(null);
+      setSelectedBusiness(null);
+    } else {
+      setSelectedCategorySlug(slug);
+      setSelectedBusiness(null);
+      setCurrentPage('home');
+    }
+  };
+
+  const handleSelectBusiness = (business: BusinessItem) => {
+    setSelectedBusiness(business);
+  };
+
+  const handleBackToHome = () => {
+    setSelectedBusiness(null);
+    setSelectedCategorySlug(null);
+    setCurrentPage('home');
+  };
+
+  const isAtMainHome = currentPage === 'home' && !selectedBusiness && !selectedCategorySlug;
+
+  return (
+    <div dir="rtl" className="min-h-screen bg-[#070A10] text-zinc-100 flex flex-col font-['Cairo',sans-serif]">
+      
+      {/* 1. الهيدر المثبت الدائم */}
+      <header className="sticky top-0 z-50 bg-[#070A10]/98 backdrop-blur-xl border-b border-[#1F2937] shadow-2xl">
+        <Header
+          onToggleSidebar={() => setIsSidebarOpen(true)}
+          onNavigateHome={handleBackToHome}
+          onNavigateNotifications={() => setCurrentPage('notifications')}
+          unreadNotificationsCount={3}
+        />
+        
+        {/* يظهر الإعلان العلوي #1 فقط في الصفحة الرئيسية */}
+        {isAtMainHome && (
+          <div className="max-w-6xl mx-auto px-3 py-1 border-t border-[#1F2937]/30">
+            <AdBanner placementId="1" className="mb-0" />
+          </div>
+        )}
+      </header>
+
+      {/* 2. القائمة الجانبية */}
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onSelectCategory={handleSelectCategory}
+        onNavigateAuctions={() => { setCurrentPage('auctions'); setIsSidebarOpen(false); }}
+        onNavigateMarkets={() => { setCurrentPage('markets'); setIsSidebarOpen(false); }}
+        onNavigateRealEstate={() => { setCurrentPage('real-estate'); setIsSidebarOpen(false); }}
+        onNavigateJobs={() => { setCurrentPage('jobs'); setIsSidebarOpen(false); }}
+        onNavigateExchangeRates={() => { setCurrentPage('exchange-rates'); setIsSidebarOpen(false); }}
+        onNavigateProfile={() => { setCurrentPage('profile'); setIsSidebarOpen(false); }}
+        onNavigateNotifications={() => { setCurrentPage('notifications'); setIsSidebarOpen(false); }}
+        onNavigateFavorites={() => { setCurrentPage('favorites'); setIsSidebarOpen(false); }}
+      />
+
+      {/* 3. جسم المحتوى الرئيسي */}
+      <main className="flex-1 pb-16">
+        {isAtMainHome && (
+          <SearchSection
+            onSearch={handleGlobalSearch}
+            selectedGov={selectedGov}
+            selectedCity={selectedCity}
+          />
+        )}
+
+        {selectedBusiness ? (
+          <BusinessDetails
+            business={selectedBusiness}
+            onBack={handleBackToHome}
+          />
+        ) : selectedCategorySlug ? (
+          <CategoryListing
+            categorySlug={selectedCategorySlug}
+            onBack={handleBackToHome}
+            onSelectBusiness={handleSelectBusiness}
+            businesses={SAMPLE_BUSINESSES}
+            selectedGov={selectedGov}
+            selectedCity={selectedCity}
+          />
+        ) : currentPage === 'home' ? (
+          <HomeView
+            onSelectCategory={handleSelectCategory}
+            onSelectBusiness={handleSelectBusiness}
+            businesses={SAMPLE_BUSINESSES}
+            onNavigateAuctions={() => setCurrentPage('auctions')}
+            onNavigateRealEstate={() => setCurrentPage('real-estate')}
+            onNavigateJobs={() => setCurrentPage('jobs')}
+            onNavigateExchangeRates={() => setCurrentPage('exchange-rates')}
+            onNavigatePhones={() => setCurrentPage('phones')}
+          />
+        ) : currentPage === 'banks' ? (
+          <BanksAndWalletsPage onNavigate={handleBackToHome} />
+        ) : currentPage === 'phones' ? (
+          <PhoneMarketPage onNavigate={handleBackToHome} />
+        ) : currentPage === 'auctions' ? (
+          <AuctionsPage onBack={handleBackToHome} />
+        ) : currentPage === 'markets' ? (
+          <MarketsPage onBack={handleBackToHome} />
+        ) : currentPage === 'real-estate' ? (
+          <RealEstatePage onBack={handleBackToHome} />
+        ) : currentPage === 'jobs' ? (
+          <JobsPage onBack={handleBackToHome} />
+        ) : currentPage === 'exchange-rates' ? (
+          <ExchangeRatesPage onBack={handleBackToHome} />
+        ) : currentPage === 'profile' ? (
+          <ProfilePage onBack={handleBackToHome} />
+        ) : currentPage === 'notifications' ? (
+          <NotificationsPage onBack={handleBackToHome} />
+        ) : currentPage === 'favorites' ? (
+          <FavoritesPage onBack={handleBackToHome} />
+        ) : null}
+      </main>
+
+    </div>
+  );
+}
+
+export default MainPublicApp;
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Building2, MapPin, Phone, Globe, MessageCircle, Star, ArrowRight, Check, Camera, ShieldCheck, Megaphone } from 'lucide-react';
+import { BankService } from '../../services/platformServices';
+import { YRBadge } from '../../components/common/YRBadge';
+import { AdBanner } from '../../components/common/AdBanner';
+import { YRReviewSystem } from '../../components/common/YRReviewSystem';
+
+export const BankProfilePage: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const bankData = BankService.getDemoRecord();
+  const gallery = bankData.media.filter(m => m.media_type === 'image');
+
+  return (
+    <div dir="rtl" className="max-w-5xl mx-auto px-3 sm:px-4 py-2 space-y-4 font-['Cairo',sans-serif] text-white">
+      <AdBanner placementId="4" className="mb-1" />
+      <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
+        <button onClick={() => navigate('/banks')} className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1.5 cursor-pointer shadow-sm">
+          <ArrowRight size={13} className="rtl:rotate-180" />
+          <span>الرجوع للبنوك</span>
+        </button>
+      </div>
+
+      <div className="bg-[#0F0F12] rounded-3xl border border-[#222226] overflow-hidden shadow-2xl relative">
+        <div className="relative h-44 sm:h-64 w-full bg-[#161619] overflow-hidden">
+          <img src={bankData.cover_url} alt={bankData.name} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F12] via-transparent to-black/30" />
+        </div>
+
+        <div className="p-4 sm:p-5 relative -mt-12 sm:-mt-14 z-10 space-y-3">
+          <div className="flex items-end gap-3">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#0F0F12] border-2 border-[#FFC500] p-1 shadow-2xl shrink-0 overflow-hidden">
+              <img src={bankData.logo_url} alt="Logo" className="w-full h-full object-cover rounded-xl" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-sm sm:text-lg font-black text-white">{bankData.name}</h1>
+                <YRBadge type={bankData.badge_type || 'gold'} size={18} showTooltip />
+              </div>
+              <div className="flex items-center gap-2 text-[10px] text-zinc-400">
+                <span className="px-2 py-0.2 rounded bg-[#FFC500]/15 text-[#FFC500] font-bold">{bankData.category_label}</span>
+                <span>•</span>
+                <span className="flex items-center gap-0.5"><MapPin size={11} className="text-[#FFC500]" /> {bankData.city_name}</span>
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-zinc-300 leading-relaxed pt-1 font-medium">{bankData.description}</p>
+        </div>
+      </div>
+
+      <YRReviewSystem entityType="bank" entityId={bankData.id} initialReviews={bankData.reviews} />
+    </div>
+  );
+};
+import React from 'react';
+import { Landmark, Wallet, MapPin, Star, CheckCircle2, Flame, ArrowLeft, Layers, Users } from 'lucide-react';
+import { BankWalletItem } from '../../types/banksWallets';
+import { Card } from '../ui/Card';
+import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
+import { BusinessScore } from '../business/BusinessScore';
+
+interface BankWalletCardProps {
+  item: BankWalletItem;
+  onNavigate: (path: string) => void;
+}
+
+export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onNavigate }) => {
+  const isBank = item.type === 'bank';
+  const targetUrl = `/business/${item.id}`;
+
+  return (
+    <Card
+      hoverable
+      className="flex flex-col justify-between p-4 sm:p-5 transition-all duration-200 cursor-pointer group"
+      onClick={() => onNavigate(targetUrl)}
+    >
+      <div>
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge variant={isBank ? 'primary' : 'yellow'} size="sm" className="gap-1">
+              {isBank ? <Landmark size={12} strokeWidth={2} /> : <Wallet size={12} strokeWidth={2} />}
+              <span>{isBank ? 'بنك رسمي' : 'محفظة إلكترونية'}</span>
+            </Badge>
+
+            {item.isTrending && (
+              <Badge variant="warning" size="sm" className="gap-1 text-[#F59E0B]">
+                <Flame size={12} strokeWidth={2} />
+                <span>ترند</span>
+              </Badge>
+            )}
+          </div>
+
+          <BusinessScore score={item.yrScore} size="sm" showLabel={false} />
+        </div>
+
+        <div className="flex items-start gap-3 mb-3">
+          <div className="w-11 h-11 rounded-[10px] bg-[#0B1F3A]/5 dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#222222] flex items-center justify-center text-[#0B1F3A] dark:text-[#F5C400] font-bold shrink-0 group-hover:border-[#0B1F3A]/30 dark:group-hover:border-[#F5C400]/40 transition-colors">
+            {isBank ? (
+              <Landmark size={22} strokeWidth={1.75} />
+            ) : (
+              <Wallet size={22} strokeWidth={1.75} />
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-sm sm:text-base text-[#0B1F3A] dark:text-white leading-snug line-clamp-1 group-hover:text-[#162F52] dark:group-hover:text-[#F5C400] transition-colors flex items-center gap-1.5">
+              <span className="truncate">{item.name}</span>
+              {item.isVerified && (
+                <CheckCircle2
+                  size={16}
+                  className="text-[#16A34A] dark:text-[#22C55E] shrink-0"
+                  strokeWidth={2}
+                  title="مؤسسة مالية موثقة"
+                />
+              )}
+            </h3>
+            <p className="text-xs text-[#64748B] dark:text-[#A1A1AA] flex items-center gap-1 mt-1">
+              <MapPin size={13} strokeWidth={1.75} className="shrink-0 text-[#94A3B8] dark:text-[#71717A]" />
+              <span>المقر الرئيسي: {item.headquartersCity}</span>
+              {item.commercialName && <span className="truncate opacity-75">· {item.commercialName}</span>}
+            </p>
+          </div>
+        </div>
+
+        <p className="text-xs text-[#475569] dark:text-[#A1A1AA] line-clamp-2 leading-relaxed mb-3.5">
+          {item.description}
+        </p>
+
+        <div className="grid grid-cols-2 gap-2 mb-3 text-xs bg-[#F7F8FA] dark:bg-[#0A0A0A] p-2.5 rounded-[8px] border border-[#E2E8F0] dark:border-[#222222]">
+          {item.branchCount !== undefined && (
+            <div className="flex items-center gap-1.5 text-[#0B1F3A] dark:text-white font-semibold">
+              <Layers size={13} strokeWidth={1.75} className="text-[#F5C400]" />
+              <span>{item.branchCount} فرع معتمد</span>
+            </div>
+          )}
+          {item.agentCount !== undefined && (
+            <div className="flex items-center gap-1.5 text-[#0B1F3A] dark:text-white font-semibold">
+              <Users size={13} strokeWidth={1.75} className="text-[#F59E0B]" />
+              <span>+{item.agentCount.toLocaleString()} نقطة خدمة</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="pt-3 border-t border-[#F1F5F9] dark:border-[#222222] flex items-center justify-between gap-2 mt-auto">
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 text-xs font-bold text-[#0B1F3A] dark:text-white">
+            <Star size={14} strokeWidth={1.75} className="text-[#F5C400] fill-[#F5C400]" />
+            <span>{item.rating.toFixed(1)}</span>
+          </div>
+          <span className="text-[11px] text-[#94A3B8] dark:text-[#71717A]">({item.reviewCount} تقييم)</span>
+        </div>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-xs text-[#0B1F3A] dark:text-white group-hover:bg-[#0B1F3A] group-hover:text-white dark:group-hover:bg-[#F5C400] dark:group-hover:text-[#000000] transition-all h-[32px] px-2.5"
+          onClick={(e) => {
+            e.stopPropagation();
+            onNavigate(targetUrl);
+          }}
+        >
+          <span>عرض النشاط والرسوم</span>
+          <ArrowLeft size={13} strokeWidth={1.75} />
+        </Button>
+      </div>
+    </Card>
+  );
+};
+import React, { useState, useRef } from 'react';
+import { 
+  Building2, MapPin, Phone, Globe, Mail, 
+  MessageCircle, Star, ShieldCheck, ArrowRight, 
+  Check, Camera, X, ExternalLink, 
+  Sparkles, Megaphone, Send, Clock, User
+} from 'lucide-react';
+import { YRBadge, BadgeType } from '../common/YRBadge';
+import { AdBanner } from '../common/AdBanner';
+
+export interface BankProfileData {
+  id: string;
+  name: string;
+  type: 'bank' | 'exchange' | 'wallet' | 'remittance';
+  categoryLabel: string;
+  badgeType: BadgeType;
+  coverImage?: string;
+  logoImage?: string;
+  rating: number;
+  reviewsCount: number;
+  city: string;
+  address: string;
+  branchesCount: number;
+  atmsCount?: number;
+  phone: string;
+  whatsapp?: string;
+  email?: string;
+  website?: string;
+  services: string[];
+  galleryImages: string[];
+  description: string;
+}
+
+interface ReviewItem {
+  id: string;
+  authorName: string;
+  authorAvatar: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+const INITIAL_REVIEWS: ReviewItem[] = [
+  {
+    id: 'rev-1',
+    authorName: 'م. سالم الكاف',
+    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    rating: 5,
+    comment: 'خدمة مصرفية ممتازة وسرعة في إنجاز الحوالات عبر التطبيق، وانتشار واسع لأجهزة الصراف الآلي.',
+    createdAt: 'منذ يومين'
+  },
+  {
+    id: 'rev-2',
+    authorName: 'أحمد الوصابي',
+    authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    rating: 5,
+    comment: 'تعامل احترافي وخدمة عملاء متجاوبة على مدار الساعة.',
+    createdAt: 'منذ أسبوع'
+  }
+];
+
+export const BankProfileView: React.FC<{
+  bank: BankProfileData;
+  onBack: () => void;
+  onNavigateAd?: () => void;
+}> = ({ bank, onBack, onNavigateAd = () => {} }) => {
+  const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const touchStartX = useRef<number | null>(null);
+
+  const [reviews, setReviews] = useState<ReviewItem[]>(INITIAL_REVIEWS);
+  const [userRating, setUserRating] = useState(5);
+  const [userName, setUserName] = useState('');
+  const [userComment, setUserComment] = useState('');
+  const [reviewSubmittedToast, setReviewSubmittedToast] = useState(false);
+
+  const displayGallery = bank.galleryImages && bank.galleryImages.length > 0 
+    ? bank.galleryImages 
+    : [
+        'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=900&auto=format&fit=crop&q=85',
+        'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=900&auto=format&fit=crop&q=85',
+        'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=900&auto=format&fit=crop&q=85'
+      ];
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartX.current) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+
+    if (Math.abs(diff) > 35) {
+      if (diff > 0) {
+        setActiveGalleryIndex(prev => (prev + 1) % displayGallery.length);
+      } else {
+        setActiveGalleryIndex(prev => (prev - 1 + displayGallery.length) % displayGallery.length);
+      }
+    }
+    touchStartX.current = null;
+  };
+
+  const handleReviewSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userName.trim() || !userComment.trim()) return;
+
+    const newReview: ReviewItem = {
+      id: `rev-${Date.now()}`,
+      authorName: userName.trim(),
+      authorAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      rating: userRating,
+      comment: userComment.trim(),
+      createdAt: 'الآن'
+    };
+
+    setReviews(prev => [newReview, ...prev]);
+    setUserName('');
+    setUserComment('');
+    setUserRating(5);
+    setReviewSubmittedToast(true);
+    setTimeout(() => setReviewSubmittedToast(false), 3500);
+  };
+
+  return (
+    <div dir="rtl" className="max-w-5xl mx-auto px-3 sm:px-4 py-2 space-y-3.5 font-['Cairo',sans-serif] text-white">
+      
+      {/* إعلان البانر #4 */}
+      <AdBanner placementId="4" className="mb-1" />
+
+      {/* شريط الرجوع وزر أعلن هنا */}
+      <div className="flex items-center justify-between border-b border-[#1F2937] pb-2">
+        <button
+          onClick={onBack}
+          className="px-3 py-1 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+        >
+          <ArrowRight size={13} className="rtl:rotate-180" />
+          <span>الرجوع للبنوك والمحافظ</span>
+        </button>
+
+        <button
+          onClick={onNavigateAd}
+          className="px-3 py-1 rounded-xl bg-gradient-to-r from-[#FFC500] to-yellow-400 text-black font-black text-[11px] hover:opacity-90 transition-all flex items-center gap-1.5 shadow-md shadow-[#FFC500]/20 cursor-pointer"
+        >
+          <Megaphone size={12} />
+          <span>أعلن هنا (YR Ads)</span>
+        </button>
+      </div>
+
+      {reviewSubmittedToast && (
+        <div className="p-2.5 bg-[#16A34A]/20 border border-[#16A34A] rounded-xl text-xs font-bold text-white flex items-center gap-2 animate-fade-in">
+          <Sparkles size={15} className="text-[#16A34A]" />
+          <span>تم إرسال تقييمك بنجاح ونشره في صفحة {bank.name}</span>
+        </div>
+      )}
+
+      {/* كرت الغلاف والشعار ومعلومات البنك الأساسية (بدون أسعار صرف) */}
+      <div className="bg-[#0F0F12] rounded-3xl border border-[#222226] overflow-hidden shadow-2xl relative">
+        
+        {/* الغلاف العريض */}
+        <div className="relative h-40 sm:h-60 w-full bg-[#161619] overflow-hidden">
+          <img 
+            src={bank.coverImage || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=1400&auto=format&fit=crop&q=85'} 
+            alt={bank.name} 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F12] via-transparent to-black/30" />
+        </div>
+
+        {/* الشعار واسم البنك ملتصقة به الشارة */}
+        <div className="p-3.5 sm:p-5 relative -mt-12 sm:-mt-14 z-10 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2.5">
+            
+            <div className="flex items-end gap-3">
+              <div className="w-18 h-18 sm:w-22 sm:h-22 rounded-2xl bg-[#0F0F12] border-2 border-[#FFC500] p-1 shadow-2xl shrink-0 overflow-hidden">
+                <img 
+                  src={bank.logoImage || 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=200&auto=format&fit=crop&q=85'} 
+                  alt="Logo" 
+                  className="w-full h-full object-cover rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h1 className="text-sm sm:text-lg font-black text-white leading-tight">
+                    {bank.name}
+                  </h1>
+                  <YRBadge type={bank.badgeType || 'gold'} size={18} showTooltip />
+                </div>
+
+                <div className="flex items-center gap-2 text-[10px] text-[#9CA3AF] flex-wrap">
+                  <span className="px-1.5 py-0.2 rounded bg-[#FFC500]/15 text-[#FFC500] font-bold">
+                    {bank.categoryLabel}
+                  </span>
+                  <span>•</span>
+                  <span className="flex items-center gap-0.5"><MapPin size={11} className="text-[#FFC500]" /> {bank.city}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* التقييم */}
+            <div className="flex items-center gap-1.5 bg-[#161619] p-1.5 px-2.5 rounded-xl border border-[#27272A] w-fit">
+              <Star size={14} className="text-[#FFC500] fill-[#FFC500]" />
+              <b className="text-xs font-black text-white font-mono">{bank.rating.toFixed(1)}</b>
+              <span className="text-[9px] text-[#9CA3AF]">({bank.reviewsCount} تقييم)</span>
+            </div>
+
+          </div>
+
+          {bank.description && (
+            <p className="text-xs text-[#D1D5DB] leading-relaxed pt-0.5 font-medium">
+              {bank.description}
+            </p>
+          )}
+
+          {/* وسائل التواصل السريع */}
+          <div className="pt-2.5 border-t border-[#222226] flex items-center gap-2 flex-wrap">
+            {bank.phone && (
+              <a
+                href={`tel:${bank.phone}`}
+                className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#27272A] hover:border-[#FFC500] text-xs font-bold text-white flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <Phone size={13} className="text-[#FFC500]" />
+                <span>اتصال: {bank.phone}</span>
+              </a>
+            )}
+
+            {bank.whatsapp && (
+              <a
+                href={`https://wa.me/${bank.whatsapp}?text=${encodeURIComponent(`مرحباً، أرغب بالاستفسار عن خدمات ${bank.name} عبر منصة يمن ريتغ`)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-1.5 rounded-xl bg-[#16A34A]/20 border border-[#16A34A]/40 text-xs font-bold text-[#16A34A] hover:bg-[#16A34A] hover:text-white flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <MessageCircle size={13} />
+                <span>WhatsApp</span>
+              </a>
+            )}
+
+            {bank.website && (
+              <a
+                href={bank.website}
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#27272A] hover:border-[#2EA5FF] text-xs font-bold text-[#2EA5FF] flex items-center gap-1.5 transition-all"
+              >
+                <Globe size={13} />
+                <span>الموقع الرسمي</span>
+                <ExternalLink size={10} />
+              </a>
+            )}
+          </div>
+
+        </div>
+      </div>
+
+      {/* شبكة أرقام الفروع والصرافات الآلية */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 font-mono text-center">
+        <div className="p-2.5 rounded-xl bg-[#0F0F12] border border-[#222226]">
+          <span className="text-[8.5px] text-[#9CA3AF] font-['Cairo'] block">شبكة الفروع المعتمدة</span>
+          <b className="text-xs text-white font-bold">{bank.branchesCount} فرع</b>
+        </div>
+        <div className="p-2.5 rounded-xl bg-[#0F0F12] border border-[#222226]">
+          <span className="text-[8.5px] text-[#9CA3AF] font-['Cairo'] block">أجهزة الصراف ATM</span>
+          <b className="text-xs text-white font-bold">{bank.atmsCount ? `${bank.atmsCount} صراف` : 'متوفر لدى الوكلاء'}</b>
+        </div>
+        <div className="p-2.5 rounded-xl bg-[#0F0F12] border border-[#222226] col-span-2 sm:col-span-1">
+          <span className="text-[8.5px] text-[#9CA3AF] font-['Cairo'] block">المركز الرئيسي</span>
+          <b className="text-xs text-gray-200 font-bold font-['Cairo']">{bank.city.split('—')[0]}</b>
+        </div>
+      </div>
+
+      {/* قسم الخدمات المصرفية والحلول */}
+      <div className="bg-[#0F0F12] p-3.5 rounded-2xl border border-[#222226] space-y-2.5 shadow-xl">
+        <h3 className="text-xs sm:text-sm font-black text-white flex items-center gap-1.5 border-b border-[#222226] pb-2">
+          <Building2 size={14} className="text-[#FFC500]" />
+          الخدمات المصرفية والحلول المتاحة
+        </h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+          {bank.services.map((srv, idx) => (
+            <div key={idx} className="p-2 rounded-xl bg-[#161619] border border-[#27272A] flex items-center gap-2 text-xs text-gray-200">
+              <Check size={13} className="text-[#FFC500] shrink-0" />
+              <span>{srv}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* معرض الصور باللمس */}
+      <div className="bg-[#0F0F12] p-3.5 rounded-2xl border border-[#222226] space-y-2.5 shadow-xl">
+        <div className="flex justify-between items-center border-b border-[#222226] pb-1.5">
+          <h3 className="text-xs sm:text-sm font-black text-white flex items-center gap-1.5">
+            <Camera size={14} className="text-[#FFC500]" />
+            معرض الصور والفروع ({displayGallery.length} صور)
+          </h3>
+          <span className="text-[9.5px] text-[#9CA3AF]">اضغط للتكبير</span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          {displayGallery.map((img, idx) => (
+            <div
+              key={idx}
+              onClick={() => { setActiveGalleryIndex(idx); setIsLightboxOpen(true); }}
+              className="h-24 sm:h-32 rounded-xl overflow-hidden border border-[#27272A] hover:border-[#FFC500] cursor-pointer transition-all active:scale-95 relative"
+            >
+              <img src={img} alt="Gallery" className="w-full h-full object-cover" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* قسم التقييمات والمراجعات */}
+      <div className="bg-[#0F0F12] p-3.5 sm:p-4 rounded-2xl border border-[#222226] space-y-3 shadow-xl">
+        <div className="flex justify-between items-center border-b border-[#222226] pb-2">
+          <div>
+            <h3 className="text-xs sm:text-sm font-black text-white flex items-center gap-1.5">
+              <Star size={14} className="text-[#FFC500]" fill="#FFC500" />
+              التقييمات والمراجعات ({reviews.length})
+            </h3>
+          </div>
+          <div className="flex items-center gap-1 font-mono text-xs text-[#FFC500] font-black">
+            <Star size={13} fill="#FFC500" />
+            <span>{bank.rating.toFixed(1)} / 5.0</span>
+          </div>
+        </div>
+
+        {/* نموذج إضافة تقييم */}
+        <form onSubmit={handleReviewSubmit} className="p-3 bg-[#161619] rounded-xl border border-[#27272A] space-y-2.5">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-bold text-white">أضف تقييمك:</span>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setUserRating(star)}
+                  className="focus:outline-none cursor-pointer"
+                >
+                  <Star 
+                    size={16} 
+                    className={star <= userRating ? 'text-[#FFC500] fill-[#FFC500]' : 'text-gray-600'} 
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <input
+            type="text"
+            required
+            placeholder="اسمك الكامل..."
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            className="w-full bg-[#0F0F12] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]"
+          />
+
+          <textarea
+            rows={2}
+            required
+            placeholder="اكتب تجربتك ورأيك..."
+            value={userComment}
+            onChange={(e) => setUserComment(e.target.value)}
+            className="w-full bg-[#0F0F12] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]"
+          />
+
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="px-4 py-1.5 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all flex items-center gap-1 shadow-md cursor-pointer active:scale-95"
+            >
+              <Send size={12} />
+              <span>إرسال التقييم</span>
+            </button>
+          </div>
+        </form>
+
+        {/* استعراض التقييمات المنشورة بالصور الحقيقية */}
+        <div className="space-y-2">
+          {reviews.map(rev => (
+            <div key={rev.id} className="p-2.5 bg-[#161619] rounded-xl border border-[#27272A] space-y-1">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <img src={rev.authorAvatar} alt={rev.authorName} className="w-6 h-6 rounded-full object-cover border border-[#FFC500]/40" />
+                  <h5 className="text-[11px] font-bold text-white">{rev.authorName}</h5>
+                </div>
+                <div className="flex text-[#FFC500] text-[10px]">
+                  {'★'.repeat(rev.rating)}
+                </div>
+              </div>
+              <p className="text-[11px] text-gray-300 leading-relaxed font-medium pr-8">
+                "{rev.comment}"
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* عارض الصور باللمس Lightbox */}
+      {isLightboxOpen && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col justify-between p-4 select-none cursor-pointer"
+          onClick={() => setIsLightboxOpen(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="flex justify-between items-center pt-2" onClick={e => e.stopPropagation()}>
+            <span className="text-xs text-gray-400 font-mono">
+              {activeGalleryIndex + 1} من {displayGallery.length}
+            </span>
+            <button
+              onClick={() => setIsLightboxOpen(false)}
+              className="px-3 py-1 rounded-xl bg-[#18181C] text-[#FFC500] border border-[#FFC500]/30 text-xs font-bold"
+            >
+              رجوع
+            </button>
+          </div>
+
+          <div className="flex-1 flex items-center justify-center py-4" onClick={e => e.stopPropagation()}>
+            <img 
+              src={displayGallery[activeGalleryIndex]} 
+              alt="Fullscreen" 
+              className="max-h-[75vh] max-w-full object-contain rounded-2xl shadow-2xl" 
+            />
+          </div>
+
+          <div className="flex justify-center items-center gap-1.5 pb-4" onClick={e => e.stopPropagation()}>
+            {displayGallery.map((_, idx) => (
+              <span 
+                key={idx} 
+                className={`h-1.5 rounded-full transition-all ${
+                  activeGalleryIndex === idx ? 'w-5 bg-[#FFC500]' : 'w-1.5 bg-gray-700'
+                }`} 
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+};
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://wkdqeghotlipciqiytuj.supabase.co';
+
+// المفتاح الحقيقي المعتمد لمشروعك في Supabase
+const realAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
+
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || realAnonKey;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+});
