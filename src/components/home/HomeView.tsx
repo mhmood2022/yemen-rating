@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Star, MapPin, Gavel, Building, Briefcase, 
+  Star, MapPin, Gavel, ChevronLeft, Landmark, CheckCircle2, Building, Briefcase, 
   ChevronDown, ChevronUp, Coins, Smartphone,
   Clock, ShieldCheck, MessageSquare
 } from 'lucide-react';
@@ -57,40 +57,103 @@ export const HomeView: React.FC<HomeViewProps> = ({
   return (
     <div dir="rtl" className="space-y-4 pt-1 max-w-6xl mx-auto px-3 sm:px-4 font-['Cairo',sans-serif] text-white">
       
-      {/* 1. شبكة التصنيفات الرئيسية الفاخرة (تتوسع في مكانها دون فتح السايدبار) */}
+      {/* 1. الشركات والبنوك الأكثر تقييماً (بديل التصنيفات) */}
       <div className="space-y-2 pt-1">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-xs font-black text-white flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#FFC500]" /> التصنيفات الرئيسية ({OFFICIAL_CATEGORIES.length})
+            <Star size={13} className="text-[#FFC500] fill-[#FFC500]" /> الشركات والبنوك الأكثر تقييماً
           </h3>
-          <button 
+          <button
             type="button"
-            onClick={() => setShowAllCategories(!showAllCategories)}
-            className="text-[11px] font-bold text-[#FFC500] flex items-center gap-1 hover:underline cursor-pointer bg-transparent border-0"
+            onClick={() => { window.location.href = '/banks'; }}
+            className="text-[11px] font-bold text-[#FFC500] hover:underline cursor-pointer bg-transparent border-0 flex items-center gap-1"
           >
-            <span>{showAllCategories ? 'عرض أقل' : 'عرض الكل'}</span>
-            {showAllCategories ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            <span>دليل البنوك والشركات</span>
+            <ChevronLeft size={12} />
           </button>
         </div>
 
-        <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2">
-          {displayedCategories.map((cat: CategoryItem) => {
-            const Icon = cat.icon;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => onSelectCategory(cat.slug)}
-                className="h-18 rounded-2xl bg-[#0F0F12] border border-[#222226] hover:border-[#FFC500]/50 p-1.5 flex flex-col items-center justify-center gap-1 transition-all group active:scale-95 cursor-pointer shadow-sm"
-              >
-                <div className="w-7 h-7 rounded-xl bg-[#1A1A1E] group-hover:bg-[#FFC500] text-[#FFC500] group-hover:text-black flex items-center justify-center transition-all">
-                  <Icon size={15} />
+        {/* شبكة المنشآت الأعلى تقييماً */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+          {[
+            {
+              id: 'bank-tadhamon',
+              name: 'بنك التضامن',
+              category: 'خدمات مصرفية • تعز / صنعاء',
+              rating: '4.9',
+              reviewsCount: 94,
+              badge: 'موثق YR',
+              badgeColor: 'text-[#1D9BF0] border-[#1D9BF0]/30 bg-[#1D9BF0]/10',
+              iconType: 'bank',
+              action: () => { window.location.href = '/bank?slug=tadhamon'; }
+            },
+            {
+              id: 'bank-kuraimi',
+              name: 'بنك الكريمي للتمويل الأصغر',
+              category: 'خدمات مصرفية • صنعاء',
+              rating: '4.8',
+              reviewsCount: 128,
+              badge: 'موثق YR',
+              badgeColor: 'text-[#1D9BF0] border-[#1D9BF0]/30 bg-[#1D9BF0]/10',
+              iconType: 'bank',
+              action: () => { window.location.href = '/bank?slug=kuraimi'; }
+            },
+            {
+              id: 'biz-yemensoft',
+              name: 'شركة يمن سوفت للبرمجيات',
+              category: 'تكنولوجيا ومعلومات • حدة',
+              rating: '5.0',
+              reviewsCount: 62,
+              badge: 'شريك ذهبي',
+              badgeColor: 'text-[#FFC500] border-[#FFC500]/30 bg-[#FFC500]/10',
+              iconType: 'company',
+              action: () => { onSelectCategory('software'); }
+            },
+            {
+              id: 'biz-hsa',
+              name: 'مجموعة هائل سعيد أنعم',
+              category: 'صناعة وتجارة • تعز',
+              rating: '4.9',
+              reviewsCount: 85,
+              badge: 'شريك ذهبي',
+              badgeColor: 'text-[#FFC500] border-[#FFC500]/30 bg-[#FFC500]/10',
+              iconType: 'company',
+              action: () => { onSelectCategory('companies'); }
+            }
+          ].map((item) => (
+            <div
+              key={item.id}
+              onClick={item.action}
+              className="bg-[#0F0F12] border border-[#222226] hover:border-[#FFC500]/50 rounded-2xl p-2.5 flex flex-col justify-between gap-2 shadow-sm transition-all group active:scale-95 cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-xl bg-[#1A1A1E] group-hover:bg-[#FFC500]/10 text-[#FFC500] flex items-center justify-center transition-colors">
+                  {item.iconType === 'bank' ? <Building size={16} /> : <Briefcase size={16} />}
                 </div>
-                <span className="text-[9.5px] font-bold text-[#D1D5DB] group-hover:text-white truncate max-w-full">
-                  {cat.name}
+                <span className={`text-[8.5px] font-black px-1.5 py-0.5 rounded-full border ${item.badgeColor}`}>
+                  {item.badge}
                 </span>
-              </button>
-            );
-          })}
+              </div>
+
+              <div className="space-y-0.5 text-right">
+                <h4 className="text-[11px] font-black text-white group-hover:text-[#FFC500] transition-colors truncate">
+                  {item.name}
+                </h4>
+                <p className="text-[9px] text-zinc-400 truncate">
+                  {item.category}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between pt-1.5 border-t border-[#1C1C20]">
+                <div className="flex items-center gap-1">
+                  <Star size={10} className="text-[#FFC500] fill-[#FFC500]" />
+                  <span className="text-[10px] font-mono font-black text-white">{item.rating}</span>
+                  <span className="text-[8px] text-zinc-500">({item.reviewsCount})</span>
+                </div>
+                <ChevronLeft size={12} className="text-zinc-500 group-hover:text-[#FFC500] transition-transform group-hover:-translate-x-0.5" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
