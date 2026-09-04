@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Landmark, Search, Filter, ShieldCheck, CheckCircle2, 
   XCircle, Edit3, Image, Upload, Trash2, Eye, ExternalLink,
-  Phone, Globe, Mail, MapPin, AlertCircle, Check, X, Building2
+  Phone, Globe, Mail, MapPin, AlertCircle, Check, X, Loader2
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 
@@ -41,12 +41,12 @@ export const BanksManager: React.FC = () => {
   const [selectedBank, setSelectedBank] = useState<BankRecord | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // حقول النموذج
   const [formData, setFormData] = useState<Partial<BankRecord>>({});
   const [galleryImages, setGalleryImages] = useState<(string | null)[]>([null, null, null, null]);
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
 
   // جلب البنوك الحقيقية من Supabase
   const fetchBanks = async () => {
@@ -66,27 +66,16 @@ export const BanksManager: React.FC = () => {
     }
   };
 
-  // جلب التصنيفات الحقيقية
-  const fetchCategories = async () => {
-    try {
-      const { data } = await supabase.from('categories').select('id, name');
-      setCategories(data || []);
-    } catch (err) {
-      console.error('Error fetching categories:', err);
-    }
-  };
-
   useEffect(() => {
     fetchBanks();
-    fetchCategories();
   }, []);
 
-  // فتح نافذة التعديل لبنك محدد
+  // فتح نافذة التعديل
   const handleOpenEdit = (bank: BankRecord) => {
     setSelectedBank(bank);
     setFormData({ ...bank });
     
-    // استخراج صور المعرض الأربع (الحد الأقصى 4 صور)
+    // استخراج صور المعرض الأربع المعتمدة
     let initialGallery: (string | null)[] = [null, null, null, null];
     if (bank.posts && Array.isArray(bank.posts)) {
       bank.posts.slice(0, 4).forEach((p: any, idx: number) => {
@@ -98,27 +87,63 @@ export const BanksManager: React.FC = () => {
     setIsEditing(true);
   };
 
-  // معالجة رفع الصور
-  const handleImageUpload = (type: 'logo' | 'cover' | number, e: React.ChangeEvent<HTMLInputElement>) => {
+  // دالة رفع الصور المباشرة إلى Supabase Storage (bank-images)
+  const uploadToStorage = async (file: File, folder: string): Promise<string> => {
+    const fileExt = file.name.split('.').pop() || 'jpg';
+    const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('bank-images')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('bank-images')
+        .getPublicUrl(fileName);
+
+      return data.publicUrl;
+    } catch (err) {
+      console.warn('Direct bucket upload fallback:', err);
+      // في حال وجود أي عائق في الـ bucket نستخدم dataURL لضمان استمرار عمل الإدارة
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  // معالجة اختيار الملفات
+  const handleImageFileChange = async (type: 'logo' | 'cover' | number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (uploadEvent) => {
-      const resultUrl = uploadEvent.target?.result as string;
+    const targetKey = typeof type === 'number' ? `gallery-${type}` : type;
+    setUploadingTarget(targetKey);
+
+    try {
+      const folderName = type === 'logo' ? 'logos' : (type === 'cover' ? 'covers' : 'gallery');
+      const publicUrl = await uploadToStorage(file, folderName);
+
       if (type === 'logo') {
-        setFormData(prev => ({ ...prev, logo_url: resultUrl }));
+        setFormData(prev => ({ ...prev, logo_url: publicUrl }));
       } else if (type === 'cover') {
-        setFormData(prev => ({ ...prev, cover_url: resultUrl }));
+        setFormData(prev => ({ ...prev, cover_url: publicUrl }));
       } else if (typeof type === 'number') {
         setGalleryImages(prev => {
           const updated = [...prev];
-          updated[type] = resultUrl;
+          updated[type] = publicUrl;
           return updated;
         });
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('Image upload failed:', err);
+      alert('تعذر رفع الصورة، يرجى المحاولة مرة أخرى');
+    } finally {
+      setUploadingTarget(null);
+    }
   };
 
   // حذف صورة
@@ -186,15 +211,15 @@ export const BanksManager: React.FC = () => {
       setTimeout(() => {
         setIsEditing(false);
       }, 1500);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error updating bank in Supabase:', err);
-      alert('حدث خطأ أثناء حفظ بيانات البنك في Supabase');
+      alert('حدث خطأ أثناء حفظ بيانات البنك: ' + (err.message || 'يرجى المحاولة مجدداً'));
     } finally {
       setSaving(false);
     }
   };
 
-  // الفلترة الحقيقية للبيانات
+  // فلترة البنوك الحقيقية
   const filteredBanks = banks.filter(b => {
     const matchSearch = b.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                         (b.city && b.city.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -271,7 +296,7 @@ export const BanksManager: React.FC = () => {
         </select>
       </div>
 
-      {/* جدول عرض البنوك الحقيقية */}
+      {/* جدول البنوك الحقيقية */}
       {loading ? (
         <div className="py-12 text-center text-xs text-gray-400">جاري تحميل البنوك من Supabase...</div>
       ) : filteredBanks.length === 0 ? (
@@ -383,7 +408,7 @@ export const BanksManager: React.FC = () => {
               {/* 1. إدارة الشعار والغلاف */}
               <div className="p-3.5 rounded-2xl bg-[#111827] border border-[#1F2937] space-y-3">
                 <h4 className="font-bold text-[#FFC500] text-xs flex items-center gap-1.5">
-                  <Image size={14} /> الشعار والغلاف الرسمي
+                  <Image size={14} /> الشعار والغلاف الرسمي (مستودع bank-images)
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* الشعار */}
@@ -397,6 +422,7 @@ export const BanksManager: React.FC = () => {
                             type="button"
                             onClick={() => handleRemoveImage('logo')}
                             className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-red-600 rounded-full text-white flex items-center justify-center shadow"
+                            title="حذف"
                           >
                             <X size={12} />
                           </button>
@@ -406,10 +432,10 @@ export const BanksManager: React.FC = () => {
                           <Landmark size={24} />
                         </div>
                       )}
-                      <label className="px-3 py-1.5 rounded-xl bg-[#1F2937] hover:bg-[#374151] text-white text-[11px] font-bold cursor-pointer transition flex items-center gap-1">
-                        <Upload size={13} />
-                        <span>رفع / استبدال</span>
-                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload('logo', e)} />
+                      <label className="px-3 py-1.5 rounded-xl bg-[#1F2937] hover:bg-[#374151] text-white text-[11px] font-bold cursor-pointer transition flex items-center gap-1.5">
+                        {uploadingTarget === 'logo' ? <Loader2 size={13} className="animate-spin text-[#FFC500]" /> : <Upload size={13} />}
+                        <span>{formData.logo_url ? 'استبدال الشعار' : 'رفع شعار'}</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFileChange('logo', e)} />
                       </label>
                     </div>
                   </div>
@@ -425,6 +451,7 @@ export const BanksManager: React.FC = () => {
                             type="button"
                             onClick={() => handleRemoveImage('cover')}
                             className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-red-600 rounded-full text-white flex items-center justify-center shadow"
+                            title="حذف"
                           >
                             <X size={12} />
                           </button>
@@ -434,10 +461,10 @@ export const BanksManager: React.FC = () => {
                           غلاف افتراضي
                         </div>
                       )}
-                      <label className="px-3 py-1.5 rounded-xl bg-[#1F2937] hover:bg-[#374151] text-white text-[11px] font-bold cursor-pointer transition flex items-center gap-1">
-                        <Upload size={13} />
-                        <span>رفع / استبدال</span>
-                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload('cover', e)} />
+                      <label className="px-3 py-1.5 rounded-xl bg-[#1F2937] hover:bg-[#374151] text-white text-[11px] font-bold cursor-pointer transition flex items-center gap-1.5">
+                        {uploadingTarget === 'cover' ? <Loader2 size={13} className="animate-spin text-[#FFC500]" /> : <Upload size={13} />}
+                        <span>{formData.cover_url ? 'استبدال الغلاف' : 'رفع غلاف'}</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFileChange('cover', e)} />
                       </label>
                     </div>
                   </div>
@@ -455,6 +482,7 @@ export const BanksManager: React.FC = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {[0, 1, 2, 3].map((slotIdx) => {
                     const img = galleryImages[slotIdx];
+                    const isUp = uploadingTarget === `gallery-${slotIdx}`;
                     return (
                       <div key={slotIdx} className="bg-[#161D2B] border border-[#273244] rounded-xl p-2 text-center space-y-1.5 relative">
                         <span className="text-[10px] font-bold text-gray-400 block">صورة {slotIdx + 1}</span>
@@ -472,14 +500,14 @@ export const BanksManager: React.FC = () => {
                           </div>
                         ) : (
                           <div className="w-full aspect-square rounded-lg border border-dashed border-gray-700 flex flex-col items-center justify-center text-gray-500 gap-1">
-                            <Image size={20} />
-                            <span className="text-[9px]">فارغة</span>
+                            {isUp ? <Loader2 size={18} className="animate-spin text-[#FFC500]" /> : <Image size={20} />}
+                            <span className="text-[9px]">{isUp ? 'جاري الرفع...' : 'فارغة'}</span>
                           </div>
                         )}
                         <label className="w-full py-1 rounded-lg bg-[#1F2937] hover:bg-[#FFC500] hover:text-black text-gray-300 text-[10px] font-bold cursor-pointer transition flex items-center justify-center gap-1">
                           <Upload size={11} />
                           <span>{img ? 'استبدال' : 'رفع'}</span>
-                          <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(slotIdx, e)} />
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFileChange(slotIdx, e)} />
                         </label>
                       </div>
                     );
