@@ -13,7 +13,7 @@ interface BankWalletCardProps {
 
 export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onNavigate }) => {
   const isBank = item.type === 'bank';
-  const targetUrl = `/business/${item.id}`;
+  const targetUrl = `/bank/${item.slug || item.id}`;
 
   return (
     <Card

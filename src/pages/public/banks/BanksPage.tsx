@@ -67,7 +67,7 @@ export const BanksPage: React.FC = () => {
           filtered.map((bank) => (
             <div
               key={bank.id}
-              onClick={() => navigate(`/banks/${bank.slug}`)}
+              onClick={() => navigate(`/bank/${bank.slug}`)}
               className="bg-[#0F0F12] rounded-2xl border border-[#222226] hover:border-[#FFC500]/50 p-3.5 space-y-2.5 shadow-md transition-all flex flex-col justify-between cursor-pointer active:scale-[0.98]"
             >
               <div className="space-y-2">
