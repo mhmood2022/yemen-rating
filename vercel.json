@@ -5,7 +5,15 @@
   "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/bank",
+      "destination": "/bank.html"
+    },
+    {
+      "source": "/banks",
+      "destination": "/banks.html"
+    },
+    {
+      "source": "/((?!.*\\..*).*)",
       "destination": "/index.html"
     }
   ]

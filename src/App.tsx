@@ -56,7 +56,7 @@ export function App() {
         
         {/* مسارات البنوك (دليل + قالب ديناميكي) */}
         <Route path="/banks" element={<AppShell><BanksPage /></AppShell>} />
-        <Route path="/bank/:slug" element={<AppShell><BankProfilePage /></AppShell>} />
+        <Route path="/banks/:slug" element={<AppShell><BankProfilePage /></AppShell>} />
 
         {/* مسارات المنشآت والشركات (دليل + قالب ديناميكي موحد) */}
         <Route path="/businesses" element={<AppShell><BusinessesPage /></AppShell>} />
