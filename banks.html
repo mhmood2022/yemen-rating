@@ -214,7 +214,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         const rows = await resp.json();
 
         // تصفية صارمة للبنوك الحقيقية التي أدخلتها بنفسك فقط
-        const validRows = rows.filter(b => b.slug === 'tadhamon' || b.slug === 'kuraimi');
+        const validRows = rows.filter(b => b.status === 'active' || b.is_published !== false);
 
         // جلب التقييمات الحقيقية
         const revResp = await fetch(
@@ -263,6 +263,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
             city: b.city || b.address || '',
             description: b.description || b.short_description || '',
             verified: b.verified === true || b.is_verified === true,
+            logo_url: b.logo_url || null,
+            cover_url: b.cover_url || null,
             badgeColor: b.badge_type === 'blue' ? '#1D9BF0' : '#EAB308',
             ratingAvg: avg,
             ratingCount: count
@@ -333,9 +335,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         `;
 
         // 2. الشعار في اليمين متداخل
-        const logoHtml = isTadhamon ? `
-          <div class="w-16 h-16 rounded-2xl bg-white p-2 shadow-2xl border-2 border-[#0B0F17] flex items-center justify-center overflow-hidden shrink-0">
-            <i class="fa-solid fa-dharmachakra text-[#0055A5] text-4xl"></i>
+        const logoHtml = bank.logo_url ? `
+          <div class="w-16 h-16 rounded-2xl bg-white p-1.5 shadow-2xl border-2 border-[#0B0F17] flex items-center justify-center overflow-hidden shrink-0">
+            <img src="${bank.logo_url}" alt="${bank.name}" class="w-full h-full object-contain" />
           </div>
         ` : `
           <div class="w-16 h-16 rounded-2xl bg-white p-2 shadow-2xl border-2 border-[#0B0F17] flex items-center justify-center overflow-hidden shrink-0">
@@ -383,7 +385,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
         return `
           <article
-            onclick="window.location.href='/bank?slug=${bank.slug}'"
+            onclick="window.location.href='/bank?slug=' + (bank.slug || bank.id)"
             class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer"
           >
             <div>
