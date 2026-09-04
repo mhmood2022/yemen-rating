@@ -80,6 +80,19 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
 <body class="min-h-screen bg-black text-white flex justify-center selection:bg-brand-gold selection:text-black">
 
+  <!-- شاشة تجهيز فاخرة تمنع أي وميض وتضمن ظهور البنك مكتملاً ولائقاً -->
+  <div id="page-splash-loader" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center gap-3 transition-opacity duration-300">
+    <div class="relative w-14 h-14 rounded-2xl bg-[#0F0F12] border border-[#FFC500]/30 flex items-center justify-center text-brand-gold shadow-2xl shadow-[#FFC500]/10">
+      <i class="fa-solid fa-landmark text-2xl text-brand-gold"></i>
+      <div class="absolute -inset-1 rounded-2xl border-2 border-brand-gold/40 border-t-transparent animate-spin"></div>
+    </div>
+    <div class="flex items-center gap-1.5 text-xs text-zinc-400 font-bold">
+      <span class="w-1.5 h-1.5 rounded-full bg-brand-gold animate-ping"></span>
+      <span>جاري تجهيز بيانات المنشأة...</span>
+    </div>
+  </div>
+
+
   <main class="w-full max-w-md md:max-w-3xl lg:max-w-4xl min-h-screen bg-black flex flex-col pb-12 select-none relative mx-auto md:px-4">
 
     <!-- 1. غلاف البنك -->
@@ -946,6 +959,15 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     }
 
     window.addEventListener('DOMContentLoaded', loadBankProfile);
+
+    setTimeout(() => {
+      const splash = document.getElementById('page-splash-loader');
+      if (splash && splash.style.display !== 'none') {
+        splash.style.opacity = '0';
+        setTimeout(() => { splash.style.display = 'none'; }, 300);
+      }
+    }, 3500);
+  
   </script>
 
 </body>
