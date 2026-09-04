@@ -58,14 +58,13 @@
 
 <body class="min-h-screen bg-black text-white flex justify-center selection:bg-brand-gold selection:text-black">
 
-  <main class="w-full max-w-md min-h-screen bg-black flex flex-col pb-12 select-none relative">
+  <main class="w-full max-w-md md:max-w-3xl lg:max-w-4xl min-h-screen bg-black flex flex-col pb-12 select-none relative mx-auto md:px-4">
 
     <!-- 1. غلاف البنك -->
-    <div id="bank-cover" class="relative w-full h-44 bg-gradient-to-r from-[#002244] via-[#003B73] to-[#0A4D80] flex items-center justify-center overflow-hidden">
-      <!-- زر الرجوع الاحترافي لدليل البنوك -->
-      <button type="button" onclick="window.history.length > 1 ? window.history.back() : window.location.href='/banks'" class="absolute top-3 right-3 z-20 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/20 text-white text-xs font-bold transition active:scale-95 shadow-xl cursor-pointer">
-        <i class="fa-solid fa-arrow-right text-xs text-brand-gold"></i>
-        <span>دليل البنوك</span>
+    <div id="bank-cover" class="relative w-full h-44 sm:h-52 md:h-60 rounded-none md:rounded-2xl bg-gradient-to-r from-[#002244] via-[#003B73] to-[#0A4D80] flex items-center justify-center overflow-hidden mt-0 md:mt-3 shadow-lg">
+      <!-- زر الرجوع الأيقوني الفاخر -->
+      <button type="button" onclick="window.history.length > 1 ? window.history.back() : window.location.href='/banks'" class="absolute top-3.5 right-3.5 z-20 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/15 text-zinc-300 hover:text-brand-gold flex items-center justify-center transition active:scale-90 shadow-md cursor-pointer group" title="رجوع" aria-label="رجوع">
+        <i class="fa-solid fa-arrow-right text-xs transition-transform group-hover:-translate-x-0.5"></i>
       </button>
       <div class="flex items-center gap-2">
         <div class="text-right">
@@ -312,12 +311,24 @@
             <button type="submit" id="review-submit-btn" class="px-4 py-1.5 rounded-lg bg-brand-gold text-black font-bold hover:bg-brand-goldHover cursor-pointer">إرسال التقييم</button>
           </div>
         </form>
+        </div>
       </div>
     </div>
 
     <!-- 10. نافذة إثبات الملكية -->
     <div id="claim-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl">
+      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl relative">
+        <div id="claim-success-view" class="hidden text-center py-6 px-3 space-y-3">
+          <div class="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
+            <i class="fa-solid fa-check text-2xl"></i>
+          </div>
+          <h4 class="text-base font-black text-white">تم إرسال الطلب بنجاح</h4>
+          <p class="text-xs text-zinc-400 leading-relaxed">
+            تم تسجيل طلب إثبات ملكية الصفحة بنجاح، وسيتم مراجعته والتواصل معكم من قِبل إدارة منصة يمن ريتنغ.
+          </p>
+          <button type="button" onclick="closeClaimModal()" class="w-full py-2.5 rounded-xl bg-brand-gold text-black font-black text-xs hover:bg-brand-goldHover transition">حسناً، تم</button>
+        </div>
+        <div id="claim-form-view">
         <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
           <h4 class="text-sm font-bold text-[#EF4444] flex items-center gap-1.5">
             <i class="fa-solid fa-shield-halved"></i> طلب إثبات ملكية المنشأة
@@ -327,23 +338,23 @@
 
         <form id="claim-form" onsubmit="submitClaim(event)" class="space-y-3 text-xs">
           <div>
-            <label class="block text-zinc-400 mb-1">اسم المفوض / ممثل البنك*</label>
-            <input type="text" id="claim-applicant-name" required placeholder="مثال: صالح المقطري" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EF4444]" />
+            <label class="block text-white font-bold mb-1">اسم المفوض / ممثل البنك <span class="text-brand-gold">*</span></label>
+            <input type="text" id="claim-applicant-name" required placeholder="الاسم الرباعي كما في الهوية" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
           </div>
 
           <div>
-            <label class="block text-zinc-400 mb-1">الصفة أو المسمى الوظيفي*</label>
-            <input type="text" id="claim-applicant-role" required placeholder="مثال: مدير العلاقات العامة / الممثل القانوني" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EF4444]" />
+            <label class="block text-white font-bold mb-1">الصفة أو المسمى الوظيفي <span class="text-brand-gold">*</span></label>
+            <input type="text" id="claim-applicant-role" required placeholder="مثال: مدير الفرع / الممثل القانوني / مسؤول التسويق" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
           </div>
 
           <div>
-            <label class="block text-zinc-400 mb-1">رقم الهاتف / الواتساب للتواصل*</label>
-            <input type="tel" id="claim-phone" required placeholder="مثال: 777888999" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EF4444]" />
+            <label class="block text-white font-bold mb-1">رقم الهاتف أو الواتساب الرسمي <span class="text-brand-gold">*</span></label>
+            <input type="tel" id="claim-phone" required placeholder="مثال: 771234567" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
           </div>
 
           <div>
-            <label class="block text-zinc-400 mb-1">ملاحظات أو رقم السجل التجاري</label>
-            <textarea id="claim-notes" rows="2" placeholder="اكتب أي بيانات أو رقم السجل للتحقق..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EF4444]"></textarea>
+            <label class="block text-zinc-300 font-bold mb-1">رقم السجل التجاري أو صفة التفويض (اختياري)</label>
+            <textarea id="claim-notes" rows="2" placeholder="اكتب رقم السجل التجاري أو أي بيانات إضافية للتحقق..." class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition"></textarea>
           </div>
 
           <div class="flex justify-end gap-2 pt-1 border-t border-zinc-800">
@@ -615,7 +626,7 @@
         return `
           <div class="border border-zinc-800 rounded-full py-1.5 px-3 flex items-center justify-between bg-black">
             <div class="flex items-center gap-2.5">
-              <img src="${rev.user_avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=80'}" class="w-8 h-8 rounded-full border border-zinc-700 object-cover" alt="User" />
+              ${rev.user_avatar ? '<img src="' + rev.user_avatar + '" class="w-7 h-7 rounded-full object-cover border border-zinc-800" alt="avatar" />' : '<div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 shrink-0"><i class="fa-solid fa-user text-[11px]"></i></div>'}
               <span class="text-xs text-zinc-200 font-medium">${rev.user_name || rev.name}</span>
             </div>
             <div class="flex text-brand-gold text-[10px] gap-0.5">
@@ -764,6 +775,10 @@
 
     // دوال نافذة إثبات الملكية
     function openClaimModal() {
+      const sView = document.getElementById('claim-success-view');
+      const fView = document.getElementById('claim-form-view');
+      if (sView) sView.classList.add('hidden');
+      if (fView) fView.classList.remove('hidden');
       document.getElementById('claim-modal').classList.remove('hidden');
     }
 
@@ -809,8 +824,8 @@
           throw new Error(errData.message || 'فشل إرسال الطلب');
         }
 
-        alert('تم إرسال طلب إثبات الملكية بنجاح! سيتم مراجعته واعتماده من قبل إدارة يمن ريتنغ.');
-        closeClaimModal();
+        document.getElementById('claim-form-view').classList.add('hidden');
+        document.getElementById('claim-success-view').classList.remove('hidden');
         document.getElementById('claim-form').reset();
       } catch (err) {
         console.error('Claim submit error:', err);
