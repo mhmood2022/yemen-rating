@@ -509,62 +509,263 @@
       }
     }
 
+    
+    
+    let allReviews = [];
+    let showAllReviews = false;
+
+    function generateDefaultPosts(bankName) {
+      return [
+        {
+          id: 1,
+          title: 'تطبيق ' + bankName + ' للخدمات المصرفية الرقمية',
+          image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&auto=format&fit=crop&q=80',
+          tag: bankName
+        },
+        {
+          id: 2,
+          title: 'باقة البطاقات الائتمانية والخصم المباشر — ' + bankName,
+          image: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=80',
+          tag: 'بطاقات دفع'
+        },
+        {
+          id: 3,
+          title: 'حلول التحويلات المالية ودفع الفواتير أونلاين',
+          image: 'https://images.unsplash.com/photo-1556742049-0a67c5574f73?w=800&auto=format&fit=crop&q=80',
+          tag: 'خدمات إلكترونية'
+        },
+        {
+          id: 4,
+          title: 'شبكة الفروع وأجهزة الصراف الآلي المنتشرة لخدمتكم',
+          image: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=800&auto=format&fit=crop&q=80',
+          tag: 'فروع وخدمات'
+        }
+      ];
+    }
+
+    function generateDefaultServices(bankName) {
+      return [
+        {
+          service_name: 'التمويل والاستثمار المصرفي',
+          description: 'حلول تمويلية مرنة للأفراد والشركات متوافقة مع المعايير المصرفية الحديثة.',
+          icon: 'fa-solid fa-hand-holding-dollar'
+        },
+        {
+          service_name: 'الخدمات المصرفية الرقمية وتطبيق الموبايل',
+          description: 'إدارة حسابك، التحويلات اللحظية، وسداد المدفوعات من هاتفك على مدار الساعة.',
+          icon: 'fa-solid fa-mobile-screen-button'
+        },
+        {
+          service_name: 'الحسابات والودائع المصرفية',
+          description: 'فتح حسابات جارية وحسابات توفير وتسهيلات بنكية متنوعة لكافة العملاء.',
+          icon: 'fa-solid fa-building-columns'
+        }
+      ];
+    }
+
+    function generateDefaultOffers(bankName) {
+      return [
+        {
+          title: 'تسهيلات مصرفية ميسرة لرواد الأعمال والمشاريع',
+          desc: 'احصل على باقة متكاملة من الخدمات والتسهيلات لتمويل نشاطك التجاري عبر ' + bankName + '.',
+          tag: 'عرض خاص',
+          expiry: 'سارٍ حالياً'
+        }
+      ];
+    }
+
+    function toggleReviewsView() {
+      showAllReviews = !showAllReviews;
+      renderReviews();
+    }
+
+    function renderReviews() {
+      const container = document.getElementById('reviews-container');
+      if (!container) return;
+
+      if (!allReviews || allReviews.length === 0) {
+        container.innerHTML = `
+          <div class="py-6 px-4 text-center rounded-xl bg-zinc-950 border border-zinc-900 space-y-2">
+            <i class="fa-regular fa-comment-dots text-zinc-600 text-2xl"></i>
+            <p class="text-xs text-zinc-400 font-medium">لا توجد تقييمات لهذا البنك حتى الآن</p>
+            <p class="text-[10px] text-zinc-600">كن أول من يشارك تجربته مع هذا البنك وساعد الآخرين</p>
+          </div>
+        `;
+        return;
+      }
+
+      const displayed = showAllReviews ? allReviews : allReviews.slice(0, 2);
+      let listHtml = displayed.map(rev => {
+        let starsHtml = '';
+        const rVal = parseInt(rev.stars || rev.rating) || 5;
+        for (let i = 1; i <= 5; i++) {
+          if (i <= rVal) starsHtml += '<i class="fa-solid fa-star"></i>';
+          else starsHtml += '<i class="fa-regular fa-star text-zinc-600"></i>';
+        }
+        return `
+          <div class="bg-zinc-950 border border-zinc-900 rounded-xl p-3 text-right space-y-1.5 transition">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <img src="${rev.user_avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=80'}" class="w-6 h-6 rounded-full object-cover border border-zinc-800" alt="avatar" />
+                <span class="text-xs text-zinc-200 font-medium">${rev.user_name || rev.name || 'عميل مصرفي'}</span>
+              </div>
+              <div class="flex text-brand-gold text-[10px] gap-0.5">
+                ${starsHtml}
+              </div>
+            </div>
+            <p class="text-xs text-zinc-300 leading-snug font-normal pr-8 break-words">
+              "${rev.comment}"
+            </p>
+          </div>
+        `;
+      }).join('');
+
+      if (allReviews.length > 2) {
+        listHtml += `
+          <button type="button" onclick="toggleReviewsView()" class="w-full py-2.5 mt-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-brand-gold text-xs font-bold flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer shadow-sm">
+            <span>${showAllReviews ? 'عرض أقل' : 'عرض جميع التقييمات (' + allReviews.length + ')'}</span>
+            <i class="fa-solid ${showAllReviews ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px]"></i>
+          </button>
+        `;
+      }
+
+      container.innerHTML = listHtml;
+    }
+
+
     async function loadBankProfile() {
       const bankId = getBankIdentifier();
-      let bankData = { ...FALLBACK_BANK };
+      let b = null;
 
       try {
         const isUUID = /^[0-9a-f-]{36}$/i.test(bankId);
         const filterCol = isUUID ? 'id' : 'slug';
         const apiUrl = `${SUPABASE_URL}/rest/v1/banks?${filterCol}=eq.${bankId}&select=*`;
         const resp = await fetch(apiUrl, {
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`
-          }
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
         });
         const rows = await resp.json();
-        const b = (rows && rows.length > 0) ? rows[0] : null;
-
-        if (b) {
-          bankData.id = b.id;
-          bankData.name = b.name || bankData.name;
-          bankData.description = b.description || b.short_description || bankData.description;
-          bankData.badge_type = b.badge_type || 'gold';
-          bankData.phone = b.phone || bankData.phone;
-          bankData.whatsapp = b.whatsapp || bankData.whatsapp;
-          bankData.website_url = b.website || b.website_url;
-          bankData.address = b.address || b.city || bankData.address;
-
-          const revUrl = `${SUPABASE_URL}/rest/v1/reviews?entity_type=eq.bank&entity_id=eq.${b.id}&order=created_at.desc&select=*`;
-          const revResp = await fetch(revUrl, {
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-          });
-          const revRows = await revResp.json();
-          if (Array.isArray(revRows) && revRows.length > 0) {
-            bankData.reviews = revRows;
-          }
+        if (rows && rows.length > 0) {
+          b = rows[0];
         }
       } catch (err) {
-        console.warn("Fetch fallback activated:", err);
+        console.warn("Fetch bank profile error:", err);
       }
 
-      currentBank = bankData;
-      currentPosts = bankData.posts || FALLBACK_BANK.posts;
+      if (!b) {
+        b = {
+          id: bankId,
+          name: "بنك تجريبي",
+          slug: bankId,
+          badge_type: "gold",
+          is_verified: false,
+          description: "دليل البنوك والخدمات المصرفية في اليمن",
+          address: "اليمن"
+        };
+      }
+
+      currentBank = {
+        id: b.id,
+        name: b.name || "بنك",
+        nameEn: b.name_en || b.nameEn || "",
+        badge_type: b.badge_type || "gold",
+        is_verified: b.is_verified === true || b.verified === true,
+        description: b.description || b.short_description || ("أحد البنوك والمصارف العاملة في الجمهورية اليمنية."),
+        address: b.address || b.city || "اليمن",
+        phone: b.phone || "",
+        whatsapp: b.whatsapp || "",
+        email: b.email || "",
+        website_url: b.website || b.website_url || "",
+        posts: (b.posts && Array.isArray(b.posts) && b.posts.length > 0) ? b.posts : generateDefaultPosts(b.name || 'البنك'),
+        services: (b.services && Array.isArray(b.services) && b.services.length > 0) ? b.services : generateDefaultServices(b.name || 'البنك'),
+        offers: (b.offers && Array.isArray(b.offers) && b.offers.length > 0) ? b.offers : generateDefaultOffers(b.name || 'البنك'),
+        reviews: []
+      };
+
+      currentPosts = currentBank.posts;
+
+      // جلب التقييمات الحقيقية من Supabase
+      try {
+        const revUrl = `${SUPABASE_URL}/rest/v1/reviews?entity_type=eq.bank&entity_id=eq.${b.id}&order=created_at.desc&select=*`;
+        const revResp = await fetch(revUrl, {
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        const revRows = await revResp.json();
+        if (Array.isArray(revRows)) {
+          allReviews = revRows;
+          currentBank.reviews = revRows;
+        }
+      } catch (err) {
+        console.warn("Reviews fetch error:", err);
+      }
+
       renderUI();
+      updateRatingsDisplay(allReviews);
+    }
+
+    function updateRatingsDisplay(reviewsList) {
+      allReviews = reviewsList || [];
+      renderReviews();
+
+      const total = allReviews.length;
+      if (total === 0) {
+        document.getElementById('calc-avg-rating').innerText = '0.0';
+        document.getElementById('calc-total-reviews').innerText = '0 تقييم';
+        document.getElementById('header-rating-num').innerText = '0.0';
+        document.getElementById('header-rating-count').innerText = '(0 تقييم)';
+        let emptyStars = '';
+        for (let i = 0; i < 5; i++) emptyStars += '<i class="fa-regular fa-star text-zinc-600"></i>';
+        document.getElementById('header-stars-slot').innerHTML = emptyStars;
+        document.getElementById('calc-avg-stars').innerHTML = emptyStars;
+        for (let star = 1; star <= 5; star++) {
+          const barEl = document.getElementById(`bar-star-${star}`);
+          const pctEl = document.getElementById(`pct-star-${star}`);
+          if (barEl) barEl.style.width = '0%';
+          if (pctEl) pctEl.innerText = '0%';
+        }
+        return;
+      }
+
+      let sum = 0;
+      const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      allReviews.forEach(r => {
+        const rating = parseInt(r.stars || r.rating) || 5;
+        counts[rating] = (counts[rating] || 0) + 1;
+        sum += rating;
+      });
+
+      const avg = (sum / total).toFixed(1);
+      document.getElementById('calc-avg-rating').innerText = avg;
+      document.getElementById('header-rating-num').innerText = avg;
+      document.getElementById('calc-total-reviews').innerText = `${total} تقييم`;
+      document.getElementById('header-rating-count').innerText = `${total} تقييم`;
+
+      for (let star = 1; star <= 5; star++) {
+        const pct = Math.round(((counts[star] || 0) / total) * 100);
+        const barEl = document.getElementById(`bar-star-${star}`);
+        const pctEl = document.getElementById(`pct-star-${star}`);
+        if (barEl) barEl.style.width = `${pct}%`;
+        if (pctEl) pctEl.innerText = `${pct}%`;
+      }
     }
 
     function renderUI() {
       document.getElementById('bank-name').innerText = currentBank.name;
       document.getElementById('bank-cover-title').innerText = currentBank.name;
+      document.getElementById('bank-cover-subtitle').innerText = currentBank.nameEn || '';
       document.getElementById('bank-bio').innerText = currentBank.description;
       document.getElementById('bank-location').innerText = currentBank.address || "اليمن";
       document.getElementById('bank-badge-slot').innerHTML = renderVerificationBadge(currentBank.badge_type);
+
+      if (currentBank.logo_url) {
+        document.getElementById('bank-logo').src = currentBank.logo_url;
+      }
 
       document.getElementById('contact-web').href = currentBank.website_url || "#";
       document.getElementById('contact-wa').href = currentBank.whatsapp ? (currentBank.whatsapp.startsWith('http') ? currentBank.whatsapp : `https://wa.me/${currentBank.whatsapp}`) : "#";
       document.getElementById('contact-mail').href = currentBank.email ? `mailto:${currentBank.email}` : "#";
 
+      // 1. رسم معرض الصور
       const postsContainer = document.getElementById('posts-container');
       postsContainer.innerHTML = currentPosts.map((post, index) => `
         <article onclick="openLightbox(${index})" class="group relative bg-[#0D0D0D] rounded-xl overflow-hidden border border-zinc-800/80 aspect-square cursor-pointer active:scale-98 transition">
@@ -572,7 +773,7 @@
           <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-between p-2.5">
             <div class="flex justify-end">
               <span class="bg-[#0055A5]/90 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded shadow">
-                ${post.tag || 'بنك التضامن'}
+                ${post.tag || currentBank.name}
               </span>
             </div>
             <div class="text-right">
@@ -582,8 +783,9 @@
         </article>
       `).join('');
 
+      // 2. رسم تبويب العروض
       const offersContainer = document.getElementById('offers-container');
-      offersContainer.innerHTML = (currentBank.offers || FALLBACK_BANK.offers).map(offer => `
+      offersContainer.innerHTML = (currentBank.offers || []).map(offer => `
         <div class="bg-[#0D0D0D] border border-zinc-800 p-3.5 rounded-xl text-right">
           <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
             <span class="bg-brand-gold text-black font-black text-[10px] px-2.5 py-0.5 rounded">${offer.tag}</span>
@@ -594,8 +796,9 @@
         </div>
       `).join('');
 
+      // 3. رسم تبويب الخدمات
       const servicesContainer = document.getElementById('services-container');
-      servicesContainer.innerHTML = (currentBank.services || FALLBACK_BANK.services).map(service => `
+      servicesContainer.innerHTML = (currentBank.services || []).map(service => `
         <div class="bg-[#0D0D0D] border border-zinc-800 p-3 rounded-xl flex items-center justify-between text-right">
           <i class="${service.icon || 'fa-solid fa-briefcase'} text-brand-gold text-2xl ml-3 shrink-0"></i>
           <div>
@@ -604,30 +807,6 @@
           </div>
         </div>
       `).join('');
-
-      const revs = currentBank.reviews || FALLBACK_BANK.reviews;
-      updateRatingsDisplay(revs);
-
-      const reviewsContainer = document.getElementById('reviews-container');
-      reviewsContainer.innerHTML = revs.map(rev => {
-        let starsHtml = '';
-        const rVal = parseInt(rev.stars || rev.rating) || 5;
-        for (let i = 1; i <= 5; i++) {
-          if (i <= rVal) starsHtml += '<i class="fa-solid fa-star"></i>';
-          else starsHtml += '<i class="fa-regular fa-star text-zinc-600"></i>';
-        }
-        return `
-          <div class="border border-zinc-800 rounded-full py-1.5 px-3 flex items-center justify-between bg-black">
-            <div class="flex items-center gap-2.5">
-              <img src="${rev.user_avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=80'}" class="w-8 h-8 rounded-full border border-zinc-700 object-cover" alt="User" />
-              <span class="text-xs text-zinc-200 font-medium">${rev.user_name || rev.name}</span>
-            </div>
-            <div class="flex text-brand-gold text-[10px] gap-0.5">
-              ${starsHtml}
-            </div>
-          </div>
-        `;
-      }).join('');
     }
 
     function switchTab(tabName) {
