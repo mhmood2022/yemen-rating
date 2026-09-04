@@ -443,13 +443,13 @@
       reviews: [
         {
           user_name: "م. وليد الشميري",
-          user_avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=80",
+          user_avatar: null,
           stars: 5,
           comment: "خدمة إلكترونية ممتازة وسرعة عالية في فتح الحساب وتفعيل البطاقات."
         },
         {
           user_name: "أحمد المخلافي",
-          user_avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80&auto=format&fit=crop&q=80",
+          user_avatar: null,
           stars: 4,
           comment: "تعامل راقٍ من موظفي فرع تعز وتسهيلات ملموسة في التحويلات."
         }
@@ -626,7 +626,7 @@
         return `
           <div class="border border-zinc-800 rounded-full py-1.5 px-3 flex items-center justify-between bg-black">
             <div class="flex items-center gap-2.5">
-              ${rev.user_avatar ? '<img src="' + rev.user_avatar + '" class="w-7 h-7 rounded-full object-cover border border-zinc-800" alt="avatar" />' : '<div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 shrink-0"><i class="fa-solid fa-user text-[11px]"></i></div>'}
+              ${(rev.user_avatar && !rev.user_avatar.includes('unsplash')) ? '<img src="' + rev.user_avatar + '" class="w-7 h-7 rounded-full object-cover border border-zinc-800" alt="avatar" />' : '<div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 shrink-0"><i class="fa-solid fa-user text-[11px]"></i></div>'}
               <span class="text-xs text-zinc-200 font-medium">${rev.user_name || rev.name}</span>
             </div>
             <div class="flex text-brand-gold text-[10px] gap-0.5">
@@ -710,26 +710,51 @@
 
     // دوال نافذة التقييم
     function openReviewModal() {
+      const sView = document.getElementById('review-success-view');
+      const fView = document.getElementById('review-form-view');
+      if (sView) sView.classList.add('hidden');
+      if (fView) fView.classList.remove('hidden');
+
       document.getElementById('review-modal').classList.remove('hidden');
-      setRating(5);
+      setRating(0); // تبدأ النجوم فارغة ليحددها الزائر بنفسه
+      document.getElementById('selected-rating').value = '0';
+      document.getElementById('rating-hint').innerText = 'اضغط لتحديد النجوم';
     }
 
     function closeReviewModal() {
       document.getElementById('review-modal').classList.add('hidden');
     }
 
+    const ratingLabels = {
+      1: 'سيئ جداً (1 من 5)',
+      2: 'مقبول (2 من 5)',
+      3: 'جيد (3 من 5)',
+      4: 'جيد جداً (4 من 5)',
+      5: 'ممتاز وموصى به (5 من 5)'
+    };
+
     function setRating(val) {
       document.getElementById('selected-rating').value = val;
       const stars = document.querySelectorAll('#rating-stars-input span');
       stars.forEach((s, idx) => {
         if (idx < val) s.style.color = '#EAB308';
-        else s.style.color = '#4B5563';
+        else s.style.color = '#3F3F46';
       });
+      const hint = document.getElementById('rating-hint');
+      if (hint && val > 0) {
+        hint.innerText = ratingLabels[val] || (val + ' من 5');
+        hint.style.color = '#EAB308';
+      }
     }
 
     async function submitReview(e) {
       e.preventDefault();
       const rating = parseInt(document.getElementById('selected-rating').value);
+      if (!rating || rating < 1 || rating > 5) {
+        alert('يرجى تحديد عدد النجوم لتقييمك أولاً بالنقر على النجوم.');
+        return;
+      }
+
       const name = document.getElementById('reviewer-name').value.trim();
       const comment = document.getElementById('reviewer-comment').value.trim();
       const btn = document.getElementById('review-submit-btn');
@@ -741,7 +766,7 @@
         entity_type: 'bank',
         entity_id: currentBank.id,
         user_name: name,
-        user_avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=80",
+        user_avatar: null, // صورة افتراضية حيادية بدون وجوه مكررة
         stars: rating,
         comment: comment
       };
@@ -758,22 +783,24 @@
           body: JSON.stringify(newRev)
         });
 
-        currentBank.reviews = [newRev, ...(currentBank.reviews || [])];
-        updateRatingsDisplay(currentBank.reviews);
-        renderUI();
-        closeReviewModal();
+        // إضافة التقييم محلياً وتحديث الواجهة فوراً
+        allReviews = [newRev, ...allReviews];
+        currentBank.reviews = allReviews;
+        updateRatingsDisplay(allReviews);
+
+        // إظهار بطاقة الشكر الفاخرة بدل alert
+        document.getElementById('review-form-view').classList.add('hidden');
+        document.getElementById('review-success-view').classList.remove('hidden');
         document.getElementById('review-form').reset();
-        alert("شكراً لك! تم تسجيل تقييمك بنجاح.");
       } catch (err) {
-        console.error("Review insert error:", err);
-        alert("حدث خطأ أثناء حفظ التقييم");
+        console.error('Submit review error:', err);
+        alert('تنبيه: حدث خطأ أثناء إرسال التقييم، يرجى المحاولة مرة أخرى.');
       } finally {
         btn.disabled = false;
         btn.innerText = "إرسال التقييم";
       }
     }
-
-    // دوال نافذة إثبات الملكية
+    
     function openClaimModal() {
       const sView = document.getElementById('claim-success-view');
       const fView = document.getElementById('claim-form-view');
