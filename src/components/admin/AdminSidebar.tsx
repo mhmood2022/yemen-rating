@@ -10,6 +10,7 @@ import {
 const MENU_ITEMS = [
   { id: 'dashboard', label: 'لوحة التحكم الرئيسية', icon: LayoutDashboard, path: '/admin' },
   { id: 'companies', label: 'الشركات والأنشطة', icon: Building2, path: '/admin/companies' },
+  { id: 'banks', label: 'إدارة البنوك والمصارف', icon: Landmark, path: '/admin/banks' },
   { id: 'categories', label: 'التصنيفات الهرمية', icon: FolderTree, path: '/admin/categories' },
   { id: 'claims', label: 'إثبات الملكية والتوثيق', icon: ShieldCheck, path: '/admin/claims' },
   { id: 'markets', label: 'الأسواق والأسعار', icon: Store, path: '/admin/markets' },
