@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 
 // الهيكل الموحد App Shell
 import { AppShell } from './components/layout/AppShell';
@@ -52,7 +52,8 @@ export function App() {
       <Routes>
         
         {/* المسارات العامة الموحدة داخل الـ App Shell */}
-        <Route path="/" element={<AppShell><HomeView onSelectCategory={() => {}} onSelectBusiness={() => {}} businesses={SAMPLE_BUSINESSES} onNavigateAuctions={() => {}} onNavigateRealEstate={() => {}} onNavigateJobs={() => {}} onNavigateExchangeRates={() => {}} /></AppShell>} />
+        <Route path="/" element={<HomeRoute />} />
+        <Route path="/prices" element={<AppShell><ExchangeRatesPage onBack={() => window.history.back()} /></AppShell>} />
         
         {/* مسارات البنوك (دليل + قالب ديناميكي) */}
         <Route path="/banks" element={<AppShell><BanksPage /></AppShell>} />
@@ -123,7 +124,7 @@ export function App() {
         </Route>
 
         {/* إعادة التوجيه للرئيسية */}
-        <Route path="*" element={<AppShell><HomeView onSelectCategory={() => {}} onSelectBusiness={() => {}} businesses={SAMPLE_BUSINESSES} onNavigateAuctions={() => {}} onNavigateRealEstate={() => {}} onNavigateJobs={() => {}} onNavigateExchangeRates={() => {}} /></AppShell>} />
+        <Route path="*" element={<HomeRoute />} />
 
       </Routes>
     </BrowserRouter>
