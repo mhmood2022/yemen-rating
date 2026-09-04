@@ -2,19 +2,11 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "cleanUrls": true,
   "rewrites": [
-    {
-      "source": "/bank",
-      "destination": "/bank.html"
-    },
-    {
-      "source": "/banks",
-      "destination": "/banks.html"
-    },
-    {
-      "source": "/((?!.*\\..*).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/admin/(.*)", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" },
+    { "source": "/bank", "destination": "/bank.html" },
+    { "source": "/banks", "destination": "/banks.html" },
+    { "source": "/((?!.*\\..*).*)", "destination": "/index.html" }
   ]
 }
