@@ -116,7 +116,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     <div class="px-4 relative flex items-end justify-between -mt-10 mb-2">
       <div class="relative order-1">
         <div class="w-20 h-20 rounded-2xl bg-white p-2 shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden">
-          <img id="bank-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Tadhamon_Bank_Logo.png/640px-Tadhamon_Bank_Logo.png" onerror="this.outerHTML='<i class=\'fa-solid fa-dharmachakra text-[#0055A5] text-4xl\'></i>'" class="w-full h-full object-contain" alt="شعار البنك" />
+          <img id="bank-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3C/svg%3E" class="w-full h-full object-contain" alt="شعار البنك" />
         </div>
       </div>
 
@@ -637,18 +637,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         }
       }
 
-      // 1. تفعيل الشعار الحقيقي
+      // تفعيل الشعار الحقيقي
       const logoImg = document.getElementById('bank-logo');
-      const logoFallback = document.getElementById('bank-logo-fallback');
-      if (currentBank.logo_url) {
-        if (logoImg) {
-          logoImg.src = currentBank.logo_url;
-          logoImg.classList.remove('hidden');
-        }
-        if (logoFallback) logoFallback.classList.add('hidden');
-      } else {
-        if (logoImg) logoImg.classList.add('hidden');
-        if (logoFallback) logoFallback.classList.remove('hidden');
+      if (logoImg && currentBank.logo_url) {
+        logoImg.src = currentBank.logo_url;
       }
 
       // 2. تفعيل الغلاف الحقيقي
