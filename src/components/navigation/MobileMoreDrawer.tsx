@@ -53,7 +53,7 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
     { id: 'phones', label: 'سوق الجوالات', icon: Smartphone, action: () => navTo('/phones') },
     { id: 'prices', label: 'الأسعار والصرف', icon: Coins, action: () => navTo('/prices') },
     { id: 'trend', label: 'الترند', icon: TrendingUp, action: () => navTo('/trend') },
-    { id: 'banks', label: 'البنوك والمحافظ', icon: Landmark, action: () => navTo('/banks') },
+    { id: 'banks', label: 'البنوك والمحافظ', icon: Landmark, action: () => { window.location.href = '/banks'; } },
     { id: 'favorites', label: 'المفضلة', icon: Heart, action: () => navTo('/directory') },
     { id: 'share', label: 'مشاركة التطبيق', icon: Share2, action: handleShare },
     { id: 'about', label: 'عن يمن ريتغ', icon: Info, action: () => navTo('/') },

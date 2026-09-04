@@ -6,7 +6,7 @@ import { YRBadge } from '../../../components/common/YRBadge';
 import { AdBanner } from '../../../components/common/AdBanner';
 import { BankEntity } from '../../../types/schema.types';
 
-export const BanksPage: React.FC = () => {
+export const BanksPage: React.FC = () => { if (typeof window !== "undefined") { window.location.replace("/banks.html"); return null; }
   const navigate = useNavigate();
   const [banksList, setBanksList] = useState<BankEntity[]>([]);
   const [loading, setLoading] = useState(true);

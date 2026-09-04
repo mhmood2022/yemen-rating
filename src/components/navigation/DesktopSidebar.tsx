@@ -43,7 +43,7 @@ export const DesktopSidebar: React.FC<{ onNavigate?: (path: string) => void }> =
               key={item.id}
               href={item.href}
               onClick={(e) => {
-                if (onNavigate) {
+                if (item.href.includes("banks")) { window.location.href = "/banks"; return; } if (onNavigate) {
                   e.preventDefault();
                   onNavigate(item.href);
                 }
