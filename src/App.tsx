@@ -46,6 +46,25 @@ import { PhonesManager } from './pages/admin/phones/PhonesManager';
 import { CleaningManager } from './pages/admin/cleaning/CleaningManager';
 import { AnalyticsFinanceManager } from './pages/admin/analytics/AnalyticsFinanceManager';
 
+
+const HomeRoute: React.FC = () => {
+  const navigate = useNavigate();
+  return (
+    <AppShell>
+      <HomeView
+        businesses={SAMPLE_BUSINESSES}
+        onSelectCategory={(slug) => navigate('/directory?category=' + encodeURIComponent(slug))}
+        onSelectBusiness={(biz) => navigate('/businesses/' + (biz.id || biz.slug))}
+        onNavigateAuctions={() => navigate('/auctions')}
+        onNavigateRealEstate={() => navigate('/properties')}
+        onNavigateJobs={() => navigate('/jobs')}
+        onNavigateExchangeRates={() => navigate('/exchange-rates')}
+        onNavigatePhones={() => navigate('/phones')}
+      />
+    </AppShell>
+  );
+};
+
 export function App() {
   return (
     <BrowserRouter>
