@@ -277,7 +277,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       }
     }
 
-            function renderCards() {
+                    function renderCards() {
       const container = document.getElementById('banks-grid');
       let filtered = banksList.filter(b => {
         const matchesSearch = b.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
@@ -303,7 +303,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       }
 
       container.innerHTML = filtered.map(bank => {
-        // 1. الغلاف المصغر الديناميكي (يطابق صفحة البنك 100%)
+        // 1. الغلاف المصغر الحقيقي لكل بنك
         let coverHtml = '';
         if (bank.cover_url) {
           coverHtml = `
@@ -327,7 +327,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           `;
         }
 
-        // 2. الشعار بنفس استايل صفحة البنك الفردية (مربع أبيض فاخر + حواف دائرية + إطار أسود نقي)
+        // 2. الشعار في مربع أبيض فاخر بإطار أسود مطابق لصفحة البنك
         const logoHtml = bank.logo_url ? `
           <div class="w-16 h-16 rounded-2xl bg-white p-1.5 shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden shrink-0">
             <img src="${bank.logo_url}" alt="${bank.name}" class="w-full h-full object-contain" />
@@ -338,7 +338,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           </div>
         `;
 
-        // 3. زر إثبات الملكية الأحمر الرسمي (مطابق تماماً للصورة رقم 2)
+        // 3. الزر الأحمر لإثبات الملكية مثل صفحة البنك
         let claimBtnHtml = '';
         if (typeof pendingClaimsSet !== 'undefined' && pendingClaimsSet && pendingClaimsSet.has(bank.id)) {
           claimBtnHtml = `
@@ -360,7 +360,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           `;
         }
 
-        // 4. سطر التقييم مطابقة لأسلوب صفحة البنك
+        // 4. التقييم
         let ratingHtml = '';
         if (bank.ratingAvg && bank.ratingCount > 0) {
           ratingHtml = `
