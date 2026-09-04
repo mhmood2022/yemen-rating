@@ -23,7 +23,7 @@ export const ClaimsManager: React.FC = () => {
     try {
       setLoading(true);
       const { data: requests, error } = await supabase
-        .from('verification_requests')
+        .from('business_claims')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -31,7 +31,7 @@ export const ClaimsManager: React.FC = () => {
 
       if (requests && requests.length > 0) {
         // جلب أسماء البنوك لربط الاسم بمعرف المنشأة
-        const { data: banks } = await supabase.from('banks').select('id, name');
+        const { data: banks } = await supabase.from('businesses').select('id, name');
         const bankMap = new Map((banks || []).map(b => [b.id, b.name]));
 
         const mapped: ClaimRequest[] = requests.map((r: any) => ({
@@ -72,15 +72,15 @@ export const ClaimsManager: React.FC = () => {
 
       // 1. تحديث حالة الطلب في verification_requests
       await supabase
-        .from('verification_requests')
+        .from('business_claims')
         .update({ status: dbStatus, reviewed_at: new Date().toISOString() })
         .eq('id', id);
 
       // 2. إذا تمت الموافقة، توثيق البنك فوراً في جدول banks وجعل شارة التوثيق ذهبية
       if (newStatus === 'approved' && entityId) {
         await supabase
-          .from('banks')
-          .update({ verified: true, is_verified: true, badge_type: 'gold' })
+          .from('businesses')
+          .update({ is_verified: true, verified_badge_type: 'gold', ownership_status: 'VERIFIED', verified_at: new Date().toISOString() })
           .eq('id', entityId);
       }
 
