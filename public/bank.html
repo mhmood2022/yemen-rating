@@ -275,42 +275,64 @@
 
     <!-- 9. نافذة التقييم -->
     <div id="review-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl">
-        <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
-          <h4 class="text-sm font-bold text-brand-gold flex items-center gap-1.5">
-            <i class="fa-solid fa-star"></i> إضافة تقييمك للمنشأة
-          </h4>
-          <button type="button" onclick="closeReviewModal()" class="text-zinc-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl relative">
+        
+        <!-- بطاقة الشكر والنجاح الفاخرة المدمجة بنفس الاستايل -->
+        <div id="review-success-view" class="hidden text-center py-6 px-3 space-y-3">
+          <div class="w-14 h-14 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold flex items-center justify-center mx-auto shadow-lg shadow-brand-gold/10">
+            <i class="fa-solid fa-star text-2xl"></i>
+          </div>
+          <h4 class="text-base font-black text-white">شكراً لمشاركتك القيّمة!</h4>
+          <p class="text-xs text-zinc-400 leading-relaxed">
+            تم استلام تقييمك بنجاح. رأيك الصادق يسهم في تعزيز الشفافية ومساعدة المجتمع في اختيار أفضل الخدمات المصرفية.
+          </p>
+          <button type="button" onclick="closeReviewModal()" class="w-full py-2.5 rounded-xl bg-brand-gold text-black font-black text-xs hover:bg-brand-goldHover transition cursor-pointer shadow-md">
+            حسناً، تم
+          </button>
         </div>
 
-        <form id="review-form" onsubmit="submitReview(event)" class="space-y-3 text-xs">
-          <div>
-            <label class="block text-zinc-400 mb-1">التقييم بالنجوم*</label>
-            <div class="flex gap-2 text-2xl text-zinc-600 cursor-pointer" id="rating-stars-input">
-              <span onclick="setRating(1)">★</span>
-              <span onclick="setRating(2)">★</span>
-              <span onclick="setRating(3)">★</span>
-              <span onclick="setRating(4)">★</span>
-              <span onclick="setRating(5)">★</span>
+        <!-- نموذج إضافة التقييم بحقول مميزة وأمثلة واقعية -->
+        <div id="review-form-view">
+          <div class="flex items-center justify-between border-b border-zinc-800 pb-2 mb-3">
+            <h4 class="text-sm font-bold text-brand-gold flex items-center gap-1.5">
+              <i class="fa-solid fa-star"></i> إضافة تقييمك للمنشأة
+            </h4>
+            <button type="button" onclick="closeReviewModal()" class="w-7 h-7 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer transition">
+              <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
+          </div>
+
+          <form id="review-form" onsubmit="submitReview(event)" class="space-y-3 text-xs">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-brand-gold font-bold">التقييم بالنجوم <span class="text-red-500">*</span></label>
+                <span id="rating-hint" class="text-[11px] text-zinc-400 font-medium">اضغط لتحديد النجوم</span>
+              </div>
+              <div class="flex gap-2 text-2xl text-zinc-600 cursor-pointer justify-start my-1" id="rating-stars-input">
+                <span onclick="setRating(1)" class="transition hover:scale-110 select-none">★</span>
+                <span onclick="setRating(2)" class="transition hover:scale-110 select-none">★</span>
+                <span onclick="setRating(3)" class="transition hover:scale-110 select-none">★</span>
+                <span onclick="setRating(4)" class="transition hover:scale-110 select-none">★</span>
+                <span onclick="setRating(5)" class="transition hover:scale-110 select-none">★</span>
+              </div>
+              <input type="hidden" id="selected-rating" value="0" required />
             </div>
-            <input type="hidden" id="selected-rating" value="5" required />
-          </div>
 
-          <div>
-            <label class="block text-zinc-400 mb-1">اسمك الكامل*</label>
-            <input type="text" id="reviewer-name" required placeholder="مثال: محمد العماري" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-brand-gold" />
-          </div>
+            <div>
+              <label class="block text-brand-gold font-bold mb-1">اسمك الكريم أو اللقب <span class="text-red-500">*</span></label>
+              <input type="text" id="reviewer-name" required placeholder="الاسم الكريم أو اللقب (مثال: م. أحمد الحميري)" class="w-full bg-zinc-950 border border-zinc-800 focus:border-brand-gold rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none transition" />
+            </div>
 
-          <div>
-            <label class="block text-zinc-400 mb-1">تعليقك وتجربتك*</label>
-            <textarea id="reviewer-comment" rows="3" required placeholder="اكتب رأيك الصادق في خدمات البنك..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-brand-gold"></textarea>
-          </div>
+            <div>
+              <label class="block text-brand-gold font-bold mb-1">تجربتك وتقييمك لخدمات البنك <span class="text-red-500">*</span></label>
+              <textarea id="reviewer-comment" rows="3" required placeholder="شاركنا رأيك الصادق حول سرعة إنجاز المعاملات، التطبيق، أو فروع البنك..." class="w-full bg-zinc-950 border border-zinc-800 focus:border-brand-gold rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none transition"></textarea>
+            </div>
 
-          <div class="flex justify-end gap-2 pt-1 border-t border-zinc-800">
-            <button type="button" onclick="closeReviewModal()" class="px-3 py-1.5 rounded-lg bg-zinc-900 text-zinc-300 cursor-pointer">إلغاء</button>
-            <button type="submit" id="review-submit-btn" class="px-4 py-1.5 rounded-lg bg-brand-gold text-black font-bold hover:bg-brand-goldHover cursor-pointer">إرسال التقييم</button>
-          </div>
-        </form>
+            <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
+              <button type="button" onclick="closeReviewModal()" class="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold transition cursor-pointer">إلغاء</button>
+              <button type="submit" id="review-submit-btn" class="px-5 py-2 rounded-xl bg-brand-gold hover:bg-brand-goldHover text-black font-black transition cursor-pointer shadow-md">إرسال التقييم</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
@@ -716,16 +738,17 @@
       if (fView) fView.classList.remove('hidden');
 
       document.getElementById('review-modal').classList.remove('hidden');
-      setRating(0); // تبدأ النجوم فارغة ليحددها الزائر بنفسه
+      setRating(0); // النجوم تبدأ فارغة ليحددها الزائر بنفسه
       document.getElementById('selected-rating').value = '0';
       document.getElementById('rating-hint').innerText = 'اضغط لتحديد النجوم';
+      document.getElementById('rating-hint').style.color = '#A1A1AA';
     }
 
     function closeReviewModal() {
       document.getElementById('review-modal').classList.add('hidden');
     }
 
-    const ratingLabels = {
+    const starDescriptions = {
       1: 'سيئ جداً (1 من 5)',
       2: 'مقبول (2 من 5)',
       3: 'جيد (3 من 5)',
@@ -742,7 +765,7 @@
       });
       const hint = document.getElementById('rating-hint');
       if (hint && val > 0) {
-        hint.innerText = ratingLabels[val] || (val + ' من 5');
+        hint.innerText = starDescriptions[val] || (val + ' من 5');
         hint.style.color = '#EAB308';
       }
     }
@@ -766,7 +789,7 @@
         entity_type: 'bank',
         entity_id: currentBank.id,
         user_name: name,
-        user_avatar: null, // صورة افتراضية حيادية بدون وجوه مكررة
+        user_avatar: null, // استخدام الأيقونة الحيادية الأنيقة
         stars: rating,
         comment: comment
       };
@@ -783,12 +806,12 @@
           body: JSON.stringify(newRev)
         });
 
-        // إضافة التقييم محلياً وتحديث الواجهة فوراً
+        // تحديث الواجهة محلياً بالتقييم الجديد فوراً
         allReviews = [newRev, ...allReviews];
         currentBank.reviews = allReviews;
         updateRatingsDisplay(allReviews);
 
-        // إظهار بطاقة الشكر الفاخرة بدل alert
+        // إظهار بطاقة الشكر الفاخرة بنفس هوية المنصة (بدون alert)
         document.getElementById('review-form-view').classList.add('hidden');
         document.getElementById('review-success-view').classList.remove('hidden');
         document.getElementById('review-form').reset();
