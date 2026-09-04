@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-  LayoutDashboard, Building2, FolderTree, ShieldCheck, 
+  LayoutDashboard, Building2, Landmark, FolderTree, ShieldCheck, 
   Store, Gavel, Megaphone, Briefcase, 
   Home, Smartphone, Sparkles, Users, 
   BarChart3, Coins, Cpu, Settings
