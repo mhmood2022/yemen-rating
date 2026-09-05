@@ -179,95 +179,133 @@ export const BusinessesPage: React.FC = () => {
       {/* شبكة كروت المنشآت */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
         {filteredBusinesses.map((biz) => (
-          <div
+          <article
             key={biz.id}
             onClick={() => navigate(`/businesses/${biz.slug}`)}
-            className="bg-[#0F0F12] rounded-2xl border border-[#222226] hover:border-[#FFC500]/50 p-3.5 space-y-2.5 shadow-md transition-all flex flex-col justify-between cursor-pointer active:scale-98"
+            className="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer group"
           >
-            <div className="space-y-2">
-              <div className="flex items-center gap-2.5">
-                <div className="w-12 h-12 rounded-xl bg-[#18181C] border border-[#27272A] p-1 shrink-0 overflow-hidden flex items-center justify-center">
-                  <img src={biz.logo_url} alt={biz.name} className="w-full h-full object-cover rounded-lg" />
+            <div>
+              {/* 1. الغلاف المصغر */}
+              {biz.cover_url ? (
+                <div className="relative w-full h-32 select-none overflow-hidden bg-zinc-950">
+                  <img src={biz.cover_url} alt={biz.name} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-black/25 to-transparent"></div>
                 </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="text-xs sm:text-sm font-black text-white truncate">
-                      {biz.name}
-                    </h3>
-                    <YRBadge type={biz.badge_type} size={15} />
+              ) : (
+                <div className="relative w-full h-32 bg-gradient-to-r from-[#0D2137] via-[#102A45] to-[#0A192B] flex items-center justify-between px-5 select-none overflow-hidden">
+                  <div className="opacity-15"><Building2 size={44} className="text-white" /></div>
+                  <div className="text-right">
+                    <h3 className="text-white text-sm font-black tracking-wide leading-tight line-clamp-1">{biz.name}</h3>
+                    <p className="text-blue-200 text-[10px] font-bold mt-1">{biz.category_label || 'منشأة معتمدة'}</p>
                   </div>
-
-                  <div className="flex items-center gap-2 text-[9.5px] text-zinc-400 mt-0.5">
-                    <span className="px-1.5 py-0.2 rounded bg-[#FFC500]/10 text-[#FFC500] font-bold">
-                      {biz.category_label}
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-0.5 text-zinc-300">
-                      <MapPin size={10} className="text-[#FFC500]" /> {biz.city_name.split('—')[0]}
-                    </span>
-                    <span>•</span>
-                    <span className="text-[#FFC500] font-bold">★ {biz.rating_summary.average}</span>
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-[11px] text-zinc-300 line-clamp-2 leading-relaxed">
-                {biz.description}
-              </p>
-
-              {/* خدمات المنشأة البارزة */}
-              {biz.services.length > 0 && (
-                <div className="p-2 bg-[#161619] rounded-xl border border-[#27272A] space-y-1 text-[10px]">
-                  <div className="text-zinc-400 font-bold truncate">أبرز الخدمات والأسعار:</div>
-                  <div className="flex justify-between items-center text-zinc-200">
-                    <span className="truncate">{biz.services[0].name}</span>
-                    {biz.services[0].price && (
-                      <b className="font-mono text-[#FFC500] shrink-0 mr-1">
-                        {biz.services[0].price.toLocaleString()} ﷼
-                      </b>
-                    )}
+                  <div className="w-10 h-10 flex items-center justify-center opacity-30">
+                    <Sparkles size={20} className="text-white" />
                   </div>
                 </div>
               )}
+
+              {/* 2. سطر التداخل: الشعار في اليمين وزر إثبات الملكية في اليسار */}
+              <div className="px-4 relative flex items-end justify-between -mt-8 mb-2">
+                <div className="relative z-10 order-1">
+                  {biz.logo_url ? (
+                    <div className="w-14 h-14 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden shrink-0 bg-[#0B0F17]">
+                      <img src={biz.logo_url} alt={biz.name} className="w-full h-full object-contain" />
+                    </div>
+                  ) : (
+                    <div className="w-14 h-14 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden shrink-0 bg-[#0B0F17]">
+                      <Building2 size={24} className="text-zinc-500" />
+                    </div>
+                  )}
+                </div>
+                <div className="order-2 mb-1">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/businesses/${biz.slug}?claim=true`);
+                    }}
+                    className="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg transition active:scale-95 cursor-pointer"
+                  >
+                    <ShieldCheck size={12} />
+                    <span>إثبات الملكية</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 3. البيانات: الاسم مصغر + الشارة + النجوم + المقر */}
+              <div className="px-4 pt-1 pb-3 text-right space-y-1.5">
+                <div className="inline-flex items-center gap-1.5 flex-wrap">
+                  <h2 className="text-sm font-black text-white leading-tight group-hover:text-[#FFC500] transition">
+                    {biz.name}
+                  </h2>
+                  {biz.badge_type && <YRBadge type={biz.badge_type} size={15} />}
+                </div>
+
+                {/* التقييم بالنجوم */}
+                {biz.rating_summary && biz.rating_summary.count > 0 ? (
+                  <div className="flex items-center justify-start gap-1.5 text-xs font-bold pt-0.5">
+                    <span className="text-zinc-400 font-normal">★ التقييمات</span>
+                    <span className="text-[#FFC500] font-black font-mono">{biz.rating_summary.average.toFixed(1)}</span>
+                    <span className="text-zinc-400 text-[11px] font-normal">({biz.rating_summary.count} تقييم)</span>
+                  </div>
+                ) : (
+                  <div className="text-right pt-0.5"><span className="text-zinc-500 text-xs">لا توجد تقييمات بعد</span></div>
+                )}
+
+                {/* الوصف والنبذة */}
+                {biz.description && (
+                  <p className="text-xs text-zinc-300 leading-relaxed pt-1 line-clamp-2">
+                    {biz.description}
+                  </p>
+                )}
+
+                {/* المحافظة والعنوان */}
+                {biz.city_name && (
+                  <div className="flex items-center justify-start gap-1 text-xs text-zinc-400 pt-1">
+                    <MapPin size={12} className="text-[#FFC500]" />
+                    <span>{biz.city_name}</span>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* أزرار الاتصال والواتساب والدخول */}
-            <div className="pt-2 border-t border-[#1F2937] flex items-center gap-1.5">
+            {/* 4. أزرار التواصل السريع وزر الانتقال الفاخر */}
+            <div className="p-4 pt-1 border-t border-zinc-900/80 flex items-center gap-2">
               {biz.phone && (
                 <a
                   href={`tel:${biz.phone}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="p-2 rounded-xl bg-[#161619] border border-[#27272A] text-zinc-300 hover:text-[#FFC500] active:scale-95"
+                  className="p-2.5 rounded-xl bg-[#161D2B] border border-[#273244] text-zinc-300 hover:text-[#FFC500] active:scale-95 transition"
                   title="اتصال مباشر"
                 >
                   <Phone size={13} />
                 </a>
               )}
-
               {biz.whatsapp && (
                 <a
                   href={`https://wa.me/${biz.whatsapp}`}
                   target="_blank"
                   rel="noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="p-2 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/30 text-[#16A34A] hover:bg-[#16A34A] hover:text-white active:scale-95"
+                  className="p-2.5 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/30 text-[#16A34A] hover:bg-[#16A34A] hover:text-white active:scale-95 transition"
                   title="واتساب"
                 >
                   <MessageCircle size={13} />
                 </a>
               )}
-
               <button
                 type="button"
-                className="flex-1 py-1.5 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 shadow-sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/businesses/${biz.slug}`);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-[#FFC500] hover:bg-[#e6b200] text-black font-black text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-98 cursor-pointer"
               >
-                <span>عرض صفحة المنشأة</span>
+                <span>عرض التفاصيل</span>
                 <ChevronLeft size={13} />
               </button>
             </div>
-
-          </div>
+          </article>
         ))}
       </div>
 
