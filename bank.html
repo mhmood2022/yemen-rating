@@ -186,8 +186,25 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     <div class="p-3">
       <!-- المنشورات -->
       <div id="tab-posts" class="space-y-3">
-        <!-- بطاقة المنشور النصي المستقل -->
-        <div id="text-post-box" class="hidden"></div>
+        
+        <!-- بطاقة المنشور النصي الرسمي الثابتة والظاهرة فوق المعرض -->
+        <div id="text-post-box" class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl p-4 shadow-lg text-right space-y-2 mb-3.5 block">
+          <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-xl bg-black border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                <img id="announcement-bank-logo" src="" alt="logo" class="w-full h-full object-contain" />
+              </div>
+              <div>
+                <h5 id="announcement-bank-name" class="text-xs font-black text-white leading-tight">بنك الكريمي للتمويل الأصغر الإسلامي</h5>
+                <span class="text-[10px] text-brand-gold font-bold">تنويه وتحديث رسمي</span>
+              </div>
+            </div>
+            <span class="text-[10px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-full font-mono">منشور معتمد</span>
+          </div>
+          <p id="announcement-bank-text" class="text-xs text-zinc-200 leading-relaxed font-medium pt-1">
+            عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات وعمليات الدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات على مدار الساعة.
+          </p>
+        </div>
         <div id="posts-container" class="grid grid-cols-2 gap-2.5"></div>
       </div>
 
