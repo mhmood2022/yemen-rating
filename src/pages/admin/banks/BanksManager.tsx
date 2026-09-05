@@ -284,6 +284,14 @@ export const BanksManager: React.FC = () => {
           <span className="px-3 py-1.5 rounded-xl bg-[#161D2B] border border-[#1F2937] text-xs font-mono font-bold text-[#FFC500]">
             {banks.length} بنك مسجل
           </span>
+            <button
+              type="button"
+              onClick={handleOpenAdd}
+              className="px-4 py-2 rounded-xl bg-[#FFC500] hover:bg-[#e6b200] text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition active:scale-95 cursor-pointer"
+            >
+              <Plus size={16} className="stroke-[3]" />
+              <span>إضافة بنك جديد</span>
+            </button>
         </div>
       </div>
 
