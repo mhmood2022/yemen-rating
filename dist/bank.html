@@ -684,30 +684,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       const postsContainer = document.getElementById('posts-container');
       
       // معالجة وعرض المنشور النصي المستقل فوق المعرض
-      const textPostBox = document.getElementById('text-post-box');
-      if (textPostBox) {
-        const textContent = currentBank.announcement || currentBank.text_post || (currentBank.slug === 'kuraimi' ? 'عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات والدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات.' : '');
-        if (textContent) {
-          textPostBox.className = 'bg-[#0B0F17] border border-zinc-800/90 rounded-2xl p-4 shadow-lg text-right space-y-2 mb-3 block';
-          textPostBox.innerHTML = `
-            <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60">
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-xl bg-black border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
-                  <img src="${currentBank.logo_url || ''}" alt="logo" class="w-full h-full object-contain" />
-                </div>
-                <div>
-                  <h5 class="text-xs font-black text-white leading-tight">${currentBank.name || ''}</h5>
-                  <span class="text-[10px] text-brand-gold font-bold">تنويه وتحديث رسمي</span>
-                </div>
-              </div>
-              <span class="text-[10px] text-zinc-500 font-mono">منشور معتمد</span>
-            </div>
-            <p class="text-xs text-zinc-200 leading-relaxed font-medium pt-1">${textContent}</p>
-          `;
-        } else {
-          textPostBox.className = 'hidden';
-          textPostBox.innerHTML = '';
-        }
+      const postLogo = document.getElementById("announcement-bank-logo");
+      if (postLogo && currentBank.logo_url) postLogo.src = currentBank.logo_url;
+      const postName = document.getElementById("announcement-bank-name");
+      if (postName && currentBank.name) postName.innerText = currentBank.name;
+      const postText = document.getElementById("announcement-bank-text");
+      if (postText && (currentBank.announcement || currentBank.text_post)) {
+        postText.innerText = currentBank.announcement || currentBank.text_post;
+      }
       }
 
       postsContainer.innerHTML = currentPosts.map((post, index) => `
