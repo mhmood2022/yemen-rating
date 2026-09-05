@@ -213,6 +213,7 @@ export const BanksManager: React.FC = () => {
         city: formData.city,
         address: formData.address,
         description: formData.description,
+        announcement: formData.announcement || null,
         phone: formData.phone,
         whatsapp: formData.whatsapp,
         email: formData.email,

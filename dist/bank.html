@@ -185,61 +185,97 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     <!-- 5. المحتوى الديناميكي للتبويبات -->
     <div class="p-3">
       <!-- المنشورات -->
-      <div id="tab-posts" class="space-y-3">
-        
-        <!-- بطاقة المنشور النصي الرسمي الثابتة والظاهرة فوق المعرض -->
-        <div id="text-post-box" class="bg-black border border-zinc-800/90 rounded-2xl p-4 shadow-xl text-right space-y-3 mb-4">
-          <!-- هيدر المنشور بأسلوب تويتر / X -->
-          <div class="flex items-start justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
-                <img id="announcement-bank-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3C/svg%3E" alt="logo" class="w-full h-full object-contain" />
+            <div id="tab-posts" class="space-y-4">
+        <!-- 1. المنشور النصي (مطابق لصورتك بالملي) -->
+        <article id="text-post-feed" class="text-right space-y-2.5 pt-1">
+          <!-- هيدر المنشور -->
+          <div class="flex items-center justify-between">
+            <button type="button" class="text-zinc-600 hover:text-zinc-400 p-1 cursor-pointer">
+              <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
+            </button>
+            <div class="flex items-center gap-2.5">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-zinc-400 text-xs font-medium">· 20 ي</span>
+                <svg class="w-4 h-4 text-[#EAB308] fill-current shrink-0" viewBox="0 0 24 24"><path d="M22.5 12.5c0-1.58-.88-2.95-2.15-3.6.15-.44.24-.91.24-1.4 0-2.21-1.79-4-4-4-.49 0-.96.08-1.4.24C14.55 2.48 13.18 1.6 11.6 1.6c-1.58 0-2.95.88-3.6 2.15-.44-.16-.91-.25-1.4-.25-2.21 0-4 1.79-4 4 0 .49.08.96.24 1.4C1.58 9.55.7 10.92.7 12.5c0 1.58.88 2.95 2.15 3.6-.16.44-.25.91-.25 1.4 0 2.21 1.79 4 4 4 .49 0 .96-.08 1.4-.24.65 1.27 2.02 2.14 3.6 2.14 1.58 0 2.95-.87 3.6-2.14.44.16.91.24 1.4.24 2.21 0 4-1.79 4-4 0-.49-.08-.96-.24-1.4 1.27-.65 2.14-2.02 2.14-3.6z"/><path d="M10.2 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z" fill="#000000"/></svg>
+                <h5 id="feed-text-bank-name" class="text-sm font-black text-white leading-tight">بنك الكريمي للتمويل الأصغر الإسلامي</h5>
               </div>
-              <div class="space-y-0.5">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <h5 id="announcement-bank-name" class="text-sm font-black text-white leading-tight">بنك الكريمي للتمويل الأصغر الإسلامي</h5>
-                  <svg class="w-4 h-4 text-[#EAB308] fill-current shrink-0" viewBox="0 0 24 24"><path d="M22.5 12.5c0-1.58-.88-2.95-2.15-3.6.15-.44.24-.91.24-1.4 0-2.21-1.79-4-4-4-.49 0-.96.08-1.4.24C14.55 2.48 13.18 1.6 11.6 1.6c-1.58 0-2.95.88-3.6 2.15-.44-.16-.91-.25-1.4-.25-2.21 0-4 1.79-4 4 0 .49.08.96.24 1.4C1.58 9.55.7 10.92.7 12.5c0 1.58.88 2.95 2.15 3.6-.16.44-.25.91-.25 1.4 0 2.21 1.79 4 4 4 .49 0 .96-.08 1.4-.24.65 1.27 2.02 2.14 3.6 2.14 1.58 0 2.95-.87 3.6-2.14.44.16.91.24 1.4.24 2.21 0 4-1.79 4-4 0-.49-.08-.96-.24-1.4 1.27-.65 2.14-2.02 2.14-3.6z"/><path d="M10.2 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z" fill="#000000"/></svg>
-                </div>
-                <div class="flex items-center gap-1.5 text-zinc-500 text-[11px]">
-                  <span dir="ltr">@kuraimibank</span>
-                  <span>·</span>
-                  <span>منذ يومين</span>
-                </div>
+              <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                <img id="feed-text-bank-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3C/svg%3E" alt="logo" class="w-full h-full object-contain" />
               </div>
             </div>
-            <span class="text-zinc-600 hover:text-zinc-400 cursor-pointer px-1">
-              <i class="fa-solid fa-ellipsis"></i>
-            </span>
           </div>
 
-          <!-- نص التغريدة النظيف والمباشر -->
-          <p id="announcement-bank-text" class="text-[13px] text-zinc-100 leading-relaxed font-normal select-text">
+          <!-- نص المنشور -->
+          <p id="feed-announcement-text" class="text-xs sm:text-[13px] text-zinc-100 leading-relaxed font-normal select-text pr-12">
             عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات وعمليات الدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات على مدار الساعة.
           </p>
 
-          <!-- شريط تفاعلي حقيقي بأسلوب تويتر / X -->
-          <div class="flex items-center justify-between px-2 pt-2.5 border-t border-zinc-900 text-zinc-500 text-xs">
-            <div class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
-              <i class="fa-regular fa-comment text-xs"></i>
-              <span class="text-[11px] font-mono">14</span>
+          <!-- شريط التفاعل بالترتيب الموضح في صورتك -->
+          <div class="flex items-center justify-between pt-2 px-2 text-zinc-400 text-xs select-none">
+            <button type="button" class="hover:text-brand-gold cursor-pointer transition p-1">
+              <i class="fa-regular fa-bookmark text-xs"></i>
+            </button>
+            <div class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
+              <span class="text-[11px] font-mono text-zinc-400">152</span>
+              <i class="fa-regular fa-heart text-xs"></i>
             </div>
             <div class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
+              <span class="text-[11px] font-mono text-zinc-400">28</span>
               <i class="fa-solid fa-retweet text-xs"></i>
-              <span class="text-[11px] font-mono">28</span>
             </div>
-            <div class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
-              <i class="fa-regular fa-heart text-xs"></i>
-              <span class="text-[11px] font-mono">152</span>
-            </div>
-            <div class="flex items-center gap-1.5 hover:text-brand-gold cursor-pointer transition">
-              <i class="fa-regular fa-bookmark text-xs"></i>
+            <div class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
+              <span class="text-[11px] font-mono text-zinc-400">14</span>
+              <i class="fa-regular fa-comment text-xs"></i>
             </div>
           </div>
-        </div>
-        <div id="posts-container" class="grid grid-cols-2 gap-2.5"></div>
+        </article>
+
+        <!-- فاصل ناعم بين المنشورين -->
+        <div class="border-b border-zinc-800/80 my-3"></div>
+
+        <!-- 2. منشور الصور الأربع (مطابق لهيدر تويتر وصورتك بالملي) -->
+        <article class="text-right space-y-2.5">
+          <!-- هيدر منشور الصور -->
+          <div class="flex items-center justify-between">
+            <button type="button" class="text-zinc-600 hover:text-zinc-400 p-1 cursor-pointer">
+              <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
+            </button>
+            <div class="flex items-center gap-2.5">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-zinc-400 text-xs font-medium">· 20 ي</span>
+                <svg class="w-4 h-4 text-[#EAB308] fill-current shrink-0" viewBox="0 0 24 24"><path d="M22.5 12.5c0-1.58-.88-2.95-2.15-3.6.15-.44.24-.91.24-1.4 0-2.21-1.79-4-4-4-.49 0-.96.08-1.4.24C14.55 2.48 13.18 1.6 11.6 1.6c-1.58 0-2.95.88-3.6 2.15-.44-.16-.91-.25-1.4-.25-2.21 0-4 1.79-4 4 0 .49.08.96.24 1.4C1.58 9.55.7 10.92.7 12.5c0 1.58.88 2.95 2.15 3.6-.16.44-.25.91-.25 1.4 0 2.21 1.79 4 4 4 .49 0 .96-.08 1.4-.24.65 1.27 2.02 2.14 3.6 2.14 1.58 0 2.95-.87 3.6-2.14.44.16.91.24 1.4.24 2.21 0 4-1.79 4-4 0-.49-.08-.96-.24-1.4 1.27-.65 2.14-2.02 2.14-3.6z"/><path d="M10.2 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z" fill="#000000"/></svg>
+                <h5 id="feed-media-bank-name" class="text-sm font-black text-white leading-tight">بنك الكريمي للتمويل الأصغر الإسلامي</h5>
+              </div>
+              <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                <img id="feed-media-bank-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3C/svg%3E" alt="logo" class="w-full h-full object-contain" />
+              </div>
+            </div>
+          </div>
+
+          <!-- شبكة الصور الأربع الأصلية بكامل نقائها -->
+          <div id="posts-container" class="grid grid-cols-2 gap-2.5 pt-1"></div>
+
+          <!-- شريط التفاعل أسفل الصور -->
+          <div class="flex items-center justify-between pt-2 px-2 text-zinc-400 text-xs select-none">
+            <button type="button" class="hover:text-brand-gold cursor-pointer transition p-1">
+              <i class="fa-regular fa-bookmark text-xs"></i>
+            </button>
+            <div class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
+              <span class="text-[11px] font-mono text-zinc-400">152</span>
+              <i class="fa-regular fa-heart text-xs"></i>
+            </div>
+            <div class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
+              <span class="text-[11px] font-mono text-zinc-400">28</span>
+              <i class="fa-solid fa-retweet text-xs"></i>
+            </div>
+            <div class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
+              <span class="text-[11px] font-mono text-zinc-400">14</span>
+              <i class="fa-regular fa-comment text-xs"></i>
+            </div>
+          </div>
+        </article>
       </div>
 
-      <!-- العروض -->
       <div id="tab-offers" class="hidden space-y-3">
         <div id="offers-container" class="space-y-3"></div>
       </div>
