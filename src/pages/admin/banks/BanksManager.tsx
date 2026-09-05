@@ -189,7 +189,7 @@ export const BanksManager: React.FC = () => {
 
   // حفظ التعديلات في Supabase
   const handleSaveChanges = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); if (!formData.name) {
       alert('يرجى كتابة اسم البنك على الأقل');
       return;
     }
@@ -422,7 +422,7 @@ export const BanksManager: React.FC = () => {
               <div>
                 <h3 className="text-base font-black text-white flex items-center gap-2">
                   <Landmark className="text-[#FFC500]" size={18} />
-                  {selectedBank ?  : 'إضافة بنك جديد'}
+                  {selectedBank ? ('تعديل بيانات: ' + selectedBank.name) : 'إضافة بنك جديد'}
                 </h3>
                 {selectedBank ? (
                   <span className="text-[11px] text-gray-400 font-mono">ID: {selectedBank.id}</span>
@@ -475,7 +475,7 @@ export const BanksManager: React.FC = () => {
                         </div>
                       )}
                       <label className="px-3 py-1.5 rounded-xl bg-[#1F2937] hover:bg-[#374151] text-white text-[11px] font-bold cursor-pointer transition flex items-center gap-1.5">
-                        {uploadingTarget === 'logo' ? <Loader2, Plus size={13} className="animate-spin text-[#FFC500]" /> : <Upload size={13} />}
+                        {uploadingTarget === 'logo' ? <Loader2 size={13} className="animate-spin text-[#FFC500]" /> : <Upload size={13} />}
                         <span>{formData.logo_url ? 'استبدال الشعار' : 'رفع شعار'}</span>
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFileChange('logo', e)} />
                       </label>
@@ -504,7 +504,7 @@ export const BanksManager: React.FC = () => {
                         </div>
                       )}
                       <label className="px-3 py-1.5 rounded-xl bg-[#1F2937] hover:bg-[#374151] text-white text-[11px] font-bold cursor-pointer transition flex items-center gap-1.5">
-                        {uploadingTarget === 'cover' ? <Loader2, Plus size={13} className="animate-spin text-[#FFC500]" /> : <Upload size={13} />}
+                        {uploadingTarget === 'cover' ? <Loader2 size={13} className="animate-spin text-[#FFC500]" /> : <Upload size={13} />}
                         <span>{formData.cover_url ? 'استبدال الغلاف' : 'رفع غلاف'}</span>
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFileChange('cover', e)} />
                       </label>
@@ -542,7 +542,7 @@ export const BanksManager: React.FC = () => {
                           </div>
                         ) : (
                           <div className="w-full aspect-square rounded-lg border border-dashed border-gray-700 flex flex-col items-center justify-center text-gray-500 gap-1">
-                            {isUp ? <Loader2, Plus size={18} className="animate-spin text-[#FFC500]" /> : <Image size={20} />}
+                            {isUp ? <Loader2 size={18} className="animate-spin text-[#FFC500]" /> : <Image size={20} />}
                             <span className="text-[9px]">{isUp ? 'جاري الرفع...' : 'فارغة'}</span>
                           </div>
                         )}
