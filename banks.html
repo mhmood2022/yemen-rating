@@ -277,7 +277,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       }
     }
 
-                    function renderCards() {
+                        function renderCards() {
       const container = document.getElementById('banks-grid');
       let filtered = banksList.filter(b => {
         const matchesSearch = b.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
@@ -303,7 +303,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       }
 
       container.innerHTML = filtered.map(bank => {
-        // 1. الغلاف المصغر الحقيقي لكل بنك
+        // 1. الغلاف المصغر الديناميكي
         let coverHtml = '';
         if (bank.cover_url) {
           coverHtml = `
@@ -317,8 +317,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
             <div class="relative w-full h-36 bg-gradient-to-r from-[#0D2137] via-[#102A45] to-[#0A192B] flex items-center justify-between px-5 select-none overflow-hidden">
               <div class="opacity-15"><i class="fa-solid fa-building-columns text-white text-5xl"></i></div>
               <div class="text-right">
-                <h3 class="text-white text-base font-black tracking-wide leading-tight line-clamp-1">${bank.name}</h3>
-                <p class="text-blue-200 text-[11px] font-bold mt-1">خدمات مالية ومصرفية</p>
+                <h3 class="text-white text-sm font-black tracking-wide leading-tight line-clamp-1">${bank.name}</h3>
+                <p class="text-blue-200 text-[10px] font-bold mt-1">خدمات مالية ومصرفية</p>
               </div>
               <div class="w-10 h-10 flex items-center justify-center opacity-30">
                 <i class="fa-solid fa-shapes text-white text-2xl"></i>
@@ -327,40 +327,31 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           `;
         }
 
-        // 2. الشعار في مربع أبيض فاخر بإطار أسود مطابق لصفحة البنك
+        // 2. الشعار بدون أي بياض أو استروك أبيض (مطابق لـ bank.html تماماً)
         const logoHtml = bank.logo_url ? `
-          <div class="w-16 h-16 rounded-2xl bg-white p-1.5 shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden shrink-0">
+          <div class="w-16 h-16 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden shrink-0 bg-[#0B0F17]">
             <img src="${bank.logo_url}" alt="${bank.name}" class="w-full h-full object-contain" />
           </div>
         ` : `
-          <div class="w-16 h-16 rounded-2xl bg-white p-2 shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden shrink-0">
-            <i class="fa-solid fa-building-columns text-zinc-800 text-2xl"></i>
+          <div class="w-16 h-16 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden shrink-0 bg-[#0B0F17]">
+            <i class="fa-solid fa-building-columns text-zinc-500 text-2xl"></i>
           </div>
         `;
 
-        // 3. الزر الأحمر لإثبات الملكية مثل صفحة البنك
-        let claimBtnHtml = '';
-        if (typeof pendingClaimsSet !== 'undefined' && pendingClaimsSet && pendingClaimsSet.has(bank.id)) {
-          claimBtnHtml = `
-            <div class="inline-flex items-center gap-1.5 bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full shadow">
-              <i class="fa-solid fa-clock text-xs"></i>
-              <span>قيد المراجعة</span>
-            </div>
-          `;
-        } else {
-          claimBtnHtml = `
-            <button
-              type="button"
-              onclick="event.stopPropagation(); openClaimModal('${bank.id}', '${bank.name}')"
-              class="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg transition active:scale-95 cursor-pointer"
-            >
-              <i class="fa-solid fa-shield-halved text-xs"></i>
-              <span>إثبات الملكية</span>
-            </button>
-          `;
-        }
+        // 3. الزر الأحمر لإثبات الملكية (مطابق لصفحة البنك الرسمية)
+        const safeName = (bank.name || '').replace(/'/g, "\'");
+        const claimBtnHtml = `
+          <button
+            type="button"
+            onclick="event.stopPropagation(); openClaimModal('${bank.id}', '${safeName}')"
+            class="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg transition active:scale-95 cursor-pointer"
+          >
+            <i class="fa-solid fa-shield-halved text-xs"></i>
+            <span>إثبات الملكية</span>
+          </button>
+        `;
 
-        // 4. التقييم
+        // 4. التقييم المصغر
         let ratingHtml = '';
         if (bank.ratingAvg && bank.ratingCount > 0) {
           ratingHtml = `
@@ -374,14 +365,17 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           ratingHtml = `<div class="text-right pt-0.5"><span class="text-zinc-500 text-xs">لا توجد تقييمات بعد</span></div>`;
         }
 
+        const targetUrl = '/bank?slug=' + encodeURIComponent(bank.slug || bank.id);
+
         return `
           <article
-            onclick="window.location.href='/bank?slug=' + (bank.slug || bank.id)"
+            onclick="window.location.href='${targetUrl}'"
             class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer group"
           >
             <div>
               ${coverHtml}
 
+              <!-- الشعار في اليمين بدون بياض، والزر الأحمر في اليسار -->
               <div class="px-4 relative flex items-end justify-between -mt-8 mb-2">
                 <div class="relative z-10 order-1">
                   ${logoHtml}
@@ -391,9 +385,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
                 </div>
               </div>
 
+              <!-- الاسم مصغر بأناقة + الشارة بجانبه في نفس السطر -->
               <div class="px-4 pt-1 pb-3 text-right space-y-1.5">
-                <div class="flex items-center justify-start gap-1.5 flex-wrap">
-                  <h2 class="text-base font-black text-white leading-tight group-hover:text-brand-gold transition">
+                <div class="inline-flex items-center gap-1.5 flex-wrap">
+                  <h2 class="text-sm font-black text-white leading-tight group-hover:text-brand-gold transition">
                     ${bank.name}
                   </h2>
                   ${bank.verified ? renderVerifiedRosette(bank.badgeColor) : ''}
@@ -416,10 +411,11 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
               </div>
             </div>
 
+            <!-- زر الانتقال الفردي الموثوق -->
             <div class="p-4 pt-1">
               <button
                 type="button"
-                onclick="event.stopPropagation(); window.location.href='/bank?slug=' + (bank.slug || bank.id)"
+                onclick="event.stopPropagation(); window.location.href='${targetUrl}'"
                 class="w-full py-2.5 rounded-xl bg-brand-gold hover:bg-brand-goldHover text-black font-black text-sm flex items-center justify-center gap-2 shadow transition active:scale-98 cursor-pointer"
               >
                 <span>عرض صفحة البنك</span>
