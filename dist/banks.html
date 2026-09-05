@@ -264,7 +264,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
             description: b.description || b.short_description || '',
             verified: b.verified === true || b.is_verified === true,
             logo_url: b.logo_url || null,
-            cover_url: b.cover_url || null,
+            cover_url: b.cover_url || b.cover || b.banner_url || b.image_url || null,
             badgeColor: b.badge_type === 'blue' ? '#1D9BF0' : '#EAB308',
             ratingAvg: avg,
             ratingCount: count
@@ -277,29 +277,25 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       }
     }
 
-    function renderCards() {
+                        function renderCards() {
       const container = document.getElementById('banks-grid');
-
       let filtered = banksList.filter(b => {
-        const matchesSearch = b.name.toLowerCase().includes(searchKeyword.toLowerCase()) || 
+        const matchesSearch = b.name.toLowerCase().includes(searchKeyword.toLowerCase()) ||
                               b.city.toLowerCase().includes(searchKeyword.toLowerCase());
-        
         let matchesCity = true;
         if (selectedCity !== 'all') {
           matchesCity = b.city.includes(selectedCity);
         }
-
         let matchesVerified = true;
         if (onlyVerified) {
           matchesVerified = b.verified === true;
         }
-
         return matchesSearch && matchesCity && matchesVerified;
       });
 
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div class="text-center py-16 bg-[#0B0F17] border border-zinc-800 rounded-2xl p-6">
+          <div class="text-center py-16 bg-[#0B0F17] border border-zinc-800 rounded-2xl p-6 col-span-full">
             <h3 class="text-sm font-bold text-white">لا توجد بنوك مطابقة للبحث</h3>
           </div>
         `;
@@ -307,75 +303,61 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       }
 
       container.innerHTML = filtered.map(bank => {
-        const isTadhamon = bank.slug === 'tadhamon';
-
-        // 1. الغلاف الرسمي النظيف
-        const coverHtml = isTadhamon ? `
-          <div class="relative w-full h-40 bg-[#0055A5] flex items-center justify-between px-6 select-none overflow-hidden">
-            <div class="opacity-15"><i class="fa-solid fa-shapes text-white text-5xl"></i></div>
-            <div class="text-center">
-              <h2 class="text-white text-2xl font-black tracking-wide leading-tight">بنك التضامن</h2>
-              <p class="text-blue-100 text-xs font-bold tracking-wider uppercase mt-1">Tadhamon Bank</p>
-            </div>
-            <div class="w-12 h-12 flex items-center justify-center">
-              <i class="fa-solid fa-cube text-white text-3xl"></i>
-            </div>
-          </div>
-        ` : `
-          <div class="relative w-full h-40 bg-gradient-to-r from-[#0D2137] via-[#102A45] to-[#0A192B] flex items-center justify-between px-6 select-none overflow-hidden">
-            <div class="opacity-15"><i class="fa-solid fa-building-columns text-white text-5xl"></i></div>
-            <div class="text-center">
-              <h2 class="text-brand-gold text-xl font-black tracking-wide leading-tight">بنك الكريمي</h2>
-              <p class="text-white text-xs font-bold mt-1">للتمويل الأصغر الإسلامي</p>
-            </div>
-            <div class="w-12 h-12 flex items-center justify-center">
-              <i class="fa-solid fa-landmark text-brand-gold text-3xl"></i>
-            </div>
-          </div>
-        `;
-
-        // 2. الشعار في اليمين متداخل
-        const logoHtml = bank.logo_url ? `
-          <div class="w-16 h-16 rounded-2xl bg-white p-1.5 shadow-2xl border-2 border-[#0B0F17] flex items-center justify-center overflow-hidden shrink-0">
-            <img src="${bank.logo_url}" alt="${bank.name}" class="w-full h-full object-contain" />
-          </div>
-        ` : `
-          <div class="w-16 h-16 rounded-2xl bg-white p-2 shadow-2xl border-2 border-[#0B0F17] flex items-center justify-center overflow-hidden shrink-0">
-            <i class="fa-solid fa-landmark text-[#0D2137] text-3xl"></i>
-          </div>
-        `;
-
-        // 3. شارة / زر التوثيق بأسلوب جوجل الراقي (منفصل ونازل عن الغلاف بأناقة)
-        let claimBadgeHtml = '';
-        if (bank.verified) {
-          claimBadgeHtml = `
-            <div class="inline-flex items-center gap-1.5 bg-[#0A2618] border border-[#185332] text-[#4ADE80] text-xs font-bold px-3 py-1.5 rounded-full shadow-md mt-3">
-              <span class="w-4 h-4 rounded-full bg-[#EAB308] border border-black flex items-center justify-center text-black text-[9px]">
-                <i class="fa-solid fa-check"></i>
-              </span>
-              <span>تم إثبات الملكية</span>
+        // 1. الغلاف المصغر الديناميكي
+        let coverHtml = '';
+        if (bank.cover_url) {
+          coverHtml = `
+            <div class="relative w-full h-36 select-none overflow-hidden bg-zinc-950">
+              <img src="${bank.cover_url}" alt="${bank.name}" class="w-full h-full object-cover" />
+              <div class="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-black/25 to-transparent"></div>
             </div>
           `;
         } else {
-          claimBadgeHtml = `
-            <button
-              type="button"
-              onclick="event.stopPropagation(); openClaimModal('${bank.id}', '${bank.name}')"
-              class="inline-flex items-center gap-1.5 bg-[#2A0E0E] hover:bg-[#3D1414] border border-[#661F1F] text-[#F87171] text-xs font-bold px-3 py-1.5 rounded-full shadow-md transition active:scale-95 cursor-pointer mt-3"
-            >
-              <i class="fa-solid fa-shield-halved text-xs text-[#EF4444]"></i>
-              <span>إثبات ملكية الصفحة</span>
-            </button>
+          coverHtml = `
+            <div class="relative w-full h-36 bg-gradient-to-r from-[#0D2137] via-[#102A45] to-[#0A192B] flex items-center justify-between px-5 select-none overflow-hidden">
+              <div class="opacity-15"><i class="fa-solid fa-building-columns text-white text-5xl"></i></div>
+              <div class="text-right">
+                <h3 class="text-white text-sm font-black tracking-wide leading-tight line-clamp-1">${bank.name}</h3>
+                <p class="text-blue-200 text-[10px] font-bold mt-1">خدمات مالية ومصرفية</p>
+              </div>
+              <div class="w-10 h-10 flex items-center justify-center opacity-30">
+                <i class="fa-solid fa-shapes text-white text-2xl"></i>
+              </div>
+            </div>
           `;
         }
 
-        // 4. سطر التقييم يبدأ من اليمين
+        // 2. الشعار بدون أي بياض أو استروك أبيض (مطابق لـ bank.html تماماً)
+        const logoHtml = bank.logo_url ? `
+          <div class="w-16 h-16 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden shrink-0 bg-[#0B0F17]">
+            <img src="${bank.logo_url}" alt="${bank.name}" class="w-full h-full object-contain" />
+          </div>
+        ` : `
+          <div class="w-16 h-16 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden shrink-0 bg-[#0B0F17]">
+            <i class="fa-solid fa-building-columns text-zinc-500 text-2xl"></i>
+          </div>
+        `;
+
+        // 3. الزر الأحمر لإثبات الملكية (مطابق لصفحة البنك الرسمية)
+        const safeName = (bank.name || '').replace(/'/g, "\'");
+        const claimBtnHtml = `
+          <button
+            type="button"
+            onclick="event.stopPropagation(); openClaimModal('${bank.id}', '${safeName}')"
+            class="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg transition active:scale-95 cursor-pointer"
+          >
+            <i class="fa-solid fa-shield-halved text-xs"></i>
+            <span>إثبات الملكية</span>
+          </button>
+        `;
+
+        // 4. التقييم المصغر
         let ratingHtml = '';
         if (bank.ratingAvg && bank.ratingCount > 0) {
           ratingHtml = `
             <div class="flex items-center justify-start gap-1.5 text-xs font-bold pt-0.5">
-              <i class="fa-solid fa-star text-brand-gold text-xs"></i>
-              <span class="text-white font-mono">${bank.ratingAvg}</span>
+              <span class="text-zinc-400 font-normal">★ التقييمات</span>
+              <span class="text-brand-gold font-black font-mono">${bank.ratingAvg}</span>
               <span class="text-zinc-400 text-[11px] font-normal">(${bank.ratingCount} تقييم)</span>
             </div>
           `;
@@ -383,69 +365,63 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           ratingHtml = `<div class="text-right pt-0.5"><span class="text-zinc-500 text-xs">لا توجد تقييمات بعد</span></div>`;
         }
 
+        const targetUrl = '/bank?slug=' + encodeURIComponent(bank.slug || bank.id);
+
         return `
           <article
-            onclick="window.location.href='/bank?slug=' + (bank.slug || bank.id)"
-            class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer"
+            onclick="window.location.href='${targetUrl}'"
+            class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer group"
           >
             <div>
-              <!-- أ. الغلاف الرسمي -->
               ${coverHtml}
 
-              <!-- ب. سطر التداخل النظيف: الشعار في اليمين بالبداية، والزر في اليسار نازل بأناقة -->
-              <div class="px-4 relative flex items-start justify-between -mt-7 mb-2">
-                <!-- الشعار أولاً (في اليمين الطبيعي لـ RTL) -->
-                <div class="relative z-10">
+              <!-- الشعار في اليمين بدون بياض، والزر الأحمر في اليسار -->
+              <div class="px-4 relative flex items-end justify-between -mt-8 mb-2">
+                <div class="relative z-10 order-1">
                   ${logoHtml}
                 </div>
-
-                <!-- زر/شارة التوثيق ثانياً (في اليسار الطبيعي لـ RTL ونازل بمسافة كافية عن الغلاف) -->
-                <div>
-                  ${claimBadgeHtml}
+                <div class="order-2 mb-1">
+                  ${claimBtnHtml}
                 </div>
               </div>
 
-              <!-- ج. تفاصيل البنك في اليمين بالكامل (justify-start لضمان المحاذاة لليمين) -->
+              <!-- الاسم مصغر بأناقة + الشارة بجانبه في نفس السطر -->
               <div class="px-4 pt-1 pb-3 text-right space-y-1.5">
-                
-                <!-- اسم البنك وشارة التوثيق في اليمين -->
-                <div class="flex items-center justify-start gap-1.5">
-                  <h2 class="text-base font-black text-white leading-tight">
+                <div class="inline-flex items-center gap-1.5 flex-wrap">
+                  <h2 class="text-sm font-black text-white leading-tight group-hover:text-brand-gold transition">
                     ${bank.name}
                   </h2>
                   ${bank.verified ? renderVerifiedRosette(bank.badgeColor) : ''}
                 </div>
 
-                <!-- المقر والمدينة في اليمين -->
+                ${ratingHtml}
+
+                ${bank.description ? `
+                  <p class="text-xs text-zinc-300 leading-relaxed pt-1 line-clamp-2">
+                    ${bank.description}
+                  </p>
+                ` : ''}
+
                 ${bank.city ? `
-                  <div class="flex items-center justify-start gap-1 text-xs text-zinc-400">
+                  <div class="flex items-center justify-start gap-1 text-xs text-zinc-400 pt-1">
                     <i class="fa-solid fa-location-dot text-brand-gold text-[11px]"></i>
                     <span>${bank.city}</span>
                   </div>
                 ` : ''}
-
-                <!-- التقييم الحقيقي في اليمين -->
-                ${ratingHtml}
-
-                <!-- النبذة والوصف الحقيقي في اليمين -->
-                <p class="text-xs text-zinc-300 leading-relaxed pt-1 line-clamp-2">
-                  ${bank.description}
-                </p>
               </div>
             </div>
 
-            <!-- د. زر عرض صفحة البنك الأصفر المتناسق -->
+            <!-- زر الانتقال الفردي الموثوق -->
             <div class="p-4 pt-1">
               <button
                 type="button"
-                onclick="window.location.href='/bank?slug=${bank.slug}'"
+                onclick="event.stopPropagation(); window.location.href='${targetUrl}'"
                 class="w-full py-2.5 rounded-xl bg-brand-gold hover:bg-brand-goldHover text-black font-black text-sm flex items-center justify-center gap-2 shadow transition active:scale-98 cursor-pointer"
               >
                 <span>عرض صفحة البنك</span>
                 <i class="fa-solid fa-arrow-left text-xs"></i>
               </button>
             </div>
-
           </article>
         `;
       }).join('');
