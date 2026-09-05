@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Landmark, Search, Filter, ShieldCheck, CheckCircle2, 
   XCircle, Edit3, Image, Upload, Trash2, Eye, ExternalLink,
-  Phone, Globe, Mail, MapPin, AlertCircle, Check, X, Loader2
+  Phone, Globe, Mail, MapPin, AlertCircle, Check, X, Loader2, Plus
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 
@@ -69,6 +69,32 @@ export const BanksManager: React.FC = () => {
   useEffect(() => {
     fetchBanks();
   }, []);
+
+  // فتح نافذة إضافة بنك جديد
+  const handleOpenAdd = () => {
+    setSelectedBank(null);
+    setFormData({
+      name: '',
+      slug: '',
+      city: 'صنعاء',
+      address: '',
+      description: '',
+      phone: '',
+      whatsapp: '',
+      email: '',
+      website: '',
+      logo_url: null,
+      cover_url: null,
+      badge_type: 'gold',
+      verified: false,
+      status: 'active',
+      is_published: true,
+      priority_level: 'normal'
+    });
+    setGalleryImages([null, null, null, null]);
+    setSaveSuccess(false);
+    setIsEditing(true);
+  };
 
   // فتح نافذة التعديل
   const handleOpenEdit = (bank: BankRecord) => {
@@ -164,7 +190,9 @@ export const BanksManager: React.FC = () => {
   // حفظ التعديلات في Supabase
   const handleSaveChanges = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedBank) return;
+      alert('يرجى كتابة اسم البنك على الأقل');
+      return;
+    }
     setSaving(true);
     setSaveSuccess(false);
 
@@ -199,10 +227,19 @@ export const BanksManager: React.FC = () => {
         posts: validPosts
       };
 
-      const { error } = await supabase
-        .from('banks')
-        .update(payload)
-        .eq('id', selectedBank.id);
+      let error;
+      if (selectedBank && selectedBank.id) {
+        const res = await supabase
+          .from('banks')
+          .update(payload)
+          .eq('id', selectedBank.id);
+        error = res.error;
+      } else {
+        const res = await supabase
+          .from('banks')
+          .insert([payload]);
+        error = res.error;
+      }
 
       if (error) throw error;
 
@@ -376,7 +413,7 @@ export const BanksManager: React.FC = () => {
       )}
 
       {/* نافذة تعديل بيانات البنك الشاملة */}
-      {isEditing && selectedBank && (
+      {isEditing && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           <div className="bg-[#0B0F17] border border-[#1F2937] rounded-3xl w-full max-w-2xl p-5 sm:p-6 space-y-5 shadow-2xl my-auto text-right max-h-[90vh] overflow-y-auto no-scrollbar">
             
@@ -384,9 +421,14 @@ export const BanksManager: React.FC = () => {
             <div className="flex items-center justify-between pb-3 border-b border-[#1F2937]">
               <div>
                 <h3 className="text-base font-black text-white flex items-center gap-2">
-                  <Landmark className="text-[#FFC500]" size={18} /> تعديل بيانات: {selectedBank.name}
+                  <Landmark className="text-[#FFC500]" size={18} />
+                  {selectedBank ?  : 'إضافة بنك جديد'}
                 </h3>
-                <span className="text-[11px] text-gray-400 font-mono">ID: {selectedBank.id}</span>
+                {selectedBank ? (
+                  <span className="text-[11px] text-gray-400 font-mono">ID: {selectedBank.id}</span>
+                ) : (
+                  <span className="text-[11px] text-gray-400">تسجيل بنك جديد في قاعدة البيانات</span>
+                )}
               </div>
               <button
                 type="button"
@@ -433,7 +475,7 @@ export const BanksManager: React.FC = () => {
                         </div>
                       )}
                       <label className="px-3 py-1.5 rounded-xl bg-[#1F2937] hover:bg-[#374151] text-white text-[11px] font-bold cursor-pointer transition flex items-center gap-1.5">
-                        {uploadingTarget === 'logo' ? <Loader2 size={13} className="animate-spin text-[#FFC500]" /> : <Upload size={13} />}
+                        {uploadingTarget === 'logo' ? <Loader2, Plus size={13} className="animate-spin text-[#FFC500]" /> : <Upload size={13} />}
                         <span>{formData.logo_url ? 'استبدال الشعار' : 'رفع شعار'}</span>
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFileChange('logo', e)} />
                       </label>
@@ -462,7 +504,7 @@ export const BanksManager: React.FC = () => {
                         </div>
                       )}
                       <label className="px-3 py-1.5 rounded-xl bg-[#1F2937] hover:bg-[#374151] text-white text-[11px] font-bold cursor-pointer transition flex items-center gap-1.5">
-                        {uploadingTarget === 'cover' ? <Loader2 size={13} className="animate-spin text-[#FFC500]" /> : <Upload size={13} />}
+                        {uploadingTarget === 'cover' ? <Loader2, Plus size={13} className="animate-spin text-[#FFC500]" /> : <Upload size={13} />}
                         <span>{formData.cover_url ? 'استبدال الغلاف' : 'رفع غلاف'}</span>
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFileChange('cover', e)} />
                       </label>
@@ -500,7 +542,7 @@ export const BanksManager: React.FC = () => {
                           </div>
                         ) : (
                           <div className="w-full aspect-square rounded-lg border border-dashed border-gray-700 flex flex-col items-center justify-center text-gray-500 gap-1">
-                            {isUp ? <Loader2 size={18} className="animate-spin text-[#FFC500]" /> : <Image size={20} />}
+                            {isUp ? <Loader2, Plus size={18} className="animate-spin text-[#FFC500]" /> : <Image size={20} />}
                             <span className="text-[9px]">{isUp ? 'جاري الرفع...' : 'فارغة'}</span>
                           </div>
                         )}
