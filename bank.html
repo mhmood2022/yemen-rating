@@ -753,150 +753,177 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       renderUI();
     }
 
+    
     function renderUI() {
-      // تحديث الشعار الحقيقي
-      if (currentBank.logo_url) {
-        const logoImg = document.getElementById('bank-logo');
-        if (logoImg) {
-          logoImg.src = currentBank.logo_url;
-          logoImg.classList.remove('opacity-50');
+      try {
+        // تحديث الشعار
+        if (currentBank.logo_url) {
+          const logoImg = document.getElementById('bank-logo');
+          if (logoImg) {
+            logoImg.src = currentBank.logo_url;
+            logoImg.classList.remove('opacity-50');
+          }
         }
-      }
 
-      // تحديث الغلاف الحقيقي
-      if (currentBank.cover_url) {
+        // تحديث الغلاف
         const coverEl = document.getElementById('bank-cover');
-        if (coverEl) {
+        if (coverEl && currentBank.cover_url) {
           coverEl.style.backgroundImage = 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.85)), url(' + currentBank.cover_url + ')';
           coverEl.style.backgroundSize = 'cover';
           coverEl.style.backgroundPosition = 'center';
         }
-      }
 
-      // تفعيل الشعار الحقيقي
-      const logoImg = document.getElementById('bank-logo');
-      if (logoImg && currentBank.logo_url) {
-        logoImg.src = currentBank.logo_url;
-      }
+        // بيانات البنك الأساسية
+        const nameEl = document.getElementById('bank-name');
+        if (nameEl) nameEl.innerText = currentBank.name || '';
 
-      // 2. تفعيل الغلاف الحقيقي
-      const coverEl = document.getElementById('bank-cover');
-      if (coverEl && currentBank.cover_url) {
-        coverEl.style.backgroundImage = 'linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.3)), url(' + currentBank.cover_url + ')';
-        coverEl.style.backgroundSize = 'cover';
-        coverEl.style.backgroundPosition = 'center';
-      }
+        const badgeSlot = document.getElementById('bank-badge-slot');
+        if (badgeSlot) {
+          badgeSlot.innerHTML = currentBank.is_verified ? renderVerificationBadge(currentBank.badge_type || 'gold') : '';
+        }
 
-      // 3. اسم البنك
-      document.getElementById('bank-name').innerText = currentBank.name;
-      // تم إلغاء الاسم فوق الغلاف
-      document.getElementById('bank-bio').innerText = currentBank.description;
-      document.getElementById('bank-location').innerText = currentBank.address || "اليمن";
-      document.getElementById('bank-badge-slot').innerHTML = renderVerificationBadge(currentBank.badge_type);
+        const bioEl = document.getElementById('bank-bio');
+        if (bioEl) bioEl.innerText = currentBank.description || currentBank.bio || '';
 
-      document.getElementById('contact-web').href = currentBank.website_url || "#";
-      document.getElementById('contact-wa').href = currentBank.whatsapp ? (currentBank.whatsapp.startsWith('http') ? currentBank.whatsapp : `https://wa.me/${currentBank.whatsapp}`) : "#";
-      document.getElementById('contact-mail').href = currentBank.email ? `mailto:${currentBank.email}` : "#";
+        const locEl = document.getElementById('bank-location');
+        if (locEl) locEl.innerText = currentBank.address || currentBank.location || currentBank.city || '';
 
-      const postsContainer = document.getElementById('posts-container');
-      
-      // 1. عرض المنشورات النصية مع الحفاظ على صور المعرض
-      const postsContainer = document.getElementById('posts-container');
-      const textPostsContainer = document.getElementById('text-posts-container');
-      
-      const allPosts = currentPosts || [];
-      const imagePosts = allPosts.filter(p => p.image || p.file_url);
-      const textPosts = (currentBank.text_posts || []).concat(allPosts.filter(p => !p.image && !p.file_url && (p.text || p.desc || p.title)));
+        const catEl = document.getElementById('bank-category');
+        if (catEl) catEl.innerText = currentBank.category || 'خدمات مالية ومصرفية';
 
-      if (textPostsContainer) {
-        if (textPosts.length > 0) {
-          textPostsContainer.innerHTML = textPosts.map(tp => `
-            <div class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl p-4 space-y-2.5 shadow-lg text-right">
-              <div class="flex items-center justify-between pb-2 border-b border-zinc-800/50">
-                <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-xl bg-black border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
-                    <img src="${currentBank.logo_url || ''}" alt="logo" class="w-full h-full object-contain" />
+        // 1. عرض المنشورات: نصية + صورية
+        const allPosts = currentPosts || [];
+        const imagePosts = allPosts.filter(p => p.image || p.file_url);
+        const textPosts = (currentBank.text_posts || []).concat(allPosts.filter(p => !p.image && !p.file_url && (p.text || p.desc || p.title)));
+
+        const textPostsContainer = document.getElementById('text-posts-container');
+        if (textPostsContainer) {
+          if (textPosts.length > 0) {
+            textPostsContainer.innerHTML = textPosts.map(tp => `
+              <div class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl p-4 space-y-2 shadow-lg text-right">
+                <div class="flex items-center justify-between pb-2 border-b border-zinc-800/50">
+                  <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-black border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                      <img src="${currentBank.logo_url || ''}" alt="logo" class="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                      <h5 class="text-xs font-black text-white leading-tight">${currentBank.name}</h5>
+                      <span class="text-[10px] text-brand-gold font-bold">${tp.tag || 'إعلان وتحديث رسمي'}</span>
+                    </div>
                   </div>
-                  <div>
-                    <h5 class="text-xs font-black text-white leading-tight">${currentBank.name}</h5>
-                    <span class="text-[10px] text-brand-gold font-bold">${tp.tag || 'إعلان وتحديث رسمي'}</span>
-                  </div>
+                  <span class="text-[10px] text-zinc-500 font-mono">${tp.date || 'منشور رسمي'}</span>
                 </div>
-                <span class="text-[10px] text-zinc-500 font-mono">${tp.date || 'منشور رسمي'}</span>
+                <p class="text-xs text-zinc-200 leading-relaxed font-medium">${tp.text || tp.desc || tp.title || ''}</p>
               </div>
-              <p class="text-xs text-zinc-200 leading-relaxed font-medium">${tp.text || tp.desc || tp.title || ''}</p>
+            `).join('');
+          } else {
+            textPostsContainer.innerHTML = '';
+          }
+        }
+
+        const postsContainer = document.getElementById('posts-container');
+        if (postsContainer) {
+          postsContainer.innerHTML = imagePosts.map((post, index) => `
+            <div class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-md flex flex-col group cursor-pointer" onclick="openLightbox(${index})">
+              <div class="relative w-full h-36 bg-zinc-950 overflow-hidden">
+                <img src="${post.image || post.file_url}" alt="${post.title || 'منشور'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                ${post.tag ? `<span class="absolute top-2 right-2 bg-black/70 backdrop-blur-md text-brand-gold text-[10px] font-black px-2 py-0.5 rounded-md border border-brand-gold/30">${post.tag}</span>` : ''}
+              </div>
+              ${post.title ? `
+                <div class="p-2.5 text-right">
+                  <h5 class="text-xs font-bold text-white line-clamp-1">${post.title}</h5>
+                  ${post.desc ? `<p class="text-[10px] text-zinc-400 mt-1 line-clamp-2">${post.desc}</p>` : ''}
+                </div>
+              ` : ''}
             </div>
           `).join('');
-        } else {
-          textPostsContainer.innerHTML = '';
         }
-      }
 
-      if (postsContainer) {
-        postsContainer.innerHTML = imagePosts.map((post, index) => `
-          <div class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-md flex flex-col group cursor-pointer" onclick="openLightbox(${index})">
-            <div class="relative w-full h-36 bg-zinc-950 overflow-hidden">
-              <img src="${post.image || post.file_url}" alt="${post.title || 'منشور'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-              ${post.tag ? `<span class="absolute top-2 right-2 bg-black/70 backdrop-blur-md text-brand-gold text-[10px] font-black px-2 py-0.5 rounded-md border border-brand-gold/30">${post.tag}</span>` : ''}
-            </div>
-            ${post.title ? `
-              <div class="p-2.5 text-right">
-                <h5 class="text-xs font-bold text-white line-clamp-1">${post.title}</h5>
-                ${post.desc ? `<p class="text-[10px] text-zinc-400 mt-1 line-clamp-2">${post.desc}</p>` : ''}
+        // 2. العروض
+        const offersContainer = document.getElementById('offers-container');
+        if (offersContainer) {
+          const offersList = currentBank.offers || FALLBACK_BANK.offers || [];
+          offersContainer.innerHTML = offersList.map(offer => `
+            <div class="bg-[#0D0D0D] border border-zinc-800 p-3.5 rounded-xl text-right">
+              <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
+                <span class="bg-brand-gold text-black font-black text-[10px] px-2.5 py-0.5 rounded">${offer.tag || 'عرض خاص'}</span>
+                <span class="text-[10px] text-zinc-400 font-medium">${offer.expiry || ''}</span>
               </div>
-            ` : ''}
-          </div>
-        `).join('');
-      }
-
-      // 2. التحكم في ظهور الوحدات الإعلانية الثلاث برمجياً دون رسم مستطيلات عند غياب الإعلان
-      function applyAdUnit(slotId, adData) {
-        const slot = document.getElementById(slotId);
-        if (!slot) return;
-        if (!adData || (!adData.image && !adData.image_url && !adData.html)) {
-          slot.className = 'hidden';
-          slot.innerHTML = '';
-          return;
+              <h4 class="text-sm font-bold text-white leading-snug">${offer.title}</h4>
+              <p class="text-xs text-zinc-400 mt-1.5 leading-relaxed">${offer.desc || ''}</p>
+            </div>
+          `).join('');
         }
-        slot.className = 'w-full my-3.5 overflow-hidden rounded-2xl shadow-xl block';
-        if (adData.html) {
-          slot.innerHTML = adData.html;
-        } else {
-          const imgSrc = adData.image || adData.image_url;
-          const href = adData.link || adData.url || '#';
-          slot.innerHTML = `
-            <a href="${href}" target="_blank" rel="noopener noreferrer" class="block w-full overflow-hidden rounded-2xl transition hover:opacity-95">
-              <img src="${imgSrc}" alt="${adData.title || 'إعلان'}" class="w-full h-auto object-cover max-h-36 sm:max-h-44 rounded-2xl" />
-            </a>
-          `;
+
+        // 3. الخدمات
+        const servicesContainer = document.getElementById('services-container');
+        if (servicesContainer) {
+          const sList = currentBank.services || FALLBACK_BANK.services || [];
+          servicesContainer.innerHTML = sList.map(service => `
+            <div class="bg-[#0D0D0D] border border-zinc-800 p-3 rounded-xl flex items-center justify-between text-right">
+              <i class="${service.icon || 'fa-solid fa-briefcase'} text-brand-gold text-2xl ml-3 shrink-0"></i>
+              <div>
+                <h4 class="text-sm font-bold text-white">${service.service_name || service.title || ''}</h4>
+                <p class="text-xs text-zinc-400 mt-0.5 leading-snug">${service.description || service.desc || ''}</p>
+              </div>
+            </div>
+          `).join('');
         }
+
+        // 4. تشغيل الإعلانات برمجياً (مخفية تماماً إلا إذا توفر إعلان حقيقي)
+        function renderAdSlot(slotId, adData) {
+          const slot = document.getElementById(slotId);
+          if (!slot) return;
+          if (!adData || (!adData.image && !adData.image_url && !adData.html)) {
+            slot.className = 'hidden';
+            slot.innerHTML = '';
+            return;
+          }
+          slot.className = 'w-full my-3.5 overflow-hidden rounded-2xl shadow-xl block';
+          if (adData.html) {
+            slot.innerHTML = adData.html;
+          } else {
+            const imgSrc = adData.image || adData.image_url;
+            const href = adData.link || adData.url || '#';
+            slot.innerHTML = `<a href="${href}" target="_blank" rel="noopener noreferrer" class="block w-full overflow-hidden rounded-2xl"><img src="${imgSrc}" class="w-full h-auto object-cover max-h-36 rounded-2xl" /></a>`;
+          }
+        }
+
+        const bankAds = currentBank.ads || {};
+        renderAdSlot('ad-unit-header', bankAds.header || bankAds.top);
+        renderAdSlot('ad-unit-middle', bankAds.middle || bankAds.mid);
+        renderAdSlot('ad-unit-bottom', bankAds.bottom);
+
+        // 5. ربط أزرار التواصل وساعات العمل
+        const callBtn = document.getElementById('btn-phone-call');
+        if (callBtn && currentBank.phone) callBtn.href = 'tel:' + currentBank.phone;
+
+        const waBtn = document.getElementById('btn-whatsapp-chat');
+        if (waBtn && currentBank.whatsapp) waBtn.href = 'https://wa.me/' + currentBank.whatsapp.replace(/[^0-9]/g, '');
+
+        const emailBtn = document.getElementById('btn-email-send');
+        if (emailBtn && currentBank.email) emailBtn.href = 'mailto:' + currentBank.email;
+
+        const webBtn = document.getElementById('btn-website-visit');
+        if (webBtn && (currentBank.website_url || currentBank.website)) webBtn.href = currentBank.website_url || currentBank.website;
+
+        const hqCity = document.getElementById('bank-hq-city');
+        if (hqCity && (currentBank.address || currentBank.city)) hqCity.innerText = (currentBank.address || currentBank.city).split('—')[0];
+
+        // التقييمات
+        const revs = currentBank.reviews || FALLBACK_BANK.reviews || [];
+        updateRatingsDisplay(revs);
+      } catch (err) {
+        console.error('Render UI Error:', err);
+      } finally {
+        // إخفاء شاشة التحميل بشكل قاطع ومضمون
+        const loadingOverlay = document.getElementById('loading-overlay') || document.getElementById('bank-loading');
+        if (loadingOverlay) {
+          loadingOverlay.classList.add('hidden');
+          loadingOverlay.style.display = 'none';
+        }
+        document.body.classList.remove('overflow-hidden');
       }
-
-      const bankAds = currentBank.ads || {};
-      applyAdUnit('ad-unit-header', bankAds.header || bankAds.top);
-      applyAdUnit('ad-unit-middle', bankAds.middle || bankAds.mid);
-      applyAdUnit('ad-unit-bottom', bankAds.bottom);
-
-      // 3. ربط أزرار التواصل وأوقات الدوام تلقائياً
-      const callBtn = document.getElementById('btn-phone-call');
-      if (callBtn && currentBank.phone) callBtn.href = 'tel:' + currentBank.phone;
-      
-      const waBtn = document.getElementById('btn-whatsapp-chat');
-      if (waBtn && currentBank.whatsapp) waBtn.href = 'https://wa.me/' + currentBank.whatsapp.replace(/[^0-9]/g, '');
-
-      const emailBtn = document.getElementById('btn-email-send');
-      if (emailBtn && currentBank.email) emailBtn.href = 'mailto:' + currentBank.email;
-
-      const webBtn = document.getElementById('btn-website-visit');
-      if (webBtn && (currentBank.website_url || currentBank.website)) webBtn.href = currentBank.website_url || currentBank.website;
-
-      const hqCity = document.getElementById('bank-hq-city');
-      if (hqCity && currentBank.address) hqCity.innerText = currentBank.address.split('—')[0];
-
-      if (allRevs.length > 2) {
-        rHtml += '<button type="button" onclick="window.showAllReviewsExpanded = !window.showAllReviewsExpanded; renderUI();" class="w-full py-2.5 mt-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-brand-gold text-xs font-bold flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer shadow-sm"><span>' + (window.showAllReviewsExpanded ? 'عرض أقل' : 'عرض جميع التقييمات (' + allRevs.length + ')') + '</span><i class="fa-solid ' + (window.showAllReviewsExpanded ? 'fa-chevron-up' : 'fa-chevron-down') + ' text-[10px]"></i></button>';
-      }
-      reviewsContainer.innerHTML = rHtml;
     }
 
     function switchTab(tabName) {
