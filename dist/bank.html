@@ -186,6 +186,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     <div class="p-3">
       <!-- المنشورات -->
       <div id="tab-posts" class="space-y-3">
+        <!-- بطاقة المنشور النصي المستقل -->
+        <div id="text-post-box" class="hidden"></div>
         <div id="posts-container" class="grid grid-cols-2 gap-2.5"></div>
       </div>
 
@@ -663,6 +665,34 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       document.getElementById('contact-mail').href = currentBank.email ? `mailto:${currentBank.email}` : "#";
 
       const postsContainer = document.getElementById('posts-container');
+      
+      // معالجة وعرض المنشور النصي المستقل فوق المعرض
+      const textPostBox = document.getElementById('text-post-box');
+      if (textPostBox) {
+        const textContent = currentBank.announcement || currentBank.text_post || (currentBank.slug === 'kuraimi' ? 'عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات والدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات.' : '');
+        if (textContent) {
+          textPostBox.className = 'bg-[#0B0F17] border border-zinc-800/90 rounded-2xl p-4 shadow-lg text-right space-y-2 mb-3 block';
+          textPostBox.innerHTML = `
+            <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-black border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                  <img src="${currentBank.logo_url || ''}" alt="logo" class="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <h5 class="text-xs font-black text-white leading-tight">${currentBank.name || ''}</h5>
+                  <span class="text-[10px] text-brand-gold font-bold">تنويه وتحديث رسمي</span>
+                </div>
+              </div>
+              <span class="text-[10px] text-zinc-500 font-mono">منشور معتمد</span>
+            </div>
+            <p class="text-xs text-zinc-200 leading-relaxed font-medium pt-1">${textContent}</p>
+          `;
+        } else {
+          textPostBox.className = 'hidden';
+          textPostBox.innerHTML = '';
+        }
+      }
+
       postsContainer.innerHTML = currentPosts.map((post, index) => `
         <article onclick="openLightbox(${index})" class="group relative bg-[#0D0D0D] rounded-2xl overflow-hidden border border-zinc-800/80 aspect-square cursor-pointer active:scale-95 transition-all shadow-md">
           <img src="${post.image || post.file_url}" alt="معرض الصور" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
