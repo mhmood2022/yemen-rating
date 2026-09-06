@@ -102,30 +102,11 @@ export function App() {
         {/* لوحة تحكم مالك المنشأة */}
         <Route path="/owner" element={<AppShell><OwnerDashboardPage /></AppShell>} />
 
-                                                                    {/* لوحة التحكم الإدارية */}
-                                                                    <Route path="/admin" element={<AdminMaster />}>
-                                                                        <Route index element={<AdminDashboardOverview />} />
-                                                                        <Route path="claims" element={<ClaimsManager />} />
-                                                                        <Route path="companies" element={<CompaniesManager />} />
-          <Route path="banks" element={<BanksManager />} />
-                                                                        <Route path="categories" element={<CategoriesManager />} />
-                                                                        <Route path="auctions" element={<AuctionsManager />} />
-                                                                        <Route path="ads" element={<AdsManager />} />
-                                                                        <Route path="jobs" element={<JobsManager />} />
-                                                                        <Route path="real-estate" element={<RealEstateManager />} />
-                                                                        <Route path="phones" element={<PhonesManager />} />
-                                                                        <Route path="cleaning" element={<CleaningManager />} />
-                                                                        <Route path="users" element={<UsersRolesManager />} />
-                                                                        <Route path="analytics" element={<AnalyticsFinanceManager />} />
-                                                                        <Route path="gold-currency" element={<GoldCurrencyManager />} />
-                                                                        <Route path="matching" element={<MatchingAIManager />} />
-                                                                        <Route path="settings" element={<SettingsAuditManager />} />
-                                                                    </Route>
-
-        {/* لوحة التحكم المعزولة والمحمية /admin */}
+                                                                    {/* لوحة التحكم الإدارية الموحدة /admin */}
         <Route path="/admin" element={<AdminMaster />}>
           <Route index element={<AdminDashboardOverview />} />
           <Route path="companies" element={<CompaniesManager />} />
+          <Route path="banks" element={<BanksManager />} />
           <Route path="categories" element={<CategoriesManager />} />
           <Route path="claims" element={<ClaimsManager />} />
           <Route path="markets" element={<MarketsManager />} />
@@ -144,7 +125,6 @@ export function App() {
           <Route path="settings" element={<SettingsAuditManager />} />
         </Route>
 
-        {/* إعادة التوجيه للرئيسية */}
         <Route path="*" element={<HomeRoute />} />
 
       </Routes>
