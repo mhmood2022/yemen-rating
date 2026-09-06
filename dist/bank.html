@@ -75,6 +75,119 @@
       }
     }
 
+
+    // دالة توليد المنشورات الديناميكية 100% لكل بنك
+    function renderDynamicFeed() {
+      const feedBox = document.getElementById('dynamic-posts-feed');
+      if (!feedBox) return;
+
+      const bankName = currentBank.name || '';
+      const bankLogo = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : '');
+      const bankSlug = currentBank.slug || (new URLSearchParams(window.location.search)).get('slug') || '';
+      
+      // شارة التوثيق الخاصة بهذا البنك تحديداً (زرقاء للتضامن، ذهبية للكريمي، أو حسب الداتابيز)
+      const isVerified = currentBank.is_verified === true || currentBank.verified === true;
+      const badgeHtml = isVerified ? renderVerificationBadge(currentBank.badge_type || (bankSlug === 'tadhamon' ? 'blue' : 'gold')) : '';
+
+      // نص المنشور الخاص بهذا البنك فقط
+      let postText = currentBank.announcement || currentBank.text_post || '';
+      if (!postText) {
+        if (bankSlug === 'kuraimi') {
+          postText = 'عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات وعمليات الدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات على مدار الساعة.';
+        } else if (bankSlug === 'tadhamon') {
+          postText = 'عملاؤنا الكرام: يسر بنك التضامن تقديم أحدث حلول الصيرفة الإسلامية وخدمات الدفع والتحويل السريع وتطبيق تضامن باي لخدمتكم على مدار الساعة في عموم الفروع.';
+        }
+      }
+
+      // هيدر تويتر/X بالترتيب العربي الصحيح (اليمين: الشعار + الاسم + الشارة + الوقت | اليسار: النقاط)
+      const makePostHeader = () => `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-md">
+              ${bankLogo ? `<img src="${bankLogo}" class="w-full h-full object-contain" alt="${bankName}" />` : `<i class="fa-solid fa-building-columns text-zinc-500 text-sm"></i>`}
+            </div>
+            <div class="space-y-0.5 text-right">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <h5 class="text-sm font-black text-white leading-tight">${bankName}</h5>
+                ${badgeHtml}
+                <span class="text-zinc-500 text-xs font-mono pr-1">· 20 ي</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="text-zinc-600 hover:text-zinc-400 p-1 cursor-pointer">
+            <i class="fa-solid fa-ellipsis text-xs"></i>
+          </button>
+        </div>
+      `;
+
+      // شريط التفاعل بتنسيق RTL الصحيح (اليمين: تعليق، ريتويت، لايك | اليسار: حفظ، مشاركة)
+      const makeActionBar = () => `
+        <div class="flex items-center justify-between pt-2.5 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
+          <div class="flex items-center gap-6">
+            <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
+              <i class="fa-regular fa-comment text-xs"></i>
+              <span class="text-[11px] font-mono">14</span>
+            </button>
+            <button type="button" onclick="toggleInteraction(this, 'retweet')" class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
+              <i class="fa-solid fa-retweet text-xs"></i>
+              <span class="text-[11px] font-mono">28</span>
+            </button>
+            <button type="button" onclick="toggleInteraction(this, 'like')" class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
+              <i class="fa-regular fa-heart text-xs"></i>
+              <span class="text-[11px] font-mono">152</span>
+            </button>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="toggleInteraction(this, 'bookmark')" class="hover:text-brand-gold cursor-pointer transition p-1">
+              <i class="fa-regular fa-bookmark text-xs"></i>
+            </button>
+            <button type="button" onclick="shareBankPage()" class="hover:text-zinc-300 cursor-pointer transition p-1">
+              <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
+            </button>
+          </div>
+        </div>
+      `;
+
+      let outputHtml = '';
+
+      // 1. المنشور الأول: المنشور النصي الخاص بهذا البنك (إذا توفر له نص)
+      if (postText) {
+        outputHtml += `
+          <article class="text-right space-y-2.5 pt-1">
+            ${makePostHeader()}
+            <p class="text-xs sm:text-[13px] text-zinc-100 leading-relaxed font-normal select-text pr-1">${postText}</p>
+            ${makeActionBar()}
+          </article>
+          <div class="border-b border-zinc-900 my-4"></div>
+        `;
+      }
+
+      // 2. المنشور الثاني: صور المعرض الخاصة بهذا البنك فقط
+      const bankMedia = currentPosts || [];
+      if (bankMedia.length > 0) {
+        const photosGrid = bankMedia.map((post, idx) => `
+          <div class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-md flex flex-col group cursor-pointer" onclick="openLightbox(${idx})">
+            <div class="relative w-full h-36 bg-zinc-950 overflow-hidden">
+              <img src="${post.image || post.file_url}" alt="${post.title || 'منشور'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              ${post.tag ? `<span class="absolute top-2 right-2 bg-black/70 backdrop-blur-md text-brand-gold text-[10px] font-black px-2 py-0.5 rounded-md border border-brand-gold/30">${post.tag}</span>` : ''}
+            </div>
+          </div>
+        `).join('');
+
+        outputHtml += `
+          <article class="text-right space-y-2.5">
+            ${makePostHeader()}
+            <div class="grid grid-cols-2 gap-2.5 pt-1">
+              ${photosGrid}
+            </div>
+            ${makeActionBar()}
+          </article>
+        `;
+      }
+
+      feedBox.innerHTML = outputHtml;
+    }
+
 </script>
 
   <!-- Font Awesome 6 -->
@@ -162,6 +275,119 @@
         icon.classList.toggle('text-emerald-400');
         if (num) num.innerText = parseInt(num.innerText) + 1;
       }
+    }
+
+
+    // دالة توليد المنشورات الديناميكية 100% لكل بنك
+    function renderDynamicFeed() {
+      const feedBox = document.getElementById('dynamic-posts-feed');
+      if (!feedBox) return;
+
+      const bankName = currentBank.name || '';
+      const bankLogo = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : '');
+      const bankSlug = currentBank.slug || (new URLSearchParams(window.location.search)).get('slug') || '';
+      
+      // شارة التوثيق الخاصة بهذا البنك تحديداً (زرقاء للتضامن، ذهبية للكريمي، أو حسب الداتابيز)
+      const isVerified = currentBank.is_verified === true || currentBank.verified === true;
+      const badgeHtml = isVerified ? renderVerificationBadge(currentBank.badge_type || (bankSlug === 'tadhamon' ? 'blue' : 'gold')) : '';
+
+      // نص المنشور الخاص بهذا البنك فقط
+      let postText = currentBank.announcement || currentBank.text_post || '';
+      if (!postText) {
+        if (bankSlug === 'kuraimi') {
+          postText = 'عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات وعمليات الدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات على مدار الساعة.';
+        } else if (bankSlug === 'tadhamon') {
+          postText = 'عملاؤنا الكرام: يسر بنك التضامن تقديم أحدث حلول الصيرفة الإسلامية وخدمات الدفع والتحويل السريع وتطبيق تضامن باي لخدمتكم على مدار الساعة في عموم الفروع.';
+        }
+      }
+
+      // هيدر تويتر/X بالترتيب العربي الصحيح (اليمين: الشعار + الاسم + الشارة + الوقت | اليسار: النقاط)
+      const makePostHeader = () => `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-md">
+              ${bankLogo ? `<img src="${bankLogo}" class="w-full h-full object-contain" alt="${bankName}" />` : `<i class="fa-solid fa-building-columns text-zinc-500 text-sm"></i>`}
+            </div>
+            <div class="space-y-0.5 text-right">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <h5 class="text-sm font-black text-white leading-tight">${bankName}</h5>
+                ${badgeHtml}
+                <span class="text-zinc-500 text-xs font-mono pr-1">· 20 ي</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="text-zinc-600 hover:text-zinc-400 p-1 cursor-pointer">
+            <i class="fa-solid fa-ellipsis text-xs"></i>
+          </button>
+        </div>
+      `;
+
+      // شريط التفاعل بتنسيق RTL الصحيح (اليمين: تعليق، ريتويت، لايك | اليسار: حفظ، مشاركة)
+      const makeActionBar = () => `
+        <div class="flex items-center justify-between pt-2.5 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
+          <div class="flex items-center gap-6">
+            <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
+              <i class="fa-regular fa-comment text-xs"></i>
+              <span class="text-[11px] font-mono">14</span>
+            </button>
+            <button type="button" onclick="toggleInteraction(this, 'retweet')" class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
+              <i class="fa-solid fa-retweet text-xs"></i>
+              <span class="text-[11px] font-mono">28</span>
+            </button>
+            <button type="button" onclick="toggleInteraction(this, 'like')" class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
+              <i class="fa-regular fa-heart text-xs"></i>
+              <span class="text-[11px] font-mono">152</span>
+            </button>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="toggleInteraction(this, 'bookmark')" class="hover:text-brand-gold cursor-pointer transition p-1">
+              <i class="fa-regular fa-bookmark text-xs"></i>
+            </button>
+            <button type="button" onclick="shareBankPage()" class="hover:text-zinc-300 cursor-pointer transition p-1">
+              <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
+            </button>
+          </div>
+        </div>
+      `;
+
+      let outputHtml = '';
+
+      // 1. المنشور الأول: المنشور النصي الخاص بهذا البنك (إذا توفر له نص)
+      if (postText) {
+        outputHtml += `
+          <article class="text-right space-y-2.5 pt-1">
+            ${makePostHeader()}
+            <p class="text-xs sm:text-[13px] text-zinc-100 leading-relaxed font-normal select-text pr-1">${postText}</p>
+            ${makeActionBar()}
+          </article>
+          <div class="border-b border-zinc-900 my-4"></div>
+        `;
+      }
+
+      // 2. المنشور الثاني: صور المعرض الخاصة بهذا البنك فقط
+      const bankMedia = currentPosts || [];
+      if (bankMedia.length > 0) {
+        const photosGrid = bankMedia.map((post, idx) => `
+          <div class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-md flex flex-col group cursor-pointer" onclick="openLightbox(${idx})">
+            <div class="relative w-full h-36 bg-zinc-950 overflow-hidden">
+              <img src="${post.image || post.file_url}" alt="${post.title || 'منشور'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              ${post.tag ? `<span class="absolute top-2 right-2 bg-black/70 backdrop-blur-md text-brand-gold text-[10px] font-black px-2 py-0.5 rounded-md border border-brand-gold/30">${post.tag}</span>` : ''}
+            </div>
+          </div>
+        `).join('');
+
+        outputHtml += `
+          <article class="text-right space-y-2.5">
+            ${makePostHeader()}
+            <div class="grid grid-cols-2 gap-2.5 pt-1">
+              ${photosGrid}
+            </div>
+            ${makeActionBar()}
+          </article>
+        `;
+      }
+
+      feedBox.innerHTML = outputHtml;
     }
 
 </script>
@@ -313,117 +539,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     <!-- 5. المحتوى الديناميكي للتبويبات -->
     <div class="p-3">
       <!-- المنشورات -->
-                  <div id="tab-posts" class="space-y-5">
-        <!-- 1. المنشور النصي (مضبوط بالترتيب العربي الصحيح) -->
-        <article id="text-post-feed" class="text-right space-y-2.5 pt-1">
-          <!-- هيدر المنشور: الشعار في اليمين، الاسم والتاريخ في الوسط، النقاط في اليسار -->
-          <div class="flex items-center justify-between">
-            <!-- جهة اليمين: الشعار + الاسم + الشارة + الوقت -->
-            <div class="flex items-center gap-2.5">
-              <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-md">
-                <img class="feed-avatar-img w-full h-full object-contain" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3C/svg%3E" alt="logo" />
-              </div>
-              <div class="space-y-0.5 text-right">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <h5 class="feed-bank-title text-sm font-black text-white leading-tight">بنك الكريمي للتمويل الأصغر الإسلامي</h5>
-                  <svg class="w-4 h-4 text-[#EAB308] fill-current shrink-0" viewBox="0 0 24 24"><path d="M22.5 12.5c0-1.58-.88-2.95-2.15-3.6.15-.44.24-.91.24-1.4 0-2.21-1.79-4-4-4-.49 0-.96.08-1.4.24C14.55 2.48 13.18 1.6 11.6 1.6c-1.58 0-2.95.88-3.6 2.15-.44-.16-.91-.25-1.4-.25-2.21 0-4 1.79-4 4 0 .49.08.96.24 1.4C1.58 9.55.7 10.92.7 12.5c0 1.58.88 2.95 2.15 3.6-.16.44-.25.91-.25 1.4 0 2.21 1.79 4 4 4 .49 0 .96-.08 1.4-.24.65 1.27 2.02 2.14 3.6 2.14 1.58 0 2.95-.87 3.6-2.14.44.16.91.24 1.4.24 2.21 0 4-1.79 4-4 0-.49-.08-.96-.24-1.4 1.27-.65 2.14-2.02 2.14-3.6z"/><path d="M10.2 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z" fill="#000000"/></svg>
-                  <span class="text-zinc-500 text-xs font-mono pr-1">· 20 ي</span>
-                </div>
-              </div>
-            </div>
-            <!-- جهة اليسار: زر خيارات المنشور -->
-            <button type="button" class="text-zinc-600 hover:text-zinc-400 p-1 cursor-pointer">
-              <i class="fa-solid fa-ellipsis text-xs"></i>
-            </button>
-          </div>
-
-          <!-- نص المنشور -->
-          <p id="feed-announcement-text" class="text-xs sm:text-[13px] text-zinc-100 leading-relaxed font-normal select-text pr-1">
-            عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات وعمليات الدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات على مدار الساعة.
-          </p>
-
-          <!-- شريط التفاعل بالترتيب العربي الصحيح: التفاعلات في اليمين، والحفظ والمشاركة في اليسار -->
-          <div class="flex items-center justify-between pt-2.5 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
-            <!-- اليمين: تعليق، ريتويت، لايك -->
-            <div class="flex items-center gap-6">
-              <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
-                <i class="fa-regular fa-comment text-xs"></i>
-                <span class="text-[11px] font-mono">14</span>
-              </button>
-              <button type="button" onclick="toggleInteraction(this, 'retweet')" class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
-                <i class="fa-solid fa-retweet text-xs"></i>
-                <span class="text-[11px] font-mono">28</span>
-              </button>
-              <button type="button" onclick="toggleInteraction(this, 'like')" class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
-                <i class="fa-regular fa-heart text-xs"></i>
-                <span class="text-[11px] font-mono">152</span>
-              </button>
-            </div>
-            <!-- اليسار: حفظ ومشاركة -->
-            <div class="flex items-center gap-3">
-              <button type="button" onclick="toggleInteraction(this, 'bookmark')" class="hover:text-brand-gold cursor-pointer transition p-1">
-                <i class="fa-regular fa-bookmark text-xs"></i>
-              </button>
-              <button type="button" onclick="shareBankPage()" class="hover:text-zinc-300 cursor-pointer transition p-1">
-                <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
-              </button>
-            </div>
-          </div>
-        </article>
-
-        <!-- فاصل ناعم -->
-        <div class="border-b border-zinc-900 my-4"></div>
-
-        <!-- 2. منشور الصور (مضبوط بالترتيب العربي الصحيح) -->
-        <article class="text-right space-y-2.5">
-          <!-- هيدر منشور الصور -->
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-md">
-                <img class="feed-avatar-img w-full h-full object-contain" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3C/svg%3E" alt="logo" />
-              </div>
-              <div class="space-y-0.5 text-right">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <h5 class="feed-bank-title text-sm font-black text-white leading-tight">بنك الكريمي للتمويل الأصغر الإسلامي</h5>
-                  <svg class="w-4 h-4 text-[#EAB308] fill-current shrink-0" viewBox="0 0 24 24"><path d="M22.5 12.5c0-1.58-.88-2.95-2.15-3.6.15-.44.24-.91.24-1.4 0-2.21-1.79-4-4-4-.49 0-.96.08-1.4.24C14.55 2.48 13.18 1.6 11.6 1.6c-1.58 0-2.95.88-3.6 2.15-.44-.16-.91-.25-1.4-.25-2.21 0-4 1.79-4 4 0 .49.08.96.24 1.4C1.58 9.55.7 10.92.7 12.5c0 1.58.88 2.95 2.15 3.6-.16.44-.25.91-.25 1.4 0 2.21 1.79 4 4 4 .49 0 .96-.08 1.4-.24.65 1.27 2.02 2.14 3.6 2.14 1.58 0 2.95-.87 3.6-2.14.44.16.91.24 1.4.24 2.21 0 4-1.79 4-4 0-.49-.08-.96-.24-1.4 1.27-.65 2.14-2.02 2.14-3.6z"/><path d="M10.2 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z" fill="#000000"/></svg>
-                  <span class="text-zinc-500 text-xs font-mono pr-1">· 20 ي</span>
-                </div>
-              </div>
-            </div>
-            <button type="button" class="text-zinc-600 hover:text-zinc-400 p-1 cursor-pointer">
-              <i class="fa-solid fa-ellipsis text-xs"></i>
-            </button>
-          </div>
-
-          <!-- شبكة الصور الأربع الأصلية -->
-          <div id="posts-container" class="grid grid-cols-2 gap-2.5 pt-1"></div>
-
-          <!-- شريط التفاعل أسفل الصور -->
-          <div class="flex items-center justify-between pt-2.5 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
-            <div class="flex items-center gap-6">
-              <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
-                <i class="fa-regular fa-comment text-xs"></i>
-                <span class="text-[11px] font-mono">14</span>
-              </button>
-              <button type="button" onclick="toggleInteraction(this, 'retweet')" class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
-                <i class="fa-solid fa-retweet text-xs"></i>
-                <span class="text-[11px] font-mono">28</span>
-              </button>
-              <button type="button" onclick="toggleInteraction(this, 'like')" class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
-                <i class="fa-regular fa-heart text-xs"></i>
-                <span class="text-[11px] font-mono">152</span>
-              </button>
-            </div>
-            <div class="flex items-center gap-3">
-              <button type="button" onclick="toggleInteraction(this, 'bookmark')" class="hover:text-brand-gold cursor-pointer transition p-1">
-                <i class="fa-regular fa-bookmark text-xs"></i>
-              </button>
-              <button type="button" onclick="shareBankPage()" class="hover:text-zinc-300 cursor-pointer transition p-1">
-                <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
-              </button>
-            </div>
-          </div>
-        </article>
+                        <div id="tab-posts" class="space-y-5">
+        <!-- خلاصة المنشورات الديناميكية (كل بنك يأخذ اسمه وشعاره وشارته الخاصة 100%) -->
+        <div id="dynamic-posts-feed" class="space-y-4"></div>
       </div>
 
       <div id="tab-offers" class="hidden space-y-3">
@@ -858,6 +976,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
         if (b) {
           bankData.id = b.id;
+          bankData.slug = b.slug || bankId;
+          bankData.announcement = b.announcement || b.text_post || null;
           bankData.name = b.name || bankData.name;
           bankData.description = b.description || b.short_description || bankData.description;
           bankData.badge_type = b.badge_type || 'gold';
@@ -1307,6 +1427,119 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       }
     }
 
+
+    // دالة توليد المنشورات الديناميكية 100% لكل بنك
+    function renderDynamicFeed() {
+      const feedBox = document.getElementById('dynamic-posts-feed');
+      if (!feedBox) return;
+
+      const bankName = currentBank.name || '';
+      const bankLogo = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : '');
+      const bankSlug = currentBank.slug || (new URLSearchParams(window.location.search)).get('slug') || '';
+      
+      // شارة التوثيق الخاصة بهذا البنك تحديداً (زرقاء للتضامن، ذهبية للكريمي، أو حسب الداتابيز)
+      const isVerified = currentBank.is_verified === true || currentBank.verified === true;
+      const badgeHtml = isVerified ? renderVerificationBadge(currentBank.badge_type || (bankSlug === 'tadhamon' ? 'blue' : 'gold')) : '';
+
+      // نص المنشور الخاص بهذا البنك فقط
+      let postText = currentBank.announcement || currentBank.text_post || '';
+      if (!postText) {
+        if (bankSlug === 'kuraimi') {
+          postText = 'عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات وعمليات الدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات على مدار الساعة.';
+        } else if (bankSlug === 'tadhamon') {
+          postText = 'عملاؤنا الكرام: يسر بنك التضامن تقديم أحدث حلول الصيرفة الإسلامية وخدمات الدفع والتحويل السريع وتطبيق تضامن باي لخدمتكم على مدار الساعة في عموم الفروع.';
+        }
+      }
+
+      // هيدر تويتر/X بالترتيب العربي الصحيح (اليمين: الشعار + الاسم + الشارة + الوقت | اليسار: النقاط)
+      const makePostHeader = () => `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-md">
+              ${bankLogo ? `<img src="${bankLogo}" class="w-full h-full object-contain" alt="${bankName}" />` : `<i class="fa-solid fa-building-columns text-zinc-500 text-sm"></i>`}
+            </div>
+            <div class="space-y-0.5 text-right">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <h5 class="text-sm font-black text-white leading-tight">${bankName}</h5>
+                ${badgeHtml}
+                <span class="text-zinc-500 text-xs font-mono pr-1">· 20 ي</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="text-zinc-600 hover:text-zinc-400 p-1 cursor-pointer">
+            <i class="fa-solid fa-ellipsis text-xs"></i>
+          </button>
+        </div>
+      `;
+
+      // شريط التفاعل بتنسيق RTL الصحيح (اليمين: تعليق، ريتويت، لايك | اليسار: حفظ، مشاركة)
+      const makeActionBar = () => `
+        <div class="flex items-center justify-between pt-2.5 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
+          <div class="flex items-center gap-6">
+            <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
+              <i class="fa-regular fa-comment text-xs"></i>
+              <span class="text-[11px] font-mono">14</span>
+            </button>
+            <button type="button" onclick="toggleInteraction(this, 'retweet')" class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
+              <i class="fa-solid fa-retweet text-xs"></i>
+              <span class="text-[11px] font-mono">28</span>
+            </button>
+            <button type="button" onclick="toggleInteraction(this, 'like')" class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
+              <i class="fa-regular fa-heart text-xs"></i>
+              <span class="text-[11px] font-mono">152</span>
+            </button>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="toggleInteraction(this, 'bookmark')" class="hover:text-brand-gold cursor-pointer transition p-1">
+              <i class="fa-regular fa-bookmark text-xs"></i>
+            </button>
+            <button type="button" onclick="shareBankPage()" class="hover:text-zinc-300 cursor-pointer transition p-1">
+              <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
+            </button>
+          </div>
+        </div>
+      `;
+
+      let outputHtml = '';
+
+      // 1. المنشور الأول: المنشور النصي الخاص بهذا البنك (إذا توفر له نص)
+      if (postText) {
+        outputHtml += `
+          <article class="text-right space-y-2.5 pt-1">
+            ${makePostHeader()}
+            <p class="text-xs sm:text-[13px] text-zinc-100 leading-relaxed font-normal select-text pr-1">${postText}</p>
+            ${makeActionBar()}
+          </article>
+          <div class="border-b border-zinc-900 my-4"></div>
+        `;
+      }
+
+      // 2. المنشور الثاني: صور المعرض الخاصة بهذا البنك فقط
+      const bankMedia = currentPosts || [];
+      if (bankMedia.length > 0) {
+        const photosGrid = bankMedia.map((post, idx) => `
+          <div class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-md flex flex-col group cursor-pointer" onclick="openLightbox(${idx})">
+            <div class="relative w-full h-36 bg-zinc-950 overflow-hidden">
+              <img src="${post.image || post.file_url}" alt="${post.title || 'منشور'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              ${post.tag ? `<span class="absolute top-2 right-2 bg-black/70 backdrop-blur-md text-brand-gold text-[10px] font-black px-2 py-0.5 rounded-md border border-brand-gold/30">${post.tag}</span>` : ''}
+            </div>
+          </div>
+        `).join('');
+
+        outputHtml += `
+          <article class="text-right space-y-2.5">
+            ${makePostHeader()}
+            <div class="grid grid-cols-2 gap-2.5 pt-1">
+              ${photosGrid}
+            </div>
+            ${makeActionBar()}
+          </article>
+        `;
+      }
+
+      feedBox.innerHTML = outputHtml;
+    }
+
 </script>
 
 
@@ -1384,6 +1617,119 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         icon.classList.toggle('text-emerald-400');
         if (num) num.innerText = parseInt(num.innerText) + 1;
       }
+    }
+
+
+    // دالة توليد المنشورات الديناميكية 100% لكل بنك
+    function renderDynamicFeed() {
+      const feedBox = document.getElementById('dynamic-posts-feed');
+      if (!feedBox) return;
+
+      const bankName = currentBank.name || '';
+      const bankLogo = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : '');
+      const bankSlug = currentBank.slug || (new URLSearchParams(window.location.search)).get('slug') || '';
+      
+      // شارة التوثيق الخاصة بهذا البنك تحديداً (زرقاء للتضامن، ذهبية للكريمي، أو حسب الداتابيز)
+      const isVerified = currentBank.is_verified === true || currentBank.verified === true;
+      const badgeHtml = isVerified ? renderVerificationBadge(currentBank.badge_type || (bankSlug === 'tadhamon' ? 'blue' : 'gold')) : '';
+
+      // نص المنشور الخاص بهذا البنك فقط
+      let postText = currentBank.announcement || currentBank.text_post || '';
+      if (!postText) {
+        if (bankSlug === 'kuraimi') {
+          postText = 'عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات وعمليات الدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات على مدار الساعة.';
+        } else if (bankSlug === 'tadhamon') {
+          postText = 'عملاؤنا الكرام: يسر بنك التضامن تقديم أحدث حلول الصيرفة الإسلامية وخدمات الدفع والتحويل السريع وتطبيق تضامن باي لخدمتكم على مدار الساعة في عموم الفروع.';
+        }
+      }
+
+      // هيدر تويتر/X بالترتيب العربي الصحيح (اليمين: الشعار + الاسم + الشارة + الوقت | اليسار: النقاط)
+      const makePostHeader = () => `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-md">
+              ${bankLogo ? `<img src="${bankLogo}" class="w-full h-full object-contain" alt="${bankName}" />` : `<i class="fa-solid fa-building-columns text-zinc-500 text-sm"></i>`}
+            </div>
+            <div class="space-y-0.5 text-right">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <h5 class="text-sm font-black text-white leading-tight">${bankName}</h5>
+                ${badgeHtml}
+                <span class="text-zinc-500 text-xs font-mono pr-1">· 20 ي</span>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="text-zinc-600 hover:text-zinc-400 p-1 cursor-pointer">
+            <i class="fa-solid fa-ellipsis text-xs"></i>
+          </button>
+        </div>
+      `;
+
+      // شريط التفاعل بتنسيق RTL الصحيح (اليمين: تعليق، ريتويت، لايك | اليسار: حفظ، مشاركة)
+      const makeActionBar = () => `
+        <div class="flex items-center justify-between pt-2.5 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
+          <div class="flex items-center gap-6">
+            <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
+              <i class="fa-regular fa-comment text-xs"></i>
+              <span class="text-[11px] font-mono">14</span>
+            </button>
+            <button type="button" onclick="toggleInteraction(this, 'retweet')" class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
+              <i class="fa-solid fa-retweet text-xs"></i>
+              <span class="text-[11px] font-mono">28</span>
+            </button>
+            <button type="button" onclick="toggleInteraction(this, 'like')" class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
+              <i class="fa-regular fa-heart text-xs"></i>
+              <span class="text-[11px] font-mono">152</span>
+            </button>
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="toggleInteraction(this, 'bookmark')" class="hover:text-brand-gold cursor-pointer transition p-1">
+              <i class="fa-regular fa-bookmark text-xs"></i>
+            </button>
+            <button type="button" onclick="shareBankPage()" class="hover:text-zinc-300 cursor-pointer transition p-1">
+              <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
+            </button>
+          </div>
+        </div>
+      `;
+
+      let outputHtml = '';
+
+      // 1. المنشور الأول: المنشور النصي الخاص بهذا البنك (إذا توفر له نص)
+      if (postText) {
+        outputHtml += `
+          <article class="text-right space-y-2.5 pt-1">
+            ${makePostHeader()}
+            <p class="text-xs sm:text-[13px] text-zinc-100 leading-relaxed font-normal select-text pr-1">${postText}</p>
+            ${makeActionBar()}
+          </article>
+          <div class="border-b border-zinc-900 my-4"></div>
+        `;
+      }
+
+      // 2. المنشور الثاني: صور المعرض الخاصة بهذا البنك فقط
+      const bankMedia = currentPosts || [];
+      if (bankMedia.length > 0) {
+        const photosGrid = bankMedia.map((post, idx) => `
+          <div class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-md flex flex-col group cursor-pointer" onclick="openLightbox(${idx})">
+            <div class="relative w-full h-36 bg-zinc-950 overflow-hidden">
+              <img src="${post.image || post.file_url}" alt="${post.title || 'منشور'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              ${post.tag ? `<span class="absolute top-2 right-2 bg-black/70 backdrop-blur-md text-brand-gold text-[10px] font-black px-2 py-0.5 rounded-md border border-brand-gold/30">${post.tag}</span>` : ''}
+            </div>
+          </div>
+        `).join('');
+
+        outputHtml += `
+          <article class="text-right space-y-2.5">
+            ${makePostHeader()}
+            <div class="grid grid-cols-2 gap-2.5 pt-1">
+              ${photosGrid}
+            </div>
+            ${makeActionBar()}
+          </article>
+        `;
+      }
+
+      feedBox.innerHTML = outputHtml;
     }
 
 </script>
