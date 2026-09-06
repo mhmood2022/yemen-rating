@@ -246,8 +246,8 @@ export const CompaniesManager: React.FC = () => {
 
   const badgeOptions = [
     { value: 'all', label: 'كافة الشارات الملكية' },
-    { value: 'gold', label: 'شارة ذهبية (Gold) 🏆' },
-    { value: 'blue', label: 'شارة زرقاء موثقة 🛡️' },
+    { value: 'gold', label: 'شارة ذهبية (Gold)' },
+    { value: 'blue', label: 'شارة زرقاء موثقة' },
     { value: 'gray', label: 'شارة فضية اعتيادية' },
     { value: 'none', label: 'بدون شارة' },
   ];
@@ -561,8 +561,8 @@ export const CompaniesManager: React.FC = () => {
       setSavedSuccessfully(true);
 
       const successText = isEdit
-        ? `تم تحديث وحفظ بيانات "${formData.name}" بنجاح! ✅`
-        : `تمت إضافة ونشر "${formData.name}" بنجاح! 🎉`;
+        ? `تم تحديث وحفظ بيانات "${formData.name}" بنجاح!`
+        : `تمت إضافة ونشر "${formData.name}" بنجاح!`;
 
       setSuccessToast(successText);
 
@@ -1119,14 +1119,14 @@ export const CompaniesManager: React.FC = () => {
                     <label className="text-white font-bold block">ميزات المنشأة (اضغط للتفعيل المباشر):</label>
                     <div className="flex flex-wrap gap-2">
                       {[
-                        { key: 'has_pool', label: 'مسبح خاص / عام 🏊‍♂️', val: formData.has_pool },
-                        { key: 'has_wifi', label: 'واي فاي مجاني سريع 📶', val: formData.has_wifi },
-                        { key: 'has_parking', label: 'مواقف سيارات واسعة 🚗', val: formData.has_parking },
-                        { key: 'has_emergency', label: 'طوارئ 24 ساعة 🚑', val: formData.has_emergency },
-                        { key: 'has_icu', label: 'عناية مركزة 🏥', val: formData.has_icu },
-                        { key: 'has_delivery', label: 'توصيل للمنازل 🛵', val: formData.has_delivery },
-                        { key: 'has_family_sections', label: 'جلسات عائلية خاصة 👨‍👩‍👧', val: formData.has_family_sections },
-                        { key: 'warranty_available', label: 'فحص وضمان معتمد 🛡️', val: formData.warranty_available },
+                        { key: 'has_pool', label: 'مسبح خاص / عام', val: formData.has_pool },
+                        { key: 'has_wifi', label: 'واي فاي مجاني سريع', val: formData.has_wifi },
+                        { key: 'has_parking', label: 'مواقف سيارات واسعة', val: formData.has_parking },
+                        { key: 'has_emergency', label: 'طوارئ 24 ساعة', val: formData.has_emergency },
+                        { key: 'has_icu', label: 'عناية مركزة', val: formData.has_icu },
+                        { key: 'has_delivery', label: 'توصيل للمنازل', val: formData.has_delivery },
+                        { key: 'has_family_sections', label: 'جلسات عائلية خاصة', val: formData.has_family_sections },
+                        { key: 'warranty_available', label: 'فحص وضمان معتمد', val: formData.warranty_available },
                       ].map(item => (
                         <button
                           key={item.key}
