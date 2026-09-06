@@ -291,6 +291,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
       <div class="space-y-2 pt-2">
         <h4 class="text-right text-xs font-bold text-zinc-300">اخر التقييمات</h4>
+        <div id="reviews-container" class="space-y-2.5 pt-2"></div>
         
     <!-- الفروع (مخفية تماماً وفارغة حتى تعبئها الإدارة) -->
     <div id="bank-branches-slot" class="hidden mt-6 bg-black border border-zinc-800/90 rounded-2xl p-4 text-right shadow-xl">
@@ -314,7 +315,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       <div id="bank-hours-content" class="text-xs text-zinc-300 leading-relaxed"></div>
     </div>
 
-<div id="reviews-container" class="space-y-2"></div>
+
       </div>
     </section>
 
@@ -753,7 +754,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
               ${bankLogo ? `<img src="${bankLogo}" class="w-full h-full object-contain" alt="logo" />` : `<i class="fa-solid fa-building-columns text-zinc-500 text-xs"></i>`}
             </div>
             <div class="flex items-center gap-1.5 flex-nowrap text-right truncate">
-              <span class="text-xs font-bold text-white truncate max-w-[170px] sm:max-w-none leading-none">${bankName}</span>
+              <span class="text-xs font-bold text-white truncate  leading-none">${bankName}</span>
               <span class="inline-flex shrink-0 leading-none">${badgeSvg}</span>
             </div>
           </div>
@@ -832,6 +833,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     }
 
       renderDynamicFeed();
+      updateRatingsDisplay(currentBank.reviews || []);
 
       // الفروع: تظهر فقط إذا أدخلتها الإدارة وتختفي تماماً (0 بكسل) إذا كانت فارغة
       const branchSlot = document.getElementById('bank-branches-slot');
