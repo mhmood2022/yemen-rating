@@ -853,13 +853,13 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         entity_type: 'bank',
         entity_id: currentBank.id,
         user_name: name,
-        user_avatar: null, // استخدام الأيقونة الحيادية الأنيقة
-        stars: rating,
+        user_avatar: null,
+        rating: rating,
         comment: comment
       };
 
       try {
-        await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
@@ -869,6 +869,11 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           },
           body: JSON.stringify(newRev)
         });
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData.message || errData.details || errData.hint || `Supabase error: ${resp.status}`);
+        }
 
         // تحديث الواجهة محلياً بالتقييم الجديد فوراً
         allReviews = [newRev, ...allReviews];
