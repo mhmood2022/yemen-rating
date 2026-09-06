@@ -7,7 +7,7 @@ import {
   EyeOff, Eye, Edit3, Upload, Trash2, Phone, Globe, Mail,
   MapPin, CheckCircle2, Loader2, Award, ExternalLink, Star,
   Image as ImageIcon, Sparkles, Megaphone, Bed, Wifi, Car,
-  Stethoscope, Clock, ShieldCheck, Tag
+  Stethoscope, Clock, ShieldCheck, Tag, ChevronDown
 } from 'lucide-react';
 
 interface BusinessRecord {
@@ -48,6 +48,9 @@ export const CompaniesManager: React.FC = () => {
   const [filterCity, setFilterCity] = useState('all');
   const [filterBadge, setFilterBadge] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+
+  // إشعار النجاح التفاعلي (Success Toast)
+  const [successToast, setSuccessToast] = useState<string | null>(null);
 
   // نافذة الإضافة والتعديل
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -213,7 +216,6 @@ export const CompaniesManager: React.FC = () => {
     setUploadingTarget(String(target));
     setErrorMessage(null);
 
-    // 1. معاينة فورية محلية بنسبة 100% دون انتظار السيرفر
     const reader = new FileReader();
     reader.onload = async (event) => {
       const localBase64 = event.target?.result as string;
@@ -229,7 +231,6 @@ export const CompaniesManager: React.FC = () => {
         });
       }
 
-      // 2. الرفع في الخلفية إلى Supabase Storage
       try {
         const ext = file.name.split('.').pop() || 'jpg';
         const folder = target === 'logo' ? 'logos' : (target === 'cover' ? 'covers' : 'gallery');
@@ -373,6 +374,7 @@ export const CompaniesManager: React.FC = () => {
     setSaving(true);
     setErrorMessage(null);
 
+    const isEdit = !!editingId;
     const generatedSlug = formData.slug.trim() || formData.name.trim().toLowerCase().replace(/\s+/g, '-');
     const cleanGallery = formData.gallery_urls.filter(Boolean) as string[];
 
@@ -419,7 +421,7 @@ export const CompaniesManager: React.FC = () => {
     };
 
     try {
-      if (editingId) {
+      if (isEdit) {
         const { error } = await supabase
           .from('businesses')
           .update(payload)
@@ -434,6 +436,18 @@ export const CompaniesManager: React.FC = () => {
 
       await fetchData();
       setIsModalOpen(false);
+
+      // إطلاق إشعار النجاح التفاعلي
+      setSuccessToast(
+        isEdit
+          ? `تم تحديث وحفظ بيانات "${formData.name}" بنجاح! ✅`
+          : `تمت إضافة المنشأة الجديدة "${formData.name}" وتجهيزها بنجاح! 🎉`
+      );
+
+      setTimeout(() => {
+        setSuccessToast(null);
+      }, 3500);
+
     } catch (err: any) {
       console.error('Save error:', err);
       setErrorMessage(err.message || 'تعذر حفظ البيانات في السيرفر.');
@@ -443,7 +457,17 @@ export const CompaniesManager: React.FC = () => {
   };
 
   return (
-    <div dir="rtl" className="p-4 sm:p-6 lg:p-8 space-y-6 font-['Cairo',sans-serif] text-white">
+    <div dir="rtl" className="p-4 sm:p-6 lg:p-8 space-y-6 font-['Cairo',sans-serif] text-white relative">
+      {/* شريط رسالة النجاح العائم (Success Toast Notification) */}
+      {successToast && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3.5 rounded-2xl bg-emerald-500/20 border-2 border-emerald-500/60 text-emerald-300 font-bold text-xs sm:text-sm flex items-center gap-3 shadow-2xl backdrop-blur-xl animate-bounce">
+          <div className="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0">
+            <Check size={14} className="stroke-[3]" />
+          </div>
+          <span>{successToast}</span>
+        </div>
+      )}
+
       {/* الترويسة الرئيسية */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#1F2937]">
         <div className="flex items-center gap-3">
@@ -485,7 +509,7 @@ export const CompaniesManager: React.FC = () => {
         </div>
       </div>
 
-      {/* شريط البحث والفلترة الدقيق */}
+      {/* شريط البحث والفلاتر المنسدلة بتصميم داكن موحد 100% */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-[#0B0F17] p-3 rounded-2xl border border-[#1F2937]">
         <div className="relative">
           <Search size={16} className="absolute right-3.5 top-3.5 text-gray-400" />
@@ -498,47 +522,62 @@ export const CompaniesManager: React.FC = () => {
           />
         </div>
 
-        <select
-          value={filterCity}
-          onChange={(e) => setFilterCity(e.target.value)}
-          className="bg-[#161D2B] border border-[#1F2937] rounded-xl px-3 py-2 text-xs text-gray-300 outline-none"
-        >
-          <option value="all">كافة المحافظات والمدن</option>
-          <option value="صنعاء">صنعاء</option>
-          <option value="عدن">عدن</option>
-          <option value="تعز">تعز</option>
-          <option value="حضرموت">حضرموت</option>
-          <option value="إب">إب</option>
-          <option value="الحديدة">الحديدة</option>
-          <option value="ذمار">ذمار</option>
-          <option value="مأرب">مأرب</option>
-        </select>
+        {/* قائمة المحافظات */}
+        <div className="relative">
+          <select
+            value={filterCity}
+            onChange={(e) => setFilterCity(e.target.value)}
+            className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
+            style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
+          >
+            <option value="all" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>كافة المحافظات والمدن</option>
+            <option value="صنعاء" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>صنعاء</option>
+            <option value="عدن" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>عدن</option>
+            <option value="تعز" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>تعز</option>
+            <option value="حضرموت" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>حضرموت</option>
+            <option value="إب" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>إب</option>
+            <option value="الحديدة" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>الحديدة</option>
+            <option value="ذمار" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>ذمار</option>
+            <option value="مأرب" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>مأرب</option>
+          </select>
+          <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        </div>
 
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="bg-[#161D2B] border border-[#1F2937] rounded-xl px-3 py-2 text-xs text-gray-300 outline-none"
-        >
-          <option value="all">كافة الحالات</option>
-          <option value="active">نشط ومعروض للموقع</option>
-          <option value="pending">غير نشط / قيد المراجعة</option>
-          <option value="hidden">مخفي وغير ظاهر</option>
-        </select>
+        {/* قائمة الحالات */}
+        <div className="relative">
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
+            style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
+          >
+            <option value="all" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>كافة الحالات</option>
+            <option value="active" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>نشط ومعروض للموقع</option>
+            <option value="pending" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>غير نشط / قيد المراجعة</option>
+            <option value="hidden" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>مخفي وغير ظاهر</option>
+          </select>
+          <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        </div>
 
-        <select
-          value={filterBadge}
-          onChange={(e) => setFilterBadge(e.target.value)}
-          className="bg-[#161D2B] border border-[#1F2937] rounded-xl px-3 py-2 text-xs text-gray-300 outline-none"
-        >
-          <option value="all">كافة الشارات الملكية</option>
-          <option value="gold">شارة ذهبية (Gold) 🏆</option>
-          <option value="blue">شارة زرقاء موثقة 🛡️</option>
-          <option value="gray">شارة فضية اعتيادية</option>
-          <option value="none">بدون شارة</option>
-        </select>
+        {/* قائمة الشارات */}
+        <div className="relative">
+          <select
+            value={filterBadge}
+            onChange={(e) => setFilterBadge(e.target.value)}
+            className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
+            style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
+          >
+            <option value="all" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>كافة الشارات الملكية</option>
+            <option value="gold" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>شارة ذهبية (Gold) 🏆</option>
+            <option value="blue" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>شارة زرقاء موثقة 🛡️</option>
+            <option value="gray" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>شارة فضية اعتيادية</option>
+            <option value="none" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>بدون شارة</option>
+          </select>
+          <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        </div>
       </div>
 
-      {/* قائمة البطاقات الحقيقية الغنية */}
+      {/* قائمة البطاقات الحقيقية */}
       {loading ? (
         <div className="py-24 text-center text-xs text-gray-400 flex flex-col items-center justify-center gap-2.5">
           <Loader2 className="w-7 h-7 animate-spin text-[#FFC500]" />
@@ -724,7 +763,7 @@ export const CompaniesManager: React.FC = () => {
               </button>
             </div>
 
-            {/* شريط تبويبات سحاب أفقي باللمس للموبايل (Horizontal Swipeable Tabs) */}
+            {/* شريط تبويبات سحاب أفقي باللمس للموبايل */}
             <div className="flex border-b border-[#1F2937] bg-[#0B0F17] px-3 overflow-x-auto scrollbar-none text-xs font-bold gap-1 py-1 shrink-0">
               {[
                 { id: 'info', label: '1. البيانات والتواصل' },
@@ -772,41 +811,49 @@ export const CompaniesManager: React.FC = () => {
 
                     <div className="space-y-1">
                       <label className="text-gray-300 font-bold">التصنيف الرسمي *</label>
-                      <select
-                        value={formData.category_id}
-                        onChange={(e) => setFormData(p => ({ ...p, category_id: e.target.value }))}
-                        className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none"
-                      >
-                        {OFFICIAL_CATEGORIES.map(c => {
-                          const dbCat = categoriesMap[c.slug];
-                          const val = dbCat ? dbCat.id : c.id;
-                          return (
-                            <option key={c.id} value={val}>
-                              {c.name}
-                            </option>
-                          );
-                        })}
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={formData.category_id}
+                          onChange={(e) => setFormData(p => ({ ...p, category_id: e.target.value }))}
+                          className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
+                          style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
+                        >
+                          {OFFICIAL_CATEGORIES.map(c => {
+                            const dbCat = categoriesMap[c.slug];
+                            const val = dbCat ? dbCat.id : c.id;
+                            return (
+                              <option key={c.id} value={val} style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>
+                                {c.name}
+                              </option>
+                            );
+                          })}
+                        </select>
+                        <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
                       <label className="text-gray-300 font-bold">المدينة</label>
-                      <select
-                        value={formData.city}
-                        onChange={(e) => setFormData(p => ({ ...p, city: e.target.value }))}
-                        className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none"
-                      >
-                        <option value="صنعاء">صنعاء</option>
-                        <option value="عدن">عدن</option>
-                        <option value="تعز">تعز</option>
-                        <option value="حضرموت">حضرموت</option>
-                        <option value="إب">إب</option>
-                        <option value="الحديدة">الحديدة</option>
-                        <option value="ذمار">ذمار</option>
-                        <option value="مأرب">مأرب</option>
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={formData.city}
+                          onChange={(e) => setFormData(p => ({ ...p, city: e.target.value }))}
+                          className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
+                          style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
+                        >
+                          <option value="صنعاء" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>صنعاء</option>
+                          <option value="عدن" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>عدن</option>
+                          <option value="تعز" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>تعز</option>
+                          <option value="حضرموت" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>حضرموت</option>
+                          <option value="إب" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>إب</option>
+                          <option value="الحديدة" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>الحديدة</option>
+                          <option value="ذمار" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>ذمار</option>
+                          <option value="مأرب" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>مأرب</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="space-y-1 sm:col-span-2">
@@ -869,7 +916,7 @@ export const CompaniesManager: React.FC = () => {
                 </div>
               )}
 
-              {/* التبويب 2: وسائط الهاتف مع المعاينة الفورية المضمونة */}
+              {/* التبويب 2: وسائط الهاتف مع المعاينة الفورية */}
               {activeTab === 'media' && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -881,7 +928,7 @@ export const CompaniesManager: React.FC = () => {
                           {formData.logo_url ? (
                             <img
                               src={formData.logo_url}
-                              alt="Logo Preview"
+                              alt="Logo"
                               className="w-full h-full object-cover"
                               onError={(e) => { e.currentTarget.style.display = 'none'; }}
                             />
@@ -910,7 +957,7 @@ export const CompaniesManager: React.FC = () => {
                           {formData.cover_url ? (
                             <img
                               src={formData.cover_url}
-                              alt="Cover Preview"
+                              alt="Cover"
                               className="w-full h-full object-cover"
                               onError={(e) => { e.currentTarget.style.display = 'none'; }}
                             />
@@ -992,7 +1039,7 @@ export const CompaniesManager: React.FC = () => {
               {/* التبويب 3: عناصر السحب والاختيار باللمس (Touch Slider & Chips) */}
               {activeTab === 'features' && (
                 <div className="space-y-4">
-                  {/* شريط خيارات عدد الغرف السحاب (Horizontal Swipeable Slider) */}
+                  {/* شريط خيارات عدد الغرف السحاب */}
                   <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2.5">
                     <label className="text-white font-bold flex items-center gap-2">
                       <Bed size={15} className="text-[#FFC500]" />
@@ -1016,7 +1063,7 @@ export const CompaniesManager: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* أزرار الميزات التفاعلية بنقرة واحدة (Touch Feature Chips) */}
+                  {/* أزرار الميزات التفاعلية بنقرة واحدة */}
                   <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
                     <label className="text-white font-bold block">ميزات المنشأة (اضغط للتفعيل المباشر):</label>
                     <div className="flex flex-wrap gap-2">
@@ -1112,42 +1159,54 @@ export const CompaniesManager: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
                       <label className="text-gray-300 font-bold">الشارة الملكية</label>
-                      <select
-                        value={formData.badge_type || 'none'}
-                        onChange={(e) => setFormData(p => ({ ...p, badge_type: e.target.value === 'none' ? null : (e.target.value as any) }))}
-                        className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none"
-                      >
-                        <option value="gold">شارة ذهبية 🏆</option>
-                        <option value="blue">شارة موثقة زرقاء 🛡️</option>
-                        <option value="gray">شارة فضية</option>
-                        <option value="none">بدون شارة</option>
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={formData.badge_type || 'none'}
+                          onChange={(e) => setFormData(p => ({ ...p, badge_type: e.target.value === 'none' ? null : (e.target.value as any) }))}
+                          className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
+                          style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
+                        >
+                          <option value="gold" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>شارة ذهبية 🏆</option>
+                          <option value="blue" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>شارة موثقة زرقاء 🛡️</option>
+                          <option value="gray" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>شارة فضية</option>
+                          <option value="none" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>بدون شارة</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="space-y-1">
                       <label className="text-gray-300 font-bold">حالة إثبات الملكية</label>
-                      <select
-                        value={formData.claim_status}
-                        onChange={(e) => setFormData(p => ({ ...p, claim_status: e.target.value as any }))}
-                        className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none"
-                      >
-                        <option value="UNCLAIMED">غير مطالب بها (جاهزة للمطالبة)</option>
-                        <option value="PENDING">قيد المراجعة</option>
-                        <option value="CLAIMED">مملوكة وموثقة</option>
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={formData.claim_status}
+                          onChange={(e) => setFormData(p => ({ ...p, claim_status: e.target.value as any }))}
+                          className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
+                          style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
+                        >
+                          <option value="UNCLAIMED" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>غير مطالب بها (جاهزة للمطالبة)</option>
+                          <option value="PENDING" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>قيد المراجعة</option>
+                          <option value="CLAIMED" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>مملوكة وموثقة</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div className="space-y-1">
                       <label className="text-gray-300 font-bold">حالة الظهور</label>
-                      <select
-                        value={formData.status}
-                        onChange={(e) => setFormData(p => ({ ...p, status: e.target.value as any }))}
-                        className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none"
-                      >
-                        <option value="active">نشط ومعروض</option>
-                        <option value="pending">غير نشط / معلق</option>
-                        <option value="hidden">مخفي بالكامل</option>
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={formData.status}
+                          onChange={(e) => setFormData(p => ({ ...p, status: e.target.value as any }))}
+                          className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
+                          style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
+                        >
+                          <option value="active" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>نشط ومعروض</option>
+                          <option value="pending" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>غير نشط / معلق</option>
+                          <option value="hidden" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>مخفي بالكامل</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      </div>
                     </div>
                   </div>
                 </div>
