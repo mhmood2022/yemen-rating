@@ -101,6 +101,25 @@ interface BusinessRecord {
 }
 
 export const CompaniesManager: React.FC = () => {
+
+  // مترجم الأخطاء الذكي للعربية
+  const getFriendlyErrorMessage = (err: any): string => {
+    const msg = (err?.message || "").toLowerCase();
+    if (msg.includes("row-level security") || msg.includes("violates row-level security")) {
+      return "تعذر الحفظ: تنقصك صلاحية الكتابة والإضافة في قاعدة البيانات (RLS). يرجى تشغيل كود الصلاحيات في Supabase.";
+    }
+    if (msg.includes("duplicate key") || msg.includes("unique constraint")) {
+      return "اسم المنشأة أو المعرف (slug) مسجل مسبقاً لمنشأة أخرى. يرجى كتابة اسم مختلف.";
+    }
+    if (msg.includes("foreign key")) {
+      return "التصنيف المختار غير متوافق مع قاعدة البيانات.";
+    }
+    if (msg.includes("failed to fetch") || msg.includes("network")) {
+      return "تعذر الاتصال بالسيرفر. يرجى التحقق من اتصال الإنترنت والمحاولة مجدداً.";
+    }
+    return "حدث خطأ غير متوقع أثناء حفظ البيانات في السيرفر. يرجى التأكد من صحة الحقول والمحاولة ثانية.";
+  };
+
   const [searchParams, setSearchParams] = useSearchParams();
   const currentCategorySlug = searchParams.get('category');
 
@@ -578,7 +597,7 @@ export const CompaniesManager: React.FC = () => {
 
     } catch (err: any) {
       console.error('Save error:', err);
-      setErrorMessage(err.message || 'تعذر حفظ البيانات في السيرفر.');
+      setErrorMessage(getFriendlyErrorMessage(err));
     } finally {
       setSaving(false);
     }
