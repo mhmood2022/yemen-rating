@@ -124,6 +124,25 @@ export const CompaniesManager: React.FC = () => {
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // تجميد وتثبيت خلفية الصفحة كلياً عند فتح النافذة على الهاتف (Body Scroll Lock)
+  useEffect(() => {
+    if (isModalOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [isModalOpen]);
+
   const [formData, setFormData] = useState<{
     name: string;
     slug: string;
@@ -206,7 +225,6 @@ export const CompaniesManager: React.FC = () => {
     return currentCategorySlug || '';
   }, [formData.category_id, categoriesMap, currentCategorySlug]);
 
-  // خيارات القوائم المنسدلة الموحدة
   const cityOptions = [
     { value: 'all', label: 'كافة المحافظات والمدن' },
     { value: 'صنعاء', label: 'صنعاء' },
@@ -806,10 +824,16 @@ export const CompaniesManager: React.FC = () => {
         </div>
       )}
 
-      {/* المودال الشامل الموحد المطور للهاتف */}
+      {/* المودال الشامل الموحد المطور للهاتف مع تجميد وعزل الخلفية بنسبة 100% */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
-          <div className="bg-[#0F141F] border border-[#1F2937] rounded-t-3xl sm:rounded-3xl w-full max-w-3xl max-h-[95vh] sm:max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col">
+        <div
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto"
+          style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
+        >
+          <div
+            className="bg-[#0F141F] border border-[#1F2937] rounded-t-3xl sm:rounded-3xl w-full max-w-3xl max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col"
+            style={{ overscrollBehavior: 'contain' }}
+          >
             <div className="p-4 sm:p-5 border-b border-[#1F2937] flex items-center justify-between bg-[#111827] sticky top-0 z-30">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-xl bg-[#FFC500]/10 text-[#FFC500]">
