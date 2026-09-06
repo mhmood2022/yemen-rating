@@ -11,174 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com">
-    // تحديث الشعار والاسم في المنشورات تلقائياً من بيانات البنك
-    function syncFeedBranding() {
-      const logoUrl = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : null);
-      if (logoUrl) {
-        document.querySelectorAll('.feed-avatar-img').forEach(img => {
-          img.src = logoUrl;
-        });
-      }
-      if (currentBank.name) {
-        document.querySelectorAll('.feed-bank-title').forEach(el => {
-          el.innerText = currentBank.name;
-        });
-      }
-      const feedText = document.getElementById('feed-announcement-text');
-      if (feedText && (currentBank.announcement || currentBank.text_post)) {
-        feedText.innerText = currentBank.announcement || currentBank.text_post;
-      }
-    }
-
-    // دوال نافذة التعليق
-    function openCommentModal() {
-      const m = document.getElementById('post-comment-modal');
-      if (m) m.classList.remove('hidden');
-    }
-    function closeCommentModal() {
-      const m = document.getElementById('post-comment-modal');
-      if (m) m.classList.add('hidden');
-    }
-    function submitPostComment() {
-      const input = document.getElementById('post-comment-input');
-      if (!input || !input.value.trim()) {
-        alert('يرجى كتابة تعليقك أولاً');
-        return;
-      }
-      alert('تم إرسال تعليقك بنجاح! سيظهر في لوحة إدارة البنك.');
-      input.value = '';
-      closeCommentModal();
-    }
-
-    // تفاعل الإعجاب والريتويت
-    function toggleInteraction(btn, type) {
-      if (type === 'like') {
-        const icon = btn.querySelector('i');
-        const num = btn.querySelector('span');
-        if (icon.classList.contains('fa-regular')) {
-          icon.className = 'fa-solid fa-heart text-xs text-rose-500';
-          if (num) num.innerText = parseInt(num.innerText) + 1;
-        } else {
-          icon.className = 'fa-regular fa-heart text-xs';
-          if (num) num.innerText = parseInt(num.innerText) - 1;
-        }
-      } else if (type === 'bookmark') {
-        const icon = btn.querySelector('i');
-        icon.classList.toggle('fa-solid');
-        icon.classList.toggle('text-brand-gold');
-      } else if (type === 'retweet') {
-        const icon = btn.querySelector('i');
-        const num = btn.querySelector('span');
-        icon.classList.toggle('text-emerald-400');
-        if (num) num.innerText = parseInt(num.innerText) + 1;
-      }
-    }
-
-
-    // دالة توليد المنشورات الديناميكية 100% لكل بنك
-    
-    // توليد المنشورات: الصور نظيفة تماماً بدون أي كتابة، تصغير الاسم، وتصفير الأرقام الوهمية
-    
-    function renderDynamicFeed() {
-      const feedBox = document.getElementById('tab-posts');
-      if (!feedBox) return;
-
-      const bankName = currentBank.name || '';
-      const bankLogo = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : '');
-      const isVerified = currentBank.is_verified === true || currentBank.verified === true;
-      const badgeSvg = isVerified ? renderVerificationBadge(currentBank.badge_type || 'gold') : '';
-
-      // هيدر المنشور المنخفض الارتفاع وباسم مصغر في سطر واحد مستقيم تماماً لا ينكسر
-      const makePostHeader = () => `
-        <div class="flex items-center justify-between pb-1">
-          <div class="flex items-center gap-2 min-w-0">
-            <div class="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-              ${bankLogo ? `<img src="${bankLogo}" class="w-full h-full object-contain" alt="logo" />` : `<i class="fa-solid fa-building-columns text-zinc-500 text-xs"></i>`}
-            </div>
-            <div class="flex items-center gap-1.5 flex-nowrap text-right truncate">
-              <span class="text-xs font-bold text-white truncate max-w-[170px] sm:max-w-none leading-none">${bankName}</span>
-              <span class="inline-flex shrink-0 leading-none">${badgeSvg}</span>
-              <span class="text-zinc-500 text-[10px] font-mono shrink-0 leading-none">· 20 ي</span>
-            </div>
-          </div>
-          <button type="button" class="text-zinc-500 hover:text-zinc-300 p-1 shrink-0 cursor-pointer">
-            <i class="fa-solid fa-ellipsis text-xs"></i>
-          </button>
-        </div>
-      `;
-
-      // شريط التفاعل المصفّر بالكامل
-      const realCommentsCount = (currentBank.reviews && currentBank.reviews.length) || 0;
-      const makePostBar = () => `
-        <div class="flex items-center justify-between pt-2 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
-          <div class="flex items-center gap-6">
-            <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
-              <i class="fa-regular fa-comment text-xs"></i>
-              <span class="text-[11px] font-mono">${realCommentsCount}</span>
-            </button>
-            <button type="button" onclick="toggleInteraction(this, 'retweet')" class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
-              <i class="fa-solid fa-retweet text-xs"></i>
-              <span class="text-[11px] font-mono">0</span>
-            </button>
-            <button type="button" onclick="toggleInteraction(this, 'like')" class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
-              <i class="fa-regular fa-heart text-xs"></i>
-              <span class="text-[11px] font-mono">0</span>
-            </button>
-          </div>
-          <div class="flex items-center gap-3">
-            <button type="button" onclick="toggleInteraction(this, 'bookmark')" class="hover:text-brand-gold cursor-pointer transition p-1">
-              <i class="fa-regular fa-bookmark text-xs"></i>
-            </button>
-            <button type="button" onclick="shareBankPage()" class="hover:text-zinc-300 cursor-pointer transition p-1">
-              <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
-            </button>
-          </div>
-        </div>
-      `;
-
-      let feedHtml = '';
-
-      // 1. المنشور النصي: لا يظهر إطلاقاً إلا إذا كُتب فعلياً من الإدارة
-      const postText = currentBank.announcement || currentBank.text_post || '';
-      if (postText.trim()) {
-        feedHtml += `
-          <article class="text-right space-y-2 pt-1">
-            ${makePostHeader()}
-            <p class="text-xs text-zinc-100 leading-relaxed font-normal select-text pr-1">${postText}</p>
-            ${makePostBar()}
-          </article>
-          <div class="border-b border-zinc-900/80 my-3"></div>
-        `;
-      }
-
-      // 2. منشور الصور الأربع: صور نقية 100% بدون أي أشرطة سوداء أو نصوص فوقها
-      const postsList = currentPosts || [];
-      if (postsList.length > 0) {
-        const cleanPhotos = postsList.map((post, idx) => `
-          <div class="bg-black border border-zinc-800/80 rounded-2xl overflow-hidden shadow-md cursor-pointer aspect-square" onclick="openLightbox(${idx})">
-            <img src="${post.image || post.file_url}" alt="صورة المعرض" class="w-full h-full object-cover" />
-          </div>
-        `).join('');
-
-        feedHtml += `
-          <article class="text-right space-y-2">
-            ${makePostHeader()}
-            <div class="grid grid-cols-2 gap-2 pt-1">
-              ${cleanPhotos}
-            </div>
-            ${makePostBar()}
-          </article>
-        `;
-      }
-
-      feedBox.className = 'space-y-4';
-      feedBox.innerHTML = feedHtml;
-    }
-
-
-
-</script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -203,184 +36,7 @@
         }
       }
     }
-  
-    // تحديث الشعار والاسم في المنشورات تلقائياً من بيانات البنك
-    function syncFeedBranding() {
-      const logoUrl = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : null);
-      if (logoUrl) {
-        document.querySelectorAll('.feed-avatar-img').forEach(img => {
-          img.src = logoUrl;
-        });
-      }
-      if (currentBank.name) {
-        document.querySelectorAll('.feed-bank-title').forEach(el => {
-          el.innerText = currentBank.name;
-        });
-      }
-      const feedText = document.getElementById('feed-announcement-text');
-      if (feedText && (currentBank.announcement || currentBank.text_post)) {
-        feedText.innerText = currentBank.announcement || currentBank.text_post;
-      }
-    }
-
-    // دوال نافذة التعليق
-    function openCommentModal() {
-      const m = document.getElementById('post-comment-modal');
-      if (m) m.classList.remove('hidden');
-    }
-    function closeCommentModal() {
-      const m = document.getElementById('post-comment-modal');
-      if (m) m.classList.add('hidden');
-    }
-    function submitPostComment() {
-      const input = document.getElementById('post-comment-input');
-      if (!input || !input.value.trim()) {
-        alert('يرجى كتابة تعليقك أولاً');
-        return;
-      }
-      alert('تم إرسال تعليقك بنجاح! سيظهر في لوحة إدارة البنك.');
-      input.value = '';
-      closeCommentModal();
-    }
-
-    // تفاعل الإعجاب والريتويت
-    function toggleInteraction(btn, type) {
-      if (type === 'like') {
-        const icon = btn.querySelector('i');
-        const num = btn.querySelector('span');
-        if (icon.classList.contains('fa-regular')) {
-          icon.className = 'fa-solid fa-heart text-xs text-rose-500';
-          if (num) num.innerText = parseInt(num.innerText) + 1;
-        } else {
-          icon.className = 'fa-regular fa-heart text-xs';
-          if (num) num.innerText = parseInt(num.innerText) - 1;
-        }
-      } else if (type === 'bookmark') {
-        const icon = btn.querySelector('i');
-        icon.classList.toggle('fa-solid');
-        icon.classList.toggle('text-brand-gold');
-      } else if (type === 'retweet') {
-        const icon = btn.querySelector('i');
-        const num = btn.querySelector('span');
-        icon.classList.toggle('text-emerald-400');
-        if (num) num.innerText = parseInt(num.innerText) + 1;
-      }
-    }
-
-
-    // دالة توليد المنشورات الديناميكية 100% لكل بنك
-    function renderDynamicFeed() {
-      const feedBox = document.getElementById('dynamic-posts-feed');
-      if (!feedBox) return;
-
-      const bankName = currentBank.name || '';
-      const bankLogo = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : '');
-      const bankSlug = currentBank.slug || (new URLSearchParams(window.location.search)).get('slug') || '';
-      
-      // شارة التوثيق الخاصة بهذا البنك تحديداً (زرقاء للتضامن، ذهبية للكريمي، أو حسب الداتابيز)
-      const isVerified = currentBank.is_verified === true || currentBank.verified === true;
-      const badgeHtml = isVerified ? renderVerificationBadge(currentBank.badge_type || (bankSlug === 'tadhamon' ? 'blue' : 'gold')) : '';
-
-      // نص المنشور الخاص بهذا البنك فقط
-      let postText = currentBank.announcement || currentBank.text_post || '';
-      if (!postText) {
-        if (bankSlug === 'kuraimi') {
-          postText = 'عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات وعمليات الدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات على مدار الساعة.';
-        } else if (bankSlug === 'tadhamon') {
-          postText = 'عملاؤنا الكرام: يسر بنك التضامن تقديم أحدث حلول الصيرفة الإسلامية وخدمات الدفع والتحويل السريع وتطبيق تضامن باي لخدمتكم على مدار الساعة في عموم الفروع.';
-        }
-      }
-
-      // هيدر تويتر/X بالترتيب العربي الصحيح (اليمين: الشعار + الاسم + الشارة + الوقت | اليسار: النقاط)
-      const makePostHeader = () => `
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-md">
-              ${bankLogo ? `<img src="${bankLogo}" class="w-full h-full object-contain" alt="${bankName}" />` : `<i class="fa-solid fa-building-columns text-zinc-500 text-sm"></i>`}
-            </div>
-            <div class="space-y-0.5 text-right">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <h5 class="text-sm font-black text-white leading-tight">${bankName}</h5>
-                ${badgeHtml}
-                <span class="text-zinc-500 text-xs font-mono pr-1">· 20 ي</span>
-              </div>
-            </div>
-          </div>
-          <button type="button" class="text-zinc-600 hover:text-zinc-400 p-1 cursor-pointer">
-            <i class="fa-solid fa-ellipsis text-xs"></i>
-          </button>
-        </div>
-      `;
-
-      // شريط التفاعل بتنسيق RTL الصحيح (اليمين: تعليق، ريتويت، لايك | اليسار: حفظ، مشاركة)
-      const makeActionBar = () => `
-        <div class="flex items-center justify-between pt-2.5 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
-          <div class="flex items-center gap-6">
-            <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
-              <i class="fa-regular fa-comment text-xs"></i>
-              <span class="text-[11px] font-mono">14</span>
-            </button>
-            <button type="button" onclick="toggleInteraction(this, 'retweet')" class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
-              <i class="fa-solid fa-retweet text-xs"></i>
-              <span class="text-[11px] font-mono">28</span>
-            </button>
-            <button type="button" onclick="toggleInteraction(this, 'like')" class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
-              <i class="fa-regular fa-heart text-xs"></i>
-              <span class="text-[11px] font-mono">152</span>
-            </button>
-          </div>
-          <div class="flex items-center gap-3">
-            <button type="button" onclick="toggleInteraction(this, 'bookmark')" class="hover:text-brand-gold cursor-pointer transition p-1">
-              <i class="fa-regular fa-bookmark text-xs"></i>
-            </button>
-            <button type="button" onclick="shareBankPage()" class="hover:text-zinc-300 cursor-pointer transition p-1">
-              <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
-            </button>
-          </div>
-        </div>
-      `;
-
-      let outputHtml = '';
-
-      // 1. المنشور الأول: المنشور النصي الخاص بهذا البنك (إذا توفر له نص)
-      if (postText) {
-        outputHtml += `
-          <article class="text-right space-y-2.5 pt-1">
-            ${makePostHeader()}
-            <p class="text-xs sm:text-[13px] text-zinc-100 leading-relaxed font-normal select-text pr-1">${postText}</p>
-            ${makeActionBar()}
-          </article>
-          <div class="border-b border-zinc-900 my-4"></div>
-        `;
-      }
-
-      // 2. المنشور الثاني: صور المعرض الخاصة بهذا البنك فقط
-      const bankMedia = currentPosts || [];
-      if (bankMedia.length > 0) {
-        const photosGrid = bankMedia.map((post, idx) => `
-          <div class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-md flex flex-col group cursor-pointer" onclick="openLightbox(${idx})">
-            <div class="relative w-full h-36 bg-zinc-950 overflow-hidden">
-              <img src="${post.image || post.file_url}" alt="${post.title || 'منشور'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-              ${post.tag ? `<span class="absolute top-2 right-2 bg-black/70 backdrop-blur-md text-brand-gold text-[10px] font-black px-2 py-0.5 rounded-md border border-brand-gold/30">${post.tag}</span>` : ''}
-            </div>
-          </div>
-        `).join('');
-
-        outputHtml += `
-          <article class="text-right space-y-2.5">
-            ${makePostHeader()}
-            <div class="grid grid-cols-2 gap-2.5 pt-1">
-              ${photosGrid}
-            </div>
-            ${makeActionBar()}
-          </article>
-        `;
-      }
-
-      feedBox.innerHTML = outputHtml;
-    }
-
-</script>
+  </script>
 
   <style>
 /* إخفاء شريط التمرير الجانبي تماماً في كافة المتصفحات */
@@ -488,8 +144,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           <i class="fa-solid fa-star"></i>
           <i class="fa-solid fa-star-half-stroke"></i>
         </div>
-        <span id="header-rating-num">--</span>
-        <span id="header-rating-count"></span>
+        <span class="text-white text-sm font-black" id="header-rating-num">--</span>
+        <span class="text-zinc-400 font-normal text-[11px]" id="header-rating-count">(جاري التحميل...)</span>
       </div>
 
       <p id="bank-bio" class="text-zinc-300 text-xs leading-snug font-medium pt-1">
@@ -529,11 +185,30 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     <!-- 5. المحتوى الديناميكي للتبويبات -->
     <div class="p-3">
       <!-- المنشورات -->
-                        <div id="tab-posts" class="space-y-5">
-        <!-- خلاصة المنشورات الديناميكية (كل بنك يأخذ اسمه وشعاره وشارته الخاصة 100%) -->
-        <div id="dynamic-posts-feed" class="space-y-4"></div>
+      <div id="tab-posts" class="space-y-3">
+        
+        <!-- بطاقة المنشور النصي الرسمي الثابتة والظاهرة فوق المعرض -->
+        <div id="text-post-box" class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl p-4 shadow-lg text-right space-y-2 mb-3.5 block">
+          <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-xl bg-black border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                <img id="announcement-bank-logo" src="" alt="logo" class="w-full h-full object-contain" />
+              </div>
+              <div>
+                <h5 id="announcement-bank-name" class="text-xs font-black text-white leading-tight">بنك الكريمي للتمويل الأصغر الإسلامي</h5>
+                <span class="text-[10px] text-brand-gold font-bold">تنويه وتحديث رسمي</span>
+              </div>
+            </div>
+            <span class="text-[10px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded-full font-mono">منشور معتمد</span>
+          </div>
+          <p id="announcement-bank-text" class="text-xs text-zinc-200 leading-relaxed font-medium pt-1">
+            عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات وعمليات الدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات على مدار الساعة.
+          </p>
+        </div>
+        <div id="posts-container" class="grid grid-cols-2 gap-2.5"></div>
       </div>
 
+      <!-- العروض -->
       <div id="tab-offers" class="hidden space-y-3">
         <div id="offers-container" class="space-y-3"></div>
       </div>
@@ -617,120 +292,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       <div class="space-y-2 pt-2">
         <h4 class="text-right text-xs font-bold text-zinc-300">اخر التقييمات</h4>
         
-    <!-- فروع البنك وساعات العمل المعتمدة -->
-    <div class="mt-8 space-y-4">
-      <div class="bg-black border border-zinc-800/90 rounded-2xl p-4 shadow-xl text-right space-y-3">
-        <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60">
-          <h4 class="text-xs font-black text-white flex items-center gap-1.5">
-            <i class="fa-solid fa-code-branch text-brand-gold"></i>
-            <span>فروع البنك وأجهزة الصراف الآلي</span>
-          </h4>
-          <span class="text-[10px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded-full font-bold">خدمات مستمرة</span>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs pt-1">
-          <div class="bg-zinc-950 border border-zinc-800/60 p-3 rounded-xl flex items-center gap-2.5">
-            <i class="fa-solid fa-building-columns text-brand-gold text-sm shrink-0"></i>
-            <div class="truncate">
-              <span class="text-white font-bold block truncate">الفرع الرئيسي</span>
-              <span class="text-zinc-400 text-[11px] truncate">صنعاء — شارع القصر</span>
-            </div>
-          </div>
-          <div class="bg-zinc-950 border border-zinc-800/60 p-3 rounded-xl flex items-center gap-2.5">
-            <i class="fa-solid fa-money-bill-transfer text-emerald-400 text-sm shrink-0"></i>
-            <div class="truncate">
-              <span class="text-white font-bold block truncate">صرافات آلية (ATM)</span>
-              <span class="text-zinc-400 text-[11px] truncate">خدمة نقدية 24/7</span>
-            </div>
-          </div>
-          <div class="bg-zinc-950 border border-zinc-800/60 p-3 rounded-xl flex items-center justify-center">
-            <a href="https://maps.google.com" target="_blank" class="text-brand-gold hover:underline font-black text-xs flex items-center gap-1.5">
-              <span>مواقع الفروع على الخريطة</span>
-              <i class="fa-solid fa-arrow-up-right-from-square text-[11px]"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- ساعات الدوام الرسمي -->
-      <div class="bg-black border border-zinc-800/90 rounded-2xl p-4 shadow-xl text-right">
-        <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60">
-          <div class="flex items-center gap-2">
-            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
-            <h4 class="text-xs font-black text-white flex items-center gap-1.5">
-              <i class="fa-solid fa-clock text-brand-gold"></i>
-              <span>مواعيد وساعات الدوام الرسمي</span>
-            </h4>
-          </div>
-          <span class="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">أوقات العمل</span>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 text-xs">
-          <div class="flex items-start gap-2.5">
-            <i class="fa-regular fa-calendar-check text-brand-gold text-xs mt-0.5"></i>
-            <div>
-              <span class="text-white font-bold block">الفترة الصباحية (الأحد - الخميس)</span>
-              <span class="text-zinc-400 text-[11px]">8:00 صباحاً – 2:00 ظهراً</span>
-            </div>
-          </div>
-          <div class="flex items-start gap-2.5">
-            <i class="fa-solid fa-moon text-blue-400 text-xs mt-0.5"></i>
-            <div>
-              <span class="text-white font-bold block">الفترة المسائية (مراكز محددة)</span>
-              <span class="text-zinc-400 text-[11px]">4:00 عصراً – 7:30 مساءً</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- بطاقات الفروع وساعات العمل المعتمدة -->
-    <div class="mt-8 space-y-4">
-      <!-- فروع البنك المعتمدة (بدون صراف آلي) -->
-      <div class="bg-black border border-zinc-800/90 rounded-2xl p-4 shadow-xl text-right space-y-3">
-        <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60">
-          <h4 class="text-xs font-black text-white flex items-center gap-1.5">
-            <i class="fa-solid fa-code-branch text-brand-gold"></i>
-            <span>فروع البنك المعتمدة</span>
-          </h4>
-          <span class="text-[10px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded-full font-bold">شبكة الفروع</span>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
-          <div class="bg-zinc-950 border border-zinc-800/60 p-3 rounded-xl flex items-center gap-2.5">
-            <i class="fa-solid fa-building-columns text-brand-gold text-sm shrink-0"></i>
-            <div class="truncate">
-              <span class="text-white font-bold block truncate">الفرع الرئيسي</span>
-              <span class="text-zinc-400 text-[11px] truncate" id="bank-branch-hq">صنعاء — شارع القصر</span>
-            </div>
-          </div>
-          <div class="bg-zinc-950 border border-zinc-800/60 p-3 rounded-xl flex items-center justify-center">
-            <a id="bank-maps-url" href="https://maps.google.com" target="_blank" class="text-brand-gold hover:underline font-black text-xs flex items-center gap-1.5">
-              <span>عرض موقع الفرع على الخريطة</span>
-              <i class="fa-solid fa-arrow-up-right-from-square text-[11px]"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- مواعيد وساعات الدوام الرسمي (تُحدّد من قبل الإدارة) -->
-      <div class="bg-black border border-zinc-800/90 rounded-2xl p-4 shadow-xl text-right">
-        <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60">
-          <div class="flex items-center gap-2">
-            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-            <h4 class="text-xs font-black text-white flex items-center gap-1.5">
-              <i class="fa-solid fa-clock text-brand-gold"></i>
-              <span>مواعيد وساعات العمل</span>
-            </h4>
-          </div>
-          <span class="text-[10px] text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">أوقات الدوام</span>
-        </div>
-        <div class="pt-2 text-xs text-zinc-300 space-y-1">
-          <p id="bank-hours-text">يتم تحديد ساعات الدوام المعتمدة من قبل إدارة البنك.</p>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- حاوية الفروع (مخفية تماماً إلا إذا أدخلتها الإدارة) -->
+    <!-- الفروع (مخفية تماماً وفارغة حتى تعبئها الإدارة) -->
     <div id="bank-branches-slot" class="hidden mt-6 bg-black border border-zinc-800/90 rounded-2xl p-4 text-right shadow-xl">
       <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
         <h4 class="text-xs font-black text-white flex items-center gap-1.5">
@@ -741,7 +303,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       <div id="bank-branches-content" class="text-xs text-zinc-300 leading-relaxed"></div>
     </div>
 
-    <!-- حاوية ساعات العمل (مخفية تماماً إلا إذا أدخلتها الإدارة) -->
+    <!-- ساعات العمل (مخفية تماماً وفارغة حتى تعبئها الإدارة) -->
     <div id="bank-hours-slot" class="hidden mt-4 bg-black border border-zinc-800/90 rounded-2xl p-4 text-right shadow-xl">
       <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
         <h4 class="text-xs font-black text-white flex items-center gap-1.5">
@@ -902,43 +464,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       </div>
     </div>
 
-  
-      <!-- شبكة الفروع وأجهزة الصراف الآلي المعتمدة -->
-      <div class="mt-6 pt-5 border-t border-zinc-800/80">
-        <div class="flex items-center justify-between mb-3 px-1">
-          <h4 class="text-xs font-black text-white flex items-center gap-1.5">
-            <i class="fa-solid fa-code-branch text-brand-gold"></i>
-            <span>فروع البنك وأجهزة الصراف الآلي</span>
-          </h4>
-          <span class="text-[10px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-2.5 py-0.5 rounded-full font-bold">تغطية في كافة المحافظات</span>
-        </div>
-        <div class="bg-black border border-zinc-800/90 rounded-2xl p-4 space-y-3 shadow-xl text-right">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-            <div class="bg-zinc-950 border border-zinc-800/60 p-3 rounded-xl flex items-center gap-2.5">
-              <i class="fa-solid fa-building-columns text-brand-gold text-sm shrink-0"></i>
-              <div class="truncate">
-                <span class="text-white font-bold block truncate">الفرع الرئيسي</span>
-                <span class="text-zinc-400 text-[11px] truncate">صنعاء — شارع القصر</span>
-              </div>
-            </div>
-            <div class="bg-zinc-950 border border-zinc-800/60 p-3 rounded-xl flex items-center gap-2.5">
-              <i class="fa-solid fa-money-bill-transfer text-emerald-400 text-sm shrink-0"></i>
-              <div class="truncate">
-                <span class="text-white font-bold block truncate">صرافات آلية (ATM)</span>
-                <span class="text-zinc-400 text-[11px] truncate">خدمة نقدية سريعة 24/7</span>
-              </div>
-            </div>
-            <div class="bg-zinc-950 border border-zinc-800/60 p-3 rounded-xl flex items-center justify-center">
-              <a href="https://maps.google.com" target="_blank" class="text-brand-gold hover:underline font-black text-xs flex items-center gap-1.5">
-                <span>مواقع الفروع على الخريطة</span>
-                <i class="fa-solid fa-arrow-up-right-from-square text-[11px]"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </main>
+  </main>
 
   <!-- محرك الصفحة البرمجي المتكامل والخالي من أي أخطاء -->
   <script>
@@ -1052,9 +578,6 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     }
 
     
-    
-    
-    
     function updateRatingsDisplay(reviewsList) {
       const revs = Array.isArray(reviewsList) ? reviewsList : [];
       const total = revs.length;
@@ -1087,17 +610,17 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         if (pctEl) pctEl.innerText = `${pct}%`;
       }
 
-      // إظهار تقييمات ومراجعات العملاء الحقيقية من Supabase تحت آخر التقييمات
+      // إظهار مراجعات العملاء الحقيقية من Supabase
       const rContainer = document.getElementById('reviews-container');
       if (rContainer) {
         if (total === 0) {
-          rContainer.innerHTML = '<div class="py-6 px-4 text-center rounded-xl bg-zinc-950 border border-zinc-900 text-xs text-zinc-400">لا توجد تقييمات مسجلة لهذا البنك حتى الآن. كن أول من يقيّم!</div>';
+          rContainer.innerHTML = '<div class="py-6 px-4 text-center text-xs text-zinc-400">لا توجد تقييمات مسجلة لهذا البنك حتى الآن.</div>';
         } else {
           rContainer.innerHTML = revs.map(r => `
             <div class="border border-zinc-800/80 rounded-2xl p-3 flex flex-col gap-2 bg-[#0A0A0A] text-right mb-2.5 shadow-md">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold text-xs">
+                  <div class="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold text-xs">
                     ${(r.user_name || 'ع')[0]}
                   </div>
                   <div>
@@ -1115,9 +638,6 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         }
       }
     }
-
-
-
 
 
     async function loadBankProfile() {
@@ -1139,8 +659,6 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
         if (b) {
           bankData.id = b.id;
-          bankData.slug = b.slug || bankId;
-          bankData.announcement = b.announcement || b.text_post || null;
           bankData.name = b.name || bankData.name;
           bankData.description = b.description || b.short_description || bankData.description;
           bankData.badge_type = b.badge_type || 'gold';
@@ -1218,101 +736,125 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       document.getElementById('contact-mail').href = currentBank.email ? `mailto:${currentBank.email}` : "#";
 
       
-      // رسم خلاصة المنشورات بأسلوب تويتر / X (منشور نصي + منشور صور)
-      const tabPosts = document.getElementById('tab-posts');
-      if (tabPosts) {
-        const bankName = currentBank.name || '';
-        const bankLogo = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : '');
-        const isVerified = currentBank.is_verified === true || currentBank.verified === true;
-        const badgeSvg = isVerified ? renderVerificationBadge(currentBank.badge_type || 'gold') : '';
+    function renderDynamicFeed() {
+      const feedBox = document.getElementById('tab-posts');
+      if (!feedBox) return;
 
-        const postText = currentBank.announcement || currentBank.text_post || 'عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات وعمليات الدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات على مدار الساعة.';
+      const bankName = currentBank.name || '';
+      const bankLogo = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : '');
+      const isVerified = currentBank.is_verified === true || currentBank.verified === true;
+      const badgeSvg = isVerified ? renderVerificationBadge(currentBank.badge_type || 'gold') : '';
 
-        const makePostHeader = () => `
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-md">
-                ${bankLogo ? `<img src="${bankLogo}" class="w-full h-full object-contain" alt="${bankName}" />` : `<i class="fa-solid fa-building-columns text-zinc-500 text-sm"></i>`}
-              </div>
-              <div class="space-y-0.5 text-right">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <h5 class="text-sm font-black text-white leading-tight">${bankName}</h5>
-                  ${badgeSvg}
-                  <span class="text-zinc-500 text-xs font-mono pr-1">· 20 ي</span>
-                </div>
-              </div>
+      // هيدر المنشور المنخفض الارتفاع: الاسم مصغر والشارة في سطر واحد مستقيم بدون أي تاريخ وهمي
+      const makePostHeader = () => `
+        <div class="flex items-center justify-between py-0.5">
+          <div class="flex items-center gap-2 min-w-0">
+            <div class="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+              ${bankLogo ? `<img src="${bankLogo}" class="w-full h-full object-contain" alt="logo" />` : `<i class="fa-solid fa-building-columns text-zinc-500 text-xs"></i>`}
             </div>
-            <button type="button" class="text-zinc-600 hover:text-zinc-400 p-1 cursor-pointer">
-              <i class="fa-solid fa-ellipsis text-xs"></i>
+            <div class="flex items-center gap-1.5 flex-nowrap text-right truncate">
+              <span class="text-xs font-bold text-white truncate max-w-[170px] sm:max-w-none leading-none">${bankName}</span>
+              <span class="inline-flex shrink-0 leading-none">${badgeSvg}</span>
+            </div>
+          </div>
+          <button type="button" class="text-zinc-500 hover:text-zinc-300 p-1 shrink-0 cursor-pointer">
+            <i class="fa-solid fa-ellipsis text-xs"></i>
+          </button>
+        </div>
+      `;
+
+      // شريط التفاعل المصفّر حقيقياً
+      const realCommentsCount = (currentBank.reviews && currentBank.reviews.length) || 0;
+      const makePostBar = () => `
+        <div class="flex items-center justify-between pt-2 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
+          <div class="flex items-center gap-6">
+            <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
+              <i class="fa-regular fa-comment text-xs"></i>
+              <span class="text-[11px] font-mono">${realCommentsCount}</span>
+            </button>
+            <button type="button" onclick="toggleInteraction(this, 'retweet')" class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
+              <i class="fa-solid fa-retweet text-xs"></i>
+              <span class="text-[11px] font-mono">0</span>
+            </button>
+            <button type="button" onclick="toggleInteraction(this, 'like')" class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
+              <i class="fa-regular fa-heart text-xs"></i>
+              <span class="text-[11px] font-mono">0</span>
             </button>
           </div>
-        `;
-
-        const makeActionBar = (comments, retweets, likes) => `
-          <div class="flex items-center justify-between pt-2.5 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
-            <div class="flex items-center gap-6">
-              <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
-                <i class="fa-regular fa-comment text-xs"></i>
-                <span class="text-[11px] font-mono">${comments}</span>
-              </button>
-              <button type="button" onclick="toggleInteraction(this, 'retweet')" class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
-                <i class="fa-solid fa-retweet text-xs"></i>
-                <span class="text-[11px] font-mono">${retweets}</span>
-              </button>
-              <button type="button" onclick="toggleInteraction(this, 'like')" class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
-                <i class="fa-regular fa-heart text-xs"></i>
-                <span class="text-[11px] font-mono">${likes}</span>
-              </button>
-            </div>
-            <div class="flex items-center gap-3">
-              <button type="button" onclick="toggleInteraction(this, 'bookmark')" class="hover:text-brand-gold cursor-pointer transition p-1">
-                <i class="fa-regular fa-bookmark text-xs"></i>
-              </button>
-              <button type="button" onclick="shareBankPage()" class="hover:text-zinc-300 cursor-pointer transition p-1">
-                <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
-              </button>
-            </div>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="toggleInteraction(this, 'bookmark')" class="hover:text-brand-gold cursor-pointer transition p-1">
+              <i class="fa-regular fa-bookmark text-xs"></i>
+            </button>
+            <button type="button" onclick="shareBankPage()" class="hover:text-zinc-300 cursor-pointer transition p-1">
+              <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
+            </button>
           </div>
-        `;
+        </div>
+      `;
 
-        const realCommentsCount = (currentBank.reviews && currentBank.reviews.length) || 14;
-        let feedHtml = '';
+      let feedHtml = '';
 
-        // المنشور الأول: منشور نصي
+      // 1. المنشور النصي: يظهر فقط وفقط إذا كتبته الإدارة (فارغ ومخفي افتراضياً)
+      const postText = currentBank.announcement || currentBank.text_post || '';
+      if (postText.trim()) {
         feedHtml += `
-          <article class="text-right space-y-2.5 pt-1">
+          <article class="text-right space-y-2 pt-1">
             ${makePostHeader()}
-            <p class="text-xs sm:text-[13px] text-zinc-100 leading-relaxed font-normal select-text pr-1">${postText}</p>
-            ${makeActionBar(realCommentsCount, 28, 152)}
+            <p class="text-xs text-zinc-100 leading-relaxed font-normal select-text pr-1">${postText}</p>
+            ${makePostBar()}
           </article>
-          <div class="border-b border-zinc-900 my-4"></div>
+          <div class="border-b border-zinc-900/80 my-3"></div>
         `;
+      }
 
-        // المنشور الثاني: منشور الصور الأربع
-        const postsList = currentPosts || [];
-        if (postsList.length > 0) {
-          const photosGrid = postsList.map((post, idx) => `
-            <div class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-md flex flex-col group cursor-pointer" onclick="openLightbox(${idx})">
-              <div class="relative w-full h-36 bg-zinc-950 overflow-hidden">
-                <img src="${post.image || post.file_url}" alt="${post.title || 'منشور'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                ${post.tag ? `<span class="absolute top-2 right-2 bg-black/70 backdrop-blur-md text-brand-gold text-[10px] font-black px-2 py-0.5 rounded-md border border-brand-gold/30">${post.tag}</span>` : ''}
-              </div>
+      // 2. صور المعرض: صور نقية 100% بدون أي أشرطة سوداء أو كتابة فوقها نهائياً
+      const postsList = currentPosts || [];
+      if (postsList.length > 0) {
+        const cleanPhotos = postsList.map((post, idx) => `
+          <div class="bg-black border border-zinc-800/80 rounded-2xl overflow-hidden shadow-md cursor-pointer aspect-square" onclick="openLightbox(${idx})">
+            <img src="${post.image || post.file_url}" alt="صورة المعرض" class="w-full h-full object-cover" />
+          </div>
+        `).join('');
+
+        feedHtml += `
+          <article class="text-right space-y-2">
+            ${makePostHeader()}
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              ${cleanPhotos}
             </div>
-          `).join('');
+            ${makePostBar()}
+          </article>
+        `;
+      }
 
-          feedHtml += `
-            <article class="text-right space-y-2.5">
-              ${makePostHeader()}
-              <div class="grid grid-cols-2 gap-2.5 pt-1">
-                ${photosGrid}
-              </div>
-              ${makeActionBar(realCommentsCount, 28, 152)}
-            </article>
-          `;
+      feedBox.className = 'space-y-4';
+      feedBox.innerHTML = feedHtml;
+    }
+
+      renderDynamicFeed();
+
+      // الفروع: تظهر فقط إذا أدخلتها الإدارة وتختفي تماماً (0 بكسل) إذا كانت فارغة
+      const branchSlot = document.getElementById('bank-branches-slot');
+      if (branchSlot) {
+        if (currentBank.branches && String(currentBank.branches).trim()) {
+          branchSlot.classList.remove('hidden');
+          const bText = document.getElementById('bank-branches-content');
+          if (bText) bText.innerText = typeof currentBank.branches === 'string' ? currentBank.branches : JSON.stringify(currentBank.branches);
+        } else {
+          branchSlot.classList.add('hidden');
         }
+      }
 
-        tabPosts.className = 'space-y-5';
-        tabPosts.innerHTML = feedHtml;
+      // ساعات العمل: تظهر فقط إذا أدخلتها الإدارة وتختفي تماماً (0 بكسل) إذا كانت فارغة
+      const hoursSlot = document.getElementById('bank-hours-slot');
+      if (hoursSlot) {
+        if (currentBank.working_hours && String(currentBank.working_hours).trim()) {
+          hoursSlot.classList.remove('hidden');
+          const hText = document.getElementById('bank-hours-content');
+          if (hText) hText.innerText = currentBank.working_hours;
+        } else {
+          hoursSlot.classList.add('hidden');
+        }
       }
 
       if (allRevs.length > 2) {
@@ -1554,184 +1096,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       }
     }, 3500);
   
-  
-    // تحديث الشعار والاسم في المنشورات تلقائياً من بيانات البنك
-    function syncFeedBranding() {
-      const logoUrl = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : null);
-      if (logoUrl) {
-        document.querySelectorAll('.feed-avatar-img').forEach(img => {
-          img.src = logoUrl;
-        });
-      }
-      if (currentBank.name) {
-        document.querySelectorAll('.feed-bank-title').forEach(el => {
-          el.innerText = currentBank.name;
-        });
-      }
-      const feedText = document.getElementById('feed-announcement-text');
-      if (feedText && (currentBank.announcement || currentBank.text_post)) {
-        feedText.innerText = currentBank.announcement || currentBank.text_post;
-      }
-    }
-
-    // دوال نافذة التعليق
-    function openCommentModal() {
-      const m = document.getElementById('post-comment-modal');
-      if (m) m.classList.remove('hidden');
-    }
-    function closeCommentModal() {
-      const m = document.getElementById('post-comment-modal');
-      if (m) m.classList.add('hidden');
-    }
-    function submitPostComment() {
-      const input = document.getElementById('post-comment-input');
-      if (!input || !input.value.trim()) {
-        alert('يرجى كتابة تعليقك أولاً');
-        return;
-      }
-      alert('تم إرسال تعليقك بنجاح! سيظهر في لوحة إدارة البنك.');
-      input.value = '';
-      closeCommentModal();
-    }
-
-    // تفاعل الإعجاب والريتويت
-    function toggleInteraction(btn, type) {
-      if (type === 'like') {
-        const icon = btn.querySelector('i');
-        const num = btn.querySelector('span');
-        if (icon.classList.contains('fa-regular')) {
-          icon.className = 'fa-solid fa-heart text-xs text-rose-500';
-          if (num) num.innerText = parseInt(num.innerText) + 1;
-        } else {
-          icon.className = 'fa-regular fa-heart text-xs';
-          if (num) num.innerText = parseInt(num.innerText) - 1;
-        }
-      } else if (type === 'bookmark') {
-        const icon = btn.querySelector('i');
-        icon.classList.toggle('fa-solid');
-        icon.classList.toggle('text-brand-gold');
-      } else if (type === 'retweet') {
-        const icon = btn.querySelector('i');
-        const num = btn.querySelector('span');
-        icon.classList.toggle('text-emerald-400');
-        if (num) num.innerText = parseInt(num.innerText) + 1;
-      }
-    }
-
-
-    // دالة توليد المنشورات الديناميكية 100% لكل بنك
-    function renderDynamicFeed() {
-      const feedBox = document.getElementById('dynamic-posts-feed');
-      if (!feedBox) return;
-
-      const bankName = currentBank.name || '';
-      const bankLogo = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : '');
-      const bankSlug = currentBank.slug || (new URLSearchParams(window.location.search)).get('slug') || '';
-      
-      // شارة التوثيق الخاصة بهذا البنك تحديداً (زرقاء للتضامن، ذهبية للكريمي، أو حسب الداتابيز)
-      const isVerified = currentBank.is_verified === true || currentBank.verified === true;
-      const badgeHtml = isVerified ? renderVerificationBadge(currentBank.badge_type || (bankSlug === 'tadhamon' ? 'blue' : 'gold')) : '';
-
-      // نص المنشور الخاص بهذا البنك فقط
-      let postText = currentBank.announcement || currentBank.text_post || '';
-      if (!postText) {
-        if (bankSlug === 'kuraimi') {
-          postText = 'عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات وعمليات الدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات على مدار الساعة.';
-        } else if (bankSlug === 'tadhamon') {
-          postText = 'عملاؤنا الكرام: يسر بنك التضامن تقديم أحدث حلول الصيرفة الإسلامية وخدمات الدفع والتحويل السريع وتطبيق تضامن باي لخدمتكم على مدار الساعة في عموم الفروع.';
-        }
-      }
-
-      // هيدر تويتر/X بالترتيب العربي الصحيح (اليمين: الشعار + الاسم + الشارة + الوقت | اليسار: النقاط)
-      const makePostHeader = () => `
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-md">
-              ${bankLogo ? `<img src="${bankLogo}" class="w-full h-full object-contain" alt="${bankName}" />` : `<i class="fa-solid fa-building-columns text-zinc-500 text-sm"></i>`}
-            </div>
-            <div class="space-y-0.5 text-right">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <h5 class="text-sm font-black text-white leading-tight">${bankName}</h5>
-                ${badgeHtml}
-                <span class="text-zinc-500 text-xs font-mono pr-1">· 20 ي</span>
-              </div>
-            </div>
-          </div>
-          <button type="button" class="text-zinc-600 hover:text-zinc-400 p-1 cursor-pointer">
-            <i class="fa-solid fa-ellipsis text-xs"></i>
-          </button>
-        </div>
-      `;
-
-      // شريط التفاعل بتنسيق RTL الصحيح (اليمين: تعليق، ريتويت، لايك | اليسار: حفظ، مشاركة)
-      const makeActionBar = () => `
-        <div class="flex items-center justify-between pt-2.5 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
-          <div class="flex items-center gap-6">
-            <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
-              <i class="fa-regular fa-comment text-xs"></i>
-              <span class="text-[11px] font-mono">14</span>
-            </button>
-            <button type="button" onclick="toggleInteraction(this, 'retweet')" class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
-              <i class="fa-solid fa-retweet text-xs"></i>
-              <span class="text-[11px] font-mono">28</span>
-            </button>
-            <button type="button" onclick="toggleInteraction(this, 'like')" class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
-              <i class="fa-regular fa-heart text-xs"></i>
-              <span class="text-[11px] font-mono">152</span>
-            </button>
-          </div>
-          <div class="flex items-center gap-3">
-            <button type="button" onclick="toggleInteraction(this, 'bookmark')" class="hover:text-brand-gold cursor-pointer transition p-1">
-              <i class="fa-regular fa-bookmark text-xs"></i>
-            </button>
-            <button type="button" onclick="shareBankPage()" class="hover:text-zinc-300 cursor-pointer transition p-1">
-              <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
-            </button>
-          </div>
-        </div>
-      `;
-
-      let outputHtml = '';
-
-      // 1. المنشور الأول: المنشور النصي الخاص بهذا البنك (إذا توفر له نص)
-      if (postText) {
-        outputHtml += `
-          <article class="text-right space-y-2.5 pt-1">
-            ${makePostHeader()}
-            <p class="text-xs sm:text-[13px] text-zinc-100 leading-relaxed font-normal select-text pr-1">${postText}</p>
-            ${makeActionBar()}
-          </article>
-          <div class="border-b border-zinc-900 my-4"></div>
-        `;
-      }
-
-      // 2. المنشور الثاني: صور المعرض الخاصة بهذا البنك فقط
-      const bankMedia = currentPosts || [];
-      if (bankMedia.length > 0) {
-        const photosGrid = bankMedia.map((post, idx) => `
-          <div class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-md flex flex-col group cursor-pointer" onclick="openLightbox(${idx})">
-            <div class="relative w-full h-36 bg-zinc-950 overflow-hidden">
-              <img src="${post.image || post.file_url}" alt="${post.title || 'منشور'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-              ${post.tag ? `<span class="absolute top-2 right-2 bg-black/70 backdrop-blur-md text-brand-gold text-[10px] font-black px-2 py-0.5 rounded-md border border-brand-gold/30">${post.tag}</span>` : ''}
-            </div>
-          </div>
-        `).join('');
-
-        outputHtml += `
-          <article class="text-right space-y-2.5">
-            ${makePostHeader()}
-            <div class="grid grid-cols-2 gap-2.5 pt-1">
-              ${photosGrid}
-            </div>
-            ${makeActionBar()}
-          </article>
-        `;
-      }
-
-      feedBox.innerHTML = outputHtml;
-    }
-
-</script>
+  </script>
 
 
   <script>
@@ -1746,206 +1111,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     }
     window.addEventListener('DOMContentLoaded', () => setTimeout(forceDismissLoader, 800));
     window.addEventListener('load', () => setTimeout(forceDismissLoader, 300));
-  
-    // تحديث الشعار والاسم في المنشورات تلقائياً من بيانات البنك
-    function syncFeedBranding() {
-      const logoUrl = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : null);
-      if (logoUrl) {
-        document.querySelectorAll('.feed-avatar-img').forEach(img => {
-          img.src = logoUrl;
-        });
-      }
-      if (currentBank.name) {
-        document.querySelectorAll('.feed-bank-title').forEach(el => {
-          el.innerText = currentBank.name;
-        });
-      }
-      const feedText = document.getElementById('feed-announcement-text');
-      if (feedText && (currentBank.announcement || currentBank.text_post)) {
-        feedText.innerText = currentBank.announcement || currentBank.text_post;
-      }
-    }
-
-    // دوال نافذة التعليق
-    function openCommentModal() {
-      const m = document.getElementById('post-comment-modal');
-      if (m) m.classList.remove('hidden');
-    }
-    function closeCommentModal() {
-      const m = document.getElementById('post-comment-modal');
-      if (m) m.classList.add('hidden');
-    }
-    function submitPostComment() {
-      const input = document.getElementById('post-comment-input');
-      if (!input || !input.value.trim()) {
-        alert('يرجى كتابة تعليقك أولاً');
-        return;
-      }
-      alert('تم إرسال تعليقك بنجاح! سيظهر في لوحة إدارة البنك.');
-      input.value = '';
-      closeCommentModal();
-    }
-
-    // تفاعل الإعجاب والريتويت
-    function toggleInteraction(btn, type) {
-      if (type === 'like') {
-        const icon = btn.querySelector('i');
-        const num = btn.querySelector('span');
-        if (icon.classList.contains('fa-regular')) {
-          icon.className = 'fa-solid fa-heart text-xs text-rose-500';
-          if (num) num.innerText = parseInt(num.innerText) + 1;
-        } else {
-          icon.className = 'fa-regular fa-heart text-xs';
-          if (num) num.innerText = parseInt(num.innerText) - 1;
-        }
-      } else if (type === 'bookmark') {
-        const icon = btn.querySelector('i');
-        icon.classList.toggle('fa-solid');
-        icon.classList.toggle('text-brand-gold');
-      } else if (type === 'retweet') {
-        const icon = btn.querySelector('i');
-        const num = btn.querySelector('span');
-        icon.classList.toggle('text-emerald-400');
-        if (num) num.innerText = parseInt(num.innerText) + 1;
-      }
-    }
-
-
-    // دالة توليد المنشورات الديناميكية 100% لكل بنك
-    function renderDynamicFeed() {
-      const feedBox = document.getElementById('dynamic-posts-feed');
-      if (!feedBox) return;
-
-      const bankName = currentBank.name || '';
-      const bankLogo = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : '');
-      const bankSlug = currentBank.slug || (new URLSearchParams(window.location.search)).get('slug') || '';
-      
-      // شارة التوثيق الخاصة بهذا البنك تحديداً (زرقاء للتضامن، ذهبية للكريمي، أو حسب الداتابيز)
-      const isVerified = currentBank.is_verified === true || currentBank.verified === true;
-      const badgeHtml = isVerified ? renderVerificationBadge(currentBank.badge_type || (bankSlug === 'tadhamon' ? 'blue' : 'gold')) : '';
-
-      // نص المنشور الخاص بهذا البنك فقط
-      let postText = currentBank.announcement || currentBank.text_post || '';
-      if (!postText) {
-        if (bankSlug === 'kuraimi') {
-          postText = 'عملاؤنا الكرام: يمكنكم الاستفادة من كافة خدمات التحويل الفوري وتغذية الحسابات وعمليات الدفع الإلكتروني عبر تطبيق الكريمي جوال وأجهزة الصراف الآلي المعتمدة في كافة المحافظات على مدار الساعة.';
-        } else if (bankSlug === 'tadhamon') {
-          postText = 'عملاؤنا الكرام: يسر بنك التضامن تقديم أحدث حلول الصيرفة الإسلامية وخدمات الدفع والتحويل السريع وتطبيق تضامن باي لخدمتكم على مدار الساعة في عموم الفروع.';
-        }
-      }
-
-      // هيدر تويتر/X بالترتيب العربي الصحيح (اليمين: الشعار + الاسم + الشارة + الوقت | اليسار: النقاط)
-      const makePostHeader = () => `
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-md">
-              ${bankLogo ? `<img src="${bankLogo}" class="w-full h-full object-contain" alt="${bankName}" />` : `<i class="fa-solid fa-building-columns text-zinc-500 text-sm"></i>`}
-            </div>
-            <div class="space-y-0.5 text-right">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <h5 class="text-sm font-black text-white leading-tight">${bankName}</h5>
-                ${badgeHtml}
-                <span class="text-zinc-500 text-xs font-mono pr-1">· 20 ي</span>
-              </div>
-            </div>
-          </div>
-          <button type="button" class="text-zinc-600 hover:text-zinc-400 p-1 cursor-pointer">
-            <i class="fa-solid fa-ellipsis text-xs"></i>
-          </button>
-        </div>
-      `;
-
-      // شريط التفاعل بتنسيق RTL الصحيح (اليمين: تعليق، ريتويت، لايك | اليسار: حفظ، مشاركة)
-      const makeActionBar = () => `
-        <div class="flex items-center justify-between pt-2.5 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
-          <div class="flex items-center gap-6">
-            <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
-              <i class="fa-regular fa-comment text-xs"></i>
-              <span class="text-[11px] font-mono">14</span>
-            </button>
-            <button type="button" onclick="toggleInteraction(this, 'retweet')" class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
-              <i class="fa-solid fa-retweet text-xs"></i>
-              <span class="text-[11px] font-mono">28</span>
-            </button>
-            <button type="button" onclick="toggleInteraction(this, 'like')" class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
-              <i class="fa-regular fa-heart text-xs"></i>
-              <span class="text-[11px] font-mono">152</span>
-            </button>
-          </div>
-          <div class="flex items-center gap-3">
-            <button type="button" onclick="toggleInteraction(this, 'bookmark')" class="hover:text-brand-gold cursor-pointer transition p-1">
-              <i class="fa-regular fa-bookmark text-xs"></i>
-            </button>
-            <button type="button" onclick="shareBankPage()" class="hover:text-zinc-300 cursor-pointer transition p-1">
-              <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
-            </button>
-          </div>
-        </div>
-      `;
-
-      let outputHtml = '';
-
-      // 1. المنشور الأول: المنشور النصي الخاص بهذا البنك (إذا توفر له نص)
-      if (postText) {
-        outputHtml += `
-          <article class="text-right space-y-2.5 pt-1">
-            ${makePostHeader()}
-            <p class="text-xs sm:text-[13px] text-zinc-100 leading-relaxed font-normal select-text pr-1">${postText}</p>
-            ${makeActionBar()}
-          </article>
-          <div class="border-b border-zinc-900 my-4"></div>
-        `;
-      }
-
-      // 2. المنشور الثاني: صور المعرض الخاصة بهذا البنك فقط
-      const bankMedia = currentPosts || [];
-      if (bankMedia.length > 0) {
-        const photosGrid = bankMedia.map((post, idx) => `
-          <div class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-md flex flex-col group cursor-pointer" onclick="openLightbox(${idx})">
-            <div class="relative w-full h-36 bg-zinc-950 overflow-hidden">
-              <img src="${post.image || post.file_url}" alt="${post.title || 'منشور'}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-              ${post.tag ? `<span class="absolute top-2 right-2 bg-black/70 backdrop-blur-md text-brand-gold text-[10px] font-black px-2 py-0.5 rounded-md border border-brand-gold/30">${post.tag}</span>` : ''}
-            </div>
-          </div>
-        `).join('');
-
-        outputHtml += `
-          <article class="text-right space-y-2.5">
-            ${makePostHeader()}
-            <div class="grid grid-cols-2 gap-2.5 pt-1">
-              ${photosGrid}
-            </div>
-            ${makeActionBar()}
-          </article>
-        `;
-      }
-
-      feedBox.innerHTML = outputHtml;
-    }
-
-</script>
-
-
-    <!-- نافذة كتابة التعليق على المنشور -->
-    <div id="post-comment-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-3">
-      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-3xl w-full max-w-lg p-5 space-y-4 shadow-2xl text-right">
-        <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
-          <button type="button" onclick="closeCommentModal()" class="w-8 h-8 rounded-full bg-zinc-900 text-zinc-400 hover:text-white flex items-center justify-center">
-            <i class="fa-solid fa-xmark text-sm"></i>
-          </button>
-          <h4 class="text-sm font-black text-white">الرد على منشور البنك</h4>
-        </div>
-        <div class="space-y-2">
-          <textarea id="post-comment-input" rows="3" placeholder="اكتب تعليقك أو استفسارك هنا..." class="w-full bg-black border border-zinc-800 rounded-2xl p-3 text-xs text-white placeholder-zinc-500 outline-none focus:border-brand-gold leading-relaxed resize-none"></textarea>
-          <div class="flex items-center justify-between pt-2">
-            <span class="text-[10px] text-zinc-500">سيصل تعليقك مباشرة لإدارة البنك</span>
-            <button type="button" onclick="submitPostComment()" class="px-5 py-2 rounded-xl bg-brand-gold text-black font-black text-xs hover:bg-brand-goldHover transition cursor-pointer shadow">
-              نشر التعليق
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+  </script>
 
 </body>
 </html>
