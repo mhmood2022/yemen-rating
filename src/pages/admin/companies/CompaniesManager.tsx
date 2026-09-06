@@ -78,7 +78,6 @@ export const CompaniesManager: React.FC = () => {
     claim_status: 'UNCLAIMED' | 'PENDING' | 'CLAIMED';
     rating: number;
     review_count: number;
-    // الحقول المخصصة للقطاعات
     rooms_count: string;
     has_pool: boolean;
     has_wifi: boolean;
@@ -90,7 +89,6 @@ export const CompaniesManager: React.FC = () => {
     warranty_available: boolean;
     gold_carat: string;
     working_hours: string;
-    // إعدادات الوحدات الإعلانية الثلاث
     ad_unit_top: boolean;
     ad_unit_feed: boolean;
     ad_unit_sticky: boolean;
@@ -114,7 +112,7 @@ export const CompaniesManager: React.FC = () => {
     claim_status: 'UNCLAIMED',
     rating: 4.8,
     review_count: 5,
-    rooms_count: '',
+    rooms_count: '20-50 غرفة',
     has_pool: false,
     has_wifi: true,
     has_parking: true,
@@ -142,7 +140,7 @@ export const CompaniesManager: React.FC = () => {
     return currentCategorySlug || '';
   }, [formData.category_id, categoriesMap, currentCategorySlug]);
 
-  // جلب البيانات الحقيقية من Supabase
+  // جلب البيانات من Supabase
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -182,7 +180,6 @@ export const CompaniesManager: React.FC = () => {
     fetchData();
   }, []);
 
-  // التصفية الشاملة
   const filteredBusinesses = useMemo(() => {
     return businesses.filter(b => {
       if (currentCategorySlug) {
@@ -208,62 +205,66 @@ export const CompaniesManager: React.FC = () => {
     });
   }, [businesses, currentCategorySlug, searchTerm, filterCity, filterStatus, filterBadge, categoriesMap]);
 
-  // رفع الصور المباشر من الهاتف (شعار، غلاف، وأربع صور للمعرض)
-  const handleUploadFile = async (target: 'logo' | 'cover' | number, e: React.ChangeEvent<HTMLInputElement>) => {
+  // رفع فوري ومعاينة مؤكدة من ذاكرة الهاتف
+  const handleUploadFile = (target: 'logo' | 'cover' | number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploadingTarget(String(target));
     setErrorMessage(null);
 
-    try {
-      const ext = file.name.split('.').pop();
-      const folder = target === 'logo' ? 'logos' : (target === 'cover' ? 'covers' : 'gallery');
-      const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
-
-      const { error: uploadErr } = await supabase.storage
-        .from('businesses')
-        .upload(fileName, file, { upsert: true });
-
-      if (uploadErr) {
-        await supabase.storage.from('public').upload(fileName, file, { upsert: true });
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('businesses')
-        .getPublicUrl(fileName);
-
-      const finalUrl = publicUrl || URL.createObjectURL(file);
-
+    // 1. معاينة فورية محلية بنسبة 100% دون انتظار السيرفر
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const localBase64 = event.target?.result as string;
       if (target === 'logo') {
-        setFormData(p => ({ ...p, logo_url: finalUrl }));
+        setFormData(p => ({ ...p, logo_url: localBase64 }));
       } else if (target === 'cover') {
-        setFormData(p => ({ ...p, cover_url: finalUrl }));
+        setFormData(p => ({ ...p, cover_url: localBase64 }));
       } else if (typeof target === 'number') {
         setFormData(p => {
-          const nextGallery = [...p.gallery_urls];
-          nextGallery[target] = finalUrl;
-          return { ...p, gallery_urls: nextGallery };
-        });
-      }
-    } catch (err: any) {
-      console.warn('Storage fallback applied:', err);
-      const previewUrl = URL.createObjectURL(file);
-      if (target === 'logo') setFormData(p => ({ ...p, logo_url: previewUrl }));
-      else if (target === 'cover') setFormData(p => ({ ...p, cover_url: previewUrl }));
-      else if (typeof target === 'number') {
-        setFormData(p => {
           const next = [...p.gallery_urls];
-          next[target] = previewUrl;
+          next[target] = localBase64;
           return { ...p, gallery_urls: next };
         });
       }
-    } finally {
-      setUploadingTarget(null);
-    }
+
+      // 2. الرفع في الخلفية إلى Supabase Storage
+      try {
+        const ext = file.name.split('.').pop() || 'jpg';
+        const folder = target === 'logo' ? 'logos' : (target === 'cover' ? 'covers' : 'gallery');
+        const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+
+        const { error: uploadErr } = await supabase.storage
+          .from('businesses')
+          .upload(fileName, file, { upsert: true });
+
+        if (!uploadErr) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('businesses')
+            .getPublicUrl(fileName);
+
+          if (publicUrl) {
+            if (target === 'logo') setFormData(p => ({ ...p, logo_url: publicUrl }));
+            else if (target === 'cover') setFormData(p => ({ ...p, cover_url: publicUrl }));
+            else if (typeof target === 'number') {
+              setFormData(p => {
+                const next = [...p.gallery_urls];
+                next[target] = publicUrl;
+                return { ...p, gallery_urls: next };
+              });
+            }
+          }
+        }
+      } catch (uploadErr) {
+        console.warn('Storage background upload notice:', uploadErr);
+      } finally {
+        setUploadingTarget(null);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
-  // فتح نافذة الإضافة
   const handleOpenAddModal = () => {
     setEditingId(null);
     setErrorMessage(null);
@@ -293,7 +294,7 @@ export const CompaniesManager: React.FC = () => {
       claim_status: 'UNCLAIMED',
       rating: 4.8,
       review_count: 5,
-      rooms_count: '',
+      rooms_count: '20-50 غرفة',
       has_pool: false,
       has_wifi: true,
       has_parking: true,
@@ -311,7 +312,6 @@ export const CompaniesManager: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  // فتح نافذة التعديل
   const handleOpenEditModal = (b: BusinessRecord) => {
     setEditingId(b.id);
     setErrorMessage(null);
@@ -345,7 +345,7 @@ export const CompaniesManager: React.FC = () => {
       claim_status: b.claim_status || 'UNCLAIMED',
       rating: b.rating || 4.8,
       review_count: b.review_count || 5,
-      rooms_count: feat.rooms_count || '',
+      rooms_count: feat.rooms_count || '20-50 غرفة',
       has_pool: !!feat.has_pool,
       has_wifi: feat.has_wifi !== undefined ? !!feat.has_wifi : true,
       has_parking: feat.has_parking !== undefined ? !!feat.has_parking : true,
@@ -363,7 +363,6 @@ export const CompaniesManager: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  // حفظ المنشأة بالكامل
   const handleSaveBusiness = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
@@ -577,7 +576,12 @@ export const CompaniesManager: React.FC = () => {
               {/* صورة الغلاف العريض والشعار */}
               <div className="relative h-28 bg-[#161D2B] overflow-hidden">
                 {b.cover_url ? (
-                  <img src={b.cover_url} alt="Cover" className="w-full h-full object-cover" />
+                  <img
+                    src={b.cover_url}
+                    alt="Cover"
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 flex items-center justify-center text-gray-600 text-xs">
                     لا يوجد غلاف بانورامي
@@ -598,10 +602,15 @@ export const CompaniesManager: React.FC = () => {
                   </span>
                 </div>
 
-                {/* الشعار المرفوع من الهاتف */}
+                {/* الشعار */}
                 <div className="absolute -bottom-2 right-3 w-14 h-14 rounded-xl bg-[#0B0F17] border-2 border-[#1F2937] overflow-hidden shadow-lg flex items-center justify-center">
                   {b.logo_url ? (
-                    <img src={b.logo_url} alt={b.name} className="w-full h-full object-cover" />
+                    <img
+                      src={b.logo_url}
+                      alt={b.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
                   ) : (
                     <Building2 className="w-6 h-6 text-[#FFC500]" />
                   )}
@@ -675,7 +684,6 @@ export const CompaniesManager: React.FC = () => {
                   </div>
                 </div>
 
-                {/* أزرار الإجراءات */}
                 <div className="flex items-center gap-2 pt-2 border-t border-[#1F2937] mt-3">
                   <button
                     onClick={() => handleOpenEditModal(b)}
@@ -691,47 +699,47 @@ export const CompaniesManager: React.FC = () => {
         </div>
       )}
 
-      {/* المودال الشامل الموحد للإضافة والتعديل الكامل مع التبويبات المتطورة */}
+      {/* المودال الشامل الموحد المطور للهاتف */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-[#0F141F] border border-[#1F2937] rounded-3xl w-full max-w-3xl max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col">
-            {/* ترويسة المودال */}
-            <div className="p-5 border-b border-[#1F2937] flex items-center justify-between bg-[#111827] sticky top-0 z-20">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+          <div className="bg-[#0F141F] border border-[#1F2937] rounded-t-3xl sm:rounded-3xl w-full max-w-3xl max-h-[95vh] sm:max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col">
+            {/* ترويسة المودال المحمية للموبايل */}
+            <div className="p-4 sm:p-5 border-b border-[#1F2937] flex items-center justify-between bg-[#111827] sticky top-0 z-30">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-xl bg-[#FFC500]/10 text-[#FFC500]">
                   <Edit3 size={18} />
                 </div>
                 <div>
-                  <h2 className="text-base sm:text-lg font-black text-white">
-                    {editingId ? 'تعديل بيانات المنشأة الشاملة' : 'إضافة منشأة جديدة بالكامل للموقع'}
+                  <h2 className="text-sm sm:text-base font-black text-white">
+                    {editingId ? 'تعديل بيانات المنشأة' : 'إضافة منشأة جديدة'}
                   </h2>
-                  <p className="text-[11px] text-gray-400">نموذج الإدارة الموحد مع رفع وسائط الهاتف وميزات القطاع</p>
+                  <p className="text-[10px] text-gray-400">حفظ فوري ورفع مباشر من الهاتف</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 text-gray-400 hover:text-white rounded-lg transition-colors"
+                className="p-2 text-gray-400 hover:text-white rounded-xl bg-[#161D2B]"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
-            {/* أزرار التبويبات الداخلية */}
-            <div className="flex border-b border-[#1F2937] bg-[#0B0F17] px-4 text-xs font-bold">
+            {/* شريط تبويبات سحاب أفقي باللمس للموبايل (Horizontal Swipeable Tabs) */}
+            <div className="flex border-b border-[#1F2937] bg-[#0B0F17] px-3 overflow-x-auto scrollbar-none text-xs font-bold gap-1 py-1 shrink-0">
               {[
                 { id: 'info', label: '1. البيانات والتواصل' },
-                { id: 'media', label: '2. الغلاف والشعار والمعرض (4 صور)' },
-                { id: 'features', label: '3. ميزات القطاع المخصصة' },
-                { id: 'ads', label: '4. الوحدات الإعلانية والتوثيق' },
+                { id: 'media', label: '2. الغلاف والشعار (4 صور)' },
+                { id: 'features', label: '3. ميزات القطاع والسحب' },
+                { id: 'ads', label: '4. الإعلانات والتوثيق' },
               ].map(tab => (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`py-3 px-3 sm:px-4 border-b-2 transition-all shrink-0 ${
+                  className={`py-2.5 px-3.5 rounded-xl whitespace-nowrap transition-all ${
                     activeTab === tab.id
-                      ? 'border-[#FFC500] text-[#FFC500]'
-                      : 'border-transparent text-gray-400 hover:text-white'
+                      ? 'bg-[#FFC500] text-black font-black shadow-md'
+                      : 'text-gray-400 hover:text-white hover:bg-[#161D2B]'
                   }`}
                 >
                   {tab.label}
@@ -745,7 +753,7 @@ export const CompaniesManager: React.FC = () => {
               </div>
             )}
 
-            <form onSubmit={handleSaveBusiness} className="p-5 space-y-4 text-xs flex-1">
+            <form onSubmit={handleSaveBusiness} className="p-4 sm:p-5 space-y-4 text-xs flex-1">
               {/* التبويب 1: البيانات والتواصل */}
               {activeTab === 'info' && (
                 <div className="space-y-4">
@@ -757,13 +765,13 @@ export const CompaniesManager: React.FC = () => {
                         required
                         value={formData.name}
                         onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
-                        placeholder="مثال: فندق عدن بلازا، مطاعم الشيباني، مستشفى النخبة..."
+                        placeholder="مثال: فندق سبأ، مطاعم الشيباني، مستشفى النخبة..."
                         className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none focus:border-[#FFC500]"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-gray-300 font-bold">التصنيف الرسمي التابع له *</label>
+                      <label className="text-gray-300 font-bold">التصنيف الرسمي *</label>
                       <select
                         value={formData.category_id}
                         onChange={(e) => setFormData(p => ({ ...p, category_id: e.target.value }))}
@@ -784,7 +792,7 @@ export const CompaniesManager: React.FC = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
-                      <label className="text-gray-300 font-bold">المدينة / المحافظة</label>
+                      <label className="text-gray-300 font-bold">المدينة</label>
                       <select
                         value={formData.city}
                         onChange={(e) => setFormData(p => ({ ...p, city: e.target.value }))}
@@ -802,7 +810,7 @@ export const CompaniesManager: React.FC = () => {
                     </div>
 
                     <div className="space-y-1 sm:col-span-2">
-                      <label className="text-gray-300 font-bold">العنوان التفصيلي وموقع النشاط</label>
+                      <label className="text-gray-300 font-bold">العنوان التفصيلي</label>
                       <input
                         type="text"
                         value={formData.address}
@@ -815,7 +823,7 @@ export const CompaniesManager: React.FC = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
-                      <label className="text-gray-300 font-bold">رقم الهاتف الرسمي</label>
+                      <label className="text-gray-300 font-bold">رقم الهاتف</label>
                       <input
                         type="text"
                         value={formData.phone}
@@ -837,7 +845,7 @@ export const CompaniesManager: React.FC = () => {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-gray-300 font-bold">الموقع الإلكتروني (Website)</label>
+                      <label className="text-gray-300 font-bold">الموقع الإلكتروني</label>
                       <input
                         type="text"
                         value={formData.website_url}
@@ -849,37 +857,41 @@ export const CompaniesManager: React.FC = () => {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-gray-300 font-bold">نبذة تعريفية ووصف المنشأة</label>
+                    <label className="text-gray-300 font-bold">نبذة ووصف المنشأة</label>
                     <textarea
                       rows={3}
                       value={formData.description}
                       onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
-                      placeholder="وصف الخدمات، تاريخ التأسيس، المنتجات الرئيسية، المميزات..."
+                      placeholder="وصف الخدمات، المميزات، التأسيس..."
                       className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none resize-none"
                     />
                   </div>
                 </div>
               )}
 
-              {/* التبويب 2: وسائط العرض المباشرة من الهاتف */}
+              {/* التبويب 2: وسائط الهاتف مع المعاينة الفورية المضمونة */}
               {activeTab === 'media' && (
                 <div className="space-y-4">
-                  {/* رفع الغلاف العريض والشعار */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {/* الشعار */}
                     <div className="p-3.5 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2.5">
                       <label className="text-gray-300 font-bold block">شعار المنشأة (Logo)</label>
                       <div className="flex items-center gap-3">
-                        <div className="w-14 h-14 rounded-xl bg-[#0B0F17] border border-[#1F2937] overflow-hidden flex items-center justify-center shrink-0">
+                        <div className="w-16 h-16 rounded-xl bg-[#0B0F17] border border-[#1F2937] overflow-hidden flex items-center justify-center shrink-0">
                           {formData.logo_url ? (
-                            <img src={formData.logo_url} alt="Logo" className="w-full h-full object-cover" />
+                            <img
+                              src={formData.logo_url}
+                              alt="Logo Preview"
+                              className="w-full h-full object-cover"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
                           ) : (
-                            <Building2 className="w-6 h-6 text-gray-500" />
+                            <Building2 className="w-7 h-7 text-gray-500" />
                           )}
                         </div>
-                        <label className="cursor-pointer px-3.5 py-2 rounded-xl bg-[#0B0F17] hover:bg-[#FFC500] hover:text-black text-gray-300 border border-[#1F2937] font-bold text-xs flex items-center gap-1.5 transition-colors">
-                          <Upload size={13} />
-                          {uploadingTarget === 'logo' ? 'جاري الرفع...' : 'اختر من الهاتف'}
+                        <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-[#FFC500] text-black font-black text-xs flex items-center gap-2 shadow-md">
+                          <Upload size={14} />
+                          {uploadingTarget === 'logo' ? 'جاري المعاينة...' : 'اختر من الهاتف'}
                           <input
                             type="file"
                             accept="image/*"
@@ -894,15 +906,20 @@ export const CompaniesManager: React.FC = () => {
                     <div className="p-3.5 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2.5">
                       <label className="text-gray-300 font-bold block">الغلاف البانورامي (Cover Banner)</label>
                       <div className="flex items-center gap-3">
-                        <div className="w-24 h-14 rounded-xl bg-[#0B0F17] border border-[#1F2937] overflow-hidden flex items-center justify-center shrink-0">
+                        <div className="w-24 h-16 rounded-xl bg-[#0B0F17] border border-[#1F2937] overflow-hidden flex items-center justify-center shrink-0">
                           {formData.cover_url ? (
-                            <img src={formData.cover_url} alt="Cover" className="w-full h-full object-cover" />
+                            <img
+                              src={formData.cover_url}
+                              alt="Cover Preview"
+                              className="w-full h-full object-cover"
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
                           ) : (
-                            <ImageIcon className="w-6 h-6 text-gray-500" />
+                            <ImageIcon className="w-7 h-7 text-gray-500" />
                           )}
                         </div>
-                        <label className="cursor-pointer px-3.5 py-2 rounded-xl bg-[#0B0F17] hover:bg-[#FFC500] hover:text-black text-gray-300 border border-[#1F2937] font-bold text-xs flex items-center gap-1.5 transition-colors">
-                          <Upload size={13} />
+                        <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-[#161D2B] hover:bg-[#FFC500] hover:text-black border border-[#1F2937] text-white font-bold text-xs flex items-center gap-2 transition-all">
+                          <Upload size={14} />
                           {uploadingTarget === 'cover' ? 'جاري الرفع...' : 'رفع غلاف من الهاتف'}
                           <input
                             type="file"
@@ -915,25 +932,29 @@ export const CompaniesManager: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* معرض الصور الأربع المخصصة للعرض */}
+                  {/* معرض الصور الأربع المباشر من الهاتف */}
                   <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
                     <div className="flex items-center justify-between">
                       <label className="text-white font-bold flex items-center gap-2">
-                        <ImageIcon size={15} className="text-[#FFC500]" />
+                        <ImageIcon size={16} className="text-[#FFC500]" />
                         معرض المنشأة (أربع صور للعرض من استوديو الهاتف)
                       </label>
-                      <span className="text-[11px] text-gray-400">تظهر في صفحة المنشأة العامة للزائر</span>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       {[0, 1, 2, 3].map((slotIdx) => {
                         const imgUrl = formData.gallery_urls[slotIdx];
                         return (
-                          <div key={slotIdx} className="space-y-1.5 text-center">
-                            <div className="h-24 rounded-xl bg-[#0B0F17] border border-[#1F2937] relative overflow-hidden flex items-center justify-center group">
+                          <div key={slotIdx} className="space-y-2 text-center">
+                            <div className="h-28 rounded-2xl bg-[#0B0F17] border border-[#1F2937] relative overflow-hidden flex items-center justify-center group">
                               {imgUrl ? (
                                 <>
-                                  <img src={imgUrl} alt={`Gallery ${slotIdx + 1}`} className="w-full h-full object-cover" />
+                                  <img
+                                    src={imgUrl}
+                                    alt={`Slot ${slotIdx + 1}`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                  />
                                   <button
                                     type="button"
                                     onClick={() => {
@@ -941,18 +962,18 @@ export const CompaniesManager: React.FC = () => {
                                       next[slotIdx] = null;
                                       setFormData(p => ({ ...p, gallery_urls: next }));
                                     }}
-                                    className="absolute top-1 left-1 p-1 rounded-lg bg-red-600/80 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="absolute top-1.5 left-1.5 p-1.5 rounded-lg bg-red-600 text-white shadow-lg"
                                   >
-                                    <Trash2 size={12} />
+                                    <Trash2 size={13} />
                                   </button>
                                 </>
                               ) : (
-                                <span className="text-gray-600 text-[11px]">صورة #{slotIdx + 1}</span>
+                                <span className="text-gray-500 text-xs font-mono">صورة #{slotIdx + 1}</span>
                               )}
                             </div>
 
-                            <label className="cursor-pointer block py-1.5 px-2 rounded-lg bg-[#0B0F17] hover:bg-[#FFC500] hover:text-black text-gray-400 text-[10px] font-bold border border-[#1F2937] transition-colors">
-                              {uploadingTarget === String(slotIdx) ? 'جاري الرفع...' : 'رفع من الهاتف'}
+                            <label className="cursor-pointer block py-2 px-2 rounded-xl bg-[#0B0F17] hover:bg-[#FFC500] hover:text-black text-gray-300 text-xs font-bold border border-[#1F2937] transition-all">
+                              {uploadingTarget === String(slotIdx) ? 'جاري التحميل...' : 'اختر صورة'}
                               <input
                                 type="file"
                                 accept="image/*"
@@ -968,225 +989,154 @@ export const CompaniesManager: React.FC = () => {
                 </div>
               )}
 
-              {/* التبويب 3: الحقول المخصصة لكل قطاع */}
+              {/* التبويب 3: عناصر السحب والاختيار باللمس (Touch Slider & Chips) */}
               {activeTab === 'features' && (
                 <div className="space-y-4">
-                  <div className="p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs flex items-center gap-2">
-                    <Sparkles size={16} />
-                    حقول مخصصة لقطاع: <strong className="text-white">{categoriesMap[formData.category_id]?.name || 'العام'}</strong>
+                  {/* شريط خيارات عدد الغرف السحاب (Horizontal Swipeable Slider) */}
+                  <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2.5">
+                    <label className="text-white font-bold flex items-center gap-2">
+                      <Bed size={15} className="text-[#FFC500]" />
+                      سعة وحجم المنشأة / عدد الغرف (اسحب واختر):
+                    </label>
+                    <div className="flex gap-2 overflow-x-auto scrollbar-none py-1">
+                      {['منشأة ناشئة (1-10)', 'متوسطة (10-30)', '20-50 غرفة', '50-100 جناح', 'صرح كبير (+100)'].map(chip => (
+                        <button
+                          key={chip}
+                          type="button"
+                          onClick={() => setFormData(p => ({ ...p, rooms_count: chip }))}
+                          className={`px-4 py-2 rounded-xl text-xs whitespace-nowrap font-bold transition-all ${
+                            formData.rooms_count === chip
+                              ? 'bg-[#FFC500] text-black shadow-md shadow-yellow-500/10'
+                              : 'bg-[#0B0F17] text-gray-300 border border-[#1F2937]'
+                          }`}
+                        >
+                          {chip}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
-                  {/* مواصفات الفنادق والشاليهات */}
-                  {(selectedCatSlug.includes('hotel') || selectedCatSlug.includes('chalet')) && (
-                    <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
-                      <h4 className="font-bold text-white flex items-center gap-2"><Bed size={15} className="text-[#FFC500]" /> مواصفات الإقامة الفندقية</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-gray-400 text-[11px] block mb-1">إجمالي الغرف والأجنحة</label>
-                          <input
-                            type="text"
-                            value={formData.rooms_count}
-                            onChange={e => setFormData(p => ({ ...p, rooms_count: e.target.value }))}
-                            placeholder="مثال: 45 جناح وغرفة فندقية"
-                            className="w-full p-2 bg-[#0B0F17] border border-[#1F2937] rounded-xl text-white"
-                          />
-                        </div>
-                        <div className="flex items-center gap-4 pt-4">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={formData.has_pool}
-                              onChange={e => setFormData(p => ({ ...p, has_pool: e.target.checked }))}
-                              className="accent-[#FFC500]"
-                            />
-                            <span>مسبح خاص / عام</span>
-                          </label>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={formData.has_wifi}
-                              onChange={e => setFormData(p => ({ ...p, has_wifi: e.target.checked }))}
-                              className="accent-[#FFC500]"
-                            />
-                            <span>واي فاي مجاني سريع</span>
-                          </label>
-                        </div>
-                      </div>
+                  {/* أزرار الميزات التفاعلية بنقرة واحدة (Touch Feature Chips) */}
+                  <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
+                    <label className="text-white font-bold block">ميزات المنشأة (اضغط للتفعيل المباشر):</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { key: 'has_pool', label: 'مسبح خاص / عام 🏊‍♂️', val: formData.has_pool },
+                        { key: 'has_wifi', label: 'واي فاي مجاني سريع 📶', val: formData.has_wifi },
+                        { key: 'has_parking', label: 'مواقف سيارات واسعة 🚗', val: formData.has_parking },
+                        { key: 'has_emergency', label: 'طوارئ 24 ساعة 🚑', val: formData.has_emergency },
+                        { key: 'has_icu', label: 'عناية مركزة 🏥', val: formData.has_icu },
+                        { key: 'has_delivery', label: 'توصيل للمنازل 🛵', val: formData.has_delivery },
+                        { key: 'has_family_sections', label: 'جلسات عائلية خاصة 👨‍👩‍👧', val: formData.has_family_sections },
+                        { key: 'warranty_available', label: 'فحص وضمان معتمد 🛡️', val: formData.warranty_available },
+                      ].map(item => (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() => setFormData(p => ({ ...p, [item.key]: !item.val }))}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                            item.val
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                              : 'bg-[#0B0F17] text-gray-500 border border-[#1F2937]'
+                          }`}
+                        >
+                          <Check size={13} className={item.val ? 'opacity-100' : 'opacity-0'} />
+                          {item.label}
+                        </button>
+                      ))}
                     </div>
-                  )}
+                  </div>
 
-                  {/* مواصفات المستشفيات والعيادات */}
-                  {(selectedCatSlug.includes('hospital') || selectedCatSlug.includes('clinic')) && (
-                    <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
-                      <h4 className="font-bold text-white flex items-center gap-2"><Stethoscope size={15} className="text-[#FFC500]" /> التجهيزات الطبية</h4>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={formData.has_emergency}
-                            onChange={e => setFormData(p => ({ ...p, has_emergency: e.target.checked }))}
-                            className="accent-[#FFC500]"
-                          />
-                          <span>طوارئ 24 ساعة</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={formData.has_icu}
-                            onChange={e => setFormData(p => ({ ...p, has_icu: e.target.checked }))}
-                            className="accent-[#FFC500]"
-                          />
-                          <span>عناية مركزة وغرف عمليات</span>
-                        </label>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* مواصفات المطاعم والكافيهات */}
-                  {(selectedCatSlug.includes('restaurant') || selectedCatSlug.includes('cafe')) && (
-                    <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
-                      <h4 className="font-bold text-white flex items-center gap-2"><Sparkles size={15} className="text-[#FFC500]" /> خدمات الضيافة والأطعمة</h4>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={formData.has_family_sections}
-                            onChange={e => setFormData(p => ({ ...p, has_family_sections: e.target.checked }))}
-                            className="accent-[#FFC500]"
-                          />
-                          <span>قسم عوائل خاص ومستقل</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={formData.has_delivery}
-                            onChange={e => setFormData(p => ({ ...p, has_delivery: e.target.checked }))}
-                            className="accent-[#FFC500]"
-                          />
-                          <span>خدمة التوصيل السريع للمنازل</span>
-                        </label>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* مواصفات معارض السيارات ومحلات الذهب */}
-                  {selectedCatSlug.includes('car') && (
-                    <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.warranty_available}
-                          onChange={e => setFormData(p => ({ ...p, warranty_available: e.target.checked }))}
-                          className="accent-[#FFC500]"
-                        />
-                        <span>فحص وضمان ميكانيكي معتمد</span>
-                      </label>
-                    </div>
-                  )}
-
-                  {/* أوقات الدوام العامة لكافة المنشآت */}
+                  {/* مواعيد العمل اليومية */}
                   <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2">
-                    <label className="text-gray-300 font-bold block flex items-center gap-1.5"><Clock size={14} /> مواعيد وساعات الدوام اليومي</label>
-                    <input
-                      type="text"
-                      value={formData.working_hours}
-                      onChange={e => setFormData(p => ({ ...p, working_hours: e.target.value }))}
-                      placeholder="مثال: يومياً من 08:00 صباحاً حتى 11:30 مساءً"
-                      className="w-full p-2.5 bg-[#0B0F17] border border-[#1F2937] rounded-xl text-white"
-                    />
+                    <label className="text-white font-bold flex items-center gap-1.5">
+                      <Clock size={15} className="text-[#FFC500]" />
+                      مواعيد وساعات الدوام اليومي:
+                    </label>
+                    <div className="flex gap-2 overflow-x-auto scrollbar-none py-1">
+                      {['08:00 ص - 10:00 م', 'مفتوح 24 ساعة يومياً', 'فترة صباحية ومسائية', '09:00 ص - 01:00 بعد منتصف الليل'].map(shift => (
+                        <button
+                          key={shift}
+                          type="button"
+                          onClick={() => setFormData(p => ({ ...p, working_hours: shift }))}
+                          className={`px-3.5 py-2 rounded-xl text-xs whitespace-nowrap font-bold transition-all ${
+                            formData.working_hours === shift
+                              ? 'bg-[#FFC500] text-black'
+                              : 'bg-[#0B0F17] text-gray-400 border border-[#1F2937]'
+                          }`}
+                        >
+                          {shift}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* التبويب 4: الوحدات الإعلانية الثلاث والتوثيق والملكية */}
+              {/* التبويب 4: الوحدات الإعلانية الثلاث والتوثيق */}
               {activeTab === 'ads' && (
                 <div className="space-y-4">
-                  {/* الوحدات الإعلانية الثلاث للمنصة */}
+                  {/* الوحدات الإعلانية الثلاث الرسمية */}
                   <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
                     <div className="flex items-center justify-between pb-2 border-b border-[#1F2937]">
                       <h4 className="font-bold text-white flex items-center gap-2">
                         <Megaphone size={16} className="text-[#FFC500]" />
-                        تفعيل الوحدات الإعلانية الثلاث (YR Ads) في صفحة القسم
+                        تفعيل الوحدات الإعلانية الثلاث (YR Ads) في هذا القسم
                       </h4>
-                      <span className="text-[10px] text-amber-400 font-bold">نظام إعلانات المنصة الرسمي</span>
+                      <span className="text-[10px] text-amber-400 font-bold">معتمدة للموقع العام</span>
                     </div>
 
-                    <div className="space-y-2.5">
-                      <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#0B0F17] border border-[#1F2937] cursor-pointer">
-                        <div>
-                          <p className="font-bold text-white">1. الوحدة الإعلانية العلوية (Top Banner Ad)</p>
-                          <p className="text-[11px] text-gray-400">بنر ترويجي رئيسي أعلى صفحة التصنيف للمنشآت المميزة</p>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={formData.ad_unit_top}
-                          onChange={e => setFormData(p => ({ ...p, ad_unit_top: e.target.checked }))}
-                          className="w-4 h-4 accent-[#FFC500]"
-                        />
-                      </label>
-
-                      <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#0B0F17] border border-[#1F2937] cursor-pointer">
-                        <div>
-                          <p className="font-bold text-white">2. الوحدة الإعلانية المضمنة (In-Feed Sponsor Ad)</p>
-                          <p className="text-[11px] text-gray-400">تظهر بين كروت المنشآت لجذب الزوار أثناء التصفح</p>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={formData.ad_unit_feed}
-                          onChange={e => setFormData(p => ({ ...p, ad_unit_feed: e.target.checked }))}
-                          className="w-4 h-4 accent-[#FFC500]"
-                        />
-                      </label>
-
-                      <label className="flex items-center justify-between p-2.5 rounded-xl bg-[#0B0F17] border border-[#1F2937] cursor-pointer">
-                        <div>
-                          <p className="font-bold text-white">3. الوحدة الإعلانية المثبتة (Sticky Bottom Ad)</p>
-                          <p className="text-[11px] text-gray-400">بنر ثابت أسفل الشاشة للعروض الخاصة والحملات الكبرى</p>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={formData.ad_unit_sticky}
-                          onChange={e => setFormData(p => ({ ...p, ad_unit_sticky: e.target.checked }))}
-                          className="w-4 h-4 accent-[#FFC500]"
-                        />
-                      </label>
+                    <div className="space-y-2">
+                      {[
+                        { key: 'ad_unit_top', title: '1. البنر العلوي الرئيسي (Top Banner Ad)', sub: 'يظهر في أعلى صفحة القسم للمنشآت المميزة' },
+                        { key: 'ad_unit_feed', title: '2. الإعلان المضمن (In-Feed Sponsor Ad)', sub: 'يظهر بين بطاقات المنشآت أثناء التصفح' },
+                        { key: 'ad_unit_sticky', title: '3. البنر الثابت (Sticky Bottom Ad)', sub: 'مثبت أسفل الشاشة للعروض الخاصة' },
+                      ].map(ad => (
+                        <label key={ad.key} className="flex items-center justify-between p-3 rounded-xl bg-[#0B0F17] border border-[#1F2937] cursor-pointer">
+                          <div>
+                            <p className="font-bold text-white">{ad.title}</p>
+                            <p className="text-[11px] text-gray-400">{ad.sub}</p>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={(formData as any)[ad.key]}
+                            onChange={e => setFormData(p => ({ ...p, [ad.key]: e.target.checked }))}
+                            className="w-5 h-5 accent-[#FFC500]"
+                          />
+                        </label>
+                      ))}
                     </div>
                   </div>
 
-                  {/* الشارات، التقييم، وحالة الملكية والنشاط */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* الشارة والتقييم وإثبات الملكية */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
-                      <label className="text-gray-300 font-bold">نوع الشارة الملكية (Badge)</label>
+                      <label className="text-gray-300 font-bold">الشارة الملكية</label>
                       <select
                         value={formData.badge_type || 'none'}
-                        onChange={(e) => setFormData(p => ({
-                          ...p,
-                          badge_type: e.target.value === 'none' ? null : (e.target.value as any)
-                        }))}
+                        onChange={(e) => setFormData(p => ({ ...p, badge_type: e.target.value === 'none' ? null : (e.target.value as any) }))}
                         className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none"
                       >
-                        <option value="gold">شارة ذهبية (Gold Badge) 🏆</option>
-                        <option value="blue">شارة موثقة زرقاء (Blue Verified) 🛡️</option>
-                        <option value="gray">شارة فضية اعتيادية (Silver)</option>
-                        <option value="none">بدون شارة (قياسي)</option>
+                        <option value="gold">شارة ذهبية 🏆</option>
+                        <option value="blue">شارة موثقة زرقاء 🛡️</option>
+                        <option value="gray">شارة فضية</option>
+                        <option value="none">بدون شارة</option>
                       </select>
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-gray-300 font-bold">حالة إثبات الملكية (Claim Status)</label>
+                      <label className="text-gray-300 font-bold">حالة إثبات الملكية</label>
                       <select
                         value={formData.claim_status}
                         onChange={(e) => setFormData(p => ({ ...p, claim_status: e.target.value as any }))}
                         className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none"
                       >
-                        <option value="UNCLAIMED">غير مطالب بها (جاهزة لطلب الملكية)</option>
-                        <option value="PENDING">طلب توثيق قيد المراجعة</option>
-                        <option value="CLAIMED">مملوكة وموثقة رسمياً للمالك</option>
+                        <option value="UNCLAIMED">غير مطالب بها (جاهزة للمطالبة)</option>
+                        <option value="PENDING">قيد المراجعة</option>
+                        <option value="CLAIMED">مملوكة وموثقة</option>
                       </select>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
                       <label className="text-gray-300 font-bold">حالة الظهور</label>
                       <select
@@ -1199,47 +1149,23 @@ export const CompaniesManager: React.FC = () => {
                         <option value="hidden">مخفي بالكامل</option>
                       </select>
                     </div>
-
-                    <div className="space-y-1">
-                      <label className="text-gray-300 font-bold">التقييم الافتراضي (1 - 5)</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="1"
-                        max="5"
-                        value={formData.rating}
-                        onChange={(e) => setFormData(p => ({ ...p, rating: parseFloat(e.target.value) || 4.5 }))}
-                        className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none font-mono"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="text-gray-300 font-bold">عدد المراجعات والتقييمات</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={formData.review_count}
-                        onChange={(e) => setFormData(p => ({ ...p, review_count: parseInt(e.target.value) || 0 }))}
-                        className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none font-mono"
-                      />
-                    </div>
                   </div>
                 </div>
               )}
 
               {/* أزرار الحفظ الموحدة */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#1F2937]">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#1F2937] sticky bottom-0 bg-[#0F141F] py-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl bg-[#161D2B] text-gray-300 hover:text-white font-bold transition-colors"
+                  className="px-5 py-2.5 rounded-xl bg-[#161D2B] text-gray-300 hover:text-white font-bold"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#FFC500] hover:bg-[#e6b200] text-black font-black shadow-lg disabled:opacity-50 transition-all"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#FFC500] hover:bg-[#e6b200] text-black font-black shadow-lg disabled:opacity-50"
                 >
                   {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                   {editingId ? 'حفظ كافة التعديلات' : 'إضافة ونشر المنشأة'}
