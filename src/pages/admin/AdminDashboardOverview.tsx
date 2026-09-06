@@ -25,7 +25,7 @@ export const AdminDashboardOverview: React.FC = () => {
   // 1. الإحصائيات الرئيسية الشاملة
   const mainStats = [
     { title: 'إجمالي المنشآت والشركات', value: '1,420', change: '+12% هذا الشهر', icon: Building2, color: '#EAB308', path: '/admin/companies' },
-    { title: 'التصنيفات الرسمية المعتمدة', value: '26 تصنيف', change: '100% نشطة ومفعلة', icon: Layers, color: '#3B82F6', path: '/admin/categories' },
+    { title: 'التصنيفات الرسمية المعتمدة', value: '34 تصنيف', change: '100% نشطة ومفعلة', icon: Layers, color: '#3B82F6', path: '/admin/categories' },
     { title: 'المزادات والصفقات النشطة', value: '28 مزاد', change: '5% عمولة محتسبة', icon: Gavel, color: '#10B981', path: '/admin/auctions' },
     { title: 'العقارات المعروضة', value: '315 عقار', change: 'أرقام الاتصال محمية', icon: Home, color: '#8B5CF6', path: '/admin/real-estate' },
     { title: 'طلبات التوثيق وإثبات الملكية', value: '14 معلق', change: 'يتطلب مراجعة فورية', icon: ShieldCheck, color: '#F59E0B', path: '/admin/claims' },
@@ -38,7 +38,7 @@ export const AdminDashboardOverview: React.FC = () => {
   // 2. الوصول السريع لكافة وحدات الإدارة الـ 16
   const quickModules = [
     { label: 'الشركات والأنشطة', icon: Building2, path: '/admin/companies', desc: 'إدارة وتعديل المنشآت' },
-    { label: 'التصنيفات الـ 26', icon: Layers, path: '/admin/categories', desc: 'تفعيل وترتيب التصنيفات' },
+    { label: 'التصنيفات الـ 34', icon: Layers, path: '/admin/categories', desc: 'تفعيل وترتيب التصنيفات' },
     { label: 'إثبات الملكية', icon: ShieldCheck, path: '/admin/claims', desc: 'مراجعة طلبات التوثيق' },
     { label: 'الأسواق والأسعار', icon: Activity, path: '/admin/markets', desc: 'مؤشرات السلع اليومية' },
     { label: 'المزادات والعمولات', icon: Gavel, path: '/admin/auctions', desc: 'متابعة العطاءات والعمولة' },

@@ -70,7 +70,7 @@ export const AnalyticsFinanceManager: React.FC = () => {
     { name: 'العقارات والمتاجر المميزة', percent: 5, value: '$1,300', color: '#A855F7' },
   ];
 
-  // أداء القطاعات الـ 26 الأكثر مساهمة وتفاعلاً
+  // أداء القطاعات الـ 34 الأكثر مساهمة وتفاعلاً
   const topCategories = [
     { name: 'البنوك والصرافة وأسعار الصرف', share: '32%', ads: '14 حملة', growth: '+25%' },
     { name: 'العقارات والأراضي', share: '24%', ads: '11 حملة', growth: '+18%' },
@@ -149,7 +149,7 @@ export const AnalyticsFinanceManager: React.FC = () => {
           {[
             { id: 'overview', label: 'نظرة عامة على المركز المالي', icon: BarChart3 },
             { id: 'sources', label: 'تفصيل مصادر الدخل', icon: PieChart },
-            { id: 'categories', label: 'أداء القطاعات الـ 26', icon: Layers },
+            { id: 'categories', label: 'أداء القطاعات الـ 34', icon: Layers },
             { id: 'transactions', label: 'سجل المعاملات المحصلة', icon: Activity, count: transactions.length },
           ].map(tab => {
             const Icon = tab.icon;
@@ -286,14 +286,14 @@ export const AnalyticsFinanceManager: React.FC = () => {
       )}
 
       {/* ========================================================= */}
-      {/* التبويب 2: أداء القطاعات الـ 26 الأكثر نمواً                */}
+      {/* التبويب 2: أداء القطاعات الـ 34 الأكثر نمواً                */}
       {/* ========================================================= */}
       {activeTab === 'categories' && (
         <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-xl">
           <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
             <div className="flex items-center gap-2 text-yellow-400">
               <Layers className="w-5 h-5" />
-              <h2 className="text-base font-bold text-white">أداء وتفاعل القطاعات الـ 26 الرسمية</h2>
+              <h2 className="text-base font-bold text-white">أداء وتفاعل القطاعات الـ 34 الرسمية</h2>
             </div>
             <span className="text-xs text-zinc-400">ترتيب القطاعات حسب العوائد والتفاعل الإعلاني</span>
           </div>
