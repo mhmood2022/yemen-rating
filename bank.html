@@ -79,39 +79,40 @@
     // دالة توليد المنشورات الديناميكية 100% لكل بنك
     
     // توليد المنشورات: الصور نظيفة تماماً بدون أي كتابة، تصغير الاسم، وتصفير الأرقام الوهمية
+    
     function renderDynamicFeed() {
-      const feedBox = document.getElementById('dynamic-posts-feed');
+      const feedBox = document.getElementById('tab-posts');
       if (!feedBox) return;
 
       const bankName = currentBank.name || '';
       const bankLogo = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : '');
       const isVerified = currentBank.is_verified === true || currentBank.verified === true;
-      const badgeHtml = isVerified ? renderVerificationBadge(currentBank.badge_type || 'gold') : '';
+      const badgeSvg = isVerified ? renderVerificationBadge(currentBank.badge_type || 'gold') : '';
 
-      // هيدر تويتر المنخفض الارتفاع وباسم مصغر في سطر واحد مستقيم تماماً
+      // هيدر المنشور المنخفض الارتفاع وباسم مصغر في سطر واحد مستقيم تماماً لا ينكسر
       const makePostHeader = () => `
         <div class="flex items-center justify-between pb-1">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 min-w-0">
             <div class="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
               ${bankLogo ? `<img src="${bankLogo}" class="w-full h-full object-contain" alt="logo" />` : `<i class="fa-solid fa-building-columns text-zinc-500 text-xs"></i>`}
             </div>
-            <div class="flex items-center gap-1.5 flex-wrap text-right">
-              <span class="text-xs font-bold text-white leading-none">${bankName}</span>
-              <span class="inline-flex shrink-0">${badgeHtml}</span>
-              <span class="text-zinc-500 text-[10px] font-mono">· 20 ي</span>
+            <div class="flex items-center gap-1.5 flex-nowrap text-right truncate">
+              <span class="text-xs font-bold text-white truncate max-w-[170px] sm:max-w-none leading-none">${bankName}</span>
+              <span class="inline-flex shrink-0 leading-none">${badgeSvg}</span>
+              <span class="text-zinc-500 text-[10px] font-mono shrink-0 leading-none">· 20 ي</span>
             </div>
           </div>
-          <button type="button" class="text-zinc-500 hover:text-zinc-300 p-1 cursor-pointer">
+          <button type="button" class="text-zinc-500 hover:text-zinc-300 p-1 shrink-0 cursor-pointer">
             <i class="fa-solid fa-ellipsis text-xs"></i>
           </button>
         </div>
       `;
 
-      // شريط التفاعل المصفّر حقيقياً والمضبوط المسافات
+      // شريط التفاعل المصفّر بالكامل
       const realCommentsCount = (currentBank.reviews && currentBank.reviews.length) || 0;
       const makePostBar = () => `
         <div class="flex items-center justify-between pt-2 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
-          <div class="flex items-center gap-7">
+          <div class="flex items-center gap-6">
             <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
               <i class="fa-regular fa-comment text-xs"></i>
               <span class="text-[11px] font-mono">${realCommentsCount}</span>
@@ -138,23 +139,23 @@
 
       let feedHtml = '';
 
-      // 1. المنشور النصي: يظهر فقط وفقط إذا كتبته الإدارة في قاعدة البيانات
-      const customAnnouncement = currentBank.announcement || currentBank.text_post || '';
-      if (customAnnouncement) {
+      // 1. المنشور النصي: لا يظهر إطلاقاً إلا إذا كُتب فعلياً من الإدارة
+      const postText = currentBank.announcement || currentBank.text_post || '';
+      if (postText.trim()) {
         feedHtml += `
-          <article class="text-right space-y-2 pt-0.5">
+          <article class="text-right space-y-2 pt-1">
             ${makePostHeader()}
-            <p class="text-xs text-zinc-100 leading-relaxed font-normal select-text pr-1">${customAnnouncement}</p>
+            <p class="text-xs text-zinc-100 leading-relaxed font-normal select-text pr-1">${postText}</p>
             ${makePostBar()}
           </article>
           <div class="border-b border-zinc-900/80 my-3"></div>
         `;
       }
 
-      // 2. منشور الصور الأربع: صور نقية 100% بدون أي أشرطة سوداء أو كتابة فوقها
-      const mediaList = currentPosts || [];
-      if (mediaList.length > 0) {
-        const pureImagesGrid = mediaList.map((post, idx) => `
+      // 2. منشور الصور الأربع: صور نقية 100% بدون أي أشرطة سوداء أو نصوص فوقها
+      const postsList = currentPosts || [];
+      if (postsList.length > 0) {
+        const cleanPhotos = postsList.map((post, idx) => `
           <div class="bg-black border border-zinc-800/80 rounded-2xl overflow-hidden shadow-md cursor-pointer aspect-square" onclick="openLightbox(${idx})">
             <img src="${post.image || post.file_url}" alt="صورة المعرض" class="w-full h-full object-cover" />
           </div>
@@ -164,15 +165,17 @@
           <article class="text-right space-y-2">
             ${makePostHeader()}
             <div class="grid grid-cols-2 gap-2 pt-1">
-              ${pureImagesGrid}
+              ${cleanPhotos}
             </div>
             ${makePostBar()}
           </article>
         `;
       }
 
+      feedBox.className = 'space-y-4';
       feedBox.innerHTML = feedHtml;
     }
+
 
 
 </script>
@@ -726,6 +729,29 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       </div>
     </div>
 
+
+    <!-- حاوية الفروع (مخفية تماماً إلا إذا أدخلتها الإدارة) -->
+    <div id="bank-branches-slot" class="hidden mt-6 bg-black border border-zinc-800/90 rounded-2xl p-4 text-right shadow-xl">
+      <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
+        <h4 class="text-xs font-black text-white flex items-center gap-1.5">
+          <i class="fa-solid fa-code-branch text-brand-gold"></i>
+          <span>فروع البنك المعتمدة</span>
+        </h4>
+      </div>
+      <div id="bank-branches-content" class="text-xs text-zinc-300 leading-relaxed"></div>
+    </div>
+
+    <!-- حاوية ساعات العمل (مخفية تماماً إلا إذا أدخلتها الإدارة) -->
+    <div id="bank-hours-slot" class="hidden mt-4 bg-black border border-zinc-800/90 rounded-2xl p-4 text-right shadow-xl">
+      <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
+        <h4 class="text-xs font-black text-white flex items-center gap-1.5">
+          <i class="fa-solid fa-clock text-brand-gold"></i>
+          <span>مواعيد وساعات العمل</span>
+        </h4>
+      </div>
+      <div id="bank-hours-content" class="text-xs text-zinc-300 leading-relaxed"></div>
+    </div>
+
 <div id="reviews-container" class="space-y-2"></div>
       </div>
     </section>
@@ -1028,6 +1054,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     
     
     
+    
     function updateRatingsDisplay(reviewsList) {
       const revs = Array.isArray(reviewsList) ? reviewsList : [];
       const total = revs.length;
@@ -1040,17 +1067,17 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         sum += star;
       });
 
-      const avg = total > 0 ? (sum / total).toFixed(1) : null;
+      const avg = total > 0 ? (sum / total).toFixed(1) : '--';
 
-      const setElText = (id, txt) => {
+      const setEl = (id, val) => {
         const el = document.getElementById(id);
-        if (el) el.innerText = txt;
+        if (el) el.innerText = val;
       };
 
-      setElText('calc-avg-rating', avg || '0.0');
-      setElText('calc-total-reviews', total > 0 ? `${total} تقييم` : 'لا توجد تقييمات بعد');
-      setElText('header-rating-num', avg || '--');
-      setElText('header-rating-count', total > 0 ? `${total} تقييم` : 'لا توجد تقييمات بعد');
+      setEl('calc-avg-rating', avg !== '--' ? avg : '0.0');
+      setEl('calc-total-reviews', total > 0 ? `${total} تقييم` : 'لا توجد تقييمات بعد');
+      setEl('header-rating-num', avg);
+      setEl('header-rating-count', total > 0 ? `(${total} تقييم)` : '');
 
       for (let s = 1; s <= 5; s++) {
         const pct = total > 0 ? Math.round(((counts[s] || 0) / total) * 100) : 0;
@@ -1060,17 +1087,17 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         if (pctEl) pctEl.innerText = `${pct}%`;
       }
 
-      // عرض المراجعات الحقيقية من Supabase
-      const revContainer = document.getElementById('reviews-container');
-      if (revContainer) {
+      // إظهار تقييمات ومراجعات العملاء الحقيقية من Supabase تحت آخر التقييمات
+      const rContainer = document.getElementById('reviews-container');
+      if (rContainer) {
         if (total === 0) {
-          revContainer.innerHTML = '<div class="py-6 px-4 text-center rounded-xl bg-zinc-950 border border-zinc-900 text-xs text-zinc-400">لا توجد تقييمات مسجلة لهذا البنك حتى الآن. كن أول من يقيّم!</div>';
+          rContainer.innerHTML = '<div class="py-6 px-4 text-center rounded-xl bg-zinc-950 border border-zinc-900 text-xs text-zinc-400">لا توجد تقييمات مسجلة لهذا البنك حتى الآن. كن أول من يقيّم!</div>';
         } else {
-          revContainer.innerHTML = revs.map(r => `
+          rContainer.innerHTML = revs.map(r => `
             <div class="border border-zinc-800/80 rounded-2xl p-3 flex flex-col gap-2 bg-[#0A0A0A] text-right mb-2.5 shadow-md">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold text-xs">
+                  <div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold text-xs">
                     ${(r.user_name || 'ع')[0]}
                   </div>
                   <div>
@@ -1088,6 +1115,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         }
       }
     }
+
 
 
 
