@@ -485,8 +485,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           <i class="fa-solid fa-star"></i>
           <i class="fa-solid fa-star-half-stroke"></i>
         </div>
-        <span id="header-rating-num">4.5</span>
-        <span id="header-rating-count">2 تقييم</span>
+        <span id="header-rating-num">--</span>
+        <span id="header-rating-count"></span>
       </div>
 
       <p id="bank-bio" class="text-zinc-300 text-xs leading-snug font-medium pt-1">
@@ -1027,50 +1027,50 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
     
     
+    
     function updateRatingsDisplay(reviewsList) {
-      const revs = reviewsList || [];
+      const revs = Array.isArray(reviewsList) ? reviewsList : [];
       const total = revs.length;
       let sum = 0;
       const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
       revs.forEach(r => {
-        const rating = Math.min(5, Math.max(1, parseInt(r.stars || r.rating) || 5));
-        counts[rating] = (counts[rating] || 0) + 1;
-        sum += rating;
+        const star = Math.min(5, Math.max(1, parseInt(r.stars || r.rating) || 5));
+        counts[star] = (counts[star] || 0) + 1;
+        sum += star;
       });
 
-      const avg = total > 0 ? (sum / total).toFixed(1) : '0.0';
+      const avg = total > 0 ? (sum / total).toFixed(1) : null;
 
-      const setVal = (id, val) => {
+      const setElText = (id, txt) => {
         const el = document.getElementById(id);
-        if (el) el.innerText = val;
+        if (el) el.innerText = txt;
       };
 
-      setVal('calc-avg-rating', avg);
-      setVal('calc-total-reviews', `${total} تقييم`);
-      setVal('header-rating-num', avg);
-      setVal('header-rating-count', `${total} تقييم`);
+      setElText('calc-avg-rating', avg || '0.0');
+      setElText('calc-total-reviews', total > 0 ? `${total} تقييم` : 'لا توجد تقييمات بعد');
+      setElText('header-rating-num', avg || '--');
+      setElText('header-rating-count', total > 0 ? `${total} تقييم` : 'لا توجد تقييمات بعد');
 
-      // تحديث أشرطة النسب
-      for (let star = 1; star <= 5; star++) {
-        const pct = total > 0 ? Math.round(((counts[star] || 0) / total) * 100) : 0;
-        const barEl = document.getElementById(`bar-star-${star}`);
-        const pctEl = document.getElementById(`pct-star-${star}`);
-        if (barEl) barEl.style.width = `${pct}%`;
+      for (let s = 1; s <= 5; s++) {
+        const pct = total > 0 ? Math.round(((counts[s] || 0) / total) * 100) : 0;
+        const bar = document.getElementById(`bar-star-${s}`);
+        const pctEl = document.getElementById(`pct-star-${s}`);
+        if (bar) bar.style.width = `${pct}%`;
         if (pctEl) pctEl.innerText = `${pct}%`;
       }
 
-      // إظهار قائمة تعليقات العملاء الحقيقية من Supabase تحت آخر التقييمات
+      // عرض المراجعات الحقيقية من Supabase
       const revContainer = document.getElementById('reviews-container');
       if (revContainer) {
         if (total === 0) {
-          revContainer.innerHTML = '<div class="py-4 text-center text-xs text-zinc-500">لا توجد تقييمات مسجلة بعد.</div>';
+          revContainer.innerHTML = '<div class="py-6 px-4 text-center rounded-xl bg-zinc-950 border border-zinc-900 text-xs text-zinc-400">لا توجد تقييمات مسجلة لهذا البنك حتى الآن. كن أول من يقيّم!</div>';
         } else {
           revContainer.innerHTML = revs.map(r => `
             <div class="border border-zinc-800/80 rounded-2xl p-3 flex flex-col gap-2 bg-[#0A0A0A] text-right mb-2.5 shadow-md">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold text-xs">
+                  <div class="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold text-xs">
                     ${(r.user_name || 'ع')[0]}
                   </div>
                   <div>
@@ -1079,7 +1079,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
                   </div>
                 </div>
                 <div class="flex items-center text-[#FFC500] text-xs font-mono">
-                  ${'★'.repeat(Math.min(5, parseInt(r.stars || r.rating || 5)))}
+                  ${'★'.repeat(Math.min(5, Math.max(1, parseInt(r.stars || r.rating || 5))))}
                 </div>
               </div>
               <p class="text-xs text-zinc-200 leading-relaxed font-normal">${r.comment || ''}</p>
@@ -1088,6 +1088,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         }
       }
     }
+
 
 
 

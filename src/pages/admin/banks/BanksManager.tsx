@@ -27,6 +27,11 @@ interface BankRecord {
   display_order: number | null;
   created_at?: string;
   posts?: any[];
+  announcement?: string | null;
+  working_hours?: string | null;
+  branches?: any | null;
+  services?: any | null;
+  offers?: any | null;
 }
 
 export const BanksManager: React.FC = () => {
@@ -225,7 +230,12 @@ export const BanksManager: React.FC = () => {
         status: formData.status || 'active',
         is_published: formData.is_published !== false,
         priority_level: formData.priority_level || 'normal',
-        posts: validPosts
+        posts: validPosts,
+        announcement: formData.announcement || null,
+        working_hours: formData.working_hours || null,
+        branches: formData.branches || null,
+        services: formData.services || null,
+        offers: formData.offers || null
       };
 
       let error;
