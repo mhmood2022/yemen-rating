@@ -872,7 +872,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
         if (!resp.ok) {
           const errData = await resp.json().catch(() => ({}));
-          throw new Error(errData.message || errData.details || errData.hint || `Supabase error: ${resp.status}`);
+          throw new Error(
+            `Supabase ${resp.status}: ` +
+            (errData.message || errData.details || errData.hint || JSON.stringify(errData))
+          );
         }
 
         // تحديث الواجهة محلياً بالتقييم الجديد فوراً
@@ -886,7 +889,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         document.getElementById('review-form').reset();
       } catch (err) {
         console.error('Submit review error:', err);
-        alert('تنبيه: حدث خطأ أثناء إرسال التقييم، يرجى المحاولة مرة أخرى.');
+        alert('خطأ التقييم: ' + (err.message || 'خطأ غير معروف من Supabase'));
       } finally {
         btn.disabled = false;
         btn.innerText = "إرسال التقييم";
