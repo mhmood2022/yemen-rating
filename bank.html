@@ -879,9 +879,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         }
 
         // تحديث الواجهة محلياً بالتقييم الجديد فوراً
-        allRevs = [newRev, ...allRevs];
-        currentBank.reviews = allRevs;
-        updateRatingsDisplay(allRevs);
+        currentBank.reviews = [newRev, ...(currentBank.reviews || [])];
+        updateRatingsDisplay(currentBank.reviews);
 
         // إظهار بطاقة الشكر الفاخرة بنفس هوية المنصة (بدون alert)
         document.getElementById('review-form-view').classList.add('hidden');
