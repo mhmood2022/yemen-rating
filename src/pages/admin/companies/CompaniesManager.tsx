@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import { OFFICIAL_CATEGORIES } from '../../../data/categories';
@@ -9,6 +9,69 @@ import {
   Image as ImageIcon, Sparkles, Megaphone, Bed, Wifi, Car,
   Stethoscope, Clock, ShieldCheck, Tag, ChevronDown
 } from 'lucide-react';
+
+// مكون منسدل مخصص لا تعبث به متصفحات الهواتف نهائياً (Custom Dark Select)
+const CustomSelect: React.FC<{
+  label?: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (val: string) => void;
+  placeholder?: string;
+}> = ({ label, value, options, onChange, placeholder }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selectedLabel = options.find(o => o.value === value)?.label || placeholder || value;
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative w-full text-right" ref={ref}>
+      {label && <label className="text-gray-300 font-bold block mb-1 text-xs">{label}</label>}
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between p-2.5 bg-[#161D2B] text-white border border-[#1F2937] hover:border-[#FFC500]/50 rounded-xl text-xs outline-none transition-colors"
+      >
+        <span className="truncate">{selectedLabel}</span>
+        <ChevronDown size={14} className={`text-gray-400 transition-transform ${open ? 'rotate-180 text-[#FFC500]' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="absolute top-full right-0 left-0 mt-1.5 bg-[#161D2B] border-2 border-[#1F2937] rounded-xl shadow-2xl max-h-52 overflow-y-auto z-[90] p-1 space-y-0.5 scrollbar-thin scrollbar-thumb-zinc-700">
+          {options.map((opt) => {
+            const isSelected = opt.value === value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange(opt.value);
+                  setOpen(false);
+                }}
+                className={`w-full text-right px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors ${
+                  isSelected
+                    ? 'bg-[#FFC500] text-black font-black'
+                    : 'text-gray-200 hover:bg-[#0B0F17] hover:text-[#FFC500]'
+                }`}
+              >
+                <span className="truncate">{opt.label}</span>
+                {isSelected && <Check size={14} className="shrink-0 stroke-[3]" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface BusinessRecord {
   id: string;
@@ -49,7 +112,8 @@ export const CompaniesManager: React.FC = () => {
   const [filterBadge, setFilterBadge] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  // إشعار النجاح التفاعلي (Success Toast)
+  // حالات رسالة النجاح الفورية
+  const [savedSuccessfully, setSavedSuccessfully] = useState(false);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
   // نافذة الإضافة والتعديل
@@ -60,7 +124,6 @@ export const CompaniesManager: React.FC = () => {
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // حقول النموذج الشاملة
   const [formData, setFormData] = useState<{
     name: string;
     slug: string;
@@ -143,7 +206,48 @@ export const CompaniesManager: React.FC = () => {
     return currentCategorySlug || '';
   }, [formData.category_id, categoriesMap, currentCategorySlug]);
 
-  // جلب البيانات من Supabase
+  // خيارات القوائم المنسدلة الموحدة
+  const cityOptions = [
+    { value: 'all', label: 'كافة المحافظات والمدن' },
+    { value: 'صنعاء', label: 'صنعاء' },
+    { value: 'عدن', label: 'عدن' },
+    { value: 'تعز', label: 'تعز' },
+    { value: 'حضرموت', label: 'حضرموت' },
+    { value: 'إب', label: 'إب' },
+    { value: 'الحديدة', label: 'الحديدة' },
+    { value: 'ذمار', label: 'ذمار' },
+    { value: 'مأرب', label: 'مأرب' },
+  ];
+
+  const statusOptions = [
+    { value: 'all', label: 'كافة الحالات' },
+    { value: 'active', label: 'نشط ومعروض للموقع' },
+    { value: 'pending', label: 'غير نشط / قيد المراجعة' },
+    { value: 'hidden', label: 'مخفي وغير ظاهر' },
+  ];
+
+  const badgeOptions = [
+    { value: 'all', label: 'كافة الشارات الملكية' },
+    { value: 'gold', label: 'شارة ذهبية (Gold) 🏆' },
+    { value: 'blue', label: 'شارة زرقاء موثقة 🛡️' },
+    { value: 'gray', label: 'شارة فضية اعتيادية' },
+    { value: 'none', label: 'بدون شارة' },
+  ];
+
+  const claimOptions = [
+    { value: 'UNCLAIMED', label: 'غير مطالب بها (جاهزة للمطالبة)' },
+    { value: 'PENDING', label: 'طلب توثيق قيد المراجعة' },
+    { value: 'CLAIMED', label: 'مملوكة وموثقة رسمياً' },
+  ];
+
+  const categoryDropdownOptions = useMemo(() => {
+    return OFFICIAL_CATEGORIES.map(c => {
+      const dbCat = categoriesMap[c.slug];
+      const val = dbCat ? dbCat.id : c.id;
+      return { value: val, label: c.name };
+    });
+  }, [categoriesMap]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -208,7 +312,6 @@ export const CompaniesManager: React.FC = () => {
     });
   }, [businesses, currentCategorySlug, searchTerm, filterCity, filterStatus, filterBadge, categoriesMap]);
 
-  // رفع فوري ومعاينة مؤكدة من ذاكرة الهاتف
   const handleUploadFile = (target: 'logo' | 'cover' | number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -219,11 +322,9 @@ export const CompaniesManager: React.FC = () => {
     const reader = new FileReader();
     reader.onload = async (event) => {
       const localBase64 = event.target?.result as string;
-      if (target === 'logo') {
-        setFormData(p => ({ ...p, logo_url: localBase64 }));
-      } else if (target === 'cover') {
-        setFormData(p => ({ ...p, cover_url: localBase64 }));
-      } else if (typeof target === 'number') {
+      if (target === 'logo') setFormData(p => ({ ...p, logo_url: localBase64 }));
+      else if (target === 'cover') setFormData(p => ({ ...p, cover_url: localBase64 }));
+      else if (typeof target === 'number') {
         setFormData(p => {
           const next = [...p.gallery_urls];
           next[target] = localBase64;
@@ -269,6 +370,7 @@ export const CompaniesManager: React.FC = () => {
   const handleOpenAddModal = () => {
     setEditingId(null);
     setErrorMessage(null);
+    setSavedSuccessfully(false);
     setActiveTab('info');
 
     const defaultCatId = currentCategorySlug && categoriesMap[currentCategorySlug]
@@ -316,6 +418,7 @@ export const CompaniesManager: React.FC = () => {
   const handleOpenEditModal = (b: BusinessRecord) => {
     setEditingId(b.id);
     setErrorMessage(null);
+    setSavedSuccessfully(false);
     setActiveTab('info');
 
     const sec = b.sections_config || {};
@@ -435,18 +538,25 @@ export const CompaniesManager: React.FC = () => {
       }
 
       await fetchData();
-      setIsModalOpen(false);
 
-      // إطلاق إشعار النجاح التفاعلي
-      setSuccessToast(
-        isEdit
-          ? `تم تحديث وحفظ بيانات "${formData.name}" بنجاح! ✅`
-          : `تمت إضافة المنشأة الجديدة "${formData.name}" وتجهيزها بنجاح! 🎉`
-      );
+      // 1. إظهار النجاح فوراً عند زر الحفظ
+      setSavedSuccessfully(true);
+
+      const successText = isEdit
+        ? `تم تحديث وحفظ بيانات "${formData.name}" بنجاح! ✅`
+        : `تمت إضافة ونشر "${formData.name}" بنجاح! 🎉`;
+
+      setSuccessToast(successText);
+
+      // 2. الانتظار ثانية واحدة ليراها المستخدم بوضوح قبل إغلاق النافذة
+      setTimeout(() => {
+        setSavedSuccessfully(false);
+        setIsModalOpen(false);
+      }, 1200);
 
       setTimeout(() => {
         setSuccessToast(null);
-      }, 3500);
+      }, 4000);
 
     } catch (err: any) {
       console.error('Save error:', err);
@@ -458,9 +568,9 @@ export const CompaniesManager: React.FC = () => {
 
   return (
     <div dir="rtl" className="p-4 sm:p-6 lg:p-8 space-y-6 font-['Cairo',sans-serif] text-white relative">
-      {/* شريط رسالة النجاح العائم (Success Toast Notification) */}
+      {/* إشعار النجاح العائم المريح للهاتف (أسفل الشاشة مكان الإبهام) */}
       {successToast && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3.5 rounded-2xl bg-emerald-500/20 border-2 border-emerald-500/60 text-emerald-300 font-bold text-xs sm:text-sm flex items-center gap-3 shadow-2xl backdrop-blur-xl animate-bounce">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3.5 rounded-2xl bg-[#161D2B] border-2 border-emerald-500 text-emerald-300 font-bold text-xs sm:text-sm flex items-center gap-3 shadow-2xl backdrop-blur-xl">
           <div className="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0">
             <Check size={14} className="stroke-[3]" />
           </div>
@@ -509,7 +619,7 @@ export const CompaniesManager: React.FC = () => {
         </div>
       </div>
 
-      {/* شريط البحث والفلاتر المنسدلة بتصميم داكن موحد 100% */}
+      {/* شريط الفلاتر بالقوائم المنسدلة المخصصة الداركة 100% */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-[#0B0F17] p-3 rounded-2xl border border-[#1F2937]">
         <div className="relative">
           <Search size={16} className="absolute right-3.5 top-3.5 text-gray-400" />
@@ -522,62 +632,26 @@ export const CompaniesManager: React.FC = () => {
           />
         </div>
 
-        {/* قائمة المحافظات */}
-        <div className="relative">
-          <select
-            value={filterCity}
-            onChange={(e) => setFilterCity(e.target.value)}
-            className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
-            style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
-          >
-            <option value="all" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>كافة المحافظات والمدن</option>
-            <option value="صنعاء" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>صنعاء</option>
-            <option value="عدن" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>عدن</option>
-            <option value="تعز" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>تعز</option>
-            <option value="حضرموت" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>حضرموت</option>
-            <option value="إب" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>إب</option>
-            <option value="الحديدة" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>الحديدة</option>
-            <option value="ذمار" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>ذمار</option>
-            <option value="مأرب" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>مأرب</option>
-          </select>
-          <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-        </div>
+        <CustomSelect
+          value={filterCity}
+          options={cityOptions}
+          onChange={setFilterCity}
+        />
 
-        {/* قائمة الحالات */}
-        <div className="relative">
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
-            style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
-          >
-            <option value="all" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>كافة الحالات</option>
-            <option value="active" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>نشط ومعروض للموقع</option>
-            <option value="pending" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>غير نشط / قيد المراجعة</option>
-            <option value="hidden" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>مخفي وغير ظاهر</option>
-          </select>
-          <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-        </div>
+        <CustomSelect
+          value={filterStatus}
+          options={statusOptions}
+          onChange={setFilterStatus}
+        />
 
-        {/* قائمة الشارات */}
-        <div className="relative">
-          <select
-            value={filterBadge}
-            onChange={(e) => setFilterBadge(e.target.value)}
-            className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
-            style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
-          >
-            <option value="all" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>كافة الشارات الملكية</option>
-            <option value="gold" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>شارة ذهبية (Gold) 🏆</option>
-            <option value="blue" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>شارة زرقاء موثقة 🛡️</option>
-            <option value="gray" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>شارة فضية اعتيادية</option>
-            <option value="none" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>بدون شارة</option>
-          </select>
-          <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-        </div>
+        <CustomSelect
+          value={filterBadge}
+          options={badgeOptions}
+          onChange={setFilterBadge}
+        />
       </div>
 
-      {/* قائمة البطاقات الحقيقية */}
+      {/* قائمة البطاقات */}
       {loading ? (
         <div className="py-24 text-center text-xs text-gray-400 flex flex-col items-center justify-center gap-2.5">
           <Loader2 className="w-7 h-7 animate-spin text-[#FFC500]" />
@@ -592,7 +666,7 @@ export const CompaniesManager: React.FC = () => {
               : 'لا توجد منشآت مطابقة للبحث'}
           </p>
           <p className="text-xs text-gray-400 max-w-md mx-auto leading-relaxed">
-            سياسة YEMEN RATING تتيح لك كمسؤول إضافة وتجهيز صفحات {activeOfficialCategory?.name || 'المنشآت'} ورفع الغلاف والشعار والصور، ليطالب أصحابها بـ «إثبات الملكية» لاحقاً.
+            يمكنك الآن إضافة وتجهيز صفحات {activeOfficialCategory?.name || 'المنشآت'} ورفع الغلاف والشعار والصور ليطالب أصحابها بـ «إثبات الملكية» لاحقاً.
           </p>
           <button
             onClick={handleOpenAddModal}
@@ -612,7 +686,6 @@ export const CompaniesManager: React.FC = () => {
                   : 'border-[#1F2937] hover:border-[#FFC500]/50'
               }`}
             >
-              {/* صورة الغلاف العريض والشعار */}
               <div className="relative h-28 bg-[#161D2B] overflow-hidden">
                 {b.cover_url ? (
                   <img
@@ -628,7 +701,6 @@ export const CompaniesManager: React.FC = () => {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
-                {/* حالة النشاط */}
                 <div className="absolute top-2.5 right-2.5">
                   <span className={`px-2 py-0.5 rounded-md text-[10px] font-black ${
                     b.status === 'active'
@@ -641,7 +713,6 @@ export const CompaniesManager: React.FC = () => {
                   </span>
                 </div>
 
-                {/* الشعار */}
                 <div className="absolute -bottom-2 right-3 w-14 h-14 rounded-xl bg-[#0B0F17] border-2 border-[#1F2937] overflow-hidden shadow-lg flex items-center justify-center">
                   {b.logo_url ? (
                     <img
@@ -656,7 +727,6 @@ export const CompaniesManager: React.FC = () => {
                 </div>
               </div>
 
-              {/* المحتوى والتفاصيل */}
               <div className="p-4 pt-5 space-y-3 flex-1 flex flex-col justify-between">
                 <div>
                   <div className="flex items-start justify-between gap-2">
@@ -678,7 +748,6 @@ export const CompaniesManager: React.FC = () => {
                     )}
                   </div>
 
-                  {/* التقييم والصور الأربع */}
                   <div className="flex items-center justify-between text-xs mt-3 pt-2 border-t border-[#1F2937]">
                     <div className="flex items-center gap-1 text-amber-400 font-bold">
                       <Star size={13} className="fill-amber-400" />
@@ -692,7 +761,6 @@ export const CompaniesManager: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* التواصل والمدينة */}
                   <div className="mt-2.5 p-2.5 rounded-xl bg-[#161D2B]/70 border border-[#1F2937] space-y-1 text-xs text-gray-300">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 text-[11px] flex items-center gap-1"><MapPin size={11} /> المدينة:</span>
@@ -742,7 +810,6 @@ export const CompaniesManager: React.FC = () => {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
           <div className="bg-[#0F141F] border border-[#1F2937] rounded-t-3xl sm:rounded-3xl w-full max-w-3xl max-h-[95vh] sm:max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col">
-            {/* ترويسة المودال المحمية للموبايل */}
             <div className="p-4 sm:p-5 border-b border-[#1F2937] flex items-center justify-between bg-[#111827] sticky top-0 z-30">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-xl bg-[#FFC500]/10 text-[#FFC500]">
@@ -763,7 +830,6 @@ export const CompaniesManager: React.FC = () => {
               </button>
             </div>
 
-            {/* شريط تبويبات سحاب أفقي باللمس للموبايل */}
             <div className="flex border-b border-[#1F2937] bg-[#0B0F17] px-3 overflow-x-auto scrollbar-none text-xs font-bold gap-1 py-1 shrink-0">
               {[
                 { id: 'info', label: '1. البيانات والتواصل' },
@@ -793,7 +859,6 @@ export const CompaniesManager: React.FC = () => {
             )}
 
             <form onSubmit={handleSaveBusiness} className="p-4 sm:p-5 space-y-4 text-xs flex-1">
-              {/* التبويب 1: البيانات والتواصل */}
               {activeTab === 'info' && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -809,52 +874,21 @@ export const CompaniesManager: React.FC = () => {
                       />
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-gray-300 font-bold">التصنيف الرسمي *</label>
-                      <div className="relative">
-                        <select
-                          value={formData.category_id}
-                          onChange={(e) => setFormData(p => ({ ...p, category_id: e.target.value }))}
-                          className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
-                          style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
-                        >
-                          {OFFICIAL_CATEGORIES.map(c => {
-                            const dbCat = categoriesMap[c.slug];
-                            const val = dbCat ? dbCat.id : c.id;
-                            return (
-                              <option key={c.id} value={val} style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>
-                                {c.name}
-                              </option>
-                            );
-                          })}
-                        </select>
-                        <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                      </div>
-                    </div>
+                    <CustomSelect
+                      label="التصنيف الرسمي *"
+                      value={formData.category_id}
+                      options={categoryDropdownOptions}
+                      onChange={(val) => setFormData(p => ({ ...p, category_id: val }))}
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-gray-300 font-bold">المدينة</label>
-                      <div className="relative">
-                        <select
-                          value={formData.city}
-                          onChange={(e) => setFormData(p => ({ ...p, city: e.target.value }))}
-                          className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
-                          style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
-                        >
-                          <option value="صنعاء" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>صنعاء</option>
-                          <option value="عدن" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>عدن</option>
-                          <option value="تعز" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>تعز</option>
-                          <option value="حضرموت" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>حضرموت</option>
-                          <option value="إب" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>إب</option>
-                          <option value="الحديدة" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>الحديدة</option>
-                          <option value="ذمار" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>ذمار</option>
-                          <option value="مأرب" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>مأرب</option>
-                        </select>
-                        <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                      </div>
-                    </div>
+                    <CustomSelect
+                      label="المدينة"
+                      value={formData.city}
+                      options={cityOptions.filter(o => o.value !== 'all')}
+                      onChange={(val) => setFormData(p => ({ ...p, city: val }))}
+                    />
 
                     <div className="space-y-1 sm:col-span-2">
                       <label className="text-gray-300 font-bold">العنوان التفصيلي</label>
@@ -916,11 +950,9 @@ export const CompaniesManager: React.FC = () => {
                 </div>
               )}
 
-              {/* التبويب 2: وسائط الهاتف مع المعاينة الفورية */}
               {activeTab === 'media' && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* الشعار */}
                     <div className="p-3.5 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2.5">
                       <label className="text-gray-300 font-bold block">شعار المنشأة (Logo)</label>
                       <div className="flex items-center gap-3">
@@ -928,7 +960,7 @@ export const CompaniesManager: React.FC = () => {
                           {formData.logo_url ? (
                             <img
                               src={formData.logo_url}
-                              alt="Logo"
+                              alt="Logo Preview"
                               className="w-full h-full object-cover"
                               onError={(e) => { e.currentTarget.style.display = 'none'; }}
                             />
@@ -949,7 +981,6 @@ export const CompaniesManager: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* الغلاف العريض */}
                     <div className="p-3.5 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2.5">
                       <label className="text-gray-300 font-bold block">الغلاف البانورامي (Cover Banner)</label>
                       <div className="flex items-center gap-3">
@@ -957,7 +988,7 @@ export const CompaniesManager: React.FC = () => {
                           {formData.cover_url ? (
                             <img
                               src={formData.cover_url}
-                              alt="Cover"
+                              alt="Cover Preview"
                               className="w-full h-full object-cover"
                               onError={(e) => { e.currentTarget.style.display = 'none'; }}
                             />
@@ -979,7 +1010,6 @@ export const CompaniesManager: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* معرض الصور الأربع المباشر من الهاتف */}
                   <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
                     <div className="flex items-center justify-between">
                       <label className="text-white font-bold flex items-center gap-2">
@@ -1036,10 +1066,8 @@ export const CompaniesManager: React.FC = () => {
                 </div>
               )}
 
-              {/* التبويب 3: عناصر السحب والاختيار باللمس (Touch Slider & Chips) */}
               {activeTab === 'features' && (
                 <div className="space-y-4">
-                  {/* شريط خيارات عدد الغرف السحاب */}
                   <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2.5">
                     <label className="text-white font-bold flex items-center gap-2">
                       <Bed size={15} className="text-[#FFC500]" />
@@ -1063,7 +1091,6 @@ export const CompaniesManager: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* أزرار الميزات التفاعلية بنقرة واحدة */}
                   <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
                     <label className="text-white font-bold block">ميزات المنشأة (اضغط للتفعيل المباشر):</label>
                     <div className="flex flex-wrap gap-2">
@@ -1094,7 +1121,6 @@ export const CompaniesManager: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* مواعيد العمل اليومية */}
                   <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2">
                     <label className="text-white font-bold flex items-center gap-1.5">
                       <Clock size={15} className="text-[#FFC500]" />
@@ -1120,10 +1146,8 @@ export const CompaniesManager: React.FC = () => {
                 </div>
               )}
 
-              {/* التبويب 4: الوحدات الإعلانية الثلاث والتوثيق */}
               {activeTab === 'ads' && (
                 <div className="space-y-4">
-                  {/* الوحدات الإعلانية الثلاث الرسمية */}
                   <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
                     <div className="flex items-center justify-between pb-2 border-b border-[#1F2937]">
                       <h4 className="font-bold text-white flex items-center gap-2">
@@ -1155,80 +1179,74 @@ export const CompaniesManager: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* الشارة والتقييم وإثبات الملكية */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-gray-300 font-bold">الشارة الملكية</label>
-                      <div className="relative">
-                        <select
-                          value={formData.badge_type || 'none'}
-                          onChange={(e) => setFormData(p => ({ ...p, badge_type: e.target.value === 'none' ? null : (e.target.value as any) }))}
-                          className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
-                          style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
-                        >
-                          <option value="gold" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>شارة ذهبية 🏆</option>
-                          <option value="blue" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>شارة موثقة زرقاء 🛡️</option>
-                          <option value="gray" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>شارة فضية</option>
-                          <option value="none" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>بدون شارة</option>
-                        </select>
-                        <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                      </div>
-                    </div>
+                    <CustomSelect
+                      label="الشارة الملكية"
+                      value={formData.badge_type || 'none'}
+                      options={badgeOptions.filter(o => o.value !== 'all')}
+                      onChange={(val) => setFormData(p => ({ ...p, badge_type: val === 'none' ? null : (val as any) }))}
+                    />
 
-                    <div className="space-y-1">
-                      <label className="text-gray-300 font-bold">حالة إثبات الملكية</label>
-                      <div className="relative">
-                        <select
-                          value={formData.claim_status}
-                          onChange={(e) => setFormData(p => ({ ...p, claim_status: e.target.value as any }))}
-                          className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
-                          style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
-                        >
-                          <option value="UNCLAIMED" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>غير مطالب بها (جاهزة للمطالبة)</option>
-                          <option value="PENDING" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>قيد المراجعة</option>
-                          <option value="CLAIMED" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>مملوكة وموثقة</option>
-                        </select>
-                        <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                      </div>
-                    </div>
+                    <CustomSelect
+                      label="حالة إثبات الملكية"
+                      value={formData.claim_status}
+                      options={claimOptions}
+                      onChange={(val) => setFormData(p => ({ ...p, claim_status: val as any }))}
+                    />
 
-                    <div className="space-y-1">
-                      <label className="text-gray-300 font-bold">حالة الظهور</label>
-                      <div className="relative">
-                        <select
-                          value={formData.status}
-                          onChange={(e) => setFormData(p => ({ ...p, status: e.target.value as any }))}
-                          className="w-full bg-[#161D2B] text-white border border-[#1F2937] rounded-xl px-3 py-2.5 text-xs outline-none focus:border-[#FFC500] appearance-none cursor-pointer pl-8"
-                          style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}
-                        >
-                          <option value="active" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>نشط ومعروض</option>
-                          <option value="pending" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>غير نشط / معلق</option>
-                          <option value="hidden" style={{ backgroundColor: '#161D2B', color: '#FFFFFF' }}>مخفي بالكامل</option>
-                        </select>
-                        <ChevronDown size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                      </div>
-                    </div>
+                    <CustomSelect
+                      label="حالة الظهور"
+                      value={formData.status}
+                      options={statusOptions.filter(o => o.value !== 'all')}
+                      onChange={(val) => setFormData(p => ({ ...p, status: val as any }))}
+                    />
                   </div>
                 </div>
               )}
 
-              {/* أزرار الحفظ الموحدة */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#1F2937] sticky bottom-0 bg-[#0F141F] py-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl bg-[#161D2B] text-gray-300 hover:text-white font-bold"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#FFC500] hover:bg-[#e6b200] text-black font-black shadow-lg disabled:opacity-50"
-                >
-                  {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {editingId ? 'حفظ كافة التعديلات' : 'إضافة ونشر المنشأة'}
-                </button>
+              {/* شريط الإجراءات السفلي مع رسالة النجاح المرئية بجانب زر الحفظ مباشرة */}
+              <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#1F2937] sticky bottom-0 bg-[#0F141F] py-2.5">
+                <div className="flex-1 min-w-0">
+                  {savedSuccessfully && (
+                    <div className="flex items-center gap-1.5 text-emerald-400 font-black text-xs animate-bounce">
+                      <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+                      <span className="truncate">تم الحفظ بنجاح في السيرفر!</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 rounded-xl bg-[#161D2B] text-gray-300 hover:text-white font-bold text-xs"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving || savedSuccessfully}
+                    className={`flex items-center gap-2 px-6 py-2 rounded-xl font-black text-xs shadow-lg transition-all ${
+                      savedSuccessfully
+                        ? 'bg-emerald-500 text-black scale-105'
+                        : 'bg-[#FFC500] hover:bg-[#e6b200] text-black'
+                    }`}
+                  >
+                    {saving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>جاري الحفظ...</span>
+                      </>
+                    ) : savedSuccessfully ? (
+                      <>
+                        <Check size={16} className="stroke-[3]" />
+                        <span>تم الحفظ بنجاح!</span>
+                      </>
+                    ) : (
+                      <span>{editingId ? 'حفظ كافة التعديلات' : 'إضافة ونشر المنشأة'}</span>
+                    )}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
