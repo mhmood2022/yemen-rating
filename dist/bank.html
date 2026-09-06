@@ -291,31 +291,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
       <div class="space-y-2 pt-2">
         <h4 class="text-right text-xs font-bold text-zinc-300">اخر التقييمات</h4>
-        <div id="reviews-container" class="space-y-2.5 pt-2"></div>
-        
-    <!-- الفروع (مخفية تماماً وفارغة حتى تعبئها الإدارة) -->
-    <div id="bank-branches-slot" class="hidden mt-6 bg-black border border-zinc-800/90 rounded-2xl p-4 text-right shadow-xl">
-      <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
-        <h4 class="text-xs font-black text-white flex items-center gap-1.5">
-          <i class="fa-solid fa-code-branch text-brand-gold"></i>
-          <span>فروع البنك المعتمدة</span>
-        </h4>
-      </div>
-      <div id="bank-branches-content" class="text-xs text-zinc-300 leading-relaxed"></div>
-    </div>
-
-    <!-- ساعات العمل (مخفية تماماً وفارغة حتى تعبئها الإدارة) -->
-    <div id="bank-hours-slot" class="hidden mt-4 bg-black border border-zinc-800/90 rounded-2xl p-4 text-right shadow-xl">
-      <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
-        <h4 class="text-xs font-black text-white flex items-center gap-1.5">
-          <i class="fa-solid fa-clock text-brand-gold"></i>
-          <span>مواعيد وساعات العمل</span>
-        </h4>
-      </div>
-      <div id="bank-hours-content" class="text-xs text-zinc-300 leading-relaxed"></div>
-    </div>
-
-
+        <div id="reviews-container" class="space-y-2"></div>
       </div>
     </section>
 
@@ -578,68 +554,37 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       `;
     }
 
-    
     function updateRatingsDisplay(reviewsList) {
-      const revs = Array.isArray(reviewsList) ? reviewsList : [];
-      const total = revs.length;
+      if (!reviewsList || reviewsList.length === 0) {
+        document.getElementById('calc-avg-rating').innerText = '0.0';
+        document.getElementById('calc-total-reviews').innerText = 'لا توجد تقييمات بعد';
+        return;
+      }
+
+      const total = reviewsList.length;
       let sum = 0;
       const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
-      revs.forEach(r => {
-        const star = Math.min(5, Math.max(1, parseInt(r.stars || r.rating) || 5));
-        counts[star] = (counts[star] || 0) + 1;
-        sum += star;
+      reviewsList.forEach(r => {
+        const rating = Math.min(5, Math.max(1, parseInt(r.stars || r.rating) || 5));
+        counts[rating] = (counts[rating] || 0) + 1;
+        sum += rating;
       });
 
-      const avg = total > 0 ? (sum / total).toFixed(1) : '--';
+      const avg = (sum / total).toFixed(1);
+      document.getElementById('calc-avg-rating').innerText = avg;
+      document.getElementById('header-rating-num').innerText = avg;
+      document.getElementById('calc-total-reviews').innerText = `${total} تقييم`;
+      document.getElementById('header-rating-count').innerText = `${total} تقييم`;
 
-      const setEl = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.innerText = val;
-      };
-
-      setEl('calc-avg-rating', avg !== '--' ? avg : '0.0');
-      setEl('calc-total-reviews', total > 0 ? `${total} تقييم` : 'لا توجد تقييمات بعد');
-      setEl('header-rating-num', avg);
-      setEl('header-rating-count', total > 0 ? `(${total} تقييم)` : '');
-
-      for (let s = 1; s <= 5; s++) {
-        const pct = total > 0 ? Math.round(((counts[s] || 0) / total) * 100) : 0;
-        const bar = document.getElementById(`bar-star-${s}`);
-        const pctEl = document.getElementById(`pct-star-${s}`);
-        if (bar) bar.style.width = `${pct}%`;
+      for (let star = 1; star <= 5; star++) {
+        const pct = Math.round(((counts[star] || 0) / total) * 100);
+        const barEl = document.getElementById(`bar-star-${star}`);
+        const pctEl = document.getElementById(`pct-star-${star}`);
+        if (barEl) barEl.style.width = `${pct}%`;
         if (pctEl) pctEl.innerText = `${pct}%`;
       }
-
-      // إظهار مراجعات العملاء الحقيقية من Supabase
-      const rContainer = document.getElementById('reviews-container');
-      if (rContainer) {
-        if (total === 0) {
-          rContainer.innerHTML = '<div class="py-6 px-4 text-center text-xs text-zinc-400">لا توجد تقييمات مسجلة لهذا البنك حتى الآن.</div>';
-        } else {
-          rContainer.innerHTML = revs.map(r => `
-            <div class="border border-zinc-800/80 rounded-2xl p-3 flex flex-col gap-2 bg-[#0A0A0A] text-right mb-2.5 shadow-md">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-300 font-bold text-xs">
-                    ${(r.user_name || 'ع')[0]}
-                  </div>
-                  <div>
-                    <h6 class="text-xs font-black text-white">${r.user_name || 'عميل'}</h6>
-                    <span class="text-[10px] text-zinc-500 font-mono">${r.created_at ? new Date(r.created_at).toLocaleDateString('ar-YE') : 'مؤخراً'}</span>
-                  </div>
-                </div>
-                <div class="flex items-center text-[#FFC500] text-xs font-mono">
-                  ${'★'.repeat(Math.min(5, Math.max(1, parseInt(r.stars || r.rating || 5))))}
-                </div>
-              </div>
-              <p class="text-xs text-zinc-200 leading-relaxed font-normal">${r.comment || ''}</p>
-            </div>
-          `).join('');
-        }
-      }
     }
-
 
     async function loadBankProfile() {
       const bankId = getBankIdentifier();
@@ -736,129 +681,76 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       document.getElementById('contact-wa').href = currentBank.whatsapp ? (currentBank.whatsapp.startsWith('http') ? currentBank.whatsapp : `https://wa.me/${currentBank.whatsapp}`) : "#";
       document.getElementById('contact-mail').href = currentBank.email ? `mailto:${currentBank.email}` : "#";
 
+      const postsContainer = document.getElementById('posts-container');
       
-    function renderDynamicFeed() {
-      const feedBox = document.getElementById('tab-posts');
-      if (!feedBox) return;
+      // معالجة وعرض المنشور النصي المستقل فوق المعرض
+      const postLogo = document.getElementById("announcement-bank-logo");
+      if (postLogo && currentBank.logo_url) postLogo.src = currentBank.logo_url;
+      const postName = document.getElementById("announcement-bank-name");
+      if (postName && currentBank.name) postName.innerText = currentBank.name;
+      const postText = document.getElementById("announcement-bank-text");
+      if (postText && (currentBank.announcement || currentBank.text_post)) {
+        postText.innerText = currentBank.announcement || currentBank.text_post;
+      }
 
-      const bankName = currentBank.name || '';
-      const bankLogo = currentBank.logo_url || (document.getElementById('bank-logo') ? document.getElementById('bank-logo').src : '');
-      const isVerified = currentBank.is_verified === true || currentBank.verified === true;
-      const badgeSvg = isVerified ? renderVerificationBadge(currentBank.badge_type || 'gold') : '';
+      postsContainer.innerHTML = currentPosts.map((post, index) => `
+        <article onclick="openLightbox(${index})" class="group relative bg-[#0D0D0D] rounded-2xl overflow-hidden border border-zinc-800/80 aspect-square cursor-pointer active:scale-95 transition-all shadow-md">
+          <img src="${post.image || post.file_url}" alt="معرض الصور" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+        </article>
+      `).join('');
 
-      // هيدر المنشور المنخفض الارتفاع: الاسم مصغر والشارة في سطر واحد مستقيم بدون أي تاريخ وهمي
-      const makePostHeader = () => `
-        <div class="flex items-center justify-between py-0.5">
-          <div class="flex items-center gap-2 min-w-0">
-            <div class="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-              ${bankLogo ? `<img src="${bankLogo}" class="w-full h-full object-contain" alt="logo" />` : `<i class="fa-solid fa-building-columns text-zinc-500 text-xs"></i>`}
-            </div>
-            <div class="flex items-center gap-1.5 flex-nowrap text-right truncate">
-              <span class="text-xs font-bold text-white truncate  leading-none">${bankName}</span>
-              <span class="inline-flex shrink-0 leading-none">${badgeSvg}</span>
-            </div>
+      const offersContainer = document.getElementById('offers-container');
+      offersContainer.innerHTML = (currentBank.offers || FALLBACK_BANK.offers).map(offer => `
+        <div class="bg-[#0D0D0D] border border-zinc-800 p-3.5 rounded-xl text-right">
+          <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
+            <span class="bg-brand-gold text-black font-black text-[10px] px-2.5 py-0.5 rounded">${offer.tag}</span>
+            <span class="text-[10px] text-zinc-400 font-medium">${offer.expiry}</span>
           </div>
-          <button type="button" class="text-zinc-500 hover:text-zinc-300 p-1 shrink-0 cursor-pointer">
-            <i class="fa-solid fa-ellipsis text-xs"></i>
-          </button>
+          <h4 class="text-sm font-bold text-white leading-snug">${offer.title}</h4>
+          <p class="text-xs text-zinc-400 mt-1.5 leading-relaxed">${offer.desc}</p>
         </div>
-      `;
+      `).join('');
 
-      // شريط التفاعل المصفّر حقيقياً
-      const realCommentsCount = (currentBank.reviews && currentBank.reviews.length) || 0;
-      const makePostBar = () => `
-        <div class="flex items-center justify-between pt-2 px-1 border-t border-zinc-900 text-zinc-500 text-xs select-none">
-          <div class="flex items-center gap-6">
-            <button type="button" onclick="openCommentModal()" class="flex items-center gap-1.5 hover:text-blue-400 cursor-pointer transition">
-              <i class="fa-regular fa-comment text-xs"></i>
-              <span class="text-[11px] font-mono">${realCommentsCount}</span>
-            </button>
-            <button type="button" onclick="toggleInteraction(this, 'retweet')" class="flex items-center gap-1.5 hover:text-emerald-400 cursor-pointer transition">
-              <i class="fa-solid fa-retweet text-xs"></i>
-              <span class="text-[11px] font-mono">0</span>
-            </button>
-            <button type="button" onclick="toggleInteraction(this, 'like')" class="flex items-center gap-1.5 hover:text-rose-500 cursor-pointer transition">
-              <i class="fa-regular fa-heart text-xs"></i>
-              <span class="text-[11px] font-mono">0</span>
-            </button>
-          </div>
-          <div class="flex items-center gap-3">
-            <button type="button" onclick="toggleInteraction(this, 'bookmark')" class="hover:text-brand-gold cursor-pointer transition p-1">
-              <i class="fa-regular fa-bookmark text-xs"></i>
-            </button>
-            <button type="button" onclick="shareBankPage()" class="hover:text-zinc-300 cursor-pointer transition p-1">
-              <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i>
-            </button>
+      const servicesContainer = document.getElementById('services-container');
+      servicesContainer.innerHTML = (currentBank.services || FALLBACK_BANK.services).map(service => `
+        <div class="bg-[#0D0D0D] border border-zinc-800 p-3 rounded-xl flex items-center justify-between text-right">
+          <i class="${service.icon || 'fa-solid fa-briefcase'} text-brand-gold text-2xl ml-3 shrink-0"></i>
+          <div>
+            <h4 class="text-sm font-bold text-white">${service.service_name || service.title}</h4>
+            <p class="text-xs text-zinc-400 mt-0.5 leading-snug">${service.description || service.desc}</p>
           </div>
         </div>
-      `;
+      `).join('');
 
-      let feedHtml = '';
+      const revs = currentBank.reviews || FALLBACK_BANK.reviews;
+      updateRatingsDisplay(revs);
 
-      // 1. المنشور النصي: يظهر فقط وفقط إذا كتبته الإدارة (فارغ ومخفي افتراضياً)
-      const postText = currentBank.announcement || currentBank.text_post || '';
-      if (postText.trim()) {
-        feedHtml += `
-          <article class="text-right space-y-2 pt-1">
-            ${makePostHeader()}
-            <p class="text-xs text-zinc-100 leading-relaxed font-normal select-text pr-1">${postText}</p>
-            ${makePostBar()}
-          </article>
-          <div class="border-b border-zinc-900/80 my-3"></div>
-        `;
+      let allRevs = currentBank.reviews || [];
+      const reviewsContainer = document.getElementById('reviews-container');
+      if (!allRevs || allRevs.length === 0) {
+        reviewsContainer.innerHTML = '<div class="py-6 px-4 text-center rounded-xl bg-zinc-950 border border-zinc-900 text-xs text-zinc-400">لا توجد تقييمات لهذا البنك حتى الآن. كن أول من يقيّم!</div>';
+        return;
       }
-
-      // 2. صور المعرض: صور نقية 100% بدون أي أشرطة سوداء أو كتابة فوقها نهائياً
-      const postsList = currentPosts || [];
-      if (postsList.length > 0) {
-        const cleanPhotos = postsList.map((post, idx) => `
-          <div class="bg-black border border-zinc-800/80 rounded-2xl overflow-hidden shadow-md cursor-pointer aspect-square" onclick="openLightbox(${idx})">
-            <img src="${post.image || post.file_url}" alt="صورة المعرض" class="w-full h-full object-cover" />
-          </div>
-        `).join('');
-
-        feedHtml += `
-          <article class="text-right space-y-2">
-            ${makePostHeader()}
-            <div class="grid grid-cols-2 gap-2 pt-1">
-              ${cleanPhotos}
+      const showRevs = window.showAllReviewsExpanded ? allRevs : allRevs.slice(0, 2);
+      let rHtml = showRevs.map(rev => {
+        let starsHtml = '';
+        const rVal = parseInt(rev.stars || rev.rating) || 5;
+        for (let i = 1; i <= 5; i++) {
+          if (i <= rVal) starsHtml += '<i class="fa-solid fa-star"></i>';
+          else starsHtml += '<i class="fa-regular fa-star text-zinc-600"></i>';
+        }
+        return `
+          <div class="border border-zinc-800 rounded-full py-1.5 px-3 flex items-center justify-between bg-black">
+            <div class="flex items-center gap-2.5">
+              ${(rev.user_avatar && !rev.user_avatar.includes('unsplash')) ? '<img src="' + rev.user_avatar + '" class="w-7 h-7 rounded-full object-cover border border-zinc-800" alt="avatar" />' : '<div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 shrink-0"><i class="fa-solid fa-user text-[11px]"></i></div>'}
+              <span class="text-xs text-zinc-200 font-medium">${rev.user_name || rev.name}</span>
             </div>
-            ${makePostBar()}
-          </article>
+            <div class="flex text-brand-gold text-[10px] gap-0.5">
+              ${starsHtml}
+            </div>
+          </div>
         `;
-      }
-
-      feedBox.className = 'space-y-4';
-      feedBox.innerHTML = feedHtml;
-    }
-
-      renderDynamicFeed();
-      updateRatingsDisplay(currentBank.reviews || []);
-
-      // الفروع: تظهر فقط إذا أدخلتها الإدارة وتختفي تماماً (0 بكسل) إذا كانت فارغة
-      const branchSlot = document.getElementById('bank-branches-slot');
-      if (branchSlot) {
-        if (currentBank.branches && String(currentBank.branches).trim()) {
-          branchSlot.classList.remove('hidden');
-          const bText = document.getElementById('bank-branches-content');
-          if (bText) bText.innerText = typeof currentBank.branches === 'string' ? currentBank.branches : JSON.stringify(currentBank.branches);
-        } else {
-          branchSlot.classList.add('hidden');
-        }
-      }
-
-      // ساعات العمل: تظهر فقط إذا أدخلتها الإدارة وتختفي تماماً (0 بكسل) إذا كانت فارغة
-      const hoursSlot = document.getElementById('bank-hours-slot');
-      if (hoursSlot) {
-        if (currentBank.working_hours && String(currentBank.working_hours).trim()) {
-          hoursSlot.classList.remove('hidden');
-          const hText = document.getElementById('bank-hours-content');
-          if (hText) hText.innerText = currentBank.working_hours;
-        } else {
-          hoursSlot.classList.add('hidden');
-        }
-      }
-
+      }).join('');
       if (allRevs.length > 2) {
         rHtml += '<button type="button" onclick="window.showAllReviewsExpanded = !window.showAllReviewsExpanded; renderUI();" class="w-full py-2.5 mt-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-brand-gold text-xs font-bold flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer shadow-sm"><span>' + (window.showAllReviewsExpanded ? 'عرض أقل' : 'عرض جميع التقييمات (' + allRevs.length + ')') + '</span><i class="fa-solid ' + (window.showAllReviewsExpanded ? 'fa-chevron-up' : 'fa-chevron-down') + ' text-[10px]"></i></button>';
       }
