@@ -1,314 +1,359 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { 
-  Building2, Search, MapPin, Phone, MessageCircle, 
-  ArrowRight, Star, ShieldCheck, ChevronLeft, Sparkles, 
-  Clock, Store, Utensils, Hotel, Stethoscope, Bus
+import {
+  Building2, Search, MapPin, Phone, MessageCircle,
+  ArrowRight, Star, ShieldCheck, ChevronLeft, Sparkles,
+  Clock, Store, Utensils, Hotel, Stethoscope, Bus,
+  CheckCircle2, Bed, Wifi, Car, Truck, Users, Gem,
+  Waves, Loader2, Frown, Filter
 } from 'lucide-react';
-import { BusinessService } from '../../../services/platformServices';
-import { BusinessEntity } from '../../../types/schema.types';
-import { YRBadge } from '../../../components/common/YRBadge';
 import { AdBanner } from '../../../components/common/AdBanner';
-import { YEMEN_CITIES } from '../../../config/citiesConfig';
-
-const MOCK_BUSINESSES: BusinessEntity[] = [
-  BusinessService.getDemoRecord(),
-  {
-    id: 'biz-2',
-    slug: 'yemeni-house-restaurant',
-    name: 'مطعم البيت اليمني للمأكولات الشعبية',
-    category_label: 'مطاعم وأغذية',
-    badge_type: 'blue',
-    city_name: 'صنعاء — حدة',
-    address: 'شارع حدة — أمام مركز الكميم',
-    logo_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200&auto=format&fit=crop&q=80',
-    cover_url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1400&auto=format&fit=crop&q=85',
-    description: 'أشهى المأكولات اليمنية الشعبية الأصيلة، مندي، حنيذ، سلته، فحسة، ومشاوي طازجة يومياً بأعلى معايير الجودة والنظافة.',
-    phone: '777222333',
-    whatsapp: '967777222333',
-    is_verified: true,
-    services: [
-      { name: 'وجبة مندي لحم بلدي مع الأرز والصلصة', price: 6500, currency: 'YER' },
-      { name: 'فحسة يمنية ساخنة باللحم المفروم', price: 3500, currency: 'YER' },
-      { name: 'سلته صنعانية بالخضار والحلبة', price: 2500, currency: 'YER' },
-      { name: 'مشاوي مشكلة عائلية', price: 9000, currency: 'YER' }
-    ],
-    media: [
-      { id: 'm1', file_url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=900&auto=format&fit=crop&q=85', media_type: 'image', sort_order: 1, is_cover: true },
-      { id: 'm2', file_url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900&auto=format&fit=crop&q=85', media_type: 'image', sort_order: 2 }
-    ],
-    reviews: [
-      { id: 'r1', user_name: 'أحمد الوصابي', user_avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80', entity_type: 'business', entity_id: 'biz-2', rating: 5, comment: 'أكل يمني أصيل بنكهة ممتازة ونظافة عالية.', status: 'approved', created_at: 'منذ يومين' }
-    ],
-    rating_summary: { average: 4.8, count: 140, distribution: { 5: 120, 4: 15, 3: 5, 2: 0, 1: 0 } }
-  },
-  {
-    id: 'biz-3',
-    slug: 'elite-hospital-aden',
-    name: 'مستشفى النخبة التخصصي',
-    category_label: 'المستشفيات والمراكز الطبية',
-    badge_type: 'gold',
-    city_name: 'عدن — خور مكسر',
-    address: 'شارع ساحل أبين — حي السفارات',
-    logo_url: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=200&auto=format&fit=crop&q=80',
-    cover_url: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=1400&auto=format&fit=crop&q=85',
-    description: 'صرح طبي متكامل يقدم خدمات الطوارئ على مدار الساعة، غرف عمليات جراحية حديثة، عيادات استشارية متخصصة، ومختبرات تشخيصية دقيقة.',
-    phone: '733111222',
-    whatsapp: '967733111222',
-    website_url: 'https://elite-hospital.ye',
-    is_verified: true,
-    services: [
-      { name: 'خدمات الطوارئ والإسعاف 24/7', price: 5000, currency: 'YER' },
-      { name: 'كشف واستشارة طبية تخصصية', price: 8000, currency: 'YER' },
-      { name: 'فحوصات مخبرية شاملة', price: 15000, currency: 'YER' }
-    ],
-    media: [
-      { id: 'm3', file_url: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=900&auto=format&fit=crop&q=85', media_type: 'image', sort_order: 1, is_cover: true }
-    ],
-    reviews: [
-      { id: 'r2', user_name: 'د. سامي المنصوري', user_avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80', entity_type: 'business', entity_id: 'biz-3', rating: 5, comment: 'عناية فائقة وتجهيزات طبية حديثة وكادر تمريضي ممتاز.', status: 'approved', created_at: 'منذ أسبوع' }
-    ],
-    rating_summary: { average: 4.9, count: 210, distribution: { 5: 190, 4: 18, 3: 2, 2: 0, 1: 0 } }
-  },
-  {
-    id: 'biz-4',
-    slug: 'aden-grand-hotel',
-    name: 'فندق وأجنحة عدن جراند',
-    category_label: 'الفنادق والضيافة',
-    badge_type: 'gold',
-    city_name: 'عدن — المعلا',
-    address: 'شارع مدرم — إطلالة بحرية',
-    logo_url: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=200&auto=format&fit=crop&q=80',
-    cover_url: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1400&auto=format&fit=crop&q=85',
-    description: 'إقامة فندقية فاخرة 5 نجوم بإطلالات ساحرة على خليج عدن، أجنحة مجهزة بالكامل، مسبح ومطاعم فخمة وقاعات مؤتمرات.',
-    phone: '733555777',
-    whatsapp: '967733555777',
-    website_url: 'https://adengrandhotel.ye',
-    is_verified: true,
-    services: [
-      { name: 'جناح فندقي تنفيذي إطلالة بحرية', price: 95000, currency: 'YER' },
-      { name: 'غرفة ديلوكس مفردة مع إفطار بوفيه', price: 45000, currency: 'YER' },
-      { name: 'حجز قاعة مؤتمرات وفعاليات', price: 180000, currency: 'YER' }
-    ],
-    media: [
-      { id: 'm4', file_url: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900&auto=format&fit=crop&q=85', media_type: 'image', sort_order: 1, is_cover: true }
-    ],
-    reviews: [],
-    rating_summary: { average: 4.8, count: 95, distribution: { 5: 80, 4: 12, 3: 3, 2: 0, 1: 0 } }
-  }
-];
+import { OFFICIAL_CATEGORIES, CategoryItem } from '../../../data/categories';
+import { supabase } from '../../../lib/supabase';
 
 export const BusinessesPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category') || 'all';
 
   const [selectedCategory, setSelectedCategory] = useState<string>(categoryParam);
   const [selectedCity, setSelectedCity] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [liveBusinesses, setLiveBusinesses] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // تحديث التصنيف عند تغير الرابط
+  useEffect(() => {
+    setSelectedCategory(categoryParam);
+  }, [categoryParam]);
+
+  const currentCategory = OFFICIAL_CATEGORIES.find(c => c.slug === selectedCategory);
+  const Icon = currentCategory?.icon || Store;
+
+  // جلب المنشآت الحقيقية من Supabase بناءً على التصنيف المختار
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLive = async () => {
+      setLoading(true);
+      try {
+        let query = supabase.from('businesses').select('*');
+
+        if (selectedCategory !== 'all') {
+          const { data: catRow } = await supabase
+            .from('categories')
+            .select('id, slug')
+            .eq('slug', selectedCategory)
+            .maybeSingle();
+
+          if (catRow && catRow.id) {
+            query = query.or(`category_id.eq.${catRow.id},category_id.eq.${selectedCategory}`);
+          } else {
+            query = query.eq('category_id', selectedCategory);
+          }
+        }
+
+        const { data, error } = await query
+          .eq('status', 'active')
+          .order('created_at', { ascending: false });
+
+        if (!error && data && isMounted) {
+          setLiveBusinesses(data);
+        } else if (isMounted) {
+          // إذا لم يجد في جدول النشط، يجلب دون شرط الحالة
+          const { data: allData } = await query.order('created_at', { ascending: false });
+          setLiveBusinesses(allData || []);
+        }
+      } catch (err) {
+        console.error('Error fetching businesses:', err);
+        if (isMounted) setLiveBusinesses([]);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchLive();
+    return () => { isMounted = false; };
+  }, [selectedCategory]);
 
   const filteredBusinesses = useMemo(() => {
-    return MOCK_BUSINESSES.filter(b => {
-      const matchCity = selectedCity === 'all' || b.city_name.includes(selectedCity);
-      const matchQuery = b.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          b.category_label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          b.services.some(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    return liveBusinesses.filter(b => {
+      const matchCity = selectedCity === 'all' || (b.city && b.city.includes(selectedCity)) || (b.address && b.address.includes(selectedCity));
+      const matchQuery = !searchQuery.trim() ||
+        (b.name && b.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (b.description && b.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (b.address && b.address.toLowerCase().includes(searchQuery.toLowerCase()));
       return matchCity && matchQuery;
     });
-  }, [selectedCity, searchQuery]);
+  }, [liveBusinesses, selectedCity, searchQuery]);
 
   return (
-    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3.5 font-['Cairo',sans-serif] text-white">
-      
-      {/* إعلان البانر #4 */}
-      <AdBanner placementId="4" className="mb-1" />
+    <div dir="rtl" className="max-w-7xl mx-auto px-3 sm:px-6 py-4 space-y-6 font-['Cairo',sans-serif] text-zinc-100">
+      {/* 🌟 1. إعلان البنر العلوي (YR Ads Top Hero Unit) */}
+      <div className="w-full">
+        <AdBanner placementId="1" className="rounded-2xl overflow-hidden shadow-lg border border-zinc-800/80" />
+      </div>
 
-      {/* رأس الصفحة */}
-      <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
-            <Store size={16} className="stroke-[2.5]" />
+      {/* ترويسة التصنيف الرسمية */}
+      <div className="bg-gradient-to-r from-zinc-900 via-[#0D121F] to-zinc-900 border border-zinc-800 rounded-3xl p-5 sm:p-7 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FFC500] to-amber-500 text-zinc-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20 shrink-0">
+            <Icon className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="text-sm sm:text-base font-black text-white leading-none">
-              دليل الشركات والمنشآت
-            </h1>
-            <span className="text-[9.5px] text-zinc-400 mt-0.5 block">
-              تصفح أفضل المنشآت المعتمدة والمطاعم والمستشفيات والخدمات في اليمن
-            </span>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-black text-white">
+                {currentCategory ? currentCategory.name : 'دليل المنشآت والشركات'}
+              </h1>
+              <span className="text-xs px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+                {filteredBusinesses.length} منشأة معتمدة
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-zinc-400 mt-1.5">
+              {currentCategory ? `تصفح وتقييم أفضل ${currentCategory.name} المعتمدة في اليمن` : 'دليل شامل وموثوق لكافة الشركات والخدمات في الجمهورية اليمنية'}
+            </p>
           </div>
         </div>
 
         <button
           onClick={() => navigate('/')}
-          className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1 cursor-pointer"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 text-xs font-extrabold transition border border-zinc-700 shadow-md self-end md:self-center"
         >
-          <span>الرئيسية</span>
-          <ArrowRight size={13} className="rtl:rotate-180" />
+          <ArrowRight className="w-4 h-4" />
+          <span>العودة للرئيسية</span>
         </button>
       </div>
 
-      {/* شريط البحث والفلترة السريعة */}
-      <div className="space-y-2 bg-[#0F0F12] p-2.5 rounded-2xl border border-[#222226] shadow-xl">
-        <div className="flex items-center bg-[#18181C] border border-[#27272A] rounded-xl px-2.5 py-1">
-          <Search size={14} className="text-zinc-500 ml-2 shrink-0" />
+      {/* أشرطة الفلترة والبحث السريع */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="sm:col-span-2 relative">
+          <Search className="w-4 h-4 text-zinc-400 absolute right-4 top-1/2 -translate-y-1/2" />
           <input
             type="text"
+            placeholder="ابحث بالاسم، المدينة، الشارع أو الخدمة..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ابحث عن منشأة، مطعم، مستشفى، فندق، خدمة..."
-            className="flex-1 bg-transparent text-xs text-white placeholder-zinc-500 outline-none"
+            className="w-full bg-[#0E1422] border border-zinc-800 focus:border-[#FFC500] text-zinc-100 placeholder-zinc-500 pr-11 pl-4 py-3 rounded-2xl text-xs sm:text-sm outline-none transition shadow-inner"
           />
         </div>
 
-        {/* فلاتر المحافظات */}
-        <div className="flex items-center justify-between gap-1">
-          <span className="text-xs text-zinc-400 font-bold">المحافظة:</span>
+        <div>
           <select
             value={selectedCity}
             onChange={(e) => setSelectedCity(e.target.value)}
-            className="bg-[#18181C] border border-[#27272A] rounded-lg px-2.5 py-1 text-xs font-bold text-zinc-200 outline-none cursor-pointer"
+            className="w-full bg-[#0E1422] border border-zinc-800 focus:border-[#FFC500] text-zinc-200 px-4 py-3 rounded-2xl text-xs sm:text-sm outline-none transition shadow-inner"
           >
-            {YEMEN_CITIES.map(c => (
-              <option key={c.id} value={c.name_ar}>{c.name_ar}</option>
-            ))}
+            <option value="all">كل المحافظات والمدن</option>
+            <option value="صنعاء">صنعاء</option>
+            <option value="عدن">عدن</option>
+            <option value="تعز">تعز</option>
+            <option value="الحديدة">الحديدة</option>
+            <option value="حضرموت">حضرموت (المكلا / سيئون)</option>
+            <option value="إب">إب</option>
+            <option value="ذمار">ذمار</option>
+            <option value="مأرب">مأرب</option>
           </select>
         </div>
       </div>
 
-      {/* شبكة كروت المنشآت */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-        {filteredBusinesses.map((biz) => (
-          <article
-            key={biz.id}
-            onClick={() => navigate(`/businesses/${biz.slug}`)}
-            className="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer group"
+      {/* شريط التصنيفات السريع للتبديل بين الأقسام */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        <button
+          onClick={() => { setSelectedCategory('all'); setSearchParams({}); }}
+          className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition ${
+            selectedCategory === 'all'
+              ? 'bg-[#FFC500] text-zinc-950 font-black shadow-md'
+              : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-400 border border-zinc-800'
+          }`}
+        >
+          كافة التصنيفات
+        </button>
+        {OFFICIAL_CATEGORIES.slice(0, 15).map(cat => (
+          <button
+            key={cat.slug}
+            onClick={() => { setSelectedCategory(cat.slug); setSearchParams({ category: cat.slug }); }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold shrink-0 transition flex items-center gap-1.5 ${
+              selectedCategory === cat.slug
+                ? 'bg-[#FFC500] text-zinc-950 font-black shadow-md'
+                : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-400 border border-zinc-800'
+            }`}
           >
-            <div>
-              {/* 1. الغلاف المصغر */}
-              {biz.cover_url ? (
-                <div className="relative w-full h-32 select-none overflow-hidden bg-zinc-950">
-                  <img src={biz.cover_url} alt={biz.name} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-black/25 to-transparent"></div>
-                </div>
-              ) : (
-                <div className="relative w-full h-32 bg-gradient-to-r from-[#0D2137] via-[#102A45] to-[#0A192B] flex items-center justify-between px-5 select-none overflow-hidden">
-                  <div className="opacity-15"><Building2 size={44} className="text-white" /></div>
-                  <div className="text-right">
-                    <h3 className="text-white text-sm font-black tracking-wide leading-tight line-clamp-1">{biz.name}</h3>
-                    <p className="text-blue-200 text-[10px] font-bold mt-1">{biz.category_label || 'منشأة معتمدة'}</p>
-                  </div>
-                  <div className="w-10 h-10 flex items-center justify-center opacity-30">
-                    <Sparkles size={20} className="text-white" />
-                  </div>
-                </div>
-              )}
-
-              {/* 2. سطر التداخل: الشعار في اليمين وزر إثبات الملكية في اليسار */}
-              <div className="px-4 relative flex items-end justify-between -mt-8 mb-2">
-                <div className="relative z-10 order-1">
-                  {biz.logo_url ? (
-                    <div className="w-14 h-14 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden shrink-0 bg-[#0B0F17]">
-                      <img src={biz.logo_url} alt={biz.name} className="w-full h-full object-contain" />
-                    </div>
-                  ) : (
-                    <div className="w-14 h-14 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden shrink-0 bg-[#0B0F17]">
-                      <Building2 size={24} className="text-zinc-500" />
-                    </div>
-                  )}
-                </div>
-                <div className="order-2 mb-1">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/businesses/${biz.slug}?claim=true`);
-                    }}
-                    className="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg transition active:scale-95 cursor-pointer"
-                  >
-                    <ShieldCheck size={12} />
-                    <span>إثبات الملكية</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* 3. البيانات: الاسم مصغر + الشارة + النجوم + المقر */}
-              <div className="px-4 pt-1 pb-3 text-right space-y-1.5">
-                <div className="inline-flex items-center gap-1.5 flex-wrap">
-                  <h2 className="text-sm font-black text-white leading-tight group-hover:text-[#FFC500] transition">
-                    {biz.name}
-                  </h2>
-                  {biz.badge_type && <YRBadge type={biz.badge_type} size={15} />}
-                </div>
-
-                {/* التقييم بالنجوم */}
-                {biz.rating_summary && biz.rating_summary.count > 0 ? (
-                  <div className="flex items-center justify-start gap-1.5 text-xs font-bold pt-0.5">
-                    <span className="text-zinc-400 font-normal">★ التقييمات</span>
-                    <span className="text-[#FFC500] font-black font-mono">{biz.rating_summary.average.toFixed(1)}</span>
-                    <span className="text-zinc-400 text-[11px] font-normal">({biz.rating_summary.count} تقييم)</span>
-                  </div>
-                ) : (
-                  <div className="text-right pt-0.5"><span className="text-zinc-500 text-xs">لا توجد تقييمات بعد</span></div>
-                )}
-
-                {/* الوصف والنبذة */}
-                {biz.description && (
-                  <p className="text-xs text-zinc-300 leading-relaxed pt-1 line-clamp-2">
-                    {biz.description}
-                  </p>
-                )}
-
-                {/* المحافظة والعنوان */}
-                {biz.city_name && (
-                  <div className="flex items-center justify-start gap-1 text-xs text-zinc-400 pt-1">
-                    <MapPin size={12} className="text-[#FFC500]" />
-                    <span>{biz.city_name}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* 4. أزرار التواصل السريع وزر الانتقال الفاخر */}
-            <div className="p-4 pt-1 border-t border-zinc-900/80 flex items-center gap-2">
-              {biz.phone && (
-                <a
-                  href={`tel:${biz.phone}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="p-2.5 rounded-xl bg-[#161D2B] border border-[#273244] text-zinc-300 hover:text-[#FFC500] active:scale-95 transition"
-                  title="اتصال مباشر"
-                >
-                  <Phone size={13} />
-                </a>
-              )}
-              {biz.whatsapp && (
-                <a
-                  href={`https://wa.me/${biz.whatsapp}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="p-2.5 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/30 text-[#16A34A] hover:bg-[#16A34A] hover:text-white active:scale-95 transition"
-                  title="واتساب"
-                >
-                  <MessageCircle size={13} />
-                </a>
-              )}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/businesses/${biz.slug}`);
-                }}
-                className="flex-1 py-2.5 rounded-xl bg-[#FFC500] hover:bg-[#e6b200] text-black font-black text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-98 cursor-pointer"
-              >
-                <span>عرض التفاصيل</span>
-                <ChevronLeft size={13} />
-              </button>
-            </div>
-          </article>
+            <cat.icon className="w-3.5 h-3.5" />
+            <span>{cat.name}</span>
+          </button>
         ))}
       </div>
 
+      {/* شبكة الكروت للمنشآت الحقيقية */}
+      {loading ? (
+        <div className="py-24 text-center flex flex-col items-center justify-center bg-[#0B0F19] rounded-3xl border border-zinc-800/80">
+          <Loader2 className="w-10 h-10 animate-spin text-[#FFC500] mb-3" />
+          <p className="text-sm text-zinc-400 font-bold">جاري تحميل المنشآت المعتمدة من قاعدة البيانات...</p>
+        </div>
+      ) : filteredBusinesses.length === 0 ? (
+        <div className="py-20 text-center bg-[#0B0F19] rounded-3xl border border-zinc-800/80 p-8 shadow-md">
+          <Frown className="w-14 h-14 mx-auto text-zinc-600 mb-3" />
+          <h3 className="text-base font-bold text-zinc-300 mb-1">لا توجد منشآت مسجلة في هذا التصنيف حالياً</h3>
+          <p className="text-xs text-zinc-500 max-w-md mx-auto mb-4">
+            {currentCategory ? `سيتم إضافة شركات ${currentCategory.name} قريباً فور اكتمال اعتمادها.` : 'جرّب تغيير خيارات البحث أو المدينة.'}
+          </p>
+          <button
+            onClick={() => { setSelectedCategory('all'); setSelectedCity('all'); setSearchQuery(''); setSearchParams({}); }}
+            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-bold rounded-xl border border-zinc-700 transition"
+          >
+            عرض كافة المنشآت
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredBusinesses.slice(0, 3).map((item) => (
+              <RealBusinessCard key={item.id} item={item} onSelect={() => navigate('/businesses/' + (item.slug || item.id))} />
+            ))}
+          </div>
+
+          {/* 🌟 2. إعلان وسط القائمة (YR Ads In-Feed Native Unit) */}
+          <div className="w-full my-6">
+            <AdBanner placementId="2" className="rounded-2xl overflow-hidden shadow-lg border border-zinc-800/80" />
+          </div>
+
+          {filteredBusinesses.length > 3 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filteredBusinesses.slice(3).map((item) => (
+                <RealBusinessCard key={item.id} item={item} onSelect={() => navigate('/businesses/' + (item.slug || item.id))} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 🌟 3. إعلان البنر السفلي (YR Ads Bottom Unit) */}
+      <div className="w-full pt-4">
+        <AdBanner placementId="3" className="rounded-2xl overflow-hidden shadow-lg border border-zinc-800/80" />
+      </div>
     </div>
   );
 };
+
+function RealBusinessCard({ item, onSelect }: { item: any; onSelect: () => void }) {
+  const feat = item.sections_config?.features || {};
+  const coverImg = item.cover_url || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1000&auto=format&fit=crop&q=80';
+  const logoImg = item.logo_url || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200&auto=format&fit=crop&q=80';
+
+  return (
+    <div className="bg-[#0B0F19] rounded-2xl border border-zinc-800/90 overflow-hidden hover:border-[#FFC500]/60 transition-all duration-300 flex flex-col justify-between group shadow-xl hover:-translate-y-1">
+      <div>
+        <div className="relative h-44 bg-zinc-900 overflow-hidden cursor-pointer" onClick={onSelect}>
+          <img
+            src={coverImg}
+            alt={item.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-transparent to-black/40" />
+
+          <div className="absolute bottom-3 right-3 w-14 h-14 rounded-xl bg-zinc-900/95 p-1 shadow-xl border border-zinc-700">
+            <img src={logoImg} alt={item.name} className="w-full h-full object-contain rounded-lg" />
+          </div>
+
+          <div className="absolute top-3 left-3 flex items-center gap-1.5">
+            {item.is_verified ? (
+              <span className="bg-emerald-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
+                <CheckCircle2 className="w-3 h-3" /> موثّق
+              </span>
+            ) : (
+              <span className="bg-amber-500/90 text-zinc-950 text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
+                <ShieldCheck className="w-3 h-3" /> غير مطالب به
+              </span>
+            )}
+            <span className="bg-black/60 backdrop-blur-md text-amber-400 text-[11px] font-black px-2 py-0.5 rounded-lg flex items-center gap-1 border border-amber-500/20">
+              <Star className="w-3 h-3 fill-amber-400" /> {Number(item.rating) || 4.8}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-5">
+          <h3
+            onClick={onSelect}
+            className="font-black text-base sm:text-lg text-white group-hover:text-[#FFC500] transition truncate cursor-pointer"
+          >
+            {item.name}
+          </h3>
+
+          <p className="text-xs text-zinc-400 flex items-center gap-1.5 mt-1.5 mb-3">
+            <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+            <span className="truncate">{item.address || item.city || 'الجمهورية اليمنية'}</span>
+          </p>
+
+          <p className="text-xs text-zinc-300 line-clamp-2 leading-relaxed mb-4">
+            {item.description || 'منشأة معتمدة تقدم خدمات راقية ومتميزة لعملائها بأعلى معايير الجودة والالتزام.'}
+          </p>
+
+          {/* شارات الميزات حسب النشاط */}
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {feat.rooms_count > 0 && (
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-zinc-800 text-amber-300 flex items-center gap-1">
+                <Bed className="w-3 h-3" /> {feat.rooms_count} غرفة
+              </span>
+            )}
+            {feat.has_pool && (
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center gap-1">
+                <Waves className="w-3 h-3" /> مسبح
+              </span>
+            )}
+            {feat.has_wifi && (
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center gap-1">
+                <Wifi className="w-3 h-3" /> واي فاي
+              </span>
+            )}
+            {feat.has_emergency && (
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-red-500/10 text-red-400 border border-red-500/20 flex items-center gap-1">
+                <Stethoscope className="w-3 h-3" /> طوارئ 24 س
+              </span>
+            )}
+            {feat.has_delivery && (
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                <Truck className="w-3 h-3" /> توصيل
+              </span>
+            )}
+            {feat.has_family_sections && (
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
+                <Users className="w-3 h-3" /> قسم عوائل
+              </span>
+            )}
+            {feat.gold_carat && (
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 flex items-center gap-1">
+                <Gem className="w-3 h-3" /> عيار {feat.gold_carat}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="p-3 bg-zinc-900/80 border-t border-zinc-800/80 flex items-center gap-2">
+        {item.phone && (
+          <a
+            href={`tel:${item.phone}`}
+            className="flex-1 text-center py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition border border-zinc-700"
+          >
+            <Phone className="w-3.5 h-3.5 text-blue-400" /> اتصال
+          </a>
+        )}
+        {(item.whatsapp || item.phone) && (
+          <a
+            href={`https://wa.me/${(item.whatsapp || item.phone).replace(/[^0-9]/g, '')}`}
+            target="_blank"
+            rel="noreferrer"
+            className="flex-1 text-center py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition shadow-md"
+          >
+            <MessageCircle className="w-3.5 h-3.5" /> واتساب
+          </a>
+        )}
+        <button
+          onClick={onSelect}
+          className="px-3.5 py-2 bg-[#FFC500] hover:bg-amber-400 text-zinc-950 font-black rounded-xl text-xs transition shadow-md shrink-0"
+        >
+          التفاصيل
+        </button>
+      </div>
+    </div>
+  );
+}
