@@ -853,13 +853,13 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         entity_type: 'bank',
         entity_id: currentBank.id,
         user_name: name,
-        user_avatar: null,
+        user_avatar: null, // استخدام الأيقونة الحيادية الأنيقة
         stars: rating,
         comment: comment
       };
 
       try {
-        const resp = await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
+        await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
@@ -870,17 +870,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           body: JSON.stringify(newRev)
         });
 
-        if (!resp.ok) {
-          const errData = await resp.json().catch(() => ({}));
-          throw new Error(
-            `Supabase ${resp.status}: ` +
-            (errData.message || errData.details || errData.hint || JSON.stringify(errData))
-          );
-        }
-
         // تحديث الواجهة محلياً بالتقييم الجديد فوراً
-        currentBank.reviews = [newRev, ...(currentBank.reviews || [])];
-        updateRatingsDisplay(currentBank.reviews);
+        allReviews = [newRev, ...allReviews];
+        currentBank.reviews = allReviews;
+        updateRatingsDisplay(allReviews);
 
         // إظهار بطاقة الشكر الفاخرة بنفس هوية المنصة (بدون alert)
         document.getElementById('review-form-view').classList.add('hidden');
@@ -888,7 +881,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         document.getElementById('review-form').reset();
       } catch (err) {
         console.error('Submit review error:', err);
-        alert('خطأ التقييم: ' + (err.message || 'خطأ غير معروف من Supabase'));
+        alert('تنبيه: حدث خطأ أثناء إرسال التقييم، يرجى المحاولة مرة أخرى.');
       } finally {
         btn.disabled = false;
         btn.innerText = "إرسال التقييم";

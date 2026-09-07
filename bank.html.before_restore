@@ -39,28 +39,6 @@
   </script>
 
   <style>
-/* إخفاء شريط التمرير الجانبي تماماً في كافة المتصفحات */
-* {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
-}
-*::-webkit-scrollbar {
-  display: none !important;
-  width: 0px !important;
-  height: 0px !important;
-  background: transparent !important;
-}
-html, body {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
-}
-html::-webkit-scrollbar, body::-webkit-scrollbar {
-  display: none !important;
-  width: 0px !important;
-  height: 0px !important;
-  background: transparent !important;
-}
-
     body {
       background-color: #000000;
       color: #FFFFFF;
@@ -79,19 +57,6 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 </head>
 
 <body class="min-h-screen bg-black text-white flex justify-center selection:bg-brand-gold selection:text-black">
-
-  <!-- شاشة تجهيز فاخرة تمنع أي وميض وتضمن ظهور البنك مكتملاً ولائقاً -->
-  <div id="page-splash-loader" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center gap-3 transition-opacity duration-300">
-    <div class="relative w-14 h-14 rounded-2xl bg-[#0F0F12] border border-[#FFC500]/30 flex items-center justify-center text-brand-gold shadow-2xl shadow-[#FFC500]/10">
-      <i class="fa-solid fa-landmark text-2xl text-brand-gold"></i>
-      <div class="absolute -inset-1 rounded-2xl border-2 border-brand-gold/40 border-t-transparent animate-spin"></div>
-    </div>
-    <div class="flex items-center gap-1.5 text-xs text-zinc-400 font-bold">
-      <span class="w-1.5 h-1.5 rounded-full bg-brand-gold animate-ping"></span>
-      <span>جاري تجهيز بيانات المنشأة...</span>
-    </div>
-  </div>
-
 
   <main class="w-full max-w-md md:max-w-3xl lg:max-w-4xl min-h-screen bg-black flex flex-col pb-12 select-none relative mx-auto md:px-4">
 
@@ -115,8 +80,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     <!-- 2. الشعار متداخل في اليمين + زر إثبات الملكية في اليسار -->
     <div class="px-4 relative flex items-end justify-between -mt-10 mb-2">
       <div class="relative order-1">
-        <div class="w-20 h-20 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden">
-          <img id="bank-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3C/svg%3E" class="w-full h-full object-contain" alt="شعار البنك" />
+        <div class="w-20 h-20 rounded-2xl bg-white p-2 shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden">
+          <img id="bank-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Tadhamon_Bank_Logo.png/640px-Tadhamon_Bank_Logo.png" onerror="this.outerHTML='<i class=\'fa-solid fa-dharmachakra text-[#0055A5] text-4xl\'></i>'" class="w-full h-full object-contain" alt="شعار البنك" />
         </div>
       </div>
 
@@ -130,9 +95,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
     <!-- 3. بيانات البنك الأساسية -->
     <div class="px-4 space-y-1.5 text-right">
-      <div class="inline-flex items-center gap-1.5 flex-wrap">
-        <h2 id="bank-name" class="text-sm sm:text-base font-black text-white leading-snug inline"></h2>
-        <span id="bank-badge-slot" class="inline-flex items-center shrink-0"></span>
+      <div class="flex items-center justify-start gap-1.5">
+        <h2 id="bank-name" class="text-xl font-black text-white min-h-[28px] flex items-center"><span class="inline-block w-40 h-6 bg-zinc-800 rounded animate-pulse"></span></h2>
+        <span id="bank-badge-slot" class="inline-flex items-center" title="منشأة موثقة"></span>
       </div>
 
       <div class="flex items-center justify-start gap-1.5 text-brand-gold text-xs font-bold">
@@ -310,64 +275,42 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
     <!-- 9. نافذة التقييم -->
     <div id="review-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl relative">
-        
-        <!-- بطاقة الشكر والنجاح الفاخرة المدمجة بنفس الاستايل -->
-        <div id="review-success-view" class="hidden text-center py-6 px-3 space-y-3">
-          <div class="w-14 h-14 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold flex items-center justify-center mx-auto shadow-lg shadow-brand-gold/10">
-            <i class="fa-solid fa-star text-2xl"></i>
-          </div>
-          <h4 class="text-base font-black text-white">شكراً لمشاركتك القيّمة!</h4>
-          <p class="text-xs text-zinc-400 leading-relaxed">
-            تم استلام تقييمك بنجاح. رأيك الصادق يسهم في تعزيز الشفافية ومساعدة المجتمع في اختيار أفضل الخدمات المصرفية.
-          </p>
-          <button type="button" onclick="closeReviewModal()" class="w-full py-2.5 rounded-xl bg-brand-gold text-black font-black text-xs hover:bg-brand-goldHover transition cursor-pointer shadow-md">
-            حسناً، تم
-          </button>
+      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+          <h4 class="text-sm font-bold text-brand-gold flex items-center gap-1.5">
+            <i class="fa-solid fa-star"></i> إضافة تقييمك للمنشأة
+          </h4>
+          <button type="button" onclick="closeReviewModal()" class="text-zinc-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <!-- نموذج إضافة التقييم بحقول مميزة وأمثلة واقعية -->
-        <div id="review-form-view">
-          <div class="flex items-center justify-between border-b border-zinc-800 pb-2 mb-3">
-            <h4 class="text-sm font-bold text-brand-gold flex items-center gap-1.5">
-              <i class="fa-solid fa-star"></i> إضافة تقييمك للمنشأة
-            </h4>
-            <button type="button" onclick="closeReviewModal()" class="w-7 h-7 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer transition">
-              <i class="fa-solid fa-xmark text-xs"></i>
-            </button>
+        <form id="review-form" onsubmit="submitReview(event)" class="space-y-3 text-xs">
+          <div>
+            <label class="block text-zinc-400 mb-1">التقييم بالنجوم*</label>
+            <div class="flex gap-2 text-2xl text-zinc-600 cursor-pointer" id="rating-stars-input">
+              <span onclick="setRating(1)">★</span>
+              <span onclick="setRating(2)">★</span>
+              <span onclick="setRating(3)">★</span>
+              <span onclick="setRating(4)">★</span>
+              <span onclick="setRating(5)">★</span>
+            </div>
+            <input type="hidden" id="selected-rating" value="5" required />
           </div>
 
-          <form id="review-form" onsubmit="submitReview(event)" class="space-y-3 text-xs">
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="block text-brand-gold font-bold">التقييم بالنجوم <span class="text-red-500">*</span></label>
-                <span id="rating-hint" class="text-[11px] text-zinc-400 font-medium">اضغط لتحديد النجوم</span>
-              </div>
-              <div class="flex gap-2 text-2xl text-zinc-600 cursor-pointer justify-start my-1" id="rating-stars-input">
-                <span onclick="setRating(1)" class="transition hover:scale-110 select-none">★</span>
-                <span onclick="setRating(2)" class="transition hover:scale-110 select-none">★</span>
-                <span onclick="setRating(3)" class="transition hover:scale-110 select-none">★</span>
-                <span onclick="setRating(4)" class="transition hover:scale-110 select-none">★</span>
-                <span onclick="setRating(5)" class="transition hover:scale-110 select-none">★</span>
-              </div>
-              <input type="hidden" id="selected-rating" value="0" required />
-            </div>
+          <div>
+            <label class="block text-zinc-400 mb-1">اسمك الكامل*</label>
+            <input type="text" id="reviewer-name" required placeholder="مثال: محمد العماري" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-brand-gold" />
+          </div>
 
-            <div>
-              <label class="block text-brand-gold font-bold mb-1">اسمك الكريم أو اللقب <span class="text-red-500">*</span></label>
-              <input type="text" id="reviewer-name" required placeholder="الاسم الكريم أو اللقب (مثال: م. أحمد الحميري)" class="w-full bg-zinc-950 border border-zinc-800 focus:border-brand-gold rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none transition" />
-            </div>
+          <div>
+            <label class="block text-zinc-400 mb-1">تعليقك وتجربتك*</label>
+            <textarea id="reviewer-comment" rows="3" required placeholder="اكتب رأيك الصادق في خدمات البنك..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-brand-gold"></textarea>
+          </div>
 
-            <div>
-              <label class="block text-brand-gold font-bold mb-1">تجربتك وتقييمك لخدمات البنك <span class="text-red-500">*</span></label>
-              <textarea id="reviewer-comment" rows="3" required placeholder="شاركنا رأيك الصادق حول سرعة إنجاز المعاملات، التطبيق، أو فروع البنك..." class="w-full bg-zinc-950 border border-zinc-800 focus:border-brand-gold rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none transition"></textarea>
-            </div>
-
-            <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
-              <button type="button" onclick="closeReviewModal()" class="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold transition cursor-pointer">إلغاء</button>
-              <button type="submit" id="review-submit-btn" class="px-5 py-2 rounded-xl bg-brand-gold hover:bg-brand-goldHover text-black font-black transition cursor-pointer shadow-md">إرسال التقييم</button>
-            </div>
-          </form>
+          <div class="flex justify-end gap-2 pt-1 border-t border-zinc-800">
+            <button type="button" onclick="closeReviewModal()" class="px-3 py-1.5 rounded-lg bg-zinc-900 text-zinc-300 cursor-pointer">إلغاء</button>
+            <button type="submit" id="review-submit-btn" class="px-4 py-1.5 rounded-lg bg-brand-gold text-black font-bold hover:bg-brand-goldHover cursor-pointer">إرسال التقييم</button>
+          </div>
+        </form>
         </div>
       </div>
     </div>
@@ -500,13 +443,13 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       reviews: [
         {
           user_name: "م. وليد الشميري",
-          user_avatar: null,
+          user_avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=80",
           stars: 5,
           comment: "خدمة إلكترونية ممتازة وسرعة عالية في فتح الحساب وتفعيل البطاقات."
         },
         {
           user_name: "أحمد المخلافي",
-          user_avatar: null,
+          user_avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80&auto=format&fit=crop&q=80",
           stars: 4,
           comment: "تعامل راقٍ من موظفي فرع تعز وتسهيلات ملموسة في التحويلات."
         }
@@ -593,11 +536,6 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           bankData.whatsapp = b.whatsapp || bankData.whatsapp;
           bankData.website_url = b.website || b.website_url;
           bankData.address = b.address || b.city || bankData.address;
-          bankData.logo_url = b.logo_url || bankData.logo_url;
-          bankData.cover_url = b.cover_url || bankData.cover_url;
-          if (b.posts && Array.isArray(b.posts) && b.posts.length > 0) {
-            bankData.posts = b.posts;
-          }
 
           const revUrl = `${SUPABASE_URL}/rest/v1/reviews?entity_type=eq.bank&entity_id=eq.${b.id}&order=created_at.desc&select=*`;
           const revResp = await fetch(revUrl, {
@@ -618,42 +556,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     }
 
     function renderUI() {
-      // تحديث الشعار الحقيقي
-      if (currentBank.logo_url) {
-        const logoImg = document.getElementById('bank-logo');
-        if (logoImg) {
-          logoImg.src = currentBank.logo_url;
-          logoImg.classList.remove('opacity-50');
-        }
-      }
-
-      // تحديث الغلاف الحقيقي
-      if (currentBank.cover_url) {
-        const coverEl = document.getElementById('bank-cover');
-        if (coverEl) {
-          coverEl.style.backgroundImage = 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.85)), url(' + currentBank.cover_url + ')';
-          coverEl.style.backgroundSize = 'cover';
-          coverEl.style.backgroundPosition = 'center';
-        }
-      }
-
-      // تفعيل الشعار الحقيقي
-      const logoImg = document.getElementById('bank-logo');
-      if (logoImg && currentBank.logo_url) {
-        logoImg.src = currentBank.logo_url;
-      }
-
-      // 2. تفعيل الغلاف الحقيقي
-      const coverEl = document.getElementById('bank-cover');
-      if (coverEl && currentBank.cover_url) {
-        coverEl.style.backgroundImage = 'linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.3)), url(' + currentBank.cover_url + ')';
-        coverEl.style.backgroundSize = 'cover';
-        coverEl.style.backgroundPosition = 'center';
-      }
-
-      // 3. اسم البنك
       document.getElementById('bank-name').innerText = currentBank.name;
-      // تم إلغاء الاسم فوق الغلاف
+      document.getElementById('bank-cover-title').innerText = currentBank.name;
       document.getElementById('bank-bio').innerText = currentBank.description;
       document.getElementById('bank-location').innerText = currentBank.address || "اليمن";
       document.getElementById('bank-badge-slot').innerHTML = renderVerificationBadge(currentBank.badge_type);
@@ -664,8 +568,18 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
       const postsContainer = document.getElementById('posts-container');
       postsContainer.innerHTML = currentPosts.map((post, index) => `
-        <article onclick="openLightbox(${index})" class="group relative bg-[#0D0D0D] rounded-2xl overflow-hidden border border-zinc-800/80 aspect-square cursor-pointer active:scale-95 transition-all shadow-md">
-          <img src="${post.image || post.file_url}" alt="معرض الصور" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+        <article onclick="openLightbox(${index})" class="group relative bg-[#0D0D0D] rounded-xl overflow-hidden border border-zinc-800/80 aspect-square cursor-pointer active:scale-98 transition">
+          <img src="${post.image}" alt="${post.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-between p-2.5">
+            <div class="flex justify-end">
+              <span class="bg-[#0055A5]/90 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded shadow">
+                ${post.tag || 'بنك التضامن'}
+              </span>
+            </div>
+            <div class="text-right">
+              <h4 class="text-white text-[11px] font-bold leading-tight line-clamp-2">${post.title}</h4>
+            </div>
+          </div>
         </article>
       `).join('');
 
@@ -712,7 +626,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         return `
           <div class="border border-zinc-800 rounded-full py-1.5 px-3 flex items-center justify-between bg-black">
             <div class="flex items-center gap-2.5">
-              ${(rev.user_avatar && !rev.user_avatar.includes('unsplash')) ? '<img src="' + rev.user_avatar + '" class="w-7 h-7 rounded-full object-cover border border-zinc-800" alt="avatar" />' : '<div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 shrink-0"><i class="fa-solid fa-user text-[11px]"></i></div>'}
+              ${rev.user_avatar ? '<img src="' + rev.user_avatar + '" class="w-7 h-7 rounded-full object-cover border border-zinc-800" alt="avatar" />' : '<div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 shrink-0"><i class="fa-solid fa-user text-[11px]"></i></div>'}
               <span class="text-xs text-zinc-200 font-medium">${rev.user_name || rev.name}</span>
             </div>
             <div class="flex text-brand-gold text-[10px] gap-0.5">
@@ -796,52 +710,26 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
     // دوال نافذة التقييم
     function openReviewModal() {
-      const sView = document.getElementById('review-success-view');
-      const fView = document.getElementById('review-form-view');
-      if (sView) sView.classList.add('hidden');
-      if (fView) fView.classList.remove('hidden');
-
       document.getElementById('review-modal').classList.remove('hidden');
-      setRating(0); // النجوم تبدأ فارغة ليحددها الزائر بنفسه
-      document.getElementById('selected-rating').value = '0';
-      document.getElementById('rating-hint').innerText = 'اضغط لتحديد النجوم';
-      document.getElementById('rating-hint').style.color = '#A1A1AA';
+      setRating(5);
     }
 
     function closeReviewModal() {
       document.getElementById('review-modal').classList.add('hidden');
     }
 
-    const starDescriptions = {
-      1: 'سيئ جداً (1 من 5)',
-      2: 'مقبول (2 من 5)',
-      3: 'جيد (3 من 5)',
-      4: 'جيد جداً (4 من 5)',
-      5: 'ممتاز وموصى به (5 من 5)'
-    };
-
     function setRating(val) {
       document.getElementById('selected-rating').value = val;
       const stars = document.querySelectorAll('#rating-stars-input span');
       stars.forEach((s, idx) => {
         if (idx < val) s.style.color = '#EAB308';
-        else s.style.color = '#3F3F46';
+        else s.style.color = '#4B5563';
       });
-      const hint = document.getElementById('rating-hint');
-      if (hint && val > 0) {
-        hint.innerText = starDescriptions[val] || (val + ' من 5');
-        hint.style.color = '#EAB308';
-      }
     }
 
     async function submitReview(e) {
       e.preventDefault();
       const rating = parseInt(document.getElementById('selected-rating').value);
-      if (!rating || rating < 1 || rating > 5) {
-        alert('يرجى تحديد عدد النجوم لتقييمك أولاً بالنقر على النجوم.');
-        return;
-      }
-
       const name = document.getElementById('reviewer-name').value.trim();
       const comment = document.getElementById('reviewer-comment').value.trim();
       const btn = document.getElementById('review-submit-btn');
@@ -853,13 +741,13 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         entity_type: 'bank',
         entity_id: currentBank.id,
         user_name: name,
-        user_avatar: null,
+        user_avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=80",
         stars: rating,
         comment: comment
       };
 
       try {
-        const resp = await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
+        await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
@@ -870,31 +758,22 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           body: JSON.stringify(newRev)
         });
 
-        if (!resp.ok) {
-          const errData = await resp.json().catch(() => ({}));
-          throw new Error(
-            `Supabase ${resp.status}: ` +
-            (errData.message || errData.details || errData.hint || JSON.stringify(errData))
-          );
-        }
-
-        // تحديث الواجهة محلياً بالتقييم الجديد فوراً
         currentBank.reviews = [newRev, ...(currentBank.reviews || [])];
         updateRatingsDisplay(currentBank.reviews);
-
-        // إظهار بطاقة الشكر الفاخرة بنفس هوية المنصة (بدون alert)
-        document.getElementById('review-form-view').classList.add('hidden');
-        document.getElementById('review-success-view').classList.remove('hidden');
+        renderUI();
+        closeReviewModal();
         document.getElementById('review-form').reset();
+        alert("شكراً لك! تم تسجيل تقييمك بنجاح.");
       } catch (err) {
-        console.error('Submit review error:', err);
-        alert('خطأ التقييم: ' + (err.message || 'خطأ غير معروف من Supabase'));
+        console.error("Review insert error:", err);
+        alert("حدث خطأ أثناء حفظ التقييم");
       } finally {
         btn.disabled = false;
         btn.innerText = "إرسال التقييم";
       }
     }
-    
+
+    // دوال نافذة إثبات الملكية
     function openClaimModal() {
       const sView = document.getElementById('claim-success-view');
       const fView = document.getElementById('claim-form-view');
@@ -958,15 +837,6 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     }
 
     window.addEventListener('DOMContentLoaded', loadBankProfile);
-
-    setTimeout(() => {
-      const splash = document.getElementById('page-splash-loader');
-      if (splash && splash.style.display !== 'none') {
-        splash.style.opacity = '0';
-        setTimeout(() => { splash.style.display = 'none'; }, 300);
-      }
-    }, 3500);
-  
   </script>
 
 </body>

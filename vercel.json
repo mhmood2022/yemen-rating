@@ -1,12 +1,11 @@
 {
-  "framework": "vite",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
+  "cleanUrls": true,
   "rewrites": [
-    { "source": "/admin/(.*)", "destination": "/index.html" },
-    { "source": "/admin", "destination": "/index.html" },
-    { "source": "/bank", "destination": "/bank.html" },
+    { "source": "/category/:category", "destination": "/index.html?category=:category" },
+    { "source": "/businesses", "destination": "/index.html" },
+    { "source": "/business/:id", "destination": "/index.html?id=:id" },
     { "source": "/banks", "destination": "/banks.html" },
-    { "source": "/((?!.*\\..*).*)", "destination": "/index.html" }
+    { "source": "/bank/:slug", "destination": "/bank.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
