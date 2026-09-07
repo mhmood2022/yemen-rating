@@ -196,7 +196,7 @@ function BankCardView({ item, onSelect }: { item: any; onSelect: () => void }) {
   // التقييم يظهر فقط إن كان حقيقياً ومسجلاً
   const reviewCount = Number(item.review_count) || 0;
   const ratingValue = Number(item.rating) || 0;
-  const hasRealRating = ratingValue > 0 && reviewCount > 0;
+  const hasRealRating = Number(item.review_count) > 0 && Number(item.rating) > 0;
 
   return (
     <article
