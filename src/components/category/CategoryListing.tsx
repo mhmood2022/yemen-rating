@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Star, MapPin, Phone, ArrowRight, Frown, Layers, CheckCircle2,
-  Bed, Wifi, Car, Stethoscope, Sparkles, Clock, Megaphone,
-  ShieldCheck, Heart, Share2, ExternalLink, Loader2, Award,
+  Star, MapPin, Phone, ArrowRight, Frown, CheckCircle2,
+  Bed, Wifi, Car, Stethoscope, Sparkles, Loader2, Award,
   Utensils, Gem, Truck, Users, AlertCircle, Waves, MessageCircle,
-  Search, SlidersHorizontal
+  Search, ShieldCheck
 } from 'lucide-react';
 import { OFFICIAL_CATEGORIES, CategoryItem } from '../../data/categories';
 import { BusinessItem } from '../../data/mockData';
@@ -40,7 +39,6 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
   const Icon = category?.icon;
   const subcategories = category?.subcategories || [];
 
-  // جلب المنشآت الحقيقية من Supabase
   useEffect(() => {
     let isMounted = true;
     const fetchBusinesses = async () => {
@@ -91,7 +89,7 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
           setLiveBusinesses([]);
         }
       } catch (err) {
-        console.warn('Live fetch fallback:', err);
+        console.warn('Live fetch error:', err);
         if (isMounted) setLiveBusinesses([]);
       } finally {
         if (isMounted) setLoadingLive(false);
@@ -118,12 +116,12 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
 
   return (
     <div dir="rtl" className="space-y-6 max-w-7xl mx-auto px-3 sm:px-6 py-4 font-['Cairo',sans-serif]">
-      {/* 🌟 1. إعلان البنر العلوي (YR Ads Top Hero Unit) 🌟 */}
+      {/* 🌟 1. إعلان البنر العلوي (YR Ads Top Unit) */}
       <div className="w-full">
         <AdBanner placementId="1" className="rounded-2xl overflow-hidden shadow-lg border border-zinc-800/80" />
       </div>
 
-      {/* ترويسة التصنيف الرسمية */}
+      {/* ترويسة التصنيف الرسمية الفخمة */}
       <div className="bg-gradient-to-r from-zinc-900 via-[#0D121F] to-zinc-900 border border-zinc-800 rounded-3xl p-5 sm:p-7 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
         <div className="flex items-center gap-4">
           {Icon && (
@@ -141,7 +139,7 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
               </span>
             </div>
             <p className="text-xs sm:text-sm text-zinc-400 mt-1.5">
-              دليل شامل وموثوق لأفضل المنشآت والخدمات في الجمهورية اليمنية مع التقييمات الحقيقية
+              دليل شامل وموثوق لأفضل المنشآت والخدمات في الجمهورية اليمنية
             </p>
           </div>
         </div>
@@ -155,7 +153,7 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
         </button>
       </div>
 
-      {/* شريط البحث وفلاتر الأقسام الفرعية */}
+      {/* البحث وفلاتر الأقسام الفرعية */}
       <div className="space-y-3">
         <div className="relative">
           <Search className="w-4 h-4 text-zinc-400 absolute right-4 top-1/2 -translate-y-1/2" />
@@ -197,7 +195,7 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
         )}
       </div>
 
-      {/* قائمة كروت المنشآت */}
+      {/* شبكة الكروت الموحدة */}
       {loadingLive ? (
         <div className="py-24 text-center flex flex-col items-center justify-center bg-[#0B0F19] rounded-3xl border border-zinc-800/80">
           <Loader2 className="w-10 h-10 animate-spin text-[#FFC500] mb-3" />
@@ -207,23 +205,21 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
         <div className="py-20 text-center bg-[#0B0F19] rounded-3xl border border-zinc-800/80 p-8 shadow-md">
           <Frown className="w-14 h-14 mx-auto text-zinc-600 mb-3" />
           <h3 className="text-base font-bold text-zinc-300 mb-1">لا توجد منشآت مسجلة في هذا التصنيف حالياً</h3>
-          <p className="text-xs text-zinc-500 max-w-md mx-auto">سيتم إضافة وتحديث المنشآت المعتمدة قريباً فور اعتمادها من الإدارة.</p>
+          <p className="text-xs text-zinc-500 max-w-md mx-auto">سيتم إضافة وتحديث المنشآت المعتمدة قريباً.</p>
         </div>
       ) : (
         <div className="space-y-6">
-          {/* النصف الأول من الكروت */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.slice(0, 3).map((item) => (
               <UnifiedBusinessCard key={item.id} item={item} onSelect={() => onSelectBusiness(item)} />
             ))}
           </div>
 
-          {/* 🌟 2. إعلان وسط القائمة (YR Ads In-Feed Native Unit) 🌟 */}
+          {/* 🌟 2. إعلان وسط القائمة (YR Ads In-Feed Unit) */}
           <div className="w-full my-6">
             <AdBanner placementId="2" className="rounded-2xl overflow-hidden shadow-lg border border-zinc-800/80" />
           </div>
 
-          {/* بقية الكروت */}
           {filtered.length > 3 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {filtered.slice(3).map((item) => (
@@ -234,7 +230,7 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
         </div>
       )}
 
-      {/* 🌟 3. إعلان البنر السفلي (YR Ads Bottom Unit) 🌟 */}
+      {/* 🌟 3. إعلان البنر السفلي (YR Ads Bottom Unit) */}
       <div className="w-full pt-4">
         <AdBanner placementId="3" className="rounded-2xl overflow-hidden shadow-lg border border-zinc-800/80" />
       </div>
@@ -242,14 +238,12 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
   );
 };
 
-// كرت المنشأة الموحد الفخم (Unified Business Card)
 function UnifiedBusinessCard({ item, onSelect }: { item: BusinessItem; onSelect: () => void }) {
   const feat = (item.sectionsConfig as any)?.features || {};
 
   return (
     <div className="bg-[#0B0F19] rounded-2xl border border-zinc-800/90 overflow-hidden hover:border-[#FFC500]/60 transition-all duration-300 flex flex-col justify-between group shadow-xl hover:-translate-y-1">
       <div>
-        {/* الغلاف والشعار */}
         <div className="relative h-44 bg-zinc-900 overflow-hidden cursor-pointer" onClick={onSelect}>
           <img
             src={item.coverImage}
@@ -258,12 +252,10 @@ function UnifiedBusinessCard({ item, onSelect }: { item: BusinessItem; onSelect:
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F19] via-transparent to-black/40" />
 
-          {/* الشعار */}
           <div className="absolute bottom-3 right-3 w-14 h-14 rounded-xl bg-zinc-900/95 p-1 shadow-xl border border-zinc-700">
             <img src={item.logo} alt={item.name} className="w-full h-full object-contain rounded-lg" />
           </div>
 
-          {/* الشارات */}
           <div className="absolute top-3 left-3 flex items-center gap-1.5">
             {item.isVerified ? (
               <span className="bg-emerald-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
@@ -280,7 +272,6 @@ function UnifiedBusinessCard({ item, onSelect }: { item: BusinessItem; onSelect:
           </div>
         </div>
 
-        {/* التفاصيل والوصف */}
         <div className="p-4 sm:p-5">
           <h3
             onClick={onSelect}
@@ -298,7 +289,6 @@ function UnifiedBusinessCard({ item, onSelect }: { item: BusinessItem; onSelect:
             {item.description || 'منشأة معتمدة تقدم خدمات راقية ومتميزة لعملائها بأعلى معايير الجودة.'}
           </p>
 
-          {/* شارات الميزات المتقدمة الذكية */}
           <div className="flex flex-wrap gap-1.5 mb-2">
             {feat.rooms_count > 0 && (
               <span className="text-[10px] px-2 py-0.5 rounded-md bg-zinc-800 text-amber-300 flex items-center gap-1">
@@ -339,7 +329,6 @@ function UnifiedBusinessCard({ item, onSelect }: { item: BusinessItem; onSelect:
         </div>
       </div>
 
-      {/* أزرار الاتصال والواتساب والتفاصيل */}
       <div className="p-3 bg-zinc-900/80 border-t border-zinc-800/80 flex items-center gap-2">
         {item.phone && (
           <a

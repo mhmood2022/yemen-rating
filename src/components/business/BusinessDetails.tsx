@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import {
-  Star, MapPin, Phone, Clock, ArrowRight, Share2, Heart,
-  Globe, ShieldCheck, CheckCircle2, MessageCircle, X, ChevronRight,
-  ChevronLeft, ZoomIn, Bed, Wifi, Car, Stethoscope, Sparkles,
-  Users, Truck, Gem, Award, ThumbsUp, Calendar, Send
+  Star, MapPin, Phone, ArrowRight, Share2, ShieldCheck, CheckCircle2,
+  MessageCircle, X, ZoomIn, Bed, Wifi, Car, Stethoscope, Sparkles,
+  Users, Truck, Gem, Award, Send
 } from 'lucide-react';
 import { BusinessItem } from '../../data/mockData';
 import { AdBanner } from '../common/AdBanner';
@@ -55,12 +54,11 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
 
   return (
     <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-6 py-6 space-y-6 font-['Cairo',sans-serif]">
-      {/* 🌟 1. إعلان البنر العلوي (YR Ads Top Hero Unit) 🌟 */}
+      {/* 🌟 1. إعلان البنر العلوي */}
       <div className="w-full">
         <AdBanner placementId="1" className="rounded-2xl overflow-hidden shadow-lg border border-zinc-800/80" />
       </div>
 
-      {/* زر العودة وشريط المشاركة */}
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
@@ -125,7 +123,6 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
             </div>
           </div>
 
-          {/* زر هل أنت المالك لإثبات الملكية */}
           {!business.isVerified && (
             <div className="w-full sm:w-auto">
               <a
@@ -142,22 +139,18 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
         </div>
       </div>
 
-      {/* تفاصيل المنشأة وشبكة الأقسام */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* العمود الأيمن (النبذة والمرافق ومعرض الصور والتقييمات) */}
         <div className="lg:col-span-2 space-y-6">
-          {/* نبذة عن المنشأة */}
           <div className="bg-[#0B0F19] p-6 rounded-3xl border border-zinc-800 shadow-md">
             <h2 className="text-base font-black text-white mb-3 flex items-center gap-2 border-b border-zinc-800/80 pb-3">
               <Award className="w-5 h-5 text-[#FFC500]" />
               <span>نبذة عن المنشأة والخدمات</span>
             </h2>
             <p className="text-zinc-300 leading-relaxed text-sm whitespace-pre-line">
-              {business.description || 'منشأة يمنية رائدة تقدم أرقى الخدمات والمنتجات لعملائها بأعلى معايير الجودة والالتزام في الجمهورية اليمنية.'}
+              {business.description || 'منشأة يمنية رائدة تقدم أرقى الخدمات والمنتجات لعملائها بأعلى معايير الجودة والالتزام.'}
             </p>
           </div>
 
-          {/* الميزات والمرافق المعتمدة */}
           <div className="bg-[#0B0F19] p-6 rounded-3xl border border-zinc-800 shadow-md">
             <h2 className="text-base font-black text-white mb-4 flex items-center gap-2 border-b border-zinc-800/80 pb-3">
               <Sparkles className="w-5 h-5 text-amber-400" />
@@ -215,7 +208,6 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
             </div>
           </div>
 
-          {/* ألبوم الصور التفاعلي (Lightbox Gallery) */}
           <div className="bg-[#0B0F19] p-6 rounded-3xl border border-zinc-800 shadow-md">
             <h2 className="text-base font-black text-white mb-4 flex items-center gap-2 border-b border-zinc-800/80 pb-3">
               <ZoomIn className="w-5 h-5 text-blue-400" />
@@ -241,7 +233,6 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
             </div>
           </div>
 
-          {/* التقييمات والمراجعات */}
           <div className="bg-[#0B0F19] p-6 rounded-3xl border border-zinc-800 shadow-md space-y-4">
             <h2 className="text-base font-black text-white flex items-center gap-2 border-b border-zinc-800/80 pb-3">
               <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
@@ -290,7 +281,6 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
           </div>
         </div>
 
-        {/* العمود الأيسر (التواصل السريع وساعات الدوام) */}
         <div className="space-y-6">
           <div className="bg-[#0B0F19] p-6 rounded-3xl border border-zinc-800 shadow-md sticky top-20 space-y-5">
             <h3 className="font-black text-white pb-3 border-b border-zinc-800 text-sm flex items-center gap-2">
@@ -344,12 +334,10 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
         </div>
       </div>
 
-      {/* 🌟 3. إعلان البنر السفلي (YR Ads Bottom Unit) 🌟 */}
       <div className="w-full pt-4">
         <AdBanner placementId="3" className="rounded-2xl overflow-hidden shadow-lg border border-zinc-800/80" />
       </div>
 
-      {/* نافذة تكبير الصورة (Lightbox Modal) */}
       {selectedImage && (
         <div
           className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
