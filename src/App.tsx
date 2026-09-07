@@ -29,6 +29,7 @@ import { OwnerDashboardPage } from './pages/owner/OwnerDashboardPage';
 import { AdminMaster } from './pages/admin/AdminMaster';
 import { AdminDashboardOverview } from './pages/admin/AdminDashboardOverview';
 import { CompaniesManager } from './pages/admin/companies/CompaniesManager';
+import { RatingsManager } from './pages/admin/ratings/RatingsManager';
 import { BanksManager } from './pages/admin/banks/BanksManager';
 import { AuctionsManager } from './pages/admin/auctions/AuctionsManager';
 import { AuctionLiveMonitor } from './pages/admin/auctions/AuctionLiveMonitor';
@@ -106,6 +107,7 @@ export function App() {
         <Route path="/admin" element={<AdminMaster />}>
           <Route index element={<AdminDashboardOverview />} />
           <Route path="companies" element={<CompaniesManager />} />
+          <Route path="ratings" element={<RatingsManager />} />
           <Route path="banks" element={<BanksManager />} />
           <Route path="categories" element={<CategoriesManager />} />
           <Route path="claims" element={<ClaimsManager />} />

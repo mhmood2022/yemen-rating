@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Star, NavLink, useLocation } from 'react-router-dom';
 import { OFFICIAL_CATEGORIES } from '../../data/categories';
 import {
   LayoutDashboard, FolderTree, ShieldCheck,
@@ -11,6 +11,7 @@ import {
 const ADMIN_OPERATIONS = [
   { id: 'dashboard', label: 'لوحة التحكم الرئيسية', icon: LayoutDashboard, path: '/admin' },
   { id: 'all_companies', label: 'كافة المنشآت والأنشطة', icon: Building2, path: '/admin/companies' },
+  { id: 'ratings', label: 'التحكم بالتقييمات والنسب', icon: Star, path: '/admin/ratings' },
   { id: 'categories', label: 'إدارة التصنيفات الرسمية', icon: FolderTree, path: '/admin/categories' },
   { id: 'claims', label: 'إثبات الملكية والتوثيق', icon: ShieldCheck, path: '/admin/claims' },
   { id: 'ads', label: 'الإعلانات و YR Ads', icon: Megaphone, path: '/admin/ads' },
