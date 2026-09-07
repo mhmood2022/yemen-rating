@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Star, MapPin, Phone, ArrowRight, Frown, Layers, CheckCircle2,
-  Bed, Wifi, Car, Stethoscope, Sparkles, Clock, Megaphone,
-  ShieldCheck, Heart, Share2, ExternalLink, Loader2, Award,
-  Utensils, Gem, Truck, Users, AlertCircle, Waves
+import { 
+  Star, MapPin, Phone, ArrowRight, Frown, Layers, CheckCircle2, 
+  Bed, Wifi, Car, Stethoscope, Sparkles, Clock, Megaphone, 
+  ShieldCheck, Heart, Share2, ExternalLink, Loader2, Award, 
+  Utensils, Gem, Truck, Users, AlertCircle, Waves, MessageCircle
 } from 'lucide-react';
 import { OFFICIAL_CATEGORIES } from '../../data/categories';
 import { BusinessItem } from '../../data/mockData';
@@ -17,7 +17,8 @@ interface CategoryListingProps {
   selectedGov: string;
   selectedCity: string;
   onSelectBusiness: (business: BusinessItem) => void;
-  onBackHome: () => void;
+  onBackHome?: () => void;
+  onBack?: () => void;
 }
 
 export const CategoryListing: React.FC<CategoryListingProps> = ({
@@ -26,8 +27,10 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
   selectedGov,
   selectedCity,
   onSelectBusiness,
-  onBackHome
+  onBackHome,
+  onBack
 }) => {
+  const handleBack = onBackHome || onBack || (() => window.history.back());
   const [selectedSubCategory, setSelectedSubCategory] = useState<string>('all');
   const [liveBusinesses, setLiveBusinesses] = useState<BusinessItem[]>([]);
   const [loadingLive, setLoadingLive] = useState(true);
@@ -45,18 +48,18 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
           .from('categories')
           .select('id, slug')
           .eq('slug', categorySlug)
-          .single();
+          .maybeSingle();
 
         let query = supabase.from('businesses').select('*');
-        if (catRow) {
-          query = query.eq('category_id', catRow.id);
+        if (catRow && catRow.id) {
+          query = query.or(`category_id.eq.${catRow.id},category_id.eq.${categorySlug}`);
+        } else {
+          query = query.eq('category_id', categorySlug);
         }
-        query = query.eq('status', 'active').order('created_at', { ascending: false });
 
-        const { data: bRows, error } = await query;
-        if (error) throw error;
+        const { data: bRows, error } = await query.order('created_at', { ascending: false });
 
-        if (bRows && bRows.length > 0) {
+        if (!error && bRows && bRows.length > 0) {
           const mapped: BusinessItem[] = bRows.map(b => ({
             id: b.id,
             name: b.name,
@@ -69,8 +72,8 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
             coverImage: b.cover_url || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1000&auto=format&fit=crop&q=80',
             images: Array.isArray(b.gallery_urls) && b.gallery_urls.length > 0 ? b.gallery_urls : [b.cover_url || ''],
             rating: Number(b.rating) || 4.8,
-            reviewsCount: Number(b.review_count) || 6,
-            isVerified: b.is_verified ?? true,
+            reviewsCount: Number(b.review_count) || 0,
+            isVerified: b.is_verified ?? false,
             badgeType: b.badge_type || 'gold',
             claimStatus: b.claim_status || 'UNCLAIMED',
             phone: b.phone || '',
@@ -86,7 +89,7 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
           setLiveBusinesses([]);
         }
       } catch (err) {
-        console.warn('Live fetch fallback to props:', err);
+        console.warn('Live fetch fallback:', err);
         setLiveBusinesses([]);
       } finally {
         setLoadingLive(false);
@@ -96,353 +99,173 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
     fetchLiveCategoryBusinesses();
   }, [categorySlug]);
 
-  const allList = liveBusinesses.length > 0
-    ? liveBusinesses
+  const allList = liveBusinesses.length > 0 
+    ? liveBusinesses 
     : businesses.filter(b => b.categorySlug === categorySlug);
 
   const filtered = useMemo(() => {
     return allList.filter(b => {
       const matchesSub = selectedSubCategory === 'all' || (b as any).subCategorySlug === selectedSubCategory;
-      const matchesGov = selectedGov === 'all' || selectedGov === 'كل المحافظات' || b.governorateId === selectedGov;
-      const matchesCity = selectedCity === 'all' || b.cityId === selectedCity;
+      const matchesGov = !selectedGov || selectedGov === 'all' || selectedGov === 'كل المحافظات' || b.governorateId === selectedGov;
+      const matchesCity = !selectedCity || selectedCity === 'all' || b.cityId === selectedCity;
       return matchesSub && matchesGov && matchesCity;
     });
   }, [allList, selectedSubCategory, selectedGov, selectedCity]);
 
-  // تصنيف نوع النشاط
-  const isHotelOrChalet = categorySlug.includes('hotel') || categorySlug.includes('chalet');
-  const isMedical = categorySlug.includes('hospital') || categorySlug.includes('clinic') || categorySlug.includes('lab') || categorySlug.includes('pharmacy');
-  const isRestaurantOrCafe = categorySlug.includes('restaurant') || categorySlug.includes('cafe') || categorySlug.includes('buffet');
-  const isCarOrAuto = categorySlug.includes('car') || categorySlug.includes('motorcycle');
-  const isGoldOrJewelry = categorySlug.includes('gold') || categorySlug.includes('jewelry');
-
   return (
-    <div dir="rtl" className="space-y-6 max-w-6xl mx-auto px-2 sm:px-0">
-      {/* 🌟 الوحدة الإعلانية 1: البنر العلوي الرئيسي (YR Ads Top Hero Unit) 🌟 */}
+    <div dir="rtl" className="space-y-6 max-w-6xl mx-auto px-4 sm:px-6 py-4">
+      {/* 🟢 الوحدة الإعلانية 1: البنر العلوي (YR Ads Top Unit) */}
       <div className="w-full">
-        <AdBanner placementId="1" className="mb-2 shadow-xl rounded-2xl overflow-hidden" />
+        <AdBanner placementId="1" className="mb-2 shadow-sm rounded-2xl overflow-hidden" />
       </div>
 
       {/* ترويسة التصنيف الرسمية */}
-      <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-zinc-800">
+      <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-zinc-200">
         <div className="flex items-center gap-3.5">
           {Icon && (
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black shadow-lg ${
-              isHotelOrChalet
-                ? 'bg-amber-400 text-zinc-950 shadow-amber-400/20'
-                : isMedical
-                ? 'bg-red-500 text-white shadow-red-500/20'
-                : isRestaurantOrCafe
-                ? 'bg-orange-500 text-white shadow-orange-500/20'
-                : isCarOrAuto
-                ? 'bg-blue-500 text-white shadow-blue-500/20'
-                : isGoldOrJewelry
-                ? 'bg-yellow-400 text-zinc-950 shadow-yellow-400/20'
-                : 'bg-[#FFC500] text-black shadow-yellow-500/20'
-            }`}>
+            <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black shadow-md">
               <Icon className="w-7 h-7" />
             </div>
           )}
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
               {category?.name || 'التصنيف'}
-              {isMedical && (
-                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 flex items-center gap-1 font-bold">
-                  <Stethoscope size={11} /> رعاية وطوارئ
-                </span>
-              )}
-              {isHotelOrChalet && (
-                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1 font-bold">
-                  <Bed size={11} /> إقامة وسياحة
-                </span>
-              )}
             </h1>
-            <p className="text-xs text-zinc-400 mt-1">
-              دليل {category?.name || 'الأنشطة'} المعتمدة في اليمن مع التقييمات وتفاصيل الحجز والاتصال.
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              تصفح أفضل المنشآت والخدمات المعتمدة ({filtered.length} منشأة متاحة)
             </p>
           </div>
         </div>
 
         <button
-          onClick={onBackHome}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-bold text-yellow-400 hover:text-yellow-300 hover:bg-zinc-800 transition-colors shadow-sm"
+          onClick={handleBack}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition shadow-xs"
         >
-          <ArrowRight className="w-4 h-4 text-amber-400" />
+          <ArrowRight className="w-4 h-4" />
           <span>العودة للرئيسية</span>
         </button>
       </div>
 
-      {/* شريط التصنيفات الفرعية */}
-      {subcategories.length > 0 && (
-        <div className="bg-zinc-900/70 border border-zinc-800 p-3.5 rounded-2xl space-y-2 shadow-md">
-          <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-bold">
-            <Layers className="w-3.5 h-3.5 text-amber-400" />
-            <span>الأقسام الفرعية في {category?.name}:</span>
-          </div>
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none flex-nowrap sm:flex-wrap">
-            <button
-              onClick={() => setSelectedSubCategory('all')}
-              className={`text-xs px-4 py-1.5 rounded-xl border font-bold transition-all shrink-0 ${
-                selectedSubCategory === 'all'
-                  ? 'bg-amber-400 text-zinc-950 border-amber-400 shadow-md'
-                  : 'bg-zinc-950 text-zinc-300 border-zinc-800 hover:border-zinc-700'
-              }`}
-            >
-              الكل
-            </button>
-            {subcategories.map((sub) => (
-              <button
-                key={sub.id}
-                onClick={() => setSelectedSubCategory(sub.slug)}
-                className={`text-xs px-3.5 py-1.5 rounded-xl border font-medium transition-all shrink-0 ${
-                  selectedSubCategory === sub.slug
-                    ? 'bg-amber-400 text-zinc-950 border-amber-400 font-bold shadow-md'
-                    : 'bg-zinc-950 text-zinc-300 border-zinc-800 hover:border-amber-400/40'
-                }`}
-              >
-                {sub.name}
-              </button>
-            ))}
-          </div>
+      {/* قائمة المنشآت */}
+      {loadingLive ? (
+        <div className="py-20 text-center flex flex-col items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
+          <p className="text-xs text-slate-500 font-bold">جاري تحميل منشآت هذا القسم...</p>
         </div>
-      )}
-
-      {/* شريط نتائج البحث والحالة الحية */}
-      <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
-        <div className="flex items-center gap-1.5">
-          <span>تم العثور على</span>
-          <strong className="text-amber-400 font-mono text-sm">{filtered.length}</strong>
-          <span>منشأة مسجلة ومعتمدة</span>
-        </div>
-        {loadingLive && (
-          <span className="flex items-center gap-1 text-amber-400/80 text-[11px]">
-            <Loader2 size={12} className="animate-spin" /> جلب التحديثات الحية...
-          </span>
-        )}
-      </div>
-
-      {/* شبكة البطاقات النوعية الخالية من أي إيموجي (Listings Grid) */}
-      {filtered.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filtered.map((item, index) => {
-            const sec = (item as any).sectionsConfig || {};
-            const feat = sec.features || {};
-
-            return (
-              <React.Fragment key={item.id}>
-                <div
-                  onClick={() => onSelectBusiness(item)}
-                  className={`bg-zinc-950/90 border rounded-2xl overflow-hidden transition-all duration-200 flex flex-col group cursor-pointer shadow-xl relative ${
-                    isHotelOrChalet
-                      ? 'border-zinc-800 hover:border-amber-400/60'
-                      : isMedical
-                      ? 'border-zinc-800 hover:border-red-500/60'
-                      : isRestaurantOrCafe
-                      ? 'border-zinc-800 hover:border-orange-500/60'
-                      : isCarOrAuto
-                      ? 'border-zinc-800 hover:border-blue-500/60'
-                      : 'border-zinc-800 hover:border-[#FFC500]/60'
-                  }`}
-                >
-                  {/* الغلاف البانورامي والشارة الرسمية */}
-                  <div className="relative h-48 w-full bg-zinc-900 overflow-hidden">
-                    <img
-                      src={item.coverImage || item.logo}
-                      alt={item.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1000&auto=format&fit=crop&q=80'; }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" />
-
-                    {/* التقييم */}
-                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-xl border border-zinc-800 text-xs font-black text-amber-400 shadow-md">
-                      <Star className="w-3.5 h-3.5 fill-amber-400" />
-                      <span>{item.rating || 4.8}</span>
-                      <span className="text-zinc-500 text-[10px]">({item.reviewsCount || 0})</span>
-                    </div>
-
-                    {/* شارة التوثيق الثلاثية الرسمية (VerifiedBadge) */}
-                    {item.isVerified && (
-                      <div className="absolute top-3 left-3 bg-zinc-950/90 backdrop-blur-md border border-zinc-800 p-1.5 rounded-xl shadow-md flex items-center justify-center">
-                        <VerifiedBadge type={item.badgeType || 'gold'} size="sm" />
-                      </div>
-                    )}
-
-                    {/* شعار المنشأة */}
-                    <div className="absolute -bottom-3 right-4 w-14 h-14 rounded-2xl bg-zinc-950 border-2 border-zinc-800 overflow-hidden shadow-2xl flex items-center justify-center">
-                      <img
-                        src={item.logo}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                      />
-                    </div>
-
-                    {/* شارة الطوارئ للمستشفيات بأيقونة AlertCircle */}
-                    {isMedical && (
-                      <div className="absolute bottom-2 left-3">
-                        <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-red-600/90 text-white text-[10px] font-black shadow-lg animate-pulse">
-                          <AlertCircle size={11} /> طوارئ 24 ساعة
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* التفاصيل والميزات بأيقونات المكتبة الحصرية */}
-                  <div className="p-4 pt-5 flex-1 flex flex-col justify-between space-y-3">
-                    <div>
-                      <div className="flex items-center justify-between gap-1.5">
-                        <h3 className="font-extrabold text-base text-white group-hover:text-amber-400 transition-colors line-clamp-1">
-                          {item.name}
-                        </h3>
-                      </div>
-
-                      <p className="text-xs text-zinc-400 flex items-center gap-1 mt-1 line-clamp-1">
-                        <MapPin className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                        <span>{item.address}</span>
-                      </p>
-
-                      {/* ميزات الفنادق بأيقونات Lucide */}
-                      {isHotelOrChalet && (
-                        <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                          <span className="px-2 py-0.5 rounded-lg bg-zinc-900 border border-zinc-800 text-[11px] text-amber-400 font-bold flex items-center gap-1">
-                            <Bed size={12} /> {feat.rooms_count || 'أجنحة وغرف فندقية'}
-                          </span>
-                          <span className="px-2 py-0.5 rounded-lg bg-zinc-900 border border-zinc-800 text-[11px] text-zinc-300 flex items-center gap-1">
-                            <Wifi size={12} className="text-amber-400" /> واي فاي مجاني
-                          </span>
-                          <span className="px-2 py-0.5 rounded-lg bg-zinc-900 border border-zinc-800 text-[11px] text-zinc-300 flex items-center gap-1">
-                            <Waves size={12} className="text-amber-400" /> مسبح
-                          </span>
-                        </div>
-                      )}
-
-                      {/* ميزات المطاعم بأيقونات Lucide */}
-                      {isRestaurantOrCafe && (
-                        <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                          <span className="px-2 py-0.5 rounded-lg bg-zinc-900 border border-zinc-800 text-[11px] text-orange-400 font-bold flex items-center gap-1">
-                            <Users size={12} /> قسم عوائل مستقل
-                          </span>
-                          <span className="px-2 py-0.5 rounded-lg bg-zinc-900 border border-zinc-800 text-[11px] text-zinc-300 flex items-center gap-1">
-                            <Truck size={12} /> توصيل سفري
-                          </span>
-                        </div>
-                      )}
-
-                      {/* ميزات معارض السيارات بأيقونات Lucide */}
-                      {isCarOrAuto && (
-                        <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                          <span className="px-2 py-0.5 rounded-lg bg-blue-500/15 border border-blue-500/30 text-[11px] text-blue-400 font-bold flex items-center gap-1">
-                            <ShieldCheck size={12} /> فحص وضمان معتمد
-                          </span>
-                        </div>
-                      )}
-
-                      {/* ميزات محلات الذهب بأيقونات Lucide */}
-                      {isGoldOrJewelry && (
-                        <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                          <span className="px-2 py-0.5 rounded-lg bg-yellow-500/15 border border-yellow-500/30 text-[11px] text-yellow-400 font-bold flex items-center gap-1">
-                            <Gem size={12} /> ذهب وسبائك معتمدة
-                          </span>
-                        </div>
-                      )}
-
-                      {/* حالة إثبات الملكية */}
-                      {item.claimStatus === 'UNCLAIMED' && (
-                        <div className="mt-2.5 pt-2 border-t border-zinc-900 flex items-center justify-between text-[11px]">
-                          <span className="text-amber-400/90 font-bold flex items-center gap-1">
-                            <ShieldCheck size={12} /> صفحة معتمدة
-                          </span>
-                          <span className="text-zinc-500 text-[10px]">جاهزة لإثبات الملكية</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* زر الإجراء */}
-                    <div className="flex items-center justify-between pt-3 border-t border-zinc-800/80">
-                      {item.phone ? (
-                        <span className="text-xs font-mono text-zinc-300 flex items-center gap-1">
-                          <Phone className="w-3.5 h-3.5 text-amber-400" />
-                          <span>{item.phone}</span>
-                        </span>
-                      ) : (
-                        <span className="text-xs text-zinc-500">اليمن</span>
-                      )}
-
-                      <span className={`text-xs font-bold transition-colors flex items-center gap-1 ${
-                        isHotelOrChalet
-                          ? 'text-amber-400 group-hover:text-amber-300'
-                          : isMedical
-                          ? 'text-red-400 group-hover:text-red-300'
-                          : isRestaurantOrCafe
-                          ? 'text-orange-400 group-hover:text-orange-300'
-                          : 'text-[#FFC500] group-hover:text-yellow-300'
-                      }`}>
-                        {isHotelOrChalet
-                          ? 'استعلام وحجز إقامة'
-                          : isMedical
-                          ? 'طوارئ واستشارة فورية'
-                          : isRestaurantOrCafe
-                          ? 'عرض المنيو والطلب'
-                          : 'التفاصيل الكاملة'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 🌟 الوحدة الإعلانية 2: الإعلان المضمن بين البطاقات (In-Feed Sponsor Ad) 🌟 */}
-                {index === 1 && (
-                  <div className="col-span-1 md:col-span-2 lg:col-span-3 my-2">
-                    <div className="p-4 rounded-2xl bg-gradient-to-r from-zinc-900 via-zinc-900/90 to-zinc-900 border border-amber-400/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-xl bg-amber-400/10 text-amber-400 shrink-0">
-                          <Megaphone className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] uppercase tracking-wider font-black px-2 py-0.5 rounded bg-amber-400 text-black">
-                              إعلان مميز (YR Ads)
-                            </span>
-                            <h4 className="font-bold text-sm text-white">هل تمتلك منشأة في قطاع {category?.name}؟</h4>
-                          </div>
-                          <p className="text-xs text-zinc-400 mt-0.5">
-                            انضم إلى دليل YEMEN RATING المعتمد واحصل على شارة التوثيق والوصول لآلاف الزوار يومياً.
-                          </p>
-                        </div>
-                      </div>
-                      <a
-                        href="/admin"
-                        className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-black text-xs shrink-0 shadow-lg transition-all"
-                      >
-                        وثّق منشأتك الآن
-                      </a>
-                    </div>
-                  </div>
-                )}
-              </React.Fragment>
-            );
-          })}
+      ) : filtered.length === 0 ? (
+        <div className="py-20 text-center bg-white rounded-3xl border border-slate-200 p-8 shadow-xs">
+          <Frown className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+          <h3 className="text-base font-bold text-slate-700 mb-1">لا توجد منشآت مسجلة في هذا القسم حالياً</h3>
+          <p className="text-xs text-slate-400 max-w-md mx-auto">سيتم إضافة وتحديث المنشآت المعتمدة قريباً.</p>
         </div>
       ) : (
-        <div className="text-center py-20 bg-zinc-900/30 border border-zinc-800 rounded-3xl p-8 space-y-3.5 shadow-xl">
-          <Frown className="w-12 h-12 text-zinc-600 mx-auto" />
-          <h3 className="text-lg font-bold text-white">لا توجد منشآت مسجلة حالياً في {category?.name || 'هذا التصنيف'}</h3>
-          <p className="text-xs text-zinc-400 max-w-md mx-auto leading-relaxed">
-            سياسة منصة YEMEN RATING تتيح تسجيل واعتماد المنشآت وتجهيز صفحاتها الرسمية لتكون جاهزة للمطالبة بالملكية.
-          </p>
-          <button
-            onClick={onBackHome}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 text-amber-400 font-bold text-xs hover:bg-zinc-800 transition-colors"
-          >
-            <ArrowRight size={14} /> تصفح بقية الأقسام
-          </button>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.slice(0, 3).map((item) => (
+              <BusinessCard key={item.id} item={item} onSelect={() => onSelectBusiness(item)} />
+            ))}
+          </div>
+
+          {/* 🟢 الوحدة الإعلانية 2: إعلان وسط القائمة (YR Ads In-Feed Native) */}
+          <div className="w-full my-6">
+            <AdBanner placementId="2" className="shadow-sm rounded-2xl overflow-hidden" />
+          </div>
+
+          {filtered.length > 3 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.slice(3).map((item) => (
+                <BusinessCard key={item.id} item={item} onSelect={() => onSelectBusiness(item)} />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* 🌟 الوحدة الإعلانية 3: البنر السفلي الثابت (Sticky Bottom Ad Banner) 🌟 */}
-      <div className="pt-6">
-        <AdBanner placementId="2" className="shadow-xl rounded-2xl overflow-hidden" />
+      {/* 🟢 الوحدة الإعلانية 3: البنر السفلي (YR Ads Bottom Unit) */}
+      <div className="w-full pt-4">
+        <AdBanner placementId="3" className="shadow-sm rounded-2xl overflow-hidden" />
       </div>
     </div>
   );
 };
+
+// مكون بطاقة المنشأة الموحدة
+function BusinessCard({ item, onSelect }: { item: BusinessItem; onSelect: () => void }) {
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+      <div>
+        <div className="relative h-44 bg-slate-100 overflow-hidden cursor-pointer" onClick={onSelect}>
+          <img 
+            src={item.coverImage} 
+            alt={item.name} 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          
+          <div className="absolute bottom-3 right-4 w-14 h-14 rounded-xl bg-white p-1 shadow-lg border border-white/20">
+            <img src={item.logo} alt={item.name} className="w-full h-full object-contain rounded-lg" />
+          </div>
+
+          <div className="absolute top-3 left-3">
+            {item.isVerified ? (
+              <span className="bg-emerald-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                <CheckCircle2 className="w-3 h-3" /> موثّق
+              </span>
+            ) : (
+              <span className="bg-amber-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
+                <ShieldCheck className="w-3 h-3" /> غير مطالب به
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="p-5">
+          <h3 
+            onClick={onSelect}
+            className="font-extrabold text-lg text-slate-900 group-hover:text-blue-600 transition truncate cursor-pointer"
+          >
+            {item.name}
+          </h3>
+
+          <p className="text-xs text-slate-500 flex items-center gap-1 mt-1 mb-3">
+            <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+            <span>{item.address || item.cityId || 'اليمن'}</span>
+          </p>
+
+          <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-4">
+            {item.description || 'منشأة معتمدة تقدم خدمات راقية ومتميزة لعملائها.'}
+          </p>
+        </div>
+      </div>
+
+      <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
+        {item.phone && (
+          <a 
+            href={`tel:${item.phone}`} 
+            className="flex-1 text-center py-2.5 bg-white border border-slate-200 hover:border-blue-500 text-slate-700 hover:text-blue-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-xs"
+          >
+            <Phone className="w-3.5 h-3.5 text-blue-600" /> اتصال
+          </a>
+        )}
+
+        {(item.whatsapp || item.phone) && (
+          <a 
+            href={`https://wa.me/${(item.whatsapp || item.phone).replace(/[^0-9]/g, '')}`} 
+            target="_blank" 
+            rel="noreferrer"
+            className="flex-1 text-center py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition shadow-xs"
+          >
+            <MessageCircle className="w-3.5 h-3.5" /> واتساب
+          </a>
+        )}
+
+        <button 
+          onClick={onSelect}
+          className="px-3.5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition"
+        >
+          التفاصيل
+        </button>
+      </div>
+    </div>
+  );
+}

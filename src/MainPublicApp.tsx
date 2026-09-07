@@ -19,6 +19,19 @@ import { AdBanner } from './components/common/AdBanner';
 import { SAMPLE_BUSINESSES, BusinessItem } from './data/mockData';
 
 export function MainPublicApp() {
+  // قراءة رابط التصنيف المباشر عند بدء الفتح
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const cat = params.get('category');
+      if (cat) {
+        handleSelectCategory(cat);
+      }
+    } catch (e) {
+      console.warn('URL parsing error:', e);
+    }
+  }, []);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
   const [selectedBusiness, setSelectedBusiness] = useState<BusinessItem | null>(null);
