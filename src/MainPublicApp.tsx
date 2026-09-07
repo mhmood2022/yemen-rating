@@ -52,7 +52,7 @@ export function MainPublicApp() {
     if (selectedBusiness) setSelectedBusiness(null);
   };
 
-  const handleSelectCategory = (slug: string) => {
+  function handleSelectCategory(slug: string) {
     if (slug === 'all') {
       setIsSidebarOpen(true);
       return;

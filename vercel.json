@@ -1,11 +1,29 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/category/:category", "destination": "/index.html?category=:category" },
-    { "source": "/businesses", "destination": "/index.html" },
-    { "source": "/business/:id", "destination": "/index.html?id=:id" },
-    { "source": "/banks", "destination": "/banks.html" },
-    { "source": "/bank/:slug", "destination": "/bank.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/category/:category",
+      "destination": "/index.html?category=:category"
+    },
+    {
+      "source": "/businesses",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/business/:id",
+      "destination": "/index.html?id=:id"
+    },
+    {
+      "source": "/banks",
+      "destination": "/banks.html"
+    },
+    {
+      "source": "/bank/:slug",
+      "destination": "/bank.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
