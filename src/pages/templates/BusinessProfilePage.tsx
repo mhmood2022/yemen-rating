@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Star, MapPin, Phone, ArrowRight, ShieldCheck,
   X, ZoomIn, Bed, Wifi, Car, Stethoscope, Users, Truck, Gem,
-  Loader2, Frown, Waves, MessageCircle, Send, Heart
+  Loader2, Frown, Waves, MessageCircle, Globe, Mail, Clock, CheckCircle2, AlertCircle
 } from 'lucide-react';
 import { AdBanner } from '../../components/common/AdBanner';
 import { supabase } from '../../lib/supabase';
@@ -40,20 +40,22 @@ export const BusinessProfilePage: React.FC = () => {
 
   const [business, setBusiness] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<'photos' | 'services' | 'reviews' | 'contact'>('photos');
+  const [activeTab, setActiveTab] = useState<'photos' | 'services' | 'reviews'>('photos');
 
-  // نظام التقييم الحقيقي المربوط بقاعدة البيانات
+  // نظام التقييم الحقيقي مع الإحصائيات الدقيقة
   const [reviews, setReviews] = useState<any[]>([]);
+  const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
   const [userStars, setUserStars] = useState<number>(5);
   const [userName, setUserName] = useState<string>('');
   const [userComment, setUserComment] = useState<string>('');
   const [submittingReview, setSubmittingReview] = useState<boolean>(false);
-  const [reviewSuccess, setReviewSuccess] = useState<boolean>(false);
+  const [reviewStatus, setReviewStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-    const fetchBusinessAndReviews = async () => {
+    const fetchBusinessData = async () => {
       if (!slug) return;
       setLoading(true);
       try {
@@ -69,21 +71,21 @@ export const BusinessProfilePage: React.FC = () => {
         let { data: bData, error } = await query.maybeSingle();
 
         if (!bData && !isUuid) {
-          const { data: fallbackData } = await supabase.from('businesses').select('*').eq('name', decodeURIComponent(slug)).maybeSingle();
-          bData = fallbackData;
+          const { data: fallback } = await supabase.from('businesses').select('*').eq('name', decodeURIComponent(slug)).maybeSingle();
+          bData = fallback;
         }
 
         if (bData && isMounted) {
           setBusiness(bData);
 
-          // جلب التقييمات الحقيقية من جدول reviews
-          const { data: rData } = await supabase
+          // جلب التقييمات الحقيقية حصراً من جدول reviews
+          const { data: revData } = await supabase
             .from('reviews')
             .select('*')
             .eq('entity_id', bData.id)
             .order('created_at', { ascending: false });
 
-          setReviews(rData || []);
+          setReviews(revData || []);
         } else if (isMounted) {
           setBusiness(null);
         }
@@ -94,18 +96,47 @@ export const BusinessProfilePage: React.FC = () => {
       }
     };
 
-    fetchBusinessAndReviews();
+    fetchBusinessData();
     return () => { isMounted = false; };
   }, [slug]);
 
-  // إرسال تقييم حقيقي لقاعدة البيانات
+  // إحصائيات النجوم الحقيقية (مطابقة لأشرطة بنك الكريمي بالملي)
+  const ratingStats = useMemo(() => {
+    const total = reviews.length;
+    if (total === 0) {
+      return { avg: null, total: 0, dist: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } };
+    }
+
+    const counts: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    let sum = 0;
+
+    reviews.forEach(r => {
+      const s = Math.min(5, Math.max(1, Math.round(Number(r.rating || r.stars) || 5)));
+      counts[s] = (counts[s] || 0) + 1;
+      sum += s;
+    });
+
+    const avg = (sum / total).toFixed(1);
+    const dist = {
+      5: Math.round((counts[5] / total) * 100),
+      4: Math.round((counts[4] / total) * 100),
+      3: Math.round((counts[3] / total) * 100),
+      2: Math.round((counts[2] / total) * 100),
+      1: Math.round((counts[1] / total) * 100),
+    };
+
+    return { avg, total, dist };
+  }, [reviews]);
+
+  // إرسال تقييم حقيقي لقاعدة البيانات مع رسائل واضحة
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userName.trim() || !business) return;
     setSubmittingReview(true);
+    setReviewStatus(null);
 
     try {
-      const newReview = {
+      const newRev = {
         entity_id: business.id,
         entity_type: 'business',
         user_name: userName.trim(),
@@ -114,16 +145,23 @@ export const BusinessProfilePage: React.FC = () => {
         created_at: new Date().toISOString()
       };
 
-      const { error } = await supabase.from('reviews').insert([newReview]);
-      if (!error) {
-        setReviews([newReview, ...reviews]);
-        setReviewSuccess(true);
-        setUserName('');
-        setUserComment('');
-        setTimeout(() => setReviewSuccess(false), 3000);
+      const { error } = await supabase.from('reviews').insert([newRev]);
+
+      if (error) {
+        throw error;
       }
-    } catch (err) {
-      console.error('Review submit error:', err);
+
+      setReviews(prev => [newRev, ...prev]);
+      setReviewStatus({ type: 'success', message: 'تم تسجيل ونشر تقييمك بنجاح!' });
+      setUserName('');
+      setUserComment('');
+      setTimeout(() => {
+        setShowReviewModal(false);
+        setReviewStatus(null);
+      }, 2500);
+    } catch (err: any) {
+      console.error('Review submit failed:', err);
+      setReviewStatus({ type: 'error', message: 'حدث خطأ أثناء حفظ التقييم، يرجى المحاولة لاحقاً.' });
     } finally {
       setSubmittingReview(false);
     }
@@ -133,7 +171,7 @@ export const BusinessProfilePage: React.FC = () => {
     return (
       <div dir="rtl" className="min-h-[60vh] flex flex-col items-center justify-center font-['Cairo',sans-serif] bg-black">
         <Loader2 className="w-10 h-10 animate-spin text-[#FFC500] mb-2" />
-        <p className="text-xs text-zinc-400 font-bold">جاري تحميل بيانات المنشأة...</p>
+        <p className="text-xs text-zinc-400 font-bold">جاري التحميل...</p>
       </div>
     );
   }
@@ -147,7 +185,7 @@ export const BusinessProfilePage: React.FC = () => {
           onClick={() => navigate('/businesses')}
           className="px-5 py-2 bg-[#FFC500] text-zinc-950 font-black rounded-xl text-xs mt-3"
         >
-          العودة للدليل
+          العودة لدليل المنشآت
         </button>
       </div>
     );
@@ -156,21 +194,21 @@ export const BusinessProfilePage: React.FC = () => {
   const isVerified = business.is_verified === true;
   const feat = business.sections_config?.features || {};
   const galleryList = Array.isArray(business.gallery_urls) ? business.gallery_urls.filter((u: any) => typeof u === 'string' && u.length > 0) : [];
-  const ratingCount = reviews.length || Number(business.review_count) || 0;
-  const avgRating = reviews.length > 0
-    ? (reviews.reduce((acc, cur) => acc + (Number(cur.rating) || 5), 0) / reviews.length).toFixed(1)
-    : (Number(business.rating) > 0 ? Number(business.rating).toFixed(1) : null);
+  const servicesList = Array.isArray(business.services) ? business.services : (Array.isArray(business.sections_config?.services) ? business.sections_config.services : []);
 
   return (
     <main dir="rtl" className="w-full max-w-md md:max-w-3xl lg:max-w-4xl min-h-screen bg-black flex flex-col pb-12 select-none relative mx-auto md:px-4 font-['Cairo',sans-serif] text-zinc-100">
-      {/* 1. غلاف المنشأة الانسيابي مع زر الرجوع الأيقوني الفاخر */}
-      <div className="relative w-full h-44 sm:h-52 md:h-60 rounded-none md:rounded-2xl bg-gradient-to-r from-[#002244] via-[#003B73] to-[#0A4D80] flex items-center justify-center overflow-hidden mt-0 md:mt-3 shadow-lg">
+      {/* 🌟 1. إعلان البنر العلوي (YR Ads Top Unit) */}
+      <AdBanner placementId="1" className="mb-2 mt-1" />
+
+      {/* 1. غلاف المنشأة الانسيابي المتصل مع زر الرجوع الأيقوني */}
+      <div className="relative w-full h-44 sm:h-52 md:h-60 rounded-none md:rounded-2xl bg-gradient-to-r from-[#002244] via-[#003B73] to-[#0A4D80] flex items-center justify-center overflow-hidden mt-0 md:mt-1 shadow-lg">
         {business.cover_url ? (
           <img src={business.cover_url} alt={business.name} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-zinc-600 text-xs">لا يوجد غلاف معتمد</div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/30" />
 
         <button
           type="button"
@@ -208,7 +246,7 @@ export const BusinessProfilePage: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. بيانات المنشأة الأساسية بانسيابية تامة وبدون أي مربعات معزولة */}
+      {/* 3. بيانات المنشأة الأساسية بانسيابية تامة وبدون مربعات معزولة */}
       <div className="px-4 space-y-1.5 text-right">
         <div className="inline-flex items-center gap-2 flex-wrap">
           <h1 className="text-lg sm:text-xl font-black text-white leading-snug inline">
@@ -217,28 +255,32 @@ export const BusinessProfilePage: React.FC = () => {
           {isVerified && <OfficialVerifiedBadge type={business.badge_type || 'gold'} size={20} />}
         </div>
 
-        {/* سطر التقييمات الطبيعي */}
+        {/* سطر التقييم الواقعي */}
         <div className="flex items-center justify-start gap-1.5 text-[#FFC500] text-xs font-bold">
           <span className="text-white font-medium text-[11px]">★التقييمات</span>
-          <Star className="w-3.5 h-3.5 fill-[#FFC500]" />
-          {avgRating ? (
+          {ratingStats.avg ? (
             <>
-              <span className="text-white text-sm font-black">{avgRating}</span>
-              <span className="text-zinc-400 font-normal text-[11px]">({ratingCount} تقييم)</span>
+              <div className="flex text-[#FFC500]">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className={`w-3 h-3 ${i < Math.round(Number(ratingStats.avg)) ? 'fill-[#FFC500]' : 'text-zinc-700'}`} />
+                ))}
+              </div>
+              <span className="text-white text-sm font-black">{ratingStats.avg}</span>
+              <span className="text-zinc-400 font-normal text-[11px]">({ratingStats.total} تقييم)</span>
             </>
           ) : (
             <span className="text-zinc-400 font-normal text-[11px]">لا توجد تقييمات بعد</span>
           )}
         </div>
 
-        {/* النبذة الانسيابية المتصلة مباشرة */}
+        {/* النبذة الطبيعية */}
         {business.description && (
           <p className="text-zinc-300 text-xs leading-relaxed font-medium pt-1">
             {business.description}
           </p>
         )}
 
-        {/* أوسمة الموقع والمدينة والنشاط */}
+        {/* العنوان والمدينة */}
         <div className="flex items-center justify-start gap-3 text-xs font-semibold text-zinc-400 pt-1 pb-2 flex-wrap">
           {(business.city || business.address) && (
             <span className="flex items-center gap-1">
@@ -268,7 +310,7 @@ export const BusinessProfilePage: React.FC = () => {
               activeTab === 'services' ? 'text-[#FFC500]' : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            المرافق والخدمات
+            الخدمات والمرافق
             {activeTab === 'services' && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FFC500] rounded-full" />}
           </button>
 
@@ -278,25 +320,15 @@ export const BusinessProfilePage: React.FC = () => {
               activeTab === 'reviews' ? 'text-[#FFC500]' : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            التقييمات ({ratingCount})
+            التقييمات ({ratingStats.total})
             {activeTab === 'reviews' && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FFC500] rounded-full" />}
-          </button>
-
-          <button
-            onClick={() => setActiveTab('contact')}
-            className={`pb-2.5 transition relative ${
-              activeTab === 'contact' ? 'text-[#FFC500]' : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            التواصل والدوام
-            {activeTab === 'contact' && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#FFC500] rounded-full" />}
           </button>
         </div>
       </div>
 
-      {/* 5. محتوى التبويبات الانسيابي */}
+      {/* 5. محتوى التبويبات */}
       <div className="px-4 pt-4">
-        {/* تبويب الصور: شبكة بوسترات نظيفة (مثل بوسترات الكريمي في الصورة 2) */}
+        {/* أ) تبويب الصور: شبكة بوسترات مثل بنك الكريمي */}
         {activeTab === 'photos' && (
           <div>
             {galleryList.length > 0 ? (
@@ -315,165 +347,298 @@ export const BusinessProfilePage: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <p className="text-center text-xs text-zinc-500 py-10">لا توجد صور إضافية لهذه المنشأة</p>
+              <p className="text-center text-xs text-zinc-500 py-10">لا توجد صور إضافية مرفوعة</p>
             )}
           </div>
         )}
 
-        {/* تبويب الخدمات والمرافق */}
+        {/* ب) تبويب الخدمات كما وضعتها الإدارة */}
         {activeTab === 'services' && (
           <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-2">
-              {feat.rooms_count > 0 && (
-                <div className="p-3 bg-zinc-950 border border-zinc-800/80 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
-                  <Bed className="w-4 h-4 text-amber-400" /> <span>{feat.rooms_count} غرفة</span>
-                </div>
-              )}
-              {feat.has_pool && (
-                <div className="p-3 bg-zinc-950 border border-zinc-800/80 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
-                  <Waves className="w-4 h-4 text-blue-400" /> <span>مسبح متوفر</span>
-                </div>
-              )}
-              {feat.has_wifi && (
-                <div className="p-3 bg-zinc-950 border border-zinc-800/80 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
-                  <Wifi className="w-4 h-4 text-indigo-400" /> <span>واي فاي مجاني</span>
-                </div>
-              )}
-              {feat.has_parking && (
-                <div className="p-3 bg-zinc-950 border border-zinc-800/80 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
-                  <Car className="w-4 h-4 text-emerald-400" /> <span>مواقف سيارات</span>
-                </div>
-              )}
-              {feat.has_emergency && (
-                <div className="p-3 bg-zinc-950 border border-zinc-800/80 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
-                  <Stethoscope className="w-4 h-4 text-red-400" /> <span>طوارئ 24 ساعة</span>
-                </div>
-              )}
-              {feat.has_delivery && (
-                <div className="p-3 bg-zinc-950 border border-zinc-800/80 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
-                  <Truck className="w-4 h-4 text-emerald-400" /> <span>خدمة توصيل</span>
-                </div>
-              )}
-              {feat.has_family_sections && (
-                <div className="p-3 bg-zinc-950 border border-zinc-800/80 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
-                  <Users className="w-4 h-4 text-amber-400" /> <span>أقسام عوائل</span>
-                </div>
-              )}
-              {feat.gold_carat && (
-                <div className="p-3 bg-zinc-950 border border-zinc-800/80 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
-                  <Gem className="w-4 h-4 text-yellow-400" /> <span>ذهب عيار {feat.gold_carat}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* تبويب التقييمات: نظام حقيقي كامل مع نموذج الإرسال المتصل بـ Supabase */}
-        {activeTab === 'reviews' && (
-          <div className="space-y-5">
-            {/* نموذج التقييم الحقيقي */}
-            <form onSubmit={handleSubmitReview} className="bg-[#0B0F17] p-4 rounded-2xl border border-zinc-800/90 space-y-3">
-              <h3 className="text-xs font-black text-white">هل تعاملت مع هذه المنشأة؟ شارك تجربتك الحقيقية:</h3>
-
-              <div className="flex items-center gap-2 pt-1">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star
-                    key={s}
-                    onClick={() => setUserStars(s)}
-                    className={`w-6 h-6 cursor-pointer ${s <= userStars ? 'text-[#FFC500] fill-[#FFC500]' : 'text-zinc-700'}`}
-                  />
+            {servicesList.length > 0 ? (
+              <div className="space-y-2">
+                {servicesList.map((srv: any, idx: number) => (
+                  <div key={idx} className="p-3 bg-[#0B0F17] border border-zinc-800 rounded-xl flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-white">{srv.name || srv.title}</h4>
+                      {srv.description && <p className="text-[11px] text-zinc-400 mt-0.5">{srv.description}</p>}
+                    </div>
+                    {srv.price && (
+                      <span className="text-xs font-black text-[#FFC500]">
+                        {srv.price} {srv.currency || 'ريال'}
+                      </span>
+                    )}
+                  </div>
                 ))}
               </div>
-
-              <input
-                type="text"
-                placeholder="اسمك الكريم"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                required
-                className="w-full bg-black border border-zinc-800 focus:border-[#FFC500] text-zinc-100 placeholder-zinc-500 px-3.5 py-2.5 rounded-xl text-xs outline-none transition"
-              />
-
-              <textarea
-                placeholder="اكتب ملاحظاتك وتجربتك بأمانة..."
-                value={userComment}
-                onChange={(e) => setUserComment(e.target.value)}
-                rows={2}
-                className="w-full bg-black border border-zinc-800 focus:border-[#FFC500] text-zinc-100 placeholder-zinc-500 p-3 rounded-xl text-xs outline-none transition"
-              />
-
-              {reviewSuccess && (
-                <p className="text-emerald-400 text-xs font-bold text-center">تم إرسال تقييمك وحفظه بنجاح!</p>
-              )}
-
-              <button
-                type="submit"
-                disabled={submittingReview}
-                className="w-full py-2.5 bg-[#FFC500] hover:bg-amber-400 text-black font-black rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-98"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>{submittingReview ? 'جاري الإرسال...' : 'قيّم هذه المنشأة'}</span>
-              </button>
-            </form>
-
-            {/* قائمة التقييمات المحفوظة */}
-            <div className="space-y-2.5">
-              {reviews.map((rev, i) => (
-                <div key={i} className="p-3 rounded-xl bg-zinc-950 border border-zinc-900 space-y-1 text-right">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-white">{rev.user_name}</span>
-                    <div className="flex text-[#FFC500] text-xs">
-                      {Array.from({ length: Number(rev.rating) || 5 }).map((_, si) => (
-                        <Star key={si} className="w-3 h-3 fill-[#FFC500]" />
-                      ))}
-                    </div>
+            ) : (
+              /* إذا لم تكن هناك خدمات بقوائم مسجلة، تظهر المرافق المعتمدة */
+              <div className="grid grid-cols-2 gap-2">
+                {feat.rooms_count > 0 && (
+                  <div className="p-3 bg-[#0B0F17] border border-zinc-800 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
+                    <Bed className="w-4 h-4 text-amber-400" /> <span>{feat.rooms_count} غرفة</span>
                   </div>
-                  {rev.comment && <p className="text-xs text-zinc-300 leading-relaxed">{rev.comment}</p>}
-                </div>
-              ))}
-            </div>
+                )}
+                {feat.has_pool && (
+                  <div className="p-3 bg-[#0B0F17] border border-zinc-800 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
+                    <Waves className="w-4 h-4 text-blue-400" /> <span>مسبح</span>
+                  </div>
+                )}
+                {feat.has_wifi && (
+                  <div className="p-3 bg-[#0B0F17] border border-zinc-800 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
+                    <Wifi className="w-4 h-4 text-indigo-400" /> <span>واي فاي</span>
+                  </div>
+                )}
+                {feat.has_parking && (
+                  <div className="p-3 bg-[#0B0F17] border border-zinc-800 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
+                    <Car className="w-4 h-4 text-emerald-400" /> <span>مواقف سيارات</span>
+                  </div>
+                )}
+                {feat.has_emergency && (
+                  <div className="p-3 bg-[#0B0F17] border border-zinc-800 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
+                    <Stethoscope className="w-4 h-4 text-red-400" /> <span>طوارئ 24 ساعة</span>
+                  </div>
+                )}
+                {feat.has_delivery && (
+                  <div className="p-3 bg-[#0B0F17] border border-zinc-800 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
+                    <Truck className="w-4 h-4 text-emerald-400" /> <span>خدمة توصيل</span>
+                  </div>
+                )}
+                {feat.has_family_sections && (
+                  <div className="p-3 bg-[#0B0F17] border border-zinc-800 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
+                    <Users className="w-4 h-4 text-amber-400" /> <span>أقسام عوائل</span>
+                  </div>
+                )}
+                {feat.gold_carat && (
+                  <div className="p-3 bg-[#0B0F17] border border-zinc-800 rounded-xl text-xs flex items-center gap-2 text-zinc-300">
+                    <Gem className="w-4 h-4 text-yellow-400" /> <span>ذهب عيار {feat.gold_carat}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
-        {/* تبويب التواصل والدوام */}
-        {activeTab === 'contact' && (
-          <div className="space-y-4">
-            <div className="space-y-2.5">
-              {business.phone && (
-                <a
-                  href={`tel:${business.phone}`}
-                  className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 text-xs transition shadow-lg"
-                >
-                  <Phone className="w-4 h-4" />
-                  <span>اتصال هاتفي مباشر: {business.phone}</span>
-                </a>
+        {/* 🌟 2. إعلان منتصف الصفحة (YR Ads In-Feed Unit) */}
+        <AdBanner placementId="2" className="my-4" />
+
+        {/* جـ) تبويب التقييمات: نظام أشرطة التوزيع المطابق تماماً لصورة بنك الكريمي (الصورة 2) */}
+        {activeTab === 'reviews' && (
+          <div className="space-y-5">
+            <div className="bg-[#0B0F17] p-5 rounded-2xl border border-zinc-800 space-y-4">
+              <h3 className="text-sm font-black text-white">التقييمات</h3>
+
+              {ratingStats.total > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center border-b border-zinc-800/80 pb-4">
+                  {/* النتيجة الكبيرة */}
+                  <div className="text-right">
+                    <span className="text-zinc-400 text-xs block mb-1">تقييم الزوار</span>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-3xl font-black text-white">{ratingStats.avg}</span>
+                      <span className="text-zinc-500 text-sm font-bold">/ 5</span>
+                    </div>
+                    <div className="flex text-[#FFC500] my-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(Number(ratingStats.avg)) ? 'fill-[#FFC500]' : 'text-zinc-700'}`} />
+                      ))}
+                    </div>
+                    <span className="text-xs text-zinc-400">{ratingStats.total} تقييم</span>
+                  </div>
+
+                  {/* أشرطة التوزيع 5 نجوم إلى 1 نجمة (مثل صورة الكريمي) */}
+                  <div className="space-y-1.5 text-xs text-zinc-400">
+                    {[5, 4, 3, 2, 1].map((s) => (
+                      <div key={s} className="flex items-center gap-2">
+                        <span className="w-4 text-left font-bold">{s}★</span>
+                        <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-[#FFC500] rounded-full"
+                            style={{ width: `${(ratingStats.dist as any)[s]}%` }}
+                          />
+                        </div>
+                        <span className="w-8 text-right font-medium text-[11px]">{(ratingStats.dist as any)[s]}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4 border-b border-zinc-800/80">
+                  <p className="text-zinc-500 text-xs">لا توجد تقييمات بعد لهذه المنشأة.</p>
+                </div>
               )}
 
-              {(business.whatsapp || business.phone) && (
-                <a
-                  href={`https://wa.me/${(business.whatsapp || business.phone).replace(/[^0-9]/g, '')}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 text-xs transition shadow-lg"
+              {/* دعوة التقييم والزر الذهبي */}
+              <div className="text-center space-y-2 pt-1">
+                <p className="text-xs font-bold text-zinc-300">هل تعاملت مع هذه المنشأة؟</p>
+                <p className="text-[11px] text-zinc-500">شارك تجربتك وساعد الآخرين في اتخاذ القرار</p>
+
+                <button
+                  type="button"
+                  onClick={() => setShowReviewModal(!showReviewModal)}
+                  className="w-full py-2.5 rounded-xl bg-[#FFC500] hover:bg-amber-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-98"
                 >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>محادثة واتساب سريعة</span>
-                </a>
+                  <Star className="w-3.5 h-3.5 fill-black" />
+                  <span>قيّم هذه المنشأة</span>
+                </button>
+              </div>
+
+              {/* نافذة / نموذج إدخال التقييم الحقيقي مع رسائل الخطأ والنجاح الصريحة */}
+              {showReviewModal && (
+                <form onSubmit={handleSubmitReview} className="bg-black p-4 rounded-xl border border-zinc-800 space-y-3 pt-3">
+                  <div className="flex items-center justify-center gap-2 pt-1">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star
+                        key={s}
+                        onClick={() => setUserStars(s)}
+                        className={`w-7 h-7 cursor-pointer transition ${
+                          s <= userStars ? 'text-[#FFC500] fill-[#FFC500]' : 'text-zinc-700 hover:text-zinc-500'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <input
+                    type="text"
+                    placeholder="اسمك الكريم"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    required
+                    className="w-full bg-[#0E1422] border border-zinc-800 focus:border-[#FFC500] text-zinc-100 placeholder-zinc-500 px-3 py-2 rounded-lg text-xs outline-none transition"
+                  />
+
+                  <textarea
+                    placeholder="اكتب تفاصيل تجربتك بأمانة..."
+                    value={userComment}
+                    onChange={(e) => setUserComment(e.target.value)}
+                    rows={2}
+                    className="w-full bg-[#0E1422] border border-zinc-800 focus:border-[#FFC500] text-zinc-100 placeholder-zinc-500 p-3 rounded-lg text-xs outline-none transition"
+                  />
+
+                  {/* رسائل التنبيه الواضحة */}
+                  {reviewStatus && (
+                    <div className={`p-2.5 rounded-lg text-xs font-bold flex items-center gap-1.5 ${
+                      reviewStatus.type === 'success' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                    }`}>
+                      {reviewStatus.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                      <span>{reviewStatus.message}</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={submittingReview}
+                    className="w-full py-2 bg-[#FFC500] text-black font-bold rounded-lg text-xs flex items-center justify-center gap-1"
+                  >
+                    <span>{submittingReview ? 'جاري الإرسال...' : 'نشر التقييم'}</span>
+                  </button>
+                </form>
               )}
             </div>
 
-            {business.sections_config?.working_hours && (
-              <div className="p-3 bg-zinc-950 rounded-xl border border-zinc-900 text-xs flex items-center justify-between text-zinc-300">
-                <span className="text-zinc-500">ساعات الدوام:</span>
-                <span className="font-bold text-white">{business.sections_config.working_hours}</span>
+            {/* قائمة المراجعات الحقيقية المسجلة */}
+            {reviews.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-zinc-400">آخر التقييمات:</h4>
+                {reviews.map((r, i) => (
+                  <div key={i} className="p-3 bg-[#0B0F17] rounded-xl border border-zinc-800 text-right space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 text-xs">
+                          {r.user_name?.charAt(0) || 'ز'}
+                        </div>
+                        <span className="text-xs font-bold text-white">{r.user_name}</span>
+                      </div>
+                      <div className="flex text-[#FFC500]">
+                        {Array.from({ length: Number(r.rating || r.stars) || 5 }).map((_, si) => (
+                          <Star key={si} className="w-2.5 h-2.5 fill-[#FFC500]" />
+                        ))}
+                      </div>
+                    </div>
+                    {r.comment && <p className="text-xs text-zinc-300 pt-0.5 leading-relaxed">{r.comment}</p>}
+                  </div>
+                ))}
               </div>
             )}
           </div>
         )}
       </div>
 
-      <AdBanner placementId="3" className="mt-6 px-4" />
+      {/* 6. قسم "تواصل معنا" الأيقوني الدائري الفاخر (مطابق لأسفل صفحة البنك في الصورة 2) */}
+      <div className="px-4 pt-8 pb-4 text-center space-y-3 border-t border-zinc-900 mt-6">
+        <h3 className="text-xs font-bold text-zinc-400">تواصل معنا</h3>
 
+        <div className="flex items-center justify-center gap-3.5 flex-wrap">
+          {business.phone && (
+            <a
+              href={`tel:${business.phone}`}
+              className="w-10 h-10 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 flex items-center justify-center text-zinc-300 hover:text-[#FFC500] transition shadow-md"
+              title="اتصال هاتفي"
+            >
+              <Phone className="w-4 h-4" />
+            </a>
+          )}
+
+          {(business.whatsapp || business.phone) && (
+            <a
+              href={`https://wa.me/${(business.whatsapp || business.phone).replace(/[^0-9]/g, '')}`}
+              target="_blank"
+              rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 flex items-center justify-center text-zinc-300 hover:text-emerald-400 transition shadow-md"
+              title="محادثة واتساب"
+            >
+              <MessageCircle className="w-4 h-4" />
+            </a>
+          )}
+
+          {business.website_url && (
+            <a
+              href={business.website_url}
+              target="_blank"
+              rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 flex items-center justify-center text-zinc-300 hover:text-blue-400 transition shadow-md"
+              title="الموقع الإلكتروني"
+            >
+              <Globe className="w-4 h-4" />
+            </a>
+          )}
+
+          {business.email && (
+            <a
+              href={`mailto:${business.email}`}
+              className="w-10 h-10 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 flex items-center justify-center text-zinc-300 hover:text-amber-400 transition shadow-md"
+              title="البريد الإلكتروني"
+            >
+              <Mail className="w-4 h-4" />
+            </a>
+          )}
+
+          {(business.address || business.city) && (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((business.name || '') + ' ' + (business.address || business.city || ''))}`}
+              target="_blank"
+              rel="noreferrer"
+              className="w-10 h-10 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 flex items-center justify-center text-zinc-300 hover:text-rose-400 transition shadow-md"
+              title="الموقع الجغرافي"
+            >
+              <MapPin className="w-4 h-4" />
+            </a>
+          )}
+
+          {business.sections_config?.working_hours && (
+            <div
+              className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 shadow-md cursor-default"
+              title={`ساعات العمل: ${business.sections_config.working_hours}`}
+            >
+              <Clock className="w-4 h-4" />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 🌟 3. إعلان البنر السفلي (YR Ads Bottom Unit) */}
+      <AdBanner placementId="3" className="mt-4 px-4" />
+
+      {/* نافذة تكبير الصورة (Lightbox) */}
       {selectedImage && (
         <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4" onClick={() => setSelectedImage(null)}>
           <div className="relative max-w-2xl max-h-[85vh]" onClick={e => e.stopPropagation()}>

@@ -103,7 +103,7 @@ export const BusinessesPage: React.FC = () => {
     <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Cairo',sans-serif] text-zinc-100">
       <AdBanner placementId="1" className="mb-2" />
 
-      {/* رأس الصفحة النظيف كما طلبته تماماً */}
+      {/* رأس الصفحة النظيف */}
       <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
@@ -123,7 +123,7 @@ export const BusinessesPage: React.FC = () => {
         </button>
       </div>
 
-      {/* أدوات البحث والمدينة */}
+      {/* شريط البحث والمدينة */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <div className="sm:col-span-2 relative">
           <Search className="w-3.5 h-3.5 text-zinc-500 absolute right-3 top-1/2 -translate-y-1/2" />
@@ -155,7 +155,7 @@ export const BusinessesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* المحتوى مطابق لكروت البنوك بالملي (الصورة 4) */}
+      {/* قائمة البطاقات المطابقة لكروت البنوك بالملي */}
       {loading ? (
         <div className="py-16 text-center flex flex-col items-center justify-center">
           <Loader2 className="w-7 h-7 animate-spin text-[#FFC500] mb-2" />
@@ -191,10 +191,12 @@ export const BusinessesPage: React.FC = () => {
   );
 };
 
-// بطاقة المنشأة المطابقة حرفياً لبطاقات دليل البنوك في الصورة 4
 function BankCardView({ item, onSelect }: { item: any; onSelect: () => void }) {
-  const hasRating = Number(item.rating) > 0 && Number(item.review_count) > 0;
   const isVerified = item.is_verified === true;
+  // التقييم يظهر فقط إن كان حقيقياً ومسجلاً
+  const reviewCount = Number(item.review_count) || 0;
+  const ratingValue = Number(item.rating) || 0;
+  const hasRealRating = ratingValue > 0 && reviewCount > 0;
 
   return (
     <article
@@ -202,7 +204,7 @@ function BankCardView({ item, onSelect }: { item: any; onSelect: () => void }) {
       className="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer group"
     >
       <div>
-        {/* 1. الغلاف */}
+        {/* الغلاف */}
         <div className="relative w-full h-44 sm:h-52 bg-gradient-to-r from-[#002244] via-[#003B73] to-[#0A4D80] flex items-center justify-center overflow-hidden">
           {item.cover_url ? (
             <img src={item.cover_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -212,7 +214,7 @@ function BankCardView({ item, onSelect }: { item: any; onSelect: () => void }) {
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-transparent to-transparent" />
         </div>
 
-        {/* 2. الشعار متداخل في اليمين (-mt-8) وزر إثبات الملكية في اليسار */}
+        {/* الشعار متداخل باليمين وزر إثبات الملكية باليسار */}
         <div className="px-4 relative flex items-end justify-between -mt-8 mb-2">
           <div className="relative z-10 order-1">
             <div className="w-16 h-16 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden shrink-0 bg-[#0B0F17]">
@@ -240,7 +242,7 @@ function BankCardView({ item, onSelect }: { item: any; onSelect: () => void }) {
           </div>
         </div>
 
-        {/* 3. الاسم + الشارة المعتمدة فقط إن وجدت */}
+        {/* الاسم + الشارة المعتمدة فقط */}
         <div className="px-4 pt-1 pb-3 text-right space-y-1.5">
           <div className="inline-flex items-center gap-1.5 flex-wrap">
             <h2 className="text-sm sm:text-base font-black text-white leading-tight group-hover:text-[#FFC500] transition">
@@ -249,13 +251,13 @@ function BankCardView({ item, onSelect }: { item: any; onSelect: () => void }) {
             {isVerified && <OfficialVerifiedBadge type={item.badge_type || 'gold'} size={18} />}
           </div>
 
-          {/* 4. سطر التقييم */}
-          {hasRating ? (
+          {/* التقييم الواقعي فقط بدون أي أرقام من الرأس */}
+          {hasRealRating ? (
             <div className="flex items-center gap-1.5 text-xs text-[#FFC500] font-bold">
               <span className="text-white font-medium text-[11px]">★التقييمات</span>
               <Star className="w-3.5 h-3.5 fill-[#FFC500]" />
-              <span className="text-white text-sm font-black">{Number(item.rating).toFixed(1)}</span>
-              <span className="text-zinc-400 font-normal text-[11px]">({item.review_count} تقييم)</span>
+              <span className="text-white text-sm font-black">{ratingValue.toFixed(1)}</span>
+              <span className="text-zinc-400 font-normal text-[11px]">({reviewCount} تقييم)</span>
             </div>
           ) : (
             <div className="text-right pt-0.5">
@@ -263,14 +265,14 @@ function BankCardView({ item, onSelect }: { item: any; onSelect: () => void }) {
             </div>
           )}
 
-          {/* 5. الوصف المختصر */}
+          {/* الوصف */}
           {item.description && (
             <p className="text-xs text-zinc-300 leading-relaxed pt-1 line-clamp-2">
               {item.description}
             </p>
           )}
 
-          {/* 6. العنوان والمدينة */}
+          {/* المدينة والعنوان */}
           {(item.city || item.address) && (
             <div className="flex items-center justify-start gap-1 text-xs text-zinc-400 pt-1">
               <MapPin className="w-3.5 h-3.5 text-[#FFC500] shrink-0" />
@@ -280,7 +282,7 @@ function BankCardView({ item, onSelect }: { item: any; onSelect: () => void }) {
         </div>
       </div>
 
-      {/* 7. الزر الذهبي الفخم المطابق للبطاقة الرسمية */}
+      {/* الزر الذهبي الفاخر الموحد */}
       <div className="p-4 pt-1">
         <button
           type="button"
