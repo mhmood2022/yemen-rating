@@ -2,10 +2,19 @@ import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { OFFICIAL_CATEGORIES } from '../../data/categories';
 import {
-  LayoutDashboard, FolderTree, ShieldCheck,
-  Store, Gavel, Megaphone, Users,
-  BarChart3, Settings, Building2,
-  ChevronDown, ChevronUp
+  LayoutDashboard,
+  FolderTree,
+  ShieldCheck,
+  Store,
+  Gavel,
+  Megaphone,
+  Users,
+  BarChart3,
+  Settings,
+  Building2,
+  ChevronDown,
+  ChevronUp,
+  Star
 } from 'lucide-react';
 
 const ADMIN_OPERATIONS = [
