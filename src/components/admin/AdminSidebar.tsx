@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { OFFICIAL_CATEGORIES } from '../../data/categories';
 import {
   LayoutDashboard, FolderTree, ShieldCheck,
