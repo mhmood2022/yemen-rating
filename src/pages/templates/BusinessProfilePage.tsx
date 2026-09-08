@@ -160,8 +160,17 @@ export const BusinessProfilePage: React.FC = () => {
         setReviewStatus(null);
       }, 2500);
     } catch (err: any) {
-      console.error('Review submit failed:', err);
-      setReviewStatus({ type: 'error', message: 'حدث خطأ أثناء حفظ التقييم، يرجى المحاولة لاحقاً.' });
+      console.error("REVIEW INSERT DETAILED ERROR:", {
+        message: err?.message,
+        code: err?.code,
+        details: err?.details,
+        hint: err?.hint,
+        raw: err
+      });
+      setReviewStatus({ 
+        type: "error", 
+        message: "فشل حفظ التقييم: " + (err?.message || "خطأ غير معروف") + (err?.code ? " (كود: " + err.code + ")" : "")
+      });
     } finally {
       setSubmittingReview(false);
     }
