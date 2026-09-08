@@ -140,7 +140,7 @@ export const BusinessProfilePage: React.FC = () => {
         entity_id: business.id,
         entity_type: 'business',
         user_name: userName.trim(),
-        rating: userStars,
+        stars: userStars,
         comment: userComment.trim() || null,
         created_at: new Date().toISOString()
       };
