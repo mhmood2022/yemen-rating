@@ -22,12 +22,15 @@ export const ClaimsManager: React.FC = () => {
   const fetchClaims = async () => {
     try {
       setLoading(true);
-      const { data: requests, error } = await supabase
-        .from('business_claims')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const [verifRes, bizRes] = await Promise.all([
+        supabase.from('verification_requests').select('*').order('created_at', { ascending: false }),
+        supabase.from('business_claims').select('*').order('created_at', { ascending: false })
+      ]);
 
-      if (error) throw error;
+      const requests = [
+        ...(verifRes.data || []),
+        ...(bizRes.data || [])
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       if (requests && requests.length > 0) {
         // جلب أسماء البنوك لربط الاسم بمعرف المنشأة
@@ -37,9 +40,9 @@ export const ClaimsManager: React.FC = () => {
         const mapped: ClaimRequest[] = requests.map((r: any) => ({
           id: r.id,
           companyName: bankMap.get(r.entity_id) || r.notes || (r.entity_type === 'bank' ? 'بنك' : 'منشأة'),
-          applicantName: r.applicant_name || 'مفوض معتمد',
+          applicantName: r.applicant_name || r.claimant_name || 'مفوض معتمد',
           applicantRole: r.applicant_role || 'ممثل رسمي',
-          phone: r.phone || '—',
+          phone: r.phone || r.claimant_phone || '—',
           submittedAt: new Date(r.created_at).toLocaleDateString('ar-YE', {
             month: 'short',
             day: 'numeric',
@@ -48,7 +51,7 @@ export const ClaimsManager: React.FC = () => {
           }),
           status: (r.status || 'pending').toLowerCase() as 'pending' | 'approved' | 'rejected',
           documentsCount: 1,
-          entityId: r.entity_id,
+          entityId: r.entity_id || r.business_id,
           entityType: r.entity_type
         }));
         setClaims(mapped);
@@ -71,10 +74,10 @@ export const ClaimsManager: React.FC = () => {
       const dbStatus = newStatus === 'approved' ? 'APPROVED' : 'REJECTED';
 
       // 1. تحديث حالة الطلب في verification_requests
-      await supabase
-        .from('business_claims')
-        .update({ status: dbStatus, reviewed_at: new Date().toISOString() })
-        .eq('id', id);
+      await Promise.all([
+        supabase.from('verification_requests').update({ status: dbStatus }).eq('id', id),
+        supabase.from('business_claims').update({ status: dbStatus }).eq('id', id)
+      ]);
 
       // 2. إذا تمت الموافقة، توثيق البنك فوراً في جدول banks وجعل شارة التوثيق ذهبية
       if (newStatus === 'approved' && entityId) {

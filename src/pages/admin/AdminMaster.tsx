@@ -4,7 +4,7 @@ import { AdminSidebar } from '../../components/admin/AdminSidebar';
 import { AdminLogin } from './auth/AdminLogin';
 import { 
   Menu, ShieldAlert, LogOut, Bell, 
-  ShieldCheck, AlertTriangle, DollarSign, Gavel, Star, CheckCheck 
+  ShieldCheck, AlertTriangle, DollarSign, Gavel, Star, CheckCheck, X, ArrowRight 
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
@@ -120,7 +120,6 @@ export const AdminMaster: React.FC = () => {
   const handleNotificationClick = async (item: SystemNotification) => {
     setNotificationsOpen(false);
 
-    // إذا كان إشعاراً في جدول admin_notifications يتم تعليمه كمقروء
     if (!item.id.startsWith('claim-')) {
       await supabase
         .from('admin_notifications')
@@ -128,11 +127,8 @@ export const AdminMaster: React.FC = () => {
         .eq('id', item.id);
     }
 
-    if (item.link) {
-      navigate(item.link);
-    } else {
-      navigate('/admin/claims');
-    }
+    // فتح نافذة تفاصيل الإشعار بالكامل
+    setSelectedNotification(item);
   };
 
   if (checking) {
@@ -188,7 +184,15 @@ export const AdminMaster: React.FC = () => {
 
               {/* القائمة المنسدلة الشاملة */}
               {notificationsOpen && (
-                <div className="absolute left-0 mt-2 w-80 sm:w-96 bg-[#0B0F17] border border-[#1F2937] rounded-xl shadow-2xl p-3 z-50 text-right">
+                <>
+                  {/* خلفية لإغلاق القائمة عند النقر خارجها */}
+                  <div
+                    className="fixed inset-0 z-40 bg-black/40 sm:bg-transparent"
+                    onClick={() => setNotificationsOpen(false)}
+                    aria-hidden="true"
+                  />
+                  {/* لوحة الإشعارات المتوافقة مع الهاتف والكمبيوتر */}
+                  <div className="fixed sm:absolute top-16 sm:top-full left-2 right-2 sm:left-0 sm:right-auto sm:mt-2 sm:w-96 bg-[#0B0F17] border border-[#1F2937] rounded-xl shadow-2xl p-3 z-50 text-right max-h-[80vh] sm:max-h-[500px] flex flex-col">
                   <div className="flex justify-between items-center pb-2 border-b border-[#1F2937] mb-2">
                     <span className="text-xs font-bold text-[#FFC500] flex items-center gap-1.5">
                       <Bell size={14} /> مركز تنبيهات وأنشطة المنصة
@@ -243,6 +247,7 @@ export const AdminMaster: React.FC = () => {
                     </button>
                   </div>
                 </div>
+                </>
               )}
             </div>
 
@@ -262,6 +267,75 @@ export const AdminMaster: React.FC = () => {
           <Outlet />
         </main>
       </div>
+      {/* نافذة تفاصيل الإشعار المنبثقة الشاملة */}
+      {selectedNotification && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          onClick={() => setSelectedNotification(null)}
+        >
+          <div
+            className="bg-[#0B0F17] border border-[#1F2937] rounded-2xl p-5 max-w-md w-full shadow-2xl text-right text-white space-y-4"
+            onClick={(e) => e.stopPropagation()}
+            dir="rtl"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-[#1F2937]">
+              <div className="flex items-center gap-2 text-sm font-bold text-[#FFC500]">
+                {getNotificationIcon(selectedNotification.type)}
+                <span>{selectedNotification.title}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedNotification(null)}
+                className="p-1.5 rounded-lg bg-[#161D2B] text-gray-400 hover:text-white hover:bg-[#1F2937] transition cursor-pointer"
+                aria-label="إغلاق"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs leading-relaxed text-[#D1D5DB] bg-[#121620] p-3.5 rounded-xl border border-[#1F2937]/50">
+              <p className="font-semibold text-sm text-white mb-1">تفاصيل التنبيه الكاملة:</p>
+              <p className="whitespace-pre-wrap leading-normal text-zinc-300 font-medium">
+                {selectedNotification.message}
+              </p>
+            </div>
+
+            <div className="flex justify-between items-center text-[11px] text-gray-400">
+              <span>تاريخ ووقت التنبيه:</span>
+              <span className="font-mono text-zinc-300">
+                {new Date(selectedNotification.created_at).toLocaleString("ar-YE", {
+                  dateStyle: "medium",
+                  timeStyle: "short"
+                })}
+              </span>
+            </div>
+
+            <div className="pt-2 border-t border-[#1F2937] flex items-center gap-2">
+              {selectedNotification.link && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const link = selectedNotification.link;
+                    setSelectedNotification(null);
+                    if (link) navigate(link);
+                  }}
+                  className="flex-1 py-2.5 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                >
+                  <span>الانتقال للمعاينة والإجراء</span>
+                  <ArrowRight size={14} className="rtl:rotate-180" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setSelectedNotification(null)}
+                className="px-4 py-2.5 rounded-xl bg-[#161D2B] hover:bg-[#1F2937] text-gray-300 text-xs font-bold transition cursor-pointer"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
