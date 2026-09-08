@@ -27,6 +27,7 @@ export const AdminMaster: React.FC = () => {
   const [notifications, setNotifications] = useState<SystemNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [notificationsOpen, setNotificationsOpen] = useState<boolean>(false);
+  const [selectedNotification, setSelectedNotification] = useState<SystemNotification | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
