@@ -1,5 +1,4 @@
-import React, { useState, useMemo } from 'react';
-import { useAdmin } from '../../context/AdminContext';
+import React, { useState, useEffect } from 'react';
 import { BusinessItem } from '../../types/business';
 import { BusinessCard } from '../../components/business/BusinessCard';
 import { YrAdBanner } from '../../components/ads/YrAdBanner';
@@ -7,8 +6,9 @@ import { SearchInput } from '../../components/ui/SearchInput';
 import { Select } from '../../components/ui/Select';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { CITIES_LIST } from '../../data/demoBusinesses';
-import { ArrowRight, Star, ShieldCheck, Sparkles, Building2 } from 'lucide-react';
+import { ArrowRight, Star, ShieldCheck, Sparkles, Building2, Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { fetchBusinesses } from '../../services/businessService';
 
 interface CategoryHubPageProps {
   categoryTitle: string;
@@ -22,163 +22,145 @@ export const CategoryHubPage: React.FC<CategoryHubPageProps> = ({
   categorySlug,
   onNavigate,
 }) => {
-  const { businesses, ads } = useAdmin();
+  const [businesses, setBusinesses] = useState<BusinessItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [activeTier, setActiveTier] = useState<'all' | 'premium' | 'verified'>('all');
 
-  // Sponsored Banner for Top of Category Page
-  const topCategoryAd = ads.find(
-    (a) => a.status === 'published' && (a.placements.includes('category_page') || a.placements.includes('home_top'))
-  );
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+    // جلب البيانات حصرياً من Supabase مع تطبيق فلترة التصنيف والحالة active
+    fetchBusinesses(categorySlug)
+      .then((data: any[]) => {
+        if (isMounted) {
+          // تحويل البيانات لتتطابق مع BusinessItem
+          setBusinesses(data as BusinessItem[]);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error('Error loading category businesses:', err);
+        if (isMounted) setLoading(false);
+      });
 
-  // Category Entities
-  const categoryBusinesses = useMemo(() => {
+    return () => {
+      isMounted = false;
+    };
+  }, [categorySlug]);
+
+  // Sponsored Banner for Top of Category Page (إذا وجد)
+  const topCategoryAd = null;
+
+  // Category Entities مع فلترة البحث والمدينة
+  const categoryBusinesses = React.useMemo(() => {
     return businesses.filter((b) => {
-      const matchCat = b.category === categoryTitle || b.category.includes(categoryTitle);
-      if (!matchCat) return false;
       if (selectedCity && b.city !== selectedCity) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        return b.name.toLowerCase().includes(q) || b.description.toLowerCase().includes(q);
+        return b.name?.toLowerCase().includes(q) || b.description?.toLowerCase().includes(q);
       }
       return true;
     });
-  }, [businesses, categoryTitle, selectedCity, searchQuery]);
+  }, [businesses, selectedCity, searchQuery]);
 
-  // Three Tiers Breakdown (مستويات الظهور الثلاثة)
-  const premiumVerified = categoryBusinesses.filter((b) => b.isVerified && (b.tier === 'PREMIUM_VERIFIED' || b.yrScore >= 95));
-  const verifiedOnly = categoryBusinesses.filter((b) => b.isVerified && b.tier !== 'PREMIUM_VERIFIED' && b.yrScore < 95);
-  const allRemaining = categoryBusinesses;
+  const premiumVerified = categoryBusinesses.filter((b: any) => b.isVerified && (b.tier === 'PREMIUM_VERIFIED' || (b.yrScore || 0) >= 95));
+  const standardVerified = categoryBusinesses.filter((b: any) => b.isVerified && !premiumVerified.includes(b));
+  const communityRated = categoryBusinesses.filter((b: any) => !b.isVerified);
 
-  const cityOptions = [
-    { label: 'جميع المدن', value: '' },
-    ...CITIES_LIST.map((c) => ({ label: c, value: c })),
-  ];
+  const displayedBusinesses = React.useMemo(() => {
+    if (activeTier === 'premium') return [...premiumVerified, ...standardVerified];
+    if (activeTier === 'verified') return standardVerified;
+    return categoryBusinesses;
+  }, [activeTier, categoryBusinesses, premiumVerified, standardVerified]);
 
   return (
-    <div className="space-y-6 pb-8 max-w-6xl mx-auto text-right">
-      {/* Top Banner Ad if Available */}
-      {topCategoryAd && <YrAdBanner ad={topCategoryAd} className="mb-2" />}
-
-      {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] dark:border-[#222222]">
-        <div className="flex items-center gap-2.5">
-          <button
-            type="button"
+    <div className="min-h-screen bg-[#0A0A0F] text-white pb-24" dir="rtl">
+      {/* الهيدر العلوي */}
+      <div className="bg-[#12121A] border-b border-zinc-800/80 sticky top-0 z-30 px-4 py-3 shadow-md">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <Building2 className="w-5 h-5" />
+            </div>
+            <h1 className="text-base sm:text-lg font-black text-white">{categoryTitle}</h1>
+          </div>
+          <button 
             onClick={() => onNavigate('/directory')}
-            className="p-1 rounded-lg text-[#64748B] dark:text-[#A1A1AA] hover:text-[#0B1F3A] dark:hover:text-white"
-            aria-label="الرجوع"
+            className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 hover:text-white"
           >
-            <ArrowRight size={18} strokeWidth={2} />
+            <ArrowRight className="w-4 h-4" />
           </button>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-[#0B1F3A] dark:text-white">
-              دليل {categoryTitle} في اليمن
-            </h1>
-            <p className="text-xs text-[#64748B] dark:text-[#A1A1AA]">
-              استكشف أفضل {categoryTitle} الموثقة، التقييمات الحقيقية، والخدمات المعتمدة
-            </p>
-          </div>
-        </div>
-
-        <span className="px-3 py-1 rounded-full bg-[#F5C400]/20 text-[#F5C400] text-xs font-black">
-          {categoryBusinesses.length} جهة معتمدة
-        </span>
-      </div>
-
-      {/* Filter Toolbar */}
-      <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-        <div className="sm:col-span-8">
-          <SearchInput
-            placeholder={`ابحث داخل ${categoryTitle}...`}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onClear={() => setSearchQuery('')}
-          />
-        </div>
-        <div className="sm:col-span-4">
-          <Select
-            value={selectedCity}
-            options={cityOptions}
-            onChange={setSelectedCity}
-            placeholder="جميع المحافظات"
-          />
         </div>
       </div>
 
-      {/* Tiered Content Sections */}
-      {categoryBusinesses.length === 0 ? (
-        <EmptyState
-          title={`لم يتم العثور على نتائج في ${categoryTitle}`}
-          description="جرب تغيير معايير البحث أو اختيار محافظة أخرى."
-          actionLabel="عرض كافة الأنشطة"
-          onAction={() => {
-            setSelectedCity('');
-            setSearchQuery('');
-          }}
-        />
-      ) : (
-        <div className="space-y-8">
-          {/* Level 1: الجهات المميزة والموثقة (Premium Verified) */}
-          {premiumVerified.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs font-black text-[#F5C400] pb-1 border-b border-[#F5C400]/30">
-                <Sparkles size={16} strokeWidth={2.5} />
-                <span>الجهات المميزة والموثقة (الأعلى تصنيفاً)</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
-                {premiumVerified.map((biz) => (
-                  <BusinessCard
-                    key={biz.id}
-                    business={biz}
-                    variant="topRated"
-                    onNavigate={(id) => onNavigate(`/business/${id}`)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+      <div className="max-w-4xl mx-auto px-4 py-4 space-y-4">
+        {topCategoryAd && <YrAdBanner ad={topCategoryAd} />}
 
-          {/* Level 2: الجهات الموثقة (Verified) */}
-          {verifiedOnly.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-xs font-black text-[#16A34A] dark:text-[#22C55E] pb-1 border-b border-[#16A34A]/30">
-                <ShieldCheck size={16} strokeWidth={2.5} />
-                <span>الجهات الموثقة رسمياً</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
-                {verifiedOnly.map((biz) => (
-                  <BusinessCard
-                    key={biz.id}
-                    business={biz}
-                    variant="standard"
-                    onNavigate={(id) => onNavigate(`/business/${id}`)}
-                  />
-                ))}
-              </div>
+        {/* البحث والفلترة */}
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder={`ابحث في ${categoryTitle}...`} />
             </div>
-          )}
-
-          {/* Level 3: جميع الجهات في التصنيف */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-xs font-black text-[#0B1F3A] dark:text-white pb-1 border-b border-[#E2E8F0] dark:border-[#222222]">
-              <Building2 size={16} strokeWidth={2} />
-              <span>جميع {categoryTitle} المتاحة</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
-              {allRemaining.map((biz) => (
-                <BusinessCard
-                  key={biz.id}
-                  business={biz}
-                  variant="standard"
-                  onNavigate={(id) => onNavigate(`/business/${id}`)}
-                />
-              ))}
+            <div className="w-40">
+              <Select
+                value={selectedCity}
+                onChange={setSelectedCity}
+                options={[{ value: '', label: 'كل المدن' }, ...CITIES_LIST.map(c => ({ value: c, label: c }))]}
+              />
             </div>
           </div>
+
+          {/* تباين المستويات */}
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            <button
+              onClick={() => setActiveTier('all')}
+              className={cn("px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition", activeTier === 'all' ? "bg-amber-400 text-black" : "bg-[#14141C] text-zinc-400 border border-zinc-800")}
+            >
+              الكل ({categoryBusinesses.length})
+            </button>
+            <button
+              onClick={() => setActiveTier('premium')}
+              className={cn("px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition", activeTier === 'premium' ? "bg-amber-400 text-black" : "bg-[#14141C] text-zinc-400 border border-zinc-800")}
+            >
+              المميزة والموثقة
+            </button>
+          </div>
         </div>
-      )}
+
+        {/* المحتوى */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 space-y-3">
+            <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+            <p className="text-xs text-zinc-400">جاري تحميل المنشآت النشطة...</p>
+          </div>
+        ) : displayedBusinesses.length === 0 ? (
+          <div className="py-12">
+            <EmptyState
+              title={`لا توجد منشآت نشطة في ${categoryTitle}`}
+              description="لم يتم العثور على أي نتائج مطابقة للبحث أو الفلتر الحالي."
+              actionLabel="إعادة ضبط الفلاتر"
+              onAction={() => { setSearchQuery(''); setSelectedCity(''); setActiveTier('all'); }}
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {displayedBusinesses.map((biz, idx) => (
+              <BusinessCard
+                key={biz.id}
+                business={biz}
+                rank={idx + 1}
+                onOpenProfile={(b) => onNavigate(`/businesses/${b.slug || b.id}`)}
+                onOpenQuote={() => {}}
+                onToggleCompare={() => {}}
+                isCompared={false}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
