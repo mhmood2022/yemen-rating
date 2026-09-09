@@ -98,8 +98,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     <!-- 1. غلاف البنك -->
     <div id="bank-cover" class="relative w-full h-44 sm:h-52 md:h-60 rounded-none md:rounded-2xl bg-gradient-to-r from-[#002244] via-[#003B73] to-[#0A4D80] flex items-center justify-center overflow-hidden mt-0 md:mt-3 shadow-lg">
       <!-- زر الرجوع الأيقوني الفاخر -->
-      <button type="button" onclick="window.history.length > 1 ? window.history.back() : window.location.href='/banks'" class="absolute top-3.5 right-3.5 z-20 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/15 text-zinc-300 hover:text-brand-gold flex items-center justify-center transition active:scale-90 shadow-md cursor-pointer group" title="رجوع" aria-label="رجوع">
-        <i class="fa-solid fa-arrow-right text-xs transition-transform group-hover:-translate-x-0.5"></i>
+      <button type="button" onclick="window.location.href='/'" class="absolute top-3.5 right-3.5 z-20 text-[#EAB308] hover:text-white p-1 bg-transparent border-0 transition active:scale-90 cursor-pointer flex items-center justify-center" title="رجوع" aria-label="رجوع">
+        <i class="fa-solid fa-arrow-right text-xl"></i>
       </button>
       <div class="flex items-center gap-2">
         <div class="text-right">
@@ -115,8 +115,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     <!-- 2. الشعار متداخل في اليمين + زر إثبات الملكية في اليسار -->
     <div class="px-4 relative flex items-end justify-between -mt-10 mb-2">
       <div class="relative order-1">
-        <div class="w-20 h-20 rounded-2xl bg-white p-2 shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden">
-          <img id="bank-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3C/svg%3E" class="w-full h-full object-contain" alt="شعار البنك" />
+        <div class="w-20 h-20 rounded-2xl bg-[#0B0F17] shadow-2xl border-2 border-[#1F2937] flex items-center justify-center overflow-hidden">
+          <img id="bank-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3C/svg%3E" class="w-full h-full object-cover rounded-2xl" alt="شعار المنشأة" />
         </div>
       </div>
 
@@ -319,7 +319,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           </div>
           <h4 class="text-base font-black text-white">شكراً لمشاركتك القيّمة!</h4>
           <p class="text-xs text-zinc-400 leading-relaxed">
-            تم استلام تقييمك بنجاح. رأيك الصادق يسهم في تعزيز الشفافية ومساعدة المجتمع في اختيار أفضل الخدمات المصرفية.
+            تم تسجيل ونشر تقييمك بنجاح! رأيك الصادق يسهم في تعزيز الشفافية ومساعدة المجتمع في اختيار أفضل المنشآت والخدمات.
           </p>
           <button type="button" onclick="closeReviewModal()" class="w-full py-2.5 rounded-xl bg-brand-gold text-black font-black text-xs hover:bg-brand-goldHover transition cursor-pointer shadow-md">
             حسناً، تم
@@ -337,6 +337,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
             </button>
           </div>
 
+          <div id="review-error-box" class="hidden bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-bold p-2.5 rounded-xl text-center"></div>
           <form id="review-form" onsubmit="submitReview(event)" class="space-y-3 text-xs">
             <div>
               <div class="flex items-center justify-between mb-1">
@@ -429,6 +430,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     const SUPABASE_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE';
 
+    const DEFAULT_SHOWCASE_POSTS = [];
+
     const FALLBACK_BANK = {
       id: "1d6d2164-edc6-492c-b73d-af60c973ef4a",
       name: "بنك التضامن",
@@ -443,32 +446,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       email: "info@tadhamonbank.com",
       website_url: "https://tadhamonbank.com",
       address: "شارع جمال - تعز",
-      posts: [
-        {
-          id: 1,
-          title: "بطاقة الإنترنت الافتراضية للتسوق الآمن",
-          image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&auto=format&fit=crop&q=80",
-          tag: "تسوق أونلاين بأمان"
-        },
-        {
-          id: 2,
-          title: "باقة بطاقات فيزا المتنوعة لجميع احتياجاتك",
-          image: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=80",
-          tag: "بطاقات تناسبك"
-        },
-        {
-          id: 3,
-          title: "تطبيق تضامن موبايل - بنكك بين يديك",
-          image: "https://images.unsplash.com/photo-1556742049-0a67c5574f73?w=800&auto=format&fit=crop&q=80",
-          tag: "تضامن موبايل"
-        },
-        {
-          id: 4,
-          title: "تمويل منظومات الطاقة الشمسية والمشاريع التنموية",
-          image: "https://images.unsplash.com/photo-1509391365360-2e959784a276?w=800&auto=format&fit=crop&q=80",
-          tag: "طاقة بديلة"
-        }
-      ],
+      posts: [],
       offers: [
         {
           id: 1,
@@ -535,17 +513,25 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       `;
     }
 
-    function updateRatingsDisplay(reviewsList) {
+        function updateRatingsDisplay(reviewsList) {
+      const avgNumEl = document.getElementById("header-rating-num");
+      const countEl = document.getElementById("header-rating-count");
+      const starsSlot = document.getElementById("header-stars-slot");
+      const calcAvgEl = document.getElementById("calc-avg-rating");
+      const calcTotEl = document.getElementById("calc-total-reviews");
+
       if (!reviewsList || reviewsList.length === 0) {
-        document.getElementById('calc-avg-rating').innerText = '0.0';
-        document.getElementById('calc-total-reviews').innerText = 'لا توجد تقييمات بعد';
+        if (avgNumEl) avgNumEl.innerText = "--";
+        if (countEl) countEl.innerText = "(لا توجد تقييمات)";
+        if (starsSlot) starsSlot.innerHTML = '<span class="text-zinc-500 text-[11px] font-normal">كن أول من يقيّم</span>';
+        if (calcAvgEl) calcAvgEl.innerText = "0.0";
+        if (calcTotEl) calcTotEl.innerText = "لا توجد تقييمات بعد";
         return;
       }
 
       const total = reviewsList.length;
       let sum = 0;
       const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-
       reviewsList.forEach(r => {
         const rating = Math.min(5, Math.max(1, parseInt(r.stars || r.rating) || 5));
         counts[rating] = (counts[rating] || 0) + 1;
@@ -553,10 +539,19 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       });
 
       const avg = (sum / total).toFixed(1);
-      document.getElementById('calc-avg-rating').innerText = avg;
-      document.getElementById('header-rating-num').innerText = avg;
-      document.getElementById('calc-total-reviews').innerText = `${total} تقييم`;
-      document.getElementById('header-rating-count').innerText = `${total} تقييم`;
+      if (avgNumEl) avgNumEl.innerText = avg;
+      if (countEl) countEl.innerText = `(${total} تقييم)`;
+      if (calcAvgEl) calcAvgEl.innerText = avg;
+      if (calcTotEl) calcTotEl.innerText = `${total} تقييم`;
+
+      if (starsSlot) {
+        let starsHtml = "";
+        for (let i = 1; i <= 5; i++) {
+          if (i <= Math.round(avg)) starsHtml += '<i class="fa-solid fa-star"></i>';
+          else starsHtml += '<i class="fa-regular fa-star text-zinc-600"></i>';
+        }
+        starsSlot.innerHTML = starsHtml;
+      }
 
       for (let star = 1; star <= 5; star++) {
         const pct = Math.round(((counts[star] || 0) / total) * 100);
@@ -573,51 +568,153 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
       try {
         const isUUID = /^[0-9a-f-]{36}$/i.test(bankId);
-        const filterCol = isUUID ? 'id' : 'slug';
-        const apiUrl = `${SUPABASE_URL}/rest/v1/banks?${filterCol}=eq.${bankId}&select=*`;
-        const resp = await fetch(apiUrl, {
+        const filterCol = isUUID ? "id" : "slug";
+
+        // 1. فحص جدول businesses أولاً لدعم كل المنشآت والشركات
+        let apiUrl = `${SUPABASE_URL}/rest/v1/businesses?${filterCol}=eq.${bankId}&select=*`;
+        let res = await fetch(apiUrl, {
           headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`
           }
         });
-        const rows = await resp.json();
-        const b = (rows && rows.length > 0) ? rows[0] : null;
+        let rows = await res.json().catch(() => []);
+        let b = (Array.isArray(rows) && rows.length > 0) ? rows[0] : null;
+
+        // 2. إذا لم تكن في businesses، الفحص في جدول banks
+        if (!b) {
+          apiUrl = `${SUPABASE_URL}/rest/v1/banks?${filterCol}=eq.${bankId}&select=*`;
+          res = await fetch(apiUrl, {
+            headers: {
+              "apikey": SUPABASE_KEY,
+              "Authorization": `Bearer ${SUPABASE_KEY}`
+            }
+          });
+          rows = await res.json().catch(() => []);
+          b = (Array.isArray(rows) && rows.length > 0) ? rows[0] : null;
+        }
 
         if (b) {
           bankData.id = b.id;
           bankData.name = b.name || bankData.name;
           bankData.description = b.description || b.short_description || bankData.description;
-          bankData.badge_type = b.badge_type || 'gold';
+          bankData.badge_type = b.badge_type || "gold";
+          bankData.is_verified = b.is_verified === true;
           bankData.phone = b.phone || bankData.phone;
           bankData.whatsapp = b.whatsapp || bankData.whatsapp;
-          bankData.website_url = b.website || b.website_url;
-          bankData.address = b.address || b.city || bankData.address;
-          bankData.logo_url = b.logo_url || bankData.logo_url;
-          bankData.cover_url = b.cover_url || bankData.cover_url;
-          if (b.posts && Array.isArray(b.posts) && b.posts.length > 0) {
-            bankData.posts = b.posts;
+          bankData.email = b.email || bankData.email;
+          bankData.website_url = b.website_url || b.website || bankData.website_url;
+          bankData.address = b.address || b.city || "";
+          bankData.location = (b.city && b.address) ? `${b.city} - ${b.address}` : (b.city || b.address || "اليمن");
+          bankData.logo_url = b.logo_url || "";
+          bankData.cover_url = b.cover_url || "";
+
+          // جلب اسم التصنيف الحقيقي من categories
+          if (b.category_id) {
+            try {
+              const catResp = await fetch(`${SUPABASE_URL}/rest/v1/categories?id=eq.${b.category_id}&select=id,name,slug`, {
+                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+              });
+              const catRows = await catResp.json();
+              if (catRows && catRows.length > 0) {
+                bankData.category = catRows[0].name;
+              }
+            } catch (_) {}
+          }
+          if (!bankData.category) {
+            bankData.category = b.sub_category || b.category || "منشأة معتمدة";
           }
 
-          const revUrl = `${SUPABASE_URL}/rest/v1/reviews?entity_type=eq.bank&entity_id=eq.${b.id}&order=created_at.desc&select=*`;
-          const revResp = await fetch(revUrl, {
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-          });
-          const revRows = await revResp.json();
-          if (Array.isArray(revRows) && revRows.length > 0) {
-            bankData.reviews = revRows;
+                    // قراءة الصور الحقيقية للبنوك (b.posts) والمنشآت الأخرى (b.gallery_urls / sections_config)
+          let finalPosts = [];
+
+          // 1. فحص حقل posts المباشر (الخاص بالبنوك)
+          if (b.posts) {
+            let p = b.posts;
+            if (typeof p === "string") {
+              try { p = JSON.parse(p); } catch (_) {}
+            }
+            if (Array.isArray(p) && p.length > 0) {
+              finalPosts = p;
+            }
+          }
+
+          // 2. فحص حقل gallery_urls (الخاص بالمنشآت العامة والشركات)
+          if (finalPosts.length === 0 && b.gallery_urls && Array.isArray(b.gallery_urls)) {
+            const validUrls = b.gallery_urls.filter(Boolean);
+            if (validUrls.length > 0) {
+              finalPosts = validUrls.map((url, i) => ({
+                id: i + 1,
+                image: url,
+                tag: b.name || "معرض الصور",
+                title: (b.name || "المنشأة") + " - صورة " + (i + 1)
+              }));
+            }
+          }
+
+          // 3. فحص sections_config.posts
+          if (finalPosts.length === 0 && b.sections_config && Array.isArray(b.sections_config.posts)) {
+            finalPosts = b.sections_config.posts;
+          }
+
+          // النتيجة: تظهر صور البنك الحقيقية فوراً، والمنشآت الأخرى إن نشرت صوراً ظهرت، وإن لم تنشر تظل فارغة
+          bankData.posts = finalPosts;
+
+          // 2. الخدمات: مهيأة لقراءة أي بيانات تعبئها الإدارة في sections_config أو services
+          const adminServices = (b.sections_config && Array.isArray(b.sections_config.services)) ? b.sections_config.services : (Array.isArray(b.services) ? b.services : []);
+          bankData.services = adminServices;
+
+          // 3. العروض: مهيأة لقراءة أي بيانات تعبئها الإدارة في sections_config أو offers
+          const adminOffers = (b.sections_config && Array.isArray(b.sections_config.offers)) ? b.sections_config.offers : (Array.isArray(b.offers) ? b.offers : []);
+          bankData.offers = adminOffers;
+
+          // جلب التقييمات الحقيقية للمنشأة
+          try {
+            const revUrl = `${SUPABASE_URL}/rest/v1/reviews?entity_id=eq.${b.id}&order=created_at.desc&select=*`;
+            const revRes = await fetch(revUrl, {
+              headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+            });
+            const revRows = await revRes.json().catch(() => []);
+            if (Array.isArray(revRows) && revRows.length > 0) {
+              bankData.reviews = revRows;
+            }
+          } catch (re) {
+            console.warn("Reviews fetch error:", re);
           }
         }
       } catch (err) {
         console.warn("Fetch fallback activated:", err);
-      }
+      } finally {
+        currentBank = bankData;
+        currentPosts = bankData.posts || FALLBACK_BANK.posts;
+        try {
+          renderUI();
+        } catch (ue) {
+          console.error("renderUI error:", ue);
+        }
 
-      currentBank = bankData;
-      currentPosts = bankData.posts || FALLBACK_BANK.posts;
-      renderUI();
+        // إخفاء فوري وتلقائي لشاشة التحميل
+        const splash = document.getElementById("page-splash-loader");
+        if (splash) {
+          splash.style.opacity = "0";
+          splash.style.pointerEvents = "none";
+          setTimeout(() => { splash.style.display = "none"; }, 150);
+        }
+      }
     }
 
     function renderUI() {
+
+        // إخفاء زر إثبات الملكية نهائياً إذا كانت المنشأة موثقة
+        const claimBtn = document.getElementById('claim-btn');
+        if (claimBtn) {
+          if (currentBank.ownership_status === 'VERIFIED' || currentBank.claim_status === 'APPROVED') {
+            claimBtn.classList.add('hidden');
+          } else {
+            claimBtn.classList.remove('hidden');
+          }
+        }
+
       // تحديث الشعار الحقيقي
       if (currentBank.logo_url) {
         const logoImg = document.getElementById('bank-logo');
@@ -662,69 +759,102 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       document.getElementById('contact-wa').href = currentBank.whatsapp ? (currentBank.whatsapp.startsWith('http') ? currentBank.whatsapp : `https://wa.me/${currentBank.whatsapp}`) : "#";
       document.getElementById('contact-mail').href = currentBank.email ? `mailto:${currentBank.email}` : "#";
 
+            // 1. عرض التصنيف الحقيقي للمنشأة
+      const catEl = document.getElementById('bank-category');
+      if (catEl) catEl.innerText = currentBank.category || "منشأة معتمدة";
+
+      // 2. عرض المنشورات الحقيقية فقط أو بطاقة نظيفة فارغة
       const postsContainer = document.getElementById('posts-container');
-      postsContainer.innerHTML = currentPosts.map((post, index) => `
-        <article onclick="openLightbox(${index})" class="group relative bg-[#0D0D0D] rounded-2xl overflow-hidden border border-zinc-800/80 aspect-square cursor-pointer active:scale-95 transition-all shadow-md">
-          <img src="${post.image || post.file_url}" alt="معرض الصور" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-        </article>
-      `).join('');
+      if (postsContainer) {
+        if (!currentPosts || currentPosts.length === 0) {
+          postsContainer.className = "col-span-2";
+          postsContainer.innerHTML = `<div class="col-span-2 py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-zinc-800 text-zinc-500 text-xs">
+            <i class="fa-solid fa-images text-zinc-600 text-2xl mb-2 block"></i>
+            <span>لا توجد منشورات أو صور مضافة لهذه المنشأة حالياً.</span>
+          </div>`;
+        } else {
+          postsContainer.className = "grid grid-cols-2 gap-2.5";
+          postsContainer.innerHTML = currentPosts.map((post, index) => `
+            <article onclick="openLightbox(${index})" class="group relative bg-[#0D0D0D] rounded-2xl overflow-hidden border border-zinc-800/80 aspect-square cursor-pointer active:scale-95 transition-all shadow-md">
+              <img src="${post.image || post.file_url}" alt="معرض الصور" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            </article>
+          `).join('');
+        }
+      }
 
+      // 3. عرض العروض الحقيقية فقط أو بطاقة نظيفة فارغة
       const offersContainer = document.getElementById('offers-container');
-      offersContainer.innerHTML = (currentBank.offers || FALLBACK_BANK.offers).map(offer => `
-        <div class="bg-[#0D0D0D] border border-zinc-800 p-3.5 rounded-xl text-right">
-          <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
-            <span class="bg-brand-gold text-black font-black text-[10px] px-2.5 py-0.5 rounded">${offer.tag}</span>
-            <span class="text-[10px] text-zinc-400 font-medium">${offer.expiry}</span>
-          </div>
-          <h4 class="text-sm font-bold text-white leading-snug">${offer.title}</h4>
-          <p class="text-xs text-zinc-400 mt-1.5 leading-relaxed">${offer.desc}</p>
-        </div>
-      `).join('');
+      if (offersContainer) {
+        const realOffers = currentBank.offers || [];
+        if (realOffers.length === 0) {
+          offersContainer.innerHTML = `<div class="py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-zinc-800 text-zinc-500 text-xs">
+            <i class="fa-solid fa-tag text-zinc-600 text-2xl mb-2 block"></i>
+            <span>لا توجد عروض ترويجية نشطة حالياً لهذه المنشأة.</span>
+          </div>`;
+        } else {
+          offersContainer.innerHTML = realOffers.map(offer => `
+            <div class="bg-[#0D0D0D] border border-zinc-800 p-3.5 rounded-xl text-right">
+              <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
+                <span class="bg-brand-gold text-black font-black text-[10px] px-2.5 py-0.5 rounded">${offer.tag || "عرض خاص"}</span>
+                <span class="text-[10px] text-zinc-400 font-medium">${offer.expiry || ""}</span>
+              </div>
+              <h4 class="text-sm font-bold text-white leading-snug">${offer.title}</h4>
+              <p class="text-xs text-zinc-400 mt-1.5 leading-relaxed">${offer.desc}</p>
+            </div>
+          `).join('');
+        }
+      }
 
+      // 4. عرض الخدمات الحقيقية فقط أو بطاقة نظيفة فارغة
       const servicesContainer = document.getElementById('services-container');
-      servicesContainer.innerHTML = (currentBank.services || FALLBACK_BANK.services).map(service => `
-        <div class="bg-[#0D0D0D] border border-zinc-800 p-3 rounded-xl flex items-center justify-between text-right">
-          <i class="${service.icon || 'fa-solid fa-briefcase'} text-brand-gold text-2xl ml-3 shrink-0"></i>
-          <div>
-            <h4 class="text-sm font-bold text-white">${service.service_name || service.title}</h4>
-            <p class="text-xs text-zinc-400 mt-0.5 leading-snug">${service.description || service.desc}</p>
-          </div>
-        </div>
-      `).join('');
+      if (servicesContainer) {
+        const realServices = currentBank.services || [];
+        if (realServices.length === 0) {
+          servicesContainer.innerHTML = `<div class="py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-zinc-800 text-zinc-500 text-xs">
+            <i class="fa-solid fa-briefcase text-zinc-600 text-2xl mb-2 block"></i>
+            <span>سيتم إضافة قائمة الخدمات المعتمدة قريباً من قبل إدارة المنشأة.</span>
+          </div>`;
+        } else {
+          servicesContainer.innerHTML = realServices.map(service => `
+            <div class="bg-[#0D0D0D] border border-zinc-800 p-3 rounded-xl flex items-center justify-between text-right">
+              <i class="${service.icon || 'fa-solid fa-check-circle'} text-brand-gold text-2xl ml-3 shrink-0"></i>
+              <div>
+                <h4 class="text-sm font-bold text-white">${service.service_name || service.title}</h4>
+                <p class="text-xs text-zinc-400 mt-0.5 leading-snug">${service.description || service.desc}</p>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
 
       const revs = currentBank.reviews || FALLBACK_BANK.reviews;
       updateRatingsDisplay(revs);
 
-      let allRevs = currentBank.reviews || [];
-      const reviewsContainer = document.getElementById('reviews-container');
+            let allRevs = currentBank.reviews || [];
+      const reviewsContainer = document.getElementById("reviews-container");
       if (!allRevs || allRevs.length === 0) {
-        reviewsContainer.innerHTML = '<div class="py-6 px-4 text-center rounded-xl bg-zinc-950 border border-zinc-900 text-xs text-zinc-400">لا توجد تقييمات لهذا البنك حتى الآن. كن أول من يقيّم!</div>';
-        return;
-      }
-      const showRevs = window.showAllReviewsExpanded ? allRevs : allRevs.slice(0, 2);
-      let rHtml = showRevs.map(rev => {
-        let starsHtml = '';
-        const rVal = parseInt(rev.stars || rev.rating) || 5;
-        for (let i = 1; i <= 5; i++) {
-          if (i <= rVal) starsHtml += '<i class="fa-solid fa-star"></i>';
-          else starsHtml += '<i class="fa-regular fa-star text-zinc-600"></i>';
+        if (reviewsContainer) {
+          reviewsContainer.innerHTML = '<div class="py-6 px-4 text-center rounded-xl bg-zinc-950 border border-zinc-900 text-xs text-zinc-400">لا توجد تقييمات لهذه المنشأة حتى الآن. كن أول من يقيّم!</div>';
         }
-        return `
-          <div class="border border-zinc-800 rounded-full py-1.5 px-3 flex items-center justify-between bg-black">
-            <div class="flex items-center gap-2.5">
-              ${(rev.user_avatar && !rev.user_avatar.includes('unsplash')) ? '<img src="' + rev.user_avatar + '" class="w-7 h-7 rounded-full object-cover border border-zinc-800" alt="avatar" />' : '<div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 shrink-0"><i class="fa-solid fa-user text-[11px]"></i></div>'}
-              <span class="text-xs text-zinc-200 font-medium">${rev.user_name || rev.name}</span>
-            </div>
-            <div class="flex text-brand-gold text-[10px] gap-0.5">
-              ${starsHtml}
-            </div>
-          </div>
-        `;
-      }).join('');
-      if (allRevs.length > 2) {
-        rHtml += '<button type="button" onclick="window.showAllReviewsExpanded = !window.showAllReviewsExpanded; renderUI();" class="w-full py-2.5 mt-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-brand-gold text-xs font-bold flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer shadow-sm"><span>' + (window.showAllReviewsExpanded ? 'عرض أقل' : 'عرض جميع التقييمات (' + allRevs.length + ')') + '</span><i class="fa-solid ' + (window.showAllReviewsExpanded ? 'fa-chevron-up' : 'fa-chevron-down') + ' text-[10px]"></i></button>';
+      } else {
+        const showRevs = window.showAllReviewsExpanded ? allRevs : allRevs.slice(0, 2);
+        let rHtml = showRevs.map(rev => {
+          let starsHtml = "";
+          const rVal = parseInt(rev.stars || rev.rating) || 5;
+          for (let i = 1; i <= 5; i++) {
+            if (i <= rVal) starsHtml += '<i class="fa-solid fa-star"></i>';
+            else starsHtml += '<i class="fa-regular fa-star text-zinc-600"></i>';
+          }
+          return '<div class="border border-zinc-800 rounded-full py-1.5 px-3 flex items-center justify-between bg-black"><div class="flex items-center gap-2.5">' +
+            ((rev.user_avatar && !rev.user_avatar.includes("unsplash")) ? '<img src="' + rev.user_avatar + '" class="w-7 h-7 rounded-full object-cover border border-zinc-800" alt="avatar" />' : '<div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 shrink-0"><i class="fa-solid fa-user text-[11px]"></i></div>') +
+            '<span class="text-xs text-zinc-200 font-medium">' + (rev.user_name || rev.name) + '</span></div><div class="flex text-brand-gold text-[10px] gap-0.5">' + starsHtml + '</div></div>';
+        }).join("");
+
+        if (allRevs.length > 2) {
+          rHtml += '<button type="button" onclick="window.showAllReviewsExpanded = !window.showAllReviewsExpanded; renderUI();" class="w-full py-2.5 mt-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-brand-gold text-xs font-bold flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer shadow-sm"><span>' + (window.showAllReviewsExpanded ? "عرض أقل" : "عرض جميع التقييمات (" + allRevs.length + ")") + '</span><i class="fa-solid ' + (window.showAllReviewsExpanded ? "fa-chevron-up" : "fa-chevron-down") + ' text-[10px]"></i></button>';
+        }
+        if (reviewsContainer) reviewsContainer.innerHTML = rHtml;
       }
-      reviewsContainer.innerHTML = rHtml;
     }
 
     function switchTab(tabName) {
@@ -834,60 +964,77 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       }
     }
 
-    async function submitReview(e) {
+        async function submitReview(e) {
       e.preventDefault();
-      const rating = parseInt(document.getElementById('selected-rating').value);
+      const rating = parseInt(document.getElementById("selected-rating").value);
+      const hintEl = document.getElementById("rating-hint");
+      const errBox = document.getElementById("review-error-box");
+      if (errBox) errBox.classList.add("hidden");
+
       if (!rating || rating < 1 || rating > 5) {
-        alert('يرجى تحديد عدد النجوم لتقييمك أولاً بالنقر على النجوم.');
+        if (hintEl) {
+          hintEl.innerText = "يرجى تحديد النجوم أولاً بالنقر عليها!";
+          hintEl.style.color = "#EF4444";
+        }
         return;
       }
 
-      const name = document.getElementById('reviewer-name').value.trim();
-      const comment = document.getElementById('reviewer-comment').value.trim();
-      const btn = document.getElementById('review-submit-btn');
-
+      const name = document.getElementById("reviewer-name").value.trim();
+      const comment = document.getElementById("reviewer-comment").value.trim();
+      const btn = document.getElementById("review-submit-btn");
       btn.disabled = true;
-      btn.innerText = "جاري الإرسال...";
+      btn.innerText = "جاري الحفظ والنشر...";
 
       const newRev = {
-        entity_type: 'bank',
+        entity_type: currentBank.entity_type || "business",
         entity_id: currentBank.id,
-        user_name: name,
-        user_avatar: null, // استخدام الأيقونة الحيادية الأنيقة
+        user_name: name || "زائر موثوق",
+        user_avatar: null,
         stars: rating,
-        comment: comment
+        comment: comment || null,
+        created_at: new Date().toISOString()
       };
 
       try {
-        await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
-          method: 'POST',
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
+          method: "POST",
           headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
           },
           body: JSON.stringify(newRev)
         });
 
-        // تحديث الواجهة محلياً بالتقييم الجديد فوراً
-        allReviews = [newRev, ...allReviews];
-        currentBank.reviews = allReviews;
-        updateRatingsDisplay(allReviews);
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          console.error("Supabase review insert error:", resp.status, errData);
+          throw new Error(errData.message || "حدث خطأ أثناء حفظ التقييم");
+        }
 
-        // إظهار بطاقة الشكر الفاخرة بنفس هوية المنصة (بدون alert)
-        document.getElementById('review-form-view').classList.add('hidden');
-        document.getElementById('review-success-view').classList.remove('hidden');
-        document.getElementById('review-form').reset();
+        // تحديث الواجهة محلياً بالتقييم الجديد فوراً
+        currentBank.reviews = [newRev, ...(currentBank.reviews || [])];
+        updateRatingsDisplay(currentBank.reviews);
+        try { renderUI(); } catch (_) {}
+
+        // إظهار بطاقة الشكر والنجاح الفاخرة بنفس هوية المنصة (بدون alert)
+        document.getElementById("review-form-view").classList.add("hidden");
+        document.getElementById("review-success-view").classList.remove("hidden");
+        document.getElementById("review-form").reset();
       } catch (err) {
-        console.error('Submit review error:', err);
-        alert('تنبيه: حدث خطأ أثناء إرسال التقييم، يرجى المحاولة مرة أخرى.');
+        console.error("Submit review error:", err);
+        const errContainer = document.getElementById("review-error-box");
+        if (errContainer) {
+          errContainer.innerText = "تنبيه: " + (err.message || "حدث خطأ أثناء حفظ التقييم، يرجى المحاولة لاحقاً.");
+          errContainer.classList.remove("hidden");
+        }
       } finally {
         btn.disabled = false;
         btn.innerText = "إرسال التقييم";
       }
     }
-    
+
     function openClaimModal() {
       const sView = document.getElementById('claim-success-view');
       const fView = document.getElementById('claim-form-view');
@@ -952,13 +1099,21 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
     window.addEventListener('DOMContentLoaded', loadBankProfile);
 
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('claim') === '1' || urlParams.get('claim') === 'true') {
+      setTimeout(() => {
+        if (typeof openClaimModal === 'function') openClaimModal();
+      }, 400);
+    }
+
+
     setTimeout(() => {
       const splash = document.getElementById('page-splash-loader');
       if (splash && splash.style.display !== 'none') {
         splash.style.opacity = '0';
         setTimeout(() => { splash.style.display = 'none'; }, 300);
       }
-    }, 3500);
+    }, 600);
   
   </script>
 

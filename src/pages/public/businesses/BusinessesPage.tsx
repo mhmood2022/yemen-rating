@@ -1,18 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  Search, MapPin, ArrowRight, Star,
-  Loader2, Frown, Store, ShieldCheck
+import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { 
+  Search, MapPin, Star, ArrowRight, Loader2, Frown, Sparkles,
+  Utensils, Bed, Stethoscope, Truck, GraduationCap, Building, ShieldCheck,
+  ChevronDown, Store, ShoppingBag, Car, Scissors, Gem, HeartPulse, Check
 } from 'lucide-react';
-import { AdBanner } from '../../../components/common/AdBanner';
-import { OFFICIAL_CATEGORIES } from '../../../data/categories';
 import { supabase } from '../../../lib/supabase';
+import { AdBanner } from '../../../components/common/AdBanner';
 
-
-function OfficialVerifiedBadge({ type = 'gold', size = 18 }: { type?: string; size?: number }) {
-  let badgeColor = '#FFC500';
-  if (type === 'blue') badgeColor = '#1D9BF0';
-  if (type === 'silver' || type === 'gray') badgeColor = '#9CA3AF';
+function OfficialVerifiedBadge({ type = "gold", size = 18 }: { type?: string; size?: number }) {
+  let badgeColor = "#EAB308";
+  if (type === "blue") badgeColor = "#1D9BF0";
+  if (type === "silver" || type === "gray") badgeColor = "#9CA3AF";
 
   return (
     <svg
@@ -33,264 +32,359 @@ function OfficialVerifiedBadge({ type = 'gold', size = 18 }: { type?: string; si
   );
 }
 
+export const CATEGORY_CONFIG: { [slug: string]: { name: string; icon: any } } = {
+  'transport': { name: 'شركات النقل', icon: Truck },
+  'hospitals': { name: 'المستشفيات', icon: HeartPulse },
+  'clinics': { name: 'العيادات', icon: Stethoscope },
+  'pharmacies': { name: 'الصيدليات', icon: Stethoscope },
+  'laboratories': { name: 'المختبرات', icon: Stethoscope },
+  'restaurants': { name: 'المطاعم والأغذية', icon: Utensils },
+  'cafes': { name: 'الكافيهات', icon: Utensils },
+  'buffets': { name: 'البوفيهات', icon: Utensils },
+  'hotels': { name: 'الفنادق', icon: Bed },
+  'chalets': { name: 'الشاليهات', icon: Bed },
+  'supermarkets': { name: 'السوبرماركت', icon: Store },
+  'malls': { name: 'المولات', icon: Building },
+  'shopping-centers': { name: 'مراكز التسوق', icon: ShoppingBag },
+  'shops': { name: 'المحلات والمتاجر', icon: Store },
+  'car-dealerships': { name: 'معارض السيارات', icon: Car },
+  'motorcycle-dealerships': { name: 'معارض الدراجات النارية', icon: Car },
+  'cleaning-companies': { name: 'شركات التنظيف', icon: Sparkles },
+  'universities': { name: 'الجامعات', icon: GraduationCap },
+  'schools': { name: 'المدارس', icon: GraduationCap },
+  'parks': { name: 'الحدائق', icon: Sparkles },
+  'wedding-halls': { name: 'صالات الأفراح', icon: Sparkles },
+  'barbershops': { name: 'الحلاقون', icon: Scissors },
+  'beauty-salons': { name: 'الكوافير', icon: Sparkles },
+  'saunas': { name: 'الحمامات البخارية', icon: Sparkles },
+  'clothing-shoes': { name: 'محلات الملابس والأحذية', icon: ShoppingBag },
+  'jewelry-gold': { name: 'محلات الذهب', icon: Gem },
+  'poultry-farms': { name: 'مزارع الدواجن', icon: Building },
+  'optics-hearing': { name: 'البصريات والسمعيات', icon: Stethoscope }
+};
+
+const CITIES_LIST = [
+  { id: 'all', name: 'كل المدن والمحافظات' },
+  { id: 'صنعاء', name: 'صنعاء' },
+  { id: 'عدن', name: 'عدن' },
+  { id: 'تعز', name: 'تعز' },
+  { id: 'الحديدة', name: 'الحديدة' },
+  { id: 'حضرموت', name: 'حضرموت' },
+  { id: 'إب', name: 'إب' },
+  { id: 'ذمار', name: 'ذمار' },
+  { id: 'مأرب', name: 'مأرب' }
+];
 
 export const BusinessesPage: React.FC = () => {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const categoryParam = searchParams.get('category') || 'all';
+  const navigate = useNavigate();
 
-  const [selectedCity, setSelectedCity] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const currentCategorySlug = searchParams.get('category') || 'transport';
+  const categoryConfig = CATEGORY_CONFIG[currentCategorySlug] || { name: 'المنشآت المعتمدة', icon: Building };
+  const CategoryIcon = categoryConfig.icon;
+
   const [businesses, setBusinesses] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  const currentCategory = OFFICIAL_CATEGORIES.find(c => c.slug === categoryParam);
-  const CategoryIcon = currentCategory?.icon || Store;
+  const [realReviewsMap, setRealReviewsMap] = useState<Map<string, { count: number; avg: number }>>(new Map());
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCity, setSelectedCity] = useState('all');
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const cityDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let isMounted = true;
-    const fetchCategoryBusinesses = async () => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(e.target as Node)) {
+        setCityDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const fetchCategoryData = async () => {
       setLoading(true);
       try {
+        const { data: catData } = await supabase.from('categories').select('id, name, slug');
+        const matchedCat = (catData || []).find(
+          c => c.slug === currentCategorySlug || c.id === currentCategorySlug || c.name === currentCategorySlug
+        );
+
         let query = supabase.from('businesses').select('*');
 
-        if (categoryParam !== 'all') {
-          const { data: catRow } = await supabase
-            .from('categories')
-            .select('id, slug')
-            .eq('slug', categoryParam)
-            .maybeSingle();
-
-          if (catRow && catRow.id) {
-            query = query.eq('category_id', catRow.id);
-          } else {
-            query = query.eq('category_id', categoryParam);
-          }
+        if (matchedCat) {
+          query = query.eq('category_id', matchedCat.id);
+        } else {
+          query = query.or(`sub_category.eq.${currentCategorySlug},category_id.eq.${currentCategorySlug}`);
         }
 
-        const { data, error } = await query
-          .eq('status', 'active')
-          .order('created_at', { ascending: false });
+        query = query.or('status.eq.active,status.eq.ACTIVE,status.is.null');
 
-        if (!error && data && isMounted) {
-          setBusinesses(data);
-        } else if (isMounted) {
-          setBusinesses([]);
+        const [bizRes, revRes] = await Promise.all([
+          query.order('is_verified', { ascending: false }),
+          supabase.from('reviews').select('entity_id, stars')
+        ]);
+
+        const revMap = new Map<string, { count: number; avg: number }>();
+        if (revRes.data && Array.isArray(revRes.data)) {
+          const grouped = new Map<string, number[]>();
+          revRes.data.forEach((r: any) => {
+            if (r.entity_id) {
+              const arr = grouped.get(r.entity_id) || [];
+              const s = Number(r.stars);
+              if (s >= 1 && s <= 5) arr.push(s);
+              grouped.set(r.entity_id, arr);
+            }
+          });
+
+          grouped.forEach((starsArr, entId) => {
+            const count = starsArr.length;
+            const avg = Number((starsArr.reduce((a, b) => a + b, 0) / count).toFixed(1));
+            revMap.set(entId, { count, avg });
+          });
+        }
+        setRealReviewsMap(revMap);
+
+        if (!bizRes.error && bizRes.data) {
+          setBusinesses(bizRes.data);
         }
       } catch (err) {
-        console.error('Fetch error:', err);
-        if (isMounted) setBusinesses([]);
+        console.error('Error fetching category data:', err);
       } finally {
-        if (isMounted) setLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchCategoryBusinesses();
-    return () => { isMounted = false; };
-  }, [categoryParam]);
+    fetchCategoryData();
+  }, [currentCategorySlug]);
 
-  const filtered = useMemo(() => {
-    return businesses.filter(b => {
-      const matchCity = selectedCity === 'all' || (b.city && b.city.includes(selectedCity)) || (b.address && b.address.includes(selectedCity));
-      const matchSearch = !searchQuery.trim() ||
-        (b.name && b.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (b.address && b.address.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchCity && matchSearch;
-    });
-  }, [businesses, selectedCity, searchQuery]);
+  const filtered = businesses.filter((item) => {
+    const matchesSearch = !searchQuery.trim() || 
+      item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCity = selectedCity === 'all' || item.city === selectedCity;
+    return matchesSearch && matchesCity;
+  });
+
+  const selectedCityName = CITIES_LIST.find(c => c.id === selectedCity)?.name || 'كل المدن والمحافظات';
 
   return (
-    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Cairo',sans-serif] text-zinc-100">
-      <AdBanner placementId="1" className="mb-2" />
-
-      {/* رأس الصفحة النظيف */}
-      <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
-            <CategoryIcon className="w-4 h-4 stroke-[2.5]" />
-          </div>
-          <h1 className="text-base sm:text-lg font-bold text-white">
-            {currentCategory ? currentCategory.name : 'دليل المنشآت'}
+    <div dir="rtl" className="min-h-screen bg-[#070A10] text-white font-['Cairo',sans-serif] pb-16 px-3 sm:px-4 max-w-7xl mx-auto pt-3">
+      {/* 1. الترويسة المعتمدة: اسم الصنف في اليمين بالكامل، وزر الرجوع باليسار يرجع للرئيسية */}
+      <div className="mb-4 flex items-center justify-between border-b border-[#1F2937]/70 pb-3">
+        {/* اليمين: عنوان الصنف النظيف */}
+        <div className="flex items-center gap-2 text-right">
+          <CategoryIcon className="w-6 h-6 text-[#EAB308] shrink-0" />
+          <h1 className="text-xl sm:text-2xl font-black text-white leading-none">
+            دليل {categoryConfig.name}
           </h1>
         </div>
 
+        {/* اليسار: زر رجوع شفاف متجه لليمين يرجع للرئيسية إلزامي */}
         <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold transition border border-[#1F2937]"
+          type="button"
+          onClick={() => navigate('/')}
+          className="text-[#EAB308] hover:text-white p-1.5 bg-transparent border-0 transition cursor-pointer active:scale-90 flex items-center justify-center"
+          title="الرئيسية"
+          aria-label="الرئيسية"
         >
-          <span>رجوع</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight size={24} strokeWidth={2.5} />
         </button>
       </div>
 
-      {/* شريط البحث والمدينة */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+      {/* 2. البحث وقائمة المدن المخصصة بالكامل بهوية الموقع الفاخرة الداكنة */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4 bg-[#0B0F17] p-2.5 rounded-2xl border border-[#1F2937]">
         <div className="sm:col-span-2 relative">
-          <Search className="w-3.5 h-3.5 text-zinc-500 absolute right-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="بحث..."
+            placeholder={`ابحث في ${categoryConfig.name}...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#0E1422] border border-[#1F2937] focus:border-[#FFC500] text-zinc-100 placeholder-zinc-500 pr-9 pl-3 py-2 rounded-xl text-xs outline-none transition"
+            className="w-full bg-[#121620] border border-[#1F2937] focus:border-[#EAB308] text-zinc-200 pr-10 pl-3 py-2.5 rounded-xl text-xs outline-none transition"
           />
         </div>
 
-        <div>
-          <select
-            value={selectedCity}
-            onChange={(e) => setSelectedCity(e.target.value)}
-            className="w-full bg-[#0E1422] border border-[#1F2937] focus:border-[#FFC500] text-zinc-300 px-3 py-2 rounded-xl text-xs outline-none transition"
+        {/* القائمة المنسدلة المخصصة للمدن بهوية يمن ريتنغ الداكنة */}
+        <div className="relative" ref={cityDropdownRef}>
+          <button
+            type="button"
+            onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
+            className="w-full bg-[#121620] hover:bg-[#161D2B] border border-[#1F2937] focus:border-[#EAB308] text-zinc-200 px-3.5 py-2.5 rounded-xl text-xs outline-none transition cursor-pointer flex items-center justify-between font-bold"
           >
-            <option value="all">كل المدن والمحافظات</option>
-            <option value="صنعاء">صنعاء</option>
-            <option value="عدن">عدن</option>
-            <option value="تعز">تعز</option>
-            <option value="الحديدة">الحديدة</option>
-            <option value="حضرموت">حضرموت</option>
-            <option value="إب">إب</option>
-            <option value="ذمار">ذمار</option>
-            <option value="مأرب">مأرب</option>
-          </select>
-        </div>
-      </div>
+            <span className="truncate">{selectedCityName}</span>
+            <ChevronDown className={`w-4 h-4 text-[#EAB308] transition-transform duration-200 ${cityDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
 
-      {/* قائمة البطاقات المطابقة لكروت البنوك بالملي */}
-      {loading ? (
-        <div className="py-16 text-center flex flex-col items-center justify-center">
-          <Loader2 className="w-7 h-7 animate-spin text-[#FFC500] mb-2" />
-          <p className="text-xs text-zinc-500">جاري التحميل...</p>
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="py-14 text-center text-zinc-500">
-          <Frown className="w-10 h-10 mx-auto text-zinc-600 mb-2 stroke-[1.5]" />
-          <p className="text-xs">لا توجد منشآت مضافة في هذا القسم</p>
-        </div>
-      ) : (
-        <div className="space-y-4 pt-1">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.slice(0, 3).map((item) => (
-              <BankCardView key={item.id} item={item} onSelect={() => navigate('/businesses/' + (item.slug || item.id))} />
-            ))}
-          </div>
-
-          <AdBanner placementId="2" className="my-3" />
-
-          {filtered.length > 3 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filtered.slice(3).map((item) => (
-                <BankCardView key={item.id} item={item} onSelect={() => navigate('/businesses/' + (item.slug || item.id))} />
-              ))}
+          {cityDropdownOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1.5 z-40 bg-[#0B0F17] border border-[#1F2937] rounded-xl shadow-2xl p-1.5 max-h-60 overflow-y-auto space-y-0.5 text-right">
+              {CITIES_LIST.map((city) => {
+                const isSelected = selectedCity === city.id;
+                return (
+                  <div
+                    key={city.id}
+                    onClick={() => {
+                      setSelectedCity(city.id);
+                      setCityDropdownOpen(false);
+                    }}
+                    className={`px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-between cursor-pointer ${
+                      isSelected 
+                        ? 'bg-[#EAB308]/15 text-[#EAB308]' 
+                        : 'text-zinc-300 hover:bg-[#121620] hover:text-white'
+                    }`}
+                  >
+                    <span>{city.name}</span>
+                    {isSelected && <Check size={14} className="text-[#EAB308]" />}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
+      </div>
+
+      {/* قائمة البطاقات */}
+      {loading ? (
+        <div className="py-16 text-center flex flex-col items-center justify-center">
+          <Loader2 className="w-7 h-7 animate-spin text-[#EAB308] mb-2" />
+          <p className="text-xs text-zinc-400 font-bold">جاري التحميل...</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="py-16 text-center text-zinc-500 bg-[#0B0F17] rounded-2xl border border-[#1F2937]">
+          <Frown className="w-10 h-10 mx-auto text-zinc-600 mb-2 stroke-[1.5]" />
+          <p className="text-xs font-bold">لا توجد منشآت مضافة في هذا التصنيف حالياً</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((item) => (
+            <CleanBankStyleCard 
+              key={item.id} 
+              item={item} 
+              realReview={realReviewsMap.get(item.id)}
+              onSelect={() => window.location.href = "/bank.html?slug=" + (item.slug || item.id)} 
+            />
+          ))}
+        </div>
       )}
 
-      <AdBanner placementId="3" className="mt-4" />
+      <AdBanner placementId="3" className="mt-6" />
     </div>
   );
 };
 
-function BankCardView({ item, onSelect }: { item: any; onSelect: () => void }) {
+function CleanBankStyleCard({ item, realReview, onSelect }: { item: any; realReview?: { count: number; avg: number }; onSelect: () => void }) {
   const isVerified = item.is_verified === true;
-  // التقييم يظهر فقط إن كان حقيقياً ومسجلاً
-  const reviewCount = Number(item.review_count) || 0;
-  const ratingValue = Number(item.rating) || 0;
-  const hasRealRating = Number(item.review_count) > 0 && Number(item.rating) > 0;
+  
+  const hasRealRating = realReview && realReview.count > 0;
+  const ratingValue = hasRealRating ? realReview.avg : 0;
+  const reviewCount = hasRealRating ? realReview.count : 0;
 
   return (
     <article
       onClick={onSelect}
-      className="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer group"
+      className="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer"
     >
       <div>
-        {/* الغلاف */}
-        <div className="relative w-full h-44 sm:h-52 bg-gradient-to-r from-[#002244] via-[#003B73] to-[#0A4D80] flex items-center justify-center overflow-hidden">
+        {/* الغلاف الرسمي */}
+        <div className="relative w-full h-40 bg-gradient-to-r from-[#0D2137] via-[#102A45] to-[#0A192B] flex items-center justify-center overflow-hidden">
           {item.cover_url ? (
-            <img src={item.cover_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <img 
+              src={item.cover_url} 
+              alt={item.name} 
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+            />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-zinc-600 text-xs">لا يوجد غلاف</div>
+            <div className="text-center px-4">
+              <h2 className="text-[#EAB308] text-lg font-black tracking-wide leading-tight">{item.name}</h2>
+              <p className="text-zinc-400 text-[11px] mt-0.5 font-medium">{item.city || 'اليمن'}</p>
+            </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0F17] via-transparent to-transparent opacity-80" />
         </div>
 
-        {/* الشعار متداخل باليمين وزر إثبات الملكية باليسار */}
-        <div className="px-4 relative flex items-end justify-between -mt-8 mb-2">
-          <div className="relative z-10 order-1">
-            <div className="w-16 h-16 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden shrink-0 bg-[#0B0F17]">
+        {/* سطر التداخل: الشعار في اليمين وزر إثبات الملكية في اليسار */}
+        <div className="px-4 relative flex items-start justify-between -mt-7 mb-2">
+          {/* الشعار المعتمد: خلفية داكنة بدون أي ستروك أبيض */}
+          <div className="relative z-10">
+            <div className="w-16 h-16 rounded-2xl bg-[#0B0F17] shadow-2xl border-2 border-[#1F2937] flex items-center justify-center overflow-hidden shrink-0">
               {item.logo_url ? (
-                <img src={item.logo_url} alt={item.name} className="w-full h-full object-contain p-1" />
+                <img src={item.logo_url} alt={item.name} className="w-full h-full object-cover rounded-2xl" />
               ) : (
-                <Store className="w-7 h-7 text-zinc-600" />
+                <Building className="w-8 h-8 text-[#EAB308]" />
               )}
             </div>
           </div>
 
-          <div className="order-2 mb-1">
-            {!isVerified && (
-              <a
-                href={`https://wa.me/967770000000?text=${encodeURIComponent('طلب إثبات ملكية المنشأة: ' + item.name)}`}
-                target="_blank"
-                rel="noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg transition active:scale-95 cursor-pointer"
+          {/* زر المطالبة بالملكية: ينقل للصفحة الفردية وتفتح له نافذة المطالبة مباشرة بدلاً من الواتس */}
+          <div>
+            {item.ownership_status !== 'VERIFIED' && item.claim_status !== 'APPROVED' && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = "/bank.html?slug=" + (item.slug || item.id) + "&claim=1";
+                }}
+                className="inline-flex items-center gap-1.5 bg-[#2A0E0E] hover:bg-[#3D1414] border border-[#661F1F] text-[#F87171] text-xs font-bold px-3 py-1.5 rounded-full shadow-md transition active:scale-95 cursor-pointer mt-3"
               >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>إثبات الملكية</span>
-              </a>
+                <ShieldCheck className="w-3.5 h-3.5 text-[#EF4444]" />
+                <span>إثبات ملكية الصفحة</span>
+              </button>
             )}
           </div>
         </div>
 
-        {/* الاسم + الشارة المعتمدة فقط */}
+        {/* تفاصيل المنشأة */}
         <div className="px-4 pt-1 pb-3 text-right space-y-1.5">
-          <div className="inline-flex items-center gap-1.5 flex-wrap">
-            <h2 className="text-sm sm:text-base font-black text-white leading-tight group-hover:text-[#FFC500] transition">
+          {/* الاسم + الشارة */}
+          <div className="flex items-center justify-start gap-1.5">
+            <h2 className="text-base font-black text-white leading-tight">
               {item.name}
             </h2>
             {isVerified && <OfficialVerifiedBadge type={item.badge_type || 'gold'} size={18} />}
           </div>
 
-          {/* التقييم الواقعي فقط بدون أي أرقام من الرأس */}
-          {hasRealRating ? (
-            <div className="flex items-center gap-1.5 text-xs text-[#FFC500] font-bold">
-              <span className="text-white font-medium text-[11px]">★التقييمات</span>
-              <Star className="w-3.5 h-3.5 fill-[#FFC500]" />
-              <span className="text-white text-sm font-black">{ratingValue.toFixed(1)}</span>
-              <span className="text-zinc-400 font-normal text-[11px]">({reviewCount} تقييم)</span>
-            </div>
-          ) : (
-            <div className="text-right pt-0.5">
-              <span className="text-zinc-500 text-xs">لا توجد تقييمات بعد</span>
+          {/* المقر والمدينة */}
+          {(item.city || item.address) && (
+            <div className="flex items-center justify-start gap-1 text-xs text-zinc-400">
+              <MapPin size={12} className="text-[#EAB308] shrink-0" />
+              <span>{item.address || item.city}</span>
             </div>
           )}
 
-          {/* الوصف */}
+          {/* التقييم الواقعي فقط */}
+          {hasRealRating ? (
+            <div className="flex items-center justify-start gap-1.5 text-xs font-bold pt-0.5">
+              <Star size={13} className="text-[#EAB308] fill-[#EAB308]" />
+              <span className="text-white font-mono">{ratingValue.toFixed(1)}</span>
+              <span className="text-zinc-400 text-[11px] font-normal">({reviewCount} تقييم)</span>
+            </div>
+          ) : (
+            <div className="text-right pt-0.5">
+              <span className="text-zinc-500 text-xs font-normal">لا توجد تقييمات بعد</span>
+            </div>
+          )}
+
+          {/* النبذة */}
           {item.description && (
             <p className="text-xs text-zinc-300 leading-relaxed pt-1 line-clamp-2">
               {item.description}
             </p>
           )}
-
-          {/* المدينة والعنوان */}
-          {(item.city || item.address) && (
-            <div className="flex items-center justify-start gap-1 text-xs text-zinc-400 pt-1">
-              <MapPin className="w-3.5 h-3.5 text-[#FFC500] shrink-0" />
-              <span>{item.address || item.city}</span>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* الزر الذهبي الفاخر الموحد */}
+      {/* زر عرض صفحة المنشأة */}
       <div className="p-4 pt-1">
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); onSelect(); }}
-          className="w-full py-2.5 rounded-xl bg-[#FFC500] hover:bg-amber-400 text-black font-black text-sm flex items-center justify-center gap-2 shadow transition active:scale-98 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect();
+          }}
+          className="w-full py-2.5 rounded-xl bg-[#EAB308] hover:bg-[#CA8A04] text-black font-black text-sm flex items-center justify-center gap-2 shadow transition active:scale-98 cursor-pointer"
         >
           <span>عرض صفحة المنشأة</span>
-          <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+          <ArrowRight size={14} className="rtl:rotate-180" />
         </button>
       </div>
     </article>
