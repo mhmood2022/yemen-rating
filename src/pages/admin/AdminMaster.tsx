@@ -49,7 +49,7 @@ export const AdminMaster: React.FC = () => {
   const fetchAllNotifications = async () => {
     // كاش فوري للإشعارات للإدارة بدون انتظار
     try {
-      const cachedNotes = sessionStorage.getItem("yr_swr_admin_notes");
+      const cachedNotes = localStorage.getItem("yr_swr_admin_notes");
       if (cachedNotes) {
         const parsed = JSON.parse(cachedNotes);
         setNotifications(parsed);
@@ -89,7 +89,7 @@ export const AdminMaster: React.FC = () => {
       ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       setNotifications(combined);
-      try { sessionStorage.setItem("yr_swr_admin_notes", JSON.stringify(combined)); } catch (_) {}
+      try { localStorage.setItem("yr_swr_admin_notes", JSON.stringify(combined)); } catch (_) {}
       setUnreadCount(combined.filter(n => !n.is_read).length);
     } catch (err) {
       console.error('Error fetching admin hub notifications:', err);

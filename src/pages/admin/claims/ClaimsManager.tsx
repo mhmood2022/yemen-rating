@@ -24,7 +24,7 @@ export const ClaimsManager: React.FC = () => {
   const fetchClaims = async () => {
     // كاش فوري: عرض طلبات التوثيق للإدارة في 0.01 ثانية
     try {
-      const cachedClaims = sessionStorage.getItem("yr_swr_admin_claims");
+      const cachedClaims = localStorage.getItem("yr_swr_admin_claims");
       if (cachedClaims) {
         setClaims(JSON.parse(cachedClaims));
         setLoading(false);
@@ -70,7 +70,7 @@ export const ClaimsManager: React.FC = () => {
       });
 
       setClaims(mapped);
-      try { sessionStorage.setItem("yr_swr_admin_claims", JSON.stringify(mapped)); } catch (_) {}
+      try { localStorage.setItem("yr_swr_admin_claims", JSON.stringify(mapped)); } catch (_) {}
     } catch (err) {
       console.error('Error fetching claims:', err);
     } finally {

@@ -106,8 +106,8 @@ export const BusinessesPage: React.FC = () => {
       // 1. كاش فوري: عرض المنشآت والتقييمات فوراً في 0.01 ثانية
       const cacheKey = "yr_swr_biz_" + currentCategorySlug;
       try {
-        const cached = sessionStorage.getItem(cacheKey);
-        const cachedRevs = sessionStorage.getItem("yr_swr_revs");
+        const cached = localStorage.getItem(cacheKey);
+        const cachedRevs = localStorage.getItem("yr_swr_revs");
         if (cached) {
           setBusinesses(JSON.parse(cached));
           if (cachedRevs) {
@@ -160,8 +160,8 @@ export const BusinessesPage: React.FC = () => {
         if (!bizRes.error && bizRes.data) {
           setBusinesses(bizRes.data);
           try {
-            sessionStorage.setItem(cacheKey, JSON.stringify(bizRes.data));
-            sessionStorage.setItem("yr_swr_revs", JSON.stringify(Array.from(revMap.entries())));
+            localStorage.setItem(cacheKey, JSON.stringify(bizRes.data));
+            localStorage.setItem("yr_swr_revs", JSON.stringify(Array.from(revMap.entries())));
           } catch (_) {}
         }
       } catch (err) {
@@ -279,7 +279,7 @@ export const BusinessesPage: React.FC = () => {
               realReview={realReviewsMap.get(item.id)}
               onSelect={() => {
                 try {
-                  sessionStorage.setItem("yr_instant_entity_" + (item.slug || item.id), JSON.stringify(item));
+                  localStorage.setItem("yr_instant_entity_" + (item.slug || item.id), JSON.stringify(item));
                 } catch (_) {}
                 window.location.href = "/bank.html?slug=" + (item.slug || item.id);
               }} 
