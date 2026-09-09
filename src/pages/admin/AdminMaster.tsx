@@ -47,6 +47,16 @@ export const AdminMaster: React.FC = () => {
 
   // جلب كل أنشطة وإشعارات الموقع (توثيق، بلاغات، عمولات، مزادات)
   const fetchAllNotifications = async () => {
+    // كاش فوري للإشعارات للإدارة بدون انتظار
+    try {
+      const cachedNotes = sessionStorage.getItem("yr_swr_admin_notes");
+      if (cachedNotes) {
+        const parsed = JSON.parse(cachedNotes);
+        setNotifications(parsed);
+        setUnreadCount(parsed.filter((n: any) => !n.is_read).length);
+      }
+    } catch (_) {}
+
     try {
       // 1. جلب الإشعارات العامة من admin_notifications
       const { data: generalNotes } = await supabase
@@ -79,6 +89,7 @@ export const AdminMaster: React.FC = () => {
       ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       setNotifications(combined);
+      try { sessionStorage.setItem("yr_swr_admin_notes", JSON.stringify(combined)); } catch (_) {}
       setUnreadCount(combined.filter(n => !n.is_read).length);
     } catch (err) {
       console.error('Error fetching admin hub notifications:', err);

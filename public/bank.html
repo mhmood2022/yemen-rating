@@ -432,63 +432,25 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
     const DEFAULT_SHOWCASE_POSTS = [];
 
-    const FALLBACK_BANK = {
-      id: "1d6d2164-edc6-492c-b73d-af60c973ef4a",
-      name: "بنك التضامن",
-      nameEn: "Tadhamon Bank",
-      badge_type: "blue",
-      is_verified: true,
-      description: "أكبر بنك في اليمن يقدم خدمات مالية ومصرفية إسلامية تلبي تطلعات عملائه بجودة عالية",
-      category: "خدمات مالية",
-      location: "Taiz - Yemen",
-      phone: "+9674200000",
-      whatsapp: "967777777777",
-      email: "info@tadhamonbank.com",
-      website_url: "https://tadhamonbank.com",
-      address: "شارع جمال - تعز",
+        const FALLBACK_BANK = {
+      id: "",
+      name: "",
+      badge_type: "gold",
+      is_verified: false,
+      description: "",
+      category: "",
+      location: "",
+      address: "",
+      phone: "",
+      whatsapp: "",
+      email: "",
+      website_url: "",
+      logo_url: "",
+      cover_url: "",
       posts: [],
-      offers: [
-        {
-          id: 1,
-          tag: "عرض حصري",
-          title: "تمويل منظومات الطاقة الشمسية بنظام المرابحة",
-          desc: "هامش ربح مخفض 3.5% وفترة سداد مرنة تصل إلى 36 شهراً للمزارعين والمشاريع الصغيرة والمنازل.",
-          expiry: "ساري حتى نهاية الربع الحالي"
-        },
-        {
-          id: 2,
-          tag: "خصم خاص",
-          title: "إصدار مجاني لبطاقات الإنترنت الافتراضية",
-          desc: "تسوق إلكترونياً بأمان تام مع إعفاء كامل من رسوم الإصدار عبر تطبيق تضامن موبايل.",
-          expiry: "ساري للعملاء الجدد والمشتركين بالتطبيق"
-        }
-      ],
-      services: [
-        {
-          service_name: "التمويل والاستثمار الإسلامي",
-          description: "حلول تمويلية معتمدة وفق أحكام الشريعة (مرابحة، إجارة منتهية بالتمليك، وتمويل استصناع).",
-          icon: "fa-solid fa-hand-holding-dollar"
-        },
-        {
-          service_name: "تطبيق تضامن موبايل وتضامن باي",
-          description: "تحويلات لحظية، دفع فواتير المياه والكهرباء والاتصالات، وخدمة السحب النقدي بدون بطاقة.",
-          icon: "fa-solid fa-mobile-screen-button"
-        }
-      ],
-      reviews: [
-        {
-          user_name: "م. وليد الشميري",
-          user_avatar: null,
-          stars: 5,
-          comment: "خدمة إلكترونية ممتازة وسرعة عالية في فتح الحساب وتفعيل البطاقات."
-        },
-        {
-          user_name: "أحمد المخلافي",
-          user_avatar: null,
-          stars: 4,
-          comment: "تعامل راقٍ من موظفي فرع تعز وتسهيلات ملموسة في التحويلات."
-        }
-      ]
+      offers: [],
+      services: [],
+      reviews: []
     };
 
     let currentBank = FALLBACK_BANK;
@@ -562,9 +524,32 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       }
     }
 
-    async function loadBankProfile() {
+        async function loadBankProfile() {
       const bankId = getBankIdentifier();
       let bankData = { ...FALLBACK_BANK };
+
+      // قراءة فورية للبيانات الحقيقية المخزنة في الذاكرة (تظهر في 0.01 ثانية)
+      try {
+        const cachedStr = sessionStorage.getItem("yr_instant_entity_" + bankId);
+        if (cachedStr) {
+          const c = JSON.parse(cachedStr);
+          bankData.id = c.id || bankId;
+          bankData.name = c.name || "";
+          bankData.description = c.description || "";
+          bankData.badge_type = c.badge_type || "gold";
+          bankData.is_verified = c.is_verified === true;
+          bankData.phone = c.phone || "";
+          bankData.whatsapp = c.whatsapp || "";
+          bankData.address = c.address || c.city || "";
+          bankData.location = (c.city && c.address) ? (c.city + " - " + c.address) : (c.city || c.address || "اليمن");
+          bankData.logo_url = c.logo_url || "";
+          bankData.cover_url = c.cover_url || "";
+          currentBank = bankData;
+          try { renderUI(); } catch (_) {}
+          const splash = document.getElementById("page-splash-loader");
+          if (splash) splash.style.display = "none";
+        }
+      } catch (_) {}
 
       try {
         const isUUID = /^[0-9a-f-]{36}$/i.test(bankId);

@@ -22,8 +22,16 @@ export const ClaimsManager: React.FC = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchClaims = async () => {
+    // كاش فوري: عرض طلبات التوثيق للإدارة في 0.01 ثانية
     try {
-      setLoading(true);
+      const cachedClaims = sessionStorage.getItem("yr_swr_admin_claims");
+      if (cachedClaims) {
+        setClaims(JSON.parse(cachedClaims));
+        setLoading(false);
+      }
+    } catch (_) {}
+
+    try {
       const [verifRes, bizRes, businessesRes] = await Promise.all([
         supabase.from('verification_requests').select('*').order('created_at', { ascending: false }),
         supabase.from('business_claims').select('*').order('created_at', { ascending: false }),
@@ -62,6 +70,7 @@ export const ClaimsManager: React.FC = () => {
       });
 
       setClaims(mapped);
+      try { sessionStorage.setItem("yr_swr_admin_claims", JSON.stringify(mapped)); } catch (_) {}
     } catch (err) {
       console.error('Error fetching claims:', err);
     } finally {
