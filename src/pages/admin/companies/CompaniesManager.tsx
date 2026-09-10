@@ -1,3 +1,4 @@
+import { DynamicSectorFeatures } from './DynamicSectorFeatures';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
@@ -232,6 +233,7 @@ export const CompaniesManager: React.FC = () => {
     ad_unit_top: boolean;
     ad_unit_feed: boolean;
     ad_unit_sticky: boolean;
+    sector_features?: any[];
   }>({
     name: '',
     slug: '',
@@ -246,22 +248,23 @@ export const CompaniesManager: React.FC = () => {
     logo_url: null,
     cover_url: null,
     gallery_urls: [null, null, null, null],
-    badge_type: 'gold',
-    is_verified: true,
+    badge_type: null,
+    is_verified: false,
     status: 'active',
     claim_status: 'UNCLAIMED',
-    rating: 4.8,
-    review_count: 5,
-    rooms_count: '20-50 غرفة',
+    rating: 0,
+    review_count: 0,
+    rooms_count: '',
     has_pool: false,
-    has_wifi: true,
-    has_parking: true,
+    has_wifi: false,
+    has_parking: false,
     has_emergency: false,
     has_icu: false,
     has_delivery: false,
-    has_family_sections: true,
+    has_family_sections: false,
     warranty_available: false,
-    gold_carat: '21 & 18',
+    gold_carat: '',
+    sector_features: [],
     working_hours: '08:00 ص - 10:00 م',
     ad_unit_top: true,
     ad_unit_feed: true,
@@ -464,22 +467,23 @@ export const CompaniesManager: React.FC = () => {
       logo_url: null,
       cover_url: null,
       gallery_urls: [null, null, null, null],
-      badge_type: 'gold',
-      is_verified: true,
+      badge_type: null,
+      is_verified: false,
       status: 'active',
       claim_status: 'UNCLAIMED',
-      rating: 4.8,
-      review_count: 5,
-      rooms_count: '20-50 غرفة',
+      rating: 0,
+      review_count: 0,
+      rooms_count: '',
       has_pool: false,
-      has_wifi: true,
-      has_parking: true,
+      has_wifi: false,
+      has_parking: false,
       has_emergency: false,
       has_icu: false,
       has_delivery: false,
-      has_family_sections: true,
+      has_family_sections: false,
       warranty_available: false,
-      gold_carat: '21 & 18',
+      gold_carat: '',
+      sector_features: [],
       working_hours: '08:00 ص - 10:00 م',
       ad_unit_top: true,
       ad_unit_feed: true,
@@ -520,16 +524,17 @@ export const CompaniesManager: React.FC = () => {
       is_verified: b.is_verified,
       status: b.status || 'active',
       claim_status: b.claim_status || 'UNCLAIMED',
-      rating: b.rating || 4.8,
-      review_count: b.review_count || 5,
-      rooms_count: feat.rooms_count || '20-50 غرفة',
+      rating: b.rating || 0,
+      review_count: b.review_count || 0,
+      rooms_count: feat.rooms_count || '',
       has_pool: !!feat.has_pool,
-      has_wifi: feat.has_wifi !== undefined ? !!feat.has_wifi : true,
-      has_parking: feat.has_parking !== undefined ? !!feat.has_parking : true,
+      sector_features: feat.sector_features || b.sector_features || [],
+      has_wifi: !!feat.has_wifi,
+      has_parking: !!feat.has_parking,
       has_emergency: !!feat.has_emergency,
       has_icu: !!feat.has_icu,
       has_delivery: !!feat.has_delivery,
-      has_family_sections: feat.has_family_sections !== undefined ? !!feat.has_family_sections : true,
+      has_family_sections: !!feat.has_family_sections,
       warranty_available: !!feat.warranty_available,
       gold_carat: feat.gold_carat || '21 & 18',
       working_hours: sec.working_hours || '08:00 ص - 10:00 م',
@@ -572,7 +577,7 @@ export const CompaniesManager: React.FC = () => {
       is_verified: formData.is_verified,
       status: formData.status,
       claim_status: formData.claim_status,
-      rating: Number(formData.rating) || 4.5,
+      rating: formData.rating ? Number(formData.rating) : 0,
       review_count: Number(formData.review_count) || 0,
       sections_config: {
         ads: true,
@@ -591,6 +596,7 @@ export const CompaniesManager: React.FC = () => {
           has_family_sections: formData.has_family_sections,
           warranty_available: formData.warranty_available,
           gold_carat: formData.gold_carat,
+          sector_features: formData.sector_features || [],
         }
       },
       updated_at: new Date().toISOString(),
@@ -1180,35 +1186,25 @@ export const CompaniesManager: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
-                    <label className="text-white font-bold block">ميزات المنشأة (اضغط للتفعيل المباشر):</label>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { key: 'has_pool', label: 'مسبح خاص / عام', val: formData.has_pool },
-                        { key: 'has_wifi', label: 'واي فاي مجاني سريع', val: formData.has_wifi },
-                        { key: 'has_parking', label: 'مواقف سيارات واسعة', val: formData.has_parking },
-                        { key: 'has_emergency', label: 'طوارئ 24 ساعة', val: formData.has_emergency },
-                        { key: 'has_icu', label: 'عناية مركزة', val: formData.has_icu },
-                        { key: 'has_delivery', label: 'توصيل للمنازل', val: formData.has_delivery },
-                        { key: 'has_family_sections', label: 'جلسات عائلية خاصة', val: formData.has_family_sections },
-                        { key: 'warranty_available', label: 'فحص وضمان معتمد', val: formData.warranty_available },
-                      ].map(item => (
-                        <button
-                          key={item.key}
-                          type="button"
-                          onClick={() => setFormData(p => ({ ...p, [item.key]: !item.val }))}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                            item.val
-                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                              : 'bg-[#0B0F17] text-gray-500 border border-[#1F2937]'
-                          }`}
-                        >
-                          <Check size={13} className={item.val ? 'opacity-100' : 'opacity-0'} />
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <DynamicSectorFeatures
+                    categorySlug={selectedCatSlug || 'banks'}
+                    savedFeatures={formData.sector_features || []}
+                    onChange={(updatedFeatures) => {
+                      setFormData(p => ({
+                        ...p,
+                        sector_features: updatedFeatures,
+                        // مزامنة تلقائية للمفاتيح القديمة للتوافق الكامل مع كافة قوالب الموقع الحالية
+                        has_pool: updatedFeatures.some(f => f.label.includes('مسبح') && f.enabled),
+                        has_wifi: updatedFeatures.some(f => f.label.includes('واي فاي') && f.enabled),
+                        has_parking: updatedFeatures.some(f => f.label.includes('مواقف') && f.enabled),
+                        has_emergency: updatedFeatures.some(f => f.label.includes('طوارئ') && f.enabled),
+                        has_icu: updatedFeatures.some(f => f.label.includes('عناية') && f.enabled),
+                        has_delivery: updatedFeatures.some(f => f.label.includes('توصيل') && f.enabled),
+                        has_family_sections: updatedFeatures.some(f => f.label.includes('عائل') && f.enabled),
+                        warranty_available: updatedFeatures.some(f => f.label.includes('ضمان') && f.enabled),
+                      }));
+                    }}
+                  />
 
                   <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2">
                     <label className="text-white font-bold flex items-center gap-1.5">
