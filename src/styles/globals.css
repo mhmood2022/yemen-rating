@@ -141,3 +141,121 @@ html, body {
   animation: yrHeaderSlideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: top center;
 }
+
+
+/* =========================================================
+   النظام المركزي الموحد للقوائم المنسدلة والخيارات (يمن ريتنغ)
+   Universal Dropdown & Selects Central Styling System
+   ========================================================= */
+
+:root {
+  color-scheme: dark !important;
+  accent-color: #FFC500 !important;
+}
+
+/* 1. ضبط موحد لكل وسوم select في كل صفحات الموقع ولوحة التحكم */
+select {
+  color-scheme: dark !important;
+  background-color: #111827 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #1F2937 !important;
+  border-radius: 0.75rem !important;
+  font-family: "Cairo", sans-serif !important;
+  font-weight: 700 !important;
+  outline: none !important;
+  cursor: pointer !important;
+  accent-color: #FFC500 !important;
+
+  /* إزالة سهم المتصفح الافتراضي واستبداله بسهم رمادي هادئ على اليسار متوافق مع RTL */
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") !important;
+  background-position: left 0.65rem center !important;
+  background-repeat: no-repeat !important;
+  background-size: 1rem 1rem !important;
+  padding-left: 2rem !important;
+  padding-right: 0.75rem !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+select:hover {
+  border-color: #374151 !important;
+}
+
+select:focus,
+select:focus-visible {
+  border-color: #FFC500 !important;
+  box-shadow: 0 0 0 1px rgba(255, 197, 0, 0.4) !important;
+}
+
+/* 2. خيارات القائمة المنسدلة عند الفتح (option & optgroup) */
+select option,
+option {
+  background-color: #111827 !important;
+  color: #FFFFFF !important;
+  font-family: "Cairo", sans-serif !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  padding: 0.65rem 0.9rem !important;
+}
+
+select option:checked,
+option:checked {
+  background-color: #1F2937 !important;
+  color: #FFC500 !important;
+  font-weight: 800 !important;
+}
+
+select option:hover,
+select option:focus,
+option:hover,
+option:focus {
+  background-color: #1F2937 !important;
+  color: #FFC500 !important;
+}
+
+select optgroup {
+  background-color: #0B0F17 !important;
+  color: #FFC500 !important;
+  font-weight: 800 !important;
+  font-family: "Cairo", sans-serif !important;
+}
+
+/* 3. عناصر الإدخال ومؤشر الكتابة والتركيز */
+input,
+textarea {
+  color-scheme: dark !important;
+  caret-color: #FFC500 !important;
+}
+
+input:focus-visible,
+textarea:focus-visible {
+  outline: 1px solid #FFC500 !important;
+  outline-offset: 0px !important;
+}
+
+/* معالجة الإكمال التلقائي الداكن */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #FFFFFF !important;
+  -webkit-box-shadow: 0 0 0px 1000px #111827 inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* 4. عناصر الاختيار وتحديد النصوص */
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"] {
+  accent-color: #FFC500 !important;
+}
+
+::selection {
+  background-color: #FFC500 !important;
+  color: #000000 !important;
+}

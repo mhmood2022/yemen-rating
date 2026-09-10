@@ -1,3 +1,4 @@
+import { YRSelect } from "../common/YRSelect";
 import React, { useState, useRef } from 'react';
 import { 
   Building, MapPin, ArrowRight, Plus, CheckCircle2, 
@@ -488,18 +489,22 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
                 ))}
               </div>
 
-              <select
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                className="bg-[#18181C] border border-[#27272A] rounded-lg px-2 py-1 text-[10.5px] font-bold text-[#D1D5DB] outline-none cursor-pointer shrink-0"
-              >
-                <option value="all">كل المدن</option>
-                <option value="صنعاء">صنعاء</option>
-                <option value="عدن">عدن</option>
-                <option value="تعز">تعز</option>
-                <option value="حضرموت">حضرموت</option>
-                <option value="إب">إب</option>
-              </select>
+              <div className="w-28 shrink-0">
+                <YRSelect
+                  value={selectedCity}
+                  onChange={setSelectedCity}
+                  options={[
+                    { value: "all", label: "كل المدن" },
+                    { value: "صنعاء", label: "صنعاء" },
+                    { value: "عدن", label: "عدن" },
+                    { value: "تعز", label: "تعز" },
+                    { value: "حضرموت", label: "حضرموت" },
+                    { value: "الحديدة", label: "الحديدة" },
+                    { value: "إب", label: "إب" }
+                  ]}
+                  compact
+                />
+              </div>
             </div>
           </div>
 

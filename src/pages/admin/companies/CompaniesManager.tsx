@@ -124,6 +124,42 @@ export const CompaniesManager: React.FC = () => {
   const currentCategorySlug = searchParams.get('category');
 
   const [businesses, setBusinesses] = useState<BusinessRecord[]>([]);
+
+  const [businessToDelete, setBusinessToDelete] = useState<BusinessRecord | null>(null);
+  const [isDeletingBusiness, setIsDeletingBusiness] = useState(false);
+  const [businessDeleteToast, setBusinessDeleteToast] = useState<string | null>(null);
+
+  const handleConfirmDeleteBusiness = async () => {
+    if (!businessToDelete) return;
+    setIsDeletingBusiness(true);
+    try {
+      // 1. حذف التقييمات أو السجلات المرتبطة بالمنشأة أولاً لتفادي أي قيود
+      try {
+        await supabase.from("reviews").delete().eq("business_id", businessToDelete.id);
+      } catch(e) {}
+
+      // 2. حذف المنشأة نفسها من جدول businesses في Supabase
+      const { error } = await supabase
+        .from("businesses")
+        .delete()
+        .eq("id", businessToDelete.id);
+
+      if (error) throw error;
+
+      // 3. تحديث مصفوفة العرض المحلية فوراً
+      setBusinesses(prev => prev.filter(item => item.id !== businessToDelete.id));
+
+      const deletedName = businessToDelete.name;
+      setBusinessToDelete(null);
+      setBusinessDeleteToast('تم حذف المنشأة بنجاح نهائياً من قاعدة البيانات.');
+      setTimeout(() => setBusinessDeleteToast(null), 3000);
+    } catch (err: any) {
+      alert("تعذر حذف المنشأة: " + (err?.message || "يرجى التحقق من اتصال الإنترنت"));
+    } finally {
+      setIsDeletingBusiness(false);
+    }
+  };
+
   const [categoriesMap, setCategoriesMap] = useState<Record<string, { id: string; name: string; slug: string }>>({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -836,6 +872,16 @@ export const CompaniesManager: React.FC = () => {
                     <Edit3 size={13} />
                     تعديل شامل
                   </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setBusinessToDelete(b)}
+                      className="px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer border border-red-500/20"
+                      title="حذف المنشأة نهائياً"
+                    >
+                      <Trash2 size={13} />
+                      <span>حذف</span>
+                    </button>
                 </div>
               </div>
             </div>
@@ -1295,6 +1341,52 @@ export const CompaniesManager: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    
+      {/* إشعار نجاح الحذف العائم */}
+      {businessDeleteToast && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-[#0B0F17]/95 border border-emerald-500/40 text-emerald-300 text-xs font-bold shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-4">
+          <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
+          <span>{businessDeleteToast}</span>
+        </div>
+      )}
+
+      {/* نافذة تأكيد حذف المنشأة المصممة بدون نوافذ المتصفح */}
+      {businessToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-[#0B0F17] border border-red-500/30 w-full max-w-sm rounded-3xl p-5 shadow-2xl text-center space-y-4 font-['Cairo',sans-serif] text-white">
+            <div className="w-13 h-13 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 mx-auto flex items-center justify-center shadow-inner">
+              <Trash2 size={24} />
+            </div>
+            <div>
+              <h4 className="text-base font-black text-white">تأكيد حذف المنشأة</h4>
+              <p className="text-xs text-gray-300 mt-1.5 leading-relaxed">
+                هل أنت متأكد من حذف منشأة <span className="text-[#FFC500] font-bold">"{businessToDelete.name}"</span> نهائياً من قاعدة البيانات؟
+              </p>
+              <p className="text-[11px] text-red-400/90 mt-1">سيتم حذفها بالكامل من سجلات Supabase ولن تظهر في الدليل العام.</p>
+            </div>
+            <div className="flex items-center gap-2.5 pt-1">
+              <button
+                type="button"
+                disabled={isDeletingBusiness}
+                onClick={() => setBusinessToDelete(null)}
+                className="flex-1 py-3 bg-[#161D2B] hover:bg-[#1F2937] text-gray-300 rounded-xl text-xs font-bold border border-[#1F2937] transition active:scale-95 cursor-pointer"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingBusiness}
+                onClick={handleConfirmDeleteBusiness}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-black shadow-lg shadow-red-600/25 transition active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                {isDeletingBusiness ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                <span>{isDeletingBusiness ? "جاري الحذف..." : "نعم، احذف نهائياً"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+</div>
   );
 };

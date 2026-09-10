@@ -1,88 +1,135 @@
-html, body {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
-}
-html::-webkit-scrollbar, body::-webkit-scrollbar {
-  display: none !important;
-  width: 0px !important;
-  height: 0px !important;
-  background: transparent !important;
-}
-
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* =========================================================
+   النظام المركزي الموحد للهوية البصرية (Central Theme Tokens)
+   ========================================================= */
+:root {
+  color-scheme: dark;
+  accent-color: #FFC500;
+
+  /* لوحة الألوان المعتمدة */
+  --yr-bg-black: #070A10;
+  --yr-surface-card: #0B0F17;
+  --yr-surface-elevated: #111827;
+  --yr-surface-input: #161D2B;
+  --yr-border-dark: #1F2937;
+  --yr-border-subtle: #27303F;
+  --yr-text-primary: #FFFFFF;
+  --yr-text-secondary: #9CA3AF;
+  --yr-accent-gold: #FFC500;
+  --yr-accent-hover: #E6B200;
+}
+
+/* ضبط الخط العام والاتجاه */
+* {
+  font-family: "Cairo", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--yr-bg-black);
+  color: var(--yr-text-primary);
+  direction: rtl;
+  margin: 0;
+  padding: 0;
+}
+
+/* =========================================================
+   تطهير عناصر المتصفح الافتراضية مركزياً (Global Element Theming)
+   ========================================================= */
 @layer base {
-  html {
-    font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    direction: rtl;
-    text-align: right;
-    -webkit-font-smoothing: antialiased;
-    background-color: #0d0d0d;
-    color: #ffffff;
+  /* 1. تحديد النصوص باللون الذهبي والأسود */
+  ::selection {
+    background-color: var(--yr-accent-gold);
+    color: #000000;
   }
 
-  body {
-    background-color: #0d0d0d;
-    overflow-x: clip;
-    min-height: 100vh;
-  }
-
+  /* 2. شريط التمرير المركزي لكامل الموقع ولوحة التحكم */
   * {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+    scrollbar-width: thin;
+    scrollbar-color: var(--yr-border-dark) var(--yr-bg-black);
   }
-
   *::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
-    background: transparent !important;
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: var(--yr-bg-black);
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--yr-border-dark);
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--yr-accent-gold);
+  }
+
+  /* 3. توحيد القوائم المنسدلة الافتراضية (select & option) */
+  select {
+    color-scheme: dark !important;
+    background-color: var(--yr-surface-elevated);
+    color: var(--yr-text-primary);
+    border-color: var(--yr-border-dark);
+    accent-color: var(--yr-accent-gold);
+  }
+  
+  select option {
+    background-color: var(--yr-surface-elevated) !important;
+    color: var(--yr-text-primary) !important;
+    padding: 8px 12px;
+  }
+
+  select option:checked,
+  select option:hover,
+  select option:focus {
+    background-color: var(--yr-border-dark) !important;
+    color: var(--yr-accent-gold) !important;
+  }
+
+  /* 4. حقول الإدخال والملاحظات (input & textarea) */
+  input,
+  textarea {
+    color-scheme: dark !important;
+    caret-color: var(--yr-accent-gold);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--yr-text-secondary);
+    opacity: 0.7;
+  }
+
+  /* 5. إزالة الإطار الأزرق الافتراضي واستبداله بالذهبي المعتمد */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  button:focus-visible {
+    outline: 1px solid var(--yr-accent-gold) !important;
+    outline-offset: 0px !important;
+  }
+
+  /* 6. معالجة الإكمال التلقائي للمتصفح (Autofill) بالخلفية الداكنة */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill {
+    -webkit-text-fill-color: var(--yr-text-primary) !important;
+    -webkit-box-shadow: 0 0 0px 1000px var(--yr-surface-elevated) inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  /* 7. مربعات الاختيار والأزرار الشعاعية الافتراضية */
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="range"] {
+    accent-color: var(--yr-accent-gold) !important;
   }
 }
-
-/* محرك انزلاق وحركة الشريط المالي والمزادات */
-@keyframes ticker-slide-rtl {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(50%);
-  }
-}
-
-.ticker-track-smooth {
-  display: flex !important;
-  width: max-content !important;
-  animation: ticker-slide-rtl 25s linear infinite !important;
-  will-change: transform;
-}
-
-@media (hover: hover) {
-  .ticker-track-smooth:hover {
-    animation-play-state: paused !important;
-  }
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none !important;
-}
-.no-scrollbar {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
-}
-
-/* 🔒 قفل تمرير خلفية الموقع عند فتح أي نافذة منبثقة على الهواتف */
-html.modal-open, body.modal-open {
-  overflow: hidden !important;
-  touch-action: none !important;
-  overscroll-behavior: contain !important;
-  height: 100% !important;
-}
-
-/* إخفاء شريط التمرير في كل المتصفحات */
-* { scrollbar-width: none !important; -ms-overflow-style: none !important; }
-*::-webkit-scrollbar { display: none !important; width: 0px !important; height: 0px !important; }

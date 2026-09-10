@@ -1,3 +1,4 @@
+import { YRSelect } from "../../../components/common/YRSelect";
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -266,17 +267,14 @@ export const AuctionsManager: React.FC = () => {
             </div>
 
             <div className="flex gap-1.5 flex-wrap">
-              <select
-                value={cityFilter}
-                onChange={(e) => setCityFilter(e.target.value)}
-                className="bg-[#161D2B] border border-[#1F2937] rounded-xl px-2.5 py-1 text-xs text-gray-300 outline-none"
-              >
-                <option value="all">كل المدن</option>
-                <option value="صنعاء">صنعاء</option>
-                <option value="عدن">عدن</option>
-                <option value="تعز">تعز</option>
-                <option value="حضرموت">حضرموت</option>
-              </select>
+              <div className="w-32 shrink-0">
+            <YRSelect
+              value={cityFilter}
+              onChange={(val) => setCityFilter(val as any)}
+              options={[{"value":"all","label":"كل المدن"},{"value":"صنعاء","label":"صنعاء"},{"value":"عدن","label":"عدن"},{"value":"تعز","label":"تعز"},{"value":"حضرموت","label":"حضرموت"},{"value":"الحديدة","label":"الحديدة"},{"value":"مأرب","label":"مأرب"}]}
+              compact
+            />
+          </div>
 
               {(['all', 'auction', 'fixed_price'] as const).map(t => (
                 <button

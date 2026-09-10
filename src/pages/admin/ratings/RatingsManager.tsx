@@ -1,3 +1,4 @@
+import { YRSelect } from "../../../components/common/YRSelect";
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Star, StarOff, RotateCcw, Percent, Plus, Minus,
@@ -253,29 +254,29 @@ export const RatingsManager: React.FC = () => {
             </div>
 
             <div>
-              <select
-                value={selectedCategory}
-                onChange={e => setSelectedCategory(e.target.value)}
-                className="w-full bg-black border border-zinc-800 focus:border-[#FFC500] text-zinc-300 px-3 py-2 rounded-xl text-xs outline-none"
-              >
-                <option value="all">كل التصنيفات</option>
-                {OFFICIAL_CATEGORIES.map(c => (
-                  <option key={c.slug} value={c.slug}>{c.name}</option>
-                ))}
-              </select>
-            </div>
+            <YRSelect
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+              options={[
+                { value: "all", label: "كل التصنيفات" },
+                ...OFFICIAL_CATEGORIES.map(c => ({ value: c.slug, label: c.name }))
+              ]}
+              compact
+            />
+          </div>
 
-            <div>
-              <select
-                value={filterType}
-                onChange={e => setFilterType(e.target.value as any)}
-                className="w-full bg-black border border-zinc-800 focus:border-[#FFC500] text-zinc-300 px-3 py-2 rounded-xl text-xs outline-none"
-              >
-                <option value="all">كافة الحالات</option>
-                <option value="unrated">المنشآت المصفّرة (غير المقيمة)</option>
-                <option value="rated">المنشآت المقيمة فقط</option>
-              </select>
-            </div>
+          <div>
+            <YRSelect
+              value={filterType}
+              onChange={(val) => setFilterType(val as any)}
+              options={[
+                { value: "all", label: "كافة الحالات" },
+                { value: "unrated", label: "المنشآت المصفّرة (غير المقيمة)" },
+                { value: "rated", label: "المنشآت المقيمة فقط" }
+              ]}
+              compact
+            />
+          </div>
           </div>
 
           {/* شبكة المنشآت وأزرار التحكم */}

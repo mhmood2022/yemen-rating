@@ -1,6 +1,8 @@
+import { YRSelect } from "../../../components/common/YRSelect";
+import { AddJobModal, NewJobData } from "./AddJobModal";
 import React, { useState, useMemo } from 'react';
 import { 
-  Briefcase, Users, Cpu, FileText, CheckCircle2, 
+  Briefcase, Users, Trash2, Edit3, Cpu, FileText, CheckCircle2, 
   Clock, Sparkles, Phone, MapPin, TrendingUp, 
   Check, X, Search, Filter, CreditCard, AlertTriangle, 
   Eye, Download, Building2, User, Award, ShieldCheck
@@ -174,7 +176,73 @@ const INITIAL_APPLICANTS: AdminJobApplicant[] = [
 
 export const JobsManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'jobs' | 'applicants' | 'commissions' | 'analytics'>('jobs');
-  const [jobs, setJobs] = useState<AdminJobPosting[]>(INITIAL_ADMIN_JOBS);
+  const [jobs, setJobs] = useState<AdminJobPosting[]>(() => {
+    try {
+      const saved = localStorage.getItem("yr_admin_jobs");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return INITIAL_ADMIN_JOBS;
+  });
+  const [isAddJobModalOpen, setIsAddJobModalOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState<AdminJobPosting | null>(null);
+  const [deleteToast, setDeleteToast] = useState<string | null>(null);
+
+  const handleAddJobSubmit = (newJob: NewJobData) => {
+    let updated: AdminJobPosting[];
+    if (editingJob) {
+      updated = jobs.map(j => j.id === editingJob.id ? {
+        ...j,
+        ...newJob,
+        salary: newJob.salary || 0,
+        requiredSkills: newJob.requiredSkills
+      } : j);
+    } else {
+      const created: AdminJobPosting = {
+        id: "JOB-" + Math.floor(100 + Math.random() * 900),
+        title: newJob.title,
+        category: newJob.category,
+        jobType: newJob.jobType,
+        experience: newJob.experience,
+        gender: newJob.gender,
+        education: newJob.education,
+        salary: newJob.salary || 0,
+        currency: newJob.currency,
+        city: newJob.city,
+        description: newJob.description,
+        requiredSkills: newJob.requiredSkills,
+        employerName: newJob.employerName,
+        employerPhone: newJob.employerPhone,
+        employerEmail: newJob.employerEmail,
+        status: "active",
+        commissionAmount: newJob.commissionAmount,
+        commissionStatus: "not_due",
+        applicantsCount: 0,
+        createdAt: new Date().toISOString().split("T")[0]
+      };
+      updated = [created, ...jobs];
+    }
+    setJobs(updated);
+    setEditingJob(null);
+    try {
+      localStorage.setItem("yr_admin_jobs", JSON.stringify(updated));
+      localStorage.setItem("yr_public_jobs", JSON.stringify(updated));
+    } catch(e) {}
+  };
+
+  
+  const [jobToDelete, setJobToDelete] = useState<{ id: string; title: string } | null>(null);
+
+  const confirmDeleteJob = () => {
+    if (!jobToDelete) return;
+    const updated = jobs.filter(j => j.id !== jobToDelete.id);
+    setJobs(updated);
+    try {
+      localStorage.setItem("yr_admin_jobs", JSON.stringify(updated));
+      localStorage.setItem("yr_public_jobs", JSON.stringify(updated));
+    } catch (e) {}
+    setJobToDelete(null);
+  };
+
   const [applicants, setApplicants] = useState<AdminJobApplicant[]>(INITIAL_APPLICANTS);
   const [searchTerm, setSearchTerm] = useState('');
   const [cityFilter, setCityFilter] = useState('all');
@@ -263,6 +331,14 @@ export const JobsManager: React.FC = () => {
           <p className="text-xs text-[#9CA3AF] mt-0.5">
             متابعة إعلانات التوظيف، فحص السير الذاتية بمحرك YR AI، وتتبع عمولة التوظيف الثابتة (20,000 ريال يمني)
           </p>
+          <button
+            type="button"
+            onClick={() => { setEditingJob(null); setIsAddJobModalOpen(true); }}
+            className="mt-3 inline-flex items-center gap-2 bg-[#FFC500] hover:bg-[#e6b200] text-black font-black text-xs px-4 py-2.5 rounded-xl shadow-lg shadow-[#FFC500]/15 active:scale-95 transition cursor-pointer"
+          >
+            <Briefcase size={15} />
+            <span>➕ إضافة فرصة وظيفية جديدة</span>
+          </button>
         </div>
 
         {/* التبويبات الإدارية الأربعة */}
@@ -361,17 +437,22 @@ export const JobsManager: React.FC = () => {
               />
             </div>
 
-            <select
+            <div className="w-36 shrink-0">
+            <YRSelect
               value={cityFilter}
-              onChange={(e) => setCityFilter(e.target.value)}
-              className="bg-[#161D2B] border border-[#1F2937] rounded-xl px-3 py-1.5 text-xs text-gray-300 outline-none"
-            >
-              <option value="all">كل المحافظات</option>
-              <option value="صنعاء">صنعاء</option>
-              <option value="عدن">عدن</option>
-              <option value="تعز">تعز</option>
-              <option value="حضرموت">حضرموت</option>
-            </select>
+              onChange={setCityFilter}
+              options={[
+                { value: "all", label: "كل المحافظات" },
+                { value: "صنعاء", label: "صنعاء" },
+                { value: "عدن", label: "عدن" },
+                { value: "تعز", label: "تعز" },
+                { value: "حضرموت", label: "حضرموت" },
+                { value: "الحديدة", label: "الحديدة" },
+                { value: "مأرب", label: "مأرب" }
+              ]}
+              compact
+            />
+          </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -385,6 +466,7 @@ export const JobsManager: React.FC = () => {
                   <th className="py-3 px-3 text-center">المتقدمون</th>
                   <th className="py-3 px-3 text-[#FFC500] text-center">عمولة التوظيف</th>
                   <th className="py-3 px-3 text-center">حالة الإعلان</th>
+                    <th className="py-3 px-3 text-center">الإجراءات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#1F2937] text-white">
@@ -424,6 +506,28 @@ export const JobsManager: React.FC = () => {
                       }`}>
                         {job.status === 'active' ? 'معتمدة ونشطة' : 'مغلقة'}
                       </span>
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => { setEditingJob(job); setIsAddJobModalOpen(true); }}
+                          className="px-2.5 py-1.5 bg-[#FFC500]/15 text-[#FFC500] hover:bg-[#FFC500]/25 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
+                          title="تعديل الوظيفة"
+                        >
+                          <Edit3 size={13} />
+                          <span>تعديل</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setJobToDelete({ id: job.id, title: job.title })}
+                          className="px-2.5 py-1.5 bg-red-500/15 text-red-400 hover:bg-red-500/25 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95"
+                          title="حذف الوظيفة"
+                        >
+                          <Trash2 size={13} />
+                          <span>حذف</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -705,6 +809,47 @@ export const JobsManager: React.FC = () => {
         </div>
       )}
 
-    </div>
+          <AddJobModal
+        isOpen={isAddJobModalOpen}
+        onClose={() => { setIsAddJobModalOpen(false); setEditingJob(null); }}
+        onSubmit={handleAddJobSubmit}
+        initialData={editingJob}
+      />
+    
+      {/* نافذة تأكيد الحذف المصممة بستايل المنصة (بدون رسائل المتصفح البيضاء) */}
+      {jobToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-[#0B0F17] border border-[#1F2937] w-full max-w-sm rounded-3xl p-5 shadow-2xl text-center space-y-4 font-['Cairo',sans-serif] text-white">
+            <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 mx-auto flex items-center justify-center">
+              <Trash2 size={24} />
+            </div>
+            <div>
+              <h4 className="text-base font-black text-white">تأكيد حذف الوظيفة</h4>
+              <p className="text-xs text-gray-300 mt-1.5 leading-relaxed">
+                هل أنت متأكد من حذف فرصة <span className="text-[#FFC500] font-bold">"{jobToDelete.title}"</span> نهائياً من المنصة؟
+              </p>
+            </div>
+            <div className="flex items-center gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => setJobToDelete(null)}
+                className="flex-1 py-2.5 bg-[#161D2B] hover:bg-[#1F2937] text-gray-300 rounded-xl text-xs font-bold border border-[#1F2937] transition active:scale-95 cursor-pointer"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteJob}
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-black shadow-lg shadow-red-600/20 transition active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <Trash2 size={14} />
+                <span>نعم، احذف</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+</div>
   );
 };

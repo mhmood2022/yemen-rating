@@ -1,0 +1,692 @@
+=== PROJECT STRUCTURE ===
+.
+./audit_part2.txt
+./install_official_bank_design.cjs
+./audit_dump.txt
+./apply_full_auctions.js
+./bank.html.backup_20260904_021629
+./audit_admin_only.sh
+./files80
+./files80/001_schema_admin.sql
+./files80/supabase.js
+./build_unified_templates.cjs
+./package-lock.json
+./fix_prices_button.js
+./purge_and_fix_tabs.js
+./clean_all_hacks.js
+./update_badges_system.js
+./banks.html
+./README.md
+./fix_everything_clean.py
+./vercel.json
+./fix_tabs_layout.js
+./bank.html
+./bank.html.before_review_fix
+./fix_modal_overlay.js
+./install_perfect_bank_replica.cjs
+./_legacy_archive
+./_legacy_archive/MainPublicApp.tsx
+./_legacy_archive/OwnerDashboardPage.tsx
+./_legacy_archive/JobsPage.tsx
+./_legacy_archive/FinancialsPage.tsx
+./_legacy_archive/CategoryCollectivePage.tsx
+./_legacy_archive/BanksAndWalletsPage.tsx
+./_legacy_archive/PropertiesPage.tsx
+./_legacy_archive/BusinessProfilePage.tsx
+./_legacy_archive/BusinessDetailPage.tsx
+./index.html
+./test_admin_status.sh
+./js
+./js/matching.js
+./js/db.js
+./js/auth.js
+./js/admin.js
+./js/company.js
+./js/config.js
+./js/supabase.js
+./js/main.js
+./js/supabase-client.js
+./js/admin-engine.js
+./js/ads-loader.js
+./package.json
+./banks.html.backup_20260904_021629
+./_backup_before_unified
+./_backup_before_unified/CategoryListing.tsx.bak
+./_backup_before_unified/BusinessDetails.tsx.bak
+./_backup_before_unified/MainPublicApp.tsx.bak
+./setup_ratings_manager.cjs
+./bank.html.before_september5_restore
+./restore_original_sidebar.js
+./tsconfig.json
+./update_phase9_10.js
+./css
+./css/main.css
+./css/nav.css
+./css/admin.css
+./css/yemen-rating.css
+./restore_all_buttons.js
+./001_schema_admin.sql
+./postcss.config.js
+./fix_tab_isolation.js
+./fix_top_header_menu.js
+./fix_interactive_buttons.js
+./run_auctions_update.js
+./_audit_schema.py
+./_migrations
+./_migrations/03_storage_buckets.sql
+./_migrations/01_security.sql
+./_migrations/02_core_schema.sql
+./audit_scan.txt
+./update_phase3_4.js
+./sync_ratings_system.cjs
+./_legacy
+./_legacy/seed.html
+./_legacy/profile.html
+./_legacy/company-dashboard.html
+./_legacy/verification.html
+./FETCH_HEAD
+./install_perfect_unified_templates.cjs
+./ultimate_fix.js
+./install_clean_zero_templates.cjs
+./public
+./public/banks.html
+./public/bank.html
+./public/index.html
+./public/analytics-broadcast-engine.js
+./public/exchange-ads-engine.js
+./src
+./src/MainPublicApp.tsx
+./src/index.css
+./src/lib
+./src/lib/utils.ts
+./src/lib/supabase.ts
+./src/lib/supabase_schema.sql
+./src/types
+./src/types/banksWallets.ts
+./src/types/prices.ts
+./src/types/ads.ts
+./src/types/schema.ts
+./src/types/schema.types.ts
+./src/types/admin.ts
+./src/types/jobs.ts
+./src/types/navigation.ts
+./src/types/phones.ts
+./src/types/database.types.ts
+./src/types/auth.ts
+./src/types/business.ts
+./src/types/audit.ts
+./src/components
+./src/components/Header.tsx
+./src/components/ComparisonModal.tsx
+./src/components/ui
+./src/components/ui/Skeleton.tsx
+./src/components/ui/Button.tsx
+./src/components/ui/Alert.tsx
+./src/components/ui/LoadingSpinner.tsx
+./src/components/ui/Badge.tsx
+./src/components/ui/ErrorState.tsx
+./src/components/ui/Card.tsx
+./src/components/ui/ThemeToggle.tsx
+./src/components/ui/EmptyState.tsx
+./src/components/ui/Input.tsx
+./src/components/ui/VerifiedBadge.tsx
+./src/components/ui/SearchInput.tsx
+./src/components/ui/Select.tsx
+./src/components/ui/Modal.tsx
+./src/components/ui/Toast.tsx
+./src/components/phones
+./src/components/phones/PhoneDeviceCard.tsx
+./src/components/category
+./src/components/category/CategoryListing.tsx
+./src/components/category/CategoryListing.tsx.backup
+./src/components/pages
+./src/components/pages/NotificationsPage.tsx
+./src/components/pages/JobsPage.tsx
+./src/components/pages/RealEstatePage.tsx
+./src/components/pages/ExchangeRatesPage.tsx
+./src/components/pages/FavoritesPage.tsx
+./src/components/pages/AuctionsPage.tsx
+./src/components/pages/JobsPage.tsx.backup
+./src/components/pages/ProfilePage.tsx
+./src/components/pages/MarketsPage.tsx
+./src/components/owner
+./src/components/owner/OwnerOffersManager.tsx
+./src/components/owner/OwnerReviewsManager.tsx
+./src/components/ads
+./src/components/ads/CategoryAdBanner.tsx
+./src/components/ads/YrAdBanner.tsx
+./src/components/reviews
+./src/components/reviews/AddReviewModal.tsx
+./src/components/admin
+./src/components/admin/VerificationManagerModal.tsx
+./src/components/admin/AdPreviewModal.tsx
+./src/components/admin/AdEditorModal.tsx
+./src/components/admin/PriceEditorModal.tsx
+./src/components/admin/CategoryManagement.tsx
+./src/components/admin/AdminSidebar.tsx
+./src/components/admin/AdminMasterPage.tsx
+./src/components/jobs
+./src/components/jobs/JobDetailsModal.tsx
+./src/components/jobs/JobCard.tsx
+./src/components/common
+./src/components/common/YRLogo.tsx
+./src/components/common/YRSelect.tsx
+./src/components/common/YRBadge.tsx
+./src/components/common/BackButton.tsx
+./src/components/common/YRReviewSystem.tsx
+./src/components/common/BrandComponents.tsx
+./src/components/common/VerifiedBadge.tsx
+./src/components/common/AdBanner.tsx
+./src/components/common/SearchSection.tsx
+./src/components/business
+./src/components/business/YrVerifiedBadge.tsx
+./src/components/business/ComparisonModal.tsx
+./src/components/business/BusinessReviews.tsx
+./src/components/business/SendMessageModal.tsx
+./src/components/business/BusinessDetails.tsx
+./src/components/business/QuoteModal.tsx
+./src/components/business/BusinessHeader.tsx
+./src/components/business/BusinessCard.tsx
+./src/components/business/BusinessScore.tsx
+./src/components/business/sections
+./src/components/business/BusinessProfileEngine.tsx
+./src/components/business/AddBusinessModal.tsx
+./src/components/business/ClaimOwnershipModal.tsx
+./src/components/business/BusinessTabs.tsx
+./src/components/prices
+./src/components/prices/PriceCard.tsx
+./src/components/Sidebar.tsx
+./src/components/modals
+./src/components/modals/AdminLoginModal.tsx
+./src/components/claim
+./src/components/claim/ClaimOwnershipModal.tsx
+./src/components/layout
+./src/components/layout/Header.tsx
+./src/components/layout/AppShell.tsx
+./src/components/layout/PublicSidebar.tsx
+./src/components/layout/Sidebar.tsx
+./src/components/navigation
+./src/components/navigation/Header.tsx
+./src/components/navigation/Footer.tsx
+./src/components/navigation/MobileBottomNav.tsx
+./src/components/navigation/MobileMoreDrawer.tsx
+./src/components/navigation/DesktopSidebar.tsx
+./src/components/banks
+./src/components/banks/BankWalletModal.tsx
+./src/components/banks/BankWalletCard.tsx
+./src/components/banks/BankWalletFilters.tsx
+./src/components/banks/BankProfileView.tsx
+./src/components/home
+./src/components/home/HomePricesWidget.tsx
+./src/components/home/HeroBanner.tsx
+./src/components/home/HomeReviewsWidget.tsx
+./src/components/home/HomeView.tsx
+./src/components/home/CategorySlider.tsx
+./src/components/AddBusinessModal.tsx
+./src/components/directory
+./src/components/directory/DirectoryFilters.tsx
+./src/components/directory/DirectoryResults.tsx
+./src/components/claims
+./src/components/claims/BusinessClaimModal.tsx
+./src/context
+./src/context/AuthContext.tsx
+./src/context/ThemeContext.tsx
+./src/context/ModalContext.tsx
+./src/context/ComparisonContext.tsx
+./src/context/AdminContext.tsx
+./src/utils
+./src/utils/matchingEngine.ts
+./src/utils/adGeneratorEngine.ts
+./src/pages
+./src/pages/NotificationsPage.tsx
+./src/pages/HomePage.tsx
+./src/pages/OwnerDashboardPage.tsx
+./src/pages/JobsPage.tsx
+./src/pages/FinancialsPage.tsx
+./src/pages/templates
+./src/pages/templates/AuctionDetailsPage.tsx
+./src/pages/templates/BankProfilePage.tsx
+./src/pages/templates/BusinessProfilePage.tsx
+./src/pages/templates/PropertyDetailsPage.tsx
+./src/pages/templates/JobDetailsPage.tsx
+./src/pages/HomePage.tsx.backup
+./src/pages/owner
+./src/pages/owner/OwnerDashboardPage.tsx
+./src/pages/CategoryCollectivePage.tsx
+./src/pages/BanksAndWalletsPage.tsx
+./src/pages/admin
+./src/pages/admin/phones
+./src/pages/admin/real-estate
+./src/pages/admin/analytics
+./src/pages/admin/companies
+./src/pages/admin/matching
+./src/pages/admin/auth
+./src/pages/admin/ratings
+./src/pages/admin/AdminAuditLogsView.tsx
+./src/pages/admin/ads
+./src/pages/admin/AdminAdsView.tsx
+./src/pages/admin/jobs
+./src/pages/admin/settings
+./src/pages/admin/categories
+./src/pages/admin/gold-currency
+./src/pages/admin/cleaning
+./src/pages/admin/AdminDashboardOverview.tsx.backup
+./src/pages/admin/AdminDashboardOverview.tsx
+./src/pages/admin/AdminMaster.tsx
+./src/pages/admin/markets
+./src/pages/admin/banks
+./src/pages/admin/auctions
+./src/pages/admin/claims
+./src/pages/admin/users
+./src/pages/PropertiesPage.tsx
+./src/pages/PhoneMarketPage.tsx
+./src/pages/categories
+./src/pages/categories/CategoryHubPage.tsx
+./src/pages/AdminDashboardShell.tsx
+./src/pages/BusinessProfilePage.tsx
+./src/pages/MoreMenuPage.tsx
+./src/pages/public
+./src/pages/public/businesses
+./src/pages/public/banks
+./src/pages/BusinessDetailPage.tsx
+./src/pages/JobsPage.tsx.backup
+./src/pages/OffersPage.tsx
+./src/pages/TrendPage.tsx
+./src/pages/DirectoryPage.tsx
+./src/pages/PricesPage.tsx
+./src/App.tsx.backup.20260830_0003
+./src/layouts
+./src/layouts/AdminLayout.tsx
+./src/layouts/AppLayout.tsx
+./src/data
+./src/data/locations.ts
+./src/data/demoAuditLogs.ts
+./src/data/mockData.ts
+./src/data/demoBanksWallets.ts
+./src/data/demoAds.ts
+./src/data/categories.ts
+./src/data/demoJobs.ts
+./src/data/demoHome.ts
+./src/data/demoBusinesses.ts
+./src/data/demoPhones.ts
+./src/data/demoPrices.ts
+./src/config
+./src/config/navigationConfig.ts
+./src/config/citiesConfig.ts
+./src/App.tsx.backup
+./src/App.tsx
+./src/services
+./src/services/offerService.ts
+./src/services/propertyService.ts
+./src/services/businessService.ts
+./src/services/bankService.ts
+./src/services/rateService.ts
+./src/services/searchService.ts
+./src/services/adminService.ts
+./src/services/platformServices.ts
+./src/services/notificationService.ts
+./src/services/jobService.ts
+./src/main.tsx
+./src/styles
+./src/styles/tokens.css
+./src/styles/themeColors.css
+./src/styles/globals.css
+./supabase.js
+./supabase_phase2_architecture.sql
+./index.html.backup2
+./index.html.backup
+./update_phase11_12.js
+./tailwind.config.js
+./jobs.html.backup
+./bank.html.before_restore
+./vite.config.ts
+./update_badges_display.js
+./update_phase7_8.js
+./fix_sidebar_close.js
+./restore_and_fix.js
+./fix_tab_structure.js
+./supabase
+./supabase/migrations
+./supabase/migrations/005_master_relational_schema.sql
+./supabase/migrations/002_master_spec.sql
+./supabase/migrations/004_live_auctions_realtime_spec.sql
+./fix_black_screen.js
+./clean_master_tabs.js
+
+=== PACKAGE JSON ===
+{
+  "name": "yemen-rating",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.3.1",
+    "@supabase/supabase-js": "^2.112.3",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.39.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.18.3",
+    "sonner": "^2.0.8",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.16",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.1"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
+  }
+}
+
+=== MOCK & FAKE DATA OCCURRENCES ===
+src/MainPublicApp.tsx:19:import { SAMPLE_BUSINESSES, BusinessItem } from './data/mockData';
+src/index.css:101:  input::placeholder,
+src/index.css:102:  textarea::placeholder {
+src/components/ui/Input.tsx:35:              'bg-white dark:bg-[#0A0A0A] text-[#0F172A] dark:text-white placeholder:text-[#94A3B8] dark:placeholder:text-[#71717A]',
+src/components/ui/Select.tsx:15:  placeholder?: string;
+src/components/ui/Select.tsx:24:  placeholder = 'اختر...',
+src/components/ui/Select.tsx:50:        <span className="truncate font-semibold">{selectedOption ? selectedOption.label : placeholder}</span>
+src/components/category/CategoryListing.tsx:9:import { BusinessItem } from '../../data/mockData';
+src/components/category/CategoryListing.tsx:162:            placeholder="ابحث عن اسم منشأة، فرع، أو شارع في هذا القسم..."
+src/components/category/CategoryListing.tsx:165:            className="w-full bg-[#0E1422] border border-zinc-800 focus:border-[#FFC500] text-zinc-100 placeholder-zinc-500 pr-11 pl-4 py-3 rounded-2xl text-xs sm:text-sm outline-none transition shadow-inner"
+src/components/category/CategoryListing.tsx.backup:4:import { BusinessItem } from '../../data/mockData';
+src/components/pages/JobsPage.tsx:452:                placeholder="ابحث عن مسمى وظيفي (مهندس، محاسب، تسويق)..."
+src/components/pages/JobsPage.tsx:453:                className="flex-1 bg-transparent text-xs text-white placeholder-gray-500 outline-none"
+src/components/pages/JobsPage.tsx:577:                    placeholder="اسم الشركة أو الجهة..."
+src/components/pages/JobsPage.tsx:589:                    placeholder="777000111"
+src/components/pages/JobsPage.tsx:602:                  placeholder="مثال: محاسب عام، مهندس شبكات..."
+src/components/pages/JobsPage.tsx:702:                  placeholder="اكتب المهام والمسؤوليات المطلوبة..."
+src/components/pages/JobsPage.tsx:713:                  placeholder="اكتب كل شرط في سطر مستقل..."
+src/components/pages/JobsPage.tsx:796:                    placeholder="اسمك الثلاثي..."
+src/components/pages/JobsPage.tsx:808:                    placeholder="777000111"
+src/components/pages/JobsPage.tsx:865:                  placeholder="مثال: خبرة 3 سنوات في المحاسبة..."
+src/components/pages/JobsPage.tsx:914:                  placeholder="اكتب نبذة مختصرة عن أبرز مهاراتك وخبراتك..."
+src/components/pages/RealEstatePage.tsx:643:                  placeholder="مثال: شقة للبيع في حدة 3 غرف..."
+src/components/pages/RealEstatePage.tsx:799:                  placeholder="اكتب مواصفات العقار بدقة..."
+src/components/pages/FavoritesPage.tsx:3:import { SAMPLE_BUSINESSES } from '../../data/mockData';
+src/components/pages/AuctionsPage.tsx:683:                      placeholder="اكتب تفاصيل الاتفاق أو موعد التسليم..."
+src/components/pages/AuctionsPage.tsx:811:                <input type="text" required placeholder="اكتب عنوان العرض..." value={title} onChange={(e) => setTitle(e.target.value)} className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]" />
+src/components/pages/AuctionsPage.tsx:849:                  <input type="text" required placeholder="اسمك..." value={sellerName} onChange={(e) => setSellerName(e.target.value)} className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none" />
+src/components/pages/AuctionsPage.tsx:853:                  <input type="tel" required placeholder="777000111" value={sellerPhone} onChange={(e) => setSellerPhone(e.target.value)} className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white font-mono outline-none" />
+src/components/pages/AuctionsPage.tsx:890:                <textarea rows={2} required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="اكتب مواصفات وتفاصيل المعروض..." className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none" />
+src/components/pages/AuctionsPage.tsx:934:                <input type="text" required placeholder="اسمك الكامل..." value={buyerName} onChange={(e) => setBuyerName(e.target.value)} className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]" />
+src/components/pages/AuctionsPage.tsx:938:                <input type="tel" required placeholder="777000111" value={buyerPhone} onChange={(e) => setBuyerPhone(e.target.value)} className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-[#FFC500]" />
+src/components/pages/AuctionsPage.tsx:1011:                <input type="text" required placeholder="أدخل رقم الحوالة..." value={transferNumber} onChange={(e) => setTransferNumber(e.target.value)} className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-[#FFC500]" />
+src/components/pages/AuctionsPage.tsx:1054:                <textarea rows={3} required value={disputeDetails} onChange={(e) => setDisputeDetails(e.target.value)} placeholder="اشرح المشكلة للإدارة بالتفصيل..." className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none" />
+src/components/pages/JobsPage.tsx.backup:142:                  <input type="text" required placeholder="أدخل اسمك الثلاثي" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-amber-400" />
+src/components/pages/JobsPage.tsx.backup:146:                  <input type="tel" required placeholder="777000000" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-xs text-white font-mono focus:outline-none focus:border-amber-400" />
+src/components/pages/JobsPage.tsx.backup:150:                  <input type="url" placeholder="https://..." className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-xs text-white font-mono focus:outline-none focus:border-amber-400" />
+src/components/owner/OwnerOffersManager.tsx:93:            placeholder="مثال: خصم 20% على طلبات التوصيل"
+src/components/owner/OwnerOffersManager.tsx:102:              placeholder="مثال: 20%"
+src/components/owner/OwnerOffersManager.tsx:109:              placeholder="مثال: YEMEN20"
+src/components/owner/OwnerOffersManager.tsx:127:              placeholder="شروط الاستفادة من العرض..."
+src/components/owner/OwnerReviewsManager.tsx:109:                    placeholder="اكتب رد إدارة النشاط الرسمي هنا..."
+src/components/reviews/AddReviewModal.tsx:92:          placeholder="مثال: م. علي الريمي"
+src/components/reviews/AddReviewModal.tsx:106:            placeholder="اذكر جودة الخدمة، سرعة التعامل، والأسعار..."
+src/components/admin/AdEditorModal.tsx:89:          placeholder="مثال: عرض الصيف لمحفظة جيب كاش باك"
+src/components/admin/AdEditorModal.tsx:98:          placeholder="مثال: بنك الكريمي / متجر العصرية"
+src/components/admin/AdEditorModal.tsx:136:          placeholder="https://..."
+src/components/admin/AdEditorModal.tsx:146:          placeholder="https://..."
+src/components/admin/AdEditorModal.tsx:155:            placeholder="$500"
+src/components/admin/CategoryManagement.tsx:60:            placeholder="ابحث عن تصنيف بالاسم أو الـ Slug..."
+src/components/admin/CategoryManagement.tsx:63:            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pr-10 pl-4 py-2 text-xs md:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400"
+src/components/jobs/JobDetailsModal.tsx:181:              placeholder="مثال: أحمد محمد علي السامعي"
+src/components/jobs/JobDetailsModal.tsx:191:              placeholder="77XXXXXXX"
+src/components/jobs/JobDetailsModal.tsx:204:                placeholder="اذكر ملخص سنوات خبرتك، وأهم المشروعات أو الأنظمة التي أتقنتها..."
+src/components/common/YRSelect.tsx:14:  placeholder?: string;
+src/components/common/YRSelect.tsx:25:  placeholder = "اختر...",
+src/components/common/YRSelect.tsx:38:    normalizedOptions.find((o) => o.value === value)?.label || value || placeholder;
+src/components/common/YRReviewSystem.tsx:106:          placeholder="اسمك..."
+src/components/common/YRReviewSystem.tsx:114:          placeholder="تجربتك..."
+src/components/common/SearchSection.tsx:69:          placeholder="ابحث عن شركة، مطعم، عقار، مزاد، وظيفة..."
+src/components/common/SearchSection.tsx:70:          className="flex-1 bg-transparent text-xs sm:text-sm text-white placeholder-[#6B6B75] outline-none font-medium"
+src/components/business/SendMessageModal.tsx:93:                placeholder="استفسار عن حجز / أسعار / مواعيد..."
+src/components/business/SendMessageModal.tsx:105:                placeholder="اكتب استفسارك بالتفصيل..."
+src/components/business/BusinessDetails.tsx:7:import { BusinessItem } from '../../data/mockData';
+src/components/business/BusinessDetails.tsx:260:                  placeholder="اسمك الكامل"
+src/components/business/BusinessDetails.tsx:263:                  className="w-full bg-[#0E1422] border border-zinc-800 text-zinc-100 placeholder-zinc-500 px-3.5 py-2.5 rounded-xl text-xs outline-none focus:border-[#FFC500]"
+src/components/business/BusinessDetails.tsx:266:                  placeholder="اكتب تفاصيل تجربتك بكل أمانة..."
+src/components/business/BusinessDetails.tsx:270:                  className="w-full bg-[#0E1422] border border-zinc-800 text-zinc-100 placeholder-zinc-500 p-3 rounded-xl text-xs outline-none focus:border-[#FFC500]"
+src/components/business/QuoteModal.tsx:71:                placeholder="مثال: تركيب نظام كاميرات، صيانة كهربائية..."
+src/components/business/QuoteModal.tsx:83:                placeholder="اشرح المواصفات أو التفاصيل التي تحتاجها..."
+src/components/business/QuoteModal.tsx:94:                placeholder="مثال: 500$ - 1000$"
+src/components/business/AddBusinessModal.tsx:76:              placeholder="مثال: المقطري للخدمات الكهربائية"
+src/components/business/AddBusinessModal.tsx:126:                placeholder="770000000"
+src/components/business/AddBusinessModal.tsx:137:                placeholder="770000000"
+src/components/business/AddBusinessModal.tsx:150:              placeholder="اكتب نبذة عن الخدمات والأعمال التي يقدمها النشاط..."
+src/components/business/ClaimOwnershipModal.tsx:82:              <input type="text" required value={applicantName} onChange={e => setApplicantName(e.target.value)} placeholder="مثال: أحمد محمد الأحمدي" className="w-full bg-[#101015] border border-[#2A2A38] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400" />
+src/components/business/ClaimOwnershipModal.tsx:92:                <input type="tel" required value={phone} onChange={e => setPhone(e.target.value)} placeholder="770123456" className="w-full bg-[#101015] border border-[#2A2A38] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400" />
+src/components/business/ClaimOwnershipModal.tsx:98:              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="official@company.com" className="w-full bg-[#101015] border border-[#2A2A38] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400" />
+src/components/modals/AdminLoginModal.tsx:62:          placeholder="admin@yemenrating.com"
+src/components/modals/AdminLoginModal.tsx:73:          placeholder="••••••••"
+src/components/claim/ClaimOwnershipModal.tsx:95:                  placeholder="اسمك الكامل..."
+src/components/claim/ClaimOwnershipModal.tsx:119:                placeholder="777000111"
+src/components/claim/ClaimOwnershipModal.tsx:156:                placeholder="أي تفاصيل تثبت صفتك الرسمية بالمنشأة..."
+src/components/layout/AppShell.tsx:135:                placeholder="ابحث بالاسم، المسمى، المدينة، أو التصنيف..."
+src/components/layout/AppShell.tsx:136:                className="flex-1 bg-transparent text-xs sm:text-sm text-white placeholder-zinc-500 outline-none"
+src/components/banks/BankWalletFilters.tsx:63:            placeholder="ابحث عن بنك، محفظة، أو خدمة مالية..."
+src/components/banks/BankWalletFilters.tsx:75:            placeholder="جميع المحافظات"
+src/components/banks/BankProfileView.tsx:352:            placeholder="اسمك الكامل..."
+src/components/banks/BankProfileView.tsx:361:            placeholder="اكتب تجربتك ورأيك..."
+src/components/home/HomeView.tsx:8:import { BusinessItem } from '../../data/mockData';
+src/components/AddBusinessModal.tsx:76:              placeholder="مثال: المقطري للخدمات الكهربائية"
+src/components/AddBusinessModal.tsx:126:                placeholder="770000000"
+src/components/AddBusinessModal.tsx:137:                placeholder="770000000"
+src/components/AddBusinessModal.tsx:150:              placeholder="اكتب نبذة عن الخدمات والأعمال التي يقدمها النشاط..."
+src/components/directory/DirectoryFilters.tsx:67:        placeholder="جميع المدن"
+src/components/directory/DirectoryFilters.tsx:75:        placeholder="جميع التصنيفات"
+src/components/claims/BusinessClaimModal.tsx:74:          placeholder="الاسم الثلاثي أو الرباعي كما في الهوية"
+src/components/claims/BusinessClaimModal.tsx:84:          placeholder="77XXXXXXX"
+src/components/claims/BusinessClaimModal.tsx:94:            placeholder="الرقم الوطني"
+src/components/claims/BusinessClaimModal.tsx:101:            placeholder="رقم السجل التجاري"
+src/components/claims/BusinessClaimModal.tsx:113:            placeholder="أية معلومات إضافية تثبت صلتك بالنشاط..."
+src/context/AuthContext.tsx:39:        const mockAdminUser: any = {
+src/context/AuthContext.tsx:45:        setUser(mockAdminUser);
+src/context/AuthContext.tsx:48:          localStorage.setItem('yr-admin-session', JSON.stringify(mockAdminUser));
+src/pages/HomePage.tsx:95:              placeholder="ابحث باسم النشاط التجاري أو الخدمة..."
+src/pages/HomePage.tsx:98:              className="w-full h-12 pr-11 pl-4 rounded-xl bg-[#0D0D12] border border-[#2A2A2A] text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-400 transition"
+src/pages/OwnerDashboardPage.tsx:10:  const business: BusinessItem = mockBusinesses[0]; // بنك الكريمي كمثال
+src/pages/templates/JobDetailsPage.tsx:101:                <input type="text" required placeholder="اسمك الثلاثي..." value={applicantName} onChange={(e) => setApplicantName(e.target.value)} className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]" />
+src/pages/templates/JobDetailsPage.tsx:105:                <input type="tel" required placeholder="777000111" value={applicantPhone} onChange={(e) => setApplicantPhone(e.target.value)} className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-[#FFC500]" />
+src/pages/HomePage.tsx.backup:36:            placeholder="ابحث عن نشاط أو شركة أو بنك أو خدمة..."
+src/pages/HomePage.tsx.backup:39:            className="w-full bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl pr-10 pl-4 py-3 text-xs text-white placeholder-neutral-400 cursor-pointer shadow-md focus:border-amber-400 transition"
+src/pages/owner/OwnerDashboardPage.tsx:217:              placeholder="اسم الخدمة أو المنتج..."
+src/pages/owner/OwnerDashboardPage.tsx:226:                placeholder="السعر ﷼..."
+src/pages/CategoryCollectivePage.tsx:56:                placeholder="ابحث عن خدمة، شركة، أو نشاط..."
+src/pages/BanksAndWalletsPage.tsx:227:            placeholder="ابحث عن بنك، شركة صرافة، أو محفظة..."
+src/pages/BanksAndWalletsPage.tsx:228:            className="flex-1 bg-transparent text-xs text-white placeholder-gray-500 outline-none"
+src/pages/admin/phones/PhonesManager.tsx:464:                placeholder="بحث باسم الهاتف، الموديل، المتجر، أو الرقم..."
+src/pages/admin/phones/PhonesManager.tsx:467:                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
+src/pages/admin/phones/PhonesManager.tsx:728:                placeholder="اسم الماركة (مثال: Google Pixel, Infinix)..."
+src/pages/admin/phones/PhonesManager.tsx:760:                  placeholder="اسم الموديل..."
+src/pages/admin/phones/PhonesManager.tsx:1099:              placeholder="اكتب سبب الرفض ليتم إرساله للبائع في الإشعارات (مثال: الصور غير واضحة، السعر غير منطقي، نقص في المواصفات)..."
+src/pages/admin/analytics/AnalyticsFinanceManager.tsx:329:                placeholder="بحث برقم المعاملة، العميل، أو المرجع..."
+src/pages/admin/analytics/AnalyticsFinanceManager.tsx:332:                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
+src/pages/admin/companies/CompaniesManager.tsx:19:  placeholder?: string;
+src/pages/admin/companies/CompaniesManager.tsx:20:}> = ({ label, value, options, onChange, placeholder }) => {
+src/pages/admin/companies/CompaniesManager.tsx:23:  const selectedLabel = options.find(o => o.value === value)?.label || placeholder || value;
+src/pages/admin/companies/CompaniesManager.tsx:703:            placeholder="ابحث بالاسم، المدينة، الهاتف..."
+src/pages/admin/companies/CompaniesManager.tsx:704:            className="w-full pr-10 pl-3 py-2 bg-[#161D2B] border border-[#1F2937] rounded-xl text-xs text-white placeholder-gray-500 outline-none focus:border-[#FFC500]/50"
+src/pages/admin/companies/CompaniesManager.tsx:961:                        placeholder="مثال: فندق سبأ، مطاعم الشيباني، مستشفى النخبة..."
+src/pages/admin/companies/CompaniesManager.tsx:988:                        placeholder="الشارع، الحي، أقرب معلم..."
+src/pages/admin/companies/CompaniesManager.tsx:1001:                        placeholder="+967..."
+src/pages/admin/companies/CompaniesManager.tsx:1012:                        placeholder="+967..."
+src/pages/admin/companies/CompaniesManager.tsx:1023:                        placeholder="https://..."
+src/pages/admin/companies/CompaniesManager.tsx:1035:                      placeholder="وصف الخدمات، المميزات، التأسيس..."
+src/pages/admin/companies/CompaniesManager.tsx.backup:386:            placeholder="ابحث بالاسم، المدينة، الهاتف..."
+src/pages/admin/companies/CompaniesManager.tsx.backup:387:            className="w-full pr-10 pl-3 py-2 bg-[#161D2B] border border-[#1F2937] rounded-xl text-xs text-white placeholder-gray-500 outline-none focus:border-[#FFC500]/50"
+src/pages/admin/companies/CompaniesManager.tsx.backup:572:                    placeholder="مثال: مطعم البيت اليمني، فندق سبأ..."
+src/pages/admin/companies/CompaniesManager.tsx.backup:622:                    placeholder="الشارع، الحي، المعلم القريب..."
+src/pages/admin/companies/CompaniesManager.tsx.backup:635:                    placeholder="+967..."
+src/pages/admin/companies/CompaniesManager.tsx.backup:646:                    placeholder="+967..."
+src/pages/admin/companies/CompaniesManager.tsx.backup:702:                  placeholder="وصف مختصر للخدمات والمنتجات المميزة..."
+src/pages/admin/auth/AdminLogin.tsx:70:                placeholder="admin@yemenrating.com"
+src/pages/admin/auth/AdminLogin.tsx:85:                placeholder="••••••••••••"
+src/pages/admin/ratings/RatingsManager.tsx:249:                placeholder="ابحث عن منشأة بالاسم أو المدينة..."
+src/pages/admin/ratings/RatingsManager.tsx:252:                className="w-full bg-black border border-zinc-800 focus:border-[#FFC500] text-zinc-100 placeholder-zinc-500 pr-10 pl-3 py-2 rounded-xl text-xs outline-none"
+src/pages/admin/ads/AdGeneratorStudio.tsx.backup:478:                <input type="text" value={ctaText} onChange={(e) => setCtaText(e.target.value)} placeholder="نص الزر..." className="bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white outline-none" />
+src/pages/admin/ads/AdGeneratorStudio.tsx.backup:479:                <input type="text" value={targetUrl} onChange={(e) => setTargetUrl(e.target.value)} placeholder="الرابط..." className="bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white outline-none font-mono" />
+src/pages/admin/ads/AdGeneratorStudio.tsx:867:                    <input type="text" value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="اكتب العنوان..." className="flex-1 bg-[#0B0F17] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white font-bold" />
+src/pages/admin/ads/AdGeneratorStudio.tsx:937:                  <input type="text" value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} placeholder="السعر الحالي..." className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white" />
+src/pages/admin/ads/AdGeneratorStudio.tsx:938:                  <input type="text" value={oldPrice} onChange={(e) => setOldPrice(e.target.value)} placeholder="السعر القديم..." className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white" />
+src/pages/admin/ads/AdGeneratorStudio.tsx:939:                  <input type="text" value={discountPercentage} onChange={(e) => setDiscountPercentage(e.target.value)} placeholder="نسبة الخصم %..." className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white" />
+src/pages/admin/AdminAdsView.tsx:112:                placeholder="ابحث باسم الإعلان أو اسم المعلن..."
+src/pages/admin/jobs/JobsManager.tsx.backup:332:                placeholder="بحث بالمسمى الوظيفي، اسم الشركة، أو الرقم..."
+src/pages/admin/jobs/JobsManager.tsx.backup:335:                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
+src/pages/admin/jobs/JobsManager.tsx.backup:663:              placeholder="اكتب سبب الرفض ليتم إرساله للشركة المعلنة (مثال: بيانات التواصل ناقصة، شروط غير مطابقة للمواصفات)..."
+src/pages/admin/jobs/JobsManager.tsx.backup:708:                  placeholder="مثال: مهندس شبكات، مدير فرع..."
+src/pages/admin/jobs/JobsManager.tsx.backup:719:                  placeholder="اسم المنشأة أو الشركة..."
+src/pages/admin/jobs/JobsManager.tsx.backup:762:                    placeholder="مثال: $1,000 USD أو 300,000 YER"
+src/pages/admin/jobs/JobsManager.tsx.backup:772:                    placeholder="مثال: $150 USD"
+src/pages/admin/jobs/JobsManager.tsx.backup:783:                  placeholder="اكتب نبذة عن المهام المطلوبة..."
+src/pages/admin/jobs/JobsManager.tsx:435:                placeholder="بحث بالمسمى الوظيفي أو اسم الشركة..."
+src/pages/admin/settings/SettingsAuditManager.tsx:161:                placeholder="بحث باسم المشرف، الإجراء، الهدف، أو IP..."
+src/pages/admin/settings/SettingsAuditManager.tsx:164:                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
+src/pages/admin/categories/CategoriesManager.tsx:64:          placeholder="ابحث باسم التصنيف أو المعرف (slug)..."
+src/pages/admin/categories/CategoriesManager.tsx:65:          className="w-full bg-transparent text-xs text-white placeholder-gray-500 outline-none"
+src/pages/admin/markets/MarketsManager.tsx:241:            placeholder={activeTab === 'markets' ? 'بحث باسم السوق أو المدينة...' : 'بحث باسم السلعة أو الوحدة...'}
+src/pages/admin/markets/MarketsManager.tsx:244:            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
+src/pages/admin/markets/MarketsManager.tsx:593:                  placeholder="مثال: حليب بودرة ممتاز، زيت ذرة..."
+src/pages/admin/markets/MarketsManager.tsx:618:                    placeholder="كيس 50 كجم، دبة 20 لتر..."
+src/pages/admin/banks/BanksManager.tsx:317:            placeholder="ابحث باسم البنك أو المدينة..."
+src/pages/admin/banks/BanksManager.tsx:318:            className="w-full bg-[#161D2B] border border-[#273244] rounded-xl pr-9 pl-3 py-2 text-xs text-white placeholder-gray-500 outline-none focus:border-[#FFC500]"
+src/pages/admin/banks/BanksManager.tsx:598:                    placeholder="مثال: tadhamon أو kuraimi"
+src/pages/admin/auctions/AuctionLiveMonitor.tsx:285:                placeholder="إرسال توجيه إداري رسمي في المحادثة..."
+src/pages/admin/auctions/AuctionLiveMonitor.tsx:344:                  placeholder="اكتب سبب تغيير الحالة للتسجيل الأمني..."
+src/pages/admin/auctions/AuctionsManager.tsx:264:                placeholder="بحث برقم المزاد، السلعة، أو البائع..."
+src/pages/PropertiesPage.tsx:163:                <input type="text" required value={inqName} onChange={e => setInqName(e.target.value)} placeholder="مثال: م. عادل الصعفاني" className="w-full bg-[#101015] border border-[#2A2A38] rounded-xl px-3 py-2 text-xs text-white" />
+src/pages/PropertiesPage.tsx:167:                <input type="tel" required value={inqPhone} onChange={e => setInqPhone(e.target.value)} placeholder="770123456" className="w-full bg-[#101015] border border-[#2A2A38] rounded-xl px-3 py-2 text-xs text-white" />
+src/pages/PhoneMarketPage.tsx:464:                placeholder="ابحث عن جوال، ماركة، أو محل..."
+src/pages/PhoneMarketPage.tsx:465:                className="flex-1 bg-transparent text-xs text-white placeholder-gray-500 outline-none"
+src/pages/PhoneMarketPage.tsx:676:                    placeholder="اسمك أو اسم المحل..."
+src/pages/PhoneMarketPage.tsx:687:                    placeholder="967777..."
+src/pages/PhoneMarketPage.tsx:716:                    placeholder="مثال: iPhone 14 Pro Max..."
+src/pages/PhoneMarketPage.tsx:842:                    placeholder="مثال: أسود، أزرق، تيتانيوم..."
+src/pages/PhoneMarketPage.tsx:856:                  placeholder="اكتب حالة البطارية، الملحقات، أو الضمان..."
+src/pages/categories/CategoryHubPage.tsx:105:              <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder={`ابحث في ${categoryTitle}...`} />
+src/pages/public/businesses/BusinessesPage.tsx:217:            placeholder={`ابحث في ${categoryConfig.name}...`}
+src/pages/public/businesses/BusinessesPage.tsx.bak:133:            placeholder="بحث..."
+src/pages/public/businesses/BusinessesPage.tsx.bak:136:            className="w-full bg-[#0E1422] border border-[#1F2937] focus:border-[#FFC500] text-zinc-100 placeholder-zinc-500 pr-9 pl-3 py-2 rounded-xl text-xs outline-none transition"
+src/pages/public/banks/BanksPage.tsx:57:            placeholder="ابحث عن بنك..."
+src/pages/BusinessDetailPage.tsx:296:                  placeholder="اكتب تفاصيل تجربتك هنا..."
+src/pages/DirectoryPage.tsx:82:            placeholder="ابحث عن شركة، محل، خدمة، مدينة..."
+src/App.tsx.backup.20260830_0003:25:import { SAMPLE_BUSINESSES, BusinessItem } from './data/mockData';
+src/App.tsx:16:import { SAMPLE_BUSINESSES } from './data/mockData';
+src/services/businessService.ts:3:// Fallback Mock Data for instant visibility
+src/services/businessService.ts:4:const MOCK_BUSINESSES: YRBusiness[] = [
+src/services/businessService.ts:87:    return MOCK_BUSINESSES;
+src/services/businessService.ts:90:    return MOCK_BUSINESSES;
+src/services/bankService.ts:12:  logo_url: row.logo_url || 'https://via.placeholder.com/150',
+src/services/bankService.ts:13:  cover_url: row.cover_url || 'https://via.placeholder.com/800x400',
+
+=== SUPABASE CALLS & TABLES ===
+src/components/category/CategoryListing.tsx:53:        let query = supabase.from('businesses').select('*');
+src/components/business/AddBusinessModal.tsx:26:      const { error } = await supabase.from('businesses').insert([
+src/components/business/ClaimOwnershipModal.tsx:32:    const { error } = await supabase.from('business_claims').insert([{
+src/components/AddBusinessModal.tsx:26:      const { error } = await supabase.from('businesses').insert([
+src/pages/admin/companies/CompaniesManager.tsx:138:        await supabase.from("reviews").delete().eq("business_id", businessToDelete.id);
+src/pages/admin/companies/CompaniesManager.tsx:327:      const { data: catData } = await supabase.from('categories').select('id, name, slug');
+src/pages/admin/companies/CompaniesManager.tsx.backup:102:      const { data: catData } = await supabase.from('categories').select('id, name, slug');
+src/pages/admin/companies/CompaniesManager.tsx.backup:328:      await supabase.from('businesses').update({ status: nextStatus }).eq('id', b.id);
+src/pages/admin/ratings/RatingsManager.tsx:151:      const { error } = await supabase.from('reviews').delete().eq('id', reviewId);
+src/pages/admin/AdminDashboardOverview.tsx:31:        const { count: bCount } = await supabase.from('businesses').select('*', { count: 'exact', head: true });
+src/pages/admin/AdminDashboardOverview.tsx:34:        const { count: banksCount } = await supabase.from('banks').select('*', { count: 'exact', head: true });
+src/pages/admin/AdminDashboardOverview.tsx:39:          const res = await supabase.from('claims').select('*', { count: 'exact', head: true });
+src/pages/admin/AdminDashboardOverview.tsx:44:          const res = await supabase.from('ads').select('*', { count: 'exact', head: true });
+src/pages/admin/AdminDashboardOverview.tsx:49:          const res = await supabase.from('auctions').select('*', { count: 'exact', head: true });
+src/pages/admin/AdminDashboardOverview.tsx:54:          const res = await supabase.from('properties').select('*', { count: 'exact', head: true });
+src/pages/admin/AdminDashboardOverview.tsx:59:          const res = await supabase.from('jobs').select('*', { count: 'exact', head: true });
+src/pages/admin/AdminDashboardOverview.tsx:64:          const res = await supabase.from('phones').select('*', { count: 'exact', head: true });
+src/pages/admin/AdminDashboardOverview.tsx:80:        const { data: bList } = await supabase.from('businesses').select('category_id');
+src/pages/admin/AdminDashboardOverview.tsx:81:        const { data: cList } = await supabase.from('categories').select('id, slug');
+src/pages/admin/claims/ClaimsManager.tsx:36:        supabase.from('verification_requests').select('*').order('created_at', { ascending: false }),
+src/pages/admin/claims/ClaimsManager.tsx:37:        supabase.from('business_claims').select('*').order('created_at', { ascending: false }),
+src/pages/admin/claims/ClaimsManager.tsx:38:        supabase.from('businesses').select('id, name')
+src/pages/admin/claims/ClaimsManager.tsx:92:        supabase.from('verification_requests').update({ status: dbStatus, reviewed_at: new Date().toISOString() }).eq('id', id),
+src/pages/admin/claims/ClaimsManager.tsx:93:        supabase.from('business_claims').update({ status: dbStatus, reviewed_at: new Date().toISOString() }).eq('id', id)
+src/pages/admin/claims/ClaimsManager.tsx:106:        await supabase.from('businesses').update(payload).eq('id', entityId);
+src/pages/public/businesses/BusinessesPage.tsx:120:        const { data: catData } = await supabase.from('categories').select('id, name, slug');
+src/pages/public/businesses/BusinessesPage.tsx:125:        let query = supabase.from('businesses').select('*');
+src/pages/public/businesses/BusinessesPage.tsx:137:          supabase.from('reviews').select('entity_id, stars')
+src/pages/public/businesses/BusinessesPage.tsx.bak:56:        let query = supabase.from('businesses').select('*');
+src/services/offerService.ts:27:        let query = supabase.from('offers').select('*, businesses(*)').eq('status', 'ACTIVE');
+src/services/propertyService.ts:9:        let query = supabase.from('properties').select('*').eq('status', 'ACTIVE').order('created_at', { ascending: false });
+src/services/propertyService.ts:84:        await supabase.from('property_inquiries').insert([{
+src/services/bankService.ts:84:    const { error } = await supabase.from('reviews').insert([{
+src/services/bankService.ts:96:    const { error } = await supabase.from('business_claims').insert([{
+src/services/adminService.ts:7:      let query = supabase.from('auctions').select('*').order('created_at', { ascending: false });
+src/services/adminService.ts:25:      const { data, error } = await supabase.from('auctions').select('*').eq('id', id).single();
+src/services/adminService.ts:115:      await supabase.from('auction_timeline_events').insert([{
+src/services/adminService.ts:134:      const { data, error } = await supabase.from('platform_commission_settings').select('*').eq('is_active', true).single();
+src/services/adminService.ts:158:      const { data, error } = await supabase.from('platform_commission_settings').upsert([settings]).select().single();
+src/services/adminService.ts:176:      const { data, error } = await supabase.from('auctions').update(payload).eq('id', auctionId).select().single();
+src/services/adminService.ts:202:      const { data, error } = await supabase.from('auctions').update(payload).eq('id', auctionId).select().single();
+src/services/adminService.ts:221:      const { data, error } = await supabase.from('auction_deal_messages').insert([{
+src/services/adminService.ts:248:      await supabase.from('admin_audit_logs').insert([logData]);
+src/services/adminService.ts:258:      const { data, error } = await supabase.from('companies').select('*').order('created_at', { ascending: false });
+src/services/adminService.ts:267:      const { data, error } = await supabase.from('companies').insert([companyData]).select().single();
+src/services/adminService.ts:277:      const { data, error } = await supabase.from('companies').update({ badge_type: badge }).eq('id', companyId).select().single();
+src/services/adminService.ts:287:      const { data, error } = await supabase.from('companies').update({ is_hidden: isHidden }).eq('id', companyId).select().single();
+src/services/adminService.ts:300:      const { data, error } = await supabase.from('exchange_rates').select('*').order('updated_at', { ascending: false });
+src/services/adminService.ts:317:      const { data, error } = await supabase.from('exchange_rates').update(payload).eq('id', id).select().single();
+src/services/adminService.ts:340:      const { data, error } = await supabase.from('real_estate').insert([propData]).select().single();
+src/services/adminService.ts:350:      const { data, error } = await supabase.from('real_estate').update({ is_contact_hidden: isHidden }).eq('id', id).select().single();
+src/services/adminService.ts:363:      const { data, error } = await supabase.from('jobs').insert([jobData]).select().single();
+src/services/notificationService.ts:20:        let query = supabase.from('notifications').select('*').order('created_at', { ascending: false });
+src/services/notificationService.ts:84:        await supabase.from('broadcast_messages').insert([{
+src/services/jobService.ts:9:        let query = supabase.from('jobs').select('*').eq('status', 'PUBLISHED').order('created_at', { ascending: false });
+src/services/jobService.ts:145:        const { error } = await supabase.from('job_applications').insert([payload]);
+
+=== ROUTES DEFINITION ===
+src/App.tsx:2:import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+src/App.tsx:73:      <Routes>
+src/App.tsx:76:        <Route path="/" element={<HomeRoute />} />
+src/App.tsx:77:        <Route path="/prices" element={<AppShell><ExchangeRatesPage onBack={() => window.history.back()} /></AppShell>} />
+src/App.tsx:80:        <Route path="/banks" element={<AppShell><BanksPage /></AppShell>} />
+src/App.tsx:81:        <Route path="/banks/:slug" element={<AppShell><BankProfilePage /></AppShell>} />
+src/App.tsx:84:        <Route path="/businesses" element={<AppShell><BusinessesPage /></AppShell>} />
+src/App.tsx:85:        <Route path="/businesses/:slug" element={<AppShell><BusinessProfilePage /></AppShell>} />
+src/App.tsx:88:        <Route path="/jobs" element={<AppShell><JobsPage onBack={() => window.history.back()} /></AppShell>} />
+src/App.tsx:89:        <Route path="/jobs/:slug" element={<AppShell><JobDetailsPage /></AppShell>} />
+src/App.tsx:92:        <Route path="/properties" element={<AppShell><RealEstatePage onBack={() => window.history.back()} /></AppShell>} />
+src/App.tsx:93:        <Route path="/properties/:slug" element={<AppShell><PropertyDetailsPage /></AppShell>} />
+src/App.tsx:96:        <Route path="/auctions" element={<AppShell><AuctionsPage onBack={() => window.history.back()} /></AppShell>} />
+src/App.tsx:97:        <Route path="/auctions/:slug" element={<AppShell><AuctionDetailsPage /></AppShell>} />
+src/App.tsx:100:        <Route path="/phones" element={<AppShell><PhoneMarketPage onNavigate={() => window.history.back()} /></AppShell>} />
+src/App.tsx:101:        <Route path="/exchange-rates" element={<AppShell><ExchangeRatesPage onBack={() => window.history.back()} /></AppShell>} />
+src/App.tsx:104:        <Route path="/owner" element={<AppShell><OwnerDashboardPage /></AppShell>} />
+src/App.tsx:107:        <Route path="/admin" element={<AdminMaster />}>
+src/App.tsx:108:          <Route index element={<AdminDashboardOverview />} />
+src/App.tsx:109:          <Route path="companies" element={<CompaniesManager />} />
+src/App.tsx:110:          <Route path="ratings" element={<RatingsManager />} />
+src/App.tsx:111:          <Route path="banks" element={<BanksManager />} />
+src/App.tsx:112:          <Route path="categories" element={<CategoriesManager />} />
+src/App.tsx:113:          <Route path="claims" element={<ClaimsManager />} />
+src/App.tsx:114:          <Route path="markets" element={<MarketsManager />} />
+src/App.tsx:115:          <Route path="auctions" element={<AuctionsManager />} />
+src/App.tsx:116:          <Route path="auctions/:id" element={<AuctionLiveMonitor />} />
+src/App.tsx:117:          <Route path="ads" element={<AdsManager />} />
+src/App.tsx:118:          <Route path="ads/generator" element={<AdGeneratorStudio />} />
+src/App.tsx:119:          <Route path="jobs" element={<JobsManager />} />
+src/App.tsx:120:          <Route path="real-estate" element={<RealEstateManager />} />
+src/App.tsx:121:          <Route path="phones" element={<PhonesManager />} />
+src/App.tsx:122:          <Route path="cleaning" element={<CleaningManager />} />
+src/App.tsx:123:          <Route path="users" element={<UsersRolesManager />} />
+src/App.tsx:124:          <Route path="analytics" element={<AnalyticsFinanceManager />} />
+src/App.tsx:125:          <Route path="gold-currency" element={<GoldCurrencyManager />} />
+src/App.tsx:126:          <Route path="matching" element={<MatchingAIManager />} />
+src/App.tsx:127:          <Route path="settings" element={<SettingsAuditManager />} />
+src/App.tsx:130:        <Route path="*" element={<HomeRoute />} />
+src/App.tsx:132:      </Routes>

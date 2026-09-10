@@ -1,3 +1,4 @@
+import { YRSelect } from "../../../components/common/YRSelect";
 import React, { useState, useMemo } from 'react';
 import {
   Store,
@@ -245,33 +246,25 @@ export const MarketsManager: React.FC = () => {
         </div>
 
         {activeTab === 'commodities' && (
-          <select
-            value={categoryFilter}
-            onChange={e => setCategoryFilter(e.target.value)}
-            className="w-full sm:w-auto bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
-          >
-            <option value="all">جميع قطاعات السلع</option>
-            <option value="تموين وحبوب">تموين وحبوب</option>
-            <option value="مشتقات نفطية وغاز">مشتقات نفطية وغاز</option>
-            <option value="خضار وفواكه">خضار وفواكه</option>
-            <option value="لحوم وأسماك">لحوم وأسماك</option>
-          </select>
+          <div className="w-full sm:w-auto min-w-[170px]">
+            <YRSelect
+              value={categoryFilter}
+              onChange={(val) => setCategoryFilter(val as any)}
+              options={[{"value":"all","label":"جميع قطاعات السلع"},{"value":"تموين وحبوب","label":"تموين وحبوب"},{"value":"مشتقات نفطية وغاز","label":"مشتقات نفطية وغاز"},{"value":"خضار وفواكه","label":"خضار وفواكه"},{"value":"لحوم وأسماك","label":"لحوم وأسماك"}]}
+              compact
+            />
+          </div>
         )}
 
         {activeTab === 'markets' && (
-          <select
-            value={cityMarketFilter}
-            onChange={e => setCityMarketFilter(e.target.value)}
-            className="w-full sm:w-auto bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
-          >
-            <option value="all">كل المحافظات</option>
-            <option value="صنعاء">صنعاء</option>
-            <option value="عدن">عدن</option>
-            <option value="تعز">تعز</option>
-            <option value="الحديدة">الحديدة</option>
-            <option value="المكلا">حضرموت - المكلا</option>
-            <option value="مأرب">مأرب</option>
-          </select>
+          <div className="w-full sm:w-auto min-w-[150px]">
+            <YRSelect
+              value={cityMarketFilter}
+              onChange={(val) => setCityMarketFilter(val as any)}
+              options={[{"value":"all","label":"كل المحافظات"},{"value":"صنعاء","label":"صنعاء"},{"value":"عدن","label":"عدن"},{"value":"تعز","label":"تعز"},{"value":"حضرموت","label":"حضرموت"},{"value":"الحديدة","label":"الحديدة"},{"value":"مأرب","label":"مأرب"}]}
+              compact
+            />
+          </div>
         )}
       </div>
 

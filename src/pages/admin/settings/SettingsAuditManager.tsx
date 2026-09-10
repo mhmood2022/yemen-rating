@@ -1,3 +1,4 @@
+import { YRSelect } from "../../../components/common/YRSelect";
 import React, { useState, useMemo } from 'react';
 import {
   Settings,
@@ -165,18 +166,14 @@ export const SettingsAuditManager: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <select
-                value={categoryFilter}
-                onChange={e => setCategoryFilter(e.target.value)}
-                className="w-full sm:w-auto bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
-              >
-                <option value="all">كل أقسام العمليات</option>
-                <option value="توثيق">توثيق وشارات</option>
-                <option value="عمولات ومزادات">عمولات ومزادات</option>
-                <option value="أسعار وسلع">أسعار وسلع</option>
-                <option value="سوق الهواتف">سوق الهواتف</option>
-                <option value="صلاحيات وأمان">صلاحيات وأمان</option>
-              </select>
+              <div className="w-full sm:w-auto min-w-[180px]">
+            <YRSelect
+              value={categoryFilter}
+              onChange={(val) => setCategoryFilter(val as any)}
+              options={[{"value":"all","label":"كل أقسام العمليات"},{"value":"توثيق","label":"توثيق وشارات"},{"value":"عمولات ومزادات","label":"عمولات ومزادات"},{"value":"حسابات","label":"إدارة المستخدمين"},{"value":"نظام","label":"إعدادات النظام"}]}
+              compact
+            />
+          </div>
 
               <button
                 onClick={() => alert('تم تصدير سجل التدقيق كملف CSV')}

@@ -1,3 +1,4 @@
+import { YRSelect } from "../common/YRSelect";
 import React, { useState, useMemo, useRef } from 'react';
 import { 
   Briefcase, MapPin, ArrowRight, Plus, CheckCircle2, 
@@ -132,7 +133,37 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [selectedExperience, setSelectedExperience] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   
-  const [jobsList, setJobsList] = useState<JobItem[]>(INITIAL_JOBS);
+  const [jobsList, setJobsList] = useState<JobItem[]>(() => {
+    try {
+      const saved = localStorage.getItem("yr_admin_jobs") || localStorage.getItem("yr_public_jobs");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((j: any) => ({
+            id: j.id,
+            title: j.title,
+            category: j.category,
+            jobType: j.jobType,
+            experience: j.experience || "1-3 سنوات",
+            gender: j.gender || "لا يشترط",
+            education: j.education || "بكالوريوس",
+            salary: j.salary || 0,
+            currency: j.currency || "YER",
+            city: j.city || "صنعاء",
+            description: j.description || "",
+            requirements: j.requiredSkills || j.requirements || [],
+            employerName: "جهة معتمدة عبر وسيط المنصة",
+            employerPhone: "",
+            employerEmail: "",
+            applicantsCount: j.applicantsCount || 0,
+            status: j.status || "active",
+            createdAt: j.createdAt || new Date().toISOString().split("T")[0]
+          }));
+        }
+      }
+    } catch(e) {}
+    return INITIAL_JOBS;
+  });
   const [selectedJob, setSelectedJob] = useState<JobItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -424,41 +455,44 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             </div>
 
             <div className="grid grid-cols-3 gap-1.5">
-              <select
+              <YRSelect
                 value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                className="bg-[#18181C] border border-[#27272A] rounded-lg p-1.5 text-[10.5px] font-bold text-[#D1D5DB] outline-none cursor-pointer"
-              >
-                <option value="all">كل المحافظات</option>
-                <option value="صنعاء">صنعاء</option>
-                <option value="عدن">عدن</option>
-                <option value="تعز">تعز</option>
-                <option value="حضرموت">حضرموت</option>
-                <option value="الحديدة">الحديدة</option>
-              </select>
-
-              <select
+                onChange={setSelectedCity}
+                options={[
+                  { value: "all", label: "كل المحافظات" },
+                  { value: "صنعاء", label: "صنعاء" },
+                  { value: "عدن", label: "عدن" },
+                  { value: "تعز", label: "تعز" },
+                  { value: "حضرموت", label: "حضرموت" },
+                  { value: "الحديدة", label: "الحديدة" },
+                  { value: "مأرب", label: "مأرب" }
+                ]}
+                compact
+              />
+              <YRSelect
                 value={selectedJobType}
-                onChange={(e) => setSelectedJobType(e.target.value)}
-                className="bg-[#18181C] border border-[#27272A] rounded-lg p-1.5 text-[10.5px] font-bold text-[#D1D5DB] outline-none cursor-pointer"
-              >
-                <option value="all">نوع الدوام</option>
-                <option value="دوام كامل">دوام كامل</option>
-                <option value="دوام جزئي">دوام جزئي</option>
-                <option value="عن بعد">عن بعد</option>
-              </select>
-
-              <select
+                onChange={setSelectedJobType}
+                options={[
+                  { value: "all", label: "نوع الدوام" },
+                  { value: "دوام كامل", label: "دوام كامل" },
+                  { value: "دوام جزئي", label: "دوام جزئي" },
+                  { value: "عن بعد", label: "عن بعد" },
+                  { value: "عقد", label: "عقد عمل" }
+                ]}
+                compact
+              />
+              <YRSelect
                 value={selectedExperience}
-                onChange={(e) => setSelectedExperience(e.target.value)}
-                className="bg-[#18181C] border border-[#27272A] rounded-lg p-1.5 text-[10.5px] font-bold text-[#D1D5DB] outline-none cursor-pointer"
-              >
-                <option value="all">الخبرة</option>
-                <option value="مبتدئ">مبتدئ</option>
-                <option value="1-3 سنوات">1-3 سنوات</option>
-                <option value="3-5 سنوات">3-5 سنوات</option>
-                <option value="5+ سنوات">5+ سنوات</option>
-              </select>
+                onChange={setSelectedExperience}
+                options={[
+                  { value: "all", label: "الخبرة" },
+                  { value: "مبتدئ", label: "مبتدئ" },
+                  { value: "1-3 سنوات", label: "1-3 سنوات" },
+                  { value: "3-5 سنوات", label: "3-5 سنوات" },
+                  { value: "5+ سنوات", label: "5+ سنوات" }
+                ]}
+                compact
+              />
             </div>
           </div>
 

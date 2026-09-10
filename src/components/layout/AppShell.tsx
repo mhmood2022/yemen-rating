@@ -1,3 +1,4 @@
+import { YRSelect } from "../common/YRSelect";
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
@@ -163,15 +164,14 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 ))}
               </div>
 
-              <select
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                className="bg-[#18181C] border border-[#27272A] rounded-lg px-2.5 py-1 text-[11px] font-bold text-zinc-300 outline-none cursor-pointer"
-              >
-                {YEMEN_CITIES.map(c => (
-                  <option key={c.id} value={c.name_ar}>{c.name_ar}</option>
-                ))}
-              </select>
+              <div className="w-28 shrink-0">
+                <YRSelect
+                  value={selectedCity}
+                  onChange={setSelectedCity}
+                  options={YEMEN_CITIES.map(c => ({ value: c.name_ar, label: c.name_ar }))}
+                  compact
+                />
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar pr-0.5">
