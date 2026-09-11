@@ -1,3 +1,17 @@
+
+// دالة آمنة تمنع خطأ React عند محاولة رسم الكائنات مباشرة
+function getSafeOfferString(item: any): string {
+  if (!item) return '';
+  if (typeof item === 'string') return item;
+  if (typeof item === 'object') {
+    const t = item.title || item.name || '';
+    const d = item.description || item.desc || '';
+    if (t && d) return `${t} - ${d}`;
+    return t || d || JSON.stringify(item);
+  }
+  return String(item);
+}
+
 import React, { useState } from 'react';
 import { YRBusiness } from '../types/database.types';
 import { VerifiedBadge } from '../components/common/VerifiedBadge';
@@ -8,7 +22,7 @@ interface BusinessDetailPageProps {
 }
 
 export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business, onBack }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'services' | 'photos'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'services' | 'photos' | 'biz_promotions'>('overview');
   const [isSaved, setIsSaved] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [userRating, setUserRating] = useState(5);
@@ -185,6 +199,13 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
             className={`pb-3 transition flex items-center gap-2 border-b-2 ${activeTab === 'photos' ? 'border-amber-400 text-amber-400' : 'border-transparent text-gray-400'}`}
           >
             <i className="fa-solid fa-images"></i> معرض الصور
+          </button>
+          <button
+            onClick={() => setActiveTab('biz_promotions')}
+            className={`pb-3 transition flex items-center gap-2 border-b-2 ${activeTab === 'biz_promotions' ? 'border-amber-400 text-amber-400' : 'border-transparent text-gray-400'}`}
+            style={{ fontFamily: 'Cairo, sans-serif' }}
+          >
+            <i className="fa-solid fa-tag"></i> العروض والخصومات
           </button>
         </div>
 

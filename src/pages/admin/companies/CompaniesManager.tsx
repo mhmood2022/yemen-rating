@@ -1,3 +1,31 @@
+
+// دالة آمنة تمنع خطأ React عند محاولة رسم الكائنات مباشرة
+function getSafeOfferString(item: any): string {
+  if (!item) return '';
+  if (typeof item === 'string') return item;
+  if (typeof item === 'object') {
+    const t = item.title || item.name || '';
+    const d = item.description || item.desc || '';
+    if (t && d) return `${t} - ${d}`;
+    return t || d || JSON.stringify(item);
+  }
+  return String(item);
+}
+
+
+// دالة مساعدة لمنع أخطاء React عند عرض العروض
+const renderSafeOfferText = (offer: any): string => {
+  if (!offer) return '';
+  if (typeof offer === 'string') return offer;
+  if (typeof offer === 'object') {
+    const t = offer.title || offer.name || '';
+    const d = offer.description || offer.desc || '';
+    if (t && d) return `${t}: ${d}`;
+    return t || d || JSON.stringify(offer);
+  }
+  return String(offer);
+};
+
 import { DynamicSectorFeatures } from './DynamicSectorFeatures';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -234,6 +262,7 @@ export const CompaniesManager: React.FC = () => {
     ad_unit_feed: boolean;
     ad_unit_sticky: boolean;
     sector_features?: any[];
+    biz_promotions?: any[];
   }>({
     name: '',
     slug: '',
@@ -597,6 +626,7 @@ export const CompaniesManager: React.FC = () => {
           warranty_available: formData.warranty_available,
           gold_carat: formData.gold_carat,
           sector_features: formData.sector_features || [],
+      biz_promotions: (formData as any).biz_promotions || [],
         }
       },
       updated_at: new Date().toISOString(),
@@ -1205,6 +1235,193 @@ export const CompaniesManager: React.FC = () => {
                       }));
                     }}
                   />
+
+                  
+                  {/* قسم إدخال العروض والخصومات في قالب الإدخال الموحد (متوافق مع اللمس والهاتف) */}
+                  <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3" data-id="biz_promotions-admin-ui">
+                    <div className="flex items-center justify-between">
+                      <label className="text-white font-bold flex items-center gap-2 text-sm">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#FFC500]"></span>
+                        <span>العروض الترويجية والخصومات (تظهر في تبويب العروض):</span>
+                      </label>
+                      <span className="text-[11px] text-amber-400 font-bold">مرن وسهل الإدخال</span>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="أدخل عنوان العرض أو الخصم (مثال: خصم 20% لفترة محدودة)..."
+                        id="admin-offer-input"
+                        className="flex-1 bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const val = (e.currentTarget as HTMLInputElement).value.trim();
+                            if (val) {
+                              const currentOffers = (formData as any).biz_promotions || [];
+                              if (!currentOffers.includes(val)) {
+                                setFormData(prev => ({ ...prev, biz_promotions: [...currentOffers, val] }));
+                              }
+                              (e.currentTarget as HTMLInputElement).value = '';
+                            }
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const inputEl = document.getElementById('admin-offer-input') as HTMLInputElement;
+                          if (inputEl && inputEl.value.trim()) {
+                            const val = inputEl.value.trim();
+                            const currentOffers = (formData as any).biz_promotions || [];
+                            if (!currentOffers.includes(val)) {
+                              setFormData(prev => ({ ...prev, biz_promotions: [...currentOffers, val] }));
+                            }
+                            inputEl.value = '';
+                          }
+                        }}
+                        className="bg-[#FFC500] hover:bg-amber-400 text-black font-black text-xs px-5 py-3 rounded-xl transition active:scale-95 shrink-0 cursor-pointer"
+                      >
+                        + إضافة
+                      </button>
+                    </div>
+
+                    {/* شرائح العروض المضافة */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {((formData as any).biz_promotions || []).map((offer: string, index: number) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center gap-1.5 bg-[#0B0F17] border border-amber-500/30 text-amber-400 text-xs font-bold px-3.5 py-2 rounded-xl shadow"
+                        >
+                          <span>🎁 {offer}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const currentOffers = (formData as any).biz_promotions || [];
+                              setFormData(prev => ({ ...prev, biz_promotions: currentOffers.filter((_, i) => i !== index) }));
+                            }}
+                            className="text-red-400 hover:text-red-300 ml-1 font-black cursor-pointer px-1"
+                            title="حذف العرض"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                      {(!formData || !((formData as any).biz_promotions) || (formData as any).biz_promotions.length === 0) && (
+                        <p className="text-xs text-zinc-500 italic">لا توجد عروض مضافة حالياً. أضف عرضاً ليظهر في صفحة المنشأة.</p>
+                      )}
+                    </div>
+
+                    {/* شرائح سريعة جاهزة للاختيار باللمس */}
+                    <div className="pt-2 border-t border-zinc-800/80 space-y-1.5">
+                      <span className="text-[11px] text-zinc-400 block">عروض سريعة جاهزة (اضغط للإضافة الفورية):</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {['خصم 20% لفترة محدودة', 'توصيل مجاني للطلبات الكبيرة', 'عرض خاص بمناسبة الافتتاح', 'هدية مجانية مع كل خدمة'].map((preset, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              const currentOffers = (formData as any).biz_promotions || [];
+                              if (!currentOffers.includes(preset)) {
+                                setFormData(prev => ({ ...prev, biz_promotions: [...currentOffers, preset] }));
+                              }
+                            }}
+                            className="bg-black border border-zinc-800 hover:border-amber-500/40 text-zinc-300 hover:text-amber-400 text-[11px] font-bold px-3 py-1.5 rounded-lg transition active:scale-95 cursor-pointer"
+                          >
+                            + {preset}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  
+                  {/* قسم إدخال العروض والخصومات المرن لكافة التصنيفات الـ 28 */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-4 shadow-xl">
+                    <div className="flex items-center justify-between">
+                      <label className="text-white font-bold flex items-center gap-2 text-sm">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#FFC500]"></span>
+                        <span className="text-[#FFC500] font-black" style={{ fontFamily: 'Cairo, sans-serif' }}>العروض الترويجية والخصومات (لكافة التصنيفات):</span>
+                      </label>
+                      <span className="text-[11px] text-zinc-400">تظهر في تبويب العروض بالقالب الفردي الموحد</span>
+                    </div>
+
+                    {/* حقول إدخال مرنة: عنوان العرض + تفاصيل الخصم */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-[#0B0F17] p-3.5 rounded-xl border border-[#1F2937]">
+                      <input
+                        type="text"
+                        placeholder="عنوان العرض (مثال: خصم خاص، عرض الموسم)..."
+                        id="admin-offer-title"
+                        className="bg-[#161D2B] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
+                        style={{ fontFamily: 'Cairo, sans-serif' }}
+                      />
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="تفاصيل الخصم أو العرض (مثال: خصم 15% على الكشف أو التوصيل)..."
+                          id="admin-offer-desc"
+                          className="flex-1 bg-[#161D2B] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
+                          style={{ fontFamily: 'Cairo, sans-serif' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const titleEl = document.getElementById('admin-offer-title') as HTMLInputElement;
+                            const descEl = document.getElementById('admin-offer-desc') as HTMLInputElement;
+                            if (titleEl && descEl && (titleEl.value.trim() || descEl.value.trim())) {
+                              const newOffer = {
+                                title: titleEl.value.trim() || 'عرض خاص',
+                                description: descEl.value.trim() || ''
+                              };
+                              const currentOffers = (formData as any).biz_promotions || [];
+                              setFormData(prev => ({ ...prev, biz_promotions: [...currentOffers, newOffer] }));
+                              titleEl.value = '';
+                              descEl.value = '';
+                            }
+                          }}
+                          className="bg-[#FFC500] hover:bg-amber-400 text-black font-black text-xs px-5 py-3 rounded-xl transition active:scale-95 shrink-0 cursor-pointer"
+                          style={{ fontFamily: 'Cairo, sans-serif' }}
+                        >
+                          + إضافة عرض
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* قائمة العروض المضافة المرنة */}
+                    <div className="space-y-2 pt-1">
+                      {((formData as any).biz_promotions || []).map((offer: any, index: number) => {
+                        const title = typeof offer === 'string' ? offer : (offer.title || 'عرض خاص');
+                        const desc = typeof offer === 'string' ? '' : (offer.description || '');
+                        return (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between gap-3 bg-[#0B0F17] border border-amber-500/30 p-3.5 rounded-xl shadow-md"
+                          >
+                            <div className="space-y-0.5">
+                              <h4 className="text-[#FFC500] font-black text-xs sm:text-sm flex items-center gap-1.5" style={{ fontFamily: 'Cairo, sans-serif' }}>
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#FFC500]"></span>
+                                <span>{title}</span>
+                              </h4>
+                              {desc && <p className="text-white text-xs font-normal pr-3" style={{ fontFamily: 'Cairo, sans-serif' }}>{desc}</p>}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentOffers = (formData as any).biz_promotions || [];
+                                setFormData(prev => ({ ...prev, biz_promotions: currentOffers.filter((_, i) => i !== index) }));
+                              }}
+                              className="text-red-400 hover:text-red-300 font-bold text-xs bg-red-500/10 border border-red-500/20 px-2.5 py-1.5 rounded-lg transition cursor-pointer shrink-0"
+                            >
+                              حذف
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {(!formData || !((formData as any).biz_promotions) || (formData as any).biz_promotions.length === 0) && (
+                        <p className="text-xs text-zinc-500 italic text-center py-2" style={{ fontFamily: 'Cairo, sans-serif' }}>لا توجد عروض مضافة لهذه المنشأة حتى الآن.</p>
+                      )}
+                    </div>
+                  </div>
 
                   <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2">
                     <label className="text-white font-bold flex items-center gap-1.5">
