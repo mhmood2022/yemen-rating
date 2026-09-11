@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      body, h1, h2, h3, h4, h5, h6, p, span, div, button, input {
+        font-family: 'Cairo', sans-serif !important;
+      }
+    </style>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>بنك التضامن - يمن ريتنغ</title>
@@ -530,7 +538,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
       // قراءة فورية للبيانات الحقيقية المخزنة في الذاكرة (تظهر في 0.01 ثانية)
       try {
-        const cachedStr = sessionStorage.getItem("yr_instant_entity_" + bankId);
+        const cachedStr = sessionStorage.getItem("yr_instant_entity_" + bankId) || localStorage.getItem("yr_instant_entity_" + bankId);
         if (cachedStr) {
           const c = JSON.parse(cachedStr);
           bankData.id = c.id || bankId;
@@ -544,6 +552,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           bankData.location = (c.city && c.address) ? (c.city + " - " + c.address) : (c.city || c.address || "اليمن");
           bankData.logo_url = c.logo_url || "";
           bankData.cover_url = c.cover_url || "";
+          bankData.sector_features = c.sector_features || c.sections_config?.features?.sector_features || c.features || [];
+          bankData.sections_config = c.sections_config || {};
+          bankData.sector_features = c.sector_features || c.sections_config?.features?.sector_features || c.features || [];
+          bankData.sections_config = c.sections_config || {};
           currentBank = bankData;
           try { renderUI(); } catch (_) {}
           const splash = document.getElementById("page-splash-loader");
@@ -583,7 +595,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           bankData.id = b.id;
           bankData.name = b.name || bankData.name;
           bankData.description = b.description || b.short_description || bankData.description;
-          bankData.badge_type = b.badge_type || "gold";
+          bankData.badge_type = (b.badge_type && b.badge_type !== "none") ? b.badge_type : null;
+          bankData.sector_features = b.sector_features || b.sections_config?.features?.sector_features || b.features || [];
+          bankData.sections_config = b.sections_config || {};
           bankData.is_verified = b.is_verified === true;
           bankData.phone = b.phone || bankData.phone;
           bankData.whatsapp = b.whatsapp || bankData.whatsapp;
@@ -688,6 +702,41 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       }
     }
 
+    
+    // محرك الأيقونات الذكي المطابق لميزات وخدمات القطاعات
+    function getServiceIconClass(label) {
+      const t = (label || '').toLowerCase();
+      if (t.includes('طرد') || t.includes('طرود') || t.includes('بضائع') || t.includes('شحن طرود')) return 'fa-solid fa-boxes-packing';
+      if (t.includes('حافلات') || t.includes('باص') || t.includes('أسطول') || t.includes('مركبات')) return 'fa-solid fa-bus-simple';
+      if (t.includes('مبرد') || t.includes('تبريد') || t.includes('ثلج')) return 'fa-solid fa-snowflake';
+      if (t.includes('توصيل') || t.includes('منازل') || t.includes('سفري')) return 'fa-solid fa-truck-fast';
+      if (t.includes('باب')) return 'fa-solid fa-handshake';
+      if (t.includes('صراف') || t.includes('atm')) return 'fa-solid fa-money-bill-transfer';
+      if (t.includes('بطاق') || t.includes('فيزا') || t.includes('ماستركارد')) return 'fa-solid fa-credit-card';
+      if (t.includes('تحويل') || t.includes('حوال')) return 'fa-solid fa-paper-plane';
+      if (t.includes('مصرف') || t.includes('بنك') || t.includes('حساب')) return 'fa-solid fa-building-columns';
+      if (t.includes('تمويل') || t.includes('تسهيل')) return 'fa-solid fa-hand-holding-dollar';
+      if (t.includes('محفظ')) return 'fa-solid fa-wallet';
+      if (t.includes('صرف') || t.includes('عملات')) return 'fa-solid fa-money-bill-wave';
+      if (t.includes('طوارئ') || t.includes('إسعاف')) return 'fa-solid fa-truck-medical';
+      if (t.includes('عناية') || t.includes('icu')) return 'fa-solid fa-heart-pulse';
+      if (t.includes('مختبر') || t.includes('تحاليل')) return 'fa-solid fa-flask-vial';
+      if (t.includes('أشعة') || t.includes('رنين')) return 'fa-solid fa-x-ray';
+      if (t.includes('صيدل') || t.includes('دواء')) return 'fa-solid fa-pills';
+      if (t.includes('مسبح') || t.includes('سباح')) return 'fa-solid fa-water-ladder';
+      if (t.includes('غرف') || t.includes('أجنحة') || t.includes('فندق')) return 'fa-solid fa-bed';
+      if (t.includes('واي فاي') || t.includes('إنترنت')) return 'fa-solid fa-wifi';
+      if (t.includes('مواقف') || t.includes('سيارات')) return 'fa-solid fa-square-parking';
+      if (t.includes('ذهب') || t.includes('مجوهر') || t.includes('عيار')) return 'fa-solid fa-gem';
+      if (t.includes('نظاف') || t.includes('تنظيف')) return 'fa-solid fa-broom';
+      if (t.includes('مطعم') || t.includes('وجبات') || t.includes('أكل')) return 'fa-solid fa-utensils';
+      if (t.includes('قهوة') || t.includes('كافيه')) return 'fa-solid fa-mug-saucer';
+      if (t.includes('حلاق') || t.includes('صالون') || t.includes('شعر')) return 'fa-solid fa-scissors';
+      if (t.includes('نظر') || t.includes('بصري')) return 'fa-solid fa-glasses';
+      if (t.includes('دواجن') || t.includes('بيض')) return 'fa-solid fa-egg';
+      return 'fa-solid fa-hands-holding-circle';
+    }
+  
     function renderUI() {
 
         // إخفاء زر إثبات الملكية نهائياً إذا كانت المنشأة موثقة
@@ -792,27 +841,51 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
       // 4. عرض الخدمات الحقيقية فقط أو بطاقة نظيفة فارغة
       const servicesContainer = document.getElementById('services-container');
-      if (servicesContainer) {
-        const realServices = currentBank.services || [];
-        if (realServices.length === 0) {
-          servicesContainer.innerHTML = `<div class="py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-zinc-800 text-zinc-500 text-xs">
-            <i class="fa-solid fa-briefcase text-zinc-600 text-2xl mb-2 block"></i>
-            <span>سيتم إضافة قائمة الخدمات المعتمدة قريباً من قبل إدارة المنشأة.</span>
-          </div>`;
-        } else {
-          servicesContainer.innerHTML = realServices.map(service => `
-            <div class="bg-[#0D0D0D] border border-zinc-800 p-3 rounded-xl flex items-center justify-between text-right">
-              <i class="${service.icon || 'fa-solid fa-check-circle'} text-brand-gold text-2xl ml-3 shrink-0"></i>
-              <div>
-                <h4 class="text-sm font-bold text-white">${service.service_name || service.title}</h4>
-                <p class="text-xs text-zinc-400 mt-0.5 leading-snug">${service.description || service.desc}</p>
-              </div>
-            </div>
-          `).join('');
-        }
+    if (servicesContainer) {
+      let realServices = [];
+      const rawFeats = currentBank.sector_features || currentBank.sections_config?.features?.sector_features || currentBank.features || [];
+      if (Array.isArray(rawFeats)) {
+        realServices = rawFeats.filter(f => f && f.enabled);
+      } else if (rawFeats && typeof rawFeats === 'object') {
+        realServices = Object.keys(rawFeats)
+          .filter(k => rawFeats[k]?.enabled || rawFeats[k] === true)
+          .map(k => ({
+            label: rawFeats[k]?.label || k,
+            details: rawFeats[k]?.details || ''
+          }));
       }
 
-      const revs = currentBank.reviews || FALLBACK_BANK.reviews;
+      if (realServices.length === 0 && Array.isArray(currentBank.services)) {
+        realServices = currentBank.services;
+      }
+
+      if (realServices.length === 0) {
+        servicesContainer.innerHTML = `<div class="py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-zinc-800 text-zinc-500 text-xs" style="font-family: 'Cairo', sans-serif !important;">
+          <i class="fa-solid fa-briefcase text-zinc-600 text-2xl mb-2 block"></i>
+          <span>سيتم إضافة قائمة الخدمات المعتمدة قريباً من قبل إدارة المنشأة.</span>
+        </div>`;
+      } else {
+        servicesContainer.innerHTML = realServices.map(service => {
+          const title = service.label || service.service_name || service.title || '';
+          const detail = service.details || service.description || service.desc || '';
+          const icon = getServiceIconClass(title);
+
+          return `
+            <div class="bg-[#0D0D0D] border border-zinc-800/80 hover:border-[#FFC500]/40 p-3 sm:p-3.5 rounded-xl sm:rounded-2xl flex items-start gap-2.5 sm:gap-3 text-right transition duration-200" style="font-family: 'Cairo', sans-serif !important;" dir="rtl">
+              <div class="text-white text-base sm:text-lg shrink-0 flex items-center justify-center pt-0.5">
+                <i class="${icon}"></i>
+              </div>
+              <div class="flex-1 text-right space-y-0.5">
+                <h4 class="text-xs sm:text-[13px] font-bold text-[#FFC500] leading-snug" style="font-family: 'Cairo', sans-serif !important;">${title}</h4>
+                ${detail ? `<p class="text-[11px] text-white/90 leading-relaxed font-normal" style="font-family: 'Cairo', sans-serif !important;">${detail}</p>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    const revs = currentBank.reviews || FALLBACK_BANK.reviews;
       updateRatingsDisplay(revs);
 
             let allRevs = currentBank.reviews || [];
