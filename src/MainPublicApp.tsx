@@ -159,12 +159,12 @@ export function MainPublicApp() {
         {selectedBusiness ? (
           <BusinessDetails
             business={selectedBusiness}
-            onBack={handleBackToHome}
+            onBack={() => setSelectedBusiness(null)}
           />
         ) : selectedCategorySlug ? (
           <CategoryListing
             categorySlug={selectedCategorySlug}
-            onBack={handleBackToHome}
+            onBack={() => setSelectedBusiness(null)}
             onSelectBusiness={handleSelectBusiness}
             businesses={SAMPLE_BUSINESSES}
             selectedGov={selectedGov}
@@ -186,21 +186,21 @@ export function MainPublicApp() {
         ) : currentPage === 'phones' ? (
           <PhoneMarketPage onNavigate={handleBackToHome} />
         ) : currentPage === 'auctions' ? (
-          <AuctionsPage onBack={handleBackToHome} />
+          <AuctionsPage onBack={() => setSelectedBusiness(null)} />
         ) : currentPage === 'markets' ? (
-          <MarketsPage onBack={handleBackToHome} />
+          <MarketsPage onBack={() => setSelectedBusiness(null)} />
         ) : currentPage === 'real-estate' ? (
-          <RealEstatePage onBack={handleBackToHome} />
+          <RealEstatePage onBack={() => setSelectedBusiness(null)} />
         ) : currentPage === 'jobs' ? (
-          <JobsPage onBack={handleBackToHome} />
+          <JobsPage onBack={() => setSelectedBusiness(null)} />
         ) : currentPage === 'exchange-rates' ? (
-          <ExchangeRatesPage onBack={handleBackToHome} />
+          <ExchangeRatesPage onBack={() => setSelectedBusiness(null)} />
         ) : currentPage === 'profile' ? (
-          <ProfilePage onBack={handleBackToHome} />
+          <ProfilePage onBack={() => setSelectedBusiness(null)} />
         ) : currentPage === 'notifications' ? (
-          <NotificationsPage onBack={handleBackToHome} />
+          <NotificationsPage onBack={() => setSelectedBusiness(null)} />
         ) : currentPage === 'favorites' ? (
-          <FavoritesPage onBack={handleBackToHome} />
+          <FavoritesPage onBack={() => setSelectedBusiness(null)} />
         ) : null}
       </main>
 
