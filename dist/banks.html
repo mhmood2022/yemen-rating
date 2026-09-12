@@ -10,6 +10,26 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script>
+function renderVerificationBadge(badgeType, isVerified, size = 18) {
+  if (isVerified !== true && isVerified !== "true") return "";
+  
+  const type = (badgeType || "gold").toLowerCase();
+  let color = "#EAB308";
+  let title = "موثق - الشارة الذهبية";
+
+  if (type === "blue") {
+    color = "#1D9BF0";
+    title = "موثق - الشارة الزرقاء";
+  } else if (type === "silver" || type === "gray") {
+    color = "#9CA3AF";
+    title = "موثق - الشارة الفضية";
+  }
+
+  return `<svg class="inline-block select-none shrink-0 align-middle mr-1.5" style="width:${size}px; height:${size}px; color:${color};" viewBox="0 0 24 24" title="${title}">
+    <path d="M22.5 12.5c0-1.58-.88-2.95-2.15-3.6.15-.44.24-.91.24-1.4 0-2.21-1.79-4-4-4-.49 0-.96.08-1.4.24C14.55 2.48 13.18 1.6 11.6 1.6c-1.58 0-2.95.88-3.6 2.15-.44-.16-.91-.25-1.4-.25-2.21 0-4 1.79-4 4 4 .49 0 .96-.08 1.4-.24.65 1.27 2.02 2.14 3.6 2.14 1.58 0 2.95-.87 3.6-2.14.44.16.91.24 1.4.24 2.21 0 4-1.79 4-4 0-.49-.08-.96-.24-1.4 1.27-.65 2.14-2.02 2.14-3.6z" fill="currentColor"/>
+    <path d="M10.2 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z" fill="#FFFFFF"/>
+  </svg>`;
+}
     tailwind.config = {
       theme: {
         extend: {
@@ -134,6 +154,26 @@
   </div>
 
   <script>
+function renderVerificationBadge(badgeType, isVerified, size = 18) {
+  if (isVerified !== true && isVerified !== "true") return "";
+  
+  const type = (badgeType || "gold").toLowerCase();
+  let color = "#EAB308";
+  let title = "موثق - الشارة الذهبية";
+
+  if (type === "blue") {
+    color = "#1D9BF0";
+    title = "موثق - الشارة الزرقاء";
+  } else if (type === "silver" || type === "gray") {
+    color = "#9CA3AF";
+    title = "موثق - الشارة الفضية";
+  }
+
+  return `<svg class="inline-block select-none shrink-0 align-middle mr-1.5" style="width:${size}px; height:${size}px; color:${color};" viewBox="0 0 24 24" title="${title}">
+    <path d="M22.5 12.5c0-1.58-.88-2.95-2.15-3.6.15-.44.24-.91.24-1.4 0-2.21-1.79-4-4-4-.49 0-.96.08-1.4.24C14.55 2.48 13.18 1.6 11.6 1.6c-1.58 0-2.95.88-3.6 2.15-.44-.16-.91-.25-1.4-.25-2.21 0-4 1.79-4 4 4 .49 0 .96-.08 1.4-.24.65 1.27 2.02 2.14 3.6 2.14 1.58 0 2.95-.87 3.6-2.14.44.16.91.24 1.4.24 2.21 0 4-1.79 4-4 0-.49-.08-.96-.24-1.4 1.27-.65 2.14-2.02 2.14-3.6z" fill="currentColor"/>
+    <path d="M10.2 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z" fill="#FFFFFF"/>
+  </svg>`;
+}
     const SUPABASE_URL = "https://wkdqeghotlipciqiytuj.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE";
 
@@ -202,58 +242,30 @@
 
     async function fetchRealBanks() {
       try {
-        const resp = await fetch(
-          `${SUPABASE_URL}/rest/v1/banks?status=eq.active&select=*`,
-          {
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`
-            }
-          }
-        );
-        if (!resp.ok) throw new Error("فشل جلب قائمة البنوك");
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/banks?select=*`, {
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+        });
+        if (!resp.ok) throw new Error("تعذر جلب البنوك");
         const rows = await resp.json();
 
-        // جلب التقييمات
-        const revResp = await fetch(
-          `${SUPABASE_URL}/rest/v1/reviews?entity_type=eq.bank&select=entity_id,stars`,
-          {
-            headers: {
-              'apikey': SUPABASE_KEY,
-              'Authorization': `Bearer ${SUPABASE_KEY}`
-            }
-          }
-        );
-        const reviews = revResp.ok ? await revResp.json() : [];
-        const reviewsMap = {};
-        reviews.forEach(r => {
-          if (!reviewsMap[r.entity_id]) reviewsMap[r.entity_id] = { totalStars: 0, count: 0 };
-          reviewsMap[r.entity_id].totalStars += parseInt(r.stars) || 5;
-          reviewsMap[r.entity_id].count += 1;
-        });
-
-        // طلبات التوثيق المعلقة
+        let reviewsMap = {};
         try {
-          const claimsResp = await fetch(
-            `${SUPABASE_URL}/rest/v1/verification_requests?entity_type=eq.bank&status=eq.PENDING&select=entity_id`,
-            {
-              headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`
-              }
-            }
-          );
-          if (claimsResp.ok) {
-            const claims = await claimsResp.json();
-            pendingClaimsSet = new Set(claims.map(c => c.entity_id));
+          const revResp = await fetch(`${SUPABASE_URL}/rest/v1/reviews?select=entity_id,stars`, {
+            headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
+          });
+          if (revResp.ok) {
+            const revs = await revResp.json();
+            revs.forEach(r => {
+              if (!reviewsMap[r.entity_id]) reviewsMap[r.entity_id] = { totalStars: 0, count: 0 };
+              reviewsMap[r.entity_id].totalStars += parseInt(r.stars) || 5;
+              reviewsMap[r.entity_id].count += 1;
+            });
           }
         } catch (_) {}
 
         banksList = rows.map(b => {
           const r = reviewsMap[b.id];
           const hasReviews = r && r.count > 0;
-          const avg = hasReviews ? (r.totalStars / r.count).toFixed(1) : null;
-          const count = hasReviews ? r.count : 0;
           return {
             id: b.id,
             name: b.name,
@@ -262,28 +274,19 @@
             address: b.address || b.city || "",
             description: b.description || b.short_description || "",
             verified: b.verified === true || b.is_verified === true,
-            badge_type: b.badge_type || (b.is_verified ? "gold" : "gray"),
+            badge_type: b.badge_type || "gold",
             logo_url: b.logo_url || b.logo || "",
             cover_url: b.cover_url || b.cover || b.banner_url || "",
-            ratingAvg: avg,
-            ratingCount: count
+            ratingAvg: hasReviews ? (r.totalStars / r.count).toFixed(1) : null,
+            ratingCount: hasReviews ? r.count : 0
           };
         });
 
         renderCards();
       } catch (err) {
         console.error("Fetch error:", err);
-        // في حال حدوث أي تأخير أو خطأ، نعرض رسالة واضحة للمستخدم
-        const container = document.getElementById("banks-grid");
-        if (container) {
-          container.innerHTML = `
-            <div class="col-span-full py-12 text-center text-zinc-400 bg-[#0B0F17] rounded-2xl border border-[#1F2937]">
-              <i class="fa-solid fa-triangle-exclamation text-2xl text-[#EAB308] mb-2"></i>
-              <p class="text-xs font-bold">تعذر تحميل بيانات البنوك حالياً، يرجى المحاولة لاحقاً.</p>
-            </div>
-          `;
-        }
       }
+    }
     }
 
     function handleSearch() {
