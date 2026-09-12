@@ -31,30 +31,38 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   };
 
   const isMainHome = location.pathname === '/';
+  
+  // فحص صارم: هل الصفحة الحالية هي قالب فردي لمنشأة أو بنك؟
+  const isIndividualProfile = 
+    (location.pathname.startsWith('/businesses/') && location.pathname !== '/businesses') ||
+    (location.pathname.startsWith('/banks/') && location.pathname !== '/banks') ||
+    location.pathname.includes('/bank');
+
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#070A10] text-zinc-100 flex flex-col font-['Cairo',sans-serif]">
       
-      {/* 1. الهيدر الثابت + الوحدة الإعلانية المنزلقة من جذره مباشرة */}
-      <header className="sticky top-0 z-40 bg-[#0B0F17]/98 backdrop-blur-md border-b border-[#1F2937] shadow-xl">
-        <Header
-          onToggleSidebar={() => setIsSidebarOpen(true)}
-          onNavigateHome={() => navigate('/')}
-          onNavigateNotifications={() => navigate('/notifications')}
-          unreadNotificationsCount={3}
-        />
-
-        {/* الوحدة الإعلانية المنزلقة من جذر الهيدر تماماً في الصفحة الرئيسية */}
-        {isMainHome && (
-          <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pb-2 pt-0.5 yr-header-ad-slide overflow-hidden border-t border-[#1F2937]/40">
-            <AdBanner placementId="1" className="mb-0 shadow-lg" />
-          </div>
-        )}
-      </header>
+      {/* 1. الهيدر المثبت الدائم: يظهر في الرئيسية وقالب الشركات الجماعي ويختفي تماماً في الصفحات الفردية */}
+      {!isIndividualProfile && (
+        <header className="fixed top-0 left-0 right-0 z-50 bg-[#070A10]/98 backdrop-blur-xl border-b border-[#1F2937] shadow-2xl">
+          <Header
+            onToggleSidebar={() => setIsSidebarOpen(true)}
+            onNavigateHome={() => navigate('/')}
+            onNavigateNotifications={() => navigate('/notifications')}
+            unreadNotificationsCount={3}
+          />
+          {/* الوحدة الإعلانية المنزلقة في الصفحة الرئيسية */}
+          {isMainHome && (
+            <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pb-2 pt-0.5 yr-header-ad-slide overflow-hidden border-t border-[#1F2937]/40">
+              <AdBanner placementId="1" className="mb-0 shadow-lg" />
+            </div>
+          )}
+        </header>
+      )}
 
       {/* 2. شريط البحث المستقل بمسافة مريحة تحت الهيدر والإعلان */}
       {isMainHome && (
-        <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pt-3 pb-1">
+        <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pt-28 sm:pt-32 pb-1">
           <div 
             onClick={() => setIsSearchModalOpen(true)}
             className="flex items-center bg-[#121215] border border-[#242428] hover:border-[#FFC500]/40 rounded-2xl p-2.5 px-3.5 shadow-lg cursor-pointer transition-all"
@@ -226,7 +234,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       )}
 
       {/* 5. جسم الصفحة الرئيسي */}
-      <main className="flex-1 pb-16">
+      <main className={`flex-1 pb-16 ${!isIndividualProfile ? (!isMainHome ? "pt-16 sm:pt-20" : "") : ""}`}
         {children}
       </main>
 
