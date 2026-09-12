@@ -55,7 +55,8 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
 
   <!-- 1. الهيدر الرسمي الموحد للمنصة -->
     <!-- 1. الهيدر المثبت الدائم (مطابق لقالب المنصة الرسمي) -->
-  <header class="sticky top-0 z-50 bg-[#070A10]/98 backdrop-blur-xl border-b border-[#1F2937] shadow-2xl">
+    <!-- الهيدر المثبت الدائم الثابت في القمة 100% -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#070A10]/95 backdrop-blur-xl border-b border-[#1F2937] shadow-2xl">
     <div dir="rtl" class="w-full max-w-6xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between font-['Cairo',sans-serif]">
       <!-- اليمين: زر القائمة الجانبية (☰) + الشعار الرسمي -->
       <div class="flex items-center gap-3">
@@ -75,7 +76,7 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
           </div>
         </a>
       </div>
-      <!-- اليسار: جرس الإشعارات بنقطة التنبيه الحمراء -->
+      <!-- اليسار: جرس الإشعارات -->
       <div class="flex items-center">
         <a href="/" class="text-zinc-200 hover:text-[#EAB308] transition p-1 relative" title="الإشعارات">
           <i class="fa-regular fa-bell text-xl"></i>
@@ -86,7 +87,7 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
   </header>
 
   <!-- الحاوية الرئيسية المطابقة لقالب الشركات -->
-  <main class="min-h-screen max-w-7xl mx-auto px-3 sm:px-4 pt-3 pb-16">
+  <main class="min-h-screen max-w-7xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-16">
 
     <!-- 2. عنوان القسم الموحد وزر الرجوع -->
     <div class="mb-4 flex items-center justify-between border-b border-[#1F2937]/70 pb-3">
