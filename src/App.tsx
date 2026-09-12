@@ -82,6 +82,7 @@ export function App() {
 
         {/* مسارات المنشآت والشركات (دليل + قالب ديناميكي موحد) */}
         <Route path="/businesses" element={<AppShell><BusinessesPage /></AppShell>} />
+        <Route path="/directory" element={<AppShell><BusinessesPage /></AppShell>} />
         <Route path="/businesses/:slug" element={<AppShell><BusinessProfilePage /></AppShell>} />
 
         {/* مسارات الوظائف (دليل + قالب ديناميكي) */}
