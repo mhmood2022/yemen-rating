@@ -106,85 +106,17 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     <!-- 1. غلاف البنك -->
     <div id="bank-cover" class="relative w-full h-44 sm:h-52 md:h-60 rounded-none md:rounded-2xl bg-gradient-to-r from-[#002244] via-[#003B73] to-[#0A4D80] flex items-center justify-center overflow-hidden mt-0 md:mt-3 shadow-lg">
       <!-- زر الرجوع الأيقوني الفاخر -->
-      <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="absolute top-3.5 right-3.5 z-20 text-[#EAB308] hover:text-white p-1 bg-transparent border-0 transition active:scale-90 cursor-pointer flex items-center justify-center" title="رجوع" aria-label="رجوع">
-        <i class="fa-solid fa-arrow-right text-xl"></i>
-      </button>
-      <div class="flex items-center gap-2">
-        <div class="text-right">
-          <h1 id="bank-cover-title" class="text-2xl font-black text-white tracking-wide leading-tight min-h-[32px]"></h1>
-          <p id="bank-cover-subtitle" class="text-xs font-bold text-blue-100 tracking-wider uppercase min-h-[16px]"></p>
-        </div>
-        <div class="w-10 h-10 flex items-center justify-center">
-          <i class="fa-solid fa-shapes text-white text-3xl"></i>
-        </div>
-      </div>
-    </div>
-
-    <!-- 2. الشعار متداخل في اليمين + زر إثبات الملكية في اليسار -->
-    <div class="px-4 relative flex items-end justify-between -mt-10 mb-2">
-      <div class="relative order-1">
-        <div class="w-20 h-20 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden">
-          <img id="bank-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3C/svg%3E" class="w-full h-full object-cover rounded-2xl" alt="شعار المنشأة" />
-        </div>
-      </div>
-
-      <div class="order-2 mb-1">
-        <button type="button" id="claim-btn" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg transition active:scale-95 cursor-pointer">
-          <i class="fa-solid fa-shield-halved text-xs"></i>
-          <span>إثبات الملكية</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- 3. بيانات البنك الأساسية -->
-    <div class="px-4 space-y-1.5 text-right">
-      <div class="inline-flex items-center gap-1.5 flex-wrap">
-        <h2 id="bank-name" class="text-sm sm:text-base font-black text-white leading-snug inline"></h2>
-        <span id="bank-badge-slot" class="inline-flex items-center shrink-0"></span>
-      </div>
-
-      <div class="flex items-center justify-start gap-1.5 text-brand-gold text-xs font-bold">
-        <span class="text-white font-medium text-[11px]">★التقييمات</span>
-        <div class="flex text-[10px]" id="header-stars-slot">
-          <i class="fa-solid fa-star"></i>
-          <i class="fa-solid fa-star"></i>
-          <i class="fa-solid fa-star"></i>
-          <i class="fa-solid fa-star"></i>
-          <i class="fa-solid fa-star-half-stroke"></i>
-        </div>
-        <span class="text-white text-sm font-black" id="header-rating-num">--</span>
-        <span class="text-zinc-400 font-normal text-[11px]" id="header-rating-count">(جاري التحميل...)</span>
-      </div>
-
-      <p id="bank-bio" class="text-zinc-300 text-xs leading-snug font-medium pt-1">
-        <span class="inline-block w-full h-3.5 bg-zinc-900 rounded animate-pulse mb-1"></span><span class="inline-block w-2/3 h-3.5 bg-zinc-900 rounded animate-pulse"></span>
-      </p>
-
-      <div class="flex items-center justify-start gap-3 text-xs font-semibold text-zinc-400 pt-1 pb-1">
-        <div class="flex items-center gap-1">
-          <i class="fa-solid fa-briefcase text-brand-gold text-xs"></i>
-          <span class="text-zinc-300" id="bank-category">خدمات مالية</span>
-        </div>
-        <div class="flex items-center gap-1">
-          <i class="fa-solid fa-location-dot text-brand-gold text-xs"></i>
-          <span class="text-zinc-300" id="bank-location">Taiz - Yemen</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. تبويبات التصفح الثلاثة -->
-    <div class="border-b border-zinc-800 flex items-center justify-around text-zinc-400 text-sm font-bold mt-2">
-      <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" id="tab-posts-btn" class="tab-active py-2.5 px-3 flex items-center gap-1.5 transition cursor-pointer">
+      <button type="button" onclick="switchTab('posts')" id="tab-posts-btn" class="tab-active py-2.5 px-3 flex items-center gap-1.5 transition cursor-pointer">
         <i class="fa-solid fa-table-cells text-brand-gold text-sm"></i>
         <span>المنشورات</span>
       </button>
 
-      <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" id="tab-offers-btn" class="py-2.5 px-3 flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition cursor-pointer">
+      <button type="button" onclick="switchTab('offers')" id="tab-offers-btn" class="py-2.5 px-3 flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition cursor-pointer">
         <i class="fa-solid fa-clipboard-check text-brand-gold text-sm"></i>
         <span>العروض</span>
       </button>
 
-      <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" id="tab-services-btn" class="py-2.5 px-3 flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition cursor-pointer">
+      <button type="button" onclick="switchTab('services')" id="tab-services-btn" class="py-2.5 px-3 flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition cursor-pointer">
         <i class="fa-solid fa-briefcase text-brand-gold text-sm"></i>
         <span>الخدمات</span>
       </button>
@@ -273,7 +205,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           <p class="text-xs font-bold text-white">هل تعاملت مع هذه المنشأة؟</p>
           <p class="text-[10px] text-zinc-400">شارك تجربتك وساعد الآخرين في اتخاذ القرار.</p>
         </div>
-        <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="bg-brand-gold hover:bg-brand-goldHover text-black font-extrabold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1 shadow transition active:scale-95 cursor-pointer">
+        <button type="button" onclick="openReviewModal()" class="bg-brand-gold hover:bg-brand-goldHover text-black font-extrabold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1 shadow transition active:scale-95 cursor-pointer">
           <span>★ قيّم هذه المنشأة</span>
         </button>
       </div>
@@ -300,7 +232,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex flex-col justify-between p-4">
       <div class="flex items-center justify-between text-white border-b border-zinc-800 pb-3">
         <span id="lightbox-title" class="text-xs font-bold text-brand-gold">عرض الصورة</span>
-        <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 cursor-pointer">
+        <button type="button" onclick="closeLightbox()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 cursor-pointer">
           <i class="fa-solid fa-xmark text-sm"></i>
         </button>
       </div>
@@ -310,9 +242,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       </div>
 
       <div class="text-center text-zinc-400 text-xs flex items-center justify-between border-t border-zinc-800 pt-3">
-        <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs cursor-pointer">السابق</button>
+        <button type="button" onclick="navLightbox(-1)" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs cursor-pointer">السابق</button>
         <span id="lightbox-counter" class="font-mono text-brand-gold">1 / 4</span>
-        <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs cursor-pointer">التالي</button>
+        <button type="button" onclick="navLightbox(1)" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs cursor-pointer">التالي</button>
       </div>
     </div>
 
@@ -329,7 +261,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           <p class="text-xs text-zinc-400 leading-relaxed">
             تم تسجيل ونشر تقييمك بنجاح! رأيك الصادق يسهم في تعزيز الشفافية ومساعدة المجتمع في اختيار أفضل المنشآت والخدمات.
           </p>
-          <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="w-full py-2.5 rounded-xl bg-brand-gold text-black font-black text-xs hover:bg-brand-goldHover transition cursor-pointer shadow-md">
+          <button type="button" onclick="closeReviewModal()" class="w-full py-2.5 rounded-xl bg-brand-gold text-black font-black text-xs hover:bg-brand-goldHover transition cursor-pointer shadow-md">
             حسناً، تم
           </button>
         </div>
@@ -340,7 +272,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
             <h4 class="text-sm font-bold text-brand-gold flex items-center gap-1.5">
               <i class="fa-solid fa-star"></i> إضافة تقييمك للمنشأة
             </h4>
-            <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="w-7 h-7 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer transition">
+            <button type="button" onclick="closeReviewModal()" class="w-7 h-7 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer transition">
               <i class="fa-solid fa-xmark text-xs"></i>
             </button>
           </div>
@@ -353,11 +285,11 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
                 <span id="rating-hint" class="text-[11px] text-zinc-400 font-medium">اضغط لتحديد النجوم</span>
               </div>
               <div class="flex gap-2 text-2xl text-zinc-600 cursor-pointer justify-start my-1" id="rating-stars-input">
-                <span onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="transition hover:scale-110 select-none">★</span>
-                <span onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="transition hover:scale-110 select-none">★</span>
-                <span onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="transition hover:scale-110 select-none">★</span>
-                <span onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="transition hover:scale-110 select-none">★</span>
-                <span onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="transition hover:scale-110 select-none">★</span>
+                <span onclick="setRating(1)" class="transition hover:scale-110 select-none">★</span>
+                <span onclick="setRating(2)" class="transition hover:scale-110 select-none">★</span>
+                <span onclick="setRating(3)" class="transition hover:scale-110 select-none">★</span>
+                <span onclick="setRating(4)" class="transition hover:scale-110 select-none">★</span>
+                <span onclick="setRating(5)" class="transition hover:scale-110 select-none">★</span>
               </div>
               <input type="hidden" id="selected-rating" value="0" required />
             </div>
@@ -373,7 +305,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
             </div>
 
             <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
-              <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold transition cursor-pointer">إلغاء</button>
+              <button type="button" onclick="closeReviewModal()" class="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold transition cursor-pointer">إلغاء</button>
               <button type="submit" id="review-submit-btn" class="px-5 py-2 rounded-xl bg-brand-gold hover:bg-brand-goldHover text-black font-black transition cursor-pointer shadow-md">إرسال التقييم</button>
             </div>
           </form>
@@ -392,14 +324,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           <p class="text-xs text-zinc-400 leading-relaxed">
             تم تسجيل طلب إثبات ملكية الصفحة بنجاح، وسيتم مراجعته والتواصل معكم من قِبل إدارة منصة يمن ريتنغ.
           </p>
-          <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="w-full py-2.5 rounded-xl bg-brand-gold text-black font-black text-xs hover:bg-brand-goldHover transition">حسناً، تم</button>
+          <button type="button" onclick="closeClaimModal()" class="w-full py-2.5 rounded-xl bg-brand-gold text-black font-black text-xs hover:bg-brand-goldHover transition">حسناً، تم</button>
         </div>
         <div id="claim-form-view">
         <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
           <h4 class="text-sm font-bold text-[#EF4444] flex items-center gap-1.5">
             <i class="fa-solid fa-shield-halved"></i> طلب إثبات ملكية المنشأة
           </h4>
-          <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+          <button type="button" onclick="closeClaimModal()" class="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <form id="claim-form" onsubmit="submitClaim(event)" class="space-y-3 text-xs">
@@ -424,7 +356,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           </div>
 
           <div class="flex justify-end gap-2 pt-1 border-t border-zinc-800">
-            <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="px-3.5 py-1.5 rounded-lg bg-zinc-900 text-zinc-300 cursor-pointer">إلغاء</button>
+            <button type="button" onclick="closeClaimModal()" class="px-3.5 py-1.5 rounded-lg bg-zinc-900 text-zinc-300 cursor-pointer">إلغاء</button>
             <button type="submit" id="claim-submit-btn" class="px-4 py-1.5 rounded-lg bg-[#EF4444] hover:bg-red-700 text-white font-bold cursor-pointer transition">إرسال الطلب</button>
           </div>
         </form>
@@ -809,7 +741,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         } else {
           postsContainer.className = "grid grid-cols-2 gap-2.5";
           postsContainer.innerHTML = currentPosts.map((post, index) => `
-            <article onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="group relative bg-[#0D0D0D] rounded-2xl overflow-hidden border border-zinc-800/80 aspect-square cursor-pointer active:scale-95 transition-all shadow-md">
+            <article onclick="openLightbox(${index})" class="group relative bg-[#0D0D0D] rounded-2xl overflow-hidden border border-zinc-800/80 aspect-square cursor-pointer active:scale-95 transition-all shadow-md">
               <img src="${post.image || post.file_url}" alt="معرض الصور" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
             </article>
           `).join('');
