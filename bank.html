@@ -109,15 +109,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       <button type="button" onclick="window.history.length > 1 ? window.history.back() : window.location.href='/banks'" class="absolute top-3.5 right-3.5 z-20 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/15 text-zinc-300 hover:text-brand-gold flex items-center justify-center transition active:scale-90 shadow-md cursor-pointer group" title="رجوع" aria-label="رجوع">
         <i class="fa-solid fa-arrow-right text-xs transition-transform group-hover:-translate-x-0.5"></i>
       </button>
-      <div class="flex items-center gap-2">
-        <div class="text-right">
-          <h1 id="bank-cover-title" class="text-2xl font-black text-white tracking-wide leading-tight min-h-[32px]"></h1>
-          <p id="bank-cover-subtitle" class="text-xs font-bold text-blue-100 tracking-wider uppercase min-h-[16px]"></p>
-        </div>
-        <div class="w-10 h-10 flex items-center justify-center">
-          <i class="fa-solid fa-shapes text-white text-3xl"></i>
-        </div>
-      </div>
+      
     </div>
 
     <!-- 2. الشعار متداخل في اليمين + زر إثبات الملكية في اليسار -->
@@ -470,25 +462,27 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       return p.get('id') || p.get('slug') || 'tadhamon';
     }
 
-    function renderVerificationBadge(badgeType, isVerified, size = 18) {
+    function renderVerificationBadge(badgeType, isVerified, size = 20) {
   if (isVerified !== true && isVerified !== "true") return "";
   
   const type = (badgeType || "gold").toLowerCase();
-  let color = "#EAB308";
-  let title = "موثق رسمياً - الشارة الذهبية";
+  let color = "#EAB308"; // الذهبية
+  let title = "موثق - الشارة الذهبية";
 
   if (type === "blue") {
-    color = "#1D9BF0";
-    title = "موثق رسمياً - الشارة الزرقاء";
+    color = "#1D9BF0";   // الزرقاء
+    title = "موثق - الشارة الزرقاء";
   } else if (type === "silver" || type === "gray") {
-    color = "#9CA3AF";
-    title = "موثق رسمياً - الشارة الفضية";
+    color = "#9CA3AF";   // الفضية
+    title = "موثق - الشارة الفضية";
   }
 
-  return `<svg class="inline-block select-none shrink-0 align-middle mr-1.5" style="width:${size}px; height:${size}px; color:${color};" viewBox="0 0 24 24" title="${title}">
-    <path d="M22.5 12.5c0-1.58-.88-2.95-2.15-3.6.15-.44.24-.91.24-1.4 0-2.21-1.79-4-4-4-.49 0-.96.08-1.4.24C14.55 2.48 13.18 1.6 11.6 1.6c-1.58 0-2.95.88-3.6 2.15-.44-.16-.91-.25-1.4-.25-2.21 0-4 1.79-4 4 4 .49 0 .96-.08 1.4-.24.65 1.27 2.02 2.14 3.6 2.14 1.58 0 2.95-.87 3.6-2.14.44.16.91.24 1.4.24 2.21 0 4-1.79 4-4 0-.49-.08-.96-.24-1.4 1.27-.65 2.14-2.02 2.14-3.6z" fill="currentColor"/>
-    <path d="M10.2 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.9-5.9 1.4 1.4-7.3 7.3z" fill="#FFFFFF"/>
-  </svg>`;
+  return `<span class="inline-flex items-center justify-center shrink-0 select-none align-middle" title="${title}">
+    <svg style="width:${size}px; height:${size}px;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="shrink-0 drop-shadow-sm">
+      <path d="M10.29 2.308a2.38 2.38 0 0 1 3.42 0c.53.535 1.307.747 2.038.557a2.38 2.38 0 0 1 2.87 1.954c.148.742.668 1.353 1.365 1.604a2.38 2.38 0 0 1 1.572 3.097 2.38 2.38 0 0 0 .375 2.073 2.38 2.38 0 0 1-.375 3.447 2.38 2.38 0 0 0-.375 2.073 2.38 2.38 0 0 1-1.572 3.097c-.697.251-1.217.862-1.365 1.604a2.38 2.38 0 0 1-2.87 1.954 2.38 2.38 0 0 0-2.038.557 2.38 2.38 0 0 1-3.42 0 2.38 2.38 0 0 0-2.038-.557 2.38 2.38 0 0 1-2.87-1.954 2.38 2.38 0 0 0-1.365-1.604 2.38 2.38 0 0 1-1.572-3.097 2.38 2.38 0 0 0 .375-2.073 2.38 2.38 0 0 1-.375-3.447 2.38 2.38 0 0 0 .375-2.073 2.38 2.38 0 0 1 1.572-3.097c.697-.251 1.217-.862 1.365-1.604a2.38 2.38 0 0 1 2.87-1.954c.731.19 1.508-.022 2.038-.557Z" fill="${color}"/>
+      <path d="M9 12.5l2 2 4.5-4.5" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </span>`;
 }
 
         function updateRatingsDisplay(reviewsList) {
