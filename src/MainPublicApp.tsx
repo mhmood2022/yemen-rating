@@ -116,7 +116,7 @@ export function MainPublicApp() {
       
       {/* 1. الهيدر المثبت الدائم (يظهر فقط في الرئيسية وقالب الشركات الجماعي ويختفي في الصفحات الفردية) */}
       {!selectedBusiness && (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-[#070A10]/98 backdrop-blur-xl border-b border-[#1F2937] shadow-2xl">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-[#0B1120] border-b border-[#1E293B]">
           <Header
             onToggleSidebar={() => setIsSidebarOpen(true)}
             onNavigateHome={handleBackToHome}
