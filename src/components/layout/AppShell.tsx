@@ -44,7 +44,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       
       {/* 1. الهيدر المثبت الدائم: يظهر في الرئيسية وقالب الشركات الجماعي ويختفي تماماً في الصفحات الفردية */}
       {!isIndividualProfile && (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-[#0B1120] border-b border-[#1E293B]">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-[#070A10] border-b border-[#1F2937]">
           <Header
             onToggleSidebar={() => setIsSidebarOpen(true)}
             onNavigateHome={() => navigate('/')}
