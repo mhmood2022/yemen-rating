@@ -14,33 +14,41 @@ export const AdBanner: React.FC<AdBannerProps> = ({
   const [adData, setAdData] = useState<PublishedAd | null>(null);
 
   useEffect(() => {
-    // 1. قراءة فورية من الكاش المحلي
+    let isMounted = true;
+
+    // 1. قراءة فورية من الكاش إذا توفر
     const saved = localStorage.getItem('yr_published_ads');
     if (saved) {
       try {
         const adsList: PublishedAd[] = JSON.parse(saved);
         const match = adsList.find(a => a.status === 'active' && String(a.placementId) === String(placementId)) || adsList.find(a => a.status === 'active');
-        if (match) setAdData(match);
+        if (match && isMounted) setAdData(match);
       } catch (e) {
         console.error(e);
       }
     }
 
-    // 2. مزامنة حية مع Supabase
-    const fetchLiveAds = async () => {
-      const liveAds = await adsDatabaseService.getActiveAds(placementId);
-      if (liveAds && liveAds.length > 0) {
-        const liveMatch = liveAds[0];
-        setAdData(liveMatch);
-        try {
-          const allSaved: PublishedAd[] = JSON.parse(localStorage.getItem('yr_published_ads') || '[]');
-          const updated = [liveMatch, ...allSaved.filter(a => a.id !== liveMatch.id)];
-          localStorage.setItem('yr_published_ads', JSON.stringify(updated));
-        } catch (_) {}
+    // 2. جلب فوري ومباشر من قاعدة بيانات Supabase (يعمل في التصفح الخفي ولكافة الزوار)
+    const fetchFromDatabase = async () => {
+      try {
+        const liveAds = await adsDatabaseService.getActiveAds(placementId);
+        if (liveAds && liveAds.length > 0 && isMounted) {
+          const liveMatch = liveAds[0];
+          setAdData(liveMatch);
+          try {
+            localStorage.setItem('yr_published_ads', JSON.stringify(liveAds));
+          } catch (_) {}
+        }
+      } catch (err) {
+        console.error("AdBanner database fetch error:", err);
       }
     };
 
-    fetchLiveAds();
+    fetchFromDatabase();
+
+    return () => {
+      isMounted = false;
+    };
   }, [placementId]);
 
   if (!adData) return null;
