@@ -114,22 +114,23 @@ export function MainPublicApp() {
   return (
     <div dir="rtl" className="min-h-screen bg-[#070A10] text-zinc-100 flex flex-col font-['Cairo',sans-serif]">
       
-      {/* 1. الهيدر المثبت الدائم */}
-      <header className="sticky top-0 z-50 bg-[#070A10]/98 backdrop-blur-xl border-b border-[#1F2937] shadow-2xl">
-        <Header
-          onToggleSidebar={() => setIsSidebarOpen(true)}
-          onNavigateHome={handleBackToHome}
-          onNavigateNotifications={() => setCurrentPage('notifications')}
-          unreadNotificationsCount={3}
-        />
-        
-        {/* يظهر الإعلان العلوي #1 فقط في الصفحة الرئيسية */}
-        {isAtMainHome && (
-          <div className="max-w-6xl mx-auto px-3 py-1 border-t border-[#1F2937]/30">
-            <AdBanner placementId="1" className="mb-0" />
-          </div>
-        )}
-      </header>
+      {/* 1. الهيدر المثبت الدائم (يظهر فقط في الرئيسية وقالب الشركات الجماعي ويختفي في الصفحات الفردية) */}
+      {!selectedBusiness && (
+        <header className="fixed top-0 left-0 right-0 z-50 bg-[#070A10]/98 backdrop-blur-xl border-b border-[#1F2937] shadow-2xl">
+          <Header
+            onToggleSidebar={() => setIsSidebarOpen(true)}
+            onNavigateHome={handleBackToHome}
+            onNavigateNotifications={() => setCurrentPage('notifications')}
+            unreadNotificationsCount={3}
+          />
+          {/* يظهر الإعلان العلوي #1 فقط في الصفحة الرئيسية */}
+          {isAtMainHome && (
+            <div className="max-w-6xl mx-auto px-3 py-1 border-t border-[#1F2937]/30">
+              <AdBanner placementId="1" className="mb-0" />
+            </div>
+          )}
+        </header>
+      )}
 
       {/* 2. القائمة الجانبية */}
       <Sidebar
@@ -147,7 +148,7 @@ export function MainPublicApp() {
       />
 
       {/* 3. جسم المحتوى الرئيسي */}
-      <main className="flex-1 pb-16">
+      <main className={`flex-1 pb-16 ${!selectedBusiness ? (isAtMainHome ? "pt-24 sm:pt-28" : "pt-16 sm:pt-20") : ""}`}>
         {isAtMainHome && (
           <SearchSection
             onSearch={handleGlobalSearch}
