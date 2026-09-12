@@ -234,7 +234,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       )}
 
       {/* 5. جسم الصفحة الرئيسي */}
-      <main className={`flex-1 pb-16 ${!isIndividualProfile ? (!isMainHome ? "pt-16 sm:pt-20" : "") : ""}`}
+      <main className={`flex-1 pb-16 ${!isIndividualProfile ? (!isMainHome ? "pt-16 sm:pt-20" : "") : ""}`}>
         {children}
       </main>
 
