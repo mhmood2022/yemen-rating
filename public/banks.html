@@ -15,14 +15,14 @@ function renderVerificationBadge(badgeType, isVerified, size = 18) {
   
   const type = (badgeType || "gold").toLowerCase();
   let color = "#EAB308";
-  let title = "موثق - الشارة الذهبية";
+  let title = "موثق رسمياً - الشارة الذهبية";
 
   if (type === "blue") {
     color = "#1D9BF0";
-    title = "موثق - الشارة الزرقاء";
+    title = "موثق رسمياً - الشارة الزرقاء";
   } else if (type === "silver" || type === "gray") {
     color = "#9CA3AF";
-    title = "موثق - الشارة الفضية";
+    title = "موثق رسمياً - الشارة الفضية";
   }
 
   return `<svg class="inline-block select-none shrink-0 align-middle mr-1.5" style="width:${size}px; height:${size}px; color:${color};" viewBox="0 0 24 24" title="${title}">
@@ -159,14 +159,14 @@ function renderVerificationBadge(badgeType, isVerified, size = 18) {
   
   const type = (badgeType || "gold").toLowerCase();
   let color = "#EAB308";
-  let title = "موثق - الشارة الذهبية";
+  let title = "موثق رسمياً - الشارة الذهبية";
 
   if (type === "blue") {
     color = "#1D9BF0";
-    title = "موثق - الشارة الزرقاء";
+    title = "موثق رسمياً - الشارة الزرقاء";
   } else if (type === "silver" || type === "gray") {
     color = "#9CA3AF";
-    title = "موثق - الشارة الفضية";
+    title = "موثق رسمياً - الشارة الفضية";
   }
 
   return `<svg class="inline-block select-none shrink-0 align-middle mr-1.5" style="width:${size}px; height:${size}px; color:${color};" viewBox="0 0 24 24" title="${title}">
@@ -273,7 +273,7 @@ function renderVerificationBadge(badgeType, isVerified, size = 18) {
             city: b.city || b.address || "اليمن",
             address: b.address || b.city || "",
             description: b.description || b.short_description || "",
-            verified: b.verified === true || b.is_verified === true,
+            verified: b.verified === true,
             badge_type: b.badge_type || "gold",
             logo_url: b.logo_url || b.logo || "",
             cover_url: b.cover_url || b.cover || b.banner_url || "",

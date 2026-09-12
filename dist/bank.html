@@ -475,14 +475,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   
   const type = (badgeType || "gold").toLowerCase();
   let color = "#EAB308";
-  let title = "موثق - الشارة الذهبية";
+  let title = "موثق رسمياً - الشارة الذهبية";
 
   if (type === "blue") {
     color = "#1D9BF0";
-    title = "موثق - الشارة الزرقاء";
+    title = "موثق رسمياً - الشارة الزرقاء";
   } else if (type === "silver" || type === "gray") {
     color = "#9CA3AF";
-    title = "موثق - الشارة الفضية";
+    title = "موثق رسمياً - الشارة الفضية";
   }
 
   return `<svg class="inline-block select-none shrink-0 align-middle mr-1.5" style="width:${size}px; height:${size}px; color:${color};" viewBox="0 0 24 24" title="${title}">
@@ -553,7 +553,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           bankData.name = c.name || "";
           bankData.description = c.description || "";
           bankData.badge_type = c.badge_type || "gold";
-          bankData.is_verified = c.is_verified === true;
+          bankData.is_verified = (c.verified === true || c.is_verified === true);
           bankData.phone = c.phone || "";
           bankData.whatsapp = c.whatsapp || "";
           bankData.address = c.address || c.city || "";
@@ -606,7 +606,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           bankData.badge_type = (b.badge_type && b.badge_type !== "none") ? b.badge_type : null;
           bankData.sector_features = b.sector_features || b.sections_config?.features?.sector_features || b.features || [];
           bankData.sections_config = b.sections_config || {};
-          bankData.is_verified = b.is_verified === true;
+          bankData.is_verified = (b.verified === true || b.is_verified === true);
           bankData.phone = b.phone || bankData.phone;
           bankData.whatsapp = b.whatsapp || bankData.whatsapp;
           bankData.email = b.email || bankData.email;
