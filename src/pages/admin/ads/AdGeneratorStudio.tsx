@@ -1,3 +1,4 @@
+import { supabase } from '../../../lib/supabase';
 import { adsDatabaseService } from "../../../services/adsDatabaseService";
 import React, { useState, useRef, useEffect } from 'react';
 import { 
@@ -224,21 +225,60 @@ export const AdGeneratorStudio: React.FC = () => {
     setAnimTriggerKey(prev => prev + 1);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const isVid = file.type.startsWith('video/');
-      const url = URL.createObjectURL(file);
-      setMediaFileUrl(url);
       setMediaType(isVid ? 'video' : 'image');
+      const tempUrl = URL.createObjectURL(file);
+      setMediaFileUrl(tempUrl);
+
+      try {
+        const ext = file.name.split('.').pop() || (isVid ? 'mp4' : 'jpg');
+        const fileName = `ads/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from('businesses')
+          .upload(fileName, file, { upsert: true });
+
+        if (!uploadErr) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('businesses')
+            .getPublicUrl(fileName);
+          if (publicUrl) {
+            setMediaFileUrl(publicUrl);
+          }
+        }
+      } catch (err) {
+        console.error("Storage upload error:", err);
+      }
     }
   };
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setLogoUrl(URL.createObjectURL(file));
       setShowLogo(true);
+      const tempUrl = URL.createObjectURL(file);
+      setLogoUrl(tempUrl);
+
+      try {
+        const ext = file.name.split('.').pop() || 'png';
+        const fileName = `ads_logos/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from('businesses')
+          .upload(fileName, file, { upsert: true });
+
+        if (!uploadErr) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('businesses')
+            .getPublicUrl(fileName);
+          if (publicUrl) {
+            setLogoUrl(publicUrl);
+          }
+        }
+      } catch (err) {
+        console.error("Logo upload error:", err);
+      }
     }
   };
 
