@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+import os
+
+new_html = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
@@ -273,7 +275,7 @@
 
       container.innerHTML = filtered.map(bank => {
         const targetUrl = "/bank.html?slug=" + encodeURIComponent(bank.slug || bank.id);
-        const safeName = (bank.name || "").replace(/'/g, "\'");
+        const safeName = (bank.name || "").replace(/'/g, "\\'");
 
         const coverHtml = bank.cover_url
           ? `<img src="${bank.cover_url}" alt="${bank.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />`
@@ -396,3 +398,11 @@
   </script>
 </body>
 </html>
+"""
+
+for path in ["banks.html", "public/banks.html", "dist/banks.html"]:
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(new_html)
+    print(f"تم تحديث: {path}")
+
+print("✅ تم بنجاح تطبيق القالب الموحد بالكامل!")
