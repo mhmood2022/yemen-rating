@@ -104,7 +104,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   <main class="w-full max-w-md md:max-w-3xl lg:max-w-4xl min-h-screen bg-black flex flex-col pb-12 select-none relative mx-auto md:px-4">
 
     <!-- 1. غلاف البنك -->
-    <div id="bank-cover" class="relative w-full h-44 sm:h-52 md:h-60 rounded-none md:rounded-2xl bg-gradient-to-r from-[#002244] via-[#003B73] to-[#0A4D80] flex items-center justify-center overflow-hidden mt-0 md:mt-3 shadow-lg">
+    <div id="bank-cover" class="relative w-full h-44 sm:h-52 md:h-60 rounded-none md:rounded-2xl bg-black flex items-center justify-center overflow-hidden mt-0 md:mt-3 shadow-lg">
       <!-- زر الرجوع الأيقوني الفاخر -->
       <button type="button" onclick="window.history.length > 1 ? window.history.back() : window.location.href='/banks'" class="absolute top-3.5 right-3.5 z-20 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/15 text-zinc-300 hover:text-brand-gold flex items-center justify-center transition active:scale-90 shadow-md cursor-pointer group" title="رجوع" aria-label="رجوع">
         <i class="fa-solid fa-arrow-right text-xs transition-transform group-hover:-translate-x-0.5"></i>
@@ -762,7 +762,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       if (currentBank.cover_url) {
         const coverEl = document.getElementById('bank-cover');
         if (coverEl) {
-          coverEl.style.backgroundImage = 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.85)), url(' + currentBank.cover_url + ')';
+          coverEl.style.backgroundImage = 'url(' + currentBank.cover_url + ')';
           coverEl.style.backgroundSize = 'cover';
           coverEl.style.backgroundPosition = 'center';
         }
@@ -777,7 +777,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       // 2. تفعيل الغلاف الحقيقي
       const coverEl = document.getElementById('bank-cover');
       if (coverEl && currentBank.cover_url) {
-        coverEl.style.backgroundImage = 'linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.3)), url(' + currentBank.cover_url + ')';
+        coverEl.style.backgroundImage = 'url(' + currentBank.cover_url + ')';
         coverEl.style.backgroundSize = 'cover';
         coverEl.style.backgroundPosition = 'center';
       }
