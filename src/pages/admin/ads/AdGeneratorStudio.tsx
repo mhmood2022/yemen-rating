@@ -1,3 +1,4 @@
+import { adsDatabaseService } from "../../../services/adsDatabaseService";
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Sparkles, Smartphone, Tablet, Monitor, Image as ImageIcon, 
@@ -358,6 +359,7 @@ export const AdGeneratorStudio: React.FC = () => {
 
     const existing = JSON.parse(localStorage.getItem('yr_published_ads') || '[]');
     localStorage.setItem('yr_published_ads', JSON.stringify([newAd, ...existing]));
+    adsDatabaseService.publishAd(newAd);
     adminAuditService.logAction('نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
 
     setPublishedAlert(true);

@@ -14,6 +14,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
   const [adData, setAdData] = useState<PublishedAd | null>(null);
 
   useEffect(() => {
+    // 1. قراءة فورية من الكاش المحلي
     const saved = localStorage.getItem('yr_published_ads');
     if (saved) {
       try {
@@ -24,6 +25,22 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         console.error(e);
       }
     }
+
+    // 2. مزامنة حية مع Supabase
+    const fetchLiveAds = async () => {
+      const liveAds = await adsDatabaseService.getActiveAds(placementId);
+      if (liveAds && liveAds.length > 0) {
+        const liveMatch = liveAds[0];
+        setAdData(liveMatch);
+        try {
+          const allSaved: PublishedAd[] = JSON.parse(localStorage.getItem('yr_published_ads') || '[]');
+          const updated = [liveMatch, ...allSaved.filter(a => a.id !== liveMatch.id)];
+          localStorage.setItem('yr_published_ads', JSON.stringify(updated));
+        } catch (_) {}
+      }
+    };
+
+    fetchLiveAds();
   }, [placementId]);
 
   if (!adData) return null;
