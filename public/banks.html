@@ -54,13 +54,15 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
 <body class="min-h-screen bg-[#070A10] text-white selection:bg-[#EAB308] selection:text-black">
 
   <!-- 1. الهيدر الرسمي الموحد للمنصة -->
-  <header class="w-full border-b border-[#1F2937]/70 bg-[#070A10]/95 backdrop-blur-md sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
+    <!-- 1. الهيدر المثبت الدائم (مطابق لقالب المنصة الرسمي) -->
+  <header class="sticky top-0 z-50 bg-[#070A10]/98 backdrop-blur-xl border-b border-[#1F2937] shadow-2xl">
+    <div dir="rtl" class="w-full max-w-6xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between font-['Cairo',sans-serif]">
+      <!-- اليمين: زر القائمة الجانبية (☰) + الشعار الرسمي -->
       <div class="flex items-center gap-3">
-        <button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/'; }" class="text-white hover:text-[#EAB308] transition p-1 bg-transparent border-0 cursor-pointer active:scale-95" title="القائمة">
+        <button type="button" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = '/'; }" class="text-white hover:text-[#EAB308] transition p-1 bg-transparent border-0 cursor-pointer active:scale-95" title="القائمة">
           <i class="fa-solid fa-bars text-xl"></i>
         </button>
-        <a href="/" class="flex items-center gap-2 select-none">
+        <a href="/" class="flex items-center gap-2 select-none cursor-pointer">
           <svg viewBox="0 0 120 120" class="h-8 sm:h-9 w-auto shrink-0 drop-shadow-md" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M60 10L98 26V58C98 82 60 106 60 106C60 106 22 82 22 58V26L60 10Z" fill="#070A10" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/>
             <path d="M60 18L92 31V57C92 76 60 96 60 96C60 96 28 76 28 57V31L60 18Z" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"/>
@@ -73,9 +75,10 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
           </div>
         </a>
       </div>
+      <!-- اليسار: جرس الإشعارات بنقطة التنبيه الحمراء -->
       <div class="flex items-center">
         <a href="/" class="text-zinc-200 hover:text-[#EAB308] transition p-1 relative" title="الإشعارات">
-          <i class="fa-regular fa-bell text-lg"></i>
+          <i class="fa-regular fa-bell text-xl"></i>
           <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#DC2626] animate-pulse"></span>
         </a>
       </div>
