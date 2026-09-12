@@ -909,7 +909,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         }).join("");
 
         if (allRevs.length > 2) {
-          rHtml += '<button type="button" onclick="if (document.referrer) { window.history.back(); } else { window.location.href = '/directory'; }" class="w-full py-2.5 mt-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-brand-gold text-xs font-bold flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer shadow-sm"><span>' + (window.showAllReviewsExpanded ? "عرض أقل" : "عرض جميع التقييمات (" + allRevs.length + ")") + '</span><i class="fa-solid ' + (window.showAllReviewsExpanded ? "fa-chevron-up" : "fa-chevron-down") + ' text-[10px]"></i></button>';
+          rHtml += '<button type="button" onclick="window.showAllReviewsExpanded = !window.showAllReviewsExpanded; renderUI();" class="w-full py-2.5 mt-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-brand-gold text-xs font-bold flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer shadow-sm"><span>' + (window.showAllReviewsExpanded ? "عرض أقل" : "عرض جميع التقييمات (" + allRevs.length + ")") + '</span><i class="fa-solid ' + (window.showAllReviewsExpanded ? "fa-chevron-up" : "fa-chevron-down") + ' text-[10px]"></i></button>';
         }
         if (reviewsContainer) reviewsContainer.innerHTML = rHtml;
       }
