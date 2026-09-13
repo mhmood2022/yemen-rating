@@ -87,8 +87,8 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         backgroundColor: adData.bgColor || '#0B0F17',
         backgroundImage: adData.bgStyle === 'gradient' ? `linear-gradient(135deg, ${adData.bgColor || '#0B0F17'} 0%, #161D2B 100%)` : 'none',
         boxShadow: adData.hasGlow && adData.hasBorder ? `0 0 20px ${adData.borderColor || '#FFC500'}35` : '0 4px 15px rgba(0,0,0,0.6)',
-        minHeight: isFooterSticky ? '54px' : '82px',
-        maxHeight: isFooterSticky ? '68px' : '125px'
+        minHeight: isFooterSticky ? '54px' : '88px',
+        maxHeight: isFooterSticky ? '68px' : 'none'
       }}
     >
       {/* محرك الحركات والتأثيرات الأصلي الكامل */}
@@ -197,18 +197,6 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         {/* الجزء العلوي: الشارات + شارة جوجل وزر الإغلاق ✕ */}
         <div className="flex items-center justify-between gap-2 pb-0.5">
           <div className="flex items-center gap-1 flex-wrap">
-            {adData.showBadge && adData.badgeText && (
-              <span
-                style={{
-                  backgroundColor: adData.badgeBgColor || 'rgba(255,197,0,0.25)',
-                  color: adData.badgeTextColor || '#FFC500',
-                  borderColor: adData.badgeTextColor || '#FFC500'
-                }}
-                className="inline-flex items-center px-1.5 py-0.2 rounded-none text-[8.5px] font-bold border tracking-wide whitespace-nowrap backdrop-blur-sm"
-              >
-                {adData.badgeText}
-              </span>
-            )}
             {adData.showVerifiedBadge && (
               <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded-none bg-[#16A34A]/25 text-[#16A34A] border border-[#16A34A]/40 text-[8.5px] font-bold whitespace-nowrap">
                 <ShieldCheck size={10} /> موثّق YR
@@ -268,7 +256,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         </div>
 
         {/* الأسعار وزر الإجراء التجاري */}
-        <div className="pt-0.5 flex items-center justify-between border-t border-white/10 mt-0.5 flex-wrap gap-2">
+        <div className="pt-0.5 flex items-center justify-between border-t border-white/10 shrink-0 mt-0.5 flex-wrap gap-2">
           {adData.showPricing && (
             <div className="flex items-center gap-1 font-mono">
               <span className="text-xs font-black text-[#FFC500] drop-shadow">{adData.currentPrice} {adData.currency || 'YER'}</span>
