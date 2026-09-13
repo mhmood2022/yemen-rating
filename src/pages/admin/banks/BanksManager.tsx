@@ -231,7 +231,7 @@ export const BanksManager: React.FC = () => {
         is_published: formData.is_published !== false,
         priority_level: formData.priority_level || 'normal',
         posts: validPosts,
-        announcement: formData.announcement || null,
+        
         working_hours: formData.working_hours || null,
         branches: formData.branches || null,
         services: formData.services || null,
