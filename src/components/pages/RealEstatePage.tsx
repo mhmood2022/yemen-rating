@@ -266,20 +266,21 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="px-3 py-1.5 rounded-xl bg-[#FFC500] text-black font-black text-[11px] hover:bg-[#FFC500]/90 transition-all flex items-center gap-1 cursor-pointer shadow-sm"
-          >
-            <Plus size={13} />
-            <span>إضافة عقار</span>
-          </button>
+          onClick={() => setIsAddModalOpen(true)}
+          className="h-10 px-3.5 rounded-xl bg-[#FFC500] hover:bg-[#e5b200] text-black font-black text-xs sm:text-sm whitespace-nowrap flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all shrink-0"
+        >
+          <Plus size=16 className="stroke-[3]" />
+          <span>إضافة عقار</span>
+        </button>
           
           <button
-            onClick={selectedProperty ? () => setSelectedProperty(null) : onBack}
-            className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1 cursor-pointer"
-          >
-            <span>{selectedProperty ? 'رجوع' : 'الرئيسية'}</span>
-            <ArrowRight size={13} className="rtl:rotate-180" />
-          </button>
+          onClick={selectedProperty ? () => setSelectedProperty(null) : onBack}
+          title="رجوع"
+          aria-label="رجوع"
+          className="w-10 h-10 rounded-xl bg-zinc-900 border border-[#FFC500]/40 text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center justify-center shrink-0 shadow-md"
+        >
+          <ArrowRight size=20 className="stroke-[2.5]" />
+        </button>
         </div>
       </div>
 

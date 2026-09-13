@@ -466,12 +466,13 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           </button>
           
           <button
-            onClick={selectedListing ? () => setSelectedListing(null) : onBack}
-            className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1 cursor-pointer"
-          >
-            <span>{selectedListing ? 'رجوع' : 'الرئيسية'}</span>
-            <ArrowRight size={13} className="rtl:rotate-180" />
-          </button>
+          onClick={selectedListing ? () => setSelectedListing(null) : onBack}
+          title="رجوع"
+          aria-label="رجوع"
+          className="w-10 h-10 rounded-xl bg-zinc-900 border border-[#FFC500]/40 text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center justify-center shrink-0 shadow-md"
+        >
+          <ArrowRight size=20 className="stroke-[2.5]" />
+        </button>
         </div>
       </div>
 
@@ -726,7 +727,13 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         <div className="space-y-3">
           <div className="flex gap-1 bg-[#0F0F12] p-1 rounded-xl border border-[#222226]">
             <button onClick={() => setActiveTab('all')} className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all ${activeTab === 'all' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'}`}>الكل ({listings.length})</button>
-            <button onClick={() => setActiveTab('auction')} className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all ${activeTab === 'auction' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'}`}>المزادات</button>
+            <button
+          onClick={() => setActiveTab('auction')}
+          className="h-10 px-3.5 rounded-xl bg-[#FFC500] hover:bg-[#e5b200] text-black font-black text-xs sm:text-sm whitespace-nowrap flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all shrink-0"
+        >
+          <Plus size=16 className="stroke-[3]" />
+          <span>نشر وظيفة</span>
+        </button>
             <button onClick={() => setActiveTab('fixed_price')} className={`flex-1 py-1.5 rounded-lg text-xs font-black transition-all ${activeTab === 'fixed_price' ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'}`}>بيع بسعر ثابت</button>
           </div>
 
