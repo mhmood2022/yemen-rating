@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Sparkles, MessageCircle, Phone, Award, Flame, Clock, ShieldCheck, Star, QrCode, ExternalLink } from 'lucide-react';
 import { PublishedAd } from '../../pages/admin/ads/AdGeneratorStudio';
+import { adsDatabaseService } from '../../services/adsDatabaseService';
 
 interface AdBannerProps {
   placementId?: string;
@@ -130,7 +131,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           )}
 
           {adData.mediaType === 'video' ? (
-            <video src={adData.mediaUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+            <video src={adData.mediaUrl} autoPlay loop muted playsInline className="w-full h-full object-cover relative z-10" />
           ) : (
             <img 
               src={adData.mediaUrl} 
