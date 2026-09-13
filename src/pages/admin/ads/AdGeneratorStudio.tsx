@@ -214,7 +214,7 @@ export const AdGeneratorStudio: React.FC = () => {
   const [hasBorder, setHasBorder] = useState(false);
   const [borderWidth, setBorderWidth] = useState(2);
   const [borderColor, setBorderColor] = useState('#FFC500');
-  const [borderRadius, setBorderRadius] = useState(16);
+  const [borderRadius, setBorderRadius] = useState(0);
   const [hasGlow, setHasGlow] = useState(false);
   const [bgColor, setBgColor] = useState('#0B0F17');
   const [bgStyle, setBgStyle] = useState<'gradient' | 'solid' | 'transparent'>('solid');
@@ -478,7 +478,7 @@ export const AdGeneratorStudio: React.FC = () => {
                 backgroundImage: bgStyle === 'gradient' ? `linear-gradient(135deg, ${bgColor} 0%, #161D2B 100%)` : 'none',
                 boxShadow: hasGlow && hasBorder ? `0 0 25px ${borderColor}40` : 'none',
               }}
-              className="relative overflow-hidden w-full min-h-[160px] p-4 sm:p-5 flex flex-col justify-between"
+              className="relative overflow-hidden w-full min-h-[88px] max-h-[135px] p-2.5 sm:p-3.5 flex flex-col justify-between"
             >
               {/* شريط التمرير الزمني */}
               {hasProgressBar && (

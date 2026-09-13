@@ -13,6 +13,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
   className = '' 
 }) => {
   const [adData, setAdData] = useState<PublishedAd | null>(null);
+  const [isDismissed, setIsDismissed] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -52,15 +53,15 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     };
   }, [placementId]);
 
-  if (!adData) return null;
+  if (!adData || isDismissed) return null;
 
   return (
     <div 
       dir="rtl"
       className={`relative overflow-hidden transition-all duration-300 w-full shadow-2xl ${className}`}
       style={{
-        borderRadius: `${adData.borderRadius || 18}px`,
-        border: adData.hasBorder ? `${adData.borderWidth || 2}px solid ${adData.borderColor || '#FFC500'}` : '1px solid rgba(255,197,0,0.25)',
+        borderRadius: `${adData.borderRadius ?? 0}px`,
+        border: adData.hasBorder ? `${adData.borderWidth || 1}px solid ${adData.borderColor || "#FFC500"}` : "none",
         backgroundColor: adData.bgColor || '#0B0F17',
         backgroundImage: adData.bgStyle === 'gradient' ? `linear-gradient(135deg, ${adData.bgColor || '#0B0F17'} 0%, #161D2B 100%)` : 'none',
         boxShadow: adData.hasGlow ? `0 0 30px ${adData.borderColor || '#FFC500'}40` : '0 10px 30px rgba(0,0,0,0.8)',
@@ -156,7 +157,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
       )}
 
       {/* شريط الإعلان التجاري وشارة الرعاية */}
-      <div className="relative z-20 p-4 sm:p-5 flex flex-col justify-between h-full min-h-[145px]">
+      <div className="relative z-20 p-2.5 sm:p-3.5 flex flex-col justify-between h-full min-h-[54px]">
         
         {/* الجزء العلوي: شارة الإعلان الممول المعتمد */}
         <div className="flex items-center justify-between gap-2 pb-1">
