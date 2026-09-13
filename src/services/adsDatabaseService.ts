@@ -8,7 +8,8 @@ export const adsDatabaseService = {
       let query = supabase
         .from('published_ads')
         .select('*')
-        .eq('status', 'active');
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
 
       if (placementId) {
         query = query.eq('placement_id', String(placementId));
