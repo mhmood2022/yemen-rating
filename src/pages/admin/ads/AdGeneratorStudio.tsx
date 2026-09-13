@@ -117,6 +117,8 @@ export interface PublishedAd {
 }
 
 export const AdGeneratorStudio: React.FC = () => {
+  const [isMediaUploading, setIsMediaUploading] = useState<boolean>(false);
+  const [uploadStatusText, setUploadStatusText] = useState<string>('');
   const [adTier, setAdTier] = useState<'basic' | 'professional' | 'premium'>('professional');
   const [adCategoryType, setAdCategoryType] = useState<PublishedAd['adCategoryType']>('image_text');
   const [designTheme, setDesignTheme] = useState<PublishedAd['designTheme']>('modern');
