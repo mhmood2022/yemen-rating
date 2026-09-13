@@ -298,9 +298,10 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Cairo',sans-serif] text-white">
       
       {/* 1. إعلان البانر المخصص للوظائف #7 */}
-      <AdBanner placementId="7" className="mb-1" />
+      <AdBanner placementId="jobs_footer" className="mb-1" />
 
       {/* 2. رأس الصفحة الرسمي */}
+      <AdBanner placementId="jobs_top" className="mb-3 rounded-2xl overflow-hidden shadow-lg" />
       <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
@@ -498,7 +499,13 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
           {/* شبكة كروت الوظائف */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-            {filteredJobs.map((job) => (
+            {filteredJobs.map((job, idx) => (
+            <React.Fragment key={job.id}>
+              {idx === 2 && (
+                <div className="col-span-full my-2">
+                  <AdBanner placementId="jobs_feed" className="rounded-2xl overflow-hidden shadow-md" />
+                </div>
+              )}
               <div
                 key={job.id}
                 className="bg-[#0F0F12] rounded-2xl border border-[#222226] hover:border-[#FFC500]/40 p-3 space-y-2 shadow-md transition-all flex flex-col justify-between"
@@ -537,7 +544,8 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   </button>
                 </div>
               </div>
-            ))}
+            </React.Fragment>
+              ))}
           </div>
 
         </div>

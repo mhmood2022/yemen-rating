@@ -437,9 +437,10 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   return (
     <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Cairo',sans-serif] text-white">
       
-      <AdBanner placementId="6" className="mb-1" />
+      <AdBanner placementId="auctions_footer" className="mb-1" />
 
       {/* رأس الصفحة */}
+      <AdBanner placementId="auctions_top" className="mb-3 rounded-2xl overflow-hidden shadow-lg" />
       <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
@@ -730,7 +731,13 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-            {filteredListings.map((item) => (
+            {filteredListings.map((item, idx) => (
+            <React.Fragment key={item.id}>
+              {idx === 2 && (
+                <div className="col-span-full my-2">
+                  <AdBanner placementId="auctions_feed" className="rounded-2xl overflow-hidden shadow-md" />
+                </div>
+              )}
               <div key={item.id} className="bg-[#0F0F12] rounded-2xl border border-[#222226] hover:border-[#FFC500]/40 overflow-hidden shadow-md transition-all flex flex-col justify-between">
                 <div className="h-40 w-full relative bg-[#161619]">
                   <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover" />
@@ -768,7 +775,8 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
                   </button>
                 </div>
               </div>
-            ))}
+            </React.Fragment>
+              ))}
           </div>
         </div>
       )}
