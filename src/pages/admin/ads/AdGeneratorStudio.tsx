@@ -1,5 +1,6 @@
 import { supabase } from '../../../lib/supabase';
 import { adsDatabaseService } from "../../../services/adsDatabaseService";
+import { useNavigate } from 'react-router-dom';
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Sparkles, Smartphone, Tablet, Monitor, Image as ImageIcon, 
@@ -117,6 +118,7 @@ export interface PublishedAd {
 }
 
 export const AdGeneratorStudio: React.FC = () => {
+  const navigate = useNavigate();
   const [isMediaUploading, setIsMediaUploading] = useState<boolean>(false);
   const [uploadStatusText, setUploadStatusText] = useState<string>('');
   const [adTier, setAdTier] = useState<'basic' | 'professional' | 'premium'>('professional');
@@ -147,8 +149,8 @@ export const AdGeneratorStudio: React.FC = () => {
   const [logoSize, setLogoSize] = useState(36);
 
   // النصوص
-  const [showBadge, setShowBadge] = useState(true);
-  const [badgeText, setBadgeText] = useState('عرض خاص — يمن ريتنغ');
+  const [showBadge, setShowBadge] = useState(false);
+  const [badgeText, setBadgeText] = useState('');
   const [badgeBgColor, setBadgeBgColor] = useState('rgba(255, 197, 0, 0.25)');
   const [badgeTextColor, setBadgeTextColor] = useState('#FFC500');
 
@@ -414,7 +416,11 @@ export const AdGeneratorStudio: React.FC = () => {
     adminAuditService.logAction('نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
 
     setPublishedAlert(true);
-    setTimeout(() => setPublishedAlert(false), 4000);
+    // إشعار نجاح ثم الخروج تلقائياً لمعرض الإعلانات
+    setTimeout(() => {
+      setPublishedAlert(false);
+      navigate('/admin/ads');
+    }, 1500);
   };
 
   return (

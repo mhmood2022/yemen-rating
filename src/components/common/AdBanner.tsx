@@ -161,7 +161,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         {/* الجزء العلوي: شارة الإعلان الممول المعتمد */}
         <div className="flex items-center justify-between gap-2 pb-1">
           <div className="flex items-center gap-1.5 flex-wrap">
-            {adData.showBadge && (
+            {adData.showBadge && adData.badgeText && (
               <span
                 style={{ backgroundColor: adData.badgeBgColor || 'rgba(255,197,0,0.25)', color: adData.badgeTextColor || '#FFC500', borderColor: adData.badgeTextColor || '#FFC500' }}
                 className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[9.5px] font-black border tracking-wide whitespace-nowrap shadow-md backdrop-blur-md"

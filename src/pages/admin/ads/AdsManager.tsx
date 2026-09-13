@@ -1,9 +1,11 @@
+import { adsDatabaseService } from '../../../services/adsDatabaseService';
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Megaphone, Sparkles, Play, Pause, Trash2, LayoutGrid, Table, ArrowRight } from 'lucide-react';
 import { PublishedAd } from './AdGeneratorStudio';
 
 export const AdsManager: React.FC = () => {
+  const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
   const [ads, setAds] = useState<PublishedAd[]>([]);
   const [viewFormat, setViewFormat] = useState<'grid' | 'table'>('grid');
 
@@ -24,14 +26,34 @@ export const AdsManager: React.FC = () => {
     localStorage.setItem('yr_published_ads', JSON.stringify(updated));
   };
 
-  const deleteAd = (id: string) => {
+  const deleteAd = async (id: string) => {
+    // 1. حذف محلياً
     const updated = ads.filter(a => a.id !== id);
     setAds(updated);
-    localStorage.setItem('yr_published_ads', JSON.stringify(updated));
+    try {
+      localStorage.setItem('yr_published_ads', JSON.stringify(updated));
+    } catch (_) {}
+
+    // 2. حذف من قاعدة بيانات Supabase السحابية
+    try {
+      await adsDatabaseService.deleteAd(id);
+    } catch (e) {
+      console.error("Delete from supabase error:", e);
+    }
+
+    // 3. عرض رسالة النجاح
+    setDeleteSuccess('✅ تم حذف الإعلان بنجاح من قاعدة البيانات ومن المنصة بالكامل!');
+    setTimeout(() => setDeleteSuccess(null), 3500);
   };
 
   return (
     <div className="space-y-6 font-['Cairo',sans-serif] pb-16">
+      {deleteSuccess && (
+        <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-between shadow-lg">
+          <span>{deleteSuccess}</span>
+          <button onClick={() => setDeleteSuccess(null)} className="text-emerald-400 hover:text-white px-2 py-0.5">✕</button>
+        </div>
+      )}
       
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0B0F17] p-5 rounded-2xl border border-[#1F2937]">
         <div>
