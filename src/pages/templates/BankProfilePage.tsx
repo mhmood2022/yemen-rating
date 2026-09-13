@@ -29,7 +29,7 @@ export const BankProfilePage: React.FC = () => {
 
   return (
     <div dir="rtl" className="max-w-5xl mx-auto px-3 sm:px-4 py-2 space-y-4 font-['Cairo',sans-serif] text-white">
-      <AdBanner placementId="4" className="mb-1" />
+      <AdBanner placementId="bank_profile_top" className="mb-1" />
       
       <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
         <button onClick={() => navigate('/banks')} className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] flex items-center gap-1.5">
@@ -83,6 +83,7 @@ export const BankProfilePage: React.FC = () => {
           businessName={bank.name}
         />
       )}
+    <AdBanner placementId="bank_profile_footer" className="mt-4" />
     </div>
   );
 };

@@ -272,7 +272,13 @@ export const BusinessesPage: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((item) => (
+          {filtered.map((item, idx) => (
+            <React.Fragment key={item.id}>
+              {idx === 2 && (
+                <div className="col-span-full my-2">
+                  <AdBanner placementId="3" className="rounded-2xl overflow-hidden shadow-md" />
+                </div>
+              )}
             <CleanBankStyleCard 
               key={item.id} 
               item={item} 
@@ -284,11 +290,12 @@ export const BusinessesPage: React.FC = () => {
                 window.location.href = "/bank.html?slug=" + (item.slug || item.id);
               }} 
             />
-          ))}
+          </React.Fragment>
+              ))}
         </div>
       )}
 
-      <AdBanner placementId="3" className="mt-6" />
+      <AdBanner placementId="3" className="mt-6 rounded-2xl overflow-hidden shadow-lg" />
     </div>
   );
 };

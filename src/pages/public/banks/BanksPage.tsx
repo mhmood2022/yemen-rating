@@ -30,7 +30,7 @@ export const BanksPage: React.FC = () => { if (typeof window !== "undefined") { 
 
   return (
     <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3.5 font-['Cairo',sans-serif] text-white">
-      <AdBanner placementId="8" className="mb-1" />
+      <AdBanner placementId="banks_top" className="mb-1" />
       
       <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
         <div className="flex items-center gap-2">
@@ -101,6 +101,7 @@ export const BanksPage: React.FC = () => { if (typeof window !== "undefined") { 
           ))
         )}
       </div>
+    <AdBanner placementId="banks_footer" className="mt-4" />
     </div>
   );
 };
