@@ -32,16 +32,22 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     // 2. جلب فوري ومباشر من قاعدة بيانات Supabase (يعمل في التصفح الخفي ولكافة الزوار)
     const fetchFromDatabase = async () => {
       try {
+        // جلب حصري وصارم للموضع المطلوب فقط بدون استعارة من مواضع أخرى
         const liveAds = await adsDatabaseService.getActiveAds(placementId);
-        if (liveAds && liveAds.length > 0 && isMounted) {
-          const liveMatch = liveAds[0];
-          setAdData(liveMatch);
-          try {
-            localStorage.setItem('yr_published_ads', JSON.stringify(liveAds));
-          } catch (_) {}
+        const validAds = (liveAds || []).filter(a => 
+          String(a.placementId) === String(placementId) && 
+          a.mediaUrl && 
+          !a.mediaUrl.startsWith('blob:')
+        );
+
+        if (validAds.length > 0 && isMounted) {
+          setAdData(validAds[0]);
+        } else if (isMounted) {
+          // إذا لم يوجد إعلان لهذا الموضع بالذات، يبقى فارغاً ومخفياً تماماً
+          setAdData(null);
         }
       } catch (err) {
-        console.error("AdBanner database fetch error:", err);
+        console.error("AdBanner fetch error:", err);
       }
     };
 
