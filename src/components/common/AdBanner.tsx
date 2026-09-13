@@ -8,12 +8,11 @@ interface AdBannerProps {
   className?: string;
 }
 
-export const AdBanner: React.FC<AdBannerProps> = ({
-  placementId = '1',
-  className = ''
+export const AdBanner: React.FC<AdBannerProps> = ({ 
+  placementId = '1', 
+  className = '' 
 }) => {
   const [adData, setAdData] = useState<PublishedAd | null>(null);
-  const [isDismissed, setIsDismissed] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -23,34 +22,23 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     if (saved) {
       try {
         const adsList: PublishedAd[] = JSON.parse(saved);
-        const match = adsList.find(a => 
-          a.status === 'active' && 
-          String(a.placementId) === String(placementId) && 
-          !a.mediaUrl?.startsWith('blob:')
-        );
+        const match = adsList.find(a => a.status === 'active' && String(a.placementId) === String(placementId)) || adsList.find(a => a.status === 'active');
         if (match && isMounted) setAdData(match);
       } catch (e) {
         console.error(e);
       }
     }
 
-    // 2. مزامنة حية من قاعدة بيانات Supabase
+    // 2. جلب فوري ومباشر من قاعدة بيانات Supabase (يعمل في التصفح الخفي ولكافة الزوار)
     const fetchFromDatabase = async () => {
       try {
         const liveAds = await adsDatabaseService.getActiveAds(placementId);
-        const validAds = (liveAds || []).filter(a => 
-          String(a.placementId) === String(placementId) && 
-          a.mediaUrl && 
-          !a.mediaUrl.startsWith('blob:')
-        );
-
-        if (validAds.length > 0 && isMounted) {
-          setAdData(validAds[0]);
+        if (liveAds && liveAds.length > 0 && isMounted) {
+          const liveMatch = liveAds[0];
+          setAdData(liveMatch);
           try {
-            localStorage.setItem('yr_published_ads', JSON.stringify(validAds));
+            localStorage.setItem('yr_published_ads', JSON.stringify(liveAds));
           } catch (_) {}
-        } else if (isMounted && !saved) {
-          setAdData(null);
         }
       } catch (err) {
         console.error("AdBanner database fetch error:", err);
@@ -64,34 +52,22 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     };
   }, [placementId]);
 
-  if (!adData || isDismissed) return null;
-
-  const isFooterSticky = placementId === '10';
-
-  // تحديد استدارة الزر حسب اختيارك في الاستوديو
-  const getBtnBorderRadius = () => {
-    if (adData.btnShape === 'pill') return '9999px';
-    if (adData.btnShape === 'square') return '0px';
-    return `${adData.borderRadius ? Math.min(adData.borderRadius, 14) : 10}px`;
-  };
+  if (!adData) return null;
 
   return (
-    <div
+    <div 
       dir="rtl"
-      className={`relative overflow-hidden transition-all duration-300 w-full shadow-xl ${
-        isFooterSticky ? 'border-t' : 'border my-2'
-      } ${className}`}
+      className={`relative overflow-hidden transition-all duration-300 w-full shadow-2xl ${className}`}
       style={{
-        borderRadius: '0px', // حواف الإطار الخارجي مستقيمة كإعلانات جوجل
-        border: adData.hasBorder ? `${adData.borderWidth || 1.5}px solid ${adData.borderColor || '#FFC500'}` : '1px solid rgba(255,197,0,0.25)',
+        borderRadius: `${adData.borderRadius || 18}px`,
+        border: adData.hasBorder ? `${adData.borderWidth || 2}px solid ${adData.borderColor || '#FFC500'}` : '1px solid rgba(255,197,0,0.25)',
         backgroundColor: adData.bgColor || '#0B0F17',
         backgroundImage: adData.bgStyle === 'gradient' ? `linear-gradient(135deg, ${adData.bgColor || '#0B0F17'} 0%, #161D2B 100%)` : 'none',
-        boxShadow: adData.hasGlow ? `0 0 25px ${adData.borderColor || '#FFC500'}40` : '0 6px 20px rgba(0,0,0,0.8)',
-        minHeight: isFooterSticky ? '58px' : '95px',
-        maxHeight: isFooterSticky ? '72px' : '150px'
+        boxShadow: adData.hasGlow ? `0 0 30px ${adData.borderColor || '#FFC500'}40` : '0 10px 30px rgba(0,0,0,0.8)',
+        minHeight: '145px'
       }}
     >
-      {/* محرك الحركات والتأثيرات الأصلي بكامل طاقته */}
+      {/* تضمين محرك الحركات الإعلانية */}
       <style>{`
         @keyframes yrContinuousSlideRight {
           0% { opacity: 0; transform: translateX(25px); }
@@ -118,10 +94,6 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           50% { transform: scale(1.15) translate(-1%, -1%); }
           100% { transform: scale(1); }
         }
-        @keyframes yrAdProgress {
-          0% { transform: scaleX(0); }
-          100% { transform: scaleX(1); }
-        }
 
         .yr-live-slide-right { animation: yrContinuousSlideRight 6s ease-in-out infinite; }
         .yr-live-slide-up { animation: yrContinuousSlideUp 6s ease-in-out infinite; }
@@ -137,8 +109,8 @@ export const AdBanner: React.FC<AdBannerProps> = ({
       {/* شريط التمرير الزمني العلوي */}
       {adData.hasProgressBar && (
         <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 z-30 overflow-hidden">
-          <div
-            style={{
+          <div 
+            style={{ 
               backgroundColor: adData.progressBarColor || '#FFC500',
               animation: `yrAdProgress ${adData.progressDuration || 8}s linear infinite`
             }}
@@ -147,31 +119,24 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         </div>
       )}
 
-      {/* وسائط الإعلان (صورة أو فيديو مع حركة KenBurns) */}
+      {/* وسائط الإعلان (صورة ناصعة أو فيديو تجاري حقيقي) */}
       {adData.mediaUrl && adData.layoutStyle !== 'text_only' && (
         <div className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center">
           {adData.imageFit === 'contain' && adData.useBlurBackground && adData.mediaType === 'image' && (
-            <img
-              src={adData.mediaUrl}
-              alt="Blur fill"
+            <img 
+              src={adData.mediaUrl} 
+              alt="Blur fill" 
               className="absolute inset-0 w-full h-full object-cover blur-lg scale-125 opacity-50"
             />
           )}
 
           {adData.mediaType === 'video' ? (
-            <video 
-              src={adData.mediaUrl} 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              className="w-full h-full object-cover relative z-10" 
-            />
+            <video src={adData.mediaUrl} autoPlay loop muted playsInline className="w-full h-full object-cover relative z-10" />
           ) : (
-            <img
-              src={adData.mediaUrl}
-              alt="Ad"
-              style={{
+            <img 
+              src={adData.mediaUrl} 
+              alt="Ad" 
+              style={{ 
                 objectFit: adData.imageFit || 'cover',
                 objectPosition: `${adData.imgPosX ?? 50}% ${adData.imgPosY ?? 50}%`,
                 transform: `scale(${(adData.imgScale ?? 100) / 100})`,
@@ -181,32 +146,27 @@ export const AdBanner: React.FC<AdBannerProps> = ({
               className={`w-full h-full relative z-10 ${adData.mediaMotion === 'kenBurns' ? 'yr-live-kenburns' : ''}`}
             />
           )}
-
+          
           {/* طبقة التباين الإعلانية لقراءة النصوص */}
-          {(adData.showHeadline || adData.showDescription) && (
-            <div
-              className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent z-10"
-              style={{ opacity: Math.max((adData.imgOverlay ?? 30) / 100, 0.4) }}
-            />
-          )}
+          <div 
+            className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent z-10" 
+            style={{ opacity: Math.max((adData.imgOverlay ?? 30) / 100, 0.4) }} 
+          />
         </div>
       )}
 
-      {/* شريط المحتوى الأصلي */}
-      <div className="relative z-20 p-3 sm:p-4 flex flex-col justify-between h-full min-h-[58px]">
-        {/* الجزء العلوي: الشارات + شارة YR Ads + زر الإغلاق ✕ */}
+      {/* شريط الإعلان التجاري وشارة الرعاية */}
+      <div className="relative z-20 p-4 sm:p-5 flex flex-col justify-between h-full min-h-[145px]">
+        
+        {/* الجزء العلوي: شارة الإعلان الممول المعتمد */}
         <div className="flex items-center justify-between gap-2 pb-1">
           <div className="flex items-center gap-1.5 flex-wrap">
-            {adData.showBadge && adData.badgeText && (
+            {adData.showBadge && (
               <span
-                style={{
-                  backgroundColor: adData.badgeBgColor || 'rgba(255,197,0,0.25)',
-                  color: adData.badgeTextColor || '#FFC500',
-                  borderColor: adData.badgeTextColor || '#FFC500'
-                }}
+                style={{ backgroundColor: adData.badgeBgColor || 'rgba(255,197,0,0.25)', color: adData.badgeTextColor || '#FFC500', borderColor: adData.badgeTextColor || '#FFC500' }}
                 className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[9.5px] font-black border tracking-wide whitespace-nowrap shadow-md backdrop-blur-md"
               >
-                {adData.badgeText}
+                {adData.badgeText || 'إعلان ممول'}
               </span>
             )}
             {adData.showVerifiedBadge && (
@@ -216,36 +176,21 @@ export const AdBanner: React.FC<AdBannerProps> = ({
             )}
           </div>
 
-          {/* شارة YR Ads + زر الإغلاق ✕ بنمط جوجل */}
-          <div className="flex items-center gap-1.5 pointer-events-auto">
-            <span className="text-[9px] text-white/70 font-mono bg-black/60 px-2 py-0.5 rounded border border-white/10 backdrop-blur-md flex items-center gap-1">
-              <ExternalLink size={10} /> YR Ads
-            </span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                setIsDismissed(true);
-              }}
-              className="w-4 h-4 rounded-full bg-black/70 hover:bg-red-600 text-zinc-300 hover:text-white flex items-center justify-center text-[9px] font-bold border border-white/20 transition-all cursor-pointer"
-              title="إغلاق هذا الإعلان"
-            >
-              ✕
-            </button>
-          </div>
+          <span className="text-[9px] text-white/70 font-mono bg-black/60 px-2 py-0.5 rounded border border-white/10 backdrop-blur-md flex items-center gap-1">
+            <ExternalLink size={10} /> YR Ads
+          </span>
         </div>
 
-        {/* جسم الإعلان والنصوص البارزة كما كتبتها بالضبط */}
-        <div className="space-y-1 max-w-lg my-0.5">
-          {adData.showHeadline && adData.headline && (
-            <h3
-              style={{
+        {/* جسم الإعلان والنصوص البارزة */}
+        <div className="space-y-1.5 max-w-lg my-1">
+          {adData.showHeadline && (
+            <h3 
+              style={{ 
                 color: adData.headlineColor || '#FFFFFF',
                 fontFamily: adData.headlineFont || 'Cairo',
                 textShadow: '0 2px 12px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.9)'
-              }}
-              className={`leading-snug font-black text-xs sm:text-sm truncate ${
+              }} 
+              className={`leading-snug font-black text-sm sm:text-base md:text-lg ${
                 adData.headlineMotion === 'slideRight' ? 'yr-live-slide-right' :
                 adData.headlineMotion === 'slideUp' ? 'yr-live-slide-up' : ''
               }`}
@@ -254,21 +199,21 @@ export const AdBanner: React.FC<AdBannerProps> = ({
             </h3>
           )}
 
-          {adData.showDescription && adData.description && (
-            <p
-              style={{
+          {adData.showDescription && (
+            <p 
+              style={{ 
                 color: adData.descColor || '#E5E7EB',
                 textShadow: '0 1px 8px rgba(0,0,0,0.95)'
-              }}
-              className="text-[10px] sm:text-xs text-gray-200 line-clamp-1 leading-relaxed font-medium"
+              }} 
+              className="text-xs text-gray-200 line-clamp-2 leading-relaxed font-medium"
             >
               {adData.description}
             </p>
           )}
         </div>
 
-        {/* زر الإجراء الأصلي بكامل أشكاله وحركاته وتفاعلاته */}
-        <div className="pt-1.5 flex items-center justify-between border-t border-white/15 mt-0.5 flex-wrap gap-2">
+        {/* زر الإجراء التجاري الصريح والأسعار إن وجدت */}
+        <div className="pt-2 flex items-center justify-between border-t border-white/15 mt-1 flex-wrap gap-2">
           {adData.showPricing && (
             <div className="flex items-center gap-1.5 font-mono">
               <span className="text-xs sm:text-sm font-black text-[#FFC500] drop-shadow">{adData.currentPrice} {adData.currency || 'YER'}</span>
@@ -282,24 +227,20 @@ export const AdBanner: React.FC<AdBannerProps> = ({
               href={adData.targetUrl || '#'}
               target={adData.actionType === 'link' ? '_blank' : '_self'}
               rel="noopener noreferrer"
-              onClick={() => adsDatabaseService.recordClick(adData.id)}
-              style={{
-                backgroundColor: adData.btnBgColor || '#FFC500',
-                color: adData.btnTextColor || '#000000',
-                borderRadius: getBtnBorderRadius()
-              }}
-              className={`px-3.5 py-1.5 font-black text-xs shadow-xl flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer ${
+              style={{ backgroundColor: adData.btnBgColor || '#FFC500', color: adData.btnTextColor || '#000000' }}
+              className={`px-4 py-2 rounded-xl font-black text-xs shadow-2xl flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer ${
                 adData.btnAnimation === 'pulse' ? 'yr-live-pulse' :
                 adData.btnAnimation === 'shimmer' ? 'yr-live-shimmer' : ''
               }`}
             >
-              {adData.actionType === 'whatsapp' && <MessageCircle size={13} />}
-              {adData.actionType === 'call' && <Phone size={13} />}
+              {adData.actionType === 'whatsapp' && <MessageCircle size={14} />}
+              {adData.actionType === 'call' && <Phone size={14} />}
               <span>{adData.ctaText || 'اطلب الآن'}</span>
-              <ArrowRight size={12} className="rtl:rotate-180" />
+              <ArrowRight size={13} className="rtl:rotate-180" />
             </a>
           )}
         </div>
+
       </div>
     </div>
   );
