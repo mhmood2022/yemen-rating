@@ -6,6 +6,24 @@ import { PublishedAd } from './AdGeneratorStudio';
 
 export const AdsManager: React.FC = () => {
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    // جلب كافة الإعلانات الحية من Supabase للوحة التحكم
+    const loadAllAdsFromCloud = async () => {
+      try {
+        const cloudAds = await adsDatabaseService.getActiveAds();
+        if (cloudAds && cloudAds.length > 0) {
+          setAds(cloudAds);
+          try {
+            localStorage.setItem('yr_published_ads', JSON.stringify(cloudAds));
+          } catch (_) {}
+        }
+      } catch (err) {
+        console.error("Error loading ads from cloud:", err);
+      }
+    };
+    loadAllAdsFromCloud();
+  }, []);
   const [ads, setAds] = useState<PublishedAd[]>([]);
   const [viewFormat, setViewFormat] = useState<'grid' | 'table'>('grid');
 
