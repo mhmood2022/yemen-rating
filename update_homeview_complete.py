@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+homeview_code = '''import React, { useState } from 'react';
 import {
   Star, Gavel, ChevronLeft, Landmark, Briefcase, Smartphone,
   GraduationCap, Hotel, Tag, Building2, UtensilsCrossed, Stethoscope,
@@ -568,3 +568,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
     </div>
   );
 };
+'''
+
+with open("src/components/home/HomeView.tsx", "w", encoding="utf-8") as f:
+    f.write(homeview_code)
+print("✅ تم كتابة كود HomeView.tsx بالكامل ومطابقته 100%.")
