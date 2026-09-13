@@ -225,14 +225,15 @@ export const AdGeneratorStudio: React.FC = () => {
     setAnimTriggerKey(prev => prev + 1);
   };
 
+    const [uploadStatusText, setUploadStatusText] = useState<string>('');
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const isVid = file.type.startsWith('video/');
       setMediaType(isVid ? 'video' : 'image');
-      const tempUrl = URL.createObjectURL(file);
-      setMediaFileUrl(tempUrl);
       setIsMediaUploading(true);
+      setUploadStatusText('جاري رفع الملف إلى السحابة... يرجى الانتظار ⏳');
 
       try {
         const ext = file.name.split('.').pop() || (isVid ? 'mp4' : 'jpg');
@@ -247,13 +248,15 @@ export const AdGeneratorStudio: React.FC = () => {
             .getPublicUrl(fileName);
           if (publicUrl) {
             setMediaFileUrl(publicUrl);
-            console.log("Uploaded successfully to Supabase Storage:", publicUrl);
+            setUploadStatusText('✅ تم رفع الملف إلى السحابة بنجاح وبشكل دائم!');
           }
         } else {
-          console.error("Storage upload error:", uploadErr);
+          setUploadStatusText('❌ فشل الرفع للسحابة: ' + uploadErr.message);
+          setMediaFileUrl(URL.createObjectURL(file));
         }
-      } catch (err) {
-        console.error("Storage upload error:", err);
+      } catch (err: any) {
+        setUploadStatusText('❌ خطأ في الاتصال أثناء الرفع: ' + err.message);
+        setMediaFileUrl(URL.createObjectURL(file));
       } finally {
         setIsMediaUploading(false);
       }
@@ -1242,13 +1245,31 @@ export const AdGeneratorStudio: React.FC = () => {
           </div>
         )}
 
-        {/* زر النشر النهائي */}
+        {/* مؤشر حالة الرفع السحابي */}
+        {uploadStatusText && (
+          <div className={`p-3 rounded-xl text-xs font-bold text-center border mb-3 ${
+            isMediaUploading 
+              ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 animate-pulse' 
+              : uploadStatusText.includes('✅') 
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+                : 'bg-red-500/10 border-red-500/30 text-red-400'
+          }`}>
+            {uploadStatusText}
+          </div>
+        )}
+
+        {/* زر النشر النهائي المحمي */}
         <button
           onClick={handleSaveAndPublish}
-          className="w-full py-4 rounded-xl bg-[#FFC500] text-black font-black text-sm hover:bg-[#FFC500]/90 transition-all shadow-xl shadow-[#FFC500]/20 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+          disabled={isMediaUploading}
+          className={`w-full py-4 rounded-xl font-black text-sm transition-all shadow-xl flex items-center justify-center gap-2 ${
+            isMediaUploading
+              ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'
+              : 'bg-[#FFC500] text-black hover:bg-[#FFC500]/90 shadow-[#FFC500]/20 cursor-pointer active:scale-98'
+          }`}
         >
           <Sparkles size={18} />
-          <span>حفظ ونشر الإعلان فوراً في المعرض المرئي</span>
+          <span>{isMediaUploading ? '⏳ جاري رفع الوسائط للسحابة... انتظر لحظات' : 'حفظ ونشر الإعلان فوراً في المعرض المرئي'}</span>
         </button>
       </div>
 
