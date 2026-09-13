@@ -1,5 +1,6 @@
 import { supabase } from '../../../lib/supabase';
 import { adsDatabaseService } from "../../../services/adsDatabaseService";
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Sparkles, Smartphone, Tablet, Monitor, Image as ImageIcon, 
@@ -117,8 +118,41 @@ export interface PublishedAd {
 }
 
 export const AdGeneratorStudio: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('editId');
   const [isMediaUploading, setIsMediaUploading] = useState<boolean>(false);
   const [uploadStatusText, setUploadStatusText] = useState<string>('');
+
+  // تحميل بيانات الإعلان إذا كان المطلوب تعديله
+  useEffect(() => {
+    if (editId) {
+      const loadAdForEdit = async () => {
+        try {
+          const adsList = await adsDatabaseService.getActiveAds();
+          const targetAd = adsList.find(a => String(a.id) === String(editId));
+          if (targetAd) {
+            if (targetAd.headline) setHeadline(targetAd.headline);
+            if (targetAd.description) setDescription(targetAd.description);
+            if (targetAd.mediaUrl) setMediaFileUrl(targetAd.mediaUrl);
+            if (targetAd.mediaType) setMediaType(targetAd.mediaType);
+            if (targetAd.ctaText) setCtaText(targetAd.ctaText);
+            if (targetAd.targetUrl) setTargetUrl(targetAd.targetUrl);
+            if (targetAd.btnBgColor) setBtnBgColor(targetAd.btnBgColor);
+            if (targetAd.btnTextColor) setBtnTextColor(targetAd.btnTextColor);
+            if (targetAd.btnShape) setBtnShape(targetAd.btnShape);
+            if (targetAd.btnAnimation) setBtnAnimation(targetAd.btnAnimation);
+            if (targetAd.currentPrice) setCurrentPrice(targetAd.currentPrice);
+            if (targetAd.oldPrice) setOldPrice(targetAd.oldPrice);
+            if (targetAd.showPricing !== undefined) setShowPricing(targetAd.showPricing);
+          }
+        } catch (err) {
+          console.error("Error loading ad for edit:", err);
+        }
+      };
+      loadAdForEdit();
+    }
+  }, [editId]);
   const [adTier, setAdTier] = useState<'basic' | 'professional' | 'premium'>('professional');
   const [adCategoryType, setAdCategoryType] = useState<PublishedAd['adCategoryType']>('image_text');
   const [designTheme, setDesignTheme] = useState<PublishedAd['designTheme']>('modern');
@@ -147,8 +181,8 @@ export const AdGeneratorStudio: React.FC = () => {
   const [logoSize, setLogoSize] = useState(36);
 
   // النصوص
-  const [showBadge, setShowBadge] = useState(true);
-  const [badgeText, setBadgeText] = useState('عرض خاص — يمن ريتنغ');
+  const [showBadge, setShowBadge] = useState(false);
+  const [badgeText, setBadgeText] = useState('');
   const [badgeBgColor, setBadgeBgColor] = useState('rgba(255, 197, 0, 0.25)');
   const [badgeTextColor, setBadgeTextColor] = useState('#FFC500');
 
@@ -323,7 +357,7 @@ export const AdGeneratorStudio: React.FC = () => {
       : actionType === 'call' ? `tel:${callPhone}` : targetUrl;
 
     const newAd: PublishedAd = {
-      id: `AD-${Date.now()}`,
+      id: editId || `AD-${Date.now()}`,
       placementId: selectedPlacement.id,
       placementName: selectedPlacement.name,
       adCategoryType,
@@ -413,8 +447,12 @@ export const AdGeneratorStudio: React.FC = () => {
     adsDatabaseService.publishAd(newAd);
     adminAuditService.logAction('نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
 
-    setPublishedAlert(true);
-    setTimeout(() => setPublishedAlert(false), 4000);
+        setPublishedAlert(true);
+    // إشعار نجاح ثم خروج تلقائي لمعرض الإعلانات
+    setTimeout(() => {
+      setPublishedAlert(false);
+      navigate('/admin/ads');
+    }, 1500);
   };
 
   return (
@@ -478,7 +516,7 @@ export const AdGeneratorStudio: React.FC = () => {
                 backgroundImage: bgStyle === 'gradient' ? `linear-gradient(135deg, ${bgColor} 0%, #161D2B 100%)` : 'none',
                 boxShadow: hasGlow && hasBorder ? `0 0 25px ${borderColor}40` : 'none',
               }}
-              className="relative overflow-hidden w-full min-h-[88px] max-h-[135px] p-2.5 sm:p-3.5 flex flex-col justify-between"
+              className="relative overflow-hidden w-full min-h-[92px] h-auto p-2.5 sm:p-3.5 flex flex-col justify-between"
             >
               {/* شريط التمرير الزمني */}
               {hasProgressBar && (
@@ -634,7 +672,7 @@ export const AdGeneratorStudio: React.FC = () => {
 
               {/* زر الإجراء السفلي والـ QR Code */}
               {(showButton || showQrCode) && (
-                <div className="relative z-20 pt-3 mt-2 flex justify-between items-center border-t border-white/10">
+                <div className="relative z-20 pt-2 mt-1.5 flex justify-between items-center border-t border-white/10 shrink-0">
                   {showButton ? (
                     <button 
                       style={{ backgroundColor: btnBgColor, color: btnTextColor }} 

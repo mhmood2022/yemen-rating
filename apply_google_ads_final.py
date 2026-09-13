@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+banner_code = '''import React, { useState, useEffect } from 'react';
 import { ArrowRight, Sparkles, MessageCircle, Phone, Award, Flame, Clock, ShieldCheck, Star, QrCode, ExternalLink, Info } from 'lucide-react';
 import { PublishedAd } from '../../pages/admin/ads/AdGeneratorStudio';
 import { adsDatabaseService } from '../../services/adsDatabaseService';
@@ -18,6 +18,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
   useEffect(() => {
     let isMounted = true;
 
+    // 1. قراءة فورية من الكاش
     const saved = localStorage.getItem('yr_published_ads');
     if (saved) {
       try {
@@ -33,6 +34,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
       }
     }
 
+    // 2. مزامنة حية من Supabase
     const fetchFromDatabase = async () => {
       try {
         const liveAds = await adsDatabaseService.getActiveAds(placementId);
@@ -66,6 +68,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
 
   const isFooterSticky = placementId === '10';
 
+  // شكل زر الإجراء حسب الاستوديو
   const getBtnRadius = () => {
     if (adData.btnShape === 'pill') return '9999px';
     if (adData.btnShape === 'square') return '0px';
@@ -79,14 +82,16 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         isFooterSticky ? 'border-t' : 'border my-1.5'
       } ${className}`}
       style={{
-        borderRadius: '0px',
+        borderRadius: '0px', // حواف مستقيمة كإعلانات جوجل
         border: adData.hasBorder ? `${adData.borderWidth || 1}px solid ${adData.borderColor || '#FFC500'}` : '1px solid #1F2937',
         backgroundColor: adData.bgColor || '#0B0F17',
         backgroundImage: adData.bgStyle === 'gradient' ? `linear-gradient(135deg, ${adData.bgColor || '#0B0F17'} 0%, #161D2B 100%)` : 'none',
         boxShadow: adData.hasGlow && adData.hasBorder ? `0 0 20px ${adData.borderColor || '#FFC500'}35` : '0 4px 15px rgba(0,0,0,0.6)',
-        minHeight: isFooterSticky ? '54px' : '82px'
+        minHeight: isFooterSticky ? '54px' : '82px',
+        maxHeight: isFooterSticky ? '68px' : '125px'
       }}
     >
+      {/* محرك الحركات والتأثيرات الأصلي الكامل */}
       <style>{`
         @keyframes yrContinuousSlideRight {
           0% { opacity: 0; transform: translateX(25px); }
@@ -129,6 +134,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         .yr-live-kenburns { animation: yrKenBurnsMotion 18s ease-in-out infinite alternate !important; }
       `}</style>
 
+      {/* شريط التقدم الزمني العلوي */}
       {adData.hasProgressBar && (
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/20 z-30 overflow-hidden">
           <div
@@ -141,6 +147,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         </div>
       )}
 
+      {/* وسائط الإعلان (فيديو أو صورة) */}
       {adData.mediaUrl && adData.layoutStyle !== 'text_only' && (
         <div className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center">
           {adData.imageFit === 'contain' && adData.useBlurBackground && adData.mediaType === 'image' && (
@@ -175,6 +182,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
             />
           )}
 
+          {/* طبقة التباين لقراءة النصوص */}
           {(adData.showHeadline || adData.showDescription) && (
             <div
               className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent z-10"
@@ -184,10 +192,23 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         </div>
       )}
 
-      <div className="relative z-20 p-2.5 sm:p-3 flex flex-col justify-between h-full min-h-[54px]">
-        {/* شارة التوثيق وشارة جوجل الرسمية + زر الإغلاق ✕ حصراً في الفوتر الثابت */}
+      {/* محتوى الإعلان وأزرار التحكم بنمط جوجل المدمج */}
+      <div className="relative z-20 p-2 sm:p-2.5 flex flex-col justify-between h-full min-h-[54px]">
+        {/* الجزء العلوي: الشارات + شارة جوجل وزر الإغلاق ✕ */}
         <div className="flex items-center justify-between gap-2 pb-0.5">
           <div className="flex items-center gap-1 flex-wrap">
+            {adData.showBadge && adData.badgeText && (
+              <span
+                style={{
+                  backgroundColor: adData.badgeBgColor || 'rgba(255,197,0,0.25)',
+                  color: adData.badgeTextColor || '#FFC500',
+                  borderColor: adData.badgeTextColor || '#FFC500'
+                }}
+                className="inline-flex items-center px-1.5 py-0.2 rounded-none text-[8.5px] font-bold border tracking-wide whitespace-nowrap backdrop-blur-sm"
+              >
+                {adData.badgeText}
+              </span>
+            )}
             {adData.showVerifiedBadge && (
               <span className="inline-flex items-center gap-0.5 px-1 py-0.2 rounded-none bg-[#16A34A]/25 text-[#16A34A] border border-[#16A34A]/40 text-[8.5px] font-bold whitespace-nowrap">
                 <ShieldCheck size={10} /> موثّق YR
@@ -195,27 +216,27 @@ export const AdBanner: React.FC<AdBannerProps> = ({
             )}
           </div>
 
+          {/* ترويسة شارة إعلان جوجل + زر الإغلاق ✕ */}
           <div className="flex items-center gap-1 pointer-events-auto">
-            <span className="text-[8px] text-zinc-300 font-mono bg-black/70 px-1.5 py-0.2 rounded-none border border-white/10 backdrop-blur-sm flex items-center gap-0.5">
+            <span className="text-[8px] text-zinc-300 font-mono bg-black/70 px-1 py-0.2 rounded-none border border-white/10 backdrop-blur-sm flex items-center gap-0.5">
               <Info size={8} /> إعلان YR
             </span>
-            {isFooterSticky && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setIsDismissed(true);
-                }}
-                className="w-4 h-4 rounded-none bg-black/80 hover:bg-red-600 text-zinc-300 hover:text-white flex items-center justify-center text-[8.5px] font-bold border border-white/15 transition-colors cursor-pointer"
-                title="إغلاق هذا الإعلان"
-              >
-                ✕
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setIsDismissed(true);
+              }}
+              className="w-4 h-4 rounded-none bg-black/80 hover:bg-red-600 text-zinc-300 hover:text-white flex items-center justify-center text-[8.5px] font-bold border border-white/15 transition-colors cursor-pointer"
+              title="إغلاق هذا الإعلان"
+            >
+              ✕
+            </button>
           </div>
         </div>
 
+        {/* النصوص والعناوين */}
         <div className="space-y-0.5 max-w-lg my-0.5">
           {adData.showHeadline && adData.headline && (
             <h3
@@ -246,7 +267,8 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           )}
         </div>
 
-        <div className="pt-1 flex items-center justify-between border-t border-white/10 mt-0.5 flex-wrap gap-2 shrink-0">
+        {/* الأسعار وزر الإجراء التجاري */}
+        <div className="pt-0.5 flex items-center justify-between border-t border-white/10 mt-0.5 flex-wrap gap-2">
           {adData.showPricing && (
             <div className="flex items-center gap-1 font-mono">
               <span className="text-xs font-black text-[#FFC500] drop-shadow">{adData.currentPrice} {adData.currency || 'YER'}</span>
@@ -266,7 +288,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
                 color: adData.btnTextColor || '#000000',
                 borderRadius: getBtnRadius()
               }}
-              className={`px-3 py-1 font-black text-[11px] shadow-lg flex items-center gap-1 hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0 ${
+              className={`px-3 py-1 font-black text-[11px] shadow-lg flex items-center gap-1 hover:scale-105 active:scale-95 transition-all cursor-pointer ${
                 adData.btnAnimation === 'pulse' ? 'yr-live-pulse' :
                 adData.btnAnimation === 'shimmer' ? 'yr-live-shimmer' : ''
               }`}
@@ -282,3 +304,19 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     </div>
   );
 };
+'''
+
+with open("src/components/common/AdBanner.tsx", "w", encoding="utf-8") as f:
+    f.write(banner_code)
+print("✅ 1. تم استبدال AdBanner.tsx بالنسخة المضبوطة (حواف مستقيمة + حجم رشيق + زر ✕ + كامل الحركات والأزرار).")
+
+# 2. مطابقة المعاينة في الاستوديو لتطابق العرض الفعلي بدقة
+with open("src/pages/admin/ads/AdGeneratorStudio.tsx", "r", encoding="utf-8") as f:
+    studio = f.read()
+
+studio = studio.replace("min-h-[160px]", "min-h-[82px] max-h-[125px]")
+studio = studio.replace("p-4 sm:p-5", "p-2 sm:p-2.5")
+
+with open("src/pages/admin/ads/AdGeneratorStudio.tsx", "w", encoding="utf-8") as f:
+    f.write(studio)
+print("✅ 2. تم ضبط شاشة المعاينة الحية في الاستوديو.")

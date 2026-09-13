@@ -1,4 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import re
+
+# ========================================================
+# 1. إصلاح AdBanner.tsx (حذف شارة عرض خاص + زر الإغلاق للفوتر الثابت فقط)
+# ========================================================
+ad_banner_clean = '''import React, { useState, useEffect } from 'react';
 import { ArrowRight, Sparkles, MessageCircle, Phone, Award, Flame, Clock, ShieldCheck, Star, QrCode, ExternalLink, Info } from 'lucide-react';
 import { PublishedAd } from '../../pages/admin/ads/AdGeneratorStudio';
 import { adsDatabaseService } from '../../services/adsDatabaseService';
@@ -282,3 +287,148 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     </div>
   );
 };
+'''
+
+with open("src/components/common/AdBanner.tsx", "w", encoding="utf-8") as f:
+    f.write(ad_banner_clean)
+print("✅ 1. تم تنظيف وبناء AdBanner.tsx بالكامل.")
+
+# ========================================================
+# 2. تحديث AdsManager.tsx (زر التعديل ✏️ ورسالة نجاح الحذف)
+# ========================================================
+with open("src/pages/admin/ads/AdsManager.tsx", "r", encoding="utf-8") as f:
+    mgr = f.read()
+
+# التأكد من استيراد useNavigate و Pencil
+if "useNavigate" not in mgr:
+    mgr = mgr.replace("import React,", "import { useNavigate } from 'react-router-dom';\nimport React,")
+if "Pencil" not in mgr:
+    mgr = mgr.replace("Trash2,", "Trash2, Pencil,")
+
+# استدعاء useNavigate
+if "const navigate = useNavigate();" not in mgr:
+    mgr = re.sub(
+        r'(export const AdsManager:\s*React\.FC\s*=\s*\(\)\s*=>\s*\{)',
+        r'\1\n  const navigate = useNavigate();',
+        mgr
+    )
+
+# كود دالة الحذف ورسالة النجاح
+old_del = r'const deleteAd = async \(id: string\) => \{.*?setDeleteSuccess\(null\), \d+\);\s*\};'
+new_del = """const deleteAd = async (id: string) => {
+    const updated = ads.filter(a => a.id !== id);
+    setAds(updated);
+    try {
+      localStorage.setItem('yr_published_ads', JSON.stringify(updated));
+    } catch (_) {}
+    try {
+      await adsDatabaseService.deleteAd(id);
+    } catch (e) {
+      console.error(e);
+    }
+    setDeleteSuccess('✅ تم حذف الإعلان بنجاح من قاعدة البيانات ومن المنصة بالكامل!');
+    setTimeout(() => setDeleteSuccess(null), 3500);
+  };"""
+
+mgr = re.sub(r'const deleteAd = async \(id: string\) => \{[\s\S]*?setDeleteSuccess\(null\), \d+\);\s*\};', new_del, mgr)
+
+# إضافة زر التعديل ✏️ بجانب زر الحذف
+edit_btn = """                    {/* زر تعديل الإعلان */}
+                    <button
+                      onClick={() => navigate(`/admin/ads/generator?editId=${ad.id}`)}
+                      className="p-1.5 rounded-lg bg-[#FFC500]/15 text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all"
+                      title="تعديل هذا الإعلان"
+                    >
+                      <Pencil size={15} />
+                    </button>"""
+
+if "editId=" not in mgr:
+    mgr = mgr.replace(
+        '<button onClick={() => deleteAd(ad.id)}',
+        edit_btn + '\n                    <button onClick={() => deleteAd(ad.id)}'
+    )
+
+with open("src/pages/admin/ads/AdsManager.tsx", "w", encoding="utf-8") as f:
+    f.write(mgr)
+print("✅ 2. تم إضافة زر التعديل ✏️ ورسالة الحذف في AdsManager.tsx.")
+
+# ========================================================
+# 3. تحديث AdGeneratorStudio.tsx (معاينة الأزرار كاملة + خروج تلقائي + وضع التعديل)
+# ========================================================
+with open("src/pages/admin/ads/AdGeneratorStudio.tsx", "r", encoding="utf-8") as f:
+    std = f.read()
+
+# التأكد من استيراد useNavigate و useSearchParams
+if "useSearchParams" not in std:
+    std = std.replace("import React,", "import { useNavigate, useSearchParams } from 'react-router-dom';\nimport React,")
+
+# استدعاء useNavigate و searchParams
+if "const [searchParams] = useSearchParams();" not in std:
+    std = re.sub(
+        r'(export const AdGeneratorStudio:\s*React\.FC\s*=\s*\(\)\s*=>\s*\{)',
+        r'\1\n  const navigate = useNavigate();\n  const [searchParams] = useSearchParams();\n  const editId = searchParams.get("editId");',
+        std
+    )
+
+# كود جلب بيانات الإعلان عند التعديل
+edit_fetch_code = """  useEffect(() => {
+    if (editId) {
+      const fetchAdDataForEdit = async () => {
+        try {
+          const allAds = await adsDatabaseService.getActiveAds();
+          const target = allAds.find(a => String(a.id) === String(editId));
+          if (target) {
+            if (target.headline) setHeadline(target.headline);
+            if (target.description) setDescription(target.description);
+            if (target.mediaUrl) setMediaFileUrl(target.mediaUrl);
+            if (target.mediaType) setMediaType(target.mediaType);
+            if (target.ctaText) setCtaText(target.ctaText);
+            if (target.targetUrl) setTargetUrl(target.targetUrl);
+            if (target.btnBgColor) setBtnBgColor(target.btnBgColor);
+            if (target.btnTextColor) setBtnTextColor(target.btnTextColor);
+            if (target.btnShape) setBtnShape(target.btnShape);
+            if (target.btnAnimation) setBtnAnimation(target.btnAnimation);
+            if (target.currentPrice) setCurrentPrice(target.currentPrice);
+            if (target.oldPrice) setOldPrice(target.oldPrice);
+            if (target.showPricing !== undefined) setShowPricing(target.showPricing);
+          }
+        } catch (e) {
+          console.error("Error loading ad:", e);
+        }
+      };
+      fetchAdDataForEdit();
+    }
+  }, [editId]);"""
+
+if "fetchAdDataForEdit" not in std:
+    std = re.sub(
+        r'(const editId = searchParams\.get\("editId"\);)',
+        r'\1\n' + edit_fetch_code,
+        std
+    )
+
+# استخدام نفس الـ ID عند التعديل + الخروج التلقائي بعد الحفظ
+std = std.replace("id: `AD-${Date.now()}`", "id: editId || `AD-${Date.now()}`")
+
+save_and_exit = """    setPublishedAlert(true);
+    setTimeout(() => {
+      setPublishedAlert(false);
+      navigate('/admin/ads');
+    }, 1500);"""
+
+std = re.sub(
+    r'setPublishedAlert\(true\);[\s\S]*?setTimeout\(\(\) => setPublishedAlert\(false\), \d+\);',
+    save_and_exit,
+    std
+)
+
+# ضبط حاوية المعاينة في الاستوديو بدون قص (min-h-[90px] h-auto مع shrink-0 على شريط الأزرار)
+std = re.sub(r'min-h-\[[^\]]+\]\s*max-h-\[[^\]]+\]', 'min-h-[90px] h-auto', std)
+std = std.replace(
+    'className="relative z-20 pt-3 mt-2 flex justify-between items-center border-t border-white/10"',
+    'className="relative z-20 pt-2 mt-1.5 flex justify-between items-center border-t border-white/10 shrink-0"'
+)
+
+with open("src/pages/admin/ads/AdGeneratorStudio.tsx", "w", encoding="utf-8") as f:
+    f.write(std)
+print("✅ 3. تم تحديث AdGeneratorStudio.tsx بنجاح.")

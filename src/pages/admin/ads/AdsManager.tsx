@@ -1,10 +1,12 @@
 import { adsDatabaseService } from '../../../services/adsDatabaseService';
+import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Megaphone, Sparkles, Play, Pause, Trash2, LayoutGrid, Table, ArrowRight } from 'lucide-react';
+import { Megaphone, Sparkles, Play, Pause, Trash2, Pencil, LayoutGrid, Table, ArrowRight } from 'lucide-react';
 import { PublishedAd } from './AdGeneratorStudio';
 
 export const AdsManager: React.FC = () => {
+  const navigate = useNavigate();
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,21 +47,16 @@ export const AdsManager: React.FC = () => {
   };
 
   const deleteAd = async (id: string) => {
-    // 1. حذف محلياً
     const updated = ads.filter(a => a.id !== id);
     setAds(updated);
     try {
       localStorage.setItem('yr_published_ads', JSON.stringify(updated));
     } catch (_) {}
-
-    // 2. حذف من قاعدة بيانات Supabase السحابية
     try {
       await adsDatabaseService.deleteAd(id);
     } catch (e) {
-      console.error("Delete from supabase error:", e);
+      console.error(e);
     }
-
-    // 3. عرض رسالة النجاح
     setDeleteSuccess('✅ تم حذف الإعلان بنجاح من قاعدة البيانات ومن المنصة بالكامل!');
     setTimeout(() => setDeleteSuccess(null), 3500);
   };
@@ -139,6 +136,14 @@ export const AdsManager: React.FC = () => {
                     </span>
                     <button onClick={() => toggleAdStatus(ad.id)} className="p-1.5 rounded-lg bg-[#161D2B] text-white hover:text-[#FFC500]">
                       {ad.status === 'active' ? <Pause size={14} /> : <Play size={14} />}
+                    </button>
+                                        {/* زر تعديل الإعلان */}
+                    <button
+                      onClick={() => navigate(`/admin/ads/generator?editId=${ad.id}`)}
+                      className="p-1.5 rounded-lg bg-[#FFC500]/15 text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all"
+                      title="تعديل هذا الإعلان"
+                    >
+                      <Pencil size={15} />
                     </button>
                     <button onClick={() => deleteAd(ad.id)} className="p-1.5 rounded-lg bg-[#DC2626]/10 text-[#DC2626]">
                       <Trash2 size={14} />
@@ -280,7 +285,15 @@ export const AdsManager: React.FC = () => {
                       <button onClick={() => toggleAdStatus(ad.id)} className="p-1 rounded bg-[#161D2B] hover:text-[#FFC500]">
                         {ad.status === 'active' ? <Pause size={13} /> : <Play size={13} />}
                       </button>
-                      <button onClick={() => deleteAd(ad.id)} className="p-1 rounded bg-[#DC2626]/10 text-[#DC2626]">
+                                          {/* زر تعديل الإعلان */}
+                    <button
+                      onClick={() => navigate(`/admin/ads/generator?editId=${ad.id}`)}
+                      className="p-1.5 rounded-lg bg-[#FFC500]/15 text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all"
+                      title="تعديل هذا الإعلان"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button onClick={() => deleteAd(ad.id)} className="p-1 rounded bg-[#DC2626]/10 text-[#DC2626]">
                         <Trash2 size={13} />
                       </button>
                     </div>
