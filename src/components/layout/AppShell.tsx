@@ -240,7 +240,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       {/* 6. شريط الفوتر الإعلاني الثابت العام (الموضع 10) */}
       <div className="fixed bottom-0 left-0 right-0 z-40 px-2 sm:px-4 pb-1 pointer-events-none">
         <div className="max-w-4xl mx-auto pointer-events-auto">
-          </div>
+          <AdBanner placementId="10" className="shadow-2xl" />
+        </div>
       </div>
     </div>
   );

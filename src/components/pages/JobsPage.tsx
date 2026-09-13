@@ -503,7 +503,6 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             <React.Fragment key={job.id}>
               {idx === 2 && (
                 <div className="col-span-full my-2">
-                  <AdBanner placementId="7" className="rounded-2xl overflow-hidden shadow-md" />
                 </div>
               )}
               <div

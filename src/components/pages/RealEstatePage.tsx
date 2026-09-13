@@ -515,7 +515,6 @@ export const RealEstatePage: React.FC<{ onBack: () => void }> = ({ onBack }) => 
             <React.Fragment key={prop.id}>
               {idx === 2 && (
                 <div className="col-span-full my-2">
-                  <AdBanner placementId="5" className="rounded-2xl overflow-hidden shadow-md" />
                 </div>
               )}
               <div

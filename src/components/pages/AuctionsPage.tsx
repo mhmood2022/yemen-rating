@@ -741,7 +741,6 @@ export const AuctionsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             <React.Fragment key={item.id}>
               {idx === 2 && (
                 <div className="col-span-full my-2">
-                  <AdBanner placementId="6" className="rounded-2xl overflow-hidden shadow-md" />
                 </div>
               )}
               <div key={item.id} className="bg-[#0F0F12] rounded-2xl border border-[#222226] hover:border-[#FFC500]/40 overflow-hidden shadow-md transition-all flex flex-col justify-between">
