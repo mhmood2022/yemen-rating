@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink, Info, ArrowRight, MessageCircle, Phone } from 'lucide-react';
+import { ArrowRight, Sparkles, MessageCircle, Phone, Award, Flame, Clock, ShieldCheck, Star, QrCode, ExternalLink } from 'lucide-react';
 import { PublishedAd } from '../../pages/admin/ads/AdGeneratorStudio';
 import { adsDatabaseService } from '../../services/adsDatabaseService';
 
@@ -29,10 +29,12 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           !a.mediaUrl?.startsWith('blob:')
         );
         if (match && isMounted) setAdData(match);
-      } catch (_) {}
+      } catch (e) {
+        console.error(e);
+      }
     }
 
-    // 2. جلب حصري من قاعدة بيانات Supabase
+    // 2. مزامنة حية من قاعدة بيانات Supabase
     const fetchFromDatabase = async () => {
       try {
         const liveAds = await adsDatabaseService.getActiveAds(placementId);
@@ -51,7 +53,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           setAdData(null);
         }
       } catch (err) {
-        console.error("Google-Style AdBanner fetch error:", err);
+        console.error("AdBanner database fetch error:", err);
       }
     };
 
@@ -62,51 +64,100 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     };
   }, [placementId]);
 
-  // إذا لم يكن هناك إعلان أو تم إغلاقه بواسطة الزائر
   if (!adData || isDismissed) return null;
 
   const isFooterSticky = placementId === '10';
 
+  // تحديد استدارة الزر حسب اختيارك في الاستوديو
+  const getBtnBorderRadius = () => {
+    if (adData.btnShape === 'pill') return '9999px';
+    if (adData.btnShape === 'square') return '0px';
+    return `${adData.borderRadius ? Math.min(adData.borderRadius, 14) : 10}px`;
+  };
+
   return (
     <div
       dir="rtl"
-      className={`relative overflow-hidden w-full transition-all duration-200 select-none ${
-        isFooterSticky 
-          ? 'bg-[#0B0F17] border-t border-[#222734] shadow-[0_-4px_20px_rgba(0,0,0,0.7)]' 
-          : 'bg-[#0E131F] border border-[#222734] rounded-none my-1.5'
+      className={`relative overflow-hidden transition-all duration-300 w-full shadow-xl ${
+        isFooterSticky ? 'border-t' : 'border my-2'
       } ${className}`}
       style={{
-        maxHeight: isFooterSticky ? '64px' : '110px',
-        minHeight: isFooterSticky ? '54px' : '82px',
+        borderRadius: '0px', // حواف الإطار الخارجي مستقيمة كإعلانات جوجل
+        border: adData.hasBorder ? `${adData.borderWidth || 1.5}px solid ${adData.borderColor || '#FFC500'}` : '1px solid rgba(255,197,0,0.25)',
+        backgroundColor: adData.bgColor || '#0B0F17',
+        backgroundImage: adData.bgStyle === 'gradient' ? `linear-gradient(135deg, ${adData.bgColor || '#0B0F17'} 0%, #161D2B 100%)` : 'none',
+        boxShadow: adData.hasGlow ? `0 0 25px ${adData.borderColor || '#FFC500'}40` : '0 6px 20px rgba(0,0,0,0.8)',
+        minHeight: isFooterSticky ? '58px' : '95px',
+        maxHeight: isFooterSticky ? '72px' : '150px'
       }}
     >
-      {/* 1. ترويسة إعلانات جوجل العلوية (شريط AdChoices + زر الإغلاق ✕) */}
-      <div className="absolute top-0 left-0 right-0 z-30 px-2 py-0.5 flex items-center justify-between pointer-events-auto bg-gradient-to-b from-black/80 via-black/40 to-transparent">
-        {/* شارة إعلان جوجل الرسمية */}
-        <div className="flex items-center gap-1">
-          <span className="text-[8.5px] font-sans tracking-wide text-zinc-400 bg-black/80 px-1 py-0.2 rounded-none border border-zinc-700/50 flex items-center gap-0.5">
-            <Info size={8} className="text-zinc-400" /> إعلان YR
-          </span>
+      {/* محرك الحركات والتأثيرات الأصلي بكامل طاقته */}
+      <style>{`
+        @keyframes yrContinuousSlideRight {
+          0% { opacity: 0; transform: translateX(25px); }
+          15% { opacity: 1; transform: translateX(0); }
+          85% { opacity: 1; transform: translateX(0); }
+          100% { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes yrContinuousSlideUp {
+          0% { opacity: 0; transform: translateY(15px); }
+          15% { opacity: 1; transform: translateY(0); }
+          85% { opacity: 1; transform: translateY(0); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes yrPulseGlowActive {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255,197,0,0.3); }
+          50% { transform: scale(1.04); box-shadow: 0 0 25px rgba(255,197,0,0.8); }
+        }
+        @keyframes yrShineContinuous {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        @keyframes yrKenBurnsMotion {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.15) translate(-1%, -1%); }
+          100% { transform: scale(1); }
+        }
+        @keyframes yrAdProgress {
+          0% { transform: scaleX(0); }
+          100% { transform: scaleX(1); }
+        }
+
+        .yr-live-slide-right { animation: yrContinuousSlideRight 6s ease-in-out infinite; }
+        .yr-live-slide-up { animation: yrContinuousSlideUp 6s ease-in-out infinite; }
+        .yr-live-pulse { animation: yrPulseGlowActive 2.5s infinite ease-in-out; }
+        .yr-live-shimmer {
+          background-size: 200% 100% !important;
+          background-image: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.45) 50%, transparent 70%) !important;
+          animation: yrShineContinuous 2.8s infinite linear !important;
+        }
+        .yr-live-kenburns { animation: yrKenBurnsMotion 18s ease-in-out infinite alternate !important; }
+      `}</style>
+
+      {/* شريط التمرير الزمني العلوي */}
+      {adData.hasProgressBar && (
+        <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 z-30 overflow-hidden">
+          <div
+            style={{
+              backgroundColor: adData.progressBarColor || '#FFC500',
+              animation: `yrAdProgress ${adData.progressDuration || 8}s linear infinite`
+            }}
+            className="h-full w-full origin-left"
+          />
         </div>
+      )}
 
-        {/* زر إغلاق الإعلان ✕ بطريقة جوجل AdChoices */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            setIsDismissed(true);
-          }}
-          className="w-4 h-4 rounded-none bg-black/80 hover:bg-[#DC2626] text-zinc-300 hover:text-white flex items-center justify-center text-[9px] font-bold border border-zinc-700/60 transition-colors cursor-pointer"
-          title="إغلاق هذا الإعلان"
-        >
-          ✕
-        </button>
-      </div>
-
-      {/* 2. خلفية الوسائط (فيديو أو صورة بملء الإعلان مثل Google Display) */}
+      {/* وسائط الإعلان (صورة أو فيديو مع حركة KenBurns) */}
       {adData.mediaUrl && adData.layoutStyle !== 'text_only' && (
         <div className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center">
+          {adData.imageFit === 'contain' && adData.useBlurBackground && adData.mediaType === 'image' && (
+            <img
+              src={adData.mediaUrl}
+              alt="Blur fill"
+              className="absolute inset-0 w-full h-full object-cover blur-lg scale-125 opacity-50"
+            />
+          )}
+
           {adData.mediaType === 'video' ? (
             <video 
               src={adData.mediaUrl} 
@@ -119,63 +170,136 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           ) : (
             <img
               src={adData.mediaUrl}
-              alt="Google-style ad banner"
+              alt="Ad"
               style={{
                 objectFit: adData.imageFit || 'cover',
                 objectPosition: `${adData.imgPosX ?? 50}% ${adData.imgPosY ?? 50}%`,
+                transform: `scale(${(adData.imgScale ?? 100) / 100})`,
+                filter: `brightness(${adData.brightness ?? 100}%) contrast(${adData.contrast ?? 100}%)`,
+                imageRendering: 'crisp-edges'
               }}
-              className="w-full h-full object-cover relative z-10"
+              className={`w-full h-full relative z-10 ${adData.mediaMotion === 'kenBurns' ? 'yr-live-kenburns' : ''}`}
             />
           )}
 
-          {/* طبقة تظليل خفيفة جداً لقراءة النصوص دون حجب الصورة */}
+          {/* طبقة التباين الإعلانية لقراءة النصوص */}
           {(adData.showHeadline || adData.showDescription) && (
-            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/55 to-transparent z-10" />
+            <div
+              className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent z-10"
+              style={{ opacity: Math.max((adData.imgOverlay ?? 30) / 100, 0.4) }}
+            />
           )}
         </div>
       )}
 
-      {/* 3. شريط المحتوى والنصوص التفاعلية بنمط جوجل */}
-      <div className="relative z-20 h-full w-full px-3 py-2 flex items-center justify-between gap-3 min-h-[54px]">
-        {/* النصوص والعناوين (إذا اختار المستخدم تفعيلها) */}
-        <div className="flex-1 min-w-0 pr-1 space-y-0.5">
+      {/* شريط المحتوى الأصلي */}
+      <div className="relative z-20 p-3 sm:p-4 flex flex-col justify-between h-full min-h-[58px]">
+        {/* الجزء العلوي: الشارات + شارة YR Ads + زر الإغلاق ✕ */}
+        <div className="flex items-center justify-between gap-2 pb-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {adData.showBadge && adData.badgeText && (
+              <span
+                style={{
+                  backgroundColor: adData.badgeBgColor || 'rgba(255,197,0,0.25)',
+                  color: adData.badgeTextColor || '#FFC500',
+                  borderColor: adData.badgeTextColor || '#FFC500'
+                }}
+                className="inline-flex items-center px-2.5 py-0.5 rounded-md text-[9.5px] font-black border tracking-wide whitespace-nowrap shadow-md backdrop-blur-md"
+              >
+                {adData.badgeText}
+              </span>
+            )}
+            {adData.showVerifiedBadge && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#16A34A]/25 text-[#16A34A] border border-[#16A34A]/40 text-[9.5px] font-black whitespace-nowrap">
+                <ShieldCheck size={12} /> موثّق YR
+              </span>
+            )}
+          </div>
+
+          {/* شارة YR Ads + زر الإغلاق ✕ بنمط جوجل */}
+          <div className="flex items-center gap-1.5 pointer-events-auto">
+            <span className="text-[9px] text-white/70 font-mono bg-black/60 px-2 py-0.5 rounded border border-white/10 backdrop-blur-md flex items-center gap-1">
+              <ExternalLink size={10} /> YR Ads
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setIsDismissed(true);
+              }}
+              className="w-4 h-4 rounded-full bg-black/70 hover:bg-red-600 text-zinc-300 hover:text-white flex items-center justify-center text-[9px] font-bold border border-white/20 transition-all cursor-pointer"
+              title="إغلاق هذا الإعلان"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        {/* جسم الإعلان والنصوص البارزة كما كتبتها بالضبط */}
+        <div className="space-y-1 max-w-lg my-0.5">
           {adData.showHeadline && adData.headline && (
-            <h4 
-              style={{ color: adData.headlineColor || '#FFFFFF' }}
-              className="text-xs sm:text-sm font-bold text-white truncate leading-tight drop-shadow-md"
+            <h3
+              style={{
+                color: adData.headlineColor || '#FFFFFF',
+                fontFamily: adData.headlineFont || 'Cairo',
+                textShadow: '0 2px 12px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.9)'
+              }}
+              className={`leading-snug font-black text-xs sm:text-sm truncate ${
+                adData.headlineMotion === 'slideRight' ? 'yr-live-slide-right' :
+                adData.headlineMotion === 'slideUp' ? 'yr-live-slide-up' : ''
+              }`}
             >
               {adData.headline}
-            </h4>
+            </h3>
           )}
+
           {adData.showDescription && adData.description && (
-            <p 
-              style={{ color: adData.descColor || '#D1D5DB' }}
-              className="text-[10.5px] text-zinc-300 truncate font-normal leading-tight drop-shadow-sm"
+            <p
+              style={{
+                color: adData.descColor || '#E5E7EB',
+                textShadow: '0 1px 8px rgba(0,0,0,0.95)'
+              }}
+              className="text-[10px] sm:text-xs text-gray-200 line-clamp-1 leading-relaxed font-medium"
             >
               {adData.description}
             </p>
           )}
         </div>
 
-        {/* زر الإجراء (CTA Button) على طريقة جوجل: مستطيل، أنيق، غير دائري */}
-        {adData.showButton && (
-          <a
-            href={adData.targetUrl || '#'}
-            target={adData.actionType === 'link' ? '_blank' : '_self'}
-            rel="noopener noreferrer"
-            onClick={() => adsDatabaseService.recordClick(adData.id)}
-            style={{ 
-              backgroundColor: adData.btnBgColor || '#FFC500', 
-              color: adData.btnTextColor || '#000000' 
-            }}
-            className="shrink-0 px-3 py-1.5 rounded-none font-bold text-[11px] shadow-sm flex items-center gap-1 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
-          >
-            {adData.actionType === 'whatsapp' && <MessageCircle size={12} />}
-            {adData.actionType === 'call' && <Phone size={12} />}
-            <span>{adData.ctaText || 'زيارة'}</span>
-            <ArrowRight size={11} className="rtl:rotate-180" />
-          </a>
-        )}
+        {/* زر الإجراء الأصلي بكامل أشكاله وحركاته وتفاعلاته */}
+        <div className="pt-1.5 flex items-center justify-between border-t border-white/15 mt-0.5 flex-wrap gap-2">
+          {adData.showPricing && (
+            <div className="flex items-center gap-1.5 font-mono">
+              <span className="text-xs sm:text-sm font-black text-[#FFC500] drop-shadow">{adData.currentPrice} {adData.currency || 'YER'}</span>
+              {adData.oldPrice && <span className="text-[10px] text-gray-400 line-through">{adData.oldPrice}</span>}
+              {adData.discountPercentage && <span className="text-[9px] px-1.5 py-0.2 rounded bg-red-600 text-white font-bold">-{adData.discountPercentage}</span>}
+            </div>
+          )}
+
+          {adData.showButton && (
+            <a
+              href={adData.targetUrl || '#'}
+              target={adData.actionType === 'link' ? '_blank' : '_self'}
+              rel="noopener noreferrer"
+              onClick={() => adsDatabaseService.recordClick(adData.id)}
+              style={{
+                backgroundColor: adData.btnBgColor || '#FFC500',
+                color: adData.btnTextColor || '#000000',
+                borderRadius: getBtnBorderRadius()
+              }}
+              className={`px-3.5 py-1.5 font-black text-xs shadow-xl flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer ${
+                adData.btnAnimation === 'pulse' ? 'yr-live-pulse' :
+                adData.btnAnimation === 'shimmer' ? 'yr-live-shimmer' : ''
+              }`}
+            >
+              {adData.actionType === 'whatsapp' && <MessageCircle size={13} />}
+              {adData.actionType === 'call' && <Phone size={13} />}
+              <span>{adData.ctaText || 'اطلب الآن'}</span>
+              <ArrowRight size={12} className="rtl:rotate-180" />
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );
