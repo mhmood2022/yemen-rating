@@ -232,6 +232,7 @@ export const AdGeneratorStudio: React.FC = () => {
       setMediaType(isVid ? 'video' : 'image');
       const tempUrl = URL.createObjectURL(file);
       setMediaFileUrl(tempUrl);
+      setIsMediaUploading(true);
 
       try {
         const ext = file.name.split('.').pop() || (isVid ? 'mp4' : 'jpg');
@@ -246,10 +247,15 @@ export const AdGeneratorStudio: React.FC = () => {
             .getPublicUrl(fileName);
           if (publicUrl) {
             setMediaFileUrl(publicUrl);
+            console.log("Uploaded successfully to Supabase Storage:", publicUrl);
           }
+        } else {
+          console.error("Storage upload error:", uploadErr);
         }
       } catch (err) {
         console.error("Storage upload error:", err);
+      } finally {
+        setIsMediaUploading(false);
       }
     }
   };
