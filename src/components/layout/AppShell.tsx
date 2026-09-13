@@ -58,7 +58,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       {isMainHome && (
         <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-1 space-y-2.5">
           {/* إعلان الهيدر مستقل بحواف ناعمة وتنسيق فخم */}
-          <div className="w-full rounded-2xl overflow-hidden shadow-md">
+          <div className="w-full rounded-none overflow-hidden shadow-md">
             <AdBanner placementId="1" className="mb-0" />
           </div>
 
