@@ -51,19 +51,19 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             onNavigateNotifications={() => navigate('/notifications')}
             unreadNotificationsCount={3}
           />
-          {/* الوحدة الإعلانية المنزلقة في الصفحة الرئيسية */}
-          {isMainHome && (
-            <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pb-2 pt-0.5 yr-header-ad-slide overflow-hidden border-t border-[#1F2937]/40">
-              <AdBanner placementId="1" className="mb-0 shadow-lg" />
-            </div>
-          )}
-        </header>
+          </header>
       )}
 
-      {/* 2. شريط البحث المستقل بمسافة مريحة تحت الهيدر والإعلان */}
+      {/* 2. إعلان الهيدر وشريط البحث في الصفحة الرئيسية بترتيب مستقل وأنيق */}
       {isMainHome && (
-        <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pt-28 sm:pt-32 pb-1">
-          <div 
+        <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-1 space-y-2.5">
+          {/* إعلان الهيدر مستقل بحواف ناعمة وتنسيق فخم */}
+          <div className="w-full rounded-2xl overflow-hidden shadow-md">
+            <AdBanner placementId="1" className="mb-0" />
+          </div>
+
+          {/* شريط البحث ظاهر 100% بدون أي تداخل */}
+          <div
             onClick={() => setIsSearchModalOpen(true)}
             className="flex items-center bg-[#121215] border border-[#242428] hover:border-[#FFC500]/40 rounded-2xl p-2.5 px-3.5 shadow-lg cursor-pointer transition-all"
           >

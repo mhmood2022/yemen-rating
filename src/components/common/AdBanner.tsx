@@ -79,7 +79,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         isFooterSticky ? 'border-t' : 'border my-1.5'
       } ${className}`}
       style={{
-        borderRadius: '0px',
+        borderRadius: '12px',
         border: adData.hasBorder ? `${adData.borderWidth || 1}px solid ${adData.borderColor || '#FFC500'}` : '1px solid #1F2937',
         backgroundColor: adData.bgColor || '#0B0F17',
         backgroundImage: adData.bgStyle === 'gradient' ? `linear-gradient(135deg, ${adData.bgColor || '#0B0F17'} 0%, #161D2B 100%)` : 'none',
@@ -165,7 +165,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
               src={adData.mediaUrl}
               alt="Ad"
               style={{
-                objectFit: adData.imageFit || 'cover',
+                objectFit: 'cover',
                 objectPosition: `${adData.imgPosX ?? 50}% ${adData.imgPosY ?? 50}%`,
                 transform: `scale(${(adData.imgScale ?? 100) / 100})`,
                 filter: `brightness(${adData.brightness ?? 100}%) contrast(${adData.contrast ?? 100}%)`,
