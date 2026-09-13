@@ -301,7 +301,6 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       <AdBanner placementId="7" className="mb-1" />
 
       {/* 2. رأس الصفحة الرسمي */}
-      <AdBanner placementId="7" className="mb-3 rounded-2xl overflow-hidden shadow-lg" />
       <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
@@ -322,7 +321,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           onClick={() => setIsPostJobModalOpen(true)}
           className="h-10 px-3.5 rounded-xl bg-[#FFC500] hover:bg-[#e5b200] text-black font-black text-xs sm:text-sm whitespace-nowrap flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all shrink-0"
         >
-          <Plus size=16 className="stroke-[3]" />
+          <Plus size={16} className="stroke-[3]" />
           <span>نشر وظيفة</span>
         </button>
           
@@ -332,7 +331,7 @@ export const JobsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           aria-label="رجوع"
           className="w-10 h-10 rounded-xl bg-zinc-900 border border-[#FFC500]/40 text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center justify-center shrink-0 shadow-md"
         >
-          <ArrowRight size=20 className="stroke-[2.5]" />
+          <ArrowRight size={20} className="stroke-[2.5]" />
         </button>
         </div>
       </div>
