@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+homeview_code = '''import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Star, Gavel, ChevronLeft, Landmark, Briefcase, Smartphone,
@@ -576,3 +576,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
     </div>
   );
 };
+'''
+
+with open("src/components/home/HomeView.tsx", "w", encoding="utf-8") as f:
+    f.write(homeview_code)
+print("✅ تم بنجاح تحديث HomeView.tsx بنموذج Yelp الحقيقي وفصل كافة الأصناف بدون إيموجي وبأعلى معايير الاحترافية.")
