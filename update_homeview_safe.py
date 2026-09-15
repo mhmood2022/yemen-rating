@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+homeview_code = '''import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, MapPin, X, Star, Gavel, ChevronLeft, Landmark, Briefcase, Smartphone,
@@ -561,3 +561,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
     </div>
   );
 };
+'''
+
+with open("src/components/home/HomeView.tsx", "w", encoding="utf-8") as f:
+    f.write(homeview_code)
+print("✅ تم حفظ الملف بنجاح مع الحفاظ على جميع ارتباطات قاعدة البيانات والإعلانات.")
