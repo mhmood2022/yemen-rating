@@ -1,4 +1,60 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import os, re
+
+# استخراج مفاتيح Supabase من المشروع
+env_text = ""
+for p in [".env", ".env.local", "src/lib/supabase.ts"]:
+    if os.path.exists(p):
+        with open(p, "r", encoding="utf-8", errors="ignore") as f:
+            env_text += "\n" + f.read()
+
+url_m = re.search(r'(https://[a-zA-Z0-9-]+\.supabase\.co)', env_text)
+key_m = re.search(r'(eyJ[a-zA-Z0-9_\-\.]+)', env_text)
+
+supa_url = url_m.group(1) if url_m else "https://wkdqeghotlipciqiytuj.supabase.co"
+supa_key = key_m.group(1) if key_m else ""
+
+# ==============================================================================
+# 1. إنشاء نقطة خادم Vercel Edge Serverless الذكية المجمعة
+# ==============================================================================
+os.makedirs("api", exist_ok=True)
+api_code = f'''export default async function handler(req, res) {{
+  // كاش سحابي ذكي يتحدث تلقائياً كل 30 ثانية دون إعادة بناء للموقع
+  res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
+
+  const headers = {{
+    'apikey': '{supa_key}',
+    'Authorization': 'Bearer {supa_key}'
+  }};
+
+  try {{
+    const [bRes, bnRes, jRes, pRes] = await Promise.allSettled([
+      fetch('{supa_url}/rest/v1/businesses?select=*&order=created_at.desc&limit=20', {{ headers }}).then(r => r.json()),
+      fetch('{supa_url}/rest/v1/banks?select=*&limit=6', {{ headers }}).then(r => r.json()),
+      fetch('{supa_url}/rest/v1/jobs?select=*&order=created_at.desc&limit=6', {{ headers }}).then(r => r.json()),
+      fetch('{supa_url}/rest/v1/properties?select=*&order=created_at.desc&limit=6', {{ headers }}).then(r => r.json())
+    ]);
+
+    return res.status(200).json({{
+      businesses: bRes.status === 'fulfilled' && Array.isArray(bRes.value) ? bRes.value : [],
+      banks: bnRes.status === 'fulfilled' && Array.isArray(bnRes.value) ? bnRes.value : [],
+      jobs: jRes.status === 'fulfilled' && Array.isArray(jRes.value) ? jRes.value : [],
+      properties: pRes.status === 'fulfilled' && Array.isArray(pRes.value) ? pRes.value : [],
+      timestamp: Date.now()
+    }});
+  }} catch (error) {{
+    return res.status(500).json({{ error: 'Failed to aggregate feed' }});
+  }}
+}}
+'''
+
+with open("api/home-feed.js", "w", encoding="utf-8") as f:
+    f.write(api_code)
+print("✅ 1. تم إنشاء خادم Vercel Edge الموحد api/home-feed.js بنجاح.")
+
+# ==============================================================================
+# 2. تحديث HomeView.tsx بهياكل التحميل (Skeleton) والربط الذاتي الدائم
+# ==============================================================================
+homeview_code = '''import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, MapPin, Star, Eye, Clock, ChevronLeft, Building2, Gavel,
@@ -601,3 +657,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
     </div>
   );
 };
+'''
+
+with open("src/components/home/HomeView.tsx", "w", encoding="utf-8") as f:
+    f.write(homeview_code)
+print("✅ 2. تم تحديث HomeView.tsx بهياكل التحميل والكاش الذاتي الدائم.")
