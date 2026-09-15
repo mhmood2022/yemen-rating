@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+homeview_code = '''import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, MapPin, Star, Eye, Clock, ChevronLeft, Building2, Gavel,
@@ -698,3 +698,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
     </div>
   );
 };
+'''
+
+with open("src/components/home/HomeView.tsx", "w", encoding="utf-8") as f:
+    f.write(homeview_code)
+print("✅ تم بنجاح تطبيق كافة أقسام الصورة المرجعية (آخر ما أضيف 3، الأعلى تقييماً 2، الأكثر زيارة، العقارات 2، المزادات 2، والوظائف).")
