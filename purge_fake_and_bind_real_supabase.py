@@ -1,4 +1,20 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import re
+
+# 1. تفريغ البيانات الوهمية القديمة من mockData.ts
+with open("src/data/mockData.ts", "r", encoding="utf-8") as f:
+    mock_content = f.read()
+
+# مسح أي ذكر لبلقيس أو رويال أو المتوكل
+mock_content = re.sub(r"\{[^{}]*name:\s*'مطعم ومأكولات رويال ستار السياحي'[^{}]*\},?", "", mock_content)
+mock_content = re.sub(r"\{[^{}]*name:\s*'فندق بلقيس الملكي السياحي'[^{}]*\},?", "", mock_content)
+mock_content = re.sub(r"\{[^{}]*name:\s*'مستشفى الدكتور عبدالقادر المتوكل التخصصي'[^{}]*\},?", "", mock_content)
+
+with open("src/data/mockData.ts", "w", encoding="utf-8") as f:
+    f.write(mock_content)
+print("✅ 1. تم تفريغ وتطهير mockData.ts من كافة المنشآت الوهمية.")
+
+# 2. تحديث HomeView.tsx لتقرأ مباشرة من Supabase الحقيقي
+homeview_real_code = '''import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search, MapPin, Star, Eye, Clock, ChevronLeft, Building2, Gavel,
@@ -541,3 +557,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
     </div>
   );
 };
+'''
+
+with open("src/components/home/HomeView.tsx", "w", encoding="utf-8") as f:
+    f.write(homeview_real_code)
+print("✅ 2. تم تحديث HomeView.tsx لتقرأ من Supabase الحقيقي مباشرة بدون أي بيانات وهمية.")
