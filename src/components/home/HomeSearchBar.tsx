@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useTransition } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -7,15 +7,38 @@ import {
   X,
   Building2,
   Landmark,
-  Building,
-  Briefcase,
-  Gavel,
   ChevronLeft,
   RefreshCw,
-  ExternalLink,
-  Layers
+  Layers,
+  ArrowLeft
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { YRSelect } from '../common/YRSelect';
+
+const YEMEN_GOVERNORATES = [
+  { value: 'all', label: 'كل المحافظات' },
+  { value: 'صنعاء', label: 'صنعاء' },
+  { value: 'عدن', label: 'عدن' },
+  { value: 'تعز', label: 'تعز' },
+  { value: 'حضرموت', label: 'حضرموت' },
+  { value: 'الحديدة', label: 'الحديدة' },
+  { value: 'إب', label: 'إب' },
+  { value: 'ذمار', label: 'ذمار' },
+  { value: 'مأرب', label: 'مأرب' },
+  { value: 'صعدة', label: 'صعدة' },
+  { value: 'حجة', label: 'حجة' },
+  { value: 'البيضاء', label: 'البيضاء' },
+  { value: 'لحج', label: 'لحج' },
+  { value: 'أبين', label: 'أبين' },
+  { value: 'المهرة', label: 'المهرة' },
+  { value: 'شبوة', label: 'شبوة' },
+  { value: 'عمران', label: 'عمران' },
+  { value: 'الضالع', label: 'الضالع' },
+  { value: 'ريمة', label: 'ريمة' },
+  { value: 'المحويت', label: 'المحويت' },
+  { value: 'سقطرى', label: 'أرخبيل سقطرى' },
+  { value: 'الجوف', label: 'الجوف' }
+];
 
 interface HomeSearchBarProps {
   officialCategories?: any[];
@@ -29,39 +52,43 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
   className = ''
 }) => {
   const navigate = useNavigate();
-  const [query, setQuery] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedGov, setSelectedGov] = useState('all');
   const [isSearching, setIsSearching] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [sponsorAd, setSponsorAd] = useState<any>(null);
 
+  // إعلان الراعي الحقيقي من Supabase فقط
+  const [realSponsorAd, setRealSponsorAd] = useState<any | null>(null);
+
+  // نتائج البحث
   const [matchedCategories, setMatchedCategories] = useState<any[]>([]);
   const [matchedBusinesses, setMatchedBusinesses] = useState<any[]>([]);
   const [matchedBanks, setMatchedBanks] = useState<any[]>([]);
-  const [matchedProperties, setMatchedProperties] = useState<any[]>([]);
-  const [matchedJobs, setMatchedJobs] = useState<any[]>([]);
-  const [matchedAuctions, setMatchedAuctions] = useState<any[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // جلب إعلان الراعي الرسمي
+  // 1. جلب إعلان الراعي الحقيقي فقط بدون أي معلومات وهمية
   useEffect(() => {
-    async function fetchSponsor() {
+    async function loadRealSponsor() {
       try {
         const { data } = await supabase
           .from('ads')
           .select('*')
-          .eq('status', 'published')
-          .order('created_at', { ascending: false })
+          .or("ad_type.eq.sponsor,placements.cs.[\"home_top\"],status.eq.published")
           .limit(1)
           .maybeSingle();
 
-        if (data) setSponsorAd(data);
+        if (data && data.advertiser_name) {
+          setRealSponsorAd(data);
+        } else {
+          setRealSponsorAd(null);
+        }
       } catch (err) {
-        // الراعي الافتراضي الوطني
+        setRealSponsorAd(null);
       }
     }
-    fetchSponsor();
+    loadRealSponsor();
   }, []);
 
   // إغلاق القائمة عند النقر خارجها
@@ -75,75 +102,59 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // محرك البحث اللحظي الشامل في Supabase
-  const executeSearch = async (searchTerm: string) => {
-    const clean = searchTerm.trim();
+  // 2. محرك بحث حي في قاعدة بيانات Supabase (Yelp Search Engine)
+  const performLiveSearch = async (term: string, gov: string) => {
+    const clean = term.trim();
     if (!clean) {
       setMatchedCategories([]);
       setMatchedBusinesses([]);
       setMatchedBanks([]);
-      setMatchedProperties([]);
-      setMatchedJobs([]);
-      setMatchedAuctions([]);
       setIsSearching(false);
       return;
     }
 
     setIsSearching(true);
-
-    // 1. مطابقة البوابات والتصنيفات (شاليهات، مستشفيات، حمامات بخار، معارض سيارات، عيادات...)
     const lower = clean.toLowerCase();
+
+    // أ) مطابقة البوابات والتصنيفات الوطنية (شاليهات، مستشفيات، عيادات، حمامات بخار، إلخ)
     const catMatches = officialCategories.filter((cat) => {
-      const nameMatch = cat.name.toLowerCase().includes(lower);
-      const idMatch = cat.id.toLowerCase().includes(lower);
-      return nameMatch || idMatch;
+      const name = (cat.name || '').toLowerCase();
+      const id = (cat.id || '').toLowerCase();
+      return name.includes(lower) || id.includes(lower);
     });
     setMatchedCategories(catMatches.slice(0, 4));
 
-    // 2. البحث الحي في جداول Supabase في اللحظة ذاتها
+    // ب) البحث الحقيقي في Supabase في جدول المنشآت والمحلات businesses
     try {
-      const [bRes, bnRes, pRes, jRes, aRes] = await Promise.allSettled([
-        // البحث في المنشآت والمحلات والشركات
-        supabase
-          .from('businesses')
-          .select('id, slug, name, category, city')
-          .or(`name.ilike.%${clean}%,category.ilike.%${clean}%,city.ilike.%${clean}%`)
-          .limit(6),
+      let bizQuery = supabase
+        .from('businesses')
+        .select('id, slug, name, category, city')
+        .or(`name.ilike.%${clean}%,category.ilike.%${clean}%`)
+        .limit(8);
 
-        // البحث في البنوك والمصارف
-        supabase
-          .from('banks')
-          .select('id, slug, name, commercial_name')
-          .or(`name.ilike.%${clean}%,commercial_name.ilike.%${clean}%`)
-          .limit(3),
+      if (gov && gov !== 'all') {
+        bizQuery = bizQuery.ilike('city', `%${gov}%`);
+      }
 
-        // البحث في العقارات
-        supabase
-          .from('properties')
-          .select('id, title, property_type, deal_type, city')
-          .or(`title.ilike.%${clean}%,property_type.ilike.%${clean}%,city.ilike.%${clean}%`)
-          .limit(3),
+      let bankQuery = supabase
+        .from('banks')
+        .select('id, slug, name, commercial_name')
+        .or(`name.ilike.%${clean}%,commercial_name.ilike.%${clean}%`)
+        .limit(4);
 
-        // البحث في الوظائف
-        supabase
-          .from('jobs')
-          .select('id, title, sector, city, work_type')
-          .or(`title.ilike.%${clean}%,sector.ilike.%${clean}%,city.ilike.%${clean}%`)
-          .limit(3),
+      const [bizRes, bankRes] = await Promise.allSettled([bizQuery, bankQuery]);
 
-        // البحث في المزادات
-        supabase
-          .from('auctions')
-          .select('id, title, category, city, sale_type')
-          .or(`title.ilike.%${clean}%,category.ilike.%${clean}%,city.ilike.%${clean}%`)
-          .limit(3)
-      ]);
+      if (bizRes.status === 'fulfilled' && bizRes.value.data) {
+        setMatchedBusinesses(bizRes.value.data);
+      } else {
+        setMatchedBusinesses([]);
+      }
 
-      if (bRes.status === 'fulfilled' && bRes.value.data) setMatchedBusinesses(bRes.value.data);
-      if (bnRes.status === 'fulfilled' && bnRes.value.data) setMatchedBanks(bnRes.value.data);
-      if (pRes.status === 'fulfilled' && pRes.value.data) setMatchedProperties(pRes.value.data);
-      if (jRes.status === 'fulfilled' && jRes.value.data) setMatchedJobs(jRes.value.data);
-      if (aRes.status === 'fulfilled' && aRes.value.data) setMatchedAuctions(aRes.value.data);
+      if (bankRes.status === 'fulfilled' && bankRes.value.data && (gov === 'all' || gov === 'صنعاء' || gov === 'عدن')) {
+        setMatchedBanks(bankRes.value.data);
+      } else {
+        setMatchedBanks([]);
+      }
 
       setIsOpen(true);
     } catch (err) {
@@ -153,9 +164,9 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTermChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
-    setQuery(val);
+    setSearchTerm(val);
     if (!val.trim()) {
       setIsOpen(false);
       return;
@@ -163,97 +174,119 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
 
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
-      executeSearch(val);
+      performLiveSearch(val, selectedGov);
     }, 250);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && query.trim()) {
-      setIsOpen(false);
-      navigate(`/directory?search=${encodeURIComponent(query.trim())}`);
+  const handleGovChange = (gov: string) => {
+    setSelectedGov(gov);
+    if (searchTerm.trim()) {
+      performLiveSearch(searchTerm, gov);
     }
   };
 
-  const totalResults =
-    matchedCategories.length +
-    matchedBusinesses.length +
-    matchedBanks.length +
-    matchedProperties.length +
-    matchedJobs.length +
-    matchedAuctions.length;
+  // زر البحث الرئيسي (الانتقال للدليل العام بفلتر النشاط والمحافظة)
+  const handleFullSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsOpen(false);
+    const params = new URLSearchParams();
+    if (searchTerm.trim()) params.append('search', searchTerm.trim());
+    if (selectedGov && selectedGov !== 'all') params.append('city', selectedGov);
+    navigate(`/directory?${params.toString()}`);
+  };
+
+  const totalMatches = matchedCategories.length + matchedBusinesses.length + matchedBanks.length;
 
   return (
     <div ref={containerRef} className={`relative z-40 font-['Cairo',sans-serif] ${className}`}>
-      {/* الحاوية المدمجة: شريط الراعي الرسمي + شريط البحث الوطني */}
-      <div className="rounded-2xl bg-[#0D1527] border border-slate-800 hover:border-[#F5C400]/60 transition-all shadow-2xl overflow-hidden">
-        {/* 🌟 إعلان الراعي الرسمي المدمج داخل رأس شريط البحث */}
-        <div className="bg-[#060A13] border-b border-slate-800 px-3.5 py-1.5 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="px-2 py-0.5 rounded-md bg-[#F5C400]/15 text-[#F5C400] text-[10px] font-black border border-[#F5C400]/30 flex items-center gap-1 shrink-0">
-              <Sparkles size={11} />
-              <span>الراعي الرسمي</span>
-            </span>
-            <span className="text-white text-xs font-bold truncate">
-              {sponsorAd?.advertiser_name || 'بنك الكريمي للتمويل الأصغر الإسلامي'}
-            </span>
+      <div className="rounded-2xl bg-[#0D1527] border border-slate-800 hover:border-[#F5C400]/50 transition-all shadow-2xl overflow-hidden">
+        
+        {/* 🌟 إعلان الراعي الحقيقي (يظهر فقط إذا كان موجوداً في Supabase بدون أي نصوص من الرأس) */}
+        {realSponsorAd && (
+          <div className="bg-[#060A13] border-b border-slate-800 px-3.5 py-1.5 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="px-2 py-0.5 rounded-md bg-[#F5C400]/15 text-[#F5C400] text-[10px] font-black border border-[#F5C400]/30 flex items-center gap-1 shrink-0">
+                <Sparkles size={11} />
+                <span>الراعي الرسمي</span>
+              </span>
+              <span className="text-white text-xs font-bold truncate">
+                {realSponsorAd.advertiser_name}
+              </span>
+            </div>
+
+            {realSponsorAd.title && (
+              <span className="text-[10px] text-[#F5C400] font-bold shrink-0 truncate max-w-[180px]">
+                {realSponsorAd.title}
+              </span>
+            )}
           </div>
+        )}
 
-          <span className="text-[10px] text-[#F5C400] font-bold shrink-0">
-            {sponsorAd?.title || 'شريك التمكين المالي والتنمية الوطنية'}
-          </span>
-        </div>
-
-        {/* حقل البحث الرئيسي */}
-        <div className="flex items-center justify-between p-2.5 px-3.5 gap-2.5">
-          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+        {/* 🔍 شريط بحث يلب المزدوج (ماذا تبحث عنه + المحافظة + زر البحث) */}
+        <form onSubmit={handleFullSearchSubmit} className="p-2 sm:p-2.5 flex flex-col md:flex-row items-center gap-2">
+          
+          {/* الحقل 1: ماذا تبحث عنه؟ (Find) */}
+          <div className="flex items-center gap-2 bg-[#060A13] border border-slate-800 rounded-xl px-3 h-11 flex-1 w-full focus-within:border-[#F5C400]/60 transition-colors">
             {isSearching ? (
               <RefreshCw size={17} className="animate-spin text-[#F5C400] shrink-0" />
             ) : (
-              <Search size={18} className="text-[#F5C400] shrink-0" />
+              <Search size={17} className="text-[#F5C400] shrink-0" />
             )}
-
             <input
               type="text"
-              value={query}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              onFocus={() => query.trim() && setIsOpen(true)}
-              placeholder="ابحث عن مستشفى، شاليه، بنك، معرض سيارات، حمام بخار، محل..."
-              className="w-full bg-transparent border-none outline-none text-xs sm:text-sm text-white placeholder-slate-400"
+              value={searchTerm}
+              onChange={handleTermChange}
+              onFocus={() => searchTerm.trim() && setIsOpen(true)}
+              placeholder="عن ماذا تبحث؟ (شاليهات، مستشفيات، بنوك، معارض سيارات، حمامات بخار...)"
+              className="w-full bg-transparent border-none outline-none text-xs sm:text-sm text-white placeholder-slate-400 font-medium"
             />
-
-            {query && (
+            {searchTerm && (
               <button
                 type="button"
                 onClick={() => {
-                  setQuery('');
+                  setSearchTerm('');
                   setIsOpen(false);
                 }}
-                className="p-1 rounded-full text-slate-400 hover:text-white transition-colors shrink-0"
+                className="p-1 rounded-full text-slate-400 hover:text-white shrink-0"
               >
                 <X size={14} />
               </button>
             )}
           </div>
 
-          <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#060A13] border border-slate-800 text-[11px] text-slate-300 shrink-0 select-none">
-            <MapPin size={12} className="text-[#F5C400]" />
-            <span>كل اليمن</span>
+          {/* الحقل 2: المحافظة / المدينة (Near) */}
+          <div className="w-full md:w-56 shrink-0">
+            <YRSelect
+              value={selectedGov}
+              options={YEMEN_GOVERNORATES}
+              onChange={handleGovChange}
+              placeholder="كل المحافظات"
+            />
           </div>
-        </div>
+
+          {/* زر البحث الرئيسي على طريقة Yelp */}
+          <button
+            type="submit"
+            className="w-full md:w-auto h-10 sm:h-10 px-5 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black text-xs rounded-xl flex items-center justify-center gap-1.5 shrink-0 transition-all shadow-md active:scale-95 cursor-pointer"
+          >
+            <span>بحث</span>
+            <ArrowLeft size={14} />
+          </button>
+        </form>
       </div>
 
-      {/* 📋 القائمة المنسدلة التفاعلية العائمة لجميع المنشآت والخدمات */}
-      {isOpen && query.trim().length > 0 && (
+      {/* 📋 القائمة المنبثقة الذكية للنتائج اللحظية من Supabase */}
+      {isOpen && searchTerm.trim().length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-[#0D1527] border border-slate-800 rounded-2xl shadow-2xl p-2.5 z-50 max-h-96 overflow-y-auto space-y-2">
-          {totalResults === 0 && !isSearching ? (
+          {totalMatches === 0 && !isSearching ? (
             <div className="py-6 text-center text-xs text-slate-400">
-              لم يتم العثور على منشآت أو خدمات مطابقة لـ{' '}
-              <span className="text-[#F5C400] font-bold">"{query}"</span>
+              لا توجد منشآت مطابقة لـ{' '}
+              <span className="text-[#F5C400] font-bold">"{searchTerm}"</span>
+              {selectedGov !== 'all' && ` في محافظة ${selectedGov}`}
             </div>
           ) : (
             <>
-              {/* 1. البوابات والتصنيفات المتخصصة (مستشفيات، شاليهات، حمامات بخار، إلخ) */}
+              {/* 1. البوابات والتصنيفات المتخصصة */}
               {matchedCategories.length > 0 && (
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
@@ -280,7 +313,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 </div>
               )}
 
-              {/* 2. المنشآت والمحلات والشركات */}
+              {/* 2. المنشآت والمحلات الحقيقية من Supabase */}
               {matchedBusinesses.length > 0 && (
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
@@ -311,7 +344,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 </div>
               )}
 
-              {/* 3. البنوك والمصارف */}
+              {/* 3. البنوك والمصارف الحقيقية */}
               {matchedBanks.length > 0 && (
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
@@ -340,109 +373,13 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 </div>
               )}
 
-              {/* 4. العقارات */}
-              {matchedProperties.length > 0 && (
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
-                    العقارات
-                  </span>
-                  {matchedProperties.map((prop) => (
-                    <div
-                      key={prop.id}
-                      onClick={() => {
-                        setIsOpen(false);
-                        navigate(`/properties/${prop.id}`);
-                      }}
-                      className="flex items-center justify-between p-2 rounded-xl hover:bg-[#060A13] cursor-pointer transition-colors group"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
-                          عقار {prop.deal_type || ''}
-                        </span>
-                        <span className="text-xs font-bold text-white group-hover:text-[#F5C400] truncate">
-                          {prop.title}
-                        </span>
-                      </div>
-                      {prop.city && (
-                        <span className="text-[11px] text-slate-400 shrink-0">{prop.city}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* 5. الوظائف */}
-              {matchedJobs.length > 0 && (
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
-                    الوظائف الشاغرة
-                  </span>
-                  {matchedJobs.map((job) => (
-                    <div
-                      key={job.id}
-                      onClick={() => {
-                        setIsOpen(false);
-                        navigate(`/jobs/${job.id}`);
-                      }}
-                      className="flex items-center justify-between p-2 rounded-xl hover:bg-[#060A13] cursor-pointer transition-colors group"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-purple-500/20 text-purple-400 border border-purple-500/30 shrink-0">
-                          وظيفة
-                        </span>
-                        <span className="text-xs font-bold text-white group-hover:text-[#F5C400] truncate">
-                          {job.title}
-                        </span>
-                      </div>
-                      {job.city && (
-                        <span className="text-[11px] text-slate-400 shrink-0">{job.city}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* 6. المزادات */}
-              {matchedAuctions.length > 0 && (
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
-                    المزادات
-                  </span>
-                  {matchedAuctions.map((auc) => (
-                    <div
-                      key={auc.id}
-                      onClick={() => {
-                        setIsOpen(false);
-                        navigate(`/auctions/${auc.id}`);
-                      }}
-                      className="flex items-center justify-between p-2 rounded-xl hover:bg-[#060A13] cursor-pointer transition-colors group"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
-                          مزاد
-                        </span>
-                        <span className="text-xs font-bold text-white group-hover:text-[#F5C400] truncate">
-                          {auc.title}
-                        </span>
-                      </div>
-                      {auc.city && (
-                        <span className="text-[11px] text-slate-400 shrink-0">{auc.city}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* خيار استعراض كافة النتائج في الدليل العام */}
+              {/* رابط الانتقال الشامل لنتائج الدليل */}
               <div
-                onClick={() => {
-                  setIsOpen(false);
-                  navigate(`/directory?search=${encodeURIComponent(query.trim())}`);
-                }}
-                className="mt-2 pt-2 border-t border-slate-800 p-2 rounded-xl bg-[#060A13] hover:bg-[#F5C400]/10 text-center cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+                onClick={() => handleFullSearchSubmit()}
+                className="mt-2 pt-2 border-t border-slate-800 p-2.5 rounded-xl bg-[#060A13] hover:bg-[#F5C400]/10 text-center cursor-pointer transition-colors flex items-center justify-center gap-2"
               >
                 <span className="text-xs font-bold text-[#F5C400]">
-                  استعراض كافة المنشآت والنتائج في الدليل الوطني لـ "{query}"
+                  استعراض كافة نتائج "{searchTerm}" في الدليل العام
                 </span>
                 <ChevronLeft size={14} className="text-[#F5C400]" />
               </div>
