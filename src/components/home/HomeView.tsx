@@ -10,6 +10,7 @@ import { supabase } from '../../lib/supabase';
 import { BusinessItem } from '../../data/mockData';
 import { YRBadge, BadgeType } from '../common/YRBadge';
 import { AdBanner } from '../common/AdBanner';
+import { HomeSearchBar } from './HomeSearchBar';
 
 interface HomeViewProps {
   onSelectCategory: (slug: string) => void;
@@ -171,25 +172,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
   return (
     <div dir="rtl" className="space-y-5 pt-1 max-w-5xl mx-auto px-3 sm:px-4 font-['Cairo',sans-serif] text-white">
 
-      {/* 🔍 شريط البحث الذكي الوطني */}
-      <div className="relative">
-        <div className="flex items-center justify-between p-2.5 px-3.5 rounded-2xl bg-[#0D1322] border border-zinc-700/60 hover:border-[#FFC500]/60 transition-all shadow-lg group">
-          <div className="flex items-center gap-2.5 text-zinc-400 group-hover:text-zinc-200 flex-1">
-            <Search size={17} className="text-[#FFC500]" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="ابحث في قاعدة بيانات يمن ريتنغ المعتمدة..."
-              className="w-full bg-transparent border-none outline-none text-xs sm:text-sm text-white placeholder-zinc-500"
-            />
-          </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-black/40 border border-white/10 text-[11px] text-zinc-300 shrink-0">
-            <MapPin size={12} className="text-[#FFC500]" />
-            <span>كل اليمن</span>
-          </div>
-        </div>
-      </div>
+      {/* 🔍 شريط البحث الذكي الوطني المدمج مع إعلان الراعي الرسمي */}
+      <HomeSearchBar
+        officialCategories={officialCategories}
+        onSelectCategory={onSelectCategory}
+      />
 
       {/* 🏛️ بوابات التصنيفات الـ 33 المعتمدة */}
       <div className="space-y-2">
