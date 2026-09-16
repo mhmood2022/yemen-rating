@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Gavel, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Gavel, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X, ImagePlus, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { adminAuctionsService } from '../../services/adminService';
 import { AdBanner } from '../common/AdBanner';
@@ -43,10 +43,10 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'auction' | 'fixed_price'>('all');
   const [cityFilter, setCityFilter] = useState('all');
 
-  // إعدادات العمولات الحية من لوحة التحكم
+  // عمولات لوحة التحكم
   const [commissionSettings, setCommissionSettings] = useState<any>(null);
 
-  // نافذة أضف مزاد / معروض
+  // نافذة أضف معروض
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [saleType, setSaleType] = useState<'auction' | 'fixed_price'>('auction');
@@ -56,9 +56,12 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [currency, setCurrency] = useState('YER');
   const [description, setDescription] = useState('');
   const [sellerPhone, setSellerPhone] = useState('');
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [consentListing, setConsentListing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const fetchAuctions = async () => {
     try {
@@ -84,6 +87,44 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     }).catch(() => {});
   }, []);
 
+  // فحص تسجيل الدخول قبل فتح النافذة
+  const handleOpenAddModal = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setToastMessage('يجب تسجيل الدخول إلى حسابك أولاً لتتمكن من إضافة معروض جديد');
+      setTimeout(() => setToastMessage(null), 4000);
+      return;
+    }
+    setIsAddModalOpen(true);
+  };
+
+  // رفع من 1 إلى 6 صور من الهاتف
+  const handleImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const remaining = 6 - uploadedImages.length;
+      if (remaining <= 0) {
+        setToastMessage('الحد الأقصى المسموح به هو 6 صور فقط');
+        setTimeout(() => setToastMessage(null), 3000);
+        return;
+      }
+      const taken = Array.from(files).slice(0, remaining);
+      taken.forEach((file) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') {
+            setUploadedImages((prev) => (prev.length < 6 ? [...prev, reader.result as string] : prev));
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setUploadedImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const numeric = e.target.value.replace(/\D/g, '').slice(0, 9);
     setSellerPhone(numeric);
@@ -99,6 +140,13 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       return;
     }
 
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setToastMessage('يجب تسجيل الدخول أولاً لإرسال المعروض');
+      setTimeout(() => setToastMessage(null), 3500);
+      return;
+    }
+
     try {
       setSubmitting(true);
       const priceNum = parseFloat(startingPrice) || 0;
@@ -109,6 +157,9 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         city: city,
         currency: currency,
         description: description.trim(),
+        seller_phone: sellerPhone,
+        seller_id: session.user.id,
+        images: uploadedImages,
         status: 'active',
         created_at: new Date().toISOString()
       };
@@ -128,12 +179,13 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       setStartingPrice('');
       setDescription('');
       setSellerPhone('');
+      setUploadedImages([]);
       setConsentListing(false);
-      setToastMessage('تم نشر المعروض بنجاح وتوثيق شروط العمولة والوساطة');
+      setToastMessage('تم نشر المعروض بنجاح وتوثيق الصور وشروط العمولة');
       setTimeout(() => setToastMessage(null), 4000);
       fetchAuctions();
     } catch (err: any) {
-      setToastMessage(err.message || 'تم استلام طلبك للمراجعة');
+      setToastMessage(err.message || 'حدث خطأ أثناء الإرسال');
       setTimeout(() => setToastMessage(null), 4000);
     } finally {
       setSubmitting(false);
@@ -147,7 +199,6 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     return matchTab && matchCity;
   });
 
-  // النص الديناميكي للعمولة القابل للتغيير من لوحة الإدارة
   const fixedCommAmount = commissionSettings?.default_fixed_commission_amount || 20000;
   const fixedCommCurr = commissionSettings?.default_fixed_commission_currency || 'ريال يمني';
   const auctionCommRate = commissionSettings?.default_auction_commission_rate || 5;
@@ -163,7 +214,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* الرأس مع زر أضف مزاد */}
+      {/* الرأس مع زر أضف معروض المحمي بتسجيل الدخول */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
         <div className="flex items-center gap-2.5">
           {onBack && (
@@ -182,7 +233,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={handleOpenAddModal}
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs transition-colors shadow-md"
           >
             <Plus size={15} />
@@ -200,7 +251,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* شريط الوساطة الإلزامي المعتمد والمتوافق مع لوحة التحكم */}
+      {/* شريط الوساطة الإلزامي المعتمد من لوحة التحكم */}
       <div className="bg-[#0D1527] border border-[#16A34A]/40 rounded-2xl p-3 flex items-center gap-2.5 text-xs text-slate-200">
         <ShieldCheck className="w-5 h-5 text-[#16A34A] shrink-0" />
         <span>تخضع جميع المزادات والبيوع لوساطة وضمان يمن ريتغ الرسمية لحماية حقوق البائع والمشتري مع تثبيت وتوثيق عمولة المنصة المعتمدة.</span>
@@ -245,7 +296,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* المحتوى */}
+      {/* شبكة المزادات الحقيقية */}
       {loading ? (
         <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
           <div className="w-8 h-8 rounded-full border-2 border-[#F5C400] border-t-transparent animate-spin" />
@@ -265,7 +316,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* نافذة أضف معروض مع الإقرار الأخضر الشفاف كما في الأصل */}
+      {/* نافذة أضف معروض مع رفع 1 إلى 6 صور والإقرار الأخضر الشفاف */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-[#0D1527] border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Cairo'] text-white shadow-2xl">
@@ -315,12 +366,62 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 />
               </div>
 
+              {/* قسم رفع الصور من الهاتف (من 1 إلى 6 صور) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-slate-300 font-bold flex items-center gap-1">
+                    <ImagePlus size={14} className="text-[#F5C400]" />
+                    <span>صور المعروض من الهاتف (من 1 إلى 6 صور)</span>
+                  </label>
+                  <span className="text-[10px] text-[#F5C400] font-bold">
+                    {uploadedImages.length} من 6
+                  </span>
+                </div>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  ref={fileInputRef}
+                  onChange={handleImagesUpload}
+                  className="hidden"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadedImages.length >= 6}
+                  className="w-full py-2.5 border border-dashed border-slate-700 hover:border-[#F5C400] rounded-xl bg-[#060A13] text-slate-300 hover:text-white flex items-center justify-center gap-2 text-xs font-bold transition-all disabled:opacity-50"
+                >
+                  <ImagePlus size={16} className="text-[#F5C400]" />
+                  <span>{uploadedImages.length >= 6 ? 'تم بلوغ الحد الأقصى (6 صور)' : 'اضغط لاختيار الصور من استوديو الجوال'}</span>
+                </button>
+
+                {/* مصغرات الصور المرفوعة */}
+                {uploadedImages.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {uploadedImages.map((img, idx) => (
+                      <div key={idx} className="relative h-20 rounded-lg overflow-hidden border border-slate-800 bg-[#060A13]">
+                        <img src={img} alt={`preview-${idx}`} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(idx)}
+                          className="absolute top-1 left-1 p-1 rounded-full bg-red-600/80 hover:bg-red-600 text-white transition-colors"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-slate-300 mb-1">المدينة أو المحافظة *</label>
                   <YRSelect
                     value={city}
-                    options={YEMEN_GOVERNORATES.filter(g => g.value !== 'all')}
+                    options={YEMEN_GOVERNORATES.filter((g) => g.value !== 'all')}
                     onChange={(val) => setCity(val)}
                   />
                 </div>

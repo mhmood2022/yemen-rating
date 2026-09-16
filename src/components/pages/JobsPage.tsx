@@ -54,7 +54,6 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [cityFilter, setCityFilter] = useState('all');
   const [workTypeFilter, setWorkTypeFilter] = useState('all');
 
-  // إعدادات عمولة التوظيف من لوحة الإدارة
   const [commissionSettings, setCommissionSettings] = useState<any>(null);
 
   // نافذة أضف وظيفة
@@ -95,6 +94,17 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     }).catch(() => {});
   }, []);
 
+  // فحص تسجيل الدخول قبل فتح النافذة
+  const handleOpenAddModal = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setToastMessage('يجب تسجيل الدخول إلى حسابك أولاً لتتمكن من إضافة شاغر وظيفي');
+      setTimeout(() => setToastMessage(null), 4000);
+      return;
+    }
+    setIsAddModalOpen(true);
+  };
+
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const numeric = e.target.value.replace(/\D/g, '').slice(0, 9);
     setEmployerPhone(numeric);
@@ -106,6 +116,13 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
     if (employerPhone.length !== 9) {
       setToastMessage('يرجى إدخال رقم هاتف مسؤول التوظيف (9 أرقام بالضبط)');
+      setTimeout(() => setToastMessage(null), 3500);
+      return;
+    }
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setToastMessage('يجب تسجيل الدخول أولاً لإرسال الوظيفة');
       setTimeout(() => setToastMessage(null), 3500);
       return;
     }
@@ -137,7 +154,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       setTimeout(() => setToastMessage(null), 4000);
       fetchJobs();
     } catch (err: any) {
-      setToastMessage(err.message || 'تم إرسال الوظيفة للمراجعة');
+      setToastMessage(err.message || 'حدث خطأ أثناء إرسال الوظيفة');
       setTimeout(() => setToastMessage(null), 4000);
     } finally {
       setSubmitting(false);
@@ -166,7 +183,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* الرأس مع زر أضف وظيفة */}
+      {/* الرأس مع زر أضف وظيفة المحمي */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
         <div className="flex items-center gap-2.5">
           {onBack && (
@@ -185,7 +202,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={handleOpenAddModal}
             className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs transition-colors shadow-md"
           >
             <Plus size={15} />
@@ -294,7 +311,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   <label className="block text-slate-300 mb-1">المحافظة *</label>
                   <YRSelect
                     value={newCity}
-                    options={YEMEN_GOVERNORATES.filter(g => g.value !== 'all')}
+                    options={YEMEN_GOVERNORATES.filter((g) => g.value !== 'all')}
                     onChange={(val) => setNewCity(val)}
                   />
                 </div>
@@ -305,7 +322,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   <label className="block text-slate-300 mb-1">نوع العمل *</label>
                   <YRSelect
                     value={newWorkType}
-                    options={WORK_TYPES.filter(t => t.value !== 'all')}
+                    options={WORK_TYPES.filter((t) => t.value !== 'all')}
                     onChange={(val) => setNewWorkType(val)}
                   />
                 </div>
