@@ -1,14 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { Building, ArrowRight, MapPin, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X } from 'lucide-react';
+import { Building, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdBanner } from '../common/AdBanner';
 import { PropertyCard } from '../properties/PropertyCard';
+import { YRSelect } from '../common/YRSelect';
 
-interface RealEstatePageProps {
-  onBack?: () => void;
-}
+const YEMEN_GOVERNORATES = [
+  { value: 'all', label: 'كل المدن والمحافظات' },
+  { value: 'صنعاء', label: 'صنعاء' },
+  { value: 'عدن', label: 'عدن' },
+  { value: 'تعز', label: 'تعز' },
+  { value: 'حضرموت', label: 'حضرموت' },
+  { value: 'الحديدة', label: 'الحديدة' },
+  { value: 'إب', label: 'إب' },
+  { value: 'ذمار', label: 'ذمار' },
+  { value: 'مأرب', label: 'مأرب' },
+  { value: 'صعدة', label: 'صعدة' },
+  { value: 'حجة', label: 'حجة' },
+  { value: 'البيضاء', label: 'البيضاء' },
+  { value: 'لحج', label: 'لحج' },
+  { value: 'أبين', label: 'أبين' },
+  { value: 'المهرة', label: 'المهرة' },
+  { value: 'شبوة', label: 'شبوة' },
+  { value: 'عمران', label: 'عمران' },
+  { value: 'الضالع', label: 'الضالع' },
+  { value: 'ريمة', label: 'ريمة' },
+  { value: 'المحويت', label: 'المحويت' },
+  { value: 'سقطرى', label: 'أرخبيل سقطرى' },
+  { value: 'الجوف', label: 'الجوف' }
+];
 
-export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
+const PROPERTY_TYPES = [
+  { value: 'all', label: 'كافة الأنواع' },
+  { value: 'شقة', label: 'شقق' },
+  { value: 'فيلا', label: 'فلل' },
+  { value: 'أرض', label: 'أراضي' },
+  { value: 'محل تجاري', label: 'محلات تجارية' },
+  { value: 'عمارة', label: 'عمائر' },
+  { value: 'مستودع', label: 'مستودعات' }
+];
+
+const CURRENCIES = [
+  { value: 'YER', label: 'ريال يمني (YER)' },
+  { value: 'SAR', label: 'ريال سعودي (SAR)' },
+  { value: 'USD', label: 'دولار أمريكي (USD)' }
+];
+
+export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dealTypeFilter, setDealTypeFilter] = useState<'all' | 'بيع' | 'إيجار'>('all');
@@ -26,6 +64,7 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
   const [newArea, setNewArea] = useState('');
   const [newRooms, setNewRooms] = useState('');
   const [newLocationDetails, setNewLocationDetails] = useState('');
+  const [ownerPhone, setOwnerPhone] = useState('');
   const [agreedToCommission, setAgreedToCommission] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -51,9 +90,20 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
     fetchProperties();
   }, []);
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const numeric = e.target.value.replace(/\D/g, '').slice(0, 9);
+    setOwnerPhone(numeric);
+  };
+
   const handleAddProperty = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !agreedToCommission) return;
+
+    if (ownerPhone.length !== 9) {
+      setToastMessage('يرجى إدخال رقم هاتف يمني صحيح مكون من 9 أرقام بالضبط (مثال: 77XXXXXXX)');
+      setTimeout(() => setToastMessage(null), 3500);
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -80,6 +130,7 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
       setNewArea('');
       setNewRooms('');
       setNewLocationDetails('');
+      setOwnerPhone('');
       setAgreedToCommission(false);
       setToastMessage('تم إرسال العقار بنجاح وتوثيق عمولة الوساطة المعتمدة');
       setTimeout(() => setToastMessage(null), 4000);
@@ -108,25 +159,25 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
       <AdBanner placementId="5" className="mb-2" />
 
       {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#D4AF37] text-[#0B1325] px-4 py-2.5 rounded-xl font-bold text-xs shadow-2xl flex items-center gap-2">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#F5C400] text-black px-4 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2">
           <CheckCircle2 size={16} />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* الرأس مع زر أضف عقار */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700/60 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
         <div className="flex items-center gap-2.5">
           {onBack && (
             <button
               onClick={onBack}
-              className="p-2 rounded-xl bg-[#162238] border border-slate-700 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#0B1325] transition-all"
+              className="p-2 rounded-xl bg-[#0D1527] border border-slate-800 text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all"
             >
               <ArrowRight size={16} className="rtl:rotate-180" />
             </button>
           )}
           <div className="flex items-center gap-2">
-            <Building className="w-6 h-6 text-[#D4AF37]" />
+            <Building className="w-6 h-6 text-[#F5C400]" />
             <h1 className="text-lg sm:text-xl font-black text-white">سوق العقارات المعتمد</h1>
           </div>
         </div>
@@ -134,7 +185,7 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#D4AF37] hover:bg-[#c5a230] text-[#0B1325] font-black rounded-lg text-xs transition-colors shadow-md"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs transition-colors shadow-md"
           >
             <Plus size={15} />
             <span>أضف عقار</span>
@@ -143,82 +194,72 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
           <button
             onClick={fetchProperties}
             disabled={loading}
-            className="p-2 bg-[#162238] border border-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors"
+            className="p-2 bg-[#0D1527] border border-slate-800 text-slate-300 hover:text-white rounded-xl transition-colors"
             title="تحديث"
           >
-            <RefreshCw size={15} className={loading ? 'animate-spin text-[#D4AF37]' : ''} />
+            <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
           </button>
         </div>
       </div>
 
-      {/* شريط الفلترة */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#162238] p-3 rounded-xl border border-slate-700/60">
-        <div className="flex items-center gap-1.5 bg-[#0B1325] p-1 rounded-lg border border-slate-700">
+      {/* شريط الفلترة الموحد مع YRSelect */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0D1527] p-3 rounded-2xl border border-slate-800">
+        <div className="flex items-center gap-1.5 bg-[#060A13] p-1 rounded-xl border border-slate-800">
           <button
             onClick={() => setDealTypeFilter('all')}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
-              dealTypeFilter === 'all' ? 'bg-[#D4AF37] text-[#0B1325]' : 'text-slate-300 hover:text-white'
+            className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+              dealTypeFilter === 'all' ? 'bg-[#F5C400] text-black' : 'text-slate-300 hover:text-white'
             }`}
           >
             الكل
           </button>
           <button
             onClick={() => setDealTypeFilter('بيع')}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
-              dealTypeFilter === 'بيع' ? 'bg-[#D4AF37] text-[#0B1325]' : 'text-slate-300 hover:text-white'
+            className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+              dealTypeFilter === 'بيع' ? 'bg-[#F5C400] text-black' : 'text-slate-300 hover:text-white'
             }`}
           >
             للبيع
           </button>
           <button
             onClick={() => setDealTypeFilter('إيجار')}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${
-              dealTypeFilter === 'إيجار' ? 'bg-[#D4AF37] text-[#0B1325]' : 'text-slate-300 hover:text-white'
+            className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+              dealTypeFilter === 'إيجار' ? 'bg-[#F5C400] text-black' : 'text-slate-300 hover:text-white'
             }`}
           >
             للإيجار
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="bg-[#0B1325] border border-slate-700 text-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#D4AF37]"
-          >
-            <option value="all">كافة الأنواع</option>
-            <option value="شقة">شقق</option>
-            <option value="فيلا">فلل</option>
-            <option value="أرض">أراضي</option>
-            <option value="محل تجاري">محلات تجارية</option>
-            <option value="عمارة">عمائر</option>
-            <option value="مستودع">مستودعات</option>
-          </select>
-
-          <select
-            value={cityFilter}
-            onChange={(e) => setCityFilter(e.target.value)}
-            className="bg-[#0B1325] border border-slate-700 text-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#D4AF37]"
-          >
-            <option value="all">كافة المدن</option>
-            <option value="صنعاء">صنعاء</option>
-            <option value="عدن">عدن</option>
-            <option value="تعز">تعز</option>
-            <option value="حضرموت">حضرموت</option>
-            <option value="إب">إب</option>
-          </select>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <div className="w-40">
+            <YRSelect
+              value={typeFilter}
+              options={PROPERTY_TYPES}
+              onChange={(val) => setTypeFilter(val)}
+              placeholder="كافة الأنواع"
+            />
+          </div>
+          <div className="w-48">
+            <YRSelect
+              value={cityFilter}
+              options={YEMEN_GOVERNORATES}
+              onChange={(val) => setCityFilter(val)}
+              placeholder="كل المدن والمحافظات"
+            />
+          </div>
         </div>
       </div>
 
       {/* المحتوى */}
       {loading ? (
         <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-[#D4AF37] border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-[#F5C400] border-t-transparent animate-spin" />
           <span className="text-xs font-bold">جاري تحميل العقارات الحقيقية...</span>
         </div>
       ) : filteredProperties.length === 0 ? (
-        <div className="py-16 text-center bg-[#162238] rounded-2xl border border-slate-700/60 p-6 space-y-3">
-          <AlertCircle className="w-12 h-12 text-[#D4AF37] mx-auto opacity-70" />
+        <div className="py-16 text-center bg-[#0D1527] rounded-2xl border border-slate-800 p-6 space-y-3">
+          <AlertCircle className="w-12 h-12 text-[#F5C400] mx-auto opacity-70" />
           <h3 className="text-base font-bold text-white">لا توجد عقارات معروضة حالياً</h3>
           <p className="text-xs text-slate-400">كن أول من يضيف عقاراً بالضغط على زر "أضف عقار" أعلاه.</p>
         </div>
@@ -232,26 +273,26 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
 
       {/* نافذة أضف عقار مع إقرار عمولة الوساطة 2% */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#162238] border border-slate-700 rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Cairo'] text-white">
-            <div className="flex justify-between items-center border-b border-slate-700 pb-2">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0D1527] border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Cairo'] text-white shadow-2xl">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
               <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
-                <Plus size={16} className="text-[#D4AF37]" /> إضافة عقار جديد
+                <Plus size={16} className="text-[#F5C400]" /> إضافة عقار جديد
               </h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="p-1 rounded-lg bg-[#0B1325] text-slate-400 hover:text-white">
+              <button onClick={() => setIsAddModalOpen(false)} className="p-1 rounded-lg bg-[#060A13] text-slate-400 hover:text-white">
                 <X size={16} />
               </button>
             </div>
 
             <form onSubmit={handleAddProperty} className="space-y-3 text-xs">
               <div>
-                <label className="text-[11px] text-[#D4AF37] block mb-1 font-bold">نوع المعاملة *</label>
+                <label className="text-[11px] text-[#F5C400] block mb-1 font-bold">نوع المعاملة *</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setNewDealType('بيع')}
-                    className={`py-2 rounded-lg font-bold border transition-all ${
-                      newDealType === 'بيع' ? 'bg-[#D4AF37] text-[#0B1325] border-[#D4AF37]' : 'bg-[#0B1325] text-slate-300 border-slate-700'
+                    className={`py-2 rounded-xl font-bold border transition-all ${
+                      newDealType === 'بيع' ? 'bg-[#F5C400] text-black border-[#F5C400]' : 'bg-[#060A13] text-slate-300 border-slate-800'
                     }`}
                   >
                     للبيع
@@ -259,8 +300,8 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
                   <button
                     type="button"
                     onClick={() => setNewDealType('إيجار')}
-                    className={`py-2 rounded-lg font-bold border transition-all ${
-                      newDealType === 'إيجار' ? 'bg-[#D4AF37] text-[#0B1325] border-[#D4AF37]' : 'bg-[#0B1325] text-slate-300 border-slate-700'
+                    className={`py-2 rounded-xl font-bold border transition-all ${
+                      newDealType === 'إيجار' ? 'bg-[#F5C400] text-black border-[#F5C400]' : 'bg-[#060A13] text-slate-300 border-slate-800'
                     }`}
                   >
                     للإيجار
@@ -276,39 +317,26 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="مثال: شقة سوبر ديلوكس في حي حدة"
-                  className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
+                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-slate-300 mb-1">نوع العقار *</label>
-                  <select
+                  <YRSelect
                     value={newPropertyType}
-                    onChange={(e) => setNewPropertyType(e.target.value)}
-                    className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
-                  >
-                    <option value="شقة">شقة</option>
-                    <option value="فيلا">فيلا</option>
-                    <option value="أرض">أرض</option>
-                    <option value="محل تجاري">محل تجاري</option>
-                    <option value="عمارة">عمارة</option>
-                    <option value="مستودع">مستودع</option>
-                  </select>
+                    options={PROPERTY_TYPES.filter(t => t.value !== 'all')}
+                    onChange={(val) => setNewPropertyType(val)}
+                  />
                 </div>
                 <div>
-                  <label className="block text-slate-300 mb-1">المدينة *</label>
-                  <select
+                  <label className="block text-slate-300 mb-1">المحافظة *</label>
+                  <YRSelect
                     value={newCity}
-                    onChange={(e) => setNewCity(e.target.value)}
-                    className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
-                  >
-                    <option value="صنعاء">صنعاء</option>
-                    <option value="عدن">عدن</option>
-                    <option value="تعز">تعز</option>
-                    <option value="حضرموت">حضرموت</option>
-                    <option value="إب">إب</option>
-                  </select>
+                    options={YEMEN_GOVERNORATES.filter(g => g.value !== 'all')}
+                    onChange={(val) => setNewCity(val)}
+                  />
                 </div>
               </div>
 
@@ -320,20 +348,16 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
                     type="number"
                     value={newPrice}
                     onChange={(e) => setNewPrice(e.target.value)}
-                    className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
                   />
                 </div>
                 <div>
                   <label className="block text-slate-300 mb-1">العملة *</label>
-                  <select
+                  <YRSelect
                     value={newCurrency}
-                    onChange={(e) => setNewCurrency(e.target.value)}
-                    className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
-                  >
-                    <option value="YER">ريال يمني (YER)</option>
-                    <option value="SAR">ريال سعودي (SAR)</option>
-                    <option value="USD">دولار أمريكي (USD)</option>
-                  </select>
+                    options={CURRENCIES}
+                    onChange={(val) => setNewCurrency(val)}
+                  />
                 </div>
               </div>
 
@@ -344,7 +368,7 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
                     type="number"
                     value={newArea}
                     onChange={(e) => setNewArea(e.target.value)}
-                    className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
                   />
                 </div>
                 <div>
@@ -353,9 +377,27 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
                     type="number"
                     value={newRooms}
                     onChange={(e) => setNewRooms(e.target.value)}
-                    className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1">
+                  رقم الهاتف (واتساب) * <span className="text-[#F5C400] text-[10px]">(9 أرقام بالضبط)</span>
+                </label>
+                <input
+                  required
+                  type="tel"
+                  maxLength={9}
+                  value={ownerPhone}
+                  onChange={handlePhoneChange}
+                  placeholder="77XXXXXXX"
+                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white text-left font-mono focus:outline-none focus:border-[#F5C400]"
+                />
+                <span className="text-[10px] text-slate-400 block mt-0.5">
+                  تم إدخال: {ownerPhone.length} من 9 أرقام
+                </span>
               </div>
 
               <div>
@@ -365,14 +407,14 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
                   value={newLocationDetails}
                   onChange={(e) => setNewLocationDetails(e.target.value)}
                   placeholder="مثال: خلف مجمع حدة السكني"
-                  className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
+                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
                 />
               </div>
 
               {/* سياسة عمولة الوساطة الرسمية 2% */}
-              <div className="p-3 bg-[#0B1325] rounded-xl border border-slate-700/80 space-y-2">
-                <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-xs">
-                  <ShieldCheck size={16} className="text-[#D4AF37]" />
+              <div className="p-3 bg-[#060A13] rounded-xl border border-slate-800 space-y-2">
+                <div className="flex items-center gap-1.5 text-[#F5C400] font-bold text-xs">
+                  <ShieldCheck size={16} />
                   <span>سياسة الوساطة والعمولة الرسمية (2%)</span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
@@ -383,24 +425,24 @@ export const RealEstatePage: React.FC<RealEstatePageProps> = ({ onBack }) => {
                     type="checkbox"
                     checked={agreedToCommission}
                     onChange={(e) => setAgreedToCommission(e.target.checked)}
-                    className="w-4 h-4 accent-[#D4AF37] rounded"
+                    className="w-4 h-4 accent-[#F5C400] rounded"
                   />
                   <span className="text-[11px] font-bold text-white">أوافق على شروط وسياسة وساطة يمن ريتغ</span>
                 </label>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-700">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-bold"
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  disabled={!agreedToCommission || submitting}
-                  className="px-5 py-2 rounded-lg bg-[#D4AF37] disabled:opacity-40 text-[#0B1325] font-black text-xs transition-colors"
+                  disabled={!agreedToCommission || ownerPhone.length !== 9 || submitting}
+                  className="px-5 py-2 rounded-xl bg-[#F5C400] disabled:opacity-40 text-black font-black text-xs transition-colors shadow-md"
                 >
                   {submitting ? 'جاري الإرسال...' : 'إرسال العقار للاعتماد'}
                 </button>

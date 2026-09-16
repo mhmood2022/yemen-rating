@@ -1,14 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, ArrowRight, MapPin, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X } from 'lucide-react';
+import { Briefcase, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdBanner } from '../common/AdBanner';
 import { JobCard } from '../jobs/JobCard';
+import { YRSelect } from '../common/YRSelect';
 
-interface JobsPageProps {
-  onBack?: () => void;
-}
+const YEMEN_GOVERNORATES = [
+  { value: 'all', label: 'كل المدن والمحافظات' },
+  { value: 'صنعاء', label: 'صنعاء' },
+  { value: 'عدن', label: 'عدن' },
+  { value: 'تعز', label: 'تعز' },
+  { value: 'حضرموت', label: 'حضرموت' },
+  { value: 'الحديدة', label: 'الحديدة' },
+  { value: 'إب', label: 'إب' },
+  { value: 'ذمار', label: 'ذمار' },
+  { value: 'مأرب', label: 'مأرب' },
+  { value: 'صعدة', label: 'صعدة' },
+  { value: 'حجة', label: 'حجة' },
+  { value: 'البيضاء', label: 'البيضاء' },
+  { value: 'لحج', label: 'لحج' },
+  { value: 'أبين', label: 'أبين' },
+  { value: 'المهرة', label: 'المهرة' },
+  { value: 'شبوة', label: 'شبوة' },
+  { value: 'عمران', label: 'عمران' },
+  { value: 'الضالع', label: 'الضالع' },
+  { value: 'ريمة', label: 'ريمة' },
+  { value: 'المحويت', label: 'المحويت' },
+  { value: 'سقطرى', label: 'أرخبيل سقطرى' },
+  { value: 'الجوف', label: 'الجوف' }
+];
 
-export const JobsPage: React.FC<JobsPageProps> = ({ onBack }) => {
+const WORK_TYPES = [
+  { value: 'all', label: 'كافة أنواع الدوام' },
+  { value: 'دوام كامل', label: 'دوام كامل' },
+  { value: 'دوام جزئي', label: 'دوام جزئي' },
+  { value: 'عن بعد', label: 'عن بعد' },
+  { value: 'عقد', label: 'عقد' }
+];
+
+const SECTORS = [
+  { value: 'إدارية ومحاسبة', label: 'إدارية ومحاسبة' },
+  { value: 'تقنية معلومات وبرمجة', label: 'تقنية معلومات وبرمجة' },
+  { value: 'تسويق ومبيعات', label: 'تسويق ومبيعات' },
+  { value: 'هندسة وتصميم', label: 'هندسة وتصميم' },
+  { value: 'طب وصيدلة', label: 'طب وصيدلة' },
+  { value: 'خدمات عامة', label: 'خدمات عامة' }
+];
+
+export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [cityFilter, setCityFilter] = useState('all');
@@ -23,6 +62,7 @@ export const JobsPage: React.FC<JobsPageProps> = ({ onBack }) => {
   const [newSalaryRange, setNewSalaryRange] = useState('');
   const [newExperienceLevel, setNewExperienceLevel] = useState('1-3 سنوات');
   const [newDescription, setNewDescription] = useState('');
+  const [employerPhone, setEmployerPhone] = useState('');
   const [agreedToPolicy, setAgreedToPolicy] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -48,9 +88,20 @@ export const JobsPage: React.FC<JobsPageProps> = ({ onBack }) => {
     fetchJobs();
   }, []);
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const numeric = e.target.value.replace(/\D/g, '').slice(0, 9);
+    setEmployerPhone(numeric);
+  };
+
   const handleAddJob = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !agreedToPolicy) return;
+
+    if (employerPhone.length !== 9) {
+      setToastMessage('يرجى إدخال رقم هاتف مسؤول التوظيف (9 أرقام بالضبط)');
+      setTimeout(() => setToastMessage(null), 3500);
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -73,6 +124,7 @@ export const JobsPage: React.FC<JobsPageProps> = ({ onBack }) => {
       setNewTitle('');
       setNewSalaryRange('');
       setNewDescription('');
+      setEmployerPhone('');
       setAgreedToPolicy(false);
       setToastMessage('تم نشر الوظيفة بنجاح وتوثيق عمولة ووساطة يمن ريتغ');
       setTimeout(() => setToastMessage(null), 4000);
@@ -97,25 +149,25 @@ export const JobsPage: React.FC<JobsPageProps> = ({ onBack }) => {
       <AdBanner placementId="4" className="mb-2" />
 
       {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#D4AF37] text-[#0B1325] px-4 py-2.5 rounded-xl font-bold text-xs shadow-2xl flex items-center gap-2">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#F5C400] text-black px-4 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2">
           <CheckCircle2 size={16} />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* الرأس مع زر أضف وظيفة */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-700/60 pb-3">
+      {/* شريط الرأس مع زر أضف وظيفة */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
         <div className="flex items-center gap-2.5">
           {onBack && (
             <button
               onClick={onBack}
-              className="p-2 rounded-xl bg-[#162238] border border-slate-700 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-[#0B1325] transition-all"
+              className="p-2 rounded-xl bg-[#0D1527] border border-slate-800 text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all"
             >
               <ArrowRight size={16} className="rtl:rotate-180" />
             </button>
           )}
           <div className="flex items-center gap-2">
-            <Briefcase className="w-6 h-6 text-[#D4AF37]" />
+            <Briefcase className="w-6 h-6 text-[#F5C400]" />
             <h1 className="text-lg sm:text-xl font-black text-white">فرص العمل والوظائف الشاغرة</h1>
           </div>
         </div>
@@ -123,7 +175,7 @@ export const JobsPage: React.FC<JobsPageProps> = ({ onBack }) => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#D4AF37] hover:bg-[#c5a230] text-[#0B1325] font-black rounded-lg text-xs transition-colors shadow-md"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs transition-colors shadow-md"
           >
             <Plus size={15} />
             <span>أضف وظيفة</span>
@@ -132,49 +184,42 @@ export const JobsPage: React.FC<JobsPageProps> = ({ onBack }) => {
           <button
             onClick={fetchJobs}
             disabled={loading}
-            className="p-2 bg-[#162238] border border-slate-700 text-slate-300 hover:text-white rounded-lg transition-colors"
+            className="p-2 bg-[#0D1527] border border-slate-800 text-slate-300 hover:text-white rounded-xl transition-colors"
             title="تحديث"
           >
-            <RefreshCw size={15} className={loading ? 'animate-spin text-[#D4AF37]' : ''} />
+            <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
           </button>
         </div>
       </div>
 
       {/* شريط سياسة الوساطة وحجب المنشأة */}
-      <div className="bg-[#162238] border border-[#D4AF37]/30 rounded-xl p-3 flex items-center gap-2 text-xs text-slate-300">
-        <ShieldCheck className="w-5 h-5 text-[#D4AF37] shrink-0" />
+      <div className="bg-[#0D1527] border border-[#F5C400]/30 rounded-2xl p-3 flex items-center gap-2 text-xs text-slate-300">
+        <ShieldCheck className="w-5 h-5 text-[#F5C400] shrink-0" />
         <span>منصة يمن ريتغ تعمل كوسيط رسمي مباشر؛ يتم حجب بيانات المنشأة لضمان سرية وموثوقية التنسيق الوظيفي وسداد عمولة التوظيف المعتمدة.</span>
       </div>
 
-      {/* شريط الفلترة */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#162238] p-3 rounded-xl border border-slate-700/60">
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <select
-            value={cityFilter}
-            onChange={(e) => setCityFilter(e.target.value)}
-            className="bg-[#0B1325] border border-slate-700 text-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#D4AF37]"
-          >
-            <option value="all">كافة المدن</option>
-            <option value="صنعاء">صنعاء</option>
-            <option value="عدن">عدن</option>
-            <option value="تعز">تعز</option>
-            <option value="حضرموت">حضرموت</option>
-          </select>
-
-          <select
-            value={workTypeFilter}
-            onChange={(e) => setWorkTypeFilter(e.target.value)}
-            className="bg-[#0B1325] border border-slate-700 text-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#D4AF37]"
-          >
-            <option value="all">كافة أنواع الدوام</option>
-            <option value="دوام كامل">دوام كامل</option>
-            <option value="دوام جزئي">دوام جزئي</option>
-            <option value="عن بعد">عن بعد</option>
-            <option value="عقد">عقد</option>
-          </select>
+      {/* شريط الفلترة الموحد مع YRSelect */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0D1527] p-3 rounded-2xl border border-slate-800">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <div className="w-48">
+            <YRSelect
+              value={cityFilter}
+              options={YEMEN_GOVERNORATES}
+              onChange={(val) => setCityFilter(val)}
+              placeholder="كل المدن والمحافظات"
+            />
+          </div>
+          <div className="w-44">
+            <YRSelect
+              value={workTypeFilter}
+              options={WORK_TYPES}
+              onChange={(val) => setWorkTypeFilter(val)}
+              placeholder="كافة أنواع الدوام"
+            />
+          </div>
         </div>
 
-        <span className="text-xs text-[#D4AF37] font-bold">
+        <span className="text-xs text-[#F5C400] font-bold">
           الوظائف المتاحة: {filteredJobs.length}
         </span>
       </div>
@@ -182,12 +227,12 @@ export const JobsPage: React.FC<JobsPageProps> = ({ onBack }) => {
       {/* المحتوى */}
       {loading ? (
         <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-[#D4AF37] border-t-transparent animate-spin" />
+          <div className="w-8 h-8 rounded-full border-2 border-[#F5C400] border-t-transparent animate-spin" />
           <span className="text-xs font-bold">جاري تحميل الوظائف الحقيقية...</span>
         </div>
       ) : filteredJobs.length === 0 ? (
-        <div className="py-16 text-center bg-[#162238] rounded-2xl border border-slate-700/60 p-6 space-y-3">
-          <AlertCircle className="w-12 h-12 text-[#D4AF37] mx-auto opacity-70" />
+        <div className="py-16 text-center bg-[#0D1527] rounded-2xl border border-slate-800 p-6 space-y-3">
+          <AlertCircle className="w-12 h-12 text-[#F5C400] mx-auto opacity-70" />
           <h3 className="text-base font-bold text-white">لا توجد وظائف شاغرة معلنة حالياً</h3>
           <p className="text-xs text-slate-400">كن أول من ينشر شاغراً بالضغط على زر "أضف وظيفة" أعلاه.</p>
         </div>
@@ -201,13 +246,13 @@ export const JobsPage: React.FC<JobsPageProps> = ({ onBack }) => {
 
       {/* نافذة أضف وظيفة مع سياسة الوساطة وعمولة التوظيف */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#162238] border border-slate-700 rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Cairo'] text-white">
-            <div className="flex justify-between items-center border-b border-slate-700 pb-2">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0D1527] border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Cairo'] text-white shadow-2xl">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
               <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
-                <Plus size={16} className="text-[#D4AF37]" /> إضافة شاغر وظيفي جديد
+                <Plus size={16} className="text-[#F5C400]" /> إضافة شاغر وظيفي جديد
               </h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="p-1 rounded-lg bg-[#0B1325] text-slate-400 hover:text-white">
+              <button onClick={() => setIsAddModalOpen(false)} className="p-1 rounded-lg bg-[#060A13] text-slate-400 hover:text-white">
                 <X size={16} />
               </button>
             </div>
@@ -221,79 +266,66 @@ export const JobsPage: React.FC<JobsPageProps> = ({ onBack }) => {
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="مثال: محاسب مالي أول"
-                  className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
+                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-slate-300 mb-1">القطاع الوظيفي *</label>
-                  <select
+                  <YRSelect
                     value={newSector}
-                    onChange={(e) => setNewSector(e.target.value)}
-                    className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
-                  >
-                    <option value="إدارية ومحاسبة">إدارية ومحاسبة</option>
-                    <option value="تقنية معلومات وبرمجة">تقنية معلومات وبرمجة</option>
-                    <option value="تسويق ومبيعات">تسويق ومبيعات</option>
-                    <option value="هندسة وتصميم">هندسة وتصميم</option>
-                    <option value="طب وصيدلة">طب وصيدلة</option>
-                    <option value="خدمات عامة">خدمات عامة</option>
-                  </select>
+                    options={SECTORS}
+                    onChange={(val) => setNewSector(val)}
+                  />
                 </div>
                 <div>
-                  <label className="block text-slate-300 mb-1">المدينة *</label>
-                  <select
+                  <label className="block text-slate-300 mb-1">المحافظة *</label>
+                  <YRSelect
                     value={newCity}
-                    onChange={(e) => setNewCity(e.target.value)}
-                    className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
-                  >
-                    <option value="صنعاء">صنعاء</option>
-                    <option value="عدن">عدن</option>
-                    <option value="تعز">تعز</option>
-                    <option value="حضرموت">حضرموت</option>
-                  </select>
+                    options={YEMEN_GOVERNORATES.filter(g => g.value !== 'all')}
+                    onChange={(val) => setNewCity(val)}
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-slate-300 mb-1">نوع العمل *</label>
-                  <select
+                  <YRSelect
                     value={newWorkType}
-                    onChange={(e) => setNewWorkType(e.target.value)}
-                    className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
-                  >
-                    <option value="دوام كامل">دوام كامل</option>
-                    <option value="دوام جزئي">دوام جزئي</option>
-                    <option value="عن بعد">عن بعد</option>
-                    <option value="عقد">عقد</option>
-                  </select>
+                    options={WORK_TYPES.filter(t => t.value !== 'all')}
+                    onChange={(val) => setNewWorkType(val)}
+                  />
                 </div>
                 <div>
-                  <label className="block text-slate-300 mb-1">مستوى الخبرة</label>
-                  <select
-                    value={newExperienceLevel}
-                    onChange={(e) => setNewExperienceLevel(e.target.value)}
-                    className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
-                  >
-                    <option value="مبتدئ">مبتدئ</option>
-                    <option value="1-3 سنوات">1-3 سنوات</option>
-                    <option value="3-5 سنوات">3-5 سنوات</option>
-                    <option value="5+ سنوات">5+ سنوات</option>
-                  </select>
+                  <label className="block text-slate-300 mb-1">الراتب المقترح</label>
+                  <input
+                    type="text"
+                    value={newSalaryRange}
+                    onChange={(e) => setNewSalaryRange(e.target.value)}
+                    placeholder="مثال: 450,000 ريال"
+                    className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
+                  />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-300 mb-1">الراتب المتوقع أو المقترح</label>
+                <label className="block text-slate-300 mb-1">
+                  رقم هاتف مسؤول التوظيف * <span className="text-[#F5C400] text-[10px]">(9 أرقام بالضبط - سري للوساطة)</span>
+                </label>
                 <input
-                  type="text"
-                  value={newSalaryRange}
-                  onChange={(e) => setNewSalaryRange(e.target.value)}
-                  placeholder="مثال: 400,000 - 600,000 ريال يمني"
-                  className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
+                  required
+                  type="tel"
+                  maxLength={9}
+                  value={employerPhone}
+                  onChange={handlePhoneChange}
+                  placeholder="77XXXXXXX"
+                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white text-left font-mono focus:outline-none focus:border-[#F5C400]"
                 />
+                <span className="text-[10px] text-slate-400 block mt-0.5">
+                  تم إدخال: {employerPhone.length} من 9 أرقام
+                </span>
               </div>
 
               <div>
@@ -304,14 +336,14 @@ export const JobsPage: React.FC<JobsPageProps> = ({ onBack }) => {
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
                   placeholder="اكتب المهام والمسؤوليات والمؤهلات المطلوبة..."
-                  className="w-full bg-[#0B1325] border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
+                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
                 />
               </div>
 
               {/* سياسة عمولة التوظيف وحجب اسم المنشأة */}
-              <div className="p-3 bg-[#0B1325] rounded-xl border border-slate-700/80 space-y-2">
-                <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-xs">
-                  <ShieldCheck size={16} className="text-[#D4AF37]" />
+              <div className="p-3 bg-[#060A13] rounded-xl border border-slate-800 space-y-2">
+                <div className="flex items-center gap-1.5 text-[#F5C400] font-bold text-xs">
+                  <ShieldCheck size={16} />
                   <span>سياسة الوساطة الوظيفية وعمولة التوظيف</span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
@@ -322,24 +354,24 @@ export const JobsPage: React.FC<JobsPageProps> = ({ onBack }) => {
                     type="checkbox"
                     checked={agreedToPolicy}
                     onChange={(e) => setAgreedToPolicy(e.target.checked)}
-                    className="w-4 h-4 accent-[#D4AF37] rounded"
+                    className="w-4 h-4 accent-[#F5C400] rounded"
                   />
                   <span className="text-[11px] font-bold text-white">أوافق على سياسة وساطة وتوظيف وعمولة يمن ريتغ</span>
                 </label>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-700">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-bold"
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
-                  disabled={!agreedToPolicy || submitting}
-                  className="px-5 py-2 rounded-lg bg-[#D4AF37] disabled:opacity-40 text-[#0B1325] font-black text-xs transition-colors"
+                  disabled={!agreedToPolicy || employerPhone.length !== 9 || submitting}
+                  className="px-5 py-2 rounded-xl bg-[#F5C400] disabled:opacity-40 text-black font-black text-xs transition-colors shadow-md"
                 >
                   {submitting ? 'جاري النشر...' : 'نشر الشاغر الوظيفي'}
                 </button>
