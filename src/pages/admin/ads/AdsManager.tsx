@@ -1,323 +1,310 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, NavLink } from 'react-router-dom';
-import {
-  Megaphone,
-  Sparkles,
-  Play,
-  Pause,
-  Trash2,
-  Pencil,
-  LayoutGrid,
-  Table,
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle2,
-  ExternalLink,
-  Power
-} from 'lucide-react';
-import { supabase } from '../../../lib/supabase';
 import { adsDatabaseService } from '../../../services/adsDatabaseService';
+import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink } from 'react-router-dom';
+import { Megaphone, Sparkles, Play, Pause, Trash2, Pencil, LayoutGrid, Table, ArrowRight } from 'lucide-react';
 import { PublishedAd } from './AdGeneratorStudio';
 
 export const AdsManager: React.FC = () => {
   const navigate = useNavigate();
-  const [ads, setAds] = useState<PublishedAd[]>([]);
-  const [viewFormat, setViewFormat] = useState<'grid' | 'table'>('grid');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
 
-  // إدارة الراعي الرسمي للصفحة الرئيسية
-  const [sponsorName, setSponsorName] = useState('');
-  const [sponsorSlogan, setSponsorSlogan] = useState('');
-  const [sponsorUrl, setSponsorUrl] = useState('');
-  const [isSponsorActive, setIsSponsorActive] = useState(false);
-  const [savingSponsor, setSavingSponsor] = useState(false);
-
-  // 1. جلب الإعلانات العادية
   useEffect(() => {
-    const loadAllAds = async () => {
+    // جلب كافة الإعلانات الحية من Supabase للوحة التحكم
+    const loadAllAdsFromCloud = async () => {
       try {
         const cloudAds = await adsDatabaseService.getActiveAds();
         if (cloudAds && cloudAds.length > 0) {
           setAds(cloudAds);
+          try {
+            localStorage.setItem('yr_published_ads', JSON.stringify(cloudAds));
+          } catch (_) {}
         }
       } catch (err) {
-        console.error('Error loading ads:', err);
+        console.error("Error loading ads from cloud:", err);
       }
     };
-    loadAllAds();
+    loadAllAdsFromCloud();
   }, []);
-
-  // 2. جلب الراعي الرسمي الحالي من Supabase
-  const fetchCurrentSponsor = async () => {
-    try {
-      const { data } = await supabase
-        .from('published_ads')
-        .select('*')
-        .eq('placement_id', 'home_sponsor')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (data) {
-        const adData = data.data || {};
-        setSponsorName(adData.advertiserName || data.advertiser_name || '');
-        setSponsorSlogan(adData.title || data.title || '');
-        setSponsorUrl(adData.targetUrl || data.target_url || '');
-        setIsSponsorActive(data.status === 'active');
-      } else {
-        setIsSponsorActive(false);
-      }
-    } catch (err) {
-      console.error('Error fetching sponsor:', err);
-    }
-  };
+  const [ads, setAds] = useState<PublishedAd[]>([]);
+  const [viewFormat, setViewFormat] = useState<'grid' | 'table'>('grid');
 
   useEffect(() => {
-    fetchCurrentSponsor();
+    const saved = localStorage.getItem('yr_published_ads');
+    if (saved) {
+      try {
+        setAds(JSON.parse(saved));
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }, []);
 
-  // حفظ أو تحديث الراعي الرسمي في Supabase
-  const handleSaveSponsor = async (active: boolean) => {
-    if (active && !sponsorName.trim()) {
-      setToastMessage('يرجى كتابة اسم الجهة الراعية أولاً');
-      setTimeout(() => setToastMessage(null), 3000);
-      return;
-    }
-
-    try {
-      setSavingSponsor(true);
-      const sponsorPayload = {
-        placement_id: 'home_sponsor',
-        status: active ? 'active' : 'paused',
-        data: {
-          advertiserName: sponsorName.trim(),
-          title: sponsorSlogan.trim(),
-          targetUrl: sponsorUrl.trim()
-        },
-        views: 0,
-        clicks: 0,
-        updated_at: new Date().toISOString()
-      };
-
-      // فحص هل يوجد سجل مسبق لتحديثه أو إدخال جديد
-      const { data: existing } = await supabase
-        .from('published_ads')
-        .select('id')
-        .eq('placement_id', 'home_sponsor')
-        .limit(1)
-        .maybeSingle();
-
-      let opError = null;
-      if (existing?.id) {
-        const { error } = await supabase
-          .from('published_ads')
-          .update(sponsorPayload)
-          .eq('id', existing.id);
-        opError = error;
-      } else {
-        const { error } = await supabase
-          .from('published_ads')
-          .insert([sponsorPayload]);
-        opError = error;
-      }
-
-      if (opError) throw opError;
-
-      setIsSponsorActive(active);
-      setToastMessage(active ? 'تم تفعيل ونشر الراعي الرسمي بنجاح' : 'تم تعطيل وإخفاء الراعي الرسمي من الصفحة الرئيسية');
-      setTimeout(() => setToastMessage(null), 3500);
-      fetchCurrentSponsor();
-    } catch (err: any) {
-      setToastMessage(err.message || 'حدث خطأ في حفظ الراعي');
-      setTimeout(() => setToastMessage(null), 3500);
-    } finally {
-      setSavingSponsor(false);
-    }
+  const toggleAdStatus = (id: string) => {
+    const updated = ads.map(a => a.id === id ? { ...a, status: a.status === 'active' ? 'paused' : 'active' } as PublishedAd : a);
+    setAds(updated);
+    localStorage.setItem('yr_published_ads', JSON.stringify(updated));
   };
 
-  const toggleAdStatus = (id: string) => {
-    const updated = ads.map((a) =>
-      a.id === id ? ({ ...a, status: a.status === 'active' ? 'paused' : 'active' } as PublishedAd) : a
-    );
+  const deleteAd = async (id: string) => {
+    const updated = ads.filter(a => a.id !== id);
     setAds(updated);
+    try {
+      localStorage.setItem('yr_published_ads', JSON.stringify(updated));
+    } catch (_) {}
+    try {
+      await adsDatabaseService.deleteAd(id);
+    } catch (e) {
+      console.error(e);
+    }
+    setDeleteSuccess('✅ تم حذف الإعلان بنجاح من قاعدة البيانات ومن المنصة بالكامل!');
+    setTimeout(() => setDeleteSuccess(null), 3500);
   };
 
   return (
-    <div dir="rtl" className="space-y-6 font-['Cairo',sans-serif] text-white p-4 max-w-6xl mx-auto">
-      {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#F5C400] text-black px-5 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2">
-          <CheckCircle2 size={16} />
-          <span>{toastMessage}</span>
+    <div className="space-y-6 font-['Cairo',sans-serif] pb-16">
+      {deleteSuccess && (
+        <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-between shadow-lg">
+          <span>{deleteSuccess}</span>
+          <button onClick={() => setDeleteSuccess(null)} className="text-emerald-400 hover:text-white px-2 py-0.5">✕</button>
         </div>
       )}
-
-      {/* الرأس */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+      
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0B0F17] p-5 rounded-2xl border border-[#1F2937]">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
-            <Megaphone className="text-[#F5C400]" />
-            <span>مركز إدارة الإعلانات والرعاة</span>
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            التحكم بإعلانات المنصة والرعاة الرسميين في الصفحة الرئيسية وشاشات البحث.
+          <div className="flex items-center gap-3 mb-2">
+            <NavLink
+              to="/admin"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#161D2B] text-yellow-400 hover:text-yellow-300 hover:bg-[#1F2937] border border-[#1F2937] transition font-bold text-xs shrink-0"
+              title="رجوع للوحة التحكم"
+            >
+              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              <span>رجوع</span>
+            </NavLink>
+            <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+              <Megaphone className="text-[#FFC500]" />
+              معرض الإعلانات المنشورة الحقيقية (Live Ads Showcase)
+            </h2>
+          </div>
+          <p className="text-[#9CA3AF] text-xs mt-1">
+            مشاهدة الإعلانات المنشورة بكامل الصورة أو بالاقتصاص المخصص بالفيديو والصور الحية.
           </p>
         </div>
 
-        <button
-          onClick={() => navigate('/admin/ads/generator')}
-          className="px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black text-xs rounded-xl flex items-center gap-1.5 transition-all shadow-md"
-        >
-          <Sparkles size={15} />
-          <span>استوديو توليد الإعلانات الذكي</span>
-        </button>
-      </div>
-
-      {/* ============================================================ */}
-      {/* 🌟 بطاقة التحكم بالراعي الرسمي للصفحة الرئيسية (Official Sponsor) */}
-      {/* ============================================================ */}
-      <div className="bg-[#0D1527] border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2">
-            <span className="p-2 rounded-xl bg-[#F5C400]/15 text-[#F5C400] border border-[#F5C400]/30">
-              <Sparkles size={18} />
-            </span>
-            <div>
-              <h2 className="text-sm sm:text-base font-black text-white">الراعي الرسمي للصفحة الرئيسية (شريط البحث)</h2>
-              <p className="text-[11px] text-slate-400">
-                يظهر أعلى شريط البحث في الصفحة الرئيسية لـ 100% من الزوار.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className={`px-2.5 py-1 text-xs font-bold rounded-lg ${
-              isSponsorActive
-                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                : 'bg-slate-800 text-slate-400'
-            }`}>
-              {isSponsorActive ? 'الراعي مفعّل وحي الآن' : 'الراعي معطّل (مخفي)'}
-            </span>
-          </div>
-        </div>
-
-        {/* مدخلات الراعي */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-          <div>
-            <label className="block text-slate-300 font-bold mb-1">اسم الجهة الراعية *</label>
-            <input
-              type="text"
-              value={sponsorName}
-              onChange={(e) => setSponsorName(e.target.value)}
-              placeholder="مثال: بنك الكريمي للتمويل الأصغر"
-              className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-slate-300 font-bold mb-1">الجملة الدعائية / الشعار</label>
-            <input
-              type="text"
-              value={sponsorSlogan}
-              onChange={(e) => setSponsorSlogan(e.target.value)}
-              placeholder="مثال: شريك التمكين المالي والتنمية"
-              className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-slate-300 font-bold mb-1">رابط الزيارة (اختياري)</label>
-            <input
-              type="text"
-              value={sponsorUrl}
-              onChange={(e) => setSponsorUrl(e.target.value)}
-              placeholder="https://... أو /banks/kuraimi-bank"
-              className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white text-left focus:outline-none focus:border-[#F5C400]"
-            />
-          </div>
-        </div>
-
-        {/* المعاينة الحية كما ستظهر في الصفحة الرئيسية */}
-        <div className="p-3 bg-[#060A13] rounded-xl border border-slate-800 space-y-1.5">
-          <span className="text-[10px] text-slate-400 font-bold block">معاينة شريط الراعي المدمج في شريط البحث:</span>
-          <div className="bg-[#060A13] border border-slate-800 rounded-xl px-3.5 py-2 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md bg-[#F5C400]/15 text-[#F5C400] text-[10px] font-black border border-[#F5C400]/30 flex items-center gap-1">
-                <Sparkles size={11} />
-                <span>الراعي الرسمي</span>
-              </span>
-              <span className="text-white text-xs font-bold">
-                {sponsorName || '(اكتب اسم الجهة الراعية أعلاه للظهور)'}
-              </span>
-            </div>
-            {sponsorSlogan && (
-              <span className="text-[10px] text-[#F5C400] font-bold">
-                {sponsorSlogan}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* أزرار التحكم بالراعي */}
-        <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-800">
-          {isSponsorActive && (
-            <button
-              type="button"
-              disabled={savingSponsor}
-              onClick={() => handleSaveSponsor(false)}
-              className="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 text-xs font-bold rounded-xl transition-all"
-            >
-              إيقاف وتعطيل الراعي (إخفاء)
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-[#161D2B] p-1 rounded-xl border border-[#1F2937]">
+            <button onClick={() => setViewFormat('grid')} className={`p-2 rounded-lg text-xs font-bold ${viewFormat === 'grid' ? 'bg-[#FFC500] text-black' : 'text-[#9CA3AF]'}`}>
+              <LayoutGrid size={15} />
             </button>
-          )}
+            <button onClick={() => setViewFormat('table')} className={`p-2 rounded-lg text-xs font-bold ${viewFormat === 'table' ? 'bg-[#FFC500] text-black' : 'text-[#9CA3AF]'}`}>
+              <Table size={15} />
+            </button>
+          </div>
 
-          <button
-            type="button"
-            disabled={savingSponsor}
-            onClick={() => handleSaveSponsor(true)}
-            className="px-5 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black text-xs font-black rounded-xl transition-all shadow-md"
+          <NavLink
+            to="/admin/ads/generator"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all shadow-lg shadow-[#FFC500]/20"
           >
-            {savingSponsor ? 'جاري الحفظ...' : 'حفظ وتفعيل الراعي الرسمي الآن'}
-          </button>
+            <Sparkles size={16} />
+            <span>إنشاء إعلان جديد (YR Studio)</span>
+          </NavLink>
         </div>
       </div>
 
-      {/* ============================================================ */}
-      {/* قائمة باقي الإعلانات والبانرات */}
-      {/* ============================================================ */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white">كافة الحملات والبانرات النشطة</h2>
-          <span className="text-xs text-[#F5C400] font-bold">الإعلانات: {ads.length}</span>
-        </div>
+      {/* المعرض المرئي */}
+      {viewFormat === 'grid' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {ads.length === 0 ? (
+            <div className="col-span-2 text-center py-12 text-[#9CA3AF] bg-[#0B0F17] rounded-2xl border border-[#1F2937]">
+              لا توجد إعلانات منشورة حالياً. اضغط على "إنشاء إعلان جديد" لتصميم ونشر أول إعلان.
+            </div>
+          ) : (
+            ads.map((ad) => (
+              <div key={ad.id} className="bg-[#0B0F17] rounded-2xl border border-[#1F2937] p-5 space-y-4 shadow-xl">
+                
+                <div className="flex items-center justify-between border-b border-[#1F2937] pb-3">
+                  <div>
+                    <span className="text-xs font-bold text-white">{ad.placementName}</span>
+                    <div className="text-[10px] text-[#9CA3AF] font-mono mt-0.5">{ad.id} • {ad.createdAt}</div>
+                  </div>
 
-        {ads.length === 0 ? (
-          <div className="py-12 text-center bg-[#0D1527] rounded-2xl border border-slate-800 text-slate-400 text-xs">
-            لا توجد إعلانات بنرات عادية مضافة حالياً.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {ads.map((ad) => (
-              <div key={ad.id} className="bg-[#0D1527] border border-slate-800 rounded-xl p-3 space-y-2">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-white truncate">{ad.title}</span>
-                  <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${ad.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>
-                    {ad.status === 'active' ? 'نشط' : 'متوقف'}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                      ad.status === 'active' ? 'bg-[#16A34A]/20 text-[#16A34A]' : 'bg-amber-500/20 text-amber-400'
+                    }`}>
+                      {ad.status === 'active' ? 'معروض نشط' : 'متوقف مؤقتاً'}
+                    </span>
+                    <button onClick={() => toggleAdStatus(ad.id)} className="p-1.5 rounded-lg bg-[#161D2B] text-white hover:text-[#FFC500]">
+                      {ad.status === 'active' ? <Pause size={14} /> : <Play size={14} />}
+                    </button>
+                                        {/* زر تعديل الإعلان */}
+                    <button
+                      onClick={() => navigate(`/admin/ads/generator?editId=${ad.id}`)}
+                      className="p-1.5 rounded-lg bg-[#FFC500]/15 text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all"
+                      title="تعديل هذا الإعلان"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button onClick={() => deleteAd(ad.id)} className="p-1.5 rounded-lg bg-[#DC2626]/10 text-[#DC2626]">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
-                <p className="text-[11px] text-slate-400 truncate">{ad.advertiserName}</p>
-                <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
-                  <button
-                    onClick={() => toggleAdStatus(ad.id)}
-                    className="p-1.5 rounded-lg bg-[#060A13] text-slate-300 hover:text-white"
-                  >
-                    {ad.status === 'active' ? <Pause size={14} /> : <Play size={14} />}
-                  </button>
+
+                {/* مجسم الإعلان الحقيقي بالاقتصاص والتموضع الدقيق */}
+                <div
+                  style={{
+                    borderRadius: `${ad.borderRadius}px`,
+                    border: ad.hasBorder ? `${ad.borderWidth}px solid ${ad.borderColor}` : 'none',
+                    backgroundColor: ad.bgColor,
+                    backgroundImage: ad.bgStyle === 'gradient' ? `linear-gradient(135deg, ${ad.bgColor} 0%, #161D2B 100%)` : 'none',
+                    boxShadow: ad.hasGlow && ad.hasBorder ? `0 0 20px ${ad.borderColor}40` : 'none',
+                  }}
+                  className="relative overflow-hidden w-full min-h-[160px] flex flex-col justify-between p-4"
+                >
+                  {ad.hasProgressBar && (
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 z-20 overflow-hidden">
+                      <div 
+                        style={{ 
+                          backgroundColor: ad.progressBarColor,
+                          animation: `yrAdProgress ${ad.progressDuration}s linear infinite`
+                        }}
+                        className="h-full w-full origin-left"
+                      />
+                    </div>
+                  )}
+
+                  {ad.mediaUrl && (
+                    <div className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center">
+                      {ad.mediaType === 'video' ? (
+                        <video src={ad.mediaUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                      ) : (
+                        <img 
+                          src={ad.mediaUrl} 
+                          alt="Ad" 
+                          style={{ 
+                            objectFit: ad.imageFit || 'cover',
+                            objectPosition: `${ad.imgPosX ?? 50}% ${ad.imgPosY ?? 50}%`,
+                            transform: `scale(${(ad.imgScale ?? 100) / 100})`,
+                            filter: `brightness(${ad.brightness}%) contrast(${ad.contrast}%)`,
+                            imageRendering: 'crisp-edges'
+                          }}
+                          className="w-full h-full" 
+                        />
+                      )}
+                      {ad.imgOverlay > 0 && (
+                        <div className="absolute inset-0 bg-black" style={{ opacity: ad.imgOverlay / 100 }} />
+                      )}
+                    </div>
+                  )}
+
+                  <div className="relative z-10 space-y-2">
+                    {ad.showBadge && (
+                      <span style={{ backgroundColor: ad.badgeBgColor, color: ad.badgeTextColor, borderColor: ad.badgeTextColor }} className="px-2 py-0.5 rounded-full text-[10px] font-black border inline-block">
+                        {ad.badgeText}
+                      </span>
+                    )}
+                    {ad.showHeadline && (
+                      <h4 style={{ color: ad.headlineColor }} className="text-sm font-black drop-shadow-md">
+                        {ad.headline}
+                      </h4>
+                    )}
+                    {ad.showDescription && (
+                      <p style={{ color: ad.descColor }} className="text-xs drop-shadow line-clamp-2">
+                        {ad.description}
+                      </p>
+                    )}
+                  </div>
+
+                  {ad.showButton && (
+                    <div className="relative z-10 pt-2 flex items-center justify-between border-t border-white/10">
+                      <button style={{ backgroundColor: ad.btnBgColor, color: ad.btnTextColor }} className="px-3 py-1.5 rounded-lg font-black text-xs shadow-lg">
+                        {ad.ctaText}
+                      </button>
+                      <span className="text-[9px] text-white/80 font-mono">YR Verified</span>
+                    </div>
+                  )}
                 </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-1 text-center">
+                  <div className="p-2 rounded-xl bg-[#161D2B] border border-[#1F2937]">
+                    <span className="text-[10px] text-[#9CA3AF] block">المشاهدات</span>
+                    <b className="text-sm font-mono text-white">{ad.views.toLocaleString()}</b>
+                  </div>
+                  <div className="p-2 rounded-xl bg-[#161D2B] border border-[#1F2937]">
+                    <span className="text-[10px] text-[#9CA3AF] block">النقرات</span>
+                    <b className="text-sm font-mono text-[#FFC500]">{ad.clicks.toLocaleString()}</b>
+                  </div>
+                </div>
+
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* عرض الجدول */}
+      {viewFormat === 'table' && (
+        <div className="bg-[#0B0F17] rounded-2xl border border-[#1F2937] overflow-hidden">
+          <table className="w-full text-right text-xs">
+            <thead className="bg-[#111827] text-[#9CA3AF] border-b border-[#1F2937]">
+              <tr>
+                <th className="py-3.5 px-4">الإعلان والموضع</th>
+                <th className="py-3.5 px-4">نمط العرض</th>
+                <th className="py-3.5 px-4 text-center">شريط التمرير</th>
+                <th className="py-3.5 px-4 text-center">المشاهدات / النقرات</th>
+                <th className="py-3.5 px-4 text-center">الحالة</th>
+                <th className="py-3.5 px-4 text-center">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#1F2937] text-white">
+              {ads.map(ad => (
+                <tr key={ad.id} className="hover:bg-[#161D2B]/50">
+                  <td className="py-3.5 px-4">
+                    <div className="font-bold">{ad.headline || 'إعلان صافي'}</div>
+                    <div className="text-[10px] text-[#FFC500]">{ad.placementName}</div>
+                  </td>
+                  <td className="py-3.5 px-4 text-[#D1D5DB]">
+                    {ad.imageFit === 'contain' ? 'كامل الصورة 100%' : 'اقتصاص وتموضع مخصص'}
+                  </td>
+                  <td className="py-3.5 px-4 text-center font-mono text-[11px]">
+                    {ad.hasProgressBar ? `${ad.progressDuration} ثوانٍ` : 'معطل'}
+                  </td>
+                  <td className="py-3.5 px-4 text-center font-mono">
+                    <span className="text-white">{ad.views}</span> / <span className="text-[#FFC500]">{ad.clicks}</span>
+                  </td>
+                  <td className="py-3.5 px-4 text-center">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                      ad.status === 'active' ? 'bg-[#16A34A]/20 text-[#16A34A]' : 'bg-amber-500/20 text-amber-400'
+                    }`}>
+                      {ad.status === 'active' ? 'نشط' : 'متوقف'}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4 text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <button onClick={() => toggleAdStatus(ad.id)} className="p-1 rounded bg-[#161D2B] hover:text-[#FFC500]">
+                        {ad.status === 'active' ? <Pause size={13} /> : <Play size={13} />}
+                      </button>
+                                          {/* زر تعديل الإعلان */}
+                    <button
+                      onClick={() => navigate(`/admin/ads/generator?editId=${ad.id}`)}
+                      className="p-1.5 rounded-lg bg-[#FFC500]/15 text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all"
+                      title="تعديل هذا الإعلان"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button onClick={() => deleteAd(ad.id)} className="p-1 rounded bg-[#DC2626]/10 text-[#DC2626]">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
     </div>
   );
 };
