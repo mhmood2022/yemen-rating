@@ -34,6 +34,7 @@ import { BanksManager } from './pages/admin/banks/BanksManager';
 import { AuctionsManager } from './pages/admin/auctions/AuctionsManager';
 import { AuctionLiveMonitor } from './pages/admin/auctions/AuctionLiveMonitor';
 import { AdsManager } from './pages/admin/ads/AdsManager';
+import { SponsorManager } from './pages/admin/ads/SponsorManager';
 import { AdGeneratorStudio } from './pages/admin/ads/AdGeneratorStudio';
 import { RealEstateManager } from './pages/admin/real-estate/RealEstateManager';
 import { CategoriesManager } from './pages/admin/categories/CategoriesManager';
@@ -116,6 +117,7 @@ export function App() {
           <Route path="auctions" element={<AuctionsManager />} />
           <Route path="auctions/:id" element={<AuctionLiveMonitor />} />
           <Route path="ads" element={<AdsManager />} />
+            <Route path="sponsor" element={<SponsorManager />} />
           <Route path="ads/generator" element={<AdGeneratorStudio />} />
           <Route path="jobs" element={<JobsManager />} />
           <Route path="real-estate" element={<RealEstateManager />} />
