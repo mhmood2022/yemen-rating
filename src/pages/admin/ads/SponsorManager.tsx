@@ -78,7 +78,7 @@ export const SponsorManager: React.FC = () => {
         setSponsorRecordId(null);
       }
     } catch (err) {
-      showToast('error', 'تعذر تحميل بيانات الراعي الرسمي من الخادم، يرجى المحاولة لاحقاً');
+      showToast('error', 'تعذر تحميل بيانات الراعي الرسمي من الخادم');
     } finally {
       setLoading(false);
     }
@@ -88,19 +88,19 @@ export const SponsorManager: React.FC = () => {
     loadSponsorData();
   }, []);
 
-  // رفع شعار الراعي مباشرة من الهاتف
+  // رفع الشعار من الهاتف
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 3 * 1024 * 1024) {
-        showToast('warning', 'حجم الصورة كبير، يرجى اختيار شعار بحجم أقل من 3 ميجابايت');
+        showToast('warning', 'حجم الصورة كبير، يرجى اختيار شعار أقل من 3 ميجابايت');
         return;
       }
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
           setLogoUrl(reader.result);
-          showToast('success', 'تم تحميل الشعار من هاتفك بنجاح، لا تنسَ حفظ التعديلات');
+          showToast('success', 'تم تحميل الشعار من هاتفك بنجاح');
         }
       };
       reader.readAsDataURL(file);
@@ -112,7 +112,14 @@ export const SponsorManager: React.FC = () => {
     const statusToSave = desiredStatus !== undefined ? desiredStatus : isActive;
 
     if (statusToSave && !advertiserName.trim()) {
-      showToast('warning', 'يرجى كتابة اسم الكيان أو الجهة الراعية أولاً قبل التفعيل');
+      showToast('warning', 'يرجى كتابة اسم الجهة الراعية أولاً');
+      return;
+    }
+
+    // التحقق من أن الرابط يبدأ بـ http:// أو https://
+    const trimmedUrl = targetUrl.trim();
+    if (trimmedUrl && !trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
+      showToast('warning', 'يجب أن يبدأ رابط الراعي بـ http:// أو https://');
       return;
     }
 
@@ -124,7 +131,7 @@ export const SponsorManager: React.FC = () => {
         data: {
           advertiserName: advertiserName.trim(),
           title: slogan.trim(),
-          targetUrl: targetUrl.trim(),
+          targetUrl: trimmedUrl,
           logoUrl: logoUrl.trim(),
           contractExpiry: contractExpiry.trim()
         },
@@ -154,12 +161,12 @@ export const SponsorManager: React.FC = () => {
 
       setIsActive(statusToSave);
       if (statusToSave) {
-        showToast('success', 'تم حفظ وتفعيل الراعي الرسمي بنجاح، ويظهر الآن لجميع الزوار في رأس شريط البحث');
+        showToast('success', 'تم حفظ وتفعيل الراعي الرسمي بنجاح ويظهر الآن في الرئيسية');
       } else {
-        showToast('success', 'تم إيقاف الرعاية بنجاح، واختفى شريط الراعي من الصفحة الرئيسية تماماً');
+        showToast('success', 'تم إيقاف الرعاية بنجاح واختفى شريط الراعي من الرئيسية');
       }
     } catch (err: any) {
-      showToast('error', 'حدث خطأ أثناء الحفظ في قاعدة البيانات: ' + (err.message || 'يرجى مراجعة الاتصال'));
+      showToast('error', 'حدث خطأ أثناء الحفظ في قاعدة البيانات');
     } finally {
       setSaving(false);
     }
@@ -167,8 +174,7 @@ export const SponsorManager: React.FC = () => {
 
   return (
     <div dir="rtl" className="space-y-6 font-['Cairo',sans-serif] text-white p-4 max-w-6xl mx-auto">
-      
-      {/* التنبيهات الفخمة المتناسقة مع هوية يمن ريتغ */}
+      {/* التنبيهات بالهوية الفخمة */}
       {toast && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-300">
           <div className={`px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border backdrop-blur-md ${
@@ -191,7 +197,7 @@ export const SponsorManager: React.FC = () => {
         </div>
       )}
 
-      {/* شريط العنوان */}
+      {/* الرأس */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
@@ -199,7 +205,7 @@ export const SponsorManager: React.FC = () => {
             <span>إدارة الراعي الرسمي للصفحة الرئيسية</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            التحكم الحصري بالجهة الراعية وشعار الرعاية الذي يظهر في أعلى شريط البحث لجميع زوار المنصة.
+            التحكم الحصري بالجهة الراعية في أعلى شريط البحث بالصفحة الرئيسية.
           </p>
         </div>
 
@@ -209,7 +215,7 @@ export const SponsorManager: React.FC = () => {
           className="px-3.5 py-2 bg-[#0D1527] border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
-          <span>تحديث البيانات</span>
+          <span>تحديث</span>
         </button>
       </div>
 
@@ -220,53 +226,53 @@ export const SponsorManager: React.FC = () => {
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <h2 className="text-sm font-bold text-white flex items-center gap-2">
               <ShieldCheck className="text-[#F5C400]" size={17} />
-              <span>إعدادات عقد الرعاية وبيانات الراعي</span>
+              <span>بيانات الراعي</span>
             </h2>
             <span className={`px-2.5 py-1 text-xs font-black rounded-lg ${
               isActive
                 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                 : 'bg-slate-800 text-slate-400 border border-slate-700'
             }`}>
-              {isActive ? 'الرعاية نشطة في الرئيسية' : 'الرعاية معطلة (مخفية)'}
+              {isActive ? 'الرعاية نشطة' : 'الرعاية معطلة'}
             </span>
           </div>
 
           <div className="space-y-3.5 text-xs">
-            {/* 1. اسم الجهة الراعية */}
+            {/* اسم الجهة الراعية */}
             <div>
               <label className="block text-slate-300 font-bold mb-1.5 flex items-center gap-1.5">
                 <Building size={14} className="text-[#F5C400]" />
-                <span>اسم الكيان / الجهة الراعية الرسمية *</span>
+                <span>اسم الجهة الراعية *</span>
               </label>
               <input
                 type="text"
                 value={advertiserName}
                 onChange={(e) => setAdvertiserName(e.target.value)}
-                placeholder="مثال: بنك الكريمي للتمويل الأصغر الإسلامي، شركة يمن موبايل، مجموعة هائل سعيد..."
+                placeholder="اسم الجهة الراعية"
                 className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-3 text-white text-xs focus:outline-none focus:border-[#F5C400]"
               />
             </div>
 
-            {/* 2. الجملة الإعلانية أو الشعار */}
+            {/* الشعار الترويجي */}
             <div>
               <label className="block text-slate-300 font-bold mb-1.5 flex items-center gap-1.5">
                 <Tag size={14} className="text-[#F5C400]" />
-                <span>شعار الرعاية أو الجملة الترويجية</span>
+                <span>الشعار أو الجملة الترويجية</span>
               </label>
               <input
                 type="text"
                 value={slogan}
                 onChange={(e) => setSlogan(e.target.value)}
-                placeholder="مثال: شريك التمكين المالي والتنمية الوطنية، الشبكة الأوسع والأقرب إليك..."
+                placeholder="الشعار الترويجي"
                 className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-3 text-white text-xs focus:outline-none focus:border-[#F5C400]"
               />
             </div>
 
-            {/* 3. رفع شعار الراعي من الهاتف */}
+            {/* رفع الشعار من الهاتف */}
             <div>
               <label className="block text-slate-300 font-bold mb-1.5 flex items-center gap-1.5">
                 <ImagePlus size={14} className="text-[#F5C400]" />
-                <span>شعار الراعي الرسمي (من استوديو الجوال)</span>
+                <span>شعار الراعي الرسمي</span>
               </label>
 
               <input
@@ -292,7 +298,7 @@ export const SponsorManager: React.FC = () => {
                     <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/5 p-0.5 border border-slate-700 shrink-0">
                       <img src={logoUrl} alt="logo-preview" className="w-full h-full object-contain" />
                     </div>
-                    <span className="text-[11px] text-emerald-400 font-bold">تم تحميل الشعار</span>
+                    <span className="text-[11px] text-emerald-400 font-bold">تم التحميل</span>
                     <button
                       type="button"
                       onClick={() => setLogoUrl('')}
@@ -306,26 +312,26 @@ export const SponsorManager: React.FC = () => {
               </div>
             </div>
 
-            {/* 4. رابط الزيارة وتاريخ الانتهاء */}
+            {/* رابط الزيارة (إلزامي يبدأ بـ http://) وتاريخ الانتهاء */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               <div>
                 <label className="block text-slate-300 font-bold mb-1.5 flex items-center gap-1.5">
                   <Globe size={14} className="text-[#F5C400]" />
-                  <span>رابط الزيارة أو صفحة المنشأة</span>
+                  <span>رابط الموقع (يبدأ بـ http://)</span>
                 </label>
                 <input
                   type="text"
                   value={targetUrl}
                   onChange={(e) => setTargetUrl(e.target.value)}
-                  placeholder="https://... أو /banks/kuraimi-bank"
-                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-3 text-white text-xs text-left focus:outline-none focus:border-[#F5C400]"
+                  placeholder="http://example.com"
+                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-3 text-white text-xs text-left font-mono focus:outline-none focus:border-[#F5C400]"
                 />
               </div>
 
               <div>
                 <label className="block text-slate-300 font-bold mb-1.5 flex items-center gap-1.5">
                   <Calendar size={14} className="text-[#F5C400]" />
-                  <span>تاريخ انتهاء عقد الرعاية</span>
+                  <span>تاريخ انتهاء الرعاية</span>
                 </label>
                 <input
                   type="date"
@@ -339,21 +345,19 @@ export const SponsorManager: React.FC = () => {
 
           {/* أزرار الإجراءات */}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                disabled={saving}
-                onClick={() => handleSaveSponsor(!isActive)}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30'
-                    : 'bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30'
-                }`}
-              >
-                <Power size={14} />
-                <span>{isActive ? 'إيقاف وتعطيل الرعاية (إخفاء)' : 'تنشيط وتفعيل الرعاية الآن'}</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => handleSaveSponsor(!isActive)}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                isActive
+                  ? 'bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30'
+                  : 'bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30'
+              }`}
+            >
+              <Power size={14} />
+              <span>{isActive ? 'إيقاف وتعطيل الرعاية' : 'تنشيط وتفعيل الرعاية الآن'}</span>
+            </button>
 
             <button
               type="button"
@@ -362,21 +366,20 @@ export const SponsorManager: React.FC = () => {
               className="px-6 py-2.5 bg-[#F5C400] hover:bg-[#DDAF00] text-black text-xs font-black rounded-xl transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
             >
               <Save size={15} />
-              <span>{saving ? 'جاري الحفظ في Supabase...' : 'حفظ التعديلات'}</span>
+              <span>{saving ? 'جاري الحفظ...' : 'حفظ التعديلات'}</span>
             </button>
           </div>
         </div>
 
-        {/* عمود المعاينة الحية */}
+        {/* المعاينة الحية */}
         <div className="space-y-4">
           <div className="bg-[#0D1527] border border-slate-800 rounded-2xl p-4 space-y-3 shadow-xl">
             <div className="flex items-center gap-2 text-xs font-bold text-[#F5C400]">
               <Eye size={15} />
-              <span>معاينة شريط الراعي في الصفحة الرئيسية:</span>
+              <span>المعاينة في شريط البحث:</span>
             </div>
 
-            {/* تمثيل شريط الراعي المدمج */}
-            <div className="bg-[#060A13] border border-slate-800 rounded-xl px-3.5 py-2 flex items-center justify-between text-xs transition-all">
+            <div className="bg-[#060A13] border border-slate-800 rounded-xl px-3.5 py-2 flex items-center justify-between text-xs">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="px-2 py-0.5 rounded-md bg-[#F5C400]/15 text-[#F5C400] text-[10px] font-black border border-[#F5C400]/30 flex items-center gap-1 shrink-0">
                   <Sparkles size={11} />
@@ -384,11 +387,11 @@ export const SponsorManager: React.FC = () => {
                 </span>
                 {logoUrl && (
                   <div className="w-5 h-5 rounded overflow-hidden bg-white/10 p-0.5 border border-slate-700 shrink-0">
-                    <img src={logoUrl} alt="sponsor-logo" className="w-full h-full object-contain" />
+                    <img src={logoUrl} alt="logo" className="w-full h-full object-contain" />
                   </div>
                 )}
                 <span className="text-white text-xs font-bold truncate">
-                  {advertiserName || '(اكتب اسم الراعي للمعاينة)'}
+                  {advertiserName || 'اسم الجهة'}
                 </span>
               </div>
 
@@ -401,24 +404,24 @@ export const SponsorManager: React.FC = () => {
 
             <p className="text-[11px] text-slate-400 leading-relaxed bg-[#060A13] p-2.5 rounded-xl border border-slate-800">
               {isActive
-                ? '✅ الرعاية مفعلة حالياً؛ ستظهر في رأس شريط البحث في الصفحة الرئيسية لجميع الزوار مع الشعار.'
-                : '⏸️ الرعاية معطلة حالياً؛ شريط البحث يظهر بدون أي راعٍ وبشكل نظيف تماماً.'}
+                ? 'الرعاية مفعلة؛ تظهر في الصفحة الرئيسية مع الشعار والرابط.'
+                : 'الرعاية معطلة؛ شريط البحث يظهر بدون أي راعٍ.'}
             </p>
           </div>
 
           <div className="bg-[#0D1527] border border-slate-800 rounded-2xl p-4 space-y-2.5 text-xs text-slate-300 shadow-xl">
-            <h3 className="font-bold text-white border-b border-slate-800 pb-2">سجل العقد والمشاهدات</h3>
+            <h3 className="font-bold text-white border-b border-slate-800 pb-2">بيانات الرعاية</h3>
             <div className="flex justify-between py-1 border-b border-slate-800/60">
-              <span className="text-slate-400">حالة الربط:</span>
-              <span className="text-emerald-400 font-bold">Supabase (published_ads)</span>
+              <span className="text-slate-400">حالة الرابط:</span>
+              <span className="text-emerald-400 font-bold">Supabase</span>
             </div>
             <div className="flex justify-between py-1 border-b border-slate-800/60">
               <span className="text-slate-400">عدد المشاهدات:</span>
               <span className="font-mono text-white font-bold">{viewsCount.toLocaleString()}</span>
             </div>
             <div className="flex justify-between py-1">
-              <span className="text-slate-400">تاريخ انتهاء العقد:</span>
-              <span className="font-mono text-[#F5C400] font-bold">{contractExpiry || 'مستمر / غير محدد'}</span>
+              <span className="text-slate-400">تاريخ الانتهاء:</span>
+              <span className="font-mono text-[#F5C400] font-bold">{contractExpiry || 'مستمر'}</span>
             </div>
           </div>
         </div>
