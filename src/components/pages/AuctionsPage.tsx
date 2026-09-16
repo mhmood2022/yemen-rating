@@ -43,7 +43,6 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'auction' | 'fixed_price'>('all');
   const [cityFilter, setCityFilter] = useState('all');
 
-  // عمولات لوحة التحكم
   const [commissionSettings, setCommissionSettings] = useState<any>(null);
 
   // نافذة أضف معروض
@@ -87,7 +86,6 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     }).catch(() => {});
   }, []);
 
-  // فحص تسجيل الدخول قبل فتح النافذة
   const handleOpenAddModal = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
@@ -98,7 +96,6 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     setIsAddModalOpen(true);
   };
 
-  // رفع من 1 إلى 6 صور من الهاتف
   const handleImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
@@ -135,7 +132,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     if (!title.trim() || !consentListing) return;
 
     if (sellerPhone.length !== 9) {
-      setToastMessage('يرجى إدخال رقم هاتف يمني صحيح مكون من 9 أرقام بالضبط (مثال: 77XXXXXXX)');
+      setToastMessage('يرجى إدخال رقم هاتف مكون من 9 أرقام بالضبط (مثال: 77XXXXXXX)');
       setTimeout(() => setToastMessage(null), 3500);
       return;
     }
@@ -181,7 +178,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       setSellerPhone('');
       setUploadedImages([]);
       setConsentListing(false);
-      setToastMessage('تم نشر المعروض بنجاح وتوثيق الصور وشروط العمولة');
+      setToastMessage('تم نشر المعروض بنجاح وتوثيق الصور');
       setTimeout(() => setToastMessage(null), 4000);
       fetchAuctions();
     } catch (err: any) {
@@ -204,8 +201,8 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const auctionCommRate = commissionSettings?.default_auction_commission_rate || 5;
 
   return (
-    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white">
-      <AdBanner placementId="6" className="mb-2" />
+    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Cairo'] text-white">
+      <AdBanner placementId="6" className="mb-1" />
 
       {toastMessage && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#F5C400] text-black px-4 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2">
@@ -214,7 +211,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* الرأس مع زر أضف معروض المحمي بتسجيل الدخول */}
+      {/* الرأس مع زر أضف معروض */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
         <div className="flex items-center gap-2.5">
           {onBack && (
@@ -251,42 +248,38 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* شريط الوساطة الإلزامي المعتمد من لوحة التحكم */}
-      <div className="bg-[#0D1527] border border-[#16A34A]/40 rounded-2xl p-3 flex items-center gap-2.5 text-xs text-slate-200">
-        <ShieldCheck className="w-5 h-5 text-[#16A34A] shrink-0" />
-        <span>تخضع جميع المزادات والبيوع لوساطة وضمان يمن ريتغ الرسمية لحماية حقوق البائع والمشتري مع تثبيت وتوثيق عمولة المنصة المعتمدة.</span>
-      </div>
-
-      {/* شريط الفلترة الموحد */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0D1527] p-3 rounded-2xl border border-slate-800">
-        <div className="flex items-center gap-1.5 bg-[#060A13] p-1 rounded-xl border border-slate-800">
-          <button
-            onClick={() => setActiveTab('all')}
-            className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
-              activeTab === 'all' ? 'bg-[#F5C400] text-black' : 'text-slate-300 hover:text-white'
-            }`}
-          >
-            الكل
-          </button>
-          <button
-            onClick={() => setActiveTab('auction')}
-            className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
-              activeTab === 'auction' ? 'bg-[#F5C400] text-black' : 'text-slate-300 hover:text-white'
-            }`}
-          >
-            مزاد حي
-          </button>
-          <button
-            onClick={() => setActiveTab('fixed_price')}
-            className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
-              activeTab === 'fixed_price' ? 'bg-[#F5C400] text-black' : 'text-slate-300 hover:text-white'
-            }`}
-          >
-            بيع مباشر
-          </button>
+      {/* شريط الفلترة الموحد بدون أي ألوان رمادية ومستطيل مضبوط بدقة */}
+      <div className="bg-[#0D1527] p-3 rounded-2xl border border-slate-800 space-y-2.5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1 bg-[#060A13] p-1 rounded-xl border border-slate-800 flex-1">
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                activeTab === 'all' ? 'bg-[#F5C400] text-black font-black' : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              الكل
+            </button>
+            <button
+              onClick={() => setActiveTab('auction')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                activeTab === 'auction' ? 'bg-[#F5C400] text-black font-black' : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              مزاد حي
+            </button>
+            <button
+              onClick={() => setActiveTab('fixed_price')}
+              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                activeTab === 'fixed_price' ? 'bg-[#F5C400] text-black font-black' : 'text-slate-300 hover:text-white'
+              }`}
+            >
+              بيع مباشر
+            </button>
+          </div>
         </div>
 
-        <div className="w-full sm:w-64">
+        <div>
           <YRSelect
             value={cityFilter}
             options={YEMEN_GOVERNORATES}
@@ -296,17 +289,17 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* شبكة المزادات الحقيقية */}
+      {/* شبكة المزادات */}
       {loading ? (
         <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
           <div className="w-8 h-8 rounded-full border-2 border-[#F5C400] border-t-transparent animate-spin" />
-          <span className="text-xs font-bold">جاري تحميل المزادات الحقيقية...</span>
+          <span className="text-xs font-bold text-white">جاري تحميل المزادات الحقيقية...</span>
         </div>
       ) : filteredListings.length === 0 ? (
         <div className="py-16 text-center bg-[#0D1527] rounded-2xl border border-slate-800 p-6 space-y-3">
           <AlertCircle className="w-12 h-12 text-[#F5C400] mx-auto opacity-70" />
           <h3 className="text-base font-bold text-white">لا توجد مزادات معروضة حالياً</h3>
-          <p className="text-xs text-slate-400">كن أول من يضيف معروضاً بالضغط على "أضف مزاد / معروض" أعلاه.</p>
+          <p className="text-xs text-slate-300">كن أول من يضيف معروضاً بالضغط على "أضف مزاد / معروض" أعلاه.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -316,7 +309,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* نافذة أضف معروض مع رفع 1 إلى 6 صور والإقرار الأخضر الشفاف */}
+      {/* نافذة أضف معروض مع رفع 1-6 صور والإقرار الأخضر الداخلي المعتمد */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-[#0D1527] border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Cairo'] text-white shadow-2xl">
@@ -355,7 +348,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               </div>
 
               <div>
-                <label className="block text-slate-300 mb-1">عنوان المعروض *</label>
+                <label className="block text-white mb-1">عنوان المعروض *</label>
                 <input
                   required
                   type="text"
@@ -366,10 +359,10 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 />
               </div>
 
-              {/* قسم رفع الصور من الهاتف (من 1 إلى 6 صور) */}
+              {/* قسم رفع الصور من الهاتف (1 إلى 6 صور) */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-slate-300 font-bold flex items-center gap-1">
+                  <label className="text-white font-bold flex items-center gap-1">
                     <ImagePlus size={14} className="text-[#F5C400]" />
                     <span>صور المعروض من الهاتف (من 1 إلى 6 صور)</span>
                   </label>
@@ -391,13 +384,12 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadedImages.length >= 6}
-                  className="w-full py-2.5 border border-dashed border-slate-700 hover:border-[#F5C400] rounded-xl bg-[#060A13] text-slate-300 hover:text-white flex items-center justify-center gap-2 text-xs font-bold transition-all disabled:opacity-50"
+                  className="w-full py-2.5 border border-dashed border-slate-800 hover:border-[#F5C400] rounded-xl bg-[#060A13] text-white flex items-center justify-center gap-2 text-xs font-bold transition-all disabled:opacity-50"
                 >
                   <ImagePlus size={16} className="text-[#F5C400]" />
                   <span>{uploadedImages.length >= 6 ? 'تم بلوغ الحد الأقصى (6 صور)' : 'اضغط لاختيار الصور من استوديو الجوال'}</span>
                 </button>
 
-                {/* مصغرات الصور المرفوعة */}
                 {uploadedImages.length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mt-2">
                     {uploadedImages.map((img, idx) => (
@@ -418,7 +410,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-slate-300 mb-1">المدينة أو المحافظة *</label>
+                  <label className="block text-white mb-1">المدينة أو المحافظة *</label>
                   <YRSelect
                     value={city}
                     options={YEMEN_GOVERNORATES.filter((g) => g.value !== 'all')}
@@ -426,7 +418,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 mb-1">العملة *</label>
+                  <label className="block text-white mb-1">العملة *</label>
                   <YRSelect
                     value={currency}
                     options={CURRENCIES}
@@ -436,7 +428,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               </div>
 
               <div>
-                <label className="block text-slate-300 mb-1">
+                <label className="block text-white mb-1">
                   {saleType === 'auction' ? 'السعر الابتدائي للمزاد *' : 'السعر المطلوب للبيع *'}
                 </label>
                 <input
@@ -449,7 +441,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               </div>
 
               <div>
-                <label className="block text-slate-300 mb-1">
+                <label className="block text-white mb-1">
                   رقم الهاتف (واتساب) * <span className="text-[#F5C400] text-[10px]">(9 أرقام بالضبط)</span>
                 </label>
                 <input
@@ -461,13 +453,13 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   placeholder="77XXXXXXX"
                   className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white text-left font-mono focus:outline-none focus:border-[#F5C400]"
                 />
-                <span className="text-[10px] text-slate-400 block mt-0.5">
+                <span className="text-[10px] text-slate-300 block mt-0.5">
                   تم إدخال: {sellerPhone.length} من 9 أرقام
                 </span>
               </div>
 
               <div>
-                <label className="block text-slate-300 mb-1">الوصف والمواصفات</label>
+                <label className="block text-white mb-1">الوصف والمواصفات</label>
                 <textarea
                   rows={2}
                   value={description}
@@ -502,7 +494,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                  className="px-4 py-2 rounded-xl bg-[#060A13] border border-slate-800 text-white text-xs font-bold"
                 >
                   إلغاء
                 </button>

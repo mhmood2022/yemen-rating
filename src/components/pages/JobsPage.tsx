@@ -94,7 +94,6 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     }).catch(() => {});
   }, []);
 
-  // فحص تسجيل الدخول قبل فتح النافذة
   const handleOpenAddModal = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
@@ -173,8 +172,8 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const jobCommText = `${jobCommissionAmount.toLocaleString()} ${jobCommissionCurr}`;
 
   return (
-    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white">
-      <AdBanner placementId="4" className="mb-2" />
+    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Cairo'] text-white">
+      <AdBanner placementId="4" className="mb-1" />
 
       {toastMessage && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#F5C400] text-black px-4 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2">
@@ -183,7 +182,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* الرأس مع زر أضف وظيفة المحمي */}
+      {/* الرأس مع زر أضف وظيفة */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
         <div className="flex items-center gap-2.5">
           {onBack && (
@@ -220,49 +219,40 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* شريط الوساطة الإلزامي المعتمد من لوحة التحكم */}
-      <div className="bg-[#0D1527] border border-[#16A34A]/40 rounded-2xl p-3 flex items-center gap-2.5 text-xs text-slate-200">
-        <ShieldCheck className="w-5 h-5 text-[#16A34A] shrink-0" />
-        <span>توفر منصة يمن ريتغ خدمة الوساطة والتوظيف للوصول إلى الكفاءات المناسبة؛ ويتم حجب بيانات المنشأة لضمان سرية وموثوقية التنسيق الوظيفي وسداد عمولة التوظيف المعتمدة.</span>
-      </div>
-
-      {/* شريط الفلترة الموحد مع YRSelect */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0D1527] p-3 rounded-2xl border border-slate-800">
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <div className="w-48">
-            <YRSelect
-              value={cityFilter}
-              options={YEMEN_GOVERNORATES}
-              onChange={(val) => setCityFilter(val)}
-              placeholder="كل المدن والمحافظات"
-            />
-          </div>
-          <div className="w-44">
-            <YRSelect
-              value={workTypeFilter}
-              options={WORK_TYPES}
-              onChange={(val) => setWorkTypeFilter(val)}
-              placeholder="كافة أنواع الدوام"
-            />
-          </div>
+      {/* شريط الفلترة الموحد الأنيق */}
+      <div className="bg-[#0D1527] p-3 rounded-2xl border border-slate-800 space-y-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <YRSelect
+            value={cityFilter}
+            options={YEMEN_GOVERNORATES}
+            onChange={(val) => setCityFilter(val)}
+            placeholder="كل المدن والمحافظات"
+          />
+          <YRSelect
+            value={workTypeFilter}
+            options={WORK_TYPES}
+            onChange={(val) => setWorkTypeFilter(val)}
+            placeholder="كافة أنواع الدوام"
+          />
         </div>
-
-        <span className="text-xs text-[#F5C400] font-bold">
-          الوظائف المتاحة: {filteredJobs.length}
-        </span>
+        <div className="flex justify-end pt-1">
+          <span className="text-xs text-[#F5C400] font-bold">
+            الوظائف المتاحة: {filteredJobs.length}
+          </span>
+        </div>
       </div>
 
       {/* المحتوى */}
       {loading ? (
         <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
           <div className="w-8 h-8 rounded-full border-2 border-[#F5C400] border-t-transparent animate-spin" />
-          <span className="text-xs font-bold">جاري تحميل الوظائف الحقيقية...</span>
+          <span className="text-xs font-bold text-white">جاري تحميل الوظائف الحقيقية...</span>
         </div>
       ) : filteredJobs.length === 0 ? (
         <div className="py-16 text-center bg-[#0D1527] rounded-2xl border border-slate-800 p-6 space-y-3">
           <AlertCircle className="w-12 h-12 text-[#F5C400] mx-auto opacity-70" />
           <h3 className="text-base font-bold text-white">لا توجد وظائف شاغرة معلنة حالياً</h3>
-          <p className="text-xs text-slate-400">كن أول من ينشر شاغراً بالضغط على زر "أضف وظيفة" أعلاه.</p>
+          <p className="text-xs text-slate-300">كن أول من ينشر شاغراً بالضغط على زر "أضف وظيفة" أعلاه.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -272,7 +262,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* نافذة أضف وظيفة مع الإقرار الأخضر الشفاف بالنص الأصلي الإلزامي */}
+      {/* نافذة أضف وظيفة */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-[#0D1527] border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Cairo'] text-white shadow-2xl">
@@ -287,7 +277,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
             <form onSubmit={handleAddJob} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-300 mb-1">المسمى الوظيفي *</label>
+                <label className="block text-white mb-1">المسمى الوظيفي *</label>
                 <input
                   required
                   type="text"
@@ -300,7 +290,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-slate-300 mb-1">القطاع الوظيفي *</label>
+                  <label className="block text-white mb-1">القطاع الوظيفي *</label>
                   <YRSelect
                     value={newSector}
                     options={SECTORS}
@@ -308,7 +298,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 mb-1">المحافظة *</label>
+                  <label className="block text-white mb-1">المحافظة *</label>
                   <YRSelect
                     value={newCity}
                     options={YEMEN_GOVERNORATES.filter((g) => g.value !== 'all')}
@@ -319,7 +309,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-slate-300 mb-1">نوع العمل *</label>
+                  <label className="block text-white mb-1">نوع العمل *</label>
                   <YRSelect
                     value={newWorkType}
                     options={WORK_TYPES.filter((t) => t.value !== 'all')}
@@ -327,7 +317,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-300 mb-1">الراتب المقترح</label>
+                  <label className="block text-white mb-1">الراتب المقترح</label>
                   <input
                     type="text"
                     value={newSalaryRange}
@@ -339,7 +329,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               </div>
 
               <div>
-                <label className="block text-slate-300 mb-1">
+                <label className="block text-white mb-1">
                   رقم هاتف مسؤول التوظيف * <span className="text-[#F5C400] text-[10px]">(9 أرقام بالضبط - سري للوساطة)</span>
                 </label>
                 <input
@@ -351,13 +341,13 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                   placeholder="77XXXXXXX"
                   className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white text-left font-mono focus:outline-none focus:border-[#F5C400]"
                 />
-                <span className="text-[10px] text-slate-400 block mt-0.5">
+                <span className="text-[10px] text-slate-300 block mt-0.5">
                   تم إدخال: {employerPhone.length} من 9 أرقام
                 </span>
               </div>
 
               <div>
-                <label className="block text-slate-300 mb-1">الوصف وشروط التقديم *</label>
+                <label className="block text-white mb-1">الوصف وشروط التقديم *</label>
                 <textarea
                   required
                   rows={3}
@@ -368,7 +358,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 />
               </div>
 
-              {/* شرط مقدم التوظيف الإلزامي بالخلفية الخضراء الشفافة بالنص الأصلي الإلزامي */}
+              {/* شرط مقدم التوظيف الإلزامي بالخلفية الخضراء الشفافة */}
               <div className="p-3.5 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/40 space-y-2 text-right">
                 <div className="flex items-center gap-1.5 text-[#16A34A] font-bold text-xs">
                   <ShieldCheck size={16} />
@@ -394,7 +384,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold"
+                  className="px-4 py-2 rounded-xl bg-[#060A13] border border-slate-800 text-white text-xs font-bold"
                 >
                   إلغاء
                 </button>
