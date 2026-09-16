@@ -9,7 +9,6 @@ import {
   Landmark,
   ChevronLeft,
   RefreshCw,
-  Layers,
   ArrowLeft,
   ExternalLink
 } from 'lucide-react';
@@ -58,14 +57,13 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // إعلان الراعي الحقيقي من جدول published_ads في Supabase
   const [realSponsorAd, setRealSponsorAd] = useState<{
     advertiserName: string;
     title?: string;
     targetUrl?: string;
+    logoUrl?: string;
   } | null>(null);
 
-  // نتائج البحث
   const [matchedCategories, setMatchedCategories] = useState<any[]>([]);
   const [matchedBusinesses, setMatchedBusinesses] = useState<any[]>([]);
   const [matchedBanks, setMatchedBanks] = useState<any[]>([]);
@@ -73,7 +71,6 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // جلب الراعي الرسمي الحقيقي من Supabase
   useEffect(() => {
     async function loadRealSponsor() {
       try {
@@ -93,7 +90,8 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
             setRealSponsorAd({
               advertiserName: name,
               title: adData.title || data.title || '',
-              targetUrl: adData.targetUrl || data.target_url || ''
+              targetUrl: adData.targetUrl || data.target_url || '',
+              logoUrl: adData.logoUrl || data.logo_url || ''
             });
             return;
           }
@@ -137,7 +135,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     });
     setMatchedCategories(catMatches.slice(0, 4));
 
-    // مطابقة المنشآت والبنوك في Supabase
+    // مطابقة المنشآت الحقيقية
     try {
       let bizQuery = supabase
         .from('businesses')
@@ -213,7 +211,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     <div ref={containerRef} className={`relative z-40 font-['Cairo',sans-serif] ${className}`}>
       <div className="rounded-2xl bg-[#0D1527] border border-slate-800 hover:border-[#F5C400]/50 transition-all shadow-2xl overflow-hidden">
         
-        {/* 🌟 إعلان الراعي الحقيقي من Supabase - يظهر فقط إذا كان مفعلاً من الإدارة */}
+        {/* إعلان الراعي الحقيقي مع الشعار المرفوع من الهاتف */}
         {realSponsorAd && (
           <div className="bg-[#060A13] border-b border-slate-800 px-3.5 py-1.5 flex items-center justify-between text-xs">
             <div className="flex items-center gap-2 min-w-0">
@@ -221,6 +219,13 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 <Sparkles size={11} />
                 <span>الراعي الرسمي</span>
               </span>
+
+              {realSponsorAd.logoUrl && (
+                <div className="w-5 h-5 rounded overflow-hidden bg-white/10 p-0.5 border border-slate-700 shrink-0">
+                  <img src={realSponsorAd.logoUrl} alt="sponsor-logo" className="w-full h-full object-contain" />
+                </div>
+              )}
+
               <span className="text-white text-xs font-bold truncate">
                 {realSponsorAd.advertiserName}
               </span>
@@ -247,9 +252,8 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
           </div>
         )}
 
-        {/* 🔍 شريط بحث يلب المزدوج */}
+        {/* شريط بحث يلب المزدوج */}
         <form onSubmit={handleFullSearchSubmit} className="p-2 sm:p-2.5 flex flex-col md:flex-row items-center gap-2">
-          {/* ماذا تبحث عنه؟ */}
           <div className="flex items-center gap-2 bg-[#060A13] border border-slate-800 rounded-xl px-3 h-11 flex-1 w-full focus-within:border-[#F5C400]/60 transition-colors">
             {isSearching ? (
               <RefreshCw size={17} className="animate-spin text-[#F5C400] shrink-0" />
@@ -278,7 +282,6 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
             )}
           </div>
 
-          {/* المحافظة */}
           <div className="w-full md:w-56 shrink-0">
             <YRSelect
               value={selectedGov}
@@ -288,7 +291,6 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
             />
           </div>
 
-          {/* زر البحث */}
           <button
             type="submit"
             className="w-full md:w-auto h-10 sm:h-10 px-5 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black text-xs rounded-xl flex items-center justify-center gap-1.5 shrink-0 transition-all shadow-md active:scale-95 cursor-pointer"
@@ -299,7 +301,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
         </form>
       </div>
 
-      {/* القائمة المنبثقة الذكية للنتائج اللحظية من Supabase */}
+      {/* قائمة النتائج المنبثقة الذكية */}
       {isOpen && searchTerm.trim().length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-[#0D1527] border border-slate-800 rounded-2xl shadow-2xl p-2.5 z-50 max-h-96 overflow-y-auto space-y-2">
           {totalMatches === 0 && !isSearching ? (
@@ -310,7 +312,6 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
             </div>
           ) : (
             <>
-              {/* بوابات الخدمات المعتمدة */}
               {matchedCategories.length > 0 && (
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
@@ -337,7 +338,6 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 </div>
               )}
 
-              {/* المنشآت الحقيقية من Supabase */}
               {matchedBusinesses.length > 0 && (
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
@@ -368,7 +368,6 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 </div>
               )}
 
-              {/* البنوك والمصارف الحقيقية */}
               {matchedBanks.length > 0 && (
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
@@ -397,7 +396,6 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 </div>
               )}
 
-              {/* استعراض كافة النتائج في الدليل */}
               <div
                 onClick={() => handleFullSearchSubmit()}
                 className="mt-2 pt-2 border-t border-slate-800 p-2.5 rounded-xl bg-[#060A13] hover:bg-[#F5C400]/10 text-center cursor-pointer transition-colors flex items-center justify-center gap-2"
