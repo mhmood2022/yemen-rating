@@ -10,7 +10,8 @@ import {
   ChevronLeft,
   RefreshCw,
   Layers,
-  ArrowLeft
+  ArrowLeft,
+  ExternalLink
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { YRSelect } from '../common/YRSelect';
@@ -57,8 +58,12 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // إعلان الراعي الحقيقي من Supabase فقط
-  const [realSponsorAd, setRealSponsorAd] = useState<any | null>(null);
+  // إعلان الراعي الحقيقي من جدول published_ads في Supabase
+  const [realSponsorAd, setRealSponsorAd] = useState<{
+    advertiserName: string;
+    title?: string;
+    targetUrl?: string;
+  } | null>(null);
 
   // نتائج البحث
   const [matchedCategories, setMatchedCategories] = useState<any[]>([]);
@@ -68,22 +73,32 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // 1. جلب إعلان الراعي الحقيقي فقط بدون أي معلومات وهمية
+  // جلب الراعي الرسمي الحقيقي من Supabase
   useEffect(() => {
     async function loadRealSponsor() {
       try {
-        const { data } = await supabase
-          .from('ads')
+        const { data, error } = await supabase
+          .from('published_ads')
           .select('*')
-          .or("ad_type.eq.sponsor,placements.cs.[\"home_top\"],status.eq.published")
+          .eq('status', 'active')
+          .eq('placement_id', 'home_sponsor')
+          .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
-        if (data && data.advertiser_name) {
-          setRealSponsorAd(data);
-        } else {
-          setRealSponsorAd(null);
+        if (!error && data) {
+          const adData = data.data || {};
+          const name = adData.advertiserName || data.advertiser_name || adData.title;
+          if (name) {
+            setRealSponsorAd({
+              advertiserName: name,
+              title: adData.title || data.title || '',
+              targetUrl: adData.targetUrl || data.target_url || ''
+            });
+            return;
+          }
         }
+        setRealSponsorAd(null);
       } catch (err) {
         setRealSponsorAd(null);
       }
@@ -91,7 +106,6 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     loadRealSponsor();
   }, []);
 
-  // إغلاق القائمة عند النقر خارجها
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -102,7 +116,6 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 2. محرك بحث حي في قاعدة بيانات Supabase (Yelp Search Engine)
   const performLiveSearch = async (term: string, gov: string) => {
     const clean = term.trim();
     if (!clean) {
@@ -116,7 +129,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     setIsSearching(true);
     const lower = clean.toLowerCase();
 
-    // أ) مطابقة البوابات والتصنيفات الوطنية (شاليهات، مستشفيات، عيادات، حمامات بخار، إلخ)
+    // مطابقة البوابات
     const catMatches = officialCategories.filter((cat) => {
       const name = (cat.name || '').toLowerCase();
       const id = (cat.id || '').toLowerCase();
@@ -124,7 +137,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     });
     setMatchedCategories(catMatches.slice(0, 4));
 
-    // ب) البحث الحقيقي في Supabase في جدول المنشآت والمحلات businesses
+    // مطابقة المنشآت والبنوك في Supabase
     try {
       let bizQuery = supabase
         .from('businesses')
@@ -185,7 +198,6 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     }
   };
 
-  // زر البحث الرئيسي (الانتقال للدليل العام بفلتر النشاط والمحافظة)
   const handleFullSearchSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsOpen(false);
@@ -201,7 +213,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     <div ref={containerRef} className={`relative z-40 font-['Cairo',sans-serif] ${className}`}>
       <div className="rounded-2xl bg-[#0D1527] border border-slate-800 hover:border-[#F5C400]/50 transition-all shadow-2xl overflow-hidden">
         
-        {/* 🌟 إعلان الراعي الحقيقي (يظهر فقط إذا كان موجوداً في Supabase بدون أي نصوص من الرأس) */}
+        {/* 🌟 إعلان الراعي الحقيقي من Supabase - يظهر فقط إذا كان مفعلاً من الإدارة */}
         {realSponsorAd && (
           <div className="bg-[#060A13] border-b border-slate-800 px-3.5 py-1.5 flex items-center justify-between text-xs">
             <div className="flex items-center gap-2 min-w-0">
@@ -210,22 +222,34 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 <span>الراعي الرسمي</span>
               </span>
               <span className="text-white text-xs font-bold truncate">
-                {realSponsorAd.advertiser_name}
+                {realSponsorAd.advertiserName}
               </span>
             </div>
 
-            {realSponsorAd.title && (
-              <span className="text-[10px] text-[#F5C400] font-bold shrink-0 truncate max-w-[180px]">
-                {realSponsorAd.title}
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {realSponsorAd.title && (
+                <span className="text-[10px] text-[#F5C400] font-bold shrink-0 truncate max-w-[180px]">
+                  {realSponsorAd.title}
+                </span>
+              )}
+              {realSponsorAd.targetUrl && (
+                <a
+                  href={realSponsorAd.targetUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-slate-400 hover:text-white"
+                  title="زيارة الراعي"
+                >
+                  <ExternalLink size={11} />
+                </a>
+              )}
+            </div>
           </div>
         )}
 
-        {/* 🔍 شريط بحث يلب المزدوج (ماذا تبحث عنه + المحافظة + زر البحث) */}
+        {/* 🔍 شريط بحث يلب المزدوج */}
         <form onSubmit={handleFullSearchSubmit} className="p-2 sm:p-2.5 flex flex-col md:flex-row items-center gap-2">
-          
-          {/* الحقل 1: ماذا تبحث عنه؟ (Find) */}
+          {/* ماذا تبحث عنه؟ */}
           <div className="flex items-center gap-2 bg-[#060A13] border border-slate-800 rounded-xl px-3 h-11 flex-1 w-full focus-within:border-[#F5C400]/60 transition-colors">
             {isSearching ? (
               <RefreshCw size={17} className="animate-spin text-[#F5C400] shrink-0" />
@@ -254,7 +278,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
             )}
           </div>
 
-          {/* الحقل 2: المحافظة / المدينة (Near) */}
+          {/* المحافظة */}
           <div className="w-full md:w-56 shrink-0">
             <YRSelect
               value={selectedGov}
@@ -264,7 +288,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
             />
           </div>
 
-          {/* زر البحث الرئيسي على طريقة Yelp */}
+          {/* زر البحث */}
           <button
             type="submit"
             className="w-full md:w-auto h-10 sm:h-10 px-5 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black text-xs rounded-xl flex items-center justify-center gap-1.5 shrink-0 transition-all shadow-md active:scale-95 cursor-pointer"
@@ -275,7 +299,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
         </form>
       </div>
 
-      {/* 📋 القائمة المنبثقة الذكية للنتائج اللحظية من Supabase */}
+      {/* القائمة المنبثقة الذكية للنتائج اللحظية من Supabase */}
       {isOpen && searchTerm.trim().length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-[#0D1527] border border-slate-800 rounded-2xl shadow-2xl p-2.5 z-50 max-h-96 overflow-y-auto space-y-2">
           {totalMatches === 0 && !isSearching ? (
@@ -286,7 +310,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
             </div>
           ) : (
             <>
-              {/* 1. البوابات والتصنيفات المتخصصة */}
+              {/* بوابات الخدمات المعتمدة */}
               {matchedCategories.length > 0 && (
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
@@ -313,7 +337,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 </div>
               )}
 
-              {/* 2. المنشآت والمحلات الحقيقية من Supabase */}
+              {/* المنشآت الحقيقية من Supabase */}
               {matchedBusinesses.length > 0 && (
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
@@ -344,7 +368,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 </div>
               )}
 
-              {/* 3. البنوك والمصارف الحقيقية */}
+              {/* البنوك والمصارف الحقيقية */}
               {matchedBanks.length > 0 && (
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
@@ -373,7 +397,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 </div>
               )}
 
-              {/* رابط الانتقال الشامل لنتائج الدليل */}
+              {/* استعراض كافة النتائج في الدليل */}
               <div
                 onClick={() => handleFullSearchSubmit()}
                 className="mt-2 pt-2 border-t border-slate-800 p-2.5 rounded-xl bg-[#060A13] hover:bg-[#F5C400]/10 text-center cursor-pointer transition-colors flex items-center justify-center gap-2"
