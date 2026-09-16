@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { adminAuctionsService } from '../../services/adminService';
 import { AdBanner } from '../common/AdBanner';
 import { JobCard } from '../jobs/JobCard';
 import { YRSelect } from '../common/YRSelect';
@@ -53,6 +54,9 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [cityFilter, setCityFilter] = useState('all');
   const [workTypeFilter, setWorkTypeFilter] = useState('all');
 
+  // إعدادات عمولة التوظيف من لوحة الإدارة
+  const [commissionSettings, setCommissionSettings] = useState<any>(null);
+
   // نافذة أضف وظيفة
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -63,7 +67,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [newExperienceLevel, setNewExperienceLevel] = useState('1-3 سنوات');
   const [newDescription, setNewDescription] = useState('');
   const [employerPhone, setEmployerPhone] = useState('');
-  const [agreedToPolicy, setAgreedToPolicy] = useState(false);
+  const [agreedToEmployerPolicy, setAgreedToEmployerPolicy] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -86,6 +90,9 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
   useEffect(() => {
     fetchJobs();
+    adminAuctionsService.getPlatformCommissionSettings?.().then((res: any) => {
+      if (res?.data) setCommissionSettings(res.data);
+    }).catch(() => {});
   }, []);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +102,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
   const handleAddJob = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle.trim() || !agreedToPolicy) return;
+    if (!newTitle.trim() || !agreedToEmployerPolicy) return;
 
     if (employerPhone.length !== 9) {
       setToastMessage('يرجى إدخال رقم هاتف مسؤول التوظيف (9 أرقام بالضبط)');
@@ -125,7 +132,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       setNewSalaryRange('');
       setNewDescription('');
       setEmployerPhone('');
-      setAgreedToPolicy(false);
+      setAgreedToEmployerPolicy(false);
       setToastMessage('تم نشر الوظيفة بنجاح وتوثيق عمولة ووساطة يمن ريتغ');
       setTimeout(() => setToastMessage(null), 4000);
       fetchJobs();
@@ -144,6 +151,10 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     return matchCity && matchType;
   });
 
+  const jobCommissionAmount = commissionSettings?.default_fixed_commission_amount || 20000;
+  const jobCommissionCurr = commissionSettings?.default_fixed_commission_currency || 'ريال يمني';
+  const jobCommText = `${jobCommissionAmount.toLocaleString()} ${jobCommissionCurr}`;
+
   return (
     <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white">
       <AdBanner placementId="4" className="mb-2" />
@@ -155,7 +166,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* شريط الرأس مع زر أضف وظيفة */}
+      {/* الرأس مع زر أضف وظيفة */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
         <div className="flex items-center gap-2.5">
           {onBack && (
@@ -192,10 +203,10 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* شريط سياسة الوساطة وحجب المنشأة */}
-      <div className="bg-[#0D1527] border border-[#F5C400]/30 rounded-2xl p-3 flex items-center gap-2 text-xs text-slate-300">
-        <ShieldCheck className="w-5 h-5 text-[#F5C400] shrink-0" />
-        <span>منصة يمن ريتغ تعمل كوسيط رسمي مباشر؛ يتم حجب بيانات المنشأة لضمان سرية وموثوقية التنسيق الوظيفي وسداد عمولة التوظيف المعتمدة.</span>
+      {/* شريط الوساطة الإلزامي المعتمد من لوحة التحكم */}
+      <div className="bg-[#0D1527] border border-[#16A34A]/40 rounded-2xl p-3 flex items-center gap-2.5 text-xs text-slate-200">
+        <ShieldCheck className="w-5 h-5 text-[#16A34A] shrink-0" />
+        <span>توفر منصة يمن ريتغ خدمة الوساطة والتوظيف للوصول إلى الكفاءات المناسبة؛ ويتم حجب بيانات المنشأة لضمان سرية وموثوقية التنسيق الوظيفي وسداد عمولة التوظيف المعتمدة.</span>
       </div>
 
       {/* شريط الفلترة الموحد مع YRSelect */}
@@ -244,7 +255,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* نافذة أضف وظيفة مع سياسة الوساطة وعمولة التوظيف */}
+      {/* نافذة أضف وظيفة مع الإقرار الأخضر الشفاف بالنص الأصلي الإلزامي */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-[#0D1527] border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Cairo'] text-white shadow-2xl">
@@ -340,27 +351,29 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 />
               </div>
 
-              {/* سياسة عمولة التوظيف وحجب اسم المنشأة */}
-              <div className="p-3 bg-[#060A13] rounded-xl border border-slate-800 space-y-2">
-                <div className="flex items-center gap-1.5 text-[#F5C400] font-bold text-xs">
+              {/* شرط مقدم التوظيف الإلزامي بالخلفية الخضراء الشفافة بالنص الأصلي الإلزامي */}
+              <div className="p-3.5 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/40 space-y-2 text-right">
+                <div className="flex items-center gap-1.5 text-[#16A34A] font-bold text-xs">
                   <ShieldCheck size={16} />
-                  <span>سياسة الوساطة الوظيفية وعمولة التوظيف</span>
+                  <span>تنبيه إلزامي:</span>
                 </div>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
-                  تلتزم جهة العمل بسياسة وساطة يمن ريتغ، وتوافق على حجب اسم المنشأة عن المتقدمين لضمان حصر التقديم عبر المنصة، وتلتزم بسداد عمولة التوظيف المعتمدة عند توظيف أي مرشح محال عبر المنصة.
+                <p className="text-[11px] text-gray-200 leading-relaxed">
+                  توفر منصة يمن ريتغ خدمة الوساطة والتوظيف للوصول إلى المتقدمين المناسبين، ويتم إشعار صاحب العمل عند قبول المتقدم وبدء عمله. وبتقديم طلب التوظيف، يقرّ صاحب العمل بموافقته على شروط الوساطة، ويلتزم بإبلاغ الموظف وإلزامه بسداد عمولة الوساطة المستحقة للمنصة والبالغة ({jobCommText}) من راتب الشهر الأول، عند إتمام التوظيف وبدء العمل.
                 </p>
-                <label className="flex items-center gap-2 pt-1 cursor-pointer">
+                <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
                   <input
                     type="checkbox"
-                    checked={agreedToPolicy}
-                    onChange={(e) => setAgreedToPolicy(e.target.checked)}
-                    className="w-4 h-4 accent-[#F5C400] rounded"
+                    checked={agreedToEmployerPolicy}
+                    onChange={(e) => setAgreedToEmployerPolicy(e.target.checked)}
+                    className="w-4 h-4 accent-[#16A34A] rounded cursor-pointer"
                   />
-                  <span className="text-[11px] font-bold text-white">أوافق على سياسة وساطة وتوظيف وعمولة يمن ريتغ</span>
+                  <span className="text-[11px] font-bold text-white">
+                    أوافق على شروط الوساطة وإلزام سداد عمولة المنصة ({jobCommText})
+                  </span>
                 </label>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-1 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
@@ -370,7 +383,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 </button>
                 <button
                   type="submit"
-                  disabled={!agreedToPolicy || employerPhone.length !== 9 || submitting}
+                  disabled={!agreedToEmployerPolicy || employerPhone.length !== 9 || submitting}
                   className="px-5 py-2 rounded-xl bg-[#F5C400] disabled:opacity-40 text-black font-black text-xs transition-colors shadow-md"
                 >
                   {submitting ? 'جاري النشر...' : 'نشر الشاغر الوظيفي'}

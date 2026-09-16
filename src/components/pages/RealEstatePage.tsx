@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { adminAuctionsService } from '../../services/adminService';
 import { AdBanner } from '../common/AdBanner';
 import { PropertyCard } from '../properties/PropertyCard';
 import { YRSelect } from '../common/YRSelect';
@@ -100,7 +101,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
     if (!newTitle.trim() || !agreedToCommission) return;
 
     if (ownerPhone.length !== 9) {
-      setToastMessage('يرجى إدخال رقم هاتف يمني صحيح مكون من 9 أرقام بالضبط (مثال: 77XXXXXXX)');
+      setToastMessage('يرجى إدخال رقم هاتف يمني مكون من 9 أرقام بالضبط (مثال: 77XXXXXXX)');
       setTimeout(() => setToastMessage(null), 3500);
       return;
     }
@@ -202,6 +203,12 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
         </div>
       </div>
 
+      {/* شريط وساطة العقارات الإلزامي المعتمد */}
+      <div className="bg-[#0D1527] border border-[#16A34A]/40 rounded-2xl p-3 flex items-center gap-2.5 text-xs text-slate-200">
+        <ShieldCheck className="w-5 h-5 text-[#16A34A] shrink-0" />
+        <span>تطبق المنصة عمولة الوساطة المعتمدة عند إتمام المعاملة العقارية، ويتم حجب بيانات التواصل لضمان فحص العقار والمعاينة الرسمية عبر وساطة يمن ريتغ.</span>
+      </div>
+
       {/* شريط الفلترة الموحد مع YRSelect */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0D1527] p-3 rounded-2xl border border-slate-800">
         <div className="flex items-center gap-1.5 bg-[#060A13] p-1 rounded-xl border border-slate-800">
@@ -271,7 +278,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
         </div>
       )}
 
-      {/* نافذة أضف عقار مع إقرار عمولة الوساطة 2% */}
+      {/* نافذة أضف عقار مع الإقرار الأخضر الشفاف بالنص الأصلي الإلزامي */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-[#0D1527] border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Cairo'] text-white shadow-2xl">
@@ -411,27 +418,27 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
                 />
               </div>
 
-              {/* سياسة عمولة الوساطة الرسمية 2% */}
-              <div className="p-3 bg-[#060A13] rounded-xl border border-slate-800 space-y-2">
-                <div className="flex items-center gap-1.5 text-[#F5C400] font-bold text-xs">
+              {/* تنبيه العمولة والإقرار الأخضر الشفاف بالنص الأصلي الإلزامي */}
+              <div className="p-3.5 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/40 space-y-2 text-right">
+                <div className="flex items-center gap-1.5 text-[#16A34A] font-bold text-xs">
                   <ShieldCheck size={16} />
-                  <span>سياسة الوساطة والعمولة الرسمية (2%)</span>
+                  <span>تنبيه وساطة يمن ريتغ:</span>
                 </div>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
-                  بتقديم هذا العقار، يقرّ المالك أو الوسيط بتفويض منصة يمن ريتغ في الوساطة والمعاينة، ويلتزم بسداد عمولة الوساطة المعتمدة (2% من إجمالي قيمة الصفقة) عند إتمام البيع أو التأجير عبر المنصة.
+                <p className="text-[11px] text-gray-200 leading-relaxed">
+                  تطبق المنصة عمولة الوساطة المعتمدة عند إتمام المعاملة العقارية عبر وساطة المنصة.
                 </p>
-                <label className="flex items-center gap-2 pt-1 cursor-pointer">
+                <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={agreedToCommission}
                     onChange={(e) => setAgreedToCommission(e.target.checked)}
-                    className="w-4 h-4 accent-[#F5C400] rounded"
+                    className="w-4 h-4 accent-[#16A34A] rounded cursor-pointer"
                   />
                   <span className="text-[11px] font-bold text-white">أوافق على شروط وسياسة وساطة يمن ريتغ</span>
                 </label>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-1 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}

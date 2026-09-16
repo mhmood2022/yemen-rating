@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Gavel, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { adminAuctionsService } from '../../services/adminService';
 import { AdBanner } from '../common/AdBanner';
 import { AuctionCard } from '../auctions/AuctionCard';
 import { YRSelect } from '../common/YRSelect';
@@ -42,6 +43,9 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'auction' | 'fixed_price'>('all');
   const [cityFilter, setCityFilter] = useState('all');
 
+  // إعدادات العمولات الحية من لوحة التحكم
+  const [commissionSettings, setCommissionSettings] = useState<any>(null);
+
   // نافذة أضف مزاد / معروض
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -75,6 +79,9 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
   useEffect(() => {
     fetchAuctions();
+    adminAuctionsService.getPlatformCommissionSettings?.().then((res: any) => {
+      if (res?.data) setCommissionSettings(res.data);
+    }).catch(() => {});
   }, []);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,6 +147,11 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     return matchTab && matchCity;
   });
 
+  // النص الديناميكي للعمولة القابل للتغيير من لوحة الإدارة
+  const fixedCommAmount = commissionSettings?.default_fixed_commission_amount || 20000;
+  const fixedCommCurr = commissionSettings?.default_fixed_commission_currency || 'ريال يمني';
+  const auctionCommRate = commissionSettings?.default_auction_commission_rate || 5;
+
   return (
     <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white">
       <AdBanner placementId="6" className="mb-2" />
@@ -151,7 +163,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* شريط الرأس */}
+      {/* الرأس مع زر أضف مزاد */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
         <div className="flex items-center gap-2.5">
           {onBack && (
@@ -186,6 +198,12 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
           </button>
         </div>
+      </div>
+
+      {/* شريط الوساطة الإلزامي المعتمد والمتوافق مع لوحة التحكم */}
+      <div className="bg-[#0D1527] border border-[#16A34A]/40 rounded-2xl p-3 flex items-center gap-2.5 text-xs text-slate-200">
+        <ShieldCheck className="w-5 h-5 text-[#16A34A] shrink-0" />
+        <span>تخضع جميع المزادات والبيوع لوساطة وضمان يمن ريتغ الرسمية لحماية حقوق البائع والمشتري مع تثبيت وتوثيق عمولة المنصة المعتمدة.</span>
       </div>
 
       {/* شريط الفلترة الموحد */}
@@ -247,7 +265,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* نافذة أضف معروض مع الإقرار والعمولة الرسمية */}
+      {/* نافذة أضف معروض مع الإقرار الأخضر الشفاف كما في الأصل */}
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-[#0D1527] border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Cairo'] text-white shadow-2xl">
@@ -357,29 +375,29 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
                 />
               </div>
 
-              {/* سياسة العمولة الرسمية والإقرار */}
-              <div className="p-3 bg-[#060A13] rounded-xl border border-slate-800 space-y-2">
-                <div className="flex items-center gap-1.5 text-[#F5C400] font-bold text-xs">
+              {/* الإقرار الأخضر الشفاف بالنص الأصلي الإلزامي */}
+              <div className="p-3.5 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/40 space-y-2 text-right">
+                <div className="flex items-center gap-1.5 text-[#16A34A] font-bold text-xs">
                   <ShieldCheck size={16} />
-                  <span>إقرار العمولة وسياسة الوساطة المعتمدة</span>
+                  <span>إقرار إلزامي لصاحب العرض/المزاد:</span>
                 </div>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
+                <p className="text-[11px] text-gray-200 leading-relaxed">
                   {saleType === 'fixed_price'
-                    ? 'بتقديم هذا العرض، يقرّ صاحب العرض بصحة جميع البيانات والسعر المحدد، ويوافق على شروط وساطة يمن ريتغ، ويلتزم بإتمام البيع وسداد عمولة يمن ريتغ البالغة (20,000 ريال يمني) عند إتمام الصفقة.'
-                    : 'بتقديم المعروض للمزاد، يقرّ صاحب المزاد بصحة جميع البيانات والسعر الابتدائي، ويوافق على نظام المزايدة، ويلتزم بسداد عمولة يمن ريتغ المستحقة عند إتمام الصفقة.'}
+                    ? `بتقديم هذا العرض، يقرّ صاحب العرض بصحة جميع البيانات والسعر المحدد، ويوافق على شروط وساطة يمن ريتغ، ويلتزم بإتمام البيع وسداد عمولة يمن ريتغ البالغة (${fixedCommAmount.toLocaleString()} ${fixedCommCurr}) عند إتمام الصفقة.`
+                    : `بتقديم المعروض للمزاد، يقرّ صاحب المزاد بصحة جميع البيانات والسعر الابتدائي، ويوافق على نظام المزايدة، ويلتزم بسداد عمولة يمن ريتغ المستحقة (${auctionCommRate}%) عند إتمام الصفقة.`}
                 </p>
-                <label className="flex items-center gap-2 pt-1 cursor-pointer">
+                <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={consentListing}
                     onChange={(e) => setConsentListing(e.target.checked)}
-                    className="w-4 h-4 accent-[#F5C400] rounded"
+                    className="w-4 h-4 accent-[#16A34A] rounded cursor-pointer"
                   />
                   <span className="text-[11px] font-bold text-white">أوافق على الإقرار والشروط المعتمدة</span>
                 </label>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-1 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
