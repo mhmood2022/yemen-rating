@@ -170,13 +170,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
   ];
 
   return (
-    <div dir="rtl" className="space-y-5 pt-1 max-w-5xl mx-auto px-3 sm:px-4 font-['Cairo',sans-serif] text-white">
+    <div dir="rtl" className="space-y-4 pt-16 sm:pt-20 max-w-5xl mx-auto px-3 sm:px-4 font-['Cairo',sans-serif] text-white">
 
       {/* 🔍 شريط البحث الذكي الوطني المدمج مع إعلان الراعي الرسمي */}
       <HomeSearchBar
         officialCategories={officialCategories}
         onSelectCategory={onSelectCategory}
       />
+
+      {/* 📢 إعلان البانر الرئيسي للمنصة أسفل شريط البحث مباشرة */}
+      <div className="w-full rounded-none overflow-hidden shadow-md">
+        <AdBanner placementId="1" className="mb-0" />
+      </div>
 
       {/* 🏛️ بوابات التصنيفات الـ 33 المعتمدة */}
       <div className="space-y-2">
@@ -615,7 +620,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </div>
 
       {/* 8️⃣ البنر الإعلاني الأوسط */}
-      <div className="w-full rounded-2xl overflow-hidden shadow-md">
+      <div className="w-full rounded-none overflow-hidden shadow-md">
         <AdBanner placementId="2" className="w-full" />
       </div>
 

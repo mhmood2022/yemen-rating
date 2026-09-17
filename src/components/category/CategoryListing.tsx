@@ -199,13 +199,13 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
       {loadingLive ? (
         <div className="py-24 text-center flex flex-col items-center justify-center bg-[#0B0F19] rounded-3xl border border-zinc-800/80">
           <Loader2 className="w-10 h-10 animate-spin text-[#FFC500] mb-3" />
-          <p className="text-sm text-zinc-400 font-bold">جاري تحميل المنشآت المعتمدة...</p>
+          <p className="text-sm text-zinc-400 font-bold">جاري التحميل...</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="py-20 text-center bg-[#0B0F19] rounded-3xl border border-zinc-800/80 p-8 shadow-md">
           <Frown className="w-14 h-14 mx-auto text-zinc-600 mb-3" />
           <h3 className="text-base font-bold text-zinc-300 mb-1">لا توجد منشآت مسجلة في هذا التصنيف حالياً</h3>
-          <p className="text-xs text-zinc-500 max-w-md mx-auto">سيتم إضافة وتحديث المنشآت المعتمدة قريباً.</p>
+          <p className="text-xs text-zinc-500 max-w-md mx-auto">سيتم إضافة وتحديث البيانات قريباً.</p>
         </div>
       ) : (
         <div className="space-y-6">

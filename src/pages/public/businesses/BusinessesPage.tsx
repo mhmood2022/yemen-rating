@@ -80,7 +80,7 @@ export const BusinessesPage: React.FC = () => {
   const navigate = useNavigate();
 
   const currentCategorySlug = searchParams.get('category') || 'transport';
-  const categoryConfig = CATEGORY_CONFIG[currentCategorySlug] || { name: 'المنشآت المعتمدة', icon: Building };
+  const categoryConfig = CATEGORY_CONFIG[currentCategorySlug] || { name: 'المنشآت والشركات', icon: Building };
   const CategoryIcon = categoryConfig.icon;
 
   const [businesses, setBusinesses] = useState<any[]>([]);

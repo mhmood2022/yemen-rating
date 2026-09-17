@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Sparkles,
@@ -7,36 +7,37 @@ import {
   Building2,
   Landmark,
   ChevronLeft,
+  ChevronDown,
   RefreshCw,
-  ArrowLeft,
-  ExternalLink
-} from 'lucide-react';
-import { supabase } from '../../lib/supabase';
-import { YRSelect } from '../common/YRSelect';
+  ExternalLink,
+  MapPin,
+  Check
+} from "lucide-react";
+import { supabase } from "../../lib/supabase";
 
 const YEMEN_GOVERNORATES = [
-  { value: 'all', label: 'كل المحافظات' },
-  { value: 'صنعاء', label: 'صنعاء' },
-  { value: 'عدن', label: 'عدن' },
-  { value: 'تعز', label: 'تعز' },
-  { value: 'حضرموت', label: 'حضرموت' },
-  { value: 'الحديدة', label: 'الحديدة' },
-  { value: 'إب', label: 'إب' },
-  { value: 'ذمار', label: 'ذمار' },
-  { value: 'مأرب', label: 'مأرب' },
-  { value: 'صعدة', label: 'صعدة' },
-  { value: 'حجة', label: 'حجة' },
-  { value: 'البيضاء', label: 'البيضاء' },
-  { value: 'لحج', label: 'لحج' },
-  { value: 'أبين', label: 'أبين' },
-  { value: 'المهرة', label: 'المهرة' },
-  { value: 'شبوة', label: 'شبوة' },
-  { value: 'عمران', label: 'عمران' },
-  { value: 'الضالع', label: 'الضالع' },
-  { value: 'ريمة', label: 'ريمة' },
-  { value: 'المحويت', label: 'المحويت' },
-  { value: 'سقطرى', label: 'أرخبيل سقطرى' },
-  { value: 'الجوف', label: 'الجوف' }
+  { value: "all", label: "كل المحافظات" },
+  { value: "صنعاء", label: "صنعاء" },
+  { value: "عدن", label: "عدن" },
+  { value: "تعز", label: "تعز" },
+  { value: "حضرموت", label: "حضرموت" },
+  { value: "الحديدة", label: "الحديدة" },
+  { value: "إب", label: "إب" },
+  { value: "ذمار", label: "ذمار" },
+  { value: "مأرب", label: "مأرب" },
+  { value: "صعدة", label: "صعدة" },
+  { value: "حجة", label: "حجة" },
+  { value: "البيضاء", label: "البيضاء" },
+  { value: "لحج", label: "لحج" },
+  { value: "أبين", label: "أبين" },
+  { value: "المهرة", label: "المهرة" },
+  { value: "شبوة", label: "شبوة" },
+  { value: "عمران", label: "عمران" },
+  { value: "الضالع", label: "الضالع" },
+  { value: "ريمة", label: "ريمة" },
+  { value: "المحويت", label: "المحويت" },
+  { value: "سقطرى", label: "أرخبيل سقطرى" },
+  { value: "الجوف", label: "الجوف" }
 ];
 
 interface HomeSearchBarProps {
@@ -48,19 +49,23 @@ interface HomeSearchBarProps {
 export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
   officialCategories = [],
   onSelectCategory,
-  className = ''
+  className = ""
 }) => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedGov, setSelectedGov] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedGov, setSelectedGov] = useState("all");
   const [isSearching, setIsSearching] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isGovMenuOpen, setIsGovMenuOpen] = useState(false);
 
   const [realSponsorAd, setRealSponsorAd] = useState<{
     advertiserName: string;
     title?: string;
     targetUrl?: string;
     logoUrl?: string;
+    mediaUrl?: string;
+    mediaType?: "image" | "video";
+    sponsorTag?: string;
   } | null>(null);
 
   const [matchedCategories, setMatchedCategories] = useState<any[]>([]);
@@ -68,68 +73,96 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
   const [matchedBanks, setMatchedBanks] = useState<any[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const govDropdownRef = useRef<HTMLDivElement>(null);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // جلب إعلان الراعي النشط
+  // جلب الراعي من قاعدة البيانات مع الفصل الصارم بين الفيديو والشعار
   useEffect(() => {
     let isMounted = true;
     async function loadRealSponsor() {
       try {
         const { data, error } = await supabase
-          .from('published_ads')
-          .select('*')
-          .eq('status', 'active')
-          .or('placement_id.eq.home_sponsor,placement_id.eq.sponsor,placement_id.eq.header_sponsor')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .from("published_ads")
+          .select("*")
+          .eq("placement_id", "home_sponsor")
+          .eq("status", "active")
+          .limit(1);
 
-        if (!error && data && isMounted) {
-          const adData = data.data || {};
-          const name = adData.advertiserName || data.advertiser_name || adData.title || data.title;
+        if (!error && data && data.length > 0 && isMounted) {
+          const ad = data[0];
+          const adData = ad.data || {};
+          
+          // 🎥 فيديو الإعلان أو صورته فقط (ممنوع منعاً باتاً وضع الشعار هنا):
+          const adVideoOrImage = adData.mediaUrl || adData.media_url || ad.media_url || "";
+          
+          // 🪙 شعار الراعي الدائري الصغير فقط:
+          const sponsorLogoOnly = ad.sponsor_logo || adData.logoUrl || "";
+
+          const isVideo = Boolean(
+            adVideoOrImage && (
+              adData.mediaType === "video" ||
+              adVideoOrImage.endsWith(".mp4") ||
+              adVideoOrImage.endsWith(".webm") ||
+              adVideoOrImage.startsWith("data:video")
+            )
+          );
+
+          const name = ad.sponsor_name || adData.advertiserName || ad.title;
+
           if (name) {
             setRealSponsorAd({
               advertiserName: name,
-              title: adData.title || data.title || '',
-              targetUrl: adData.targetUrl || data.target_url || '',
-              logoUrl: adData.logoUrl || data.logo_url || data.image_url || ''
+              title: adData.title || ad.title || "",
+              targetUrl: adData.targetUrl || ad.target_url || "",
+              logoUrl: sponsorLogoOnly,
+              mediaUrl: adVideoOrImage,
+              mediaType: isVideo ? "video" : "image",
+              sponsorTag: ad.sponsor_tag || adData.sponsorTag || "الراعي الرسمي"
             });
             return;
           }
         }
         if (isMounted) setRealSponsorAd(null);
-      } catch (err) {
+      } catch {
         if (isMounted) setRealSponsorAd(null);
       }
     }
     loadRealSponsor();
+
     return () => {
       isMounted = false;
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
   }, []);
 
-  // إغلاق القائمة عند النقر خارجها أو ضغط Escape
+  // إغلاق القوائم عند النقر خارجها
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
+      if (govDropdownRef.current && !govDropdownRef.current.contains(e.target as Node)) {
+        setIsGovMenuOpen(false);
+      }
     };
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false);
+      if (e.key === "Escape") {
+        setIsOpen(false);
+        setIsGovMenuOpen(false);
+      }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
-  // دالة البحث المباشر
+  // البحث المباشر
   const performLiveSearch = useCallback(async (term: string, gov: string) => {
-    const clean = term.trim().replace(/[%_]/g, '');
+    const clean = term.trim().replace(/[%_(),،]/g, "");
     if (!clean) {
       setMatchedCategories([]);
       setMatchedBusinesses([]);
@@ -142,50 +175,50 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     setIsSearching(true);
     const lower = clean.toLowerCase();
 
-    // مطابقة الأقسام
     const catMatches = officialCategories.filter((cat) => {
-      const name = (cat.name || '').toLowerCase();
-      const id = (cat.id || '').toLowerCase();
+      const name = (cat.name || "").toLowerCase();
+      const id = (cat.id || "").toLowerCase();
       return name.includes(lower) || id.includes(lower);
     });
     setMatchedCategories(catMatches.slice(0, 4));
 
     try {
-      // مطابقة المنشآت
+      let bankQuery = supabase
+        .from("banks")
+        .select("id, slug, name, city, logo_url")
+        .ilike("name", `%${clean}%`)
+        .limit(4);
+
+      if (gov && gov !== "all") {
+        bankQuery = bankQuery.ilike("city", `%${gov}%`);
+      }
+
       let bizQuery = supabase
-        .from('businesses')
-        .select('id, slug, name, category, city')
-        .or(`name.ilike.%${clean}%,category.ilike.%${clean}%`)
+        .from("businesses")
+        .select("id, slug, name, city, category_id")
+        .ilike("name", `%${clean}%`)
         .limit(6);
 
-      if (gov && gov !== 'all') {
-        bizQuery = bizQuery.ilike('city', `%${gov}%`);
+      if (gov && gov !== "all") {
+        bizQuery = bizQuery.ilike("city", `%${gov}%`);
       }
 
-      // مطابقة البنوك
-      let bankQuery = supabase
-        .from('banks')
-        .select('id, slug, name, commercial_name')
-        .or(`name.ilike.%${clean}%,commercial_name.ilike.%${clean}%`)
-        .limit(3);
+      const [bankRes, bizRes] = await Promise.allSettled([bankQuery, bizQuery]);
 
-      const [bizRes, bankRes] = await Promise.allSettled([bizQuery, bankQuery]);
-
-      if (bizRes.status === 'fulfilled' && bizRes.value.data) {
-        setMatchedBusinesses(bizRes.value.data);
-      } else {
-        setMatchedBusinesses([]);
-      }
-
-      if (bankRes.status === 'fulfilled' && bankRes.value.data) {
+      if (bankRes.status === "fulfilled" && bankRes.value.data) {
         setMatchedBanks(bankRes.value.data);
       } else {
         setMatchedBanks([]);
       }
 
+      if (bizRes.status === "fulfilled" && bizRes.value.data) {
+        setMatchedBusinesses(bizRes.value.data);
+      } else {
+        setMatchedBusinesses([]);
+      }
+
       setIsOpen(true);
-    } catch (err) {
-      console.error('Search error:', err);
+    } catch (_) {
     } finally {
       setIsSearching(false);
     }
@@ -205,191 +238,244 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     }, 200);
   };
 
-  const handleGovChange = (gov: string) => {
-    setSelectedGov(gov);
+  const handleGovSelect = (govValue: string) => {
+    setSelectedGov(govValue);
+    setIsGovMenuOpen(false);
     if (searchTerm.trim()) {
-      performLiveSearch(searchTerm, gov);
+      performLiveSearch(searchTerm, govValue);
     }
   };
 
   const handleFullSearchSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsOpen(false);
+    setIsGovMenuOpen(false);
     const params = new URLSearchParams();
-    if (searchTerm.trim()) params.append('search', searchTerm.trim());
-    if (selectedGov && selectedGov !== 'all') params.append('city', selectedGov);
+    if (searchTerm.trim()) params.append("search", searchTerm.trim());
+    if (selectedGov && selectedGov !== "all") params.append("city", selectedGov);
     navigate(`/directory?${params.toString()}`);
   };
 
   const totalMatches = matchedCategories.length + matchedBusinesses.length + matchedBanks.length;
+  const selectedGovLabel = YEMEN_GOVERNORATES.find((g) => g.value === selectedGov)?.label || "كل المحافظات";
 
   return (
-    <div ref={containerRef} className={`relative z-40 font-['Cairo',sans-serif] ${className}`}>
-      <div className="rounded-2xl bg-[#0D1527] border border-slate-800 hover:border-[#F5C400]/50 transition-all shadow-2xl overflow-hidden">
-        
-        {/* إعلان الراعي الحقيقي التفاعلي */}
+    <div ref={containerRef} dir="rtl" className={`relative z-40 font-['Cairo',sans-serif] w-full ${className}`}>
+      <div className="bg-[#090E1A] border border-slate-800 shadow-2xl rounded-none overflow-visible">
+
+        {/* ⭐ إعلان الراعي الرسمي: الفيديو الحقيقي فقط في الخلفية، والشعار في الدائرة الصغيرة */}
         {realSponsorAd && (
-          <div className="bg-[#060A13] border-b border-slate-800 px-3.5 py-1.5 flex items-center justify-between text-xs group hover:bg-[#0a101f] transition-colors">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="px-2 py-0.5 rounded-md bg-[#F5C400]/15 text-[#F5C400] text-[10px] font-black border border-[#F5C400]/30 flex items-center gap-1 shrink-0">
-                <Sparkles size={11} className="animate-pulse" />
-                <span>الراعي الرسمي</span>
-              </span>
+          <div className="bg-[#050811] border-b border-slate-800 rounded-none overflow-hidden transition-all">
+            {realSponsorAd.mediaUrl ? (
+              <div
+                onClick={() => {
+                  if (realSponsorAd.targetUrl) window.open(realSponsorAd.targetUrl, "_blank", "noopener,noreferrer");
+                }}
+                className="relative w-full h-24 sm:h-28 bg-[#0B101D] overflow-hidden cursor-pointer group rounded-none"
+              >
+                {/* مشغل الفيديو الحقيقي (وليس الشعار!) */}
+                {realSponsorAd.mediaType === "video" ? (
+                  <video
+                    key={realSponsorAd.mediaUrl}
+                    src={realSponsorAd.mediaUrl}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-none"
+                  />
+                ) : (
+                  <img
+                    src={realSponsorAd.mediaUrl}
+                    alt={realSponsorAd.advertiserName}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-none"
+                  />
+                )}
 
-              {realSponsorAd.logoUrl && (
-                <div className="w-5 h-5 rounded overflow-hidden bg-white/10 p-0.5 border border-slate-700 shrink-0">
-                  <img src={realSponsorAd.logoUrl} alt="sponsor-logo" className="w-full h-full object-contain" />
+                {/* طبقة التظليل والبيانات المصغرة */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/50 flex flex-col justify-between p-2 sm:p-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="px-1.5 py-0.5 bg-black/60 text-[#F5C400] border border-[#F5C400]/40 text-[9px] font-black rounded-none flex items-center gap-1 backdrop-blur-sm">
+                      <Sparkles size={10} />
+                      <span>{realSponsorAd.sponsorTag || "الراعي الرسمي"}</span>
+                    </span>
+
+                    <div className="flex items-center gap-1">
+                      {realSponsorAd.targetUrl && (
+                        <span className="text-[9px] text-black bg-[#F5C400] font-black px-2 py-0.5 rounded-none flex items-center gap-0.5 shadow-md">
+                          <span>زيارة</span>
+                          <ExternalLink size={9} />
+                        </span>
+                      )}
+                      <span className="text-[8px] text-zinc-300 bg-black/70 border border-white/15 px-1.5 py-0.5 rounded-none">
+                        إعلان راعٍ ⓘ
+                      </span>
+                      <span className="text-[8px] font-black text-zinc-100 bg-white/15 border border-white/25 px-1 py-0.5 rounded-none font-sans">
+                        AD
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-end justify-between gap-2">
+                    {/* الشعار الدائري الصغير فقط + اسم الراعي */}
+                    <div className="flex items-center gap-2 min-w-0">
+                      {realSponsorAd.logoUrl && (
+                        <img src={realSponsorAd.logoUrl} alt="logo" className="w-6 h-6 rounded-full object-cover border border-white/40 bg-black/60 shrink-0" />
+                      )}
+                      <h4 className="text-white text-xs sm:text-sm font-black truncate drop-shadow-md">{realSponsorAd.advertiserName}</h4>
+                    </div>
+
+                    {realSponsorAd.title && (
+                      <p className="text-[#F5C400] text-[10px] font-bold drop-shadow-md shrink-0 text-left">
+                        {realSponsorAd.title}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              )}
+              </div>
+            ) : (
+              /* شريط الراعي بدون وسائط */
+              <div
+                onClick={() => {
+                  if (realSponsorAd.targetUrl) window.open(realSponsorAd.targetUrl, "_blank", "noopener,noreferrer");
+                }}
+                className={`px-3 py-1.5 flex items-center justify-between text-xs group hover:bg-[#0c1322] transition-colors rounded-none ${
+                  realSponsorAd.targetUrl ? "cursor-pointer" : ""
+                }`}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="px-1.5 py-0.5 bg-[#F5C400]/15 text-[#F5C400] border border-[#F5C400]/30 text-[9px] font-bold flex items-center gap-1 rounded-none">
+                    <Sparkles size={9} />
+                    <span>{realSponsorAd.sponsorTag || "الراعي الرسمي"}</span>
+                  </span>
 
-              <span className="text-white text-xs font-bold truncate">
-                {realSponsorAd.advertiserName}
-              </span>
-            </div>
+                  {realSponsorAd.logoUrl && (
+                    <img src={realSponsorAd.logoUrl} alt="sponsor" className="w-5 h-5 rounded-full object-cover" />
+                  )}
 
-            <div className="flex items-center gap-2">
-              {realSponsorAd.title && (
-                <span className="text-[10px] text-[#F5C400] font-bold shrink-0 truncate max-w-[180px] hidden sm:inline">
-                  {realSponsorAd.title}
-                </span>
-              )}
-              {realSponsorAd.targetUrl && (
-                <a
-                  href={realSponsorAd.targetUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-slate-400 hover:text-[#F5C400] transition-colors flex items-center gap-1 text-[11px]"
-                  title="زيارة الراعي"
-                >
-                  <span className="hidden sm:inline">زيارة</span>
-                  <ExternalLink size={12} />
-                </a>
-              )}
-            </div>
+                  <span className="text-white text-xs font-bold truncate group-hover:text-[#F5C400] transition-colors">
+                    {realSponsorAd.advertiserName}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {realSponsorAd.title && (
+                    <span className="text-[10px] text-zinc-400 font-medium truncate max-w-[150px] hidden sm:inline">
+                      {realSponsorAd.title}
+                    </span>
+                  )}
+                  {realSponsorAd.targetUrl && (
+                    <span className="text-[10px] text-[#F5C400] hover:text-white font-bold flex items-center gap-0.5 transition-colors">
+                      <span>زيارة</span>
+                      <ExternalLink size={9} />
+                    </span>
+                  )}
+                  <span className="text-[9px] text-zinc-400 bg-white/5 border border-white/10 px-1 py-0.5 rounded-none font-sans">
+                    AD
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* شريط البحث المزدوج */}
-        <form onSubmit={handleFullSearchSubmit} className="p-2 sm:p-2.5 flex flex-col md:flex-row items-center gap-2">
-          <div className="flex items-center gap-2 bg-[#060A13] border border-slate-800 rounded-xl px-3 h-11 flex-1 w-full focus-within:border-[#F5C400]/60 transition-colors">
-            {isSearching ? (
-              <RefreshCw size={17} className="animate-spin text-[#F5C400] shrink-0" />
-            ) : (
-              <Search size={17} className="text-[#F5C400] shrink-0" />
-            )}
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={handleTermChange}
-              onFocus={() => searchTerm.trim() && setIsOpen(true)}
-              placeholder="عن ماذا تبحث؟ (مطاعم، فنادق، مستشفيات، بنوك، شركات...)"
-              className="w-full bg-transparent border-none outline-none text-xs sm:text-sm text-white placeholder-slate-400 font-medium"
-            />
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchTerm('');
-                  setIsOpen(false);
-                }}
-                className="p-1 rounded-full text-slate-400 hover:text-white shrink-0 transition"
-              >
-                <X size={14} />
-              </button>
+        {/* 🔍 شريط البحث بنمط Yelp وبزوايا 90 حادة */}
+        <form
+          onSubmit={handleFullSearchSubmit}
+          className="flex items-center h-11 px-3 gap-2 w-full rounded-none"
+        >
+          <Search size={17} className="text-[#F5C400] shrink-0" />
+
+          <input
+            type="text"
+            dir="rtl"
+            value={searchTerm}
+            onChange={handleTermChange}
+            onFocus={() => searchTerm.trim() && setIsOpen(true)}
+            placeholder="ابحث عن بنك، شركة، مطعم، مستشفى، خدمة، عقار..."
+            style={{
+              outline: "none",
+              border: "none",
+              boxShadow: "none",
+              WebkitTapHighlightColor: "transparent"
+            }}
+            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm text-white placeholder-slate-400 font-medium text-right border-0 focus:outline-none focus:ring-0 ring-0 shadow-none p-0 m-0"
+          />
+
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchTerm("");
+                setIsOpen(false);
+              }}
+              className="p-1 text-slate-400 hover:text-white shrink-0"
+            >
+              <X size={14} />
+            </button>
+          )}
+
+          <div className="w-px h-5 bg-slate-800 shrink-0" />
+
+          {/* اختيار المحافظة */}
+          <div ref={govDropdownRef} className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsGovMenuOpen(!isGovMenuOpen)}
+              className="h-8 px-2 flex items-center gap-1.5 text-slate-300 hover:text-white transition-all text-right cursor-pointer"
+            >
+              <MapPin size={13} className="text-[#F5C400] shrink-0" />
+              <span className="text-xs font-bold truncate max-w-[85px]">
+                {selectedGovLabel}
+              </span>
+              <ChevronDown
+                size={11}
+                className={`text-slate-400 shrink-0 transition-transform duration-200 ${
+                  isGovMenuOpen ? "rotate-180 text-[#F5C400]" : ""
+                }`}
+              />
+            </button>
+
+            {isGovMenuOpen && (
+              <div className="absolute top-full left-0 mt-2 w-48 max-h-64 overflow-y-auto bg-[#0A0F1D] border border-slate-700 shadow-2xl p-1.5 z-50 space-y-0.5 rounded-none">
+                {YEMEN_GOVERNORATES.map((gov) => {
+                  const isSelected = selectedGov === gov.value;
+                  return (
+                    <div
+                      key={gov.value}
+                      onClick={() => handleGovSelect(gov.value)}
+                      className={`flex items-center justify-between px-3 py-2 text-xs font-bold cursor-pointer transition-colors rounded-none ${
+                        isSelected
+                          ? "bg-[#F5C400] text-black"
+                          : "text-slate-300 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <MapPin size={12} className={isSelected ? "text-black" : "text-slate-400"} />
+                        <span>{gov.label}</span>
+                      </div>
+                      {isSelected && <Check size={13} className="text-black stroke-[3]" />}
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
-
-          <div className="w-full md:w-56 shrink-0">
-            <YRSelect
-              value={selectedGov}
-              options={YEMEN_GOVERNORATES}
-              onChange={handleGovChange}
-              placeholder="كل المحافظات"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full md:w-auto h-11 px-6 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black text-xs rounded-xl flex items-center justify-center gap-1.5 shrink-0 transition-all shadow-md active:scale-95 cursor-pointer"
-          >
-            <span>بحث</span>
-            <ArrowLeft size={14} />
-          </button>
         </form>
       </div>
 
-      {/* قائمة النتائج المنبثقة الذكية */}
+      {/* نافذة النتائج المنبثقة للبحث الحي */}
       {isOpen && searchTerm.trim().length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-[#0D1527] border border-slate-800 rounded-2xl shadow-2xl p-2.5 z-50 max-h-96 overflow-y-auto space-y-2">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-[#090E1A] border border-slate-800 shadow-2xl p-2.5 z-50 max-h-96 overflow-y-auto space-y-2.5 rounded-none">
           {totalMatches === 0 && !isSearching ? (
             <div className="py-6 text-center text-xs text-slate-400">
-              لا توجد منشآت مطابقة لـ{' '}
+              لا توجد نتائج مطابقة لـ{" "}
               <span className="text-[#F5C400] font-bold">"{searchTerm}"</span>
-              {selectedGov !== 'all' && ` في محافظة ${selectedGov}`}
+              {selectedGov !== "all" && ` في محافظة ${selectedGovLabel}`}
             </div>
           ) : (
             <>
-              {/* أقسام الخدمات */}
-              {matchedCategories.length > 0 && (
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
-                    بوابات الخدمات المعتمدة
-                  </span>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {matchedCategories.map((cat) => {
-                      const IconComp = typeof cat.icon === 'function' || typeof cat.icon === 'object' ? cat.icon : Building2;
-                      return (
-                        <div
-                          key={cat.id}
-                          onClick={() => {
-                            setIsOpen(false);
-                            if (onSelectCategory) onSelectCategory(cat.id);
-                            else navigate(`/directory?category=${encodeURIComponent(cat.id)}`);
-                          }}
-                          className="flex items-center gap-2 p-2 rounded-xl bg-[#060A13] hover:bg-[#F5C400]/10 border border-slate-800 hover:border-[#F5C400]/40 cursor-pointer transition-colors group"
-                        >
-                          <IconComp size={15} className="text-[#F5C400] shrink-0" />
-                          <span className="text-xs font-bold text-white group-hover:text-[#F5C400] truncate">
-                            بوابة {cat.name}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* المنشآت والمحلات */}
-              {matchedBusinesses.length > 0 && (
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
-                    المنشآت والمحلات والشركات
-                  </span>
-                  {matchedBusinesses.map((biz) => (
-                    <div
-                      key={biz.id}
-                      onClick={() => {
-                        setIsOpen(false);
-                        navigate(`/businesses/${biz.slug || biz.id}`);
-                      }}
-                      className="flex items-center justify-between p-2 rounded-xl hover:bg-[#060A13] cursor-pointer transition-colors group"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-[#F5C400]/15 text-[#F5C400] border border-[#F5C400]/30 shrink-0">
-                          {biz.category || 'منشأة'}
-                        </span>
-                        <span className="text-xs font-bold text-white group-hover:text-[#F5C400] truncate">
-                          {biz.name}
-                        </span>
-                      </div>
-                      {biz.city && (
-                        <span className="text-[11px] text-slate-400 shrink-0">{biz.city}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
               {/* البنوك والمصارف */}
               {matchedBanks.length > 0 && (
                 <div>
@@ -403,13 +489,16 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                         setIsOpen(false);
                         navigate(`/banks/${bank.slug || bank.id}`);
                       }}
-                      className="flex items-center justify-between p-2 rounded-xl hover:bg-[#060A13] cursor-pointer transition-colors group"
+                      className="flex items-center justify-between p-2.5 hover:bg-[#050811] cursor-pointer transition-colors group rounded-none"
                     >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30 shrink-0 flex items-center gap-1">
-                          <Landmark size={11} />
-                          مصرف
-                        </span>
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        {bank.logo_url ? (
+                          <img src={bank.logo_url} alt={bank.name} className="w-6 h-6 object-contain bg-white/10 p-0.5 shrink-0" />
+                        ) : (
+                          <span className="p-1 bg-blue-500/20 text-blue-400 shrink-0">
+                            <Landmark size={14} />
+                          </span>
+                        )}
                         <span className="text-xs font-bold text-white group-hover:text-[#F5C400] truncate">
                           {bank.name}
                         </span>
@@ -420,10 +509,72 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 </div>
               )}
 
-              {/* زر استعراض الكل */}
+              {/* بوابات الخدمات */}
+              {matchedCategories.length > 0 && (
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1.5">
+                    بوابات الخدمات
+                  </span>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {matchedCategories.map((cat) => {
+                      const isValidIcon = cat.icon && (typeof cat.icon === "function" || typeof cat.icon === "object");
+                      const IconComp = isValidIcon ? cat.icon : Building2;
+                      return (
+                        <div
+                          key={cat.id}
+                          onClick={() => {
+                            setIsOpen(false);
+                            if (onSelectCategory) onSelectCategory(cat.id);
+                            else navigate(`/directory?category=${encodeURIComponent(cat.id)}`);
+                          }}
+                          className="flex items-center gap-2 p-2 bg-[#050811] hover:bg-[#F5C400]/10 border border-slate-800 hover:border-[#F5C400]/40 cursor-pointer transition-colors group rounded-none"
+                        >
+                          <IconComp size={14} className="text-[#F5C400] shrink-0" />
+                          <span className="text-xs font-bold text-white group-hover:text-[#F5C400] truncate">
+                            بوابة {cat.name}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* المنشآت والشركات والمحلات */}
+              {matchedBusinesses.length > 0 && (
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
+                    المنشآت والمحلات والشركات
+                  </span>
+                  {matchedBusinesses.map((biz) => (
+                    <div
+                      key={biz.id}
+                      onClick={() => {
+                        setIsOpen(false);
+                        navigate(`/businesses/${biz.slug || biz.id}`);
+                      }}
+                      className="flex items-center justify-between p-2.5 hover:bg-[#050811] cursor-pointer transition-colors group rounded-none"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="px-2 py-0.5 text-[10px] font-bold bg-[#F5C400]/15 text-[#F5C400] border border-[#F5C400]/30 shrink-0 rounded-none">
+                          منشأة
+                        </span>
+                        <span className="text-xs font-bold text-white group-hover:text-[#F5C400] truncate">
+                          {biz.name}
+                        </span>
+                      </div>
+                      {biz.city && (
+                        <span className="text-[11px] text-slate-400 shrink-0">{biz.city}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* عرض كافة النتائج */}
               <div
                 onClick={() => handleFullSearchSubmit()}
-                className="mt-2 pt-2 border-t border-slate-800 p-2.5 rounded-xl bg-[#060A13] hover:bg-[#F5C400]/10 text-center cursor-pointer transition-colors flex items-center justify-center gap-2"
+                className="mt-2 pt-2 border-t border-slate-800 p-2.5 bg-[#050811] hover:bg-[#F5C400]/10 text-center cursor-pointer transition-colors flex items-center justify-center gap-2 rounded-none"
               >
                 <span className="text-xs font-bold text-[#F5C400]">
                   استعراض كافة نتائج "{searchTerm}" في الدليل العام

@@ -55,29 +55,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       )}
 
       {/* 2. إعلان الهيدر وشريط البحث في الصفحة الرئيسية بترتيب مستقل وأنيق */}
-      {isMainHome && (
-        <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-1 space-y-2.5">
-          {/* إعلان الهيدر مستقل بحواف ناعمة وتنسيق فخم */}
-          <div className="w-full rounded-none overflow-hidden shadow-md">
-            <AdBanner placementId="1" className="mb-0" />
-          </div>
-
-          {/* شريط البحث ظاهر 100% بدون أي تداخل */}
-          <div
-            onClick={() => setIsSearchModalOpen(true)}
-            className="flex items-center bg-[#121215] border border-[#242428] hover:border-[#FFC500]/40 rounded-2xl p-2.5 px-3.5 shadow-lg cursor-pointer transition-all"
-          >
-            <Search size={16} className="text-[#8E8E93] ml-2 shrink-0" />
-            <span className="flex-1 text-xs text-zinc-400 font-medium truncate">
-              ابحث عن بنك، شركة، عقار، مزاد، وظيفة...
-            </span>
-            <div className="flex items-center gap-1 border-r border-[#27272A] pr-2.5 mr-1 text-[#D1D5DB]">
-              <MapPin size={13} className="text-[#FFC500]" />
-              <span className="text-[11px] font-bold whitespace-nowrap">{selectedCity}</span>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
       {/* 3. القائمة الجانبية الموحدة المفتوحة من اليمين */}
       {isSidebarOpen && (

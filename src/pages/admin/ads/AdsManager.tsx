@@ -101,13 +101,22 @@ export const AdsManager: React.FC = () => {
             </button>
           </div>
 
-          <NavLink
+          <div className="flex items-center gap-2 flex-wrap">
+              <NavLink
+                to="/admin/sponsor"
+                className="flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl bg-gradient-to-r from-[#F5C400] to-[#DDAF00] text-black font-black text-xs hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[#F5C400]/20"
+              >
+                <Sparkles size={16} />
+                <span>إعلان راعٍ ⭐</span>
+              </NavLink>
+              <NavLink
             to="/admin/ads/generator"
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all shadow-lg shadow-[#FFC500]/20"
           >
             <Sparkles size={16} />
             <span>إنشاء إعلان جديد (YR Studio)</span>
           </NavLink>
+            </div>
         </div>
       </div>
 
@@ -229,11 +238,11 @@ export const AdsManager: React.FC = () => {
                 <div className="grid grid-cols-2 gap-2 pt-1 text-center">
                   <div className="p-2 rounded-xl bg-[#161D2B] border border-[#1F2937]">
                     <span className="text-[10px] text-[#9CA3AF] block">المشاهدات</span>
-                    <b className="text-sm font-mono text-white">{ad.views.toLocaleString()}</b>
+                    <b className="text-sm font-mono text-white">{(ad.views || 0).toLocaleString()}</b>
                   </div>
                   <div className="p-2 rounded-xl bg-[#161D2B] border border-[#1F2937]">
                     <span className="text-[10px] text-[#9CA3AF] block">النقرات</span>
-                    <b className="text-sm font-mono text-[#FFC500]">{ad.clicks.toLocaleString()}</b>
+                    <b className="text-sm font-mono text-[#FFC500]">{(ad.clicks || 0).toLocaleString()}</b>
                   </div>
                 </div>
 

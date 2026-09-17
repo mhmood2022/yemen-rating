@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Sparkles, NavLink, useLocation } from 'react-router-dom';
-import { Sparkles, OFFICIAL_CATEGORIES } from '../../data/categories';
+import { NavLink, useLocation } from 'react-router-dom';
+import { OFFICIAL_CATEGORIES } from '../../data/categories';
 import { Sparkles,
   LayoutDashboard,
   FolderTree,
@@ -24,8 +24,7 @@ const ADMIN_OPERATIONS = [
   { id: 'categories', label: 'إدارة التصنيفات الرسمية', icon: FolderTree, path: '/admin/categories' },
   { id: 'claims', label: 'إثبات الملكية والتوثيق', icon: ShieldCheck, path: '/admin/claims' },
   { id: 'ads', label: 'الإعلانات و YR Ads', icon: Megaphone, path: '/admin/ads' },
-  { id: 'sponsor', label: 'الراعي الرسمي للرئيسية', icon: Sparkles, path: '/admin/sponsor' },
-  { id: 'auctions', label: 'المزادات والعمولات', icon: Gavel, path: '/admin/auctions' },
+    { id: 'auctions', label: 'المزادات والعمولات', icon: Gavel, path: '/admin/auctions' },
   { id: 'markets', label: 'الأسواق ومؤشرات الأسعار', icon: Store, path: '/admin/markets' },
   { id: 'users', label: 'المستخدمون والأدوار', icon: Users, path: '/admin/users' },
   { id: 'analytics', label: 'التقارير والمالية', icon: BarChart3, path: '/admin/analytics' },
