@@ -578,6 +578,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
+      <div className="w-full my-2"><AdBanner placementId="2" className="w-full !rounded-none" /></div>
+
       {/* 🏢 العقارات */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
@@ -652,8 +654,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
         )}
       </div>
-
-      <div className="w-full my-2"><AdBanner placementId="2" className="w-full !rounded-none" /></div>
 
       <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] shadow-md flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
