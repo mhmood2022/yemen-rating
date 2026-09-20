@@ -158,7 +158,7 @@ export const BusinessesPage: React.FC = () => {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#070A10] text-white font-['Cairo',sans-serif] pb-16 px-3 sm:px-4 max-w-7xl mx-auto pt-3">
+    <div dir="rtl" className="min-h-screen bg-[#070A10] text-white font-['Cairo'] pb-16 px-3 sm:px-4 max-w-7xl mx-auto pt-3">
       {/* رأس الصفحة */}
       <div className="mb-4 flex items-center justify-between border-b border-[#1F2937]/70 pb-3">
         <div className="flex items-center gap-2 text-right">
@@ -272,7 +272,7 @@ export const BusinessesPage: React.FC = () => {
               <article
                 key={item.id}
                 onClick={() => navigate(`/businesses/${item.slug || item.id}`)}
-                className="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer group"
+                className="bg-[#0B0F17] font-['Cairo'] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer group"
               >
                 <div>
                   {/* الغلاف الواسع المفتوح بدون أي قص أو شارات فوقه */}
