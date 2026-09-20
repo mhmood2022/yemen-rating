@@ -156,8 +156,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
     }
   };
   const currentRates = ratesData[activeMarket];
+  const recentlyAdded = useMemo(() => {
+    return liveBusinesses.slice(0, 2);
+  }, [liveBusinesses]);
 
-  // الأكثر مشاهدة (بيانات حقيقية - بطاقتان فقط)
+  // الأكثر مشاهدة (بيانات حقيقية - بطاقتان فقط ومستقلة)
   const mostViewed = useMemo(() => {
     // 1. استبعاد المنشآت المعروضة في "آخر ما أضيف" لعدم تكرار نفس البطاقات إطلاقاً
     const recentIds = new Set(recentlyAdded.map((b: any) => b.id));
@@ -180,10 +183,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
     return liveBusinesses
       .filter((b: any) => b.is_featured === true || b.tier === "PREMIUM_VERIFIED")
       .slice(0, 2);
-  }, [liveBusinesses]);
-
-  const recentlyAdded = useMemo(() => {
-    return liveBusinesses.slice(0, 2);
   }, [liveBusinesses]);
 
   const topRatedUniversal = useMemo(() => {
