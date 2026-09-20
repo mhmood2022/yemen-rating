@@ -463,9 +463,11 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     }
 
     function renderVerificationBadge(badgeType, isVerified, size = 20) {
-  if (isVerified !== true && isVerified !== "true") return "";
+  const isV = isVerified === true || isVerified === "true" || isVerified === 1 || isVerified === "1";
+  const hasType = badgeType && badgeType !== "none" && badgeType !== "" && badgeType !== "false";
+  if (!isV && !hasType) return "";
 
-  const type = (badgeType || "gold").toLowerCase();
+  const type = (badgeType || (isVerified ? "blue" : "gold")).toLowerCase();
   let color = "#F59E0B"; // الذهبي الأصلي
   let title = "موثق رسمياً - الشارة الذهبية";
 
