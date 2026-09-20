@@ -242,12 +242,7 @@ export const BusinessesPage: React.FC = () => {
                     <Building size={42} />
                   </div>
                 )}
-                {/* إظهار الشارة المعتمدة فوق الصورة في الدليل */}
-                {item.badge_type && item.badge_type !== 'none' && (
-                  <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md p-1 rounded-lg border border-white/10 flex items-center justify-center z-10">
-                    <YRBadge type={item.badge_type as BadgeType} size={16} />
-                  </div>
-                )}
+
               </div>
 
               <div className="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
@@ -285,8 +280,8 @@ export const BusinessesPage: React.FC = () => {
         </div>
       )}
 
-      <div className="w-full rounded-2xl overflow-hidden shadow-lg border border-[#1F2937] mt-8">
-        <AdBanner placementId="2" className="w-full" />
+      <div className="w-full mt-6">
+        <AdBanner placementId="2" className="w-full !rounded-none" />
       </div>
     </div>
   );
