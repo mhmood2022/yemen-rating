@@ -27,6 +27,14 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const cleanPhone = phone.trim().replace(/\D/g, "");
+    const yemeniRegex = /^(77|78|73|71)\d{7}$/;
+    if (cleanPhone.length !== 9 || !yemeniRegex.test(cleanPhone)) {
+      alert("رقم الهاتف يجب أن يتكون من 9 أرقام ويبدأ بـ (77 أو 78 أو 73 أو 71)");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -35,8 +43,8 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
       const { error } = await supabase.from('business_claims').insert([{
         business_id: businessId,
         claimant_name: name.trim(),
-        claimant_role: fullRole.trim(),
-        claimant_phone: phone.trim(),
+        notes: fullRole.trim(),
+        claimant_phone: cleanPhone,
         status: 'PENDING'
       }]);
 
@@ -120,9 +128,9 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
             <input
               type="tel"
               required
+              maxLength={9}
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="مثال: 771234567"
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
               className="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EAB308] text-xs text-right font-mono"
             />
           </div>

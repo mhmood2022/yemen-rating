@@ -158,12 +158,12 @@ export const BusinessesPage: React.FC = () => {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#070A10] text-white font-['Cairo'] pb-16 px-3 sm:px-4 max-w-7xl mx-auto pt-3">
+    <div dir="rtl" className="min-h-screen bg-[#070A10] text-white font-['Cairo'] pb-16 px-3 sm:px-4 max-w-7xl mx-auto pt-1">
       {/* رأس الصفحة */}
-      <div className="mb-4 flex items-center justify-between border-b border-[#1F2937]/70 pb-3">
+      <div className="mb-2.5 flex items-center justify-between border-b border-[#1F2937]/70 pb-2">
         <div className="flex items-center gap-2 text-right">
-          <CategoryIcon className="w-6 h-6 text-[#EAB308] shrink-0" />
-          <h1 className="text-xl sm:text-2xl font-black text-white leading-none">
+          <CategoryIcon className="w-5 h-5 text-[#EAB308] shrink-0" />
+          <h1 className="text-base sm:text-lg font-bold text-white leading-none">
             دليل {categoryConfig.name} ({businesses.length})
           </h1>
         </div>
@@ -174,7 +174,7 @@ export const BusinessesPage: React.FC = () => {
           className="text-[#EAB308] hover:text-white p-1.5 bg-transparent border-0 transition cursor-pointer flex items-center justify-center"
           title="الرئيسية"
         >
-          <ArrowRight size={24} strokeWidth={2.5} />
+          <ArrowRight size={20} strokeWidth={2.5} />
         </button>
       </div>
 
