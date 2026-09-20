@@ -159,10 +159,21 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   // الأكثر مشاهدة (بيانات حقيقية - بطاقتان فقط)
   const mostViewed = useMemo(() => {
-    return [...liveBusinesses]
-      .sort((a, b) => Number(b.views_count || b.views || 0) - Number(a.views_count || a.views || 0))
-      .slice(0, 2);
-  }, [liveBusinesses]);
+    // 1. استبعاد المنشآت المعروضة في "آخر ما أضيف" لعدم تكرار نفس البطاقات إطلاقاً
+    const recentIds = new Set(recentlyAdded.map((b: any) => b.id));
+    const available = liveBusinesses.filter((b: any) => !recentIds.has(b.id));
+
+    // 2. إذا كانت هناك منشآت لديها مشاهدات مسجلة أكبر من صفر، نفرز بها
+    const withViews = available.filter((b: any) => Number(b.views_count || b.views || 0) > 0);
+    if (withViews.length > 0) {
+      return withViews
+        .sort((a, b) => Number(b.views_count || b.views || 0) - Number(a.views_count || a.views || 0))
+        .slice(0, 2);
+    }
+
+    // 3. إذا لم تسجل مشاهدات بعد، نعرض منشآت حقيقية مختلفة تماماً عن "آخر ما أضيف"
+    return available.slice(0, 2);
+  }, [liveBusinesses, recentlyAdded]);
 
   // الأكثر تميزاً (اشتراكات وتمييز حقيقي - بطاقتان فقط)
   const featuredBusinesses = useMemo(() => {
