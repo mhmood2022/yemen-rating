@@ -157,6 +157,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
   };
   const currentRates = ratesData[activeMarket];
 
+  // الأكثر مشاهدة (بيانات حقيقية - بطاقتان فقط)
+  const mostViewed = useMemo(() => {
+    return [...liveBusinesses]
+      .sort((a, b) => Number(b.views_count || b.views || 0) - Number(a.views_count || a.views || 0))
+      .slice(0, 2);
+  }, [liveBusinesses]);
+
+  // الأكثر تميزاً (اشتراكات وتمييز حقيقي - بطاقتان فقط)
+  const featuredBusinesses = useMemo(() => {
+    return liveBusinesses
+      .filter((b: any) => b.is_featured === true || b.tier === "PREMIUM_VERIFIED")
+      .slice(0, 2);
+  }, [liveBusinesses]);
+
   const recentlyAdded = useMemo(() => {
     return liveBusinesses.slice(0, 2);
   }, [liveBusinesses]);
@@ -511,6 +525,158 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
+      {/* 👁️ الأكثر مشاهدة */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-sm font-black text-white flex items-center gap-1.5">
+            <Eye size={17} className="text-[#FFC500]" /> الأكثر مشاهدة
+          </h3>
+          <button
+            onClick={() => navigate("/directory?category=all")}
+            className="text-xs font-bold text-[#FFC500] hover:underline flex items-center gap-0.5 cursor-pointer"
+          >
+            <span>عرض الكل</span>
+            <ChevronLeft size={13} />
+          </button>
+        </div>
+
+        {mostViewed.length > 0 ? (
+          <div className="grid grid-cols-2 gap-2.5">
+            {mostViewed.map((item: any) => {
+              const badge = (item.badge_type && item.badge_type !== "none") ? item.badge_type : (item.is_verified ? "blue" : null);
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => handleCardClick(item)}
+                  className="rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/50 transition-all overflow-hidden cursor-pointer flex flex-col justify-between shadow-md"
+                >
+                  <div className="relative h-28 w-full overflow-hidden bg-[#101524]">
+                    {item.cover_url || item.logo_url ? (
+                      <img
+                        src={item.cover_url || item.logo_url}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-zinc-600">
+                        <Building2 size={36} />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-3 text-center space-y-1.5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-black text-xs text-[#FFC500] truncate flex items-center justify-center gap-1.5">
+                        <span className="truncate">{item.name}</span>
+                        {badge && (
+                          <YRBadge type={badge as BadgeType} size={15} />
+                        )}
+                      </h4>
+                      <div className="flex items-center justify-center gap-1 text-zinc-400 text-[10px] mt-0.5">
+                        <MapPin size={11} className="text-[#FFC500]" />
+                        <span>{item.city || "اليمن"}</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-0.5 text-[#FFC500] my-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} size={11} className="fill-[#FFC500]" />
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleCardClick(item); }}
+                      className="w-full py-1.5 rounded-xl bg-[#FFC500] hover:bg-[#E5B200] text-black font-black text-[11px] transition-all cursor-pointer"
+                    >
+                      عرض التفاصيل
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] text-center text-xs text-zinc-400">
+            لا توجد بيانات مشاهدات مسجلة حالياً.
+          </div>
+        )}
+      </div>
+
+      {/* ✨ الأكثر تميزاً */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-sm font-black text-white flex items-center gap-1.5">
+            <Sparkles size={17} className="text-[#FFC500]" /> الأكثر تميزاً
+          </h3>
+          <button
+            onClick={() => navigate("/directory?category=all")}
+            className="text-xs font-bold text-[#FFC500] hover:underline flex items-center gap-0.5 cursor-pointer"
+          >
+            <span>عرض الكل</span>
+            <ChevronLeft size={13} />
+          </button>
+        </div>
+
+        {featuredBusinesses.length > 0 ? (
+          <div className="grid grid-cols-2 gap-2.5">
+            {featuredBusinesses.map((item: any) => {
+              const badge = (item.badge_type && item.badge_type !== "none") ? item.badge_type : (item.is_verified ? "blue" : null);
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => handleCardClick(item)}
+                  className="rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/50 transition-all overflow-hidden cursor-pointer flex flex-col justify-between shadow-md"
+                >
+                  <div className="relative h-28 w-full overflow-hidden bg-[#101524]">
+                    {item.cover_url || item.logo_url ? (
+                      <img
+                        src={item.cover_url || item.logo_url}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-zinc-600">
+                        <Building2 size={36} />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-3 text-center space-y-1.5 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-black text-xs text-[#FFC500] truncate flex items-center justify-center gap-1.5">
+                        <span className="truncate">{item.name}</span>
+                        {badge && (
+                          <YRBadge type={badge as BadgeType} size={15} />
+                        )}
+                      </h4>
+                      <div className="flex items-center justify-center gap-1 text-zinc-400 text-[10px] mt-0.5">
+                        <MapPin size={11} className="text-[#FFC500]" />
+                        <span>{item.city || "اليمن"}</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-0.5 text-[#FFC500] my-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} size={11} className="fill-[#FFC500]" />
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleCardClick(item); }}
+                      className="w-full py-1.5 rounded-xl bg-[#FFC500] hover:bg-[#E5B200] text-black font-black text-[11px] transition-all cursor-pointer"
+                    >
+                      عرض التفاصيل
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] text-center text-xs text-zinc-400">
+            لا توجد منشآت مميزة حالياً، ستظهر هنا فور تفعيل التمييز.
+          </div>
+        )}
+      </div>
+
       {/* 🔨 المزادات */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
@@ -528,7 +694,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         <div className="space-y-2.5">
           {liveAuctions.length > 0 ? (
-            liveAuctions.map((item: any) => (
+            liveAuctions.slice(0, 2).map((item: any) => (
               <div
                 key={item.id}
                 onClick={onNavigateAuctions}
@@ -617,7 +783,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         {liveJobs.length > 0 ? (
           <div className="space-y-2.5">
-            {liveJobs.map((job: any) => (
+            {liveJobs.slice(0, 2).map((job: any) => (
               <div
                 key={job.id}
                 onClick={onNavigateJobs}
