@@ -96,13 +96,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const handleNavigateBanks = () => {
     if (onNavigateBanks) onNavigateBanks();
     else {
-      window.location.href = '/bank.html';
+      navigate('/banks');
     }
   };
 
   const handleCardClick = (item: any) => {
     const target = item.slug || item.id;
-    window.location.href = `/bank.html?slug=${target}`;
+    navigate(`/businesses/${target}`);
   };
 
   const officialCategories = [
