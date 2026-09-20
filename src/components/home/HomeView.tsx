@@ -156,46 +156,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
     }
   };
   const currentRates = ratesData[activeMarket];
-  const recentlyAdded = useMemo(() => {
-    return liveBusinesses.slice(0, 2);
-  }, [liveBusinesses]);
-
-  // الأكثر مشاهدة (بيانات حقيقية - بطاقتان فقط ومستقلة)
-  const mostViewed = useMemo(() => {
-    // 1. استبعاد المنشآت المعروضة في "آخر ما أضيف" لعدم تكرار نفس البطاقات إطلاقاً
-    const recentIds = new Set(recentlyAdded.map((b: any) => b.id));
-    const available = liveBusinesses.filter((b: any) => !recentIds.has(b.id));
-
-    // 2. إذا كانت هناك منشآت لديها مشاهدات مسجلة أكبر من صفر، نفرز بها
-    const withViews = available.filter((b: any) => Number(b.views_count || b.views || 0) > 0);
-    if (withViews.length > 0) {
-      return withViews
-        .sort((a, b) => Number(b.views_count || b.views || 0) - Number(a.views_count || a.views || 0))
-        .slice(0, 2);
-    }
-
-    // 3. إذا لم تسجل مشاهدات بعد، نعرض منشآت حقيقية مختلفة تماماً عن "آخر ما أضيف"
-    return available.slice(0, 2);
-  }, [liveBusinesses, recentlyAdded]);
-
-  // الأكثر تميزاً (اشتراكات وتمييز حقيقي - بطاقتان فقط)
-  const featuredBusinesses = useMemo(() => {
-    return liveBusinesses
-      .filter((b: any) => b.is_featured === true || b.tier === "PREMIUM_VERIFIED")
-      .slice(0, 2);
-  }, [liveBusinesses]);
-
-  const topRatedUniversal = useMemo(() => {
-    const all = [
+  // 🌟 المجمع الموحد الشامل لجميع المنشآت والبنوك والتصنيفات الحالية والمستقبلية
+  const allUniversalEntities = useMemo(() => {
+    return [
       ...liveBusinesses.map(b => {
         const rev = reviewsMap.get(b.id);
         const score = rev ? rev.avg : 0;
         const count = rev ? rev.count : 0;
-        const badge = (b.badge_type && b.badge_type !== 'none') ? b.badge_type : (b.is_verified ? 'blue' : null);
+        const badge = (b.badge_type && b.badge_type !== "none") ? b.badge_type : (b.is_verified ? "blue" : null);
         return {
           ...b,
-          entityType: 'business',
-          categoryLabel: b.sub_category || 'عيادات وخدمات',
+          entityType: "business",
+          categoryLabel: b.sub_category || b.category || "منشأة",
           score,
           count,
           activeBadge: badge
@@ -205,23 +177,54 @@ export const HomeView: React.FC<HomeViewProps> = ({
         const rev = reviewsMap.get(bk.id);
         const score = rev ? rev.avg : 0;
         const count = rev ? rev.count : 0;
-        const badge = (bk.badge_type && bk.badge_type !== 'none') ? bk.badge_type : (bk.verified ? 'blue' : null);
+        const badge = (bk.badge_type && bk.badge_type !== "none") ? bk.badge_type : (bk.verified ? "blue" : null);
         return {
           ...bk,
-          entityType: 'bank',
-          categoryLabel: 'بنوك وصرافة',
+          entityType: "bank",
+          categoryLabel: "بنوك وصرافة",
           score,
           count,
           activeBadge: badge
         };
       })
     ];
+  }, [liveBusinesses, liveBanks, reviewsMap]);
 
-    return all
+  // 1. آخر ما أضيف (يشمل المنشآت والبنوك مفرزة بالأحدث فوراً)
+  const recentlyAdded = useMemo(() => {
+    return [...allUniversalEntities]
+      .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+      .slice(0, 2);
+  }, [allUniversalEntities]);
+
+  // 2. الأكثر مشاهدة (بيانات حقيقية - مفرزة بالأعلى مشاهدات)
+  const mostViewed = useMemo(() => {
+    const recentIds = new Set(recentlyAdded.map((b: any) => b.id));
+    const available = allUniversalEntities.filter((b: any) => !recentIds.has(b.id));
+
+    const withViews = available.filter((b: any) => Number(b.views_count || b.views || 0) > 0);
+    if (withViews.length > 0) {
+      return withViews
+        .sort((a, b) => Number(b.views_count || b.views || 0) - Number(a.views_count || a.views || 0))
+        .slice(0, 2);
+    }
+    return available.slice(0, 2);
+  }, [allUniversalEntities, recentlyAdded]);
+
+  // 3. الأكثر تميزاً (يشمل المنشآت والبنوك المميزة)
+  const featuredBusinesses = useMemo(() => {
+    return allUniversalEntities
+      .filter((b: any) => b.is_featured === true || b.tier === "PREMIUM_VERIFIED")
+      .slice(0, 2);
+  }, [allUniversalEntities]);
+
+  // 4. الأعلى تقييماً (مبني على نفس المجمع الموحد الشامل)
+  const topRatedUniversal = useMemo(() => {
+    return allUniversalEntities
       .filter(item => item.count > 0 && item.score > 0)
       .sort((a, b) => b.score - a.score || b.count - a.count)
       .slice(0, 2);
-  }, [liveBusinesses, liveBanks, reviewsMap]);
+  }, [allUniversalEntities]);
 
   return (
     <div dir="rtl" className="space-y-5 pt-16 sm:pt-20 max-w-md mx-auto px-3 sm:px-4 font-['Cairo',sans-serif] text-white bg-[#0B1224] min-h-screen">
