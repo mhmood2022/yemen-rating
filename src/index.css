@@ -1,3 +1,9 @@
+
+body { 
+  -webkit-font-smoothing: antialiased;
+}
+
+
 @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap");
 
 @tailwind base;
@@ -31,13 +37,7 @@
   box-sizing: border-box;
 }
 
-body {
-  background-color: var(--yr-bg-black);
-  color: var(--yr-text-primary);
-  direction: rtl;
-  margin: 0;
-  padding: 0;
-}
+
 
 /* =========================================================
    تطهير عناصر المتصفح الافتراضية مركزياً (Global Element Theming)
@@ -46,7 +46,7 @@ body {
   /* 1. تحديد النصوص باللون الذهبي والأسود */
   ::selection {
     background-color: var(--yr-accent-gold);
-    color: #000000;
+    color: #0a0f1d;
   }
 
   /* 2. شريط التمرير المركزي لكامل الموقع ولوحة التحكم */
@@ -71,7 +71,6 @@ body {
 
   /* 3. توحيد القوائم المنسدلة الافتراضية (select & option) */
   select {
-    color-scheme: dark !important;
     background-color: var(--yr-surface-elevated);
     color: var(--yr-text-primary);
     border-color: var(--yr-border-dark);
@@ -79,22 +78,17 @@ body {
   }
   
   select option {
-    background-color: var(--yr-surface-elevated) !important;
-    color: var(--yr-text-primary) !important;
     padding: 8px 12px;
   }
 
   select option:checked,
   select option:hover,
   select option:focus {
-    background-color: var(--yr-border-dark) !important;
-    color: var(--yr-accent-gold) !important;
   }
 
   /* 4. حقول الإدخال والملاحظات (input & textarea) */
   input,
   textarea {
-    color-scheme: dark !important;
     caret-color: var(--yr-accent-gold);
   }
 
@@ -109,8 +103,6 @@ body {
   textarea:focus-visible,
   select:focus-visible,
   button:focus-visible {
-    outline: 1px solid var(--yr-accent-gold) !important;
-    outline-offset: 0px !important;
   }
 
   /* 6. معالجة الإكمال التلقائي للمتصفح (Autofill) بالخلفية الداكنة */
@@ -121,8 +113,6 @@ body {
   textarea:-webkit-autofill:hover,
   textarea:-webkit-autofill:focus,
   select:-webkit-autofill {
-    -webkit-text-fill-color: var(--yr-text-primary) !important;
-    -webkit-box-shadow: 0 0 0px 1000px var(--yr-surface-elevated) inset !important;
     transition: background-color 5000s ease-in-out 0s;
   }
 
@@ -130,6 +120,44 @@ body {
   input[type="checkbox"],
   input[type="radio"],
   input[type="range"] {
-    accent-color: var(--yr-accent-gold) !important;
   }
+}
+
+/* === خلفية يمن ريتنغ الداكنة === */
+body {
+    min-height: 100vh;
+}
+
+
+
+
+
+
+/* ===== YEMEN RATING - CLEAN REFINED THEME ===== */
+html, body, #root, #__next, main {
+  background-color: #0b1224 !important;
+  color: #ffffff !important;
+}
+
+/* شريط البحث الخارجي فقط بدون لمس الحقول التي بداخله */
+[class*="search-bar"], [class*="search-container"] {
+  background-color: #0a0e1a !important;
+  border: 1px solid #1a2538 !important;
+  border-radius: 14px;
+}
+
+/* منع تكرار البراويز على حقل الإدخال والقائمة المنسدلة داخل البحث */
+[class*="search"] input,
+[class*="search"] select,
+[class*="search"] [role="button"] {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+/* بطاقات الخدمات (العيادات، المستشفيات...) فقط باللون المطلوب */
+.category-card, [class*="service-card"] {
+  background-color: #0a0e1a !important;
+  border: 1px solid #18233c !important;
 }

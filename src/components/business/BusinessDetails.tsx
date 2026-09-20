@@ -1,3 +1,4 @@
+import { YRBadge, BadgeType } from '../common/YRBadge';
 import React, { useState } from 'react';
 import {
   Star, MapPin, Phone, ArrowRight, Share2, ShieldCheck, CheckCircle2,
@@ -98,7 +99,11 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h1 className="text-2xl sm:text-4xl font-black text-white leading-tight">
                   {business.name}
-                </h1>
+                 {((business as any)?.badge_type && (business as any)?.badge_type !== 'none') ? (
+      <YRBadge type={(business as any)?.badge_type as BadgeType} size={20} className="inline-block align-middle mr-1.5" />
+    ) : ((business as any)?.is_verified || (business as any)?.verified) ? (
+      <YRBadge type="blue" size={20} className="inline-block align-middle mr-1.5" />
+    ) : null} </h1>
                 {business.isVerified ? (
                   <span className="bg-emerald-500 text-white text-xs font-black px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
                     <CheckCircle2 className="w-3.5 h-3.5" /> موثّق معتمد

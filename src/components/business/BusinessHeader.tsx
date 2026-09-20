@@ -1,3 +1,4 @@
+import { YRBadge, BadgeType } from '../common/YRBadge';
 import React, { useState } from 'react';
 import {
   ArrowRight,

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, MapPin, Star, Eye, Clock, ChevronLeft, Building2, Gavel,
+  MapPin, Star, Eye, Clock, ChevronLeft, Building2, Gavel,
   Briefcase, Landmark, Hotel, UtensilsCrossed, Stethoscope, GraduationCap,
   Smartphone, ShoppingBag, Truck, Wrench, Sparkles, Scissors, Glasses,
-  Coffee, Store, ShieldCheck, Layers, X, TrendingUp, Car
+  Coffee, Store, ShieldCheck, Layers, X, TrendingUp, Car, CircleDot,
+  Award
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { BusinessItem } from '../../data/mockData';
@@ -24,14 +25,6 @@ interface HomeViewProps {
   onNavigateBanks?: () => void;
 }
 
-const globalMemoryCache = {
-  businesses: [] as any[],
-  banks: [] as any[],
-  jobs: [] as any[],
-  properties: [] as any[],
-  isLoaded: false
-};
-
 export const HomeView: React.FC<HomeViewProps> = ({
   onSelectCategory,
   onSelectBusiness,
@@ -44,45 +37,56 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const navigate = useNavigate();
   const [activeMarket, setActiveMarket] = useState<'sanaa' | 'aden'>('sanaa');
   const [showAllCategoriesModal, setShowAllCategoriesModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
-  const [liveBusinesses, setLiveBusinesses] = useState<any[]>(globalMemoryCache.businesses);
-  const [liveBanks, setLiveBanks] = useState<any[]>(globalMemoryCache.banks);
-  const [liveJobs, setLiveJobs] = useState<any[]>(globalMemoryCache.jobs);
-  const [liveProperties, setLiveProperties] = useState<any[]>(globalMemoryCache.properties);
+  const [liveBusinesses, setLiveBusinesses] = useState<any[]>([]);
+  const [liveBanks, setLiveBanks] = useState<any[]>([]);
+  const [liveJobs, setLiveJobs] = useState<any[]>([]);
+  const [liveProperties, setLiveProperties] = useState<any[]>([]);
+  const [liveAuctions, setLiveAuctions] = useState<any[]>([]);
+  const [reviewsMap, setReviewsMap] = useState<Map<string, { avg: number; count: number }>>(new Map());
 
   useEffect(() => {
     let isMounted = true;
     async function loadData() {
       try {
-        const [bRes, bnRes, jRes, pRes] = await Promise.allSettled([
+        const [busRes, bankRes, jobRes, propRes, aucRes, revRes] = await Promise.allSettled([
           supabase.from('businesses').select('*').order('created_at', { ascending: false }).limit(20),
-          supabase.from('banks').select('*').limit(6),
+          supabase.from('banks').select('*').order('created_at', { ascending: true }).limit(20),
           supabase.from('jobs').select('*').order('created_at', { ascending: false }).limit(6),
-          supabase.from('properties').select('*').limit(6)
+          supabase.from('properties').select('*').order('created_at', { ascending: false }).limit(6),
+          supabase.from('auctions').select('*').order('created_at', { ascending: false }).limit(6),
+          supabase.from('reviews').select('entity_id, stars')
         ]);
 
         if (!isMounted) return;
 
-        if (bRes.status === 'fulfilled' && bRes.value.data?.length) {
-          globalMemoryCache.businesses = bRes.value.data;
-          setLiveBusinesses(bRes.value.data);
+        if (busRes.status === 'fulfilled' && busRes.value.data) setLiveBusinesses(busRes.value.data);
+        if (bankRes.status === 'fulfilled' && bankRes.value.data) setLiveBanks(bankRes.value.data);
+        if (jobRes.status === 'fulfilled' && jobRes.value.data) setLiveJobs(jobRes.value.data);
+        if (propRes.status === 'fulfilled' && propRes.value.data) setLiveProperties(propRes.value.data);
+        if (aucRes.status === 'fulfilled' && aucRes.value.data) setLiveAuctions(aucRes.value.data);
+
+        if (revRes.status === 'fulfilled' && revRes.value.data) {
+          const grouped = new Map<string, number[]>();
+          revRes.value.data.forEach((r: any) => {
+            if (r.entity_id) {
+              const arr = grouped.get(r.entity_id) || [];
+              const s = Number(r.stars);
+              if (s >= 1 && s <= 5) arr.push(s);
+              grouped.set(r.entity_id, arr);
+            }
+          });
+
+          const calculatedMap = new Map<string, { avg: number; count: number }>();
+          grouped.forEach((starsArr, id) => {
+            const count = starsArr.length;
+            const avg = Number((starsArr.reduce((a, b) => a + b, 0) / count).toFixed(1));
+            calculatedMap.set(id, { avg, count });
+          });
+          setReviewsMap(calculatedMap);
         }
-        if (bnRes.status === 'fulfilled' && bnRes.value.data?.length) {
-          globalMemoryCache.banks = bnRes.value.data;
-          setLiveBanks(bnRes.value.data);
-        }
-        if (jRes.status === 'fulfilled' && jRes.value.data?.length) {
-          globalMemoryCache.jobs = jRes.value.data;
-          setLiveJobs(jRes.value.data);
-        }
-        if (pRes.status === 'fulfilled' && pRes.value.data?.length) {
-          globalMemoryCache.properties = pRes.value.data;
-          setLiveProperties(pRes.value.data);
-        }
-        globalMemoryCache.isLoaded = true;
       } catch (err) {
-        console.error(err);
+        console.error('Data loading error:', err);
       }
     }
     loadData();
@@ -92,21 +96,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const handleNavigateBanks = () => {
     if (onNavigateBanks) onNavigateBanks();
     else {
-      try { navigate('/banks'); } catch { window.location.href = '/banks'; }
+      window.location.href = '/bank.html';
     }
   };
 
-  const handleBankClick = (bank: any) => {
-    const target = bank.slug || bank.id;
-    if (target) navigate(`/banks/${target}`);
-  };
-
-  const handleBusinessClick = (business: any) => {
-    if (onSelectBusiness) onSelectBusiness(business);
-    else {
-      const target = business.slug || business.id;
-      navigate(`/businesses/${target}`);
-    }
+  const handleCardClick = (item: any) => {
+    const target = item.slug || item.id;
+    window.location.href = `/bank.html?slug=${target}`;
   };
 
   const officialCategories = [
@@ -146,90 +142,215 @@ export const HomeView: React.FC<HomeViewProps> = ({
   ];
 
   const ratesData = {
-    sanaa: { usd: { buy: '534.76', sell: '538.00' }, sar: { buy: '140.43', sell: '140.70' }, updated: 'اليوم 09:00 ص' },
-    aden: { usd: { buy: '1,910.00', sell: '1,925.00' }, sar: { buy: '501.50', sell: '504.00' }, updated: 'اليوم 09:00 ص' }
+    sanaa: {
+      usd: { buy: '533.5', sell: '535.5' },
+      sar: { buy: '139.5', sell: '140.5' },
+      gold24: { buy: '530.5', sell: '538.5' },
+      gold18: { buy: '398.5', sell: '400.5' }
+    },
+    aden: {
+      usd: { buy: '1,910.0', sell: '1,925.0' },
+      sar: { buy: '501.5', sell: '504.0' },
+      gold24: { buy: '112,000', sell: '115,000' },
+      gold18: { buy: '84,000', sell: '86,500' }
+    }
   };
   const currentRates = ratesData[activeMarket];
 
-  // بطاقتان فقط في آخر ما أضيف (أو 3 للشاشات الكبيرة) طبقاً للصورة
-  const recentlyAdded = useMemo(() => liveBusinesses.slice(0, 3), [liveBusinesses]);
+  const recentlyAdded = useMemo(() => {
+    return liveBusinesses.slice(0, 2);
+  }, [liveBusinesses]);
 
-  // بطاقتان فقط في الأعلى تقييماً طبقاً للصورة
-  const topRated = useMemo(() => liveBanks.slice(0, 2), [liveBanks]);
+  const topRatedUniversal = useMemo(() => {
+    const all = [
+      ...liveBusinesses.map(b => {
+        const rev = reviewsMap.get(b.id);
+        const score = rev ? rev.avg : 0;
+        const count = rev ? rev.count : 0;
+        const badge = (b.badge_type && b.badge_type !== 'none') ? b.badge_type : (b.is_verified ? 'blue' : null);
+        return {
+          ...b,
+          entityType: 'business',
+          categoryLabel: b.sub_category || 'عيادات وخدمات',
+          score,
+          count,
+          activeBadge: badge
+        };
+      }),
+      ...liveBanks.map(bk => {
+        const rev = reviewsMap.get(bk.id);
+        const score = rev ? rev.avg : 0;
+        const count = rev ? rev.count : 0;
+        const badge = (bk.badge_type && bk.badge_type !== 'none') ? bk.badge_type : (bk.verified ? 'blue' : null);
+        return {
+          ...bk,
+          entityType: 'bank',
+          categoryLabel: 'بنوك وصرافة',
+          score,
+          count,
+          activeBadge: badge
+        };
+      })
+    ];
 
-  // بطاقتان في العقارات
-  const realEstateList = [
-    { id: 're1', title: 'شقة سوبر ديلوكس مفروشة راقية', type: 'للإيجار', city: 'صنعاء - حدة', price: '300 ألف', period: '/شهر', image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=500' },
-    { id: 're2', title: 'عمارة استثمارية 4 أدوار دخل ممتاز', type: 'للبيع', city: 'تعز - المسبح', price: '45 مليون', period: 'ريال', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=500' }
-  ];
-
-  // بطاقتان في المزادات
-  const auctionsList = [
-    { id: 'auc1', title: 'تحفة تراثية وجنبية فضية صيفاني', currentBid: '150 ألف', timeLeft: '05:42:12', timeAgo: 'منذ 3 أيام', image: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=400' },
-    { id: 'auc2', title: 'تويوتا لاندكروزر V8 2023 وكالة', currentBid: '6.5 مليون', timeLeft: '02:15:00', timeAgo: 'منذ يومين', image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400' }
-  ];
+    return all
+      .filter(item => item.count > 0 && item.score > 0)
+      .sort((a, b) => b.score - a.score || b.count - a.count)
+      .slice(0, 2);
+  }, [liveBusinesses, liveBanks, reviewsMap]);
 
   return (
-    <div dir="rtl" className="space-y-4 pt-16 sm:pt-20 max-w-5xl mx-auto px-3 sm:px-4 font-['Cairo',sans-serif] text-white">
+    <div dir="rtl" className="space-y-5 pt-16 sm:pt-20 max-w-md mx-auto px-3 sm:px-4 font-['Cairo',sans-serif] text-white bg-[#0B1224] min-h-screen">
 
-      {/* 🔍 شريط البحث الذكي الوطني المدمج مع إعلان الراعي الرسمي */}
+      {/* 🔍 شريط البحث الذكي وإعلان الراعي الرسمي */}
       <HomeSearchBar
         officialCategories={officialCategories}
         onSelectCategory={onSelectCategory}
       />
 
-      {/* 📢 إعلان البانر الرئيسي للمنصة أسفل شريط البحث مباشرة */}
-      <div className="w-full rounded-none overflow-hidden shadow-md">
+      {/* 📢 إعلان البانر العلوي */}
+      <div className="w-full rounded-2xl overflow-hidden shadow-lg border border-[#18233C]/70">
         <AdBanner placementId="1" className="mb-0" />
       </div>
 
-      {/* 🏛️ بوابات التصنيفات الـ 33 المعتمدة */}
-      <div className="space-y-2">
+      {/* 🏛️ بوابات الخدمات المعتمدة */}
+      <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
-          <h3 className="text-xs font-bold text-zinc-200 flex items-center gap-1.5">
-            <Layers size={15} className="text-[#FFC500]" /> بوابات الخدمات المعتمدة
+          <h3 className="text-sm font-black text-zinc-100 flex items-center gap-1.5">
+            <Layers size={17} className="text-[#FFC500]" /> بوابات الخدمات المعتمدة
           </h3>
           <button
             onClick={() => setShowAllCategoriesModal(true)}
-            className="text-[11px] font-bold text-[#FFC500] hover:underline flex items-center gap-0.5 cursor-pointer"
+            className="text-xs font-bold text-[#FFC500] hover:underline flex items-center gap-0.5 cursor-pointer"
           >
             <span>عرض الكل (33)</span>
+            <ChevronLeft size={14} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-4 gap-2">
+          <button
+            onClick={handleNavigateBanks}
+            className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/60 transition-all cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-xl bg-[#12192B] border border-[#1C2844] flex items-center justify-center text-amber-400 mb-2 group-hover:scale-105 transition-transform">
+              <Landmark size={22} />
+            </div>
+            <span className="text-[11px] font-bold text-white line-clamp-1">البنوك والصرافة</span>
+          </button>
+
+          <button
+            onClick={() => onSelectCategory('transport')}
+            className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-sky-400/60 transition-all cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-xl bg-[#12192B] border border-[#1C2844] flex items-center justify-center text-sky-400 mb-2 group-hover:scale-105 transition-transform">
+              <Truck size={22} />
+            </div>
+            <span className="text-[11px] font-bold text-white line-clamp-1">شركات النقل</span>
+          </button>
+
+          <button
+            onClick={() => onSelectCategory('hospitals')}
+            className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-rose-400/60 transition-all cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-xl bg-[#12192B] border border-[#1C2844] flex items-center justify-center text-rose-400 mb-2 group-hover:scale-105 transition-transform">
+              <Stethoscope size={22} />
+            </div>
+            <span className="text-[11px] font-bold text-white line-clamp-1">المستشفيات</span>
+          </button>
+
+          <button
+            onClick={() => onSelectCategory('clinics')}
+            className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-pink-400/60 transition-all cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-xl bg-[#12192B] border border-[#1C2844] flex items-center justify-center text-pink-400 mb-2 group-hover:scale-105 transition-transform">
+              <Stethoscope size={22} />
+            </div>
+            <span className="text-[11px] font-bold text-white line-clamp-1">العيادات</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 🕒 آخر ما أضيف (بدون أي شارة فوق الغلاف نهائياً) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-sm font-black text-white flex items-center gap-1.5">
+            <Clock size={17} className="text-[#FFC500]" /> آخر ما أضيف
+          </h3>
+          <button
+            onClick={() => navigate('/directory?category=all')}
+            className="text-xs font-bold text-[#FFC500] hover:underline flex items-center gap-0.5 cursor-pointer"
+          >
+            <span>عرض الكل</span>
             <ChevronLeft size={13} />
           </button>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {officialCategories.slice(0, 11).map((cat) => {
-            const Icon = cat.icon;
+        <div className="grid grid-cols-2 gap-2.5">
+          {recentlyAdded.map((item: any) => {
+            const badge = (item.badge_type && item.badge_type !== 'none') ? item.badge_type : (item.is_verified ? 'blue' : null);
             return (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  if (cat.id === 'banks') handleNavigateBanks();
-                  else onSelectCategory(cat.id);
-                }}
-                className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-[#101522] hover:bg-[#182032] border border-white/10 hover:border-[#FFC500]/50 transition-all shrink-0 w-[78px] text-center cursor-pointer group"
+              <div
+                key={item.id}
+                onClick={() => handleCardClick(item)}
+                className="rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/50 transition-all overflow-hidden cursor-pointer flex flex-col justify-between shadow-md"
               >
-                <div className={`w-10 h-10 rounded-xl ${cat.bg} ${cat.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                  <Icon size={19} />
+                {/* الغلاف نظيف 100% بدون أي شارة */}
+                <div className="relative h-28 w-full overflow-hidden bg-[#101524]">
+                  {item.cover_url || item.logo_url ? (
+                    <img
+                      src={item.cover_url || item.logo_url}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-zinc-600">
+                      <Building2 size={36} />
+                    </div>
+                  )}
                 </div>
-                <span className="text-[10px] font-bold text-zinc-300 group-hover:text-white line-clamp-1">
-                  {cat.name}
-                </span>
-              </button>
+
+                <div className="p-3 text-center space-y-1.5 flex-1 flex flex-col justify-between">
+                  <div>
+                    {/* الشارة بجانب الاسم فقط */}
+                    <h4 className="font-black text-xs text-[#FFC500] truncate flex items-center justify-center gap-1.5">
+                      <span className="truncate">{item.name}</span>
+                      {badge && (
+                        <YRBadge type={badge as BadgeType} size={15} />
+                      )}
+                    </h4>
+                    <div className="flex items-center justify-center gap-1 text-zinc-400 text-[10px] mt-0.5">
+                      <MapPin size={11} className="text-[#FFC500]" />
+                      <span>{item.city || 'اليمن'}</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-0.5 text-[#FFC500] my-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={11} className="fill-[#FFC500]" />
+                      ))}
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); handleCardClick(item); }}
+                    className="w-full py-1.5 rounded-xl bg-[#FFC500] hover:bg-[#E5B200] text-black font-black text-[11px] transition-all cursor-pointer"
+                  >
+                    عرض التفاصيل
+                  </button>
+                </div>
+              </div>
             );
           })}
         </div>
       </div>
 
-      {/* 1️⃣ قسم: آخر ما أضيف (بطاقتان فقط مع زر عرض الكل طبقاً للصورة) */}
-      <div className="space-y-2.5">
+      {/* 📈 أسعار الصرف والذهب */}
+      <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-sm font-black text-white flex items-center gap-1.5">
-            <Clock size={16} className="text-[#FFC500]" /> آخر ما أضيف
+            <TrendingUp size={17} className="text-[#FFC500]" /> أسعار الصرف والذهب
           </h3>
           <button
-            onClick={() => onSelectCategory('restaurants')}
+            onClick={onNavigateExchangeRates}
             className="text-xs font-bold text-[#FFC500] hover:underline flex items-center gap-0.5 cursor-pointer"
           >
             <span>عرض الكل</span>
@@ -237,174 +358,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {recentlyAdded.map((item: any) => (
-            <div
-              key={item.id}
-              onClick={() => handleBusinessClick(item)}
-              className="rounded-2xl bg-[#0F1420] border border-zinc-800/80 hover:border-[#FFC500]/50 transition-all overflow-hidden cursor-pointer group flex flex-col justify-between shadow-md"
-            >
-              <div className="relative h-28 w-full overflow-hidden bg-zinc-900">
-                <img
-                  src={item.image_url || item.image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400'}
-                  alt={item.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                {item.badge_type && item.badge_type !== 'none' && (
-                  <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm p-1 rounded-lg border border-white/10">
-                    <YRBadge type={item.badge_type as BadgeType} size={15} />
-                  </div>
-                )}
-              </div>
-
-              <div className="p-2.5 space-y-1.5 flex-1 flex flex-col justify-between">
-                <div>
-                  <h4 className="font-bold text-xs text-white group-hover:text-[#FFC500] transition-colors line-clamp-1">
-                    {item.name}
-                  </h4>
-                  <div className="flex items-center gap-1 text-zinc-400 text-[10px] mt-0.5">
-                    <MapPin size={10} className="text-[#FFC500]" />
-                    <span>{item.city || 'اليمن'}</span>
-                  </div>
-                </div>
-
-                <div className="pt-1.5 border-t border-white/5 flex items-center justify-between text-[10px]">
-                  {item.rating && Number(item.rating) > 0 ? (
-                    <div className="flex items-center gap-1 text-[#FFC500] font-mono font-bold">
-                      <Star size={11} className="fill-[#FFC500]" />
-                      <span>{Number(item.rating).toFixed(1)}</span>
-                    </div>
-                  ) : (
-                    <span className="text-zinc-500 font-medium">بانتظار التقييم</span>
-                  )}
-                  <span className="text-[9px] text-zinc-400 bg-white/5 px-1.5 py-0.5 rounded">
-                    {item.category || 'معتمد'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 2️⃣ قسم: الأعلى تقييماً (بطاقتان عرضيتان فقط مع زر عرض الكل) */}
-      <div className="space-y-2.5">
-        <div className="flex items-center justify-between px-1">
-          <h3 className="text-sm font-black text-white flex items-center gap-1.5">
-            <Star size={16} className="text-[#FFC500] fill-[#FFC500]" /> الأعلى تقييماً
-          </h3>
-          <button
-            onClick={handleNavigateBanks}
-            className="text-xs font-bold text-[#FFC500] hover:underline flex items-center gap-0.5 cursor-pointer"
-          >
-            <span>عرض الكل</span>
-            <ChevronLeft size={13} />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {topRated.map((bank: any) => (
-            <div
-              key={bank.id}
-              onClick={() => handleBankClick(bank)}
-              className="p-3 rounded-2xl bg-[#0F1420] border border-zinc-800/80 hover:border-[#FFC500]/60 transition-all cursor-pointer flex items-center justify-between group shadow-md"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-14 h-14 rounded-xl bg-amber-500/10 text-[#FFC500] border border-[#FFC500]/30 flex items-center justify-center shrink-0">
-                  <Landmark size={24} />
-                </div>
-                <div className="min-w-0 space-y-0.5">
-                  <div className="flex items-center gap-1.5">
-                    <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-[#FFC500] transition-colors truncate">
-                      {bank.name}
-                    </h4>
-                    {bank.badge_type && bank.badge_type !== 'none' && (
-                      <YRBadge type={bank.badge_type as BadgeType} size={16} />
-                    )}
-                  </div>
-                  <div className="text-[10px] text-zinc-400 flex items-center gap-1">
-                    <MapPin size={10} className="text-[#FFC500]" />
-                    <span>{bank.city || 'اليمن'} • مصرف معتمد</span>
-                  </div>
-                </div>
-              </div>
-              <div className="shrink-0 text-left">
-                {bank.rating && Number(bank.rating) > 0 ? (
-                  <div className="flex items-center gap-1 text-[#FFC500] font-mono font-bold text-xs">
-                    <Star size={11} className="fill-[#FFC500]" />
-                    <span>{Number(bank.rating).toFixed(1)}</span>
-                  </div>
-                ) : (
-                  <span className="text-[10px] text-zinc-500 font-bold bg-white/5 px-2 py-1 rounded-lg">بدون تقييم</span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 3️⃣ قسم: الأكثر مشاهدة / الأكثر زيارة (قائمة المعالم مع عداد العين) */}
-      <div className="space-y-2.5">
-        <div className="flex items-center justify-between px-1">
-          <h3 className="text-sm font-black text-white flex items-center gap-1.5">
-            <Eye size={16} className="text-[#FFC500]" /> الأكثر زيارة
-          </h3>
-          <button
-            onClick={() => onSelectCategory('parks')}
-            className="text-xs font-bold text-[#FFC500] hover:underline flex items-center gap-0.5 cursor-pointer"
-          >
-            <span>عرض الكل</span>
-            <ChevronLeft size={13} />
-          </button>
-        </div>
-
-        <div className="rounded-2xl bg-[#0F1420] border border-zinc-800/80 divide-y divide-white/5 overflow-hidden shadow-md">
-          {[
-            { id: 'p1', name: 'حديقة السعين الكبرى', city: 'صنعاء', visits: '15.2k' },
-            { id: 'p2', name: 'شاليهات ومنتجع الفخامة', city: 'عدن', visits: '9.8k' },
-            { id: 'p3', name: 'فندق ومنتجع نارسس السياحي', city: 'حضرموت', visits: '7.4k' }
-          ].map((item, idx) => (
-            <div
-              key={item.id}
-              onClick={() => onSelectCategory(idx === 0 ? 'parks' : idx === 1 ? 'chalets' : 'hotels')}
-              className="p-3 flex items-center justify-between hover:bg-white/[0.02] transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-white/10 flex items-center justify-center text-[#FFC500] shrink-0 font-bold">
-                  {idx === 0 ? <Sparkles size={18} /> : idx === 1 ? <Hotel size={18} /> : <Building2 size={18} />}
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs sm:text-sm text-white">{item.name}</h4>
-                  <div className="flex items-center gap-1 text-[10px] text-zinc-400 mt-0.5">
-                    <MapPin size={10} className="text-[#FFC500]" />
-                    <span>{item.city}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#FFC500] font-mono bg-[#FFC500]/10 px-2.5 py-1 rounded-xl border border-[#FFC500]/20">
-                <Eye size={13} />
-                <span>زيارة {item.visits}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 4️⃣ قسم: أسعار الصرف والذهب الحية */}
-      <div className="rounded-2xl bg-[#0D121F] border border-[#1F2937] p-3 shadow-md space-y-2.5">
-        <div className="flex items-center justify-between pb-2 border-b border-white/10">
-          <div className="flex items-center gap-1.5">
-            <TrendingUp size={16} className="text-[#FFC500]" />
-            <h3 className="text-xs font-black text-white">أسعار الصرف والذهب الحية</h3>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-zinc-500 font-mono">آخر تحديث: {currentRates.updated}</span>
-            <div className="flex items-center bg-black/50 p-0.5 rounded-lg border border-white/10">
+        <div className="rounded-2xl bg-[#0A0E1A] border border-[#18233C] p-3.5 space-y-3 shadow-md">
+          <div className="flex items-center justify-between pb-2 border-b border-white/5">
+            <span className="text-xs font-bold text-[#FFC500]">أسعار الصرف والذهب</span>
+            <div className="flex items-center bg-[#101726] p-0.5 rounded-xl border border-white/10">
               <button
                 onClick={() => setActiveMarket('sanaa')}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   activeMarket === 'sanaa' ? 'bg-[#FFC500] text-black' : 'text-zinc-400'
                 }`}
               >
@@ -412,7 +372,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </button>
               <button
                 onClick={() => setActiveMarket('aden')}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   activeMarket === 'aden' ? 'bg-[#FFC500] text-black' : 'text-zinc-400'
                 }`}
               >
@@ -420,53 +380,70 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </button>
             </div>
           </div>
-        </div>
 
-        <div className="overflow-x-auto">
           <table className="w-full text-center text-xs">
             <thead>
               <tr className="text-zinc-400 border-b border-white/5 text-[11px]">
-                <th className="py-1.5 font-bold text-right pr-2">العملة</th>
-                <th className="py-1.5 font-bold">شراء</th>
-                <th className="py-1.5 font-bold">بيع</th>
+                <th className="py-1 text-right font-medium">العملة</th>
+                <th className="py-1 font-medium">شراء</th>
+                <th className="py-1 font-medium">بيع</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 font-mono">
+            <tbody className="divide-y divide-white/5 font-mono text-[11px]">
               <tr>
-                <td className="py-2 text-right pr-2 font-bold text-white font-sans flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span> الدولار الأمريكي $
+                <td className="py-1.5 text-right font-bold text-white font-sans flex items-center gap-1.5">
+                  <CircleDot size={9} className="text-emerald-500 fill-emerald-500" /> الدولار الأمريكي
                 </td>
-                <td className="py-2 text-white font-bold">{currentRates.usd.buy}</td>
-                <td className="py-2 text-[#FFC500] font-bold">{currentRates.usd.sell}</td>
+                <td className="py-1.5 text-white font-bold">{currentRates.usd.buy}</td>
+                <td className="py-1.5 text-rose-400 font-bold">{currentRates.usd.sell}</td>
               </tr>
               <tr>
-                <td className="py-2 text-right pr-2 font-bold text-white font-sans flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span> الريال السعودي ر.س
+                <td className="py-1.5 text-right font-bold text-white font-sans flex items-center gap-1.5">
+                  <CircleDot size={9} className="text-emerald-500 fill-emerald-500" /> الريال السعودي
                 </td>
-                <td className="py-2 text-white font-bold">{currentRates.sar.buy}</td>
-                <td className="py-2 text-[#FFC500] font-bold">{currentRates.sar.sell}</td>
+                <td className="py-1.5 text-white font-bold">{currentRates.sar.buy}</td>
+                <td className="py-1.5 text-rose-400 font-bold">{currentRates.sar.sell}</td>
+              </tr>
+              <tr className="text-zinc-400 border-t border-white/10">
+                <th className="py-1 text-right font-medium text-[11px]">الذهب</th>
+                <th className="py-1 font-medium text-[11px]">شراء</th>
+                <th className="py-1 font-medium text-[11px]">بيع</th>
+              </tr>
+              <tr>
+                <td className="py-1.5 text-right font-bold text-white font-sans flex items-center gap-1.5">
+                  <CircleDot size={9} className="text-amber-400 fill-amber-400" /> عيار 24 قيراط
+                </td>
+                <td className="py-1.5 text-white font-bold">{currentRates.gold24.buy}</td>
+                <td className="py-1.5 text-amber-400 font-bold">{currentRates.gold24.sell}</td>
+              </tr>
+              <tr>
+                <td className="py-1.5 text-right font-bold text-white font-sans flex items-center gap-1.5">
+                  <CircleDot size={9} className="text-amber-400 fill-amber-400" /> عيار 18 قيراط
+                </td>
+                <td className="py-1.5 text-white font-bold">{currentRates.gold18.buy}</td>
+                <td className="py-1.5 text-amber-400 font-bold">{currentRates.gold18.sell}</td>
               </tr>
             </tbody>
           </table>
-        </div>
 
-        <button
-          onClick={onNavigateExchangeRates}
-          className="w-full pt-2 border-t border-white/5 text-xs font-bold text-[#FFC500] hover:underline flex items-center justify-center gap-1 cursor-pointer"
-        >
-          <span>اضغط لمعرفة التفاصيل</span>
-          <ChevronLeft size={13} />
-        </button>
+          <button
+            onClick={onNavigateExchangeRates}
+            className="w-full py-2.5 rounded-xl bg-[#FFC500] hover:bg-[#E5B200] text-black font-black text-xs transition-all flex items-center justify-center gap-1 cursor-pointer"
+          >
+            <span>تفاصيل أسعار الصرف والذهب</span>
+            <ChevronLeft size={14} />
+          </button>
+        </div>
       </div>
 
-      {/* 5️⃣ قسم: العقارات والاستثمار (بطاقتان فقط طبقاً للصورة المرجعية) */}
-      <div className="space-y-2.5">
+      {/* ⭐ الأكثر تقييماً (بدون أي شارة فوق الغلاف، الشارة فقط بجانب الاسم) */}
+      <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-sm font-black text-white flex items-center gap-1.5">
-            <Building2 size={16} className="text-[#FFC500]" /> العقارات والاستثمار
+            <Star size={17} className="text-[#FFC500] fill-[#FFC500]" /> الأكثر تقييماً
           </h3>
           <button
-            onClick={onNavigateRealEstate}
+            onClick={() => navigate('/directory?category=all')}
             className="text-xs font-bold text-[#FFC500] hover:underline flex items-center gap-0.5 cursor-pointer"
           >
             <span>عرض الكل</span>
@@ -474,47 +451,71 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {realEstateList.map((item) => (
+        <div className="grid grid-cols-2 gap-2.5">
+          {topRatedUniversal.map((item: any) => (
             <div
               key={item.id}
-              onClick={onNavigateRealEstate}
-              className="rounded-2xl bg-[#0F1420] border border-zinc-800/80 hover:border-[#FFC500]/60 transition-all overflow-hidden cursor-pointer group flex flex-col justify-between shadow-md"
+              onClick={() => handleCardClick(item)}
+              className="rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/50 transition-all overflow-hidden cursor-pointer flex flex-col justify-between shadow-md"
             >
-              <div className="relative h-32 w-full overflow-hidden bg-zinc-900">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <span className="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-black/70 backdrop-blur-sm text-[10px] font-bold text-[#FFC500] border border-[#FFC500]/30">
-                  {item.type}
+              {/* الغلاف نظيف تماماً بدون شارة */}
+              <div className="relative h-28 w-full overflow-hidden bg-[#101524]">
+                {item.cover_url || item.logo_url ? (
+                  <img
+                    src={item.cover_url || item.logo_url}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-[#FFC500]">
+                    <Award size={36} />
+                  </div>
+                )}
+                <span className="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-black/70 backdrop-blur-sm text-[9px] font-bold text-[#FFC500] border border-[#FFC500]/30">
+                  {item.categoryLabel}
                 </span>
               </div>
 
-              <div className="p-3 space-y-1.5">
-                <h4 className="font-bold text-xs text-white group-hover:text-[#FFC500] transition-colors line-clamp-1">
-                  {item.title}
-                </h4>
-                <div className="flex items-center gap-1 text-[10px] text-zinc-400">
-                  <MapPin size={10} className="text-[#FFC500]" />
-                  <span>{item.city}</span>
+              <div className="p-3 text-center space-y-1.5 flex-1 flex flex-col justify-between">
+                <div>
+                  {/* الشارة بجانب الاسم فقط */}
+                  <h4 className="font-black text-xs text-[#FFC500] truncate flex items-center justify-center gap-1.5">
+                    <span className="truncate">{item.name}</span>
+                    {item.activeBadge && (
+                      <YRBadge type={item.activeBadge as BadgeType} size={15} />
+                    )}
+                  </h4>
+                  <div className="flex items-center justify-center gap-1 text-zinc-400 text-[10px] mt-0.5">
+                    <MapPin size={11} className="text-[#FFC500]" />
+                    <span>{item.city || 'صنعاء'}</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-0.5 text-[#FFC500] my-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={11} className="fill-[#FFC500]" />
+                    ))}
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-400 font-bold block">
+                    {Number(item.score).toFixed(1)} من 5 ({item.count} تقييم)
+                  </span>
                 </div>
-                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs">
-                  <span className="font-mono font-black text-[#FFC500]">{item.price}</span>
-                  <span className="text-[10px] text-zinc-400">{item.period}</span>
-                </div>
+
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleCardClick(item); }}
+                  className="w-full py-1.5 rounded-xl bg-[#FFC500] hover:bg-[#E5B200] text-black font-black text-[11px] transition-all cursor-pointer"
+                >
+                  عرض التفاصيل
+                </button>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 6️⃣ قسم: المزادات الحية (بطاقتان فقط طبقاً للصورة المرجعية) */}
-      <div className="space-y-2.5">
+      {/* 🔨 المزادات */}
+      <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-sm font-black text-white flex items-center gap-1.5">
-            <Gavel size={16} className="text-red-500" /> المزادات الحية (%5)
+            <Gavel size={17} className="text-[#FFC500]" /> المزادات
           </h3>
           <button
             onClick={onNavigateAuctions}
@@ -525,52 +526,85 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {auctionsList.map((item) => (
-            <div
-              key={item.id}
-              onClick={onNavigateAuctions}
-              className="p-3 rounded-2xl bg-[#0F1420] border border-zinc-800/80 hover:border-red-500/50 transition-all cursor-pointer flex gap-3 group shadow-md"
-            >
-              <div className="relative w-28 h-24 rounded-xl overflow-hidden shrink-0 bg-zinc-900">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <span className="absolute top-1.5 right-1.5 px-1.5 py-0.2 rounded bg-red-600 text-white text-[9px] font-bold">
-                  نشط
-                </span>
-              </div>
+        <div className="space-y-2.5">
+          {liveAuctions.length > 0 ? (
+            liveAuctions.map((item: any) => (
+              <div
+                key={item.id}
+                onClick={onNavigateAuctions}
+                className="p-2.5 rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/50 transition-all cursor-pointer flex gap-3 shadow-md"
+              >
+                <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                  <div>
+                    <h4 className="font-bold text-xs text-white truncate">{item.title || item.name}</h4>
+                    <div className="text-xs font-bold text-emerald-400 mt-1 font-mono">
+                      <span className="text-[10px] text-zinc-400 font-sans">السعر الحالي: </span>
+                      {item.current_bid || item.price}
+                    </div>
+                    <div className="text-[10px] text-zinc-400 mt-0.5 flex items-center gap-1">
+                      <MapPin size={11} className="text-[#FFC500]" /> {item.city}
+                    </div>
+                  </div>
 
-              <div className="flex-1 min-w-0 flex flex-col justify-between">
-                <div>
-                  <h4 className="font-bold text-xs text-white group-hover:text-red-400 transition-colors line-clamp-1">
-                    {item.title}
-                  </h4>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#FFC500] mt-1 font-mono">
-                    <span className="text-[10px] text-zinc-400 font-sans">السعر الحالي:</span>
-                    <span>{item.currentBid}</span>
+                  <div className="mt-2 space-y-1.5">
+                    <button className="w-full py-1.5 rounded-xl bg-[#FFC500] hover:bg-[#E5B200] text-black font-black text-[11px] cursor-pointer">
+                      عرض تفاصيل المزاد
+                    </button>
+                    <div className="text-[10px] text-zinc-400 flex items-center justify-between font-mono">
+                      <span className="flex items-center gap-1 text-zinc-300">
+                        <Clock size={11} className="text-[#FFC500]" /> ينتهي المزاد : {item.end_time || item.time_left || 'مستمر'}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="pt-1.5 border-t border-white/5 flex items-center justify-between text-[10px] text-zinc-400 font-mono">
-                  <span className="flex items-center gap-1 text-red-400 font-bold">
-                    <Clock size={10} /> ينتهي خلال {item.timeLeft}
-                  </span>
-                  <span>{item.timeAgo}</span>
-                </div>
+                {item.image_url || item.cover_url ? (
+                  <div className="relative w-28 h-28 rounded-xl overflow-hidden shrink-0 bg-zinc-900">
+                    <img src={item.image_url || item.cover_url} alt={item.title} className="w-full h-full object-cover" />
+                    <span className="absolute top-1.5 right-1.5 px-2 py-0.5 rounded bg-red-600 text-white text-[9px] font-bold">
+                      نشط
+                    </span>
+                  </div>
+                ) : (
+                  <div className="w-28 h-28 rounded-xl bg-[#12192B] border border-[#1C2844] flex items-center justify-center text-[#FFC500] shrink-0">
+                    <Gavel size={30} />
+                  </div>
+                )}
               </div>
+            ))
+          ) : (
+            <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] text-center text-xs text-zinc-400">
+              لا توجد مزادات نشطة حالياً، ستظهر هنا فور إضافتها من الإدارة.
             </div>
-          ))}
+          )}
         </div>
       </div>
 
-      {/* 7️⃣ قسم: فرص التوظيف المعتمدة (الحقيقية من Supabase) */}
-      <div className="space-y-2.5">
+      {/* 🏢 العقارات */}
+      <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-sm font-black text-white flex items-center gap-1.5">
-            <Briefcase size={16} className="text-emerald-400" /> فرص التوظيف المعتمدة
+            <Building2 size={17} className="text-[#FFC500]" /> العقارات
+          </h3>
+          <button
+            onClick={onNavigateRealEstate}
+            className="text-xs font-bold text-[#FFC500] hover:underline flex items-center gap-0.5 cursor-pointer"
+          >
+            <span>عرض الكل</span>
+            <ChevronLeft size={13} />
+          </button>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] text-center text-xs text-zinc-400">
+          بانتظار إضافة عقارات معتمدة في قاعدة البيانات.
+        </div>
+      </div>
+
+      {/* 💼 الوظائف */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-sm font-black text-white flex items-center gap-1.5">
+            <Briefcase size={17} className="text-[#FFC500]" /> الوظائف
           </h3>
           <button
             onClick={onNavigateJobs}
@@ -582,85 +616,83 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
 
         {liveJobs.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-2.5">
             {liveJobs.map((job: any) => (
               <div
                 key={job.id}
                 onClick={onNavigateJobs}
-                className="p-3 rounded-2xl bg-[#0F1420] border border-zinc-800/80 hover:border-emerald-500/50 transition-all cursor-pointer flex flex-col justify-between group shadow-md"
+                className="p-3 rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/50 transition-all cursor-pointer space-y-2.5 shadow-md"
               >
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[9px] font-bold">
-                      {job.work_type || job.type || 'دوام كامل'}
-                    </span>
-                    <div className="flex items-center gap-1 text-[10px] text-zinc-400">
-                      <MapPin size={10} className="text-[#FFC500]" />
-                      <span>{job.city || 'صنعاء'}</span>
-                    </div>
-                  </div>
-                  <h4 className="font-bold text-xs sm:text-sm text-white group-hover:text-emerald-400 transition-colors">
-                    {job.title}
-                  </h4>
-                  <p className="text-[10px] text-zinc-400 mt-0.5">{job.sector || 'جهة عمل معتمدة'}</p>
+                <div className="flex items-center justify-between">
+                  <span className="px-2.5 py-0.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-bold flex items-center gap-1">
+                    <Briefcase size={11} /> إعلان وظيفة
+                  </span>
                 </div>
 
-                <div className="pt-2 mt-2 border-t border-white/5 flex items-center justify-between">
-                  <span className="text-[10px] text-zinc-400">الراتب المتوقع:</span>
-                  <span className="font-mono font-bold text-xs text-emerald-400">{job.salary_range || 'حسب الاتفاق'}</span>
+                <h4 className="font-bold text-xs text-white leading-relaxed">
+                  {job.title}
+                </h4>
+
+                <div className="flex items-center justify-between text-[10px] text-zinc-300 pt-1 border-t border-white/5">
+                  <span className="flex items-center gap-1">
+                    <MapPin size={10} className="text-[#FFC500]" /> <strong className="text-white">{job.city}</strong>
+                  </span>
+                  <span>الراتب: <strong className="text-emerald-400">{job.salary || 'بعد المقابلة'}</strong></span>
+                  <span>الجنس: <strong className="text-white">{job.gender || 'الكل'}</strong></span>
+                  <span>الدوام: <strong className="text-white">{job.type || 'كلي'}</strong></span>
                 </div>
+
+                <button className="w-28 py-1 rounded-lg bg-[#FFC500] hover:bg-[#E5B200] text-black font-black text-[10px] cursor-pointer">
+                  عرض كامل المواد
+                </button>
               </div>
             ))}
           </div>
         ) : (
-          <div className="p-4 rounded-xl bg-[#0F1420] border border-zinc-800 text-center text-xs text-zinc-400">
-            لا توجد شواغر وظيفية حالياً.
+          <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] text-center text-xs text-zinc-400">
+            لا توجد شواغر وظيفية حالياً، ستظهر هنا فور إضافتها.
           </div>
         )}
       </div>
 
-      {/* 8️⃣ البنر الإعلاني الأوسط */}
-      <div className="w-full rounded-none overflow-hidden shadow-md">
+      <div className="w-full rounded-2xl overflow-hidden shadow-lg border border-[#18233C]/70">
         <AdBanner placementId="2" className="w-full" />
       </div>
 
-      {/* 9️⃣ بوابة التوثيق الرسمي لأصحاب المنشآت */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-[#101524] to-black border border-[#FFC500]/30 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] shadow-md flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-[#FFC500]/20 text-[#FFC500] border border-[#FFC500]/40 flex items-center justify-center shrink-0">
-            <ShieldCheck size={26} />
+          <div className="w-11 h-11 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/30 flex items-center justify-center shrink-0">
+            <ShieldCheck size={24} />
           </div>
-          <div>
-            <h4 className="font-black text-sm text-white">هل تمتلك منشأة أو نشاط تجاري في اليمن؟</h4>
-            <p className="text-[11px] text-zinc-300 mt-0.5">وثّق نشاطك رسمياً في يمن ريتنغ واحصل على الشارة المعتمدة وعملاء جدد من عموم المحافظات.</p>
-          </div>
+          <h4 className="font-bold text-xs sm:text-sm text-white">
+            هل تمتلك منشأة؟ أضف نشاطك التجاري الآن
+          </h4>
         </div>
 
         <button
-          onClick={() => alert('لإضافة وتوثيق منشأتك يرجى التواصل مع إدارة منصة يمن ريتنغ.')}
-          className="w-full sm:w-auto px-4 py-2 rounded-xl bg-[#FFC500] hover:bg-[#E5B200] text-black font-black text-xs transition-all shrink-0 cursor-pointer shadow active:scale-95"
+          onClick={() => alert('لإضافة نشاطك التجاري يرجى التواصل مع إدارة منصة يمن ريتنغ.')}
+          className="px-3.5 py-2 rounded-xl bg-[#FFC500] hover:bg-[#E5B200] text-black font-black text-xs transition-all shrink-0 cursor-pointer shadow active:scale-95 whitespace-nowrap"
         >
-          طلب توثيق منشأة الآن
+          + أضف نشاطك
         </button>
       </div>
 
-      {/* 🔟 نافذة استعراض كامل الـ 33 تصنيفاً الرسمية */}
       {showAllCategoriesModal && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex flex-col p-4 animate-in fade-in duration-200">
-          <div className="max-w-4xl w-full mx-auto space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col p-4 animate-in fade-in duration-200">
+          <div className="max-w-md w-full mx-auto space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <h3 className="font-black text-base text-white flex items-center gap-2">
-                <Layers className="text-[#FFC500]" /> الدليل الوطني الشامل (كافة التصنيفات المعتمدة)
+                <Layers className="text-[#FFC500]" /> بوابات الخدمات المعتمدة (33)
               </h3>
               <button
                 onClick={() => setShowAllCategoriesModal(false)}
-                className="p-2 rounded-xl bg-zinc-800 text-zinc-300 hover:text-white cursor-pointer"
+                className="p-2 rounded-xl bg-[#12192B] text-zinc-300 hover:text-white cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <div className="max-h-[75vh] overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-2.5 p-1">
+            <div className="max-h-[75vh] overflow-y-auto grid grid-cols-2 gap-2 p-1">
               {officialCategories.map((cat) => {
                 const Icon = cat.icon;
                 return (
@@ -671,7 +703,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       if (cat.id === 'banks') handleNavigateBanks();
                       else onSelectCategory(cat.id);
                     }}
-                    className="p-3 rounded-xl bg-[#111624] border border-zinc-800/80 hover:border-[#FFC500]/60 transition-all cursor-pointer flex items-center gap-3 group"
+                    className="p-3 rounded-xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/60 transition-all cursor-pointer flex items-center gap-3 group"
                   >
                     <div className={`w-10 h-10 rounded-xl ${cat.bg} ${cat.color} flex items-center justify-center group-hover:scale-110 transition-transform shrink-0`}>
                       <Icon size={20} />

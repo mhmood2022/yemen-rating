@@ -1,3 +1,4 @@
+import { YRBadge, BadgeType } from '../components/common/YRBadge';
 
 // دالة آمنة تمنع خطأ React عند محاولة رسم الكائنات مباشرة
 function getSafeOfferString(item: any): string {
@@ -98,7 +99,11 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
 
         {/* Cover Photo */}
         <div className="h-48 md:h-64 w-full rounded-2xl overflow-hidden border border-white/10 relative bg-[#14141D] shadow-xl">
-          <img src={business.cover_url} alt={business.name} className="w-full h-full object-cover" />
+          <img src={business.cover_url} alt={business.name} {((business.badge_type && business.badge_type !== 'none') ? (
+      <YRBadge type={business.badge_type as BadgeType} size={22} className="inline-block align-middle mr-2" />
+    ) : (business.is_verified || business.isVerified || business.verified) ? (
+      <YRBadge type="blue" size={22} className="inline-block align-middle mr-2" />
+    ) : null)} className="w-full h-full object-cover" />
           <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-md border border-white/10 px-3 py-1 rounded-xl text-[11px] font-bold text-gray-300 flex items-center gap-1.5">
             <i className="fa-solid fa-camera text-amber-400"></i>
             <span>12 صورة</span>

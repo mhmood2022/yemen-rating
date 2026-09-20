@@ -51,8 +51,8 @@ export const DesktopSidebar: React.FC<{ onNavigate?: (path: string) => void }> =
               className={cn(
                 'flex items-center gap-3 px-3.5 py-2.5 rounded-[10px] text-sm font-semibold transition-all',
                 isActive
-                  ? 'bg-[#0B1F3A] text-white dark:bg-[#111111] dark:text-[#F5C400] dark:border dark:border-[#F5C400]/40'
-                  : 'text-[#475569] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414] hover:text-[#0B1F3A] dark:hover:text-white'
+                  ? 'bg-[#0B1F3A] text-slate-900 dark:bg-[#111111] dark:text-[#F5C400] dark:border dark:border-[#F5C400]/40'
+                  : 'text-[#475569] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414] hover:text-[#0B1F3A] dark:hover:text-slate-900'
               )}
             >
               <Icon size={18} strokeWidth={1.75} className={isActive ? 'text-current' : 'text-[#64748B] dark:text-[#71717A]'} />

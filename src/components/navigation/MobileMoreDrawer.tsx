@@ -73,7 +73,7 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
             <button
               type="button"
               onClick={closeMoreDrawer}
-              className="p-1 rounded-lg text-[#A1A1AA] hover:text-white"
+              className="p-1 rounded-lg text-[#A1A1AA] hover:text-slate-900"
               aria-label="إغلاق"
             >
               <X size={16} strokeWidth={2} />
@@ -92,7 +92,7 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
               <User size={14} strokeWidth={2} />
             </div>
             <div className="min-w-0">
-              <span className="text-[11px] font-bold text-white block leading-tight truncate">الحساب</span>
+              <span className="text-[11px] font-bold text-slate-900 block leading-tight truncate">الحساب</span>
               <span className="text-[9px] text-[#F5C400] block leading-none mt-0.5">تسجيل الدخول</span>
             </div>
           </button>
@@ -110,7 +110,7 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <Icon size={14} strokeWidth={2} className="text-[#F5C400] shrink-0" />
-                  <span className="text-[11px] font-bold text-white truncate">
+                  <span className="text-[11px] font-bold text-slate-900 truncate">
                     {item.label}
                   </span>
                 </div>
@@ -122,7 +122,7 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
 
         <div className="p-2.5 border-t border-[#222222] bg-[#000000]">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold text-white">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-900">
               {isDark ? <Sun size={13} className="text-[#F5C400]" /> : <Moon size={13} className="text-[#A1A1AA]" />}
               <span>الوضع الليلي</span>
             </div>

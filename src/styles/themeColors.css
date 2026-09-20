@@ -9,3 +9,36 @@
   --danger-red: #DC2626;
   --whatsapp-green: #25D366;
 }
+
+
+
+
+
+/* ===== YEMEN RATING - CLEAN REFINED THEME ===== */
+html, body, #root, #__next, main {
+  background-color: #0b1224 !important;
+  color: #ffffff !important;
+}
+
+/* شريط البحث الخارجي فقط بدون لمس الحقول التي بداخله */
+[class*="search-bar"], [class*="search-container"] {
+  background-color: #0a0e1a !important;
+  border: 1px solid #1a2538 !important;
+  border-radius: 14px;
+}
+
+/* منع تكرار البراويز على حقل الإدخال والقائمة المنسدلة داخل البحث */
+[class*="search"] input,
+[class*="search"] select,
+[class*="search"] [role="button"] {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+/* بطاقات الخدمات (العيادات، المستشفيات...) فقط باللون المطلوب */
+.category-card, [class*="service-card"] {
+  background-color: #0a0e1a !important;
+  border: 1px solid #18233c !important;
+}
