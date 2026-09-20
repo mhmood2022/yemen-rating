@@ -407,7 +407,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
           <div>
             <label class="block text-white font-bold mb-1">رقم الهاتف أو الواتساب الرسمي <span class="text-brand-gold">*</span></label>
-            <input type="tel" id="claim-phone" required placeholder="مثال: 771234567" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
+            <input type="tel" id="claim-phone" required maxlength="9" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 9)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
           </div>
 
           <div>

@@ -49,9 +49,11 @@ export const ClaimsManager: React.FC = () => {
       const mapped: ClaimRequest[] = raw.map((r: any) => {
         const entId = r.entity_id || r.business_id;
         const realName = nameMap.get(entId);
+        const matchName = r.notes && r.notes.match(/المنشأة:\s*([^|\n]+)/);
+        const extractedName = matchName ? matchName[1].trim() : "";
         return {
           id: r.id,
-          companyName: realName || r.company_name || r.business_name || (r.entity_type === 'bank' ? 'بنك ومصرف' : 'منشأة تجارية'),
+          companyName: realName || extractedName || r.company_name || r.business_name || (r.entity_type === 'bank' ? 'بنك ومصرف' : 'منشأة تجارية'),
           applicantName: r.applicant_name || r.claimant_name || 'مفوض معتمد',
           applicantRole: r.applicant_role || 'ممثل رسمي',
           phone: r.phone || r.claimant_phone || '—',

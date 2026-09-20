@@ -153,8 +153,8 @@ export const BusinessesPage: React.FC = () => {
 
   const handleOpenClaim = (e: React.MouseEvent, b: any) => {
     e.stopPropagation();
-    setSelectedBusinessForClaim({ id: b.id, name: b.name });
-    setClaimModalOpen(true);
+    const targetSlug = b.slug || b.id;
+    window.location.href = "/bank.html?slug=" + targetSlug + "&claim=true";
   };
 
   return (
