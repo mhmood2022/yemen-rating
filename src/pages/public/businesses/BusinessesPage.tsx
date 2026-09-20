@@ -265,10 +265,14 @@ export const BusinessesPage: React.FC = () => {
                 </div>
 
                 <div className="pt-2.5 border-t border-white/5 flex items-center justify-between">
-                  <div className="flex items-center gap-0.5 text-[#EAB308]">
-                    <Star size={13} className="fill-[#EAB308]" />
-                    <span className="text-xs font-mono font-bold">{Number(item.rating || 5).toFixed(1)}</span>
-                  </div>
+                  {item.rating && Number(item.rating) > 0 ? (
+                    <div className="flex items-center gap-1 text-[#EAB308]">
+                      <Star size={13} className="fill-[#EAB308]" />
+                      <span className="text-xs font-mono font-bold">{Number(item.rating).toFixed(1)}</span>
+                    </div>
+                  ) : (
+                    <span className="text-[11px] text-zinc-500 font-medium">لا توجد تقييمات</span>
+                  )}
 
                   <button className="px-3.5 py-1.5 rounded-xl bg-[#EAB308] hover:bg-amber-400 text-black font-bold text-xs transition cursor-pointer">
                     عرض التفاصيل

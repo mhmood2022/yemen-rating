@@ -209,9 +209,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       />
 
       {/* 📢 إعلان البانر العلوي */}
-      <div className="w-full rounded-2xl overflow-hidden shadow-lg border border-[#18233C]/70">
-        <AdBanner placementId="1" className="mb-0" />
-      </div>
+      <div className="w-full my-2"><AdBanner placementId="1" className="mb-0 !rounded-none" /></div>
 
       {/* 🏛️ بوابات الخدمات المعتمدة */}
       <div className="space-y-3">
@@ -655,9 +653,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         )}
       </div>
 
-      <div className="w-full rounded-2xl overflow-hidden shadow-lg border border-[#18233C]/70">
-        <AdBanner placementId="2" className="w-full" />
-      </div>
+      <div className="w-full my-2"><AdBanner placementId="2" className="w-full !rounded-none" /></div>
 
       <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] shadow-md flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
