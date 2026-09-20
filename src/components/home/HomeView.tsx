@@ -434,6 +434,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </div>
 
+      <div className="w-full my-2"><AdBanner placementId="2" className="w-full !rounded-none" /></div>
+
       {/* ⭐ الأكثر تقييماً (بدون أي شارة فوق الغلاف، الشارة فقط بجانب الاسم) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
@@ -577,8 +579,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
           )}
         </div>
       </div>
-
-      <div className="w-full my-2"><AdBanner placementId="2" className="w-full !rounded-none" /></div>
 
       {/* 🏢 العقارات */}
       <div className="space-y-3">
