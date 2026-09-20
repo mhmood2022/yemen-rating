@@ -22,6 +22,7 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
   const [phone, setPhone] = useState('');
   const [commercialId, setCommercialId] = useState('');
   const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   if (!isOpen) return null;
 
@@ -31,7 +32,10 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
     const cleanPhone = phone.trim().replace(/\D/g, "");
     const yemeniRegex = /^(77|78|73|71)\d{7}$/;
     if (cleanPhone.length !== 9 || !yemeniRegex.test(cleanPhone)) {
-      alert("رقم الهاتف يجب أن يتكون من 9 أرقام ويبدأ بـ (77 أو 78 أو 73 أو 71)");
+      setStatusMessage({
+        type: "error",
+        text: "رقم الهاتف يجب أن يتكون من 9 أرقام ويبدأ بـ (77 أو 78 أو 73 أو 71)"
+      });
       return;
     }
 
@@ -52,11 +56,19 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
         throw error;
       }
 
-      alert('تم إرسال طلب إثبات الملكية بنجاح! سيتم مراجعته والتواصل معكم.');
-      onSuccess();
-      onClose();
+      setStatusMessage({
+        type: "success",
+        text: "تم إرسال طلب إثبات الملكية بنجاح! سيتم مراجعته والتواصل معكم."
+      });
+      setTimeout(() => {
+        onSuccess();
+        onClose();
+      }, 1800);
     } catch (err: any) {
-      alert('حدث خطأ أثناء إرسال الطلب: ' + (err?.message || 'يرجى المحاولة لاحقاً'));
+      setStatusMessage({
+        type: "error",
+        text: "حدث خطأ أثناء إرسال الطلب: " + (err?.message || "يرجى المحاولة لاحقاً")
+      });
     } finally {
       setLoading(false);
     }
@@ -93,6 +105,15 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-2.5 text-xs">
+          {statusMessage && (
+            <div className={`p-2.5 rounded-xl border text-xs font-bold leading-relaxed transition-all ${
+              statusMessage.type === "success"
+                ? "bg-emerald-950/80 border-emerald-500/60 text-emerald-400"
+                : "bg-red-950/80 border-red-500/60 text-red-400"
+            }`}>
+              {statusMessage.text}
+            </div>
+          )}
           <div>
             <label className="block text-zinc-300 mb-1 text-[11px] font-bold">
               اسم المفوض / ممثل المنشأة <span className="text-[#EF4444]">*</span>
