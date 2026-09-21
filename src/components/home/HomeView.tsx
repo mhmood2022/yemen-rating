@@ -190,26 +190,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
     ];
   }, [liveBusinesses, liveBanks, reviewsMap]);
 
-  // 1. آخر ما أضيف (يشمل المنشآت والبنوك مفرزة بالأحدث فوراً)
+  // 1. آخر ما أضيف (آخر 2 تم إضافتهم مباشرة بدون تعقيد)
   const recentlyAdded = useMemo(() => {
     return [...allUniversalEntities]
       .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
       .slice(0, 2);
   }, [allUniversalEntities]);
 
-  // 2. الأكثر مشاهدة (بيانات حقيقية - مفرزة بالأعلى مشاهدات)
+  // 2. الأكثر مشاهدة (أعلى 2 مشاهدة في قاعدة البيانات مباشرة)
   const mostViewed = useMemo(() => {
-    const recentIds = new Set(recentlyAdded.map((b: any) => b.id));
-    const available = allUniversalEntities.filter((b: any) => !recentIds.has(b.id));
-
-    const withViews = available.filter((b: any) => Number(b.views_count || b.views || 0) > 0);
-    if (withViews.length > 0) {
-      return withViews
-        .sort((a, b) => Number(b.views_count || b.views || 0) - Number(a.views_count || a.views || 0))
-        .slice(0, 2);
-    }
-    return available.slice(0, 2);
-  }, [allUniversalEntities, recentlyAdded]);
+    return [...allUniversalEntities]
+      .sort((a, b) => Number(b.views_count || 0) - Number(a.views_count || 0))
+      .slice(0, 2);
+  }, [allUniversalEntities]);
 
   // 3. الأكثر تميزاً (يشمل المنشآت والبنوك المميزة)
   const featuredBusinesses = useMemo(() => {
@@ -589,10 +582,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         <MapPin size={11} className="text-[#FFC500]" />
                         <span>{item.city || "اليمن"}</span>
                       </div>
-                      <div className="flex items-center justify-center gap-0.5 text-[#FFC500] my-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={11} className="fill-[#FFC500]" />
-                        ))}
+                      <div className="flex items-center justify-center gap-1.5 text-zinc-400 text-[10px] my-1 font-mono">
+                        <Eye size={12} className="text-[#FFC500]" />
+                        <span className="text-white font-bold">{Number(item.views_count || 0)}</span>
+                        <span>مشاهدة</span>
                       </div>
                     </div>
 
