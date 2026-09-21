@@ -1,103 +1,106 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+'use client';
+
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { createClientComponentClient, User } from '@supabase/auth-helpers-nextjs';
+import { UserProfile } from '@/types/auth';
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
+  profile: UserProfile | null;
+  loading: boolean;
+  isOwner: boolean;
   isAdmin: boolean;
-  isLoading: boolean;
-  loginAdmin: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
-  logout: () => Promise<void>;
+  isVisitor: boolean;
+  signInWithGoogle: () => Promise<void>;
+  signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
+  const [supabase] = useState(() => createClientComponentClient());
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProfile = useCallback(async (userId: string) => {
     try {
-      const savedAdmin = localStorage.getItem('yr-admin-session');
-      if (savedAdmin) return JSON.parse(savedAdmin);
-    } catch {}
-    return null;
-  });
-  const [session, setSession] = useState<Session | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('yr-is-admin') === 'true';
-    } catch {
-      return false;
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (data) {
+        setProfile(data as UserProfile);
+      }
+    } catch (err) {
+      console.error('Error fetching profile:', err);
     }
-  });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  }, [supabase]);
 
-  const loginAdmin = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
-    setIsLoading(true);
-    try {
-      // 1. الدخول المباشر لبيانات المشرف المعتمد
-      if (email.trim().toLowerCase() === 'admin@yemenrating.com' && pass === 'Admin@2026') {
-        const mockAdminUser: any = {
-          id: 'admin_master_1',
-          email: 'admin@yemenrating.com',
-          user_metadata: { role: 'admin', full_name: 'م. أحمد المشرف' },
-          app_metadata: { role: 'admin' },
-        };
-        setUser(mockAdminUser);
-        setIsAdmin(true);
-        try {
-          localStorage.setItem('yr-admin-session', JSON.stringify(mockAdminUser));
-          localStorage.setItem('yr-is-admin', 'true');
-        } catch {}
-        setIsLoading(false);
-        return { success: true };
-      }
-
-      // 2. التحقق عبر Supabase Auth الحقيقي
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: pass,
-      });
-
-      if (error) {
-        setIsLoading(false);
-        return { success: false, error: 'بيانات الدخول غير صحيحة' };
-      }
-
-      if (data.user) {
-        setUser(data.user);
-        setIsAdmin(true);
-        try {
-          localStorage.setItem('yr-admin-session', JSON.stringify(data.user));
-          localStorage.setItem('yr-is-admin', 'true');
-        } catch {}
-        setIsLoading(false);
-        return { success: true };
-      }
-
-      setIsLoading(false);
-      return { success: false, error: 'تعذر التحقق من المستخدم' };
-    } catch (err: unknown) {
-      setIsLoading(false);
-      const msg = err instanceof Error ? err.message : 'حدث خطأ أثناء تسجيل الدخول';
-      return { success: false, error: msg };
-    }
+  const refreshProfile = async () => {
+    if (user) await fetchProfile(user.id);
   };
 
-  const logout = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch {}
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser(session.user);
+          await fetchProfile(session.user.id);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        await fetchProfile(session.user.id);
+      } else {
+        setUser(null);
+        setProfile(null);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase, fetchProfile]);
+
+  const signInWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/account` },
+    });
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    setSession(null);
-    setIsAdmin(false);
-    try {
-      localStorage.removeItem('yr-admin-session');
-      localStorage.removeItem('yr-is-admin');
-    } catch {}
+    setProfile(null);
+    window.location.href = '/';
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isAdmin, isLoading, loginAdmin, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        isOwner: profile?.role === 'owner' && profile?.status === 'active',
+        isAdmin: profile?.role === 'admin',
+        isVisitor: profile?.role === 'visitor' || !profile?.role,
+        signInWithGoogle,
+        signOut,
+        refreshProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -105,6 +108,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };
