@@ -1,5 +1,6 @@
 import React from 'react';
-import { Menu, Bell } from 'lucide-react';
+import { Menu, Bell, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { YRLogo } from './common/YRLogo';
 
 interface HeaderProps {
@@ -17,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <div dir="rtl" className="w-full max-w-6xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between font-['Cairo',sans-serif]">
-      
+
       {/* اليمين: زر القائمة الجانبية (☰) + الشعار الرسمي */}
       <div className="flex items-center gap-3">
         <button
@@ -28,14 +29,22 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <Menu size={24} className="stroke-[2.5]" />
         </button>
-
         <div onClick={onNavigateHome} className="cursor-pointer">
           <YRLogo />
         </div>
       </div>
 
-      {/* اليسار: جرس الإشعارات */}
-      <div className="flex items-center">
+      {/* اليسار: زر حسابي + جرس الإشعارات */}
+      <div className="flex items-center gap-3">
+        <Link
+          to="/account"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-yellow-500/10 hover:bg-yellow-500/20 text-[#FFC500] border border-yellow-500/30 transition-all text-xs font-bold active:scale-95 cursor-pointer no-underline"
+          title="حسابي / طلب المالك"
+        >
+          <User size={18} className="stroke-[2.2]" />
+          <span>حسابي</span>
+        </Link>
+
         <button
           type="button"
           onClick={onNavigateNotifications}
