@@ -24,6 +24,7 @@ import { AuctionDetailsPage } from './pages/templates/AuctionDetailsPage';
 
 // لوحة تحكم مالك المنشأة المعتمد
 import { OwnerDashboardPage } from './pages/owner/OwnerDashboardPage';
+import { AccountPage } from "./pages/AccountPage";
 
 // لوحة التحكم الإدارية
 import { AdminMaster } from './pages/admin/AdminMaster';
