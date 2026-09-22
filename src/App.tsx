@@ -133,6 +133,8 @@ export function App() {
 
         <Route path="*" element={<HomeRoute />} />
 
+        <Route path="/account" element={<AppShell><AccountPage /></AppShell>} />
+        <Route path="/login" element={<AppShell><AccountPage /></AppShell>} />
       </Routes>
     </BrowserRouter>
   );
