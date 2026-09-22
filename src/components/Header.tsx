@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Menu, Bell, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { YRLogo } from './common/YRLogo';
+import { AuthModal } from './auth/AuthModal';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -16,48 +18,67 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigateNotifications,
   unreadNotificationsCount = 3
 }) => {
+  const navigate = useNavigate();
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+
+  // عند الضغط على حسابي: إذا كان مسجلاً يذهب لصفحة الحساب، وإذا لم يكن مسجلاً تفتح النافذة المنبثقة
+  const handleAccountClick = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      navigate('/account');
+    } else {
+      setIsAuthOpen(true);
+    }
+  };
+
   return (
-    <div dir="rtl" className="w-full max-w-6xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between font-['Cairo',sans-serif]">
+    <>
+      <div dir="rtl" className="w-full max-w-6xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between font-['Cairo',sans-serif]">
 
-      {/* اليمين: زر القائمة الجانبية (☰) + الشعار الرسمي */}
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={onToggleSidebar}
-          className="text-white hover:text-[#FFC500] transition-colors p-1 cursor-pointer bg-transparent border-0 outline-none active:scale-95"
-          title="القائمة"
-        >
-          <Menu size={24} className="stroke-[2.5]" />
-        </button>
-        <div onClick={onNavigateHome} className="cursor-pointer">
-          <YRLogo />
+        {/* اليمين: زر القائمة الجانبية (☰) + الشعار الرسمي */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className="text-white hover:text-[#FFC500] transition-colors p-1 cursor-pointer bg-transparent border-0 outline-none active:scale-95"
+            title="القائمة"
+          >
+            <Menu size={24} className="stroke-[2.5]" />
+          </button>
+          <div onClick={onNavigateHome} className="cursor-pointer">
+            <YRLogo />
+          </div>
         </div>
+
+        {/* اليسار: زر حسابي + جرس الإشعارات */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleAccountClick}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-yellow-500/10 hover:bg-yellow-500/20 text-[#FFC500] border border-yellow-500/30 transition-all text-xs font-bold active:scale-95 cursor-pointer"
+            title="حسابي / طلب المالك"
+          >
+            <User size={18} className="stroke-[2.2]" />
+            <span>حسابي</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onNavigateNotifications}
+            className="text-zinc-200 hover:text-[#FFC500] transition-colors p-1 relative cursor-pointer bg-transparent border-0 outline-none active:scale-95"
+            title="الإشعارات"
+          >
+            <Bell size={21} className="stroke-[2.2]" />
+            {unreadNotificationsCount > 0 && (
+              <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-[#DC2626] animate-pulse" />
+            )}
+          </button>
+        </div>
+
       </div>
 
-      {/* اليسار: زر حسابي + جرس الإشعارات */}
-      <div className="flex items-center gap-3">
-        <Link
-          to="/account"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-yellow-500/10 hover:bg-yellow-500/20 text-[#FFC500] border border-yellow-500/30 transition-all text-xs font-bold active:scale-95 cursor-pointer no-underline"
-          title="حسابي / طلب المالك"
-        >
-          <User size={18} className="stroke-[2.2]" />
-          <span>حسابي</span>
-        </Link>
-
-        <button
-          type="button"
-          onClick={onNavigateNotifications}
-          className="text-zinc-200 hover:text-[#FFC500] transition-colors p-1 relative cursor-pointer bg-transparent border-0 outline-none active:scale-95"
-          title="الإشعارات"
-        >
-          <Bell size={21} className="stroke-[2.2]" />
-          {unreadNotificationsCount > 0 && (
-            <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-[#DC2626] animate-pulse" />
-          )}
-        </button>
-      </div>
-
-    </div>
+      {/* نافذة تسجيل الدخول/إنشاء الحساب المنبثقة فوق الصفحة */}
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+    </>
   );
 };
