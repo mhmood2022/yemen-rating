@@ -2,29 +2,18 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { X, Send, Save, Building2, MapPin, ChevronDown, Check, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { 
+  X, Send, Save, Building2, MapPin, ChevronDown, Check, 
+  AlertCircle, CheckCircle2, Loader2, Image as ImageIcon, 
+  Phone, Globe, Clock, Sparkles, Navigation 
+} from 'lucide-react';
 import { OwnerRequest } from '../../types/auth';
 import { YEMEN_RATING_CATEGORIES } from '../../constants/categories';
 
 const YEMEN_CITIES_LIST = [
-  'صنعاء',
-  'عدن',
-  'تعز',
-  'حضرموت',
-  'الحديدة',
-  'إب',
-  'مأرب',
-  'ذمار',
-  'شبوة',
-  'لحج',
-  'أبين',
-  'المهرة',
-  'حجة',
-  'صعدة',
-  'البيضاء',
-  'عمران',
-  'الضالع',
-  'سقطرى',
+  'صنعاء', 'عدن', 'تعز', 'حضرموت — المكلا', 'حضرموت — سيئون', 
+  'الحديدة', 'إب', 'مأرب', 'ذمار', 'شبوة', 'لحج', 'أبين', 
+  'المهرة', 'حجة', 'صعدة', 'البيضاء', 'عمران', 'الضالع', 'سقطرى'
 ];
 
 interface Props {
@@ -42,34 +31,45 @@ export const OwnerRequestModal: React.FC<Props> = ({
   onClose,
   onSuccess,
 }) => {
-  const [requestType, setRequestType] = useState<'new_business' | 'claim_business'>(
-    existingRequest?.request_type || 'new_business'
-  );
-  const [businessName, setBusinessName] = useState(existingRequest?.business_name || '');
-  const [category, setCategory] = useState(existingRequest?.business_category || YEMEN_RATING_CATEGORIES[0]);
-  const [city, setCity] = useState(existingRequest?.city || 'صنعاء');
-  const [phone, setPhone] = useState(existingRequest?.contact_phone || '');
-  const [notes, setNotes] = useState(existingRequest?.notes || '');
+  const [activeStep, setActiveStep] = useState<'basic' | 'media' | 'contact' | 'offers'>('basic');
+  
+  // البيانات الأساسية
+  const [requestType, setRequestType] = useState<'new_business' | 'claim_business'>('new_business');
+  const [businessName, setBusinessName] = useState('');
+  const [category, setCategory] = useState(YEMEN_RATING_CATEGORIES[0]);
+  const [city, setCity] = useState('صنعاء');
+  const [address, setAddress] = useState('');
+
+  // الهوية البصرية
+  const [logoUrl, setLogoUrl] = useState('');
+  const [coverUrl, setCoverUrl] = useState('');
+
+  // قنوات الاتصال والخرائط
+  const [phone, setPhone] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [email, setEmail] = useState('');
+  const [website, setWebsite] = useState('');
+  const [mapUrl, setMapUrl] = useState('');
+
+  // ساعات العمل والعروض والوصف
+  const [workingHours, setWorkingHours] = useState('');
+  const [offers, setOffers] = useState('');
+  const [notes, setNotes] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // حالات فتح القوائم المنسدلة المخصصة (بدل سيلكت أندرويد)
+  // قوائم منسدلة مخصصة
   const [isCityOpen, setIsCityOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-
   const cityRef = useRef<HTMLDivElement>(null);
   const categoryRef = useRef<HTMLDivElement>(null);
 
-  // إغلاق القوائم عند النقر خارجها
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (cityRef.current && !cityRef.current.contains(e.target as Node)) {
-        setIsCityOpen(false);
-      }
-      if (categoryRef.current && !categoryRef.current.contains(e.target as Node)) {
-        setIsCategoryOpen(false);
-      }
+      if (cityRef.current && !cityRef.current.contains(e.target as Node)) setIsCityOpen(false);
+      if (categoryRef.current && !categoryRef.current.contains(e.target as Node)) setIsCategoryOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -79,11 +79,13 @@ export const OwnerRequestModal: React.FC<Props> = ({
 
   const handleSubmit = async (targetStatus: 'draft' | 'submitted') => {
     if (!businessName.trim()) {
-      setErrorMsg('يرجى إدخال اسم المنشأة.');
+      setActiveStep('basic');
+      setErrorMsg('يرجى كتابة اسم المنشأة.');
       return;
     }
     if (!phone.trim()) {
-      setErrorMsg('يرجى إدخال رقم هاتف التواصل.');
+      setActiveStep('contact');
+      setErrorMsg('يرجى كتابة رقم هاتف التواصل مع المنشأة.');
       return;
     }
 
@@ -92,7 +94,7 @@ export const OwnerRequestModal: React.FC<Props> = ({
     setSuccessMsg(null);
 
     try {
-      const payload = {
+      const payload: any = {
         user_id: userId,
         request_type: requestType,
         business_name: businessName.trim(),
@@ -101,29 +103,24 @@ export const OwnerRequestModal: React.FC<Props> = ({
         contact_phone: phone.trim(),
         notes: notes.trim() || null,
         status: targetStatus,
+        logo_url: logoUrl.trim() || null,
+        cover_url: coverUrl.trim() || null,
+        map_url: mapUrl.trim() || null,
+        whatsapp: whatsapp.trim() || null,
+        email: email.trim() || null,
+        website: website.trim() || null,
+        working_hours: workingHours.trim() || null,
+        offers: offers.trim() || null,
         updated_at: new Date().toISOString(),
       };
 
-      if (existingRequest?.id) {
-        const { error } = await supabase
-          .from('owner_requests')
-          .update(payload)
-          .eq('id', existingRequest.id)
-          .eq('user_id', userId);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('owner_requests')
-          .insert(payload);
-
-        if (error) throw error;
-      }
+      const { error } = await supabase.from('owner_requests').insert(payload);
+      if (error) throw error;
 
       setSuccessMsg(
         targetStatus === 'submitted'
-          ? 'تم إرسال طلبك بنجاح وهو قيد المراجعة.'
-          : 'تم حفظ المسودة بنجاح.'
+          ? 'تم إرسال طلب المنشأة بكافة التفاصيل إلى الإدارة بنجاح!'
+          : 'تم حفظ مسودة المنشأة بنجاح.'
       );
 
       setTimeout(() => {
@@ -133,7 +130,7 @@ export const OwnerRequestModal: React.FC<Props> = ({
 
     } catch (err: any) {
       console.error(err);
-      setErrorMsg('تعذر حفظ الطلب، يرجى المحاولة لاحقاً.');
+      setErrorMsg(err.message || 'تعذر إرسال الطلب، يرجى المحاولة لاحقاً.');
     } finally {
       setLoading(false);
     }
@@ -145,35 +142,49 @@ export const OwnerRequestModal: React.FC<Props> = ({
       className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 font-['Cairo',sans-serif]"
       dir="rtl"
     >
-      {/* النافذة بهوية موقع يمن ريتنغ الكحلية والذهبية */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md bg-[#0a0f1d] border border-[#1e293b] rounded-3xl p-5 shadow-2xl text-white max-h-[92vh] overflow-y-auto"
+        className="relative w-full max-w-lg bg-[#0a0f1d] border border-[#1e293b] rounded-3xl p-5 sm:p-6 shadow-2xl text-white max-h-[92vh] overflow-y-auto"
       >
-        {/* رأس النافذة */}
-        <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#1e293b]">
+        {/* رأس النموذج */}
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#1e293b]">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#FFC500]/10 border border-[#FFC500]/30 text-[#FFC500] flex items-center justify-center shrink-0">
-              <Building2 size={18} />
+            <div className="w-10 h-10 rounded-2xl bg-[#FFC500]/10 border border-[#FFC500]/30 text-[#FFC500] flex items-center justify-center shrink-0">
+              <Building2 size={20} />
             </div>
             <div>
-              <h2 className="text-sm font-black text-white">
-                {existingRequest?.status === 'needs_update' ? 'تعديل طلب المالك' : 'طلب الترقية إلى حساب مالك'}
-              </h2>
-              <span className="text-[10px] text-zinc-400">يمن ريتنغ • مراجعة الإدارة مطلوبة</span>
+              <h2 className="text-sm sm:text-base font-black text-white">إضافة وتوثيق منشأة جديدة</h2>
+              <span className="text-[10px] text-zinc-400">نموذج الملف المتكامل للمنشآت في يمن ريتنغ</span>
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            type="button"
-            className="p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-850 transition"
-          >
+          <button onClick={onClose} className="p-1 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-850">
             <X size={18} />
           </button>
         </div>
 
-        {/* التنبيهات */}
+        {/* أشرطة التبويب للتنقل بين أقسام المنشأة */}
+        <div className="flex gap-1 bg-[#060913] border border-[#1e293b] rounded-2xl p-1 mb-4 overflow-x-auto">
+          {[
+            { id: 'basic', label: '1. البيانات الأساسية', icon: Building2 },
+            { id: 'media', label: '2. الشعار والغلاف', icon: ImageIcon },
+            { id: 'contact', label: '3. الاتصال والخرائط', icon: Phone },
+            { id: 'offers', label: '4. العروض والدوام', icon: Sparkles },
+          ].map((st) => (
+            <button
+              key={st.id}
+              type="button"
+              onClick={() => setActiveStep(st.id as any)}
+              className={`py-1.5 px-3 rounded-xl text-[11px] font-bold transition whitespace-nowrap cursor-pointer ${
+                activeStep === st.id ? 'bg-[#FFC500] text-black font-black' : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              {st.label}
+            </button>
+          ))}
+        </div>
+
+        {/* رسائل التنبيه */}
         {errorMsg && (
           <div className="mb-3 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2 font-bold">
             <AlertCircle size={15} className="shrink-0" />
@@ -188,213 +199,317 @@ export const OwnerRequestModal: React.FC<Props> = ({
           </div>
         )}
 
-        <div className="space-y-3">
-          
-          {/* أزرار نوع الطلب المدمجة بنعومة */}
-          <div>
-            <label className="block text-[11px] font-bold text-zinc-300 mb-1">نوع الطلب</label>
-            <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#060913] border border-[#1e293b] rounded-2xl">
-              <button
-                type="button"
-                onClick={() => setRequestType('new_business')}
-                className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all text-center ${
-                  requestType === 'new_business'
-                    ? 'bg-[#FFC500] text-black shadow-sm font-black'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                إضافة منشأة جديدة
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setRequestType('claim_business')}
-                className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all text-center ${
-                  requestType === 'claim_business'
-                    ? 'bg-[#FFC500] text-black shadow-sm font-black'
-                    : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                المطالبة بملكية منشأة
-              </button>
+        {/* 1. القسم الأساسي */}
+        {activeStep === 'basic' && (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-[11px] font-bold text-zinc-300 mb-1">نوع المعاملة</label>
+              <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#060913] border border-[#1e293b] rounded-2xl">
+                <button
+                  type="button"
+                  onClick={() => setRequestType('new_business')}
+                  className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all ${
+                    requestType === 'new_business' ? 'bg-[#FFC500] text-black font-black' : 'text-zinc-400'
+                  }`}
+                >
+                  إضافة منشأة جديدة
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRequestType('claim_business')}
+                  className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all ${
+                    requestType === 'claim_business' ? 'bg-[#FFC500] text-black font-black' : 'text-zinc-400'
+                  }`}
+                >
+                  المطالبة بملكية منشأة
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* اسم المنشأة */}
-          <div>
-            <label className="block text-[11px] font-bold text-zinc-300 mb-1">
-              اسم المنشأة <span className="text-[#FFC500]">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="مثال: فندق العنوان أو بنك التضامن"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white placeholder-zinc-500 focus:border-[#FFC500] focus:outline-none"
-            />
-          </div>
+            <div>
+              <label className="block text-[11px] font-bold text-zinc-300 mb-1">اسم المنشأة التجاري <span className="text-[#FFC500]">*</span></label>
+              <input
+                type="text"
+                required
+                placeholder="مثال: شركة الجوال للنقل الدولي"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white focus:border-[#FFC500] focus:outline-none"
+              />
+            </div>
 
-          {/* قائمة التصنيفات المخصصة بالكامل (نفس استايل صورتك) */}
-          <div ref={categoryRef} className="relative">
-            <label className="block text-[11px] font-bold text-zinc-300 mb-1">
-              تصنيف المنشأة في يمن ريتنغ <span className="text-[#FFC500]">*</span>
-            </label>
-            
-            <button
-              type="button"
-              onClick={() => { setIsCategoryOpen(!isCategoryOpen); setIsCityOpen(false); }}
-              className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] hover:border-[#FFC500]/50 text-xs font-bold text-white flex items-center justify-between transition cursor-pointer"
-            >
-              <div className="flex items-center gap-2">
-                <Building2 size={15} className="text-[#FFC500]" />
-                <span>{category}</span>
-              </div>
-              <ChevronDown size={15} className={`text-zinc-400 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {/* القائمة المنسدلة للتصنيفات */}
-            {isCategoryOpen && (
-              <div className="absolute top-full right-0 left-0 mt-1.5 bg-[#0a0f1d] border border-[#1e293b] rounded-2xl shadow-2xl z-50 max-h-52 overflow-y-auto p-1.5 space-y-0.5 animate-in fade-in">
-                {YEMEN_RATING_CATEGORIES.map((cat, idx) => {
-                  const isSelected = category === cat;
-                  return (
-                    <div
-                      key={idx}
-                      onClick={() => { setCategory(cat); setIsCategoryOpen(false); }}
-                      className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold cursor-pointer transition ${
-                        isSelected 
-                          ? 'bg-[#FFC500] text-black font-black' 
-                          : 'text-zinc-200 hover:bg-[#141d30] hover:text-[#FFC500]'
-                      }`}
-                    >
-                      <span>{cat}</span>
-                      {isSelected ? <Check size={14} className="stroke-[3]" /> : <Building2 size={13} className="text-zinc-500" />}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* المدينة ورقم الهاتف */}
-          <div className="grid grid-cols-2 gap-2">
-            
-            {/* قائمة المحافظات المخصصة المطابقة لصورتك 100% */}
-            <div ref={cityRef} className="relative">
-              <label className="block text-[11px] font-bold text-zinc-300 mb-1">
-                المدينة / المحافظة <span className="text-[#FFC500]">*</span>
-              </label>
-
+            {/* تصنيف المنشأة */}
+            <div ref={categoryRef} className="relative">
+              <label className="block text-[11px] font-bold text-zinc-300 mb-1">تصنيف النشاط في يمن ريتنغ <span className="text-[#FFC500]">*</span></label>
               <button
                 type="button"
-                onClick={() => { setIsCityOpen(!isCityOpen); setIsCategoryOpen(false); }}
-                className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] hover:border-[#FFC500]/50 text-xs font-bold text-white flex items-center justify-between transition cursor-pointer"
+                onClick={() => { setIsCategoryOpen(!isCategoryOpen); setIsCityOpen(false); }}
+                className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white flex items-center justify-between"
               >
-                <div className="flex items-center gap-1.5 truncate">
-                  <MapPin size={14} className="text-[#FFC500] shrink-0" />
-                  <span className="truncate">{city}</span>
-                </div>
-                <ChevronDown size={14} className={`text-zinc-400 shrink-0 transition-transform ${isCityOpen ? 'rotate-180' : ''}`} />
+                <span className="text-[#FFC500]">{category}</span>
+                <ChevronDown size={14} />
               </button>
-
-              {/* القائمة المنبثقة للمحافظات بنفس تصميم الصورة الأولى تماماً */}
-              {isCityOpen && (
-                <div className="absolute top-full right-0 left-0 mt-1.5 bg-[#0a0f1d] border border-[#1e293b] rounded-2xl shadow-2xl z-50 max-h-52 overflow-y-auto p-1.5 space-y-0.5 animate-in fade-in">
-                  {YEMEN_CITIES_LIST.map((c, idx) => {
-                    const isSelected = city === c;
-                    return (
-                      <div
-                        key={idx}
-                        onClick={() => { setCity(c); setIsCityOpen(false); }}
-                        className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold cursor-pointer transition ${
-                          isSelected 
-                            ? 'bg-[#FFC500] text-black font-black' 
-                            : 'text-zinc-200 hover:bg-[#141d30] hover:text-[#FFC500]'
-                        }`}
-                      >
-                        <span>{c}</span>
-                        {isSelected ? <Check size={14} className="stroke-[3]" /> : <MapPin size={13} className="text-zinc-500" />}
-                      </div>
-                    );
-                  })}
+              {isCategoryOpen && (
+                <div className="absolute top-full right-0 left-0 mt-1 bg-[#0a0f1d] border border-[#1e293b] rounded-2xl shadow-2xl z-50 max-h-48 overflow-y-auto p-1 space-y-0.5">
+                  {YEMEN_RATING_CATEGORIES.map((c, i) => (
+                    <div
+                      key={i}
+                      onClick={() => { setCategory(c); setIsCategoryOpen(false); }}
+                      className="px-3 py-2 rounded-xl text-xs font-bold hover:bg-[#151f32] hover:text-[#FFC500] cursor-pointer"
+                    >
+                      {c}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* رقم الهاتف */}
+            {/* المدينة والعنوان */}
+            <div className="grid grid-cols-2 gap-2">
+              <div ref={cityRef} className="relative">
+                <label className="block text-[11px] font-bold text-zinc-300 mb-1">المدينة / المحافظة</label>
+                <button
+                  type="button"
+                  onClick={() => { setIsCityOpen(!isCityOpen); setIsCategoryOpen(false); }}
+                  className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white flex items-center justify-between"
+                >
+                  <span className="truncate">{city}</span>
+                  <ChevronDown size={14} />
+                </button>
+                {isCityOpen && (
+                  <div className="absolute top-full right-0 left-0 mt-1 bg-[#0a0f1d] border border-[#1e293b] rounded-2xl shadow-2xl z-50 max-h-48 overflow-y-auto p-1 space-y-0.5">
+                    {YEMEN_CITIES_LIST.map((ci, i) => (
+                      <div
+                        key={i}
+                        onClick={() => { setCity(ci); setIsCityOpen(false); }}
+                        className="px-3 py-2 rounded-xl text-xs font-bold hover:bg-[#151f32] hover:text-[#FFC500] cursor-pointer"
+                      >
+                        {ci}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-zinc-300 mb-1">العنوان التفصيلي</label>
+                <input
+                  type="text"
+                  placeholder="الشارع، الحي، بجانب..."
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white focus:border-[#FFC500] focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setActiveStep('media')}
+                className="h-9 px-4 rounded-xl bg-[#FFC500] text-black text-xs font-black"
+              >
+                التالي: الشعار والغلاف →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 2. الهوية البصرية (الشعار والغلاف) */}
+        {activeStep === 'media' && (
+          <div className="space-y-3">
             <div>
-              <label className="block text-[11px] font-bold text-zinc-300 mb-1">
-                رقم التواصل <span className="text-[#FFC500]">*</span>
-              </label>
+              <label className="block text-[11px] font-bold text-zinc-300 mb-1">رابط شعار المنشأة الرسمي (Logo URL)</label>
               <input
-                type="text"
-                required
-                placeholder="777000000"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white placeholder-zinc-500 focus:border-[#FFC500] focus:outline-none text-left"
+                type="url"
+                placeholder="https://example.com/logo.png"
+                value={logoUrl}
+                onChange={(e) => setLogoUrl(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white focus:border-[#FFC500] focus:outline-none text-left"
+                dir="ltr"
+              />
+              <span className="text-[10px] text-zinc-400 mt-0.5 block">ضع رابط صورة الشعار لتظهر كأيقونة رسمية للمنشأة.</span>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-zinc-300 mb-1">رابط صورة الغلاف الرئيسية (Cover Banner URL)</label>
+              <input
+                type="url"
+                placeholder="https://example.com/cover.jpg"
+                value={coverUrl}
+                onChange={(e) => setCoverUrl(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white focus:border-[#FFC500] focus:outline-none text-left"
+                dir="ltr"
+              />
+              <span className="text-[10px] text-zinc-400 mt-0.5 block">صورة واجهة المبنى أو التصميم الإعلاني العريض في رأس الصفحة.</span>
+            </div>
+
+            <div className="pt-2 flex justify-between">
+              <button
+                type="button"
+                onClick={() => setActiveStep('basic')}
+                className="h-9 px-3 rounded-xl border border-[#1e293b] text-zinc-400 text-xs font-bold"
+              >
+                ← السابق
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveStep('contact')}
+                className="h-9 px-4 rounded-xl bg-[#FFC500] text-black text-xs font-black"
+              >
+                التالي: قنوات الاتصال والخرائط →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 3. قنوات الاتصال والخرائط */}
+        {activeStep === 'contact' && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[11px] font-bold text-zinc-300 mb-1">رقم الهاتف الرسمي <span className="text-[#FFC500]">*</span></label>
+                <input
+                  type="text"
+                  required
+                  placeholder="777000000"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white focus:border-[#FFC500] focus:outline-none text-left"
+                  dir="ltr"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-zinc-300 mb-1">رقم الواتساب المباشر</label>
+                <input
+                  type="text"
+                  placeholder="967777000000"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white focus:border-[#FFC500] focus:outline-none text-left"
+                  dir="ltr"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-zinc-300 mb-1">رابط الموقع على خرائط جوجل (Google Maps URL)</label>
+              <input
+                type="url"
+                placeholder="https://maps.google.com/..."
+                value={mapUrl}
+                onChange={(e) => setMapUrl(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white focus:border-[#FFC500] focus:outline-none text-left"
                 dir="ltr"
               />
             </div>
 
-          </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[11px] font-bold text-zinc-300 mb-1">البريد الإلكتروني</label>
+                <input
+                  type="email"
+                  placeholder="info@business.ye"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white focus:border-[#FFC500] focus:outline-none text-left"
+                  dir="ltr"
+                />
+              </div>
 
-          {/* الملاحظات */}
-          <div>
-            <label className="block text-[11px] font-bold text-zinc-300 mb-1">ملاحظات أو إثبات الصفة (اختياري)</label>
-            <textarea
-              rows={2}
-              placeholder="رقم السجل التجاري، الترخيص، أو صفة مالك المنشأة..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#060913] border border-[#1e293b] text-xs text-white placeholder-zinc-500 focus:border-[#FFC500] focus:outline-none resize-none"
-            />
-          </div>
+              <div>
+                <label className="block text-[11px] font-bold text-zinc-300 mb-1">الموقع الإلكتروني / صفحة</label>
+                <input
+                  type="url"
+                  placeholder="https://example.com"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white focus:border-[#FFC500] focus:outline-none text-left"
+                  dir="ltr"
+                />
+              </div>
+            </div>
 
-          {/* أزرار الإجراءات */}
-          <div className="pt-2.5 border-t border-[#1e293b] flex items-center justify-between gap-2">
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => handleSubmit('draft')}
-              className="h-10 px-3.5 rounded-xl border border-[#1e293b] bg-[#060913] text-zinc-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
-            >
-              <Save size={14} />
-              <span>مسودة</span>
-            </button>
-
-            <div className="flex items-center gap-2">
+            <div className="pt-2 flex justify-between">
               <button
                 type="button"
-                onClick={onClose}
-                className="h-10 px-3 text-xs font-bold text-zinc-400 hover:text-white transition cursor-pointer"
+                onClick={() => setActiveStep('media')}
+                className="h-9 px-3 rounded-xl border border-[#1e293b] text-zinc-400 text-xs font-bold"
               >
-                إلغاء
+                ← السابق
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveStep('offers')}
+                className="h-9 px-4 rounded-xl bg-[#FFC500] text-black text-xs font-black"
+              >
+                التالي: العروض والخدمات →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 4. العروض والدوام والوصف */}
+        {activeStep === 'offers' && (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-[11px] font-bold text-zinc-300 mb-1">ساعات وأوقات العمل</label>
+              <input
+                type="text"
+                placeholder="مثال: من 8:00 صباحاً إلى 10:00 مساءً (الجمعة بعد الصلاة)"
+                value={workingHours}
+                onChange={(e) => setWorkingHours(e.target.value)}
+                className="w-full h-10 px-3 rounded-xl bg-[#060913] border border-[#1e293b] text-xs font-bold text-white focus:border-[#FFC500] focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-zinc-300 mb-1">العروض والخصومات والخدمات الخاصة</label>
+              <textarea
+                rows={2}
+                placeholder="اكتب هنا أي عروض خاصة، تخفيضات موسمية، أو مميزات حصرية لمنشأتك..."
+                value={offers}
+                onChange={(e) => setOffers(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[#060913] border border-[#1e293b] text-xs text-white focus:border-[#FFC500] focus:outline-none resize-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-zinc-300 mb-1">نبذة تعريفية شاملة عن النشاط</label>
+              <textarea
+                rows={2}
+                placeholder="شرح وافٍ عن تاريخ المنشأة، جودة الخدمات، وأسباب اختيار العملاء لها..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-[#060913] border border-[#1e293b] text-xs text-white focus:border-[#FFC500] focus:outline-none resize-none"
+              />
+            </div>
+
+            <div className="pt-3 border-t border-[#1e293b] flex items-center justify-between">
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => handleSubmit('draft')}
+                className="h-10 px-3.5 rounded-xl border border-[#1e293b] bg-[#060913] text-zinc-300 text-xs font-bold"
+              >
+                <Save size={14} className="inline ml-1" />
+                حفظ كمسودة
               </button>
 
               <button
                 type="button"
                 disabled={loading}
                 onClick={() => handleSubmit('submitted')}
-                className="h-10 px-5 rounded-xl bg-[#FFC500] hover:bg-[#eab308] text-black font-black text-xs transition active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-sm"
+                className="h-10 px-5 rounded-xl bg-[#FFC500] hover:bg-[#eab308] text-black font-black text-xs flex items-center gap-1.5"
               >
-                {loading ? (
-                  <>
-                    <Loader2 size={15} className="animate-spin text-black" />
-                    <span>جارٍ الإرسال...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>إرسال للمراجعة</span>
-                    <Send size={14} className="stroke-[2.5]" />
-                  </>
-                )}
+                {loading ? <Loader2 size={15} className="animate-spin text-black" /> : <Send size={15} />}
+                <span>إرسال الملف المتكامل للإدارة</span>
               </button>
             </div>
           </div>
+        )}
 
-        </div>
       </div>
     </div>
   );
