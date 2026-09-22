@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { X, Send, Save, Building2, AlertCircle } from 'lucide-react';
+import { X, Send, Save, Building2, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { OwnerRequest } from '../../types/auth';
 import { YEMEN_RATING_CATEGORIES } from '../../constants/categories';
 
@@ -31,17 +31,23 @@ export const OwnerRequestModal: React.FC<Props> = ({
   const [notes, setNotes] = useState(existingRequest?.notes || '');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (targetStatus: 'draft' | 'submitted') => {
-    if (!businessName.trim() || !phone.trim()) {
-      setErrorMsg('يرجى كتابة اسم المنشأة ورقم هاتف التواصل.');
+    if (!businessName.trim()) {
+      setErrorMsg('يرجى إدخال اسم المنشأة.');
+      return;
+    }
+    if (!phone.trim()) {
+      setErrorMsg('يرجى إدخال رقم هاتف التواصل مع المالك.');
       return;
     }
 
     setLoading(true);
     setErrorMsg(null);
+    setSuccessMsg(null);
 
     try {
       const payload = {
@@ -62,26 +68,40 @@ export const OwnerRequestModal: React.FC<Props> = ({
           .update(payload)
           .eq('id', existingRequest.id)
           .eq('user_id', userId);
+
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('owner_requests')
           .insert(payload);
+
         if (error) throw error;
       }
 
-      onSuccess();
-      onClose();
+      const msg = targetStatus === 'submitted'
+        ? 'تم إرسال طلبك بنجاح! وهو الآن قيد مراجعة إدارة يمن ريتنغ.'
+        : 'تم حفظ الطلب كمسودة بنجاح.';
+
+      setSuccessMsg(msg);
+
+      setTimeout(() => {
+        onSuccess();
+        onClose();
+      }, 1500);
+
     } catch (err: any) {
-      setErrorMsg(err.message || 'حدث خطأ أثناء حفظ الطلب.');
+      console.error(err);
+      setErrorMsg('تعذر حفظ الطلب حالياً، يرجى التأكد من الاتصال والمحاولة لاحقاً.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 font-['Cairo']" dir="rtl">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-zinc-100 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 font-['Cairo',sans-serif]" dir="rtl">
+      <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-zinc-100 max-h-[92vh] overflow-y-auto text-zinc-900">
+        
+        {/* رأس النافذة */}
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-zinc-900 text-white">
@@ -91,22 +111,31 @@ export const OwnerRequestModal: React.FC<Props> = ({
               <h2 className="text-sm sm:text-base font-black text-zinc-900">
                 {existingRequest?.status === 'needs_update' ? 'تعديل واستكمال الطلب' : 'طلب الترقية إلى حساب مالك'}
               </h2>
-              <p className="text-[11px] text-zinc-500">يمن ريتنغ • مراجعة الإدارة مطلوبة للتفعيل</p>
+              <p className="text-[11px] text-zinc-500">مراجعة الإدارة مطلوبة لاعتماد الترقية</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:bg-zinc-100">
+          <button onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:bg-zinc-100 transition">
             <X className="w-5 h-5" />
           </button>
         </div>
 
+        {/* رسائل التنبيه بالعربي */}
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+          <div className="mb-4 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2 font-bold">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
+        {successMsg && (
+          <div className="mb-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2 font-bold">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{successMsg}</span>
+          </div>
+        )}
+
         <div className="space-y-3.5">
+          {/* نوع الطلب */}
           <div>
             <label className="block text-xs font-bold text-zinc-700 mb-1.5">نوع الطلب</label>
             <div className="grid grid-cols-2 gap-2">
@@ -115,12 +144,12 @@ export const OwnerRequestModal: React.FC<Props> = ({
                 onClick={() => setRequestType('new_business')}
                 className={`p-3 rounded-2xl border text-xs font-bold text-right transition ${
                   requestType === 'new_business'
-                    ? 'border-zinc-900 bg-zinc-900 text-white'
+                    ? 'border-zinc-900 bg-zinc-900 text-white shadow-xs'
                     : 'border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-zinc-100'
                 }`}
               >
                 إضافة منشأة جديدة
-                <span className="block text-[10px] opacity-75 font-normal mt-0.5">منشأة غير موجودة بالدليل</span>
+                <span className="block text-[10px] opacity-75 font-normal mt-0.5">منشأة غير مسجلة بالدليل</span>
               </button>
 
               <button
@@ -128,7 +157,7 @@ export const OwnerRequestModal: React.FC<Props> = ({
                 onClick={() => setRequestType('claim_business')}
                 className={`p-3 rounded-2xl border text-xs font-bold text-right transition ${
                   requestType === 'claim_business'
-                    ? 'border-zinc-900 bg-zinc-900 text-white'
+                    ? 'border-zinc-900 bg-zinc-900 text-white shadow-xs'
                     : 'border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-zinc-100'
                 }`}
               >
@@ -167,7 +196,7 @@ export const OwnerRequestModal: React.FC<Props> = ({
               <label className="block text-xs font-bold text-zinc-700 mb-1">المدينة / المحافظة *</label>
               <input
                 type="text"
-                placeholder="صنعاء، عدن..."
+                placeholder="مثال: صنعاء، عدن..."
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-xs focus:ring-2 focus:ring-zinc-900 focus:outline-none"
@@ -175,7 +204,7 @@ export const OwnerRequestModal: React.FC<Props> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-700 mb-1">هاتف المالك للتواصل *</label>
+              <label className="block text-xs font-bold text-zinc-700 mb-1">رقم هاتف المالك للتحقق *</label>
               <input
                 type="text"
                 placeholder="777000000"
@@ -190,7 +219,7 @@ export const OwnerRequestModal: React.FC<Props> = ({
             <label className="block text-xs font-bold text-zinc-700 mb-1">ملاحظات أو إثبات الصفة (اختياري)</label>
             <textarea
               rows={2}
-              placeholder="رقم السجل التجاري، الترخيص، أو أي تفاصيل تساعد الإدارة في التحقق"
+              placeholder="رقم السجل التجاري أو الترخيص لتسريع موافقة الإدارة"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-xs focus:ring-2 focus:ring-zinc-900 focus:outline-none"
@@ -223,8 +252,17 @@ export const OwnerRequestModal: React.FC<Props> = ({
                 onClick={() => handleSubmit('submitted')}
                 className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-zinc-900 text-white text-xs font-bold hover:bg-zinc-800 transition active:scale-95 disabled:opacity-50"
               >
-                <Send className="w-3.5 h-3.5" />
-                {loading ? 'جارٍ الإرسال...' : 'إرسال للمراجعة'}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>جارٍ الإرسال...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" />
+                    <span>إرسال للمراجعة</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
