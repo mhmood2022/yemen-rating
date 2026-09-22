@@ -1,3 +1,4 @@
+import { AdminOwnersHub } from "./components/admin/AdminOwnersHub";
 import React from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 
@@ -108,6 +109,7 @@ export function App() {
 
                                                                     {/* لوحة التحكم الإدارية الموحدة /admin */}
         <Route path="/admin" element={<AdminMaster />}>
+          <Route path="owners" element={<AdminOwnersHub />} />
           <Route index element={<AdminDashboardOverview />} />
           <Route path="companies" element={<CompaniesManager />} />
           <Route path="ratings" element={<RatingsManager />} />
