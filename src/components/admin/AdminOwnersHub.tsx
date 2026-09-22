@@ -8,6 +8,22 @@ import {
 } from 'lucide-react';
 import { OwnerRequest } from '../../types/auth';
 
+
+  const mapToBusinessType = (cat: string) => {
+    if (!cat) return "COMPANY";
+    if (cat.includes("نقل")) return "TRANSPORT";
+    if (cat.includes("بنك") || cat.includes("صرافة")) return "BANK";
+    if (cat.includes("فندق") || cat.includes("شاليه")) return "HOTEL";
+    if (cat.includes("مطعم") || cat.includes("كافيه") || cat.includes("بوفيه")) return "RESTAURANT";
+    if (cat.includes("مستشف") || cat.includes("عياد") || cat.includes("صيدل") || cat.includes("مختبر")) return "HEALTHCARE";
+    if (cat.includes("سيار")) return "CAR_DEALER";
+    if (cat.includes("عقار")) return "REAL_ESTATE";
+    if (cat.includes("مدرس") || cat.includes("جامع")) return "EDUCATION";
+    if (cat.includes("هاتف") || cat.includes("اتصال")) return "TELECOM";
+    if (cat.includes("متجر") || cat.includes("سوبر") || cat.includes("مول") || cat.includes("تسوق") || cat.includes("ملابس") || cat.includes("ذهب")) return "SHOP";
+    return "COMPANY";
+  };
+
 export const AdminOwnersHub: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'requests' | 'owners'>('requests');
   const [loading, setLoading] = useState(true);
