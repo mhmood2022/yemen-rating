@@ -2,9 +2,31 @@
 
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { X, Send, Save, Building2, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { X, Send, Save, Building2, AlertCircle, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
 import { OwnerRequest } from '../../types/auth';
 import { YEMEN_RATING_CATEGORIES } from '../../constants/categories';
+
+const YEMEN_CITIES_LIST = [
+  'صنعاء',
+  'عدن',
+  'تعز',
+  'حضرموت — المكلا',
+  'حضرموت — سيئون',
+  'الحديدة',
+  'إب',
+  'مأرب',
+  'ذمار',
+  'شبوة — عتق',
+  'لحج',
+  'أبين',
+  'المهرة',
+  'حجة',
+  'صعدة',
+  'البيضاء',
+  'عمران',
+  'الضالع',
+  'سقطرى',
+];
 
 interface Props {
   userId: string;
@@ -35,13 +57,20 @@ export const OwnerRequestModal: React.FC<Props> = ({
 
   if (!isOpen) return null;
 
+  // إغلاق عند النقر في الخلفية المظلمة
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   const handleSubmit = async (targetStatus: 'draft' | 'submitted') => {
     if (!businessName.trim()) {
       setErrorMsg('يرجى إدخال اسم المنشأة.');
       return;
     }
     if (!phone.trim()) {
-      setErrorMsg('يرجى إدخال رقم هاتف التواصل مع المالك.');
+      setErrorMsg('يرجى إدخال رقم هاتف المالك للتحقق.');
       return;
     }
 
@@ -78,11 +107,11 @@ export const OwnerRequestModal: React.FC<Props> = ({
         if (error) throw error;
       }
 
-      const msg = targetStatus === 'submitted'
-        ? 'تم إرسال طلبك بنجاح! وهو الآن قيد مراجعة إدارة يمن ريتنغ.'
-        : 'تم حفظ الطلب كمسودة بنجاح.';
-
-      setSuccessMsg(msg);
+      setSuccessMsg(
+        targetStatus === 'submitted'
+          ? 'تم إرسال طلبك بنجاح! وهو الآن قيد مراجعة إدارة يمن ريتنغ.'
+          : 'تم حفظ الطلب كمسودة بنجاح.'
+      );
 
       setTimeout(() => {
         onSuccess();
@@ -91,157 +120,178 @@ export const OwnerRequestModal: React.FC<Props> = ({
 
     } catch (err: any) {
       console.error(err);
-      setErrorMsg('تعذر حفظ الطلب حالياً، يرجى التأكد من الاتصال والمحاولة لاحقاً.');
+      setErrorMsg('تعذر حفظ الطلب حالياً، يرجى المحاولة لاحقاً.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 font-['Cairo',sans-serif]" dir="rtl">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-zinc-100 max-h-[92vh] overflow-y-auto text-zinc-900">
-        
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 font-['Cairo',sans-serif] animate-fade-in"
+      dir="rtl"
+    >
+      {/* بطاقة النافذة بهوية يمن ريتنغ الداكنة */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-3xl p-5 sm:p-6 shadow-2xl text-white max-h-[92vh] overflow-y-auto"
+      >
         {/* رأس النافذة */}
-        <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
+        <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800/80">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-zinc-900 text-white">
-              <Building2 className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 text-[#FFC500] flex items-center justify-center shrink-0">
+              <Building2 size={20} />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-black text-zinc-900">
+              <h2 className="text-sm sm:text-base font-black text-white leading-tight">
                 {existingRequest?.status === 'needs_update' ? 'تعديل واستكمال الطلب' : 'طلب الترقية إلى حساب مالك'}
               </h2>
-              <p className="text-[11px] text-zinc-500">مراجعة الإدارة مطلوبة لاعتماد الترقية</p>
+              <span className="text-[11px] text-zinc-400">يمن ريتنغ • مراجعة الإدارة مطلوبة</span>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:bg-zinc-100 transition">
-            <X className="w-5 h-5" />
+
+          <button
+            onClick={onClose}
+            type="button"
+            className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors cursor-pointer"
+          >
+            <X size={18} />
           </button>
         </div>
 
-        {/* رسائل التنبيه بالعربي */}
+        {/* رسائل التنبيه */}
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2 font-bold">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="mb-3.5 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2 font-bold">
+            <AlertCircle size={16} className="shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2 font-bold">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <div className="mb-3.5 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 font-bold">
+            <CheckCircle2 size={16} className="shrink-0" />
             <span>{successMsg}</span>
           </div>
         )}
 
         <div className="space-y-3.5">
-          {/* نوع الطلب */}
+          
+          {/* تبديل نوع الطلب بشكل مدمج وأنيق */}
           <div>
-            <label className="block text-xs font-bold text-zinc-700 mb-1.5">نوع الطلب</label>
-            <div className="grid grid-cols-2 gap-2">
+            <label className="block text-xs font-bold text-zinc-300 mb-1.5">نوع الطلب</label>
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-zinc-900/90 border border-zinc-800 rounded-2xl">
               <button
                 type="button"
                 onClick={() => setRequestType('new_business')}
-                className={`p-3 rounded-2xl border text-xs font-bold text-right transition ${
+                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all text-center cursor-pointer ${
                   requestType === 'new_business'
-                    ? 'border-zinc-900 bg-zinc-900 text-white shadow-xs'
-                    : 'border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-zinc-100'
+                    ? 'bg-[#FFC500] text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 إضافة منشأة جديدة
-                <span className="block text-[10px] opacity-75 font-normal mt-0.5">منشأة غير مسجلة بالدليل</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setRequestType('claim_business')}
-                className={`p-3 rounded-2xl border text-xs font-bold text-right transition ${
+                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all text-center cursor-pointer ${
                   requestType === 'claim_business'
-                    ? 'border-zinc-900 bg-zinc-900 text-white shadow-xs'
-                    : 'border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-zinc-100'
+                    ? 'bg-[#FFC500] text-zinc-950 shadow-sm'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                المطالبة بمنشأة مسجلة
-                <span className="block text-[10px] opacity-75 font-normal mt-0.5">منشأة موجودة مسبقاً بالموقع</span>
+                المطالبة بملكية منشأة
               </button>
             </div>
           </div>
 
+          {/* اسم المنشأة */}
           <div>
-            <label className="block text-xs font-bold text-zinc-700 mb-1">اسم المنشأة *</label>
+            <label className="block text-xs font-bold text-zinc-300 mb-1">اسم المنشأة <span className="text-[#FFC500]">*</span></label>
             <input
               type="text"
+              required
               placeholder="مثال: فندق العنوان أو بنك التضامن"
               value={businessName}
               onChange={(e) => setBusinessName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-xs focus:ring-2 focus:ring-zinc-900 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:border-[#FFC500] focus:ring-1 focus:ring-[#FFC500] focus:outline-none"
             />
           </div>
 
+          {/* تصنيف المنشأة */}
           <div>
-            <label className="block text-xs font-bold text-zinc-700 mb-1">تصنيف المنشأة في يمن ريتنغ *</label>
+            <label className="block text-xs font-bold text-zinc-300 mb-1">تصنيف المنشأة في يمن ريتنغ <span className="text-[#FFC500]">*</span></label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-xs focus:ring-2 focus:ring-zinc-900 focus:outline-none bg-white"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:border-[#FFC500] focus:ring-1 focus:ring-[#FFC500] focus:outline-none cursor-pointer"
             >
               {YEMEN_RATING_CATEGORIES.map((cat, idx) => (
-                <option key={idx} value={cat}>{cat}</option>
+                <option key={idx} value={cat} className="bg-zinc-950 text-white py-1">{cat}</option>
               ))}
             </select>
           </div>
 
+          {/* المدينة ورقم الهاتف جنب بعض وبوضوح تام */}
           <div className="grid grid-cols-2 gap-2.5">
             <div>
-              <label className="block text-xs font-bold text-zinc-700 mb-1">المدينة / المحافظة *</label>
-              <input
-                type="text"
-                placeholder="مثال: صنعاء، عدن..."
+              <label className="block text-xs font-bold text-zinc-300 mb-1">المدينة / المحافظة <span className="text-[#FFC500]">*</span></label>
+              <select
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-xs focus:ring-2 focus:ring-zinc-900 focus:outline-none"
-              />
+                className="w-full px-3 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white focus:border-[#FFC500] focus:ring-1 focus:ring-[#FFC500] focus:outline-none cursor-pointer"
+              >
+                {YEMEN_CITIES_LIST.map((c, idx) => (
+                  <option key={idx} value={c} className="bg-zinc-950 text-white py-1">{c}</option>
+                ))}
+              </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-700 mb-1">رقم هاتف المالك للتحقق *</label>
+              <label className="block text-xs font-bold text-zinc-300 mb-1">رقم هاتف للتواصل <span className="text-[#FFC500]">*</span></label>
               <input
                 type="text"
+                required
                 placeholder="777000000"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-xs focus:ring-2 focus:ring-zinc-900 focus:outline-none"
+                className="w-full px-3 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:border-[#FFC500] focus:ring-1 focus:ring-[#FFC500] focus:outline-none text-left"
+                dir="ltr"
               />
             </div>
           </div>
 
+          {/* ملاحظات أو إثبات الصفة */}
           <div>
-            <label className="block text-xs font-bold text-zinc-700 mb-1">ملاحظات أو إثبات الصفة (اختياري)</label>
+            <label className="block text-xs font-bold text-zinc-300 mb-1">ملاحظات أو إثبات الصفة (اختياري)</label>
             <textarea
               rows={2}
-              placeholder="رقم السجل التجاري أو الترخيص لتسريع موافقة الإدارة"
+              placeholder="رقم السجل التجاري، الترخيص، أو صفة مالك المنشأة..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 text-xs focus:ring-2 focus:ring-zinc-900 focus:outline-none"
+              className="w-full px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:border-[#FFC500] focus:ring-1 focus:ring-[#FFC500] focus:outline-none resize-none"
             />
           </div>
 
-          <div className="pt-3 border-t border-zinc-100 flex items-center justify-between gap-2">
+          {/* أزرار الإجراءات في الأسفل */}
+          <div className="pt-3 border-t border-zinc-800/80 flex items-center justify-between gap-2">
             <button
               type="button"
               disabled={loading}
               onClick={() => handleSubmit('draft')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-zinc-200 text-zinc-700 text-xs font-bold hover:bg-zinc-50 transition"
+              className="inline-flex items-center gap-1 px-3 py-2.5 rounded-xl border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-900 text-xs font-bold transition cursor-pointer"
             >
-              <Save className="w-3.5 h-3.5" />
-              حفظ كمسودة
+              <Save size={14} />
+              <span>مسودة</span>
             </button>
 
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3.5 py-2 rounded-xl text-zinc-500 text-xs font-bold hover:bg-zinc-100"
+                className="px-3.5 py-2.5 rounded-xl text-zinc-400 hover:text-white text-xs font-bold transition cursor-pointer"
               >
                 إلغاء
               </button>
@@ -250,22 +300,23 @@ export const OwnerRequestModal: React.FC<Props> = ({
                 type="button"
                 disabled={loading}
                 onClick={() => handleSubmit('submitted')}
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-zinc-900 text-white text-xs font-bold hover:bg-zinc-800 transition active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#FFC500] hover:bg-[#e6b200] text-zinc-950 text-xs font-black transition active:scale-95 disabled:opacity-50 cursor-pointer shadow-sm"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 size={15} className="animate-spin" />
                     <span>جارٍ الإرسال...</span>
                   </>
                 ) : (
                   <>
-                    <Send className="w-3.5 h-3.5" />
+                    <Send size={15} />
                     <span>إرسال للمراجعة</span>
                   </>
                 )}
               </button>
             </div>
           </div>
+
         </div>
       </div>
     </div>
