@@ -1,293 +1,552 @@
-'use client';
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../lib/supabase';
+import React, { useState, useEffect } from 'react';
 import { 
-  ShieldCheck, Clock, Check, X, AlertTriangle, Building2, 
-  Phone, MapPin, RefreshCw, Sparkles, Image as ImageIcon, Globe, Navigation, MessageCircle 
+  Building2, 
+  ShieldCheck, 
+  Clock, 
+  ExternalLink, 
+  MessageSquare, 
+  Search, 
+  FileText, 
+  UserCheck, 
+  Inbox, 
+  PhoneCall,
+  CheckCircle2,
+  AlertTriangle,
+  X
 } from 'lucide-react';
-import { OwnerRequest } from '../../types/auth';
+
+interface OwnershipClaim {
+  id: string;
+  facilityName: string;
+  sector: string;
+  applicantName: string;
+  phone: string;
+  commercialRegisterNo: string;
+  documentUrl?: string;
+  requestDate: string;
+}
+
+interface VerifiedOwner {
+  id: string;
+  facilityName: string;
+  sector: string;
+  ownerName: string;
+  phone: string;
+  approvedDate: string;
+}
+
+const STORAGE_CLAIMS_KEY = 'yr_ownership_claims';
+const STORAGE_OWNERS_KEY = 'yr_verified_owners';
 
 export const AdminOwnersHub: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'requests' | 'owners'>('requests');
-  const [loading, setLoading] = useState(true);
-  const [requests, setRequests] = useState<any[]>([]);
-  const [owners, setOwners] = useState<any[]>([]);
-  const [filter, setFilter] = useState<'all' | 'submitted' | 'approved' | 'rejected' | 'needs_update'>('submitted');
+  const [activeTab, setActiveTab] = useState<'pending' | 'verified'>('pending');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const [actionModal, setActionModal] = useState<{
-    request: any | null;
-    type: 'approve' | 'reject' | 'needs_update' | null;
-  }>({ request: null, type: null });
-  const [adminNote, setAdminNote] = useState('');
-  const [processing, setProcessing] = useState(false);
-
-  const mapToBusinessType = (cat: string) => {
-    if (!cat) return 'COMPANY';
-    if (cat.includes('نقل')) return 'TRANSPORT';
-    if (cat.includes('بنك') || cat.includes('صرافة')) return 'BANK';
-    if (cat.includes('فندق') || cat.includes('شاليه')) return 'HOTEL';
-    if (cat.includes('مطعم') || cat.includes('كافيه')) return 'RESTAURANT';
-    if (cat.includes('مستشف') || cat.includes('صيدل') || cat.includes('عياد')) return 'HEALTHCARE';
-    if (cat.includes('سيار')) return 'CAR_DEALER';
-    if (cat.includes('عقار')) return 'REAL_ESTATE';
-    if (cat.includes('مدرس') || cat.includes('جامع')) return 'EDUCATION';
-    if (cat.includes('اتصال') || cat.includes('هاتف')) return 'TELECOM';
-    return 'COMPANY';
-  };
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [reqRes, ownRes] = await Promise.all([
-        supabase.from('owner_requests').select('*').order('created_at', { ascending: false }),
-        supabase.from('profiles').select('*').eq('role', 'owner').order('created_at', { ascending: false }),
-      ]);
-      if (reqRes.data) setRequests(reqRes.data);
-      if (ownRes.data) setOwners(ownRes.data);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // الاعتماد الكامل ونقل الشعار والغلاف وقنوات الاتصال لجدول المنشآت
-  const handleExecute = async () => {
-    const { request, type } = actionModal;
-    if (!request || !type) return;
-
-    setProcessing(true);
-    try {
-      if (type === 'approve') {
-        // 1. تحديث حالة الطلب
-        await supabase.from('owner_requests').update({
-          status: 'approved',
-          admin_notes: adminNote.trim() || 'تمت الموافقة والاعتماد رسمياً',
-          reviewed_at: new Date().toISOString(),
-        }).eq('id', request.id);
-
-        // 2. ترقية الحساب
-        await supabase.from('profiles').update({ role: 'owner' }).eq('id', request.user_id);
-
-        // 3. إدراج أو تحديث المنشأة بجميع بياناتها الكاملة
-        const richBusinessData = {
-          name: request.business_name.trim(),
-          business_type: mapToBusinessType(request.business_category || ''),
-          city: request.city || 'صنعاء',
-          phone: request.contact_phone,
-          whatsapp: request.whatsapp || null,
-          email: request.email || null,
-          website: request.website || null,
-          map_url: request.map_url || null,
-          logo_url: request.logo_url || null,
-          cover_url: request.cover_url || null,
-          working_hours: request.working_hours || null,
-          description: request.notes || null,
-          owner_id: request.user_id,
-          tier: 'VERIFIED',
-          is_claimed: true,
-          status: 'active',
-        };
-
-        const { data: existing } = await supabase
-          .from('businesses')
-          .select('id')
-          .ilike('name', `%${request.business_name.trim()}%`)
-          .limit(1)
-          .maybeSingle();
-
-        if (existing?.id) {
-          await supabase.from('businesses').update(richBusinessData).eq('id', existing.id);
-        } else {
-          await supabase.from('businesses').insert(richBusinessData);
-        }
-      } else {
-        const targetStatus = type === 'reject' ? 'rejected' : 'needs_update';
-        await supabase.from('owner_requests').update({
-          status: targetStatus,
-          admin_notes: adminNote.trim() || null,
-          reviewed_at: new Date().toISOString(),
-        }).eq('id', request.id);
-      }
-
-      setActionModal({ request: null, type: null });
-      setAdminNote('');
-      await fetchData();
-    } catch (err) {
-      console.error(err);
-      alert('حدث خطأ أثناء تنفيذ الإجراء.');
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const filteredRequests = requests.filter((r) => {
-    if (filter === 'all') return true;
-    return r.status === filter;
+  // حالة النوافذ والتنبيهات المخصصة
+  const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'error' | 'warning' }>({
+    show: false,
+    message: '',
+    type: 'success'
   });
 
+  const [activeModal, setActiveModal] = useState<{
+    type: 'approve' | 'reject' | 'revoke' | null;
+    data?: any;
+  }>({ type: null });
+
+  const [rejectReason, setRejectReason] = useState('');
+
+  // عرض الإشعار التلقائي
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 2800);
+  };
+
+  const [claims, setClaims] = useState<OwnershipClaim[]>(() => {
+    const saved = localStorage.getItem(STORAGE_CLAIMS_KEY);
+    return saved ? JSON.parse(saved) : [
+      {
+        id: 'claim_1',
+        facilityName: 'فندق بلقيس الدولي',
+        sector: 'الفنادق',
+        applicantName: 'محمد عبدالله السنيدار',
+        phone: '+967770000111',
+        commercialRegisterNo: '109842 / صنعاء',
+        documentUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80',
+        requestDate: 'اليوم 10:30 ص'
+      },
+      {
+        id: 'claim_2',
+        facilityName: 'مستشفى الأمل التخصصي',
+        sector: 'المستشفيات',
+        applicantName: 'د. خالد عبدالملك',
+        phone: '+967771222333',
+        commercialRegisterNo: '55412 / عدن',
+        documentUrl: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=800&q=80',
+        requestDate: 'أمس 04:15 م'
+      }
+    ];
+  });
+
+  const [verifiedOwners, setVerifiedOwners] = useState<VerifiedOwner[]>(() => {
+    const saved = localStorage.getItem(STORAGE_OWNERS_KEY);
+    return saved ? JSON.parse(saved) : [
+      {
+        id: 'owner_1',
+        facilityName: 'مطعم الشيباني الحديث',
+        sector: 'المطاعم والأغذية',
+        ownerName: 'علي بن أحمد الشيباني',
+        phone: '+967773444555',
+        approvedDate: '2025-01-10'
+      }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_CLAIMS_KEY, JSON.stringify(claims));
+  }, [claims]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_OWNERS_KEY, JSON.stringify(verifiedOwners));
+  }, [verifiedOwners]);
+
+  // تنفيذ الموافقة بعد تأكيد النافذة
+  const confirmApprove = () => {
+    const claim = activeModal.data as OwnershipClaim;
+    if (!claim) return;
+
+    const newOwner: VerifiedOwner = {
+      id: `owner_${Date.now()}`,
+      facilityName: claim.facilityName,
+      sector: claim.sector,
+      ownerName: claim.applicantName,
+      phone: claim.phone,
+      approvedDate: new Date().toLocaleDateString('ar-YE')
+    };
+
+    setVerifiedOwners([newOwner, ...verifiedOwners]);
+    setClaims(claims.filter(c => c.id !== claim.id));
+
+    localStorage.setItem('yr_active_owner_profile', JSON.stringify({
+      facilityName: claim.facilityName,
+      ownerName: claim.applicantName,
+      sector: claim.sector,
+      phone: claim.phone
+    }));
+
+    setActiveModal({ type: null });
+    showToast(`تم اعتماد (${claim.facilityName}) ومنح الصلاحية بنجاح!`, 'success');
+  };
+
+  // تنفيذ الرفض بعد كتابة السبب
+  const confirmReject = () => {
+    const claim = activeModal.data as OwnershipClaim;
+    if (!claim) return;
+
+    if (!rejectReason.trim()) {
+      showToast('يرجى كتابة سبب الرفض', 'warning');
+      return;
+    }
+
+    setClaims(claims.filter(c => c.id !== claim.id));
+    setActiveModal({ type: null });
+    setRejectReason('');
+    showToast(`تم رفض الطلب وإرسال السبب لمقدم الطلب.`, 'error');
+  };
+
+  // تنفيذ سحب الصلاحية بعد التأكيد
+  const confirmRevoke = () => {
+    const owner = activeModal.data as VerifiedOwner;
+    if (!owner) return;
+
+    setVerifiedOwners(verifiedOwners.filter(o => o.id !== owner.id));
+    setActiveModal({ type: null });
+    showToast(`تم سحب ملكية (${owner.facilityName}) بنجاح.`, 'warning');
+  };
+
+  const filteredClaims = claims.filter(c => 
+    c.facilityName?.includes(searchTerm) || 
+    c.applicantName?.includes(searchTerm) ||
+    c.phone?.includes(searchTerm)
+  );
+
+  const filteredOwners = verifiedOwners.filter(o => 
+    o.facilityName?.includes(searchTerm) || 
+    o.ownerName?.includes(searchTerm) || 
+    o.phone?.includes(searchTerm)
+  );
+
   return (
-    <div className="font-['Cairo',sans-serif] p-4 sm:p-6 text-white" dir="rtl">
+    <div className="min-h-screen text-white p-3.5 sm:p-5 max-w-3xl mx-auto space-y-4 relative" dir="rtl">
       
-      {/* رأس إدارة الملاك */}
-      <div className="bg-[#0a0f1d] border border-[#1e293b] rounded-3xl p-5 mb-5 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-[#FFC500]/10 border border-[#FFC500]/30 text-[#FFC500] flex items-center justify-center">
-            <ShieldCheck size={22} />
-          </div>
-          <div>
-            <h1 className="text-base sm:text-lg font-black text-white">إدارة طلبات الملاك والملفات الكاملة</h1>
-            <p className="text-xs text-zinc-400">مراجعة الشعارات، الأغلفة، قنوات الاتصال والخرائط واعتماد المنشآت</p>
-          </div>
-        </div>
-
-        <button onClick={fetchData} className="p-2 rounded-xl border border-[#1e293b] text-zinc-400 hover:text-white">
-          <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-        </button>
-      </div>
-
-      {/* التبويبات */}
-      <div className="flex gap-2 mb-4">
-        <button
-          onClick={() => setActiveTab('requests')}
-          className={`py-2 px-4 rounded-xl text-xs font-black transition cursor-pointer ${
-            activeTab === 'requests' ? 'bg-[#FFC500] text-black' : 'bg-[#0a0f1d] border border-[#1e293b] text-zinc-400'
-          }`}
-        >
-          طلبات المنشآت الواردة ({requests.filter(r => r.status === 'submitted').length})
-        </button>
-        <button
-          onClick={() => setActiveTab('owners')}
-          className={`py-2 px-4 rounded-xl text-xs font-black transition cursor-pointer ${
-            activeTab === 'owners' ? 'bg-[#FFC500] text-black' : 'bg-[#0a0f1d] border border-[#1e293b] text-zinc-400'
-          }`}
-        >
-          الملاك المعتمدون ({owners.length})
-        </button>
-      </div>
-
-      {activeTab === 'requests' && (
-        <div className="bg-[#0a0f1d] border border-[#1e293b] rounded-3xl overflow-hidden shadow-sm">
-          <div className="p-3 border-b border-[#1e293b] flex gap-1 overflow-x-auto">
-            {['submitted', 'needs_update', 'approved', 'rejected', 'all'].map((st) => (
-              <button
-                key={st}
-                onClick={() => setFilter(st as any)}
-                className={`py-1.5 px-3 rounded-lg text-[11px] font-bold transition ${
-                  filter === st ? 'bg-zinc-800 text-[#FFC500]' : 'text-zinc-400'
-                }`}
-              >
-                {st === 'submitted' && 'الجديدة'}
-                {st === 'needs_update' && 'تحتاج تعديل'}
-                {st === 'approved' && 'المعتمدة'}
-                {st === 'rejected' && 'المرفوضة'}
-                {st === 'all' && 'الكل'}
-              </button>
-            ))}
-          </div>
-
-          <div className="divide-y divide-[#1e293b]">
-            {filteredRequests.map((req) => (
-              <div key={req.id} className="p-4 sm:p-5 space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    {req.logo_url ? (
-                      <img src={req.logo_url} alt="" className="w-12 h-12 rounded-xl object-cover border border-[#1e293b]" />
-                    ) : (
-                      <div className="w-12 h-12 rounded-xl bg-[#060913] border border-[#1e293b] text-[#FFC500] flex items-center justify-center font-bold">
-                        <Building2 size={20} />
-                      </div>
-                    )}
-                    <div>
-                      <h3 className="text-sm font-black text-white">{req.business_name}</h3>
-                      <div className="flex items-center gap-2 text-xs text-zinc-400 mt-0.5">
-                        <span className="text-[#FFC500]">{req.business_category}</span>
-                        <span>•</span>
-                        <span>{req.city}</span>
-                        <span>•</span>
-                        <span>{new Date(req.created_at).toLocaleDateString('ar-YE')}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* أزرار الإدارة */}
-                  <div className="flex items-center gap-2">
-                    {req.status === 'submitted' && (
-                      <>
-                        <button
-                          onClick={() => setActionModal({ request: req, type: 'approve' })}
-                          className="h-9 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black text-xs font-black flex items-center gap-1 cursor-pointer"
-                        >
-                          <Check size={14} className="stroke-[3]" />
-                          <span>قبول واعتماد</span>
-                        </button>
-                        <button
-                          onClick={() => setActionModal({ request: req, type: 'needs_update' })}
-                          className="h-9 px-3 rounded-xl bg-amber-500/10 text-[#FFC500] border border-[#FFC500]/30 text-xs font-bold"
-                        >
-                          طلب تعديل
-                        </button>
-                        <button
-                          onClick={() => setActionModal({ request: req, type: 'reject' })}
-                          className="h-9 px-3 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/30 text-xs font-bold"
-                        >
-                          رفض
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* التفاصيل الكاملة المرفقة (شعار، غلاف، خريطة، قنوات) */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs p-3 rounded-2xl bg-[#060913] border border-[#1e293b] text-zinc-300">
-                  <div><span className="text-zinc-500">الهاتف:</span> <strong className="text-white" dir="ltr">{req.contact_phone}</strong></div>
-                  <div><span className="text-zinc-500">الواتساب:</span> <strong className="text-white" dir="ltr">{req.whatsapp || 'غير محدد'}</strong></div>
-                  <div><span className="text-zinc-500">الدوام:</span> <span>{req.working_hours || 'غير محدد'}</span></div>
-                  <div>
-                    {req.map_url ? (
-                      <a href={req.map_url} target="_blank" rel="noreferrer" className="text-[#FFC500] underline flex items-center gap-1">
-                        <Navigation size={12} />
-                        <span>رابط الخريطة</span>
-                      </a>
-                    ) : (
-                      <span className="text-zinc-500">لا يوجد موقع خريطة</span>
-                    )}
-                  </div>
-                  {req.offers && (
-                    <div className="col-span-full pt-1 border-t border-zinc-800">
-                      <span className="text-[#FFC500] font-bold">العروض الخاصة:</span> {req.offers}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+      {/* 1. إشعار النجاح / الخطأ المنسدل بالأعلى (Custom Toast) */}
+      {toast.show && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-md w-[90%] animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className={`p-3.5 rounded-xl border shadow-2xl flex items-center gap-3 backdrop-blur-md ${
+            toast.type === 'success' 
+              ? 'bg-[#10172a]/95 border-[#10b981]/50 text-white shadow-emerald-950/40' 
+              : toast.type === 'error'
+              ? 'bg-[#10172a]/95 border-[#ef4444]/50 text-white shadow-red-950/40'
+              : 'bg-[#10172a]/95 border-[#f59e0b]/50 text-white shadow-amber-950/40'
+          }`}>
+            {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-[#10b981] shrink-0" />}
+            {toast.type === 'error' && <X className="w-5 h-5 text-[#ef4444] shrink-0" />}
+            {toast.type === 'warning' && <AlertTriangle className="w-5 h-5 text-[#f59e0b] shrink-0" />}
+            <span className="text-xs font-bold leading-relaxed">{toast.message}</span>
           </div>
         </div>
       )}
 
-      {/* نافذة الإجراء */}
-      {actionModal.request && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0a0f1d] border border-[#1e293b] rounded-3xl max-w-sm w-full p-5 space-y-3 shadow-2xl">
-            <h3 className="text-sm font-black text-white">
-              {actionModal.type === 'approve' && 'اعتماد المنشأة ونقل بياناتها للدليل'}
-              {actionModal.type === 'needs_update' && 'طلب تعديلات من المالك'}
-              {actionModal.type === 'reject' && 'رفض الطلب'}
-            </h3>
+      {/* 2. العنوان المصغر والأنيق */}
+      <div className="flex items-center gap-3 pb-1 border-b border-slate-800/80">
+        <div className="w-10 h-10 rounded-xl bg-[#172238] border border-[#243354] flex items-center justify-center text-[#f59e0b] shrink-0">
+          <ShieldCheck className="w-5 h-5" />
+        </div>
+        <div>
+          <h1 className="text-base sm:text-lg font-black text-white leading-tight">
+            إدارة الملاك وطلبات التوثيق
+          </h1>
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            مراجعة وثائق إثبات الملكية واعتماد الصلاحيات الرسمية للمنشآت.
+          </p>
+        </div>
+      </div>
+
+      {/* 3. بطاقات الإحصائيات المصغرة */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="bg-[#10172a] border border-[#1e293b] rounded-xl p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[#ef4444]/10 border border-[#ef4444]/20 flex items-center justify-center text-[#ef4444]">
+              <Clock className="w-3.5 h-3.5" />
+            </div>
+            <span className="text-xs text-slate-300 font-medium">طلبات الانتظار</span>
+          </div>
+          <span className="text-lg font-black text-[#ef4444] font-mono leading-none">
+            {claims.length}
+          </span>
+        </div>
+
+        <div className="bg-[#10172a] border border-[#1e293b] rounded-xl p-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[#10b981]/10 border border-[#10b981]/20 flex items-center justify-center text-[#10b981]">
+              <UserCheck className="w-3.5 h-3.5" />
+            </div>
+            <span className="text-xs text-slate-300 font-medium">الملاك المعتمدون</span>
+          </div>
+          <span className="text-lg font-black text-[#10b981] font-mono leading-none">
+            {verifiedOwners.length}
+          </span>
+        </div>
+      </div>
+
+      {/* 4. شريط التبويبات والبحث */}
+      <div className="bg-[#10172a] border border-[#1e293b] p-3 rounded-xl space-y-2.5 shadow-lg">
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+              activeTab === 'pending'
+                ? 'bg-[#f59e0b] text-[#0a0f1d] shadow-sm'
+                : 'bg-[#172238] text-slate-300 hover:text-white border border-[#243354]'
+            }`}
+          >
+            طلبات الملكية المعلقة ({claims.length})
+          </button>
+
+          <button
+            onClick={() => setActiveTab('verified')}
+            className={`py-2 px-3 rounded-lg text-xs font-bold transition-all text-center ${
+              activeTab === 'verified'
+                ? 'bg-[#f59e0b] text-[#0a0f1d] shadow-sm'
+                : 'bg-[#172238] text-slate-300 hover:text-white border border-[#243354]'
+            }`}
+          >
+            الملاك المعتمدون ({verifiedOwners.length})
+          </button>
+        </div>
+
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 absolute right-3.5 top-3 text-slate-400" />
+          <input
+            type="text"
+            placeholder="ابحث بالاسم، المنشأة، الهاتف..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pr-9 pl-3 py-2 bg-[#172238] border border-[#243354] rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#f59e0b]"
+          />
+        </div>
+      </div>
+
+      {/* 5. بطاقات طلبات إثبات الملكية */}
+      {activeTab === 'pending' && (
+        <div className="space-y-3">
+          {filteredClaims.length === 0 ? (
+            <div className="bg-[#10172a] border border-[#1e293b] rounded-xl p-8 text-center space-y-2">
+              <Inbox className="w-10 h-10 mx-auto text-slate-500" />
+              <h3 className="text-sm font-bold text-white">لا توجد طلبات إثبات ملكية معلقة</h3>
+            </div>
+          ) : (
+            filteredClaims.map((claim) => (
+              <div 
+                key={claim.id}
+                className="bg-[#10172a] border border-[#1e293b] rounded-xl p-3.5 sm:p-4 space-y-3 shadow-md"
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-lg bg-[#172238] border border-[#243354] flex items-center justify-center text-[#f59e0b] shrink-0">
+                      <Building2 className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm sm:text-base font-bold text-white leading-tight">
+                        {claim.facilityName}
+                      </h2>
+                      <span className="text-[11px] text-[#f59e0b] font-medium block">
+                        {claim.sector}
+                      </span>
+                    </div>
+                  </div>
+
+                  <span className="text-[10px] font-mono text-slate-400 bg-[#172238] border border-[#243354] px-2 py-0.5 rounded">
+                    {claim.requestDate}
+                  </span>
+                </div>
+
+                <div className="bg-[#172238] border border-[#243354] rounded-lg p-2.5 space-y-1.5 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400">مقدم الطلب:</span>
+                    <strong className="text-white font-bold">{claim.applicantName}</strong>
+                  </div>
+
+                  <div className="flex justify-between items-center border-t border-[#243354]/60 pt-1.5">
+                    <span className="text-slate-400">رقم الهاتف:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white font-mono font-bold" dir="ltr">{claim.phone}</span>
+                      <a 
+                        href={`https://wa.me/${claim.phone.replace(/[^0-9]/g, '')}`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="p-1 bg-[#10b981]/20 hover:bg-[#10b981] text-[#10b981] hover:text-white rounded transition-colors"
+                        title="واتساب مباشر"
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center border-t border-[#243354]/60 pt-1.5">
+                    <span className="text-slate-400">رقم السجل التجاري:</span>
+                    <span className="text-[#f59e0b] font-mono font-bold">{claim.commercialRegisterNo}</span>
+                  </div>
+                </div>
+
+                {claim.documentUrl && (
+                  <a
+                    href={claim.documentUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between p-2.5 bg-[#172238] hover:bg-[#1c2a47] border border-[#243354] rounded-lg text-xs text-slate-200 transition-colors"
+                  >
+                    <span className="flex items-center gap-2 font-medium">
+                      <FileText className="w-3.5 h-3.5 text-[#f59e0b]" />
+                      <span>معاينة وثيقة إثبات الملكية / السجل</span>
+                    </span>
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                  </a>
+                )}
+
+                {/* أزرار الإجراءات بدون أيقونات */}
+                <div className="flex gap-2 pt-0.5">
+                  <button
+                    onClick={() => setActiveModal({ type: 'approve', data: claim })}
+                    className="flex-1 bg-[#10b981] hover:bg-[#059669] text-white font-bold py-2.5 px-3 rounded-lg text-xs text-center transition-all shadow-sm active:scale-[0.98]"
+                  >
+                    اعتماد ومنح لوحة المالك
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setRejectReason('');
+                      setActiveModal({ type: 'reject', data: claim });
+                    }}
+                    className="bg-[#ef4444]/15 hover:bg-[#ef4444] text-[#ef4444] hover:text-white border border-[#ef4444]/30 font-bold py-2.5 px-5 rounded-lg text-xs text-center transition-all active:scale-[0.98]"
+                  >
+                    رفض
+                  </button>
+                </div>
+
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* 6. قسم الملاك المعتمدين */}
+      {activeTab === 'verified' && (
+        <div className="space-y-3">
+          {filteredOwners.length === 0 ? (
+            <div className="bg-[#10172a] border border-[#1e293b] rounded-xl p-8 text-center text-slate-400">
+              <p className="text-xs font-bold text-white">لا يوجد ملاك معتمدون حالياً</p>
+            </div>
+          ) : (
+            filteredOwners.map((owner) => (
+              <div 
+                key={owner.id}
+                className="bg-[#10172a] border border-[#1e293b] rounded-xl p-3.5 space-y-2.5 shadow-md"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="font-bold text-white text-sm flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-[#10b981]" />
+                      {owner.facilityName}
+                    </h2>
+                    <span className="text-[11px] text-[#f59e0b] font-medium block">{owner.sector}</span>
+                  </div>
+                  <span className="bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30 text-[10px] font-bold px-2 py-0.5 rounded">
+                    مالك معتمد
+                  </span>
+                </div>
+
+                <div className="bg-[#172238] border border-[#243354] rounded-lg p-2.5 text-xs space-y-1.5">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">المالك:</span>
+                    <strong className="text-white font-bold">{owner.ownerName}</strong>
+                  </div>
+                  <div className="flex justify-between border-t border-[#243354]/60 pt-1.5">
+                    <span className="text-slate-400">الهاتف:</span>
+                    <span className="font-mono text-white font-bold" dir="ltr">{owner.phone}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-[#243354]/60 pt-1.5">
+                    <span className="text-slate-400">تاريخ التوثيق:</span>
+                    <span className="font-mono text-slate-400">{owner.approvedDate}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-0.5">
+                  <a
+                    href={`https://wa.me/${owner.phone.replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 bg-[#172238] hover:bg-[#1f2e4d] text-white py-2 rounded-lg text-xs font-bold text-center transition-colors border border-[#243354]"
+                  >
+                    مراسلة واتساب
+                  </a>
+
+                  <button
+                    onClick={() => setActiveModal({ type: 'revoke', data: owner })}
+                    className="px-3 bg-[#ef4444]/15 hover:bg-[#ef4444] text-[#ef4444] hover:text-white border border-[#ef4444]/30 py-2 rounded-lg text-xs font-bold transition-all"
+                  >
+                    سحب الصلاحية
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* نوافذ التأكيد المخصصة الفخمة (بنفس الستايل الكحلي) */}
+      {/* ======================================================== */}
+
+      {/* نافذة تأكيد الاعتماد */}
+      {activeModal.type === 'approve' && activeModal.data && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-[#10172a] border border-[#243354] rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-center">
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-[#10b981]/15 text-[#10b981] flex items-center justify-center border border-[#10b981]/30">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+
+            <div>
+              <h3 className="text-base font-black text-white">تأكيد اعتماد الملكية</h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                هل أنت متأكد من منح صلاحية إدارة <strong className="text-white">({activeModal.data.facilityName})</strong> لـ <strong className="text-white">({activeModal.data.applicantName})</strong>؟
+              </p>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={confirmApprove}
+                className="flex-1 bg-[#10b981] hover:bg-[#059669] text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20"
+              >
+                تأكيد ومنح اللوحة
+              </button>
+              <button
+                onClick={() => setActiveModal({ type: null })}
+                className="px-4 bg-[#172238] hover:bg-[#1e2c48] text-slate-300 font-bold py-2.5 rounded-xl text-xs transition-all border border-[#243354]"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* نافذة سبب الرفض المخصصة */}
+      {activeModal.type === 'reject' && activeModal.data && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-[#10172a] border border-[#243354] rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-right">
+            <div>
+              <h3 className="text-base font-black text-white">رفض طلب الملكية</h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                يرجى كتابة سبب الرفض لإبلاغ <span className="text-white font-bold">({activeModal.data.applicantName})</span>:
+              </p>
+            </div>
+
             <textarea
               rows={3}
-              placeholder="اكتب ملاحظة للإدارة تظهر في حساب المالك..."
-              value={adminNote}
-              onChange={(e) => setAdminNote(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#060913] border border-[#1e293b] text-xs text-white"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="مثال: صورة السجل التجاري غير واضحة، أو المنشأة مسجلة باسم شخص آخر..."
+              className="w-full bg-[#172238] border border-[#243354] rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ef4444] resize-none"
             />
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setActionModal({ request: null, type: null })} className="px-3 text-xs text-zinc-400">إلغاء</button>
-              <button onClick={handleExecute} disabled={processing} className="px-4 py-2 rounded-xl bg-[#FFC500] text-black font-black text-xs">
-                {processing ? 'جارٍ التنفيذ...' : 'تأكيد القرار'}
+
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={confirmReject}
+                className="flex-1 bg-[#ef4444] hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md shadow-red-500/20"
+              >
+                تأكيد الرفض
+              </button>
+              <button
+                onClick={() => setActiveModal({ type: null })}
+                className="px-4 bg-[#172238] hover:bg-[#1e2c48] text-slate-300 font-bold py-2.5 rounded-xl text-xs transition-all border border-[#243354]"
+              >
+                تراجع
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* نافذة تأكيد سحب الصلاحية */}
+      {activeModal.type === 'revoke' && activeModal.data && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-[#10172a] border border-[#243354] rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-center">
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-[#ef4444]/15 text-[#ef4444] flex items-center justify-center border border-[#ef4444]/30">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+
+            <div>
+              <h3 className="text-base font-black text-white">تحذير سحب الصلاحية</h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                هل أنت متأكد من سحب ملكية <strong className="text-white">({activeModal.data.facilityName})</strong> من <strong className="text-white">({activeModal.data.ownerName})</strong>؟
+              </p>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                onClick={confirmRevoke}
+                className="flex-1 bg-[#ef4444] hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md shadow-red-500/20"
+              >
+                نعم، اسحب الصلاحية
+              </button>
+              <button
+                onClick={() => setActiveModal({ type: null })}
+                className="px-4 bg-[#172238] hover:bg-[#1e2c48] text-slate-300 font-bold py-2.5 rounded-xl text-xs transition-all border border-[#243354]"
+              >
+                إلغاء
               </button>
             </div>
           </div>
@@ -297,3 +556,5 @@ export const AdminOwnersHub: React.FC = () => {
     </div>
   );
 };
+
+export default AdminOwnersHub;

@@ -49,7 +49,7 @@ const CustomSelect: React.FC<{
 }> = ({ label, value, options, onChange, placeholder }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const selectedLabel = options.find(o => o.value === value)?.label || placeholder || value;
+  const selectedLabel = options.find(o => String(o.value) === String(value) || o.label === value)?.label || OFFICIAL_CATEGORIES.find(c => String(c.id) === String(value) || c.slug === value)?.name || placeholder || value;
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -598,7 +598,7 @@ export const CompaniesManager: React.FC = () => {
     const payload = {
       name: formData.name.trim(),
       slug: generatedSlug,
-      category_id: formData.category_id,
+      category_id: (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(formData.category_id) ? formData.category_id : null),
       city: formData.city,
       address: formData.address || null,
       phone: formData.phone || null,

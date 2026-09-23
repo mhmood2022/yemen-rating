@@ -1,19 +1,40 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabase';
+
+const STORAGE_KEY = 'yr_admin_notifications';
+
+export type NotificationType = 
+  | 'verification'   // 1. طلب توثيق وإثبات ملكية منشأة
+  | 'report'         // 2. بلاغ أو شكوى
+  | 'subscription'   // 3. طلب اشتراك / ترقية باقة
+  | 'ad_request'     // 4. طلب إعلان YR Ads
+  | 'edit_request'   // 5. تعديل بيانات
+  | 'inquiry';       // 6. استفسار أو رسالة عامة
+
+export interface NotificationAttachment {
+  type: 'image' | 'pdf' | 'document';
+  url: string;
+  name?: string;
+}
 
 export interface NotificationItem {
   id: string;
+  type: NotificationType;
   title: string;
   message: string;
-  type: 'broadcast' | 'verification' | 'review' | 'job' | 'system';
-  target_group?: string;
   is_read: boolean;
-  time_ago: string;
-  action_url?: string;
-  action_label?: string;
+  created_at: string;
+  sender_name?: string;
+  sender_phone?: string;
+  sender_email?: string;
+  facility_name?: string;
+  sector?: string;
+  admin_module?: string;
+  attachments?: NotificationAttachment[];
+  status?: 'pending' | 'approved' | 'rejected';
+  rejection_reason?: string;
 }
 
 export const notificationService = {
-  // جلب الإشعارات مع دعم الفلترة
   async getNotifications(filterType?: string): Promise<NotificationItem[]> {
     if (supabase) {
       try {
@@ -22,73 +43,74 @@ export const notificationService = {
           query = query.eq('type', filterType);
         }
         const { data, error } = await query;
-        if (!error && data && data.length > 0) return data as any;
+        if (!error && data && data.length > 0) return data as NotificationItem[];
       } catch (err) {
-        console.warn('Notifications fallback:', err);
+        console.warn('Fallback to local storage:', err);
       }
     }
 
-    return [
-      {
-        id: 'notif-1',
-        title: 'تعميم رسمي لجميع البنوك والمصارف',
-        message: 'يرجى من جميع البنوك والمؤسسات المالية تحديث أسعار الصرف الصباحية والمسائية وتأكيد أرقام خدمة العملاء.',
-        type: 'broadcast',
-        target_group: 'banks',
-        is_read: false,
-        time_ago: 'منذ 10 دقائق',
-        action_url: '/financials.html',
-        action_label: 'تحديث الأسعار'
-      },
-      {
-        id: 'notif-2',
-        title: 'تم اعتماد وتوثيق منشأتك بالشارة الذهبية',
-        message: 'تهانينا! تمت مراجعة مستندات (بنك الكريمي) ومنحه الشارة الذهبية الرسمية YR 97 في دليل المنصة.',
-        type: 'verification',
-        is_read: false,
-        time_ago: 'منذ نصف ساعة',
-        action_url: '/owner.html',
-        action_label: 'عرض لوحة النشاط'
-      },
-      {
-        id: 'notif-3',
-        title: 'تقييم جديد 5 نجوم لمطعم حضرموت الدولي',
-        message: 'قام العميل (أبو محمد) بنشر مراجعة جديدة وتقييم 5 نجوم لفرع صنعاء حدة.',
-        type: 'review',
-        is_read: true,
-        time_ago: 'منذ ساعتين',
-        action_url: '/owner.html',
-        action_label: 'الرد على التقييم'
-      },
-      {
-        id: 'notif-4',
-        title: 'طلب توظيف ومطابقة ذكية بنسبة 87%',
-        message: 'تم استلام طلب متقدم جديد لوظيفة (محاسب مالي أول) متوافق مع شروط الوظيفة عبر وساطة يمن ريتغ.',
-        type: 'job',
-        is_read: true,
-        time_ago: 'منذ 4 ساعات',
-        action_url: '/jobs.html',
-        action_label: 'فحص الطلب'
-      }
-    ];
+    const local = localStorage.getItem(STORAGE_KEY);
+    let items: NotificationItem[] = local ? JSON.parse(local) : [];
+
+    if (filterType && filterType !== 'all') {
+      items = items.filter(n => n.type === filterType);
+    }
+
+    return items;
   },
 
-  // إرسال رسالة جماعية من الإدارة إلى قطاع محدد
-  async sendBroadcastMessage(broadcast: {
-    title: string;
-    message: string;
-    target_group: string;
-  }): Promise<{ success: boolean }> {
+  async createNotification(item: Omit<NotificationItem, 'id' | 'created_at' | 'is_read' | 'status'>): Promise<NotificationItem> {
+    const newItem: NotificationItem = {
+      ...item,
+      id: `notif_${Date.now()}`,
+      created_at: new Date().toISOString(),
+      is_read: false,
+      status: 'pending'
+    };
+
     if (supabase) {
       try {
-        await supabase.from('broadcast_messages').insert([{
-          ...broadcast,
-          created_at: new Date().toISOString()
-        }]);
+        await supabase.from('notifications').insert([newItem]);
       } catch (e) {
-        console.warn(e);
+        console.warn('Saved to localStorage fallback:', e);
       }
     }
-    return { success: true };
+
+    const local = localStorage.getItem(STORAGE_KEY);
+    const items: NotificationItem[] = local ? JSON.parse(local) : [];
+    items.unshift(newItem);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    return newItem;
+  },
+
+  async updateStatus(id: string, status: 'approved' | 'rejected', reason?: string): Promise<void> {
+    const local = localStorage.getItem(STORAGE_KEY);
+    if (local) {
+      const items: NotificationItem[] = JSON.parse(local);
+      const updated = items.map(n => n.id === id ? {
+        ...n,
+        is_read: true,
+        status,
+        rejection_reason: reason
+      } : n);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    }
+  },
+
+  async markAsRead(id: string): Promise<void> {
+    const local = localStorage.getItem(STORAGE_KEY);
+    if (local) {
+      const items: NotificationItem[] = JSON.parse(local);
+      const updated = items.map(n => n.id === id ? { ...n, is_read: true } : n);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    }
+  },
+
+  async deleteNotification(id: string): Promise<void> {
+    const local = localStorage.getItem(STORAGE_KEY);
+    if (local) {
+      const items: NotificationItem[] = JSON.parse(local);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items.filter(n => n.id !== id)));
+    }
   }
 };

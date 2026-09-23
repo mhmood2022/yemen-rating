@@ -1,962 +1,606 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
-import {
-  Building2, Star, MapPin, Phone, Globe, Clock, ShieldCheck,
-  ExternalLink, Save, MessageSquare, Loader2, User, CheckCircle2,
-  Image as ImageIcon, Tag, Briefcase, Megaphone, Send, Trash2, Plus,
-  AlertCircle, Sparkles, MessageCircle, HelpCircle
+import React, { useState } from 'react';
+import { 
+  Building2, 
+  ShieldCheck, 
+  Star, 
+  Eye, 
+  PhoneCall, 
+  MessageSquare, 
+  Clock, 
+  MapPin, 
+  Upload, 
+  ImageIcon, 
+  Plus, 
+  CheckCircle2, 
+  Sparkles, 
+  Tag, 
+  Trash2,
+  Check,
+  ChevronDown
 } from 'lucide-react';
-
-interface BusinessItem {
-  id: string;
-  name: string;
-  category?: string;
-  city?: string;
-  address?: string;
-  phone?: string;
-  whatsapp?: string;
-  description?: string;
-  logo_url?: string;
-  cover_url?: string;
-  gallery_urls?: string[];
-  rating?: number;
-  review_count?: number;
-  working_hours?: string;
-  website?: string;
-  slug?: string;
-  is_verified?: boolean;
-  sections_config?: any;
-}
+import { notificationService } from '../../services/notificationService';
 
 export const OwnerDashboardPage: React.FC = () => {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [businesses, setBusinesses] = useState<BusinessItem[]>([]);
-  const [selectedBiz, setSelectedBiz] = useState<BusinessItem | null>(null);
-  const [activeTab, setActiveTab] = useState<'info' | 'media' | 'offers' | 'services' | 'reviews' | 'ads' | 'support'>('info');
-
-  // نماذج التعديل
-  const [saving, setSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
-
-  // حقول البيانات الأساسية
-  const [infoForm, setInfoForm] = useState({
-    name: '',
-    description: '',
-    phone: '',
-    whatsapp: '',
-    city: '',
-    address: '',
-    working_hours: '',
-    website: ''
+  const [ownerProfile] = useState(() => {
+    const saved = localStorage.getItem('yr_active_owner_profile');
+    return saved ? JSON.parse(saved) : {
+      facilityName: 'فندق بلقيس الدولي',
+      ownerName: 'محمد عبدالله السنيدار',
+      sector: 'الفنادق',
+      phone: '+967770000111'
+    };
   });
 
-  // الوسائط
-  const [logoUrl, setLogoUrl] = useState('');
-  const [coverUrl, setCoverUrl] = useState('');
-  const [gallery, setGallery] = useState<string[]>([]);
-  const [newGalleryInput, setNewGalleryInput] = useState('');
+  const [activeTab, setActiveTab] = useState<'info' | 'media' | 'features'>('info');
+  const [toastMessage, setToastMessage] = useState('');
 
-  // العروض
-  const [offers, setOffers] = useState<any[]>([]);
-  const [newOfferTitle, setNewOfferTitle] = useState('');
-  const [newOfferDesc, setNewOfferDesc] = useState('');
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 2500);
+  };
 
-  // الخدمات
-  const [services, setServices] = useState<string[]>([]);
-  const [newServiceInput, setNewServiceInput] = useState('');
+  // 1. البيانات الأساسية
+  const [facilityData, setFacilityData] = useState({
+    name: ownerProfile.facilityName,
+    sector: ownerProfile.sector || 'الفنادق',
+    city: 'صنعاء',
+    address: 'شارع الستين الجنوبي - بجوار الجسر',
+    phone: ownerProfile.phone,
+    whatsapp: ownerProfile.phone,
+    workHours: '24h',
+    customHours: '08:00 ص - 10:00 م'
+  });
 
-  // التقييمات
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [reviewsLoading, setReviewsLoading] = useState(false);
+  // 2. الصور الحقيقية (شعار، غلاف، 4 صور استوديو)
+  const [mediaData, setMediaData] = useState({
+    logo: '',
+    cover: '',
+    photos: ['', '', '', '']
+  });
 
-  // رسائل الدعم
-  const [supportMessage, setSupportMessage] = useState('');
-  const [supportSubject, setSupportSubject] = useState('استفسار عام');
-  const [supportSent, setSupportSent] = useState(false);
+  // 3. ميزات القطاع
+  const [sectorFeatures, setSectorFeatures] = useState([
+    { id: 1, name: 'خدمة غرف على مدار 24 ساعة', active: true },
+    { id: 2, name: 'إنترنت واي فاي مجاني فائق السرعة', active: true },
+    { id: 3, name: 'مواقف سيارات خاصة ومجانية', active: true },
+    { id: 4, name: 'قاعة مؤتمرات ومناسبات مجهزة', active: false },
+    { id: 5, name: 'مطعم وبوفيه مفتوح', active: true },
+    { id: 6, name: 'خدمة نقل من وإلى المطار', active: false },
+  ]);
+  const [customFeatureInput, setCustomFeatureInput] = useState('');
 
-  // 1. جلب بيانات المستخدم والمنشآت المعتمدة التابعة له
-  const loadOwnerData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setLoading(false);
-        return;
+  // 4. العروض والخصومات
+  const [offers, setOffers] = useState([
+    { id: 'off_1', title: 'خصم عطلة نهاية الأسبوع 20%', desc: 'خصم خاص على الحجوزات' }
+  ]);
+  const [customOfferTitle, setCustomOfferTitle] = useState('');
+  const [customOfferDesc, setCustomOfferDesc] = useState('');
+
+  // رفع الصور من استوديو الهاتف
+  const handleImageUpload = (type: 'logo' | 'cover' | number, file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      if (type === 'logo') {
+        setMediaData(prev => ({ ...prev, logo: result }));
+        showToast('✅ تم اختيار الشعار بنجاح');
+      } else if (type === 'cover') {
+        setMediaData(prev => ({ ...prev, cover: result }));
+        showToast('✅ تم اختيار الغلاف بنجاح');
+      } else {
+        const newPhotos = [...mediaData.photos];
+        newPhotos[type] = result;
+        setMediaData(prev => ({ ...prev, photos: newPhotos }));
+        showToast(`✅ تم اختيار صورة المعرض #${type + 1}`);
       }
-      setCurrentUser(user);
+    };
+    reader.readAsDataURL(file);
+  };
 
-      // جلب معرفات المنشآت المرتبطة بالمالك من جدول user_roles ومن جدول businesses
-      const [roleRes, bizRes] = await Promise.all([
-        supabase.from('user_roles').select('business_id').eq('user_id', user.id).eq('role', 'owner'),
-        supabase.from('businesses').select('*').eq('owner_id', user.id)
-      ]);
+  const toggleFeature = (id: number) => {
+    setSectorFeatures(sectorFeatures.map(f => f.id === id ? { ...f, active: !f.active } : f));
+  };
 
-      const bizMap = new Map<string, any>();
-      (bizRes.data || []).forEach(b => bizMap.set(b.id, b));
+  const handleAddCustomFeature = () => {
+    if (!customFeatureInput.trim()) return;
+    setSectorFeatures([...sectorFeatures, { id: Date.now(), name: customFeatureInput.trim(), active: true }]);
+    setCustomFeatureInput('');
+    showToast('✅ تمت إضافة الميزة');
+  };
 
-      const roleBizIds = (roleRes.data || []).map(r => r.business_id).filter(Boolean);
-      if (roleBizIds.length > 0) {
-        const { data: extraBiz } = await supabase.from('businesses').select('*').in('id', roleBizIds);
-        (extraBiz || []).forEach(b => bizMap.set(b.id, b));
-      }
+  const handleAddCustomOffer = () => {
+    if (!customOfferTitle.trim()) return;
+    setOffers([...offers, { id: `off_${Date.now()}`, title: customOfferTitle, desc: customOfferDesc }]);
+    setCustomOfferTitle('');
+    setCustomOfferDesc('');
+    showToast('🎉 تم إضافة العرض');
+  };
 
-      const list: BusinessItem[] = Array.from(bizMap.values());
-      setBusinesses(list);
+  const handleAddPresetOffer = (presetTitle: string) => {
+    setOffers([...offers, { id: `off_${Date.now()}`, title: presetTitle, desc: 'عرض خاص لفترة محدودة' }]);
+    showToast(`✅ تمت إضافة: ${presetTitle}`);
+  };
 
-      if (list.length > 0) {
-        selectBusiness(list[0]);
-      }
-    } catch (err) {
-      console.error('Error loading owner businesses:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // حفظ التعديلات
+  const handleSaveAll = async () => {
+    // 1. حفظ محلي في المتصفح لتعكس فوراً
+    localStorage.setItem('yr_active_owner_profile', JSON.stringify({
+      facilityName: facilityData.name,
+      ownerName: ownerProfile.ownerName,
+      sector: facilityData.sector,
+      phone: facilityData.phone,
+      city: facilityData.city,
+      address: facilityData.address,
+      whatsapp: facilityData.whatsapp,
+      media: mediaData,
+      features: sectorFeatures,
+      offers: offers
+    }));
 
-  useEffect(() => {
-    loadOwnerData();
-  }, [loadOwnerData]);
-
-  // عند اختيار منشأة لإدارتها
-  const selectBusiness = (biz: BusinessItem) => {
-    setSelectedBiz(biz);
-    setInfoForm({
-      name: biz.name || '',
-      description: biz.description || '',
-      phone: biz.phone || '',
-      whatsapp: biz.whatsapp || '',
-      city: biz.city || '',
-      address: biz.address || '',
-      working_hours: biz.working_hours || '',
-      website: biz.website || ''
+    // 2. إشعار الإدارة بالتحديثات
+    await notificationService.createNotification({
+      title: `تعديل بيانات منشأة: ${facilityData.name}`,
+      message: `قام المالك (${ownerProfile.ownerName}) بحفظ تعديلات جديدة على الصور والبيانات.`,
+      type: 'edit_request',
+      sender_name: ownerProfile.ownerName,
+      sender_phone: facilityData.phone,
+      facility_name: facilityData.name,
+      sector: facilityData.sector,
+      admin_module: 'facilities'
     });
 
-    setLogoUrl(biz.logo_url || '');
-    setCoverUrl(biz.cover_url || '');
-    setGallery(Array.isArray(biz.gallery_urls) ? biz.gallery_urls : []);
-
-    // استخراج العروض المتوافقة مع النظام
-    const cfgOffers = biz.sections_config?.features?.biz_promotions ||
-                     biz.sections_config?.biz_promotions ||
-                     (biz as any).biz_promotions ||
-                     biz.sections_config?.offers || [];
-    setOffers(Array.isArray(cfgOffers) ? cfgOffers : []);
-
-    // استخراج الخدمات
-    const cfgServices = biz.sections_config?.services || (biz as any).services || [];
-    setServices(Array.isArray(cfgServices) ? cfgServices : []);
-
-    // جلب التقييمات الحقيقية
-    fetchReviews(biz.id);
+    showToast('✅ تم حفظ كافة التعديلات بنجاح!');
   };
-
-  const fetchReviews = async (businessId: string) => {
-    setReviewsLoading(true);
-    try {
-      const { data } = await supabase
-        .from('reviews')
-        .select('*')
-        .eq('entity_id', businessId)
-        .order('created_at', { ascending: false });
-      setReviews(data || []);
-    } catch (err) {
-      console.warn('Reviews error:', err);
-    } finally {
-      setReviewsLoading(false);
-    }
-  };
-
-  // حفظ التعديلات العامة للمنشأة
-  const handleSaveAll = async () => {
-    const currentBiz = selectedBiz;
-    setSaving(true);
-    setSaveMessage(null);
-
-    try {
-      const existingConfig = currentBiz.sections_config || {};
-      const updatedConfig = {
-        ...existingConfig,
-        services: services,
-        offers: offers,
-        features: {
-          ...(existingConfig.features || {}),
-          biz_promotions: offers
-        }
-      };
-
-      const payload: any = {
-        name: infoForm.name,
-        description: infoForm.description,
-        phone: infoForm.phone,
-        whatsapp: infoForm.whatsapp,
-        city: infoForm.city,
-        address: infoForm.address,
-        working_hours: infoForm.working_hours,
-        website: infoForm.website,
-        logo_url: logoUrl,
-        cover_url: coverUrl,
-        gallery_urls: gallery,
-        sections_config: updatedConfig,
-        updated_at: new Date().toISOString()
-      };
-
-      const { error } = await supabase.from('businesses').update(payload).eq('id', currentBiz.id);
-      if (error) throw error;
-
-      setSaveMessage('✅ تم حفظ جميع التعديلات بنجاح وتم تحديث صفحتك العامة!');
-      setTimeout(() => setSaveMessage(null), 4000);
-
-      // تحديث الحالة محلياً
-      setSelectedBiz(prev => prev ? ({ ...prev, ...payload }) : null);
-    } catch (err: any) {
-      alert('حدث خطأ أثناء الحفظ: ' + (err.message || 'يرجى المحاولة لاحقاً'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // إضافة عرض جديد
-  const handleAddOffer = () => {
-    const newOffer = {
-      title: newOfferTitle.trim() || 'عرض خاص',
-      description: newOfferDesc.trim() || ''
-    };
-    setOffers(prev => [...prev, newOffer]);
-    setNewOfferTitle('');
-    setNewOfferDesc('');
-  };
-
-  // حذف عرض
-  const handleRemoveOffer = (index: number) => {
-    setOffers(prev => prev.filter((_, i) => i !== index));
-  };
-
-  // إضافة خدمة
-  const handleAddService = () => {
-    setServices(prev => [...prev, newServiceInput.trim()]);
-    setNewServiceInput('');
-  };
-
-  // حذف خدمة
-  const handleRemoveService = (index: number) => {
-    setServices(prev => prev.filter((_, i) => i !== index));
-  };
-
-  // إضافة صورة للمعرض
-  const handleAddGalleryImage = () => {
-    setGallery(prev => [...prev, newGalleryInput.trim()]);
-    setNewGalleryInput('');
-  };
-
-  // إرسال رسالة دعم للإدارة
-  const handleSendSupport = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await supabase.from('verification_requests').insert({
-        entity_id: selectedBiz?.id,
-        entity_type: selectedBiz?.category || 'business',
-        applicant_name: currentUser?.email || 'مالك المنشأة',
-        applicant_role: 'مالك معتمد',
-        phone: infoForm.phone || '—',
-        notes: `[رسالة دعم من لوحة المالك] الموضوع: ${supportSubject} | الرسالة: ${supportMessage}`,
-        status: 'PENDING'
-      });
-      setSupportSent(true);
-      setSupportMessage('');
-      setTimeout(() => setSupportSent(false), 5000);
-    } catch (err) {
-      alert('تم استلام رسالتك وسيتم متابعتها من قبل الإدارة.');
-    }
-  };
-
-  if (loading) {
-    return (
-      <div dir="rtl" className="min-h-screen bg-[#0B0F17] flex flex-col items-center justify-center text-white font-['Cairo',sans-serif]">
-        <Loader2 className="w-10 h-10 text-[#FFC500] animate-spin mb-4" />
-        <p className="text-sm text-zinc-400 font-bold">جاري تحميل لوحة تحكم المنشأة...</p>
-      </div>
-    );
-  }
-
-  // إذا لم يكن المستخدم مسجل دخول
-    if (!currentUser) {
-    return (
-      <div dir="rtl" className="min-h-screen bg-[#0B0F17] flex items-center justify-center p-4 font-['Cairo',sans-serif]">
-        <div className="bg-[#161D2B] border border-[#1F2937] p-8 rounded-2xl max-w-md w-full text-center space-y-4 shadow-2xl">
-          <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto text-[#FFC500]">
-            <User size={32} />
-          </div>
-          <h2 className="text-xl font-black text-white">بوابة إدارة ملاك المنشآت</h2>
-          <p className="text-xs text-zinc-400 leading-relaxed">
-            يرجى تسجيل الدخول بحسابك لتتمكن من إدارة منشآتك، وتحديث العروض، ومعرض الصور، والتواصل مع عملائك.
-          </p>
-          <button
-            onClick={() => navigate('/login?redirect=/owner')}
-            className="w-full bg-[#FFC500] hover:bg-amber-400 text-black font-black text-sm py-3 rounded-xl transition shadow-lg cursor-pointer"
-          >
-            تسجيل الدخول الآن
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // إذا لم تكن هناك أي منشأة معتمدة بعد
-  if (businesses.length === 0) {
-    return (
-      <div dir="rtl" className="min-h-screen bg-[#0B0F17] flex items-center justify-center p-4 font-['Cairo',sans-serif]">
-        <div className="bg-[#161D2B] border border-[#1F2937] p-8 rounded-2xl max-w-lg w-full text-center space-y-5 shadow-2xl">
-          <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto text-red-400">
-            <ShieldCheck size={32} />
-          </div>
-          <h2 className="text-xl font-black text-white">لا توجد منشأة معتمدة مرتبطة بحسابك بعد</h2>
-          <p className="text-xs text-zinc-400 leading-relaxed">
-            مرحباً بك ({currentUser.email}). إذا كنت تمتلك أو تدير نشاطاً تجارياً مسجلاً في دليلنا، يمكنك التوجه إلى صفحة منشأتك والضغط على زر <strong className="text-red-400">"إثبات الملكية"</strong> لتقديم طلب التوثيق واستلام لوحة التحكم فوراً بعد اعتماد الإدارة.
-          </p>
-          <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => navigate('/directory')}
-              className="bg-[#FFC500] hover:bg-amber-400 text-black font-black text-xs px-6 py-3 rounded-xl transition cursor-pointer"
-            >
-              استعراض الدليل والبحث عن منشأتك
-            </button>
-            <button
-              onClick={() => navigate('/')}
-              className="bg-[#0B0F17] border border-[#1F2937] text-zinc-300 font-bold text-xs px-5 py-3 rounded-xl hover:text-white transition cursor-pointer"
-            >
-              العودة للرئيسية
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const publicUrl = selectedBiz ? `/bank.html?slug=${selectedBiz.slug || selectedBiz.id}` : '#';
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#0B0F17] text-white font-['Cairo',sans-serif] pb-24">
-      {/* Header Bar */}
-      <header className="bg-[#111118]/90 backdrop-blur-md border-b border-[#1F2937] sticky top-0 z-40 px-4 py-3">
-        <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-3">
+    <div className="min-h-screen text-white p-3 sm:p-5 max-w-2xl mx-auto space-y-4 pb-24" dir="rtl">
+      
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-md w-[90%] animate-in fade-in duration-150">
+          <div className="bg-[#10172a] border border-[#10b981]/50 text-white p-3 rounded-xl shadow-2xl flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-[#10b981] shrink-0" />
+            <span className="text-xs font-bold">{toastMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {/* الترويسة الرئيسية */}
+      <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 shadow-xl space-y-3">
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-[#FFC500]">
-              <Building2 size={20} />
+            <div className="w-12 h-12 rounded-xl bg-[#162238] border border-[#243354] flex items-center justify-center text-[#FFD000] shrink-0">
+              {mediaData.logo ? (
+                <img src={mediaData.logo} alt="Logo" className="w-full h-full object-cover rounded-xl" />
+              ) : (
+                <Building2 className="w-6 h-6" />
+              )}
             </div>
             <div>
-              <h1 className="text-sm sm:text-base font-black text-white leading-tight flex items-center gap-2">
-                <span>لوحة تحكم المنشأة</span>
-                <span className="bg-amber-500/20 text-[#FFC500] text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-500/30">مالك معتمد</span>
-              </h1>
-              <p className="text-[11px] text-zinc-400">{currentUser.email}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-base font-black text-white">{facilityData.name}</h1>
+                <span className="whitespace-nowrap inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30">
+                  <ShieldCheck className="w-3 h-3" /> منشأة موثقة
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                المالك: <strong className="text-white">{ownerProfile.ownerName}</strong> | القطاع: <span className="text-[#FFD000] font-bold">{facilityData.sector}</span>
+              </p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <a
-              href={publicUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 bg-[#161D2B] hover:bg-[#1F2937] border border-[#1F2937] text-zinc-300 hover:text-white text-xs font-bold px-3.5 py-2 rounded-xl transition"
-            >
-              <ExternalLink size={13} className="text-[#FFC500]" />
-              <span>معاينة صفحتك</span>
-            </a>
-
-            <button
-              onClick={handleSaveAll}
-              disabled={saving}
-              className="inline-flex items-center gap-1.5 bg-[#FFC500] hover:bg-amber-400 text-black text-xs font-black px-5 py-2 rounded-xl transition shadow-md active:scale-95 cursor-pointer disabled:opacity-50"
-            >
-              {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-              <span>{saving ? 'جارِ الحفظ...' : 'حفظ التعديلات'}</span>
-            </button>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Main Container */}
-      <main className="max-w-6xl mx-auto px-4 pt-6 space-y-6">
-        {/* إشعار النجاح */}
-        {saveMessage && (
-          <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs sm:text-sm font-bold p-4 rounded-xl flex items-center gap-2 shadow-lg">
-            <CheckCircle2 size={18} className="shrink-0" />
-            <span>{saveMessage}</span>
+      {/* شريط التبويبات الثلاثة بالأصفر الصريح #FFD000 */}
+      <div className="bg-[#10172a] border border-[#1e293b] p-1.5 rounded-xl flex gap-1 shadow-md">
+        <button
+          onClick={() => setActiveTab('info')}
+          className={`flex-1 py-2.5 rounded-lg text-xs font-black transition-all text-center ${
+            activeTab === 'info'
+              ? 'bg-[#FFD000] text-black shadow-md'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          1. البيانات والتواصل
+        </button>
+
+        <button
+          onClick={() => setActiveTab('media')}
+          className={`flex-1 py-2.5 rounded-lg text-xs font-black transition-all text-center ${
+            activeTab === 'media'
+              ? 'bg-[#FFD000] text-black shadow-md'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          2. الغلاف والشعار (4 صور)
+        </button>
+
+        <button
+          onClick={() => setActiveTab('features')}
+          className={`flex-1 py-2.5 rounded-lg text-xs font-black transition-all text-center ${
+            activeTab === 'features'
+              ? 'bg-[#FFD000] text-black shadow-md'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          3. ميزات القطاع والعروض
+        </button>
+      </div>
+
+      {/* التبويب 1: البيانات والتواصل */}
+      {activeTab === 'info' && (
+        <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 sm:p-5 space-y-4 shadow-xl">
+          <div>
+            <label className="text-xs text-slate-300 font-bold block mb-1.5">
+              اسم المنشأة أو الكيان *
+            </label>
+            <input
+              type="text"
+              value={facilityData.name}
+              onChange={e => setFacilityData({ ...facilityData, name: e.target.value })}
+              placeholder="مثال: فندق سبأ، مطاعم الشيباني، مستشفى النخبة..."
+              className="w-full bg-[#162238] border border-[#243354] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#FFD000]"
+            />
           </div>
-        )}
 
-        {/* منتقي المنشآت إذا كان يملك أكثر من واحدة */}
-        {businesses.length > 1 && (
-          <div className="bg-[#161D2B] border border-[#1F2937] p-3 rounded-2xl flex items-center gap-3 overflow-x-auto">
-            <span className="text-xs text-zinc-400 font-bold shrink-0">منشآتك:</span>
-            {businesses.map(b => (
-              <button
-                key={b.id}
-                onClick={() => selectBusiness(b)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shrink-0 cursor-pointer ${selectedBiz?.id === b.id ? 'bg-[#FFC500] text-black shadow' : 'bg-[#0B0F17] text-zinc-300 hover:text-white border border-[#1F2937]'}`}
+          <div>
+            <label className="text-xs text-slate-300 font-bold block mb-1.5">
+              التصنيف الرسمي *
+            </label>
+            <input
+              type="text"
+              disabled
+              value={facilityData.sector}
+              className="w-full bg-[#162238]/60 border border-[#243354] rounded-xl px-3.5 py-2.5 text-xs text-slate-400 cursor-not-allowed"
+            />
+          </div>
+
+          {/* قائمة المدن بتصميم كحلي متناسق بدون إفساد الأندرويد */}
+          <div className="relative">
+            <label className="text-xs text-slate-300 font-bold block mb-1.5">
+              المدينة
+            </label>
+            <div className="relative">
+              <select
+                value={facilityData.city}
+                onChange={e => setFacilityData({ ...facilityData, city: e.target.value })}
+                className="w-full appearance-none bg-[#162238] border border-[#243354] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#FFD000] cursor-pointer"
               >
-                {b.name}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* كرت المنشأة العلوي والإحصائيات */}
-        {selectedBiz && (
-          <div className="bg-[#161D2B] border border-[#1F2937] rounded-2xl p-5 shadow-xl relative overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-16 h-16 rounded-2xl bg-[#0B0F17] border border-[#1F2937] overflow-hidden flex items-center justify-center shrink-0">
-                  {selectedBiz.logo_url ? (
-                    <img src={selectedBiz.logo_url} alt={selectedBiz.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <Building2 className="text-[#FFC500]" size={28} />
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-base sm:text-lg font-black text-white">{selectedBiz.name}</h2>
-                    <span className="inline-flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      <ShieldCheck size={11} /> موثقة رسميّاً
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-zinc-400 flex-wrap">
-                    <span className="flex items-center gap-1"><MapPin size={12} className="text-[#FFC500]" /> {selectedBiz.city || 'اليمن'}</span>
-                    <span className="text-zinc-600">•</span>
-                    <span className="text-zinc-300">{selectedBiz.category || 'نشاط تجاري'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* بطاقات الإحصائيات السريعة */}
-              <div className="grid grid-cols-3 gap-2.5 sm:gap-4 shrink-0">
-                <div className="bg-[#0B0F17] border border-[#1F2937] px-3.5 py-2.5 rounded-xl text-center">
-                  <span className="text-[10px] text-zinc-400 block font-bold">التقييم</span>
-                  <div className="flex items-center justify-center gap-1 text-sm font-black text-[#FFC500]">
-                    <Star size={13} className="fill-[#FFC500]" />
-                    <span>{selectedBiz.rating || '5.0'}</span>
-                  </div>
-                </div>
-                <div className="bg-[#0B0F17] border border-[#1F2937] px-3.5 py-2.5 rounded-xl text-center">
-                  <span className="text-[10px] text-zinc-400 block font-bold">الآراء</span>
-                  <span className="text-sm font-black text-white">{reviews.length || selectedBiz.review_count || 0}</span>
-                </div>
-                <div className="bg-[#0B0F17] border border-[#1F2937] px-3.5 py-2.5 rounded-xl text-center">
-                  <span className="text-[10px] text-zinc-400 block font-bold">العروض</span>
-                  <span className="text-sm font-black text-emerald-400">{offers.length}</span>
-                </div>
-              </div>
+                <option value="صنعاء" className="bg-[#10172a] text-white">صنعاء</option>
+                <option value="عدن" className="bg-[#10172a] text-white">عدن</option>
+                <option value="تعز" className="bg-[#10172a] text-white">تعز</option>
+                <option value="حضرموت (المكلا)" className="bg-[#10172a] text-white">حضرموت (المكلا)</option>
+                <option value="حضرموت (سيئون)" className="bg-[#10172a] text-white">حضرموت (سيئون)</option>
+                <option value="الحديدة" className="bg-[#10172a] text-white">الحديدة</option>
+                <option value="إب" className="bg-[#10172a] text-white">إب</option>
+                <option value="مأرب" className="bg-[#10172a] text-white">مأرب</option>
+                <option value="ذمار" className="bg-[#10172a] text-white">ذمار</option>
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
             </div>
           </div>
-        )}
 
-        {/* التبويبات الموحدة */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-[#1F2937] text-xs font-bold">
-          {[
-            { id: 'info', label: 'البيانات والتواصل', icon: Building2 },
-            { id: 'media', label: 'الصور والمعرض', icon: ImageIcon },
-            { id: 'offers', label: 'العروض والخصومات', icon: Tag, count: offers.length },
-            { id: 'services', label: 'قائمة الخدمات', icon: Briefcase, count: services.length },
-            { id: 'reviews', label: 'التقييمات والردود', icon: Star, count: reviews.length },
-            { id: 'ads', label: 'الإعلانات والترويج', icon: Megaphone },
-            { id: 'support', label: 'تواصل مع الإدارة', icon: MessageCircle }
-          ].map(tab => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            return (
+          <div>
+            <label className="text-xs text-slate-300 font-bold block mb-1.5">
+              العنوان التفصيلي
+            </label>
+            <input
+              type="text"
+              value={facilityData.address}
+              onChange={e => setFacilityData({ ...facilityData, address: e.target.value })}
+              placeholder="الشارع، الحي، أقرب معلم..."
+              className="w-full bg-[#162238] border border-[#243354] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#FFD000]"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-slate-300 font-bold block mb-1.5">
+              رقم الهاتف
+            </label>
+            <input
+              type="text"
+              value={facilityData.phone}
+              onChange={e => setFacilityData({ ...facilityData, phone: e.target.value })}
+              placeholder="+967..."
+              className="w-full bg-[#162238] border border-[#243354] rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-[#FFD000]"
+              dir="ltr"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-slate-300 font-bold block mb-1.5">
+              رقم الواتساب
+            </label>
+            <input
+              type="text"
+              value={facilityData.whatsapp}
+              onChange={e => setFacilityData({ ...facilityData, whatsapp: e.target.value })}
+              placeholder="+967..."
+              className="w-full bg-[#162238] border border-[#243354] rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-[#FFD000]"
+              dir="ltr"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-slate-300 font-bold block mb-2 flex items-center gap-1.5">
+              <Clock className="w-4 h-4 text-[#FFD000]" /> مواعيد وساعات الدوام اليومي:
+            </label>
+            <div className="grid grid-cols-2 gap-2">
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl transition shrink-0 cursor-pointer ${active ? 'bg-[#FFC500] text-black shadow font-black' : 'text-zinc-400 hover:text-white hover:bg-[#161D2B]'}`}
+                type="button"
+                onClick={() => setFacilityData({ ...facilityData, workHours: '24h' })}
+                className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all border ${
+                  facilityData.workHours === '24h'
+                    ? 'bg-[#FFD000] text-black border-[#FFD000]'
+                    : 'bg-[#162238] text-slate-300 border-[#243354]'
+                }`}
               >
-                <Icon size={14} />
-                <span>{tab.label}</span>
-                {typeof tab.count === 'number' && (
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${active ? 'bg-black text-[#FFC500]' : 'bg-[#1F2937] text-zinc-300'}`}>
-                    {tab.count}
-                  </span>
+                مفتوح 24 ساعة يومياً
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFacilityData({ ...facilityData, workHours: 'custom' })}
+                className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all border ${
+                  facilityData.workHours === 'custom'
+                    ? 'bg-[#FFD000] text-black border-[#FFD000]'
+                    : 'bg-[#162238] text-slate-300 border-[#243354]'
+                }`}
+              >
+                دوام محدد (08:00 ص - 10:00 م)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* التبويب 2: الغلاف والشعار (4 صور) */}
+      {activeTab === 'media' && (
+        <div className="space-y-4">
+          
+          {/* شعار المنشأة */}
+          <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 space-y-2">
+            <h3 className="text-xs font-bold text-white">شعار المنشأة (Logo)</h3>
+            <div className="bg-[#162238] border border-[#243354] rounded-xl p-3 flex items-center justify-between">
+              <div className="w-16 h-16 rounded-xl bg-[#10172a] border border-[#243354] flex items-center justify-center overflow-hidden shrink-0">
+                {mediaData.logo ? (
+                  <img src={mediaData.logo} alt="Logo" className="w-full h-full object-cover" />
+                ) : (
+                  <Building2 className="w-8 h-8 text-slate-500" />
                 )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* محتوى التبويبات */}
-        <div className="bg-[#161D2B] border border-[#1F2937] rounded-2xl p-5 sm:p-6 shadow-xl">
-          {/* 1. تبويب البيانات الأساسية والتواصل */}
-          {activeTab === 'info' && (
-            <div className="space-y-4 max-w-3xl">
-              <h3 className="text-sm font-black text-[#FFC500] flex items-center gap-2 pb-2 border-b border-[#1F2937]">
-                <Building2 size={16} /> بيانات المنشأة ومعلومات التواصل
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                <div className="space-y-1.5">
-                  <label className="text-xs text-zinc-300 font-bold">اسم المنشأة الرسمي</label>
-                  <input
-                    type="text"
-                    value={infoForm.name}
-                    onChange={e => setInfoForm({ ...infoForm, name: e.target.value })}
-                    className="w-full bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-3.5 py-2.5 outline-none"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs text-zinc-300 font-bold">المدينة / المحافظة</label>
-                  <input
-                    type="text"
-                    value={infoForm.city}
-                    onChange={e => setInfoForm({ ...infoForm, city: e.target.value })}
-                    placeholder="مثال: صنعاء"
-                    className="w-full bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-3.5 py-2.5 outline-none"
-                  />
-                </div>
-
-                <div className="space-y-1.5 sm:col-span-2">
-                  <label className="text-xs text-zinc-300 font-bold">العنوان بالتفصيل</label>
-                  <input
-                    type="text"
-                    value={infoForm.address}
-                    onChange={e => setInfoForm({ ...infoForm, address: e.target.value })}
-                    placeholder="مثال: شارع الزبيري - بجوار الجولة"
-                    className="w-full bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-3.5 py-2.5 outline-none"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs text-zinc-300 font-bold">رقم الهاتف الرسمي</label>
-                  <input
-                    type="text"
-                    value={infoForm.phone}
-                    onChange={e => setInfoForm({ ...infoForm, phone: e.target.value })}
-                    placeholder="مثال: 777123456"
-                    className="w-full bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-3.5 py-2.5 outline-none font-mono text-left"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs text-zinc-300 font-bold">رقم الواتساب</label>
-                  <input
-                    type="text"
-                    value={infoForm.whatsapp}
-                    onChange={e => setInfoForm({ ...infoForm, whatsapp: e.target.value })}
-                    placeholder="مثال: 967777123456"
-                    className="w-full bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-3.5 py-2.5 outline-none font-mono text-left"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs text-zinc-300 font-bold">ساعات الدوام / العمل</label>
-                  <input
-                    type="text"
-                    value={infoForm.working_hours}
-                    onChange={e => setInfoForm({ ...infoForm, working_hours: e.target.value })}
-                    placeholder="مثال: يومياً من 8:00 ص حتى 10:00 م"
-                    className="w-full bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-3.5 py-2.5 outline-none"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs text-zinc-300 font-bold">الموقع الإلكتروني أو الرابط</label>
-                  <input
-                    type="text"
-                    value={infoForm.website}
-                    onChange={e => setInfoForm({ ...infoForm, website: e.target.value })}
-                    placeholder="https://..."
-                    className="w-full bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-3.5 py-2.5 outline-none font-mono text-left"
-                  />
-                </div>
-
-                <div className="space-y-1.5 sm:col-span-2">
-                  <label className="text-xs text-zinc-300 font-bold">نبذة عن المنشأة والخدمات</label>
-                  <textarea
-                    rows={4}
-                    value={infoForm.description}
-                    onChange={e => setInfoForm({ ...infoForm, description: e.target.value })}
-                    placeholder="اكتب نبذة تعريفية بالمنشأة ومميزاتها لعملائك..."
-                    className="w-full bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl p-3 outline-none leading-relaxed"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 2. تبويب الوسائط والصور */}
-          {activeTab === 'media' && (
-            <div className="space-y-6 max-w-3xl">
-              <h3 className="text-sm font-black text-[#FFC500] flex items-center gap-2 pb-2 border-b border-[#1F2937]">
-                <ImageIcon size={16} /> إدارة الشعار والغلاف ومعرض الصور
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs text-zinc-300 font-bold">رابط الشعار المربع (Logo URL)</label>
-                  <input
-                    type="text"
-                    value={logoUrl}
-                    onChange={e => setLogoUrl(e.target.value)}
-                    placeholder="https://..."
-                    className="w-full bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs rounded-xl px-3.5 py-2.5 outline-none font-mono text-left"
-                  />
-                  {logoUrl && (
-                    <div className="w-16 h-16 rounded-xl border border-[#1F2937] overflow-hidden bg-[#0B0F17]">
-                      <img src={logoUrl} alt="logo" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs text-zinc-300 font-bold">رابط الغلاف العريض (Cover URL)</label>
-                  <input
-                    type="text"
-                    value={coverUrl}
-                    onChange={e => setCoverUrl(e.target.value)}
-                    placeholder="https://..."
-                    className="w-full bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs rounded-xl px-3.5 py-2.5 outline-none font-mono text-left"
-                  />
-                  {coverUrl && (
-                    <div className="w-full h-16 rounded-xl border border-[#1F2937] overflow-hidden bg-[#0B0F17]">
-                      <img src={coverUrl} alt="cover" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                </div>
               </div>
 
-              {/* معرض صور المنشأة */}
-              <div className="space-y-3 pt-3 border-t border-[#1F2937]">
-                <label className="text-xs text-zinc-300 font-bold block">معرض صور المنشأة (صور المقر، الأسطول، أو الأعمال)</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newGalleryInput}
-                    onChange={e => setNewGalleryInput(e.target.value)}
-                    placeholder="أدخل رابط صورة لإضافتها لمعرض الصور..."
-                    className="flex-1 bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs rounded-xl px-3.5 py-2.5 outline-none font-mono text-left"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddGalleryImage}
-                    className="bg-[#FFC500] text-black font-black text-xs px-4 py-2.5 rounded-xl hover:bg-amber-400 transition cursor-pointer shrink-0"
-                  >
-                    + إضافة صورة
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                  {gallery.map((url, idx) => (
-                    <div key={idx} className="relative group rounded-xl overflow-hidden border border-[#1F2937] bg-[#0B0F17] aspect-video">
-                      <img src={url} alt="gallery" className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setGallery(prev => prev.filter((_, i) => i !== idx))}
-                        className="absolute top-1.5 right-1.5 bg-red-600/90 text-white p-1 rounded-lg opacity-0 group-hover:opacity-100 transition cursor-pointer"
-                        title="حذف"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  ))}
-                  {gallery.length === 0 && (
-                    <p className="text-xs text-zinc-500 col-span-full py-2">لا توجد صور في المعرض بعد. أضف روابط صور لتظهر لزوارك.</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 3. تبويب العروض والخصومات */}
-          {activeTab === 'offers' && (
-            <div className="space-y-4 max-w-3xl">
-              <div className="flex items-center justify-between pb-2 border-b border-[#1F2937]">
-                <h3 className="text-sm font-black text-[#FFC500] flex items-center gap-2">
-                  <Tag size={16} /> العروض الترويجية والخصومات الحصرية
-                </h3>
-                <span className="text-[11px] text-zinc-400">تظهر في تبويب العروض بصفحتك فوراً</span>
-              </div>
-
-              {/* إضافة عرض جديد */}
-              <div className="bg-[#0B0F17] border border-amber-500/20 p-4 rounded-xl space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="sm:col-span-1">
-                    <label className="text-[11px] text-zinc-400 font-bold block mb-1">عنوان العرض</label>
-                    <input
-                      type="text"
-                      value={newOfferTitle}
-                      onChange={e => setNewOfferTitle(e.target.value)}
-                      placeholder="مثال: خصم 20% بمناسبة الافتتاح"
-                      className="w-full bg-[#161D2B] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs rounded-xl px-3 py-2 outline-none"
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="text-[11px] text-zinc-400 font-bold block mb-1">تفاصيل أو شروط الخصم</label>
-                    <input
-                      type="text"
-                      value={newOfferDesc}
-                      onChange={e => setNewOfferDesc(e.target.value)}
-                      placeholder="مثال: يشمل جميع خدمات الشحن والنقل لجميع المحافظات حتى نهاية الشهر"
-                      className="w-full bg-[#161D2B] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs rounded-xl px-3 py-2 outline-none"
-                    />
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleAddOffer}
-                  className="bg-[#FFC500] hover:bg-amber-400 text-black font-black text-xs px-5 py-2 rounded-xl transition cursor-pointer"
+              <div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="logo-input"
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && handleImageUpload('logo', e.target.files[0])}
+                />
+                <label
+                  htmlFor="logo-input"
+                  className="cursor-pointer bg-[#FFD000] hover:bg-yellow-300 text-black font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95"
                 >
-                  + إضافة هذا العرض
-                </button>
-              </div>
-
-              {/* قائمة العروض المضافة */}
-              <div className="space-y-2.5 pt-2">
-                {offers.map((offer: any, idx: number) => {
-                  const title = typeof offer === 'string' ? offer : (offer.title || 'عرض خاص');
-                  const desc = typeof offer === 'string' ? '' : (offer.description || offer.desc || '');
-                  return (
-                    <div key={idx} className="flex items-center justify-between gap-3 bg-[#0B0F17] border border-amber-500/30 p-3.5 rounded-xl shadow-md">
-                      <div className="space-y-0.5">
-                        <h4 className="text-[#FFC500] font-black text-xs sm:text-sm flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#FFC500]"></span>
-                          <span>{title}</span>
-                        </h4>
-                        {desc && <p className="text-zinc-300 text-xs font-normal pr-3 leading-relaxed">{desc}</p>}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveOffer(idx)}
-                        className="text-red-400 hover:text-red-300 font-bold text-xs bg-red-500/10 border border-red-500/20 px-2.5 py-1.5 rounded-lg transition cursor-pointer shrink-0"
-                      >
-                        حذف
-                      </button>
-                    </div>
-                  );
-                })}
-
-                {offers.length === 0 && (
-                  <p className="text-xs text-zinc-500 text-center py-6">لا توجد عروض مضافة حالياً. أضف عروضك لتجذب المزيد من العملاء.</p>
-                )}
+                  <Upload className="w-4 h-4 stroke-[2.5]" />
+                  <span>اختر من الهاتف</span>
+                </label>
               </div>
             </div>
-          )}
+          </div>
 
-          {/* 4. تبويب قائمة الخدمات */}
-          {activeTab === 'services' && (
-            <div className="space-y-4 max-w-3xl">
-              <div className="flex items-center justify-between pb-2 border-b border-[#1F2937]">
-                <h3 className="text-sm font-black text-[#FFC500] flex items-center gap-2">
-                  <Briefcase size={16} /> قائمة الخدمات والمميزات
-                </h3>
-                <span className="text-[11px] text-zinc-400">تظهر في تبويب الخدمات بالصفحة العامة</span>
+          {/* الغلاف البانورامي */}
+          <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 space-y-2">
+            <h3 className="text-xs font-bold text-white">الغلاف البانورامي (Cover Banner)</h3>
+            <div className="bg-[#162238] border border-[#243354] rounded-xl p-3 flex items-center justify-between">
+              <div className="w-20 h-14 rounded-xl bg-[#10172a] border border-[#243354] flex items-center justify-center overflow-hidden shrink-0">
+                {mediaData.cover ? (
+                  <img src={mediaData.cover} alt="Cover" className="w-full h-full object-cover" />
+                ) : (
+                  <ImageIcon className="w-6 h-6 text-slate-500" />
+                )}
               </div>
 
+              <div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="cover-input"
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && handleImageUpload('cover', e.target.files[0])}
+                />
+                <label
+                  htmlFor="cover-input"
+                  className="cursor-pointer bg-[#1e293b] hover:bg-slate-700 text-white font-bold border border-[#243354] px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition-all active:scale-95"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>رفع غلاف من الهاتف</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* معرض المنشأة 4 صور */}
+          <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 space-y-3">
+            <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+              <ImageIcon className="w-4 h-4 text-[#FFD000]" />
+              معرض المنشأة (أربع صور للعرض من استوديو الهاتف)
+            </h3>
+
+            <div className="grid grid-cols-2 gap-3">
+              {[0, 1, 2, 3].map((idx) => (
+                <div key={idx} className="bg-[#162238] border border-[#243354] rounded-xl p-2.5 space-y-2 text-center">
+                  <div className="h-28 rounded-lg bg-[#10172a] border border-[#243354] flex items-center justify-center overflow-hidden">
+                    {mediaData.photos[idx] ? (
+                      <img src={mediaData.photos[idx]} alt={`صورة #${idx + 1}`} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-bold text-slate-500 font-mono">صورة #{idx + 1}</span>
+                    )}
+                  </div>
+
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id={`photo-input-${idx}`}
+                      className="hidden"
+                      onChange={(e) => e.target.files?.[0] && handleImageUpload(idx, e.target.files[0])}
+                    />
+                    <label
+                      htmlFor={`photo-input-${idx}`}
+                      className="cursor-pointer w-full bg-[#1e293b] hover:bg-slate-700 text-white font-bold border border-[#243354] py-2 rounded-lg text-xs block transition-all active:scale-95"
+                    >
+                      اختر صورة
+                    </label>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* التبويب 3: ميزات القطاع والعروض */}
+      {activeTab === 'features' && (
+        <div className="space-y-4">
+          
+          <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 space-y-3">
+            <div>
+              <h3 className="text-xs font-bold text-white">ميزات وخدمات القطاع الفعلية (اضغط للتفعيل المباشر):</h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">تظهر في صفحة المنشأة للزبائن:</p>
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={customFeatureInput}
+                onChange={e => setCustomFeatureInput(e.target.value)}
+                placeholder="إضافة خدمة أو ميزة إضافية..."
+                className="flex-1 bg-[#162238] border border-[#243354] rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FFD000]"
+              />
+              <button
+                type="button"
+                onClick={handleAddCustomFeature}
+                className="bg-[#FFD000] hover:bg-yellow-300 text-black font-black px-4 py-2 rounded-xl text-xs flex items-center gap-1 shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" /> إضافة
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {sectorFeatures.map((feat) => (
+                <button
+                  key={feat.id}
+                  type="button"
+                  onClick={() => toggleFeature(feat.id)}
+                  className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                    feat.active
+                      ? 'bg-[#162238] text-white border-[#FFD000]'
+                      : 'bg-[#10172a] text-slate-500 border-[#1e293b] hover:text-slate-300'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${feat.active ? 'bg-[#FFD000]' : 'bg-slate-600'}`}></span>
+                  <span>{feat.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* العروض والخصومات */}
+          <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 space-y-3">
+            <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+              <Tag className="w-4 h-4 text-[#FFD000]" /> العروض الترويجية والخصومات:
+            </h3>
+
+            <div className="space-y-2 bg-[#162238] p-3 rounded-xl border border-[#243354]">
+              <input
+                type="text"
+                value={customOfferTitle}
+                onChange={e => setCustomOfferTitle(e.target.value)}
+                placeholder="عنوان العرض (مثال: خصم 25% على كافة الغرف)"
+                className="w-full bg-[#10172a] border border-[#243354] rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FFD000]"
+              />
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={newServiceInput}
-                  onChange={e => setNewServiceInput(e.target.value)}
-                  placeholder="أدخل اسم الخدمة (مثال: شحن سريع بين المحافظات، حجز مسبق، تغليف احترافي)..."
-                  className="flex-1 bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-2.5 outline-none"
-                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddService(); } }}
+                  value={customOfferDesc}
+                  onChange={e => setCustomOfferDesc(e.target.value)}
+                  placeholder="تفاصيل الخصم أو العرض..."
+                  className="flex-1 bg-[#10172a] border border-[#243354] rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FFD000]"
                 />
                 <button
                   type="button"
-                  onClick={handleAddService}
-                  className="bg-[#FFC500] hover:bg-amber-400 text-black font-black text-xs px-5 py-2.5 rounded-xl transition cursor-pointer shrink-0"
+                  onClick={handleAddCustomOffer}
+                  className="bg-[#FFD000] hover:bg-yellow-300 text-black font-black px-4 py-2 rounded-lg text-xs flex items-center gap-1 shrink-0"
                 >
-                  + إضافة خدمة
+                  <Plus className="w-3.5 h-3.5" /> إضافة
                 </button>
               </div>
+            </div>
 
-              <div className="flex flex-wrap gap-2 pt-2">
-                {services.map((srv, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-2 bg-[#0B0F17] border border-[#1F2937] text-zinc-200 text-xs font-bold px-3.5 py-2 rounded-xl shadow"
+            <div>
+              <span className="text-[11px] text-slate-400 block mb-1.5">عروض سريعة جاهزة (اضغط للإضافة):</span>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  'خصم 20% لفترة محدودة',
+                  'توصيل مجاني للطلبات الكبيرة',
+                  'عرض خاص بمناسبة الافتتاح',
+                  'هدية مجانية مع كل حجز'
+                ].map((preset, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleAddPresetOffer(preset)}
+                    className="p-2 bg-[#162238] hover:bg-[#1e293b] border border-[#243354] text-slate-300 hover:text-white rounded-lg text-[11px] font-bold text-center transition-all"
                   >
-                    <span>✓ {srv}</span>
+                    + {preset}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {offers.length > 0 && (
+              <div className="space-y-1.5 pt-2 border-t border-slate-800">
+                <span className="text-[11px] text-slate-400 block">العروض النشطة:</span>
+                {offers.map(off => (
+                  <div key={off.id} className="bg-[#162238] border border-[#243354] p-2.5 rounded-lg flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-[#FFD000]">{off.title}</span>
+                      {off.desc && <p className="text-[11px] text-slate-400">{off.desc}</p>}
+                    </div>
                     <button
                       type="button"
-                      onClick={() => handleRemoveService(idx)}
-                      className="text-red-400 hover:text-red-300 text-sm font-black cursor-pointer"
+                      onClick={() => setOffers(offers.filter(o => o.id !== off.id))}
+                      className="p-1 text-slate-500 hover:text-red-400"
                     >
-                      ×
+                      <Trash2 className="w-4 h-4" />
                     </button>
-                  </span>
+                  </div>
                 ))}
-
-                {services.length === 0 && (
-                  <p className="text-xs text-zinc-500 py-4">لم يتم إضافة خدمات بعد.</p>
-                )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* 5. تبويب التقييمات والردود */}
-          {activeTab === 'reviews' && (
-            <div className="space-y-4 max-w-3xl">
-              <div className="flex items-center justify-between pb-2 border-b border-[#1F2937]">
-                <h3 className="text-sm font-black text-[#FFC500] flex items-center gap-2">
-                  <Star size={16} /> آراء العملاء والردود الرسمية
-                </h3>
-                <span className="text-[11px] text-zinc-400">إجمالي التقييمات: {reviews.length}</span>
-              </div>
-
-              {reviewsLoading ? (
-                <div className="py-8 text-center text-zinc-400 text-xs">
-                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-[#FFC500]" />
-                  جاري تحميل التقييمات...
-                </div>
-              ) : (
-                <div className="space-y-3 pt-1">
-                  {reviews.map((rev, idx) => (
-                    <div key={idx} className="bg-[#0B0F17] border border-[#1F2937] p-4 rounded-xl space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-amber-500/20 text-[#FFC500] font-black text-xs flex items-center justify-center">
-                            {(rev.author_name || 'ع')[0]}
-                          </div>
-                          <span className="text-xs font-bold text-white">{rev.author_name || 'عميل'}</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-[#FFC500] text-xs font-bold font-mono">
-                          <Star size={12} className="fill-[#FFC500]" />
-                          <span>{rev.rating || 5}</span>
-                        </div>
-                      </div>
-                      <p className="text-xs text-zinc-300 pr-9 leading-relaxed">{rev.comment || rev.text || 'لا يوجد تعليق مكتوب.'}</p>
-                    </div>
-                  ))}
-
-                  {reviews.length === 0 && (
-                    <div className="py-10 text-center text-zinc-500 text-xs">
-                      <MessageSquare className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
-                      لا توجد تقييمات مكتوبة لهذه المنشأة حتى الآن.
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* 6. تبويب الإعلانات والترويج */}
-          {activeTab === 'ads' && (
-            <div className="space-y-5 max-w-3xl">
-              <div className="pb-2 border-b border-[#1F2937]">
-                <h3 className="text-sm font-black text-[#FFC500] flex items-center gap-2">
-                  <Megaphone size={16} /> باقات الترويج والإعلانات المميزة
-                </h3>
-                <p className="text-[11px] text-zinc-400 mt-1">
-                  ضاعف عدد زوار وعملاء منشأتك عبر باقات الترويج الرسمية المعتمدة في منصة يمن ريتنغ.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-                <div className="bg-[#0B0F17] border border-[#1F2937] p-4 rounded-2xl space-y-3 flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-bold">1</div>
-                    <h4 className="text-xs font-black text-white">تثبيت بأعلى نتائج البحث</h4>
-                    <p className="text-[11px] text-zinc-400 leading-relaxed">تظهر منشأتك كأول نتيجة دائماً للباحثين عن خدمات قطاعك في مدينتك.</p>
-                  </div>
-                  <button
-                    onClick={() => { setActiveTab('support'); setSupportSubject('طلب باقة تثبيت أعلى البحث'); }}
-                    className="w-full bg-[#161D2B] hover:bg-[#1F2937] text-white text-xs font-bold py-2 rounded-xl border border-[#1F2937] transition cursor-pointer"
-                  >
-                    طلب اشتراك
-                  </button>
-                </div>
-
-                <div className="bg-[#0B0F17] border border-amber-500/30 p-4 rounded-2xl space-y-3 flex flex-col justify-between relative shadow-lg">
-                  <span className="absolute top-2 left-2 bg-[#FFC500] text-black text-[9px] font-black px-2 py-0.5 rounded-full">الأكثر طلباً</span>
-                  <div className="space-y-2">
-                    <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[#FFC500] flex items-center justify-center font-bold">2</div>
-                    <h4 className="text-xs font-black text-white">بنر إعلاني في الواجهة</h4>
-                    <p className="text-[11px] text-zinc-400 leading-relaxed">بنر عريض مصمم باسم منشأتك في الصفحة الرئيسية وقسم الشركات.</p>
-                  </div>
-                  <button
-                    onClick={() => { setActiveTab('support'); setSupportSubject('طلب باقة بنر إعلاني في الواجهة'); }}
-                    className="w-full bg-[#FFC500] hover:bg-amber-400 text-black text-xs font-black py-2 rounded-xl transition cursor-pointer"
-                  >
-                    طلب اشتراك
-                  </button>
-                </div>
-
-                <div className="bg-[#0B0F17] border border-[#1F2937] p-4 rounded-2xl space-y-3 flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center font-bold">3</div>
-                    <h4 className="text-xs font-black text-white">حملة العروض الكبرى</h4>
-                    <p className="text-[11px] text-zinc-400 leading-relaxed">نشر عروض منشأتك في كرت أقوى العروض بالصفحة الأولى وتنبيهات الزوار.</p>
-                  </div>
-                  <button
-                    onClick={() => { setActiveTab('support'); setSupportSubject('طلب باقة حملة العروض الكبرى'); }}
-                    className="w-full bg-[#161D2B] hover:bg-[#1F2937] text-white text-xs font-bold py-2 rounded-xl border border-[#1F2937] transition cursor-pointer"
-                  >
-                    طلب اشتراك
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 7. تبويب التواصل المباشر مع الإدارة */}
-          {activeTab === 'support' && (
-            <div className="space-y-4 max-w-2xl">
-              <div className="pb-2 border-b border-[#1F2937]">
-                <h3 className="text-sm font-black text-[#FFC500] flex items-center gap-2">
-                  <MessageCircle size={16} /> تواصل مع إدارة يمن ريتنغ
-                </h3>
-                <p className="text-[11px] text-zinc-400 mt-1">
-                  لأي استفسار بخصوص التوثيق، الاشتراك في الإعلانات، أو طلب مساعدة تقنية خاصة بمنشأتك.
-                </p>
-              </div>
-
-              {supportSent && (
-                <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold p-3.5 rounded-xl flex items-center gap-2">
-                  <CheckCircle2 size={16} />
-                  <span>تم إرسال رسالتك لإدارة المنصة بنجاح! سيتم مراجعتها والرد عليكم في أقرب وقت.</span>
-                </div>
-              )}
-
-              <form onSubmit={handleSendSupport} className="space-y-3.5 pt-1">
-                <div className="space-y-1.5">
-                  <label className="text-xs text-zinc-300 font-bold">موضوع الرسالة</label>
-                  <select
-                    value={supportSubject}
-                    onChange={e => setSupportSubject(e.target.value)}
-                    className="w-full bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs rounded-xl px-3.5 py-2.5 outline-none"
-                  >
-                    <option value="استفسار عام">استفسار عام</option>
-                    <option value="طلب باقة إعلانية">طلب باقة إعلانية وترويج</option>
-                    <option value="تحديث وثائق أو ترخيص">تحديث وثائق أو ترخيص تجاري</option>
-                    <option value="بلاغ عن مشكلة تقنية">بلاغ عن مشكلة تقنية</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs text-zinc-300 font-bold">نص الرسالة أو الاستفسار</label>
-                  <textarea
-                    rows={4}
-                    value={supportMessage}
-                    onChange={e => setSupportMessage(e.target.value)}
-                    placeholder="اكتب تفاصيل استفسارك أو طلبك للإدارة هنا..."
-                    required
-                    className="w-full bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl p-3.5 outline-none leading-relaxed"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-2 bg-[#FFC500] hover:bg-amber-400 text-black font-black text-xs px-6 py-2.5 rounded-xl transition cursor-pointer shadow-md"
-                >
-                  <Send size={14} />
-                  <span>إرسال للإدارة</span>
-                </button>
-              </form>
-            </div>
-          )}
         </div>
-      </main>
+      )}
+
+      {/* الشريط السفلي الثابت: حفظ التعديلات بالأصفر الصريح */}
+      <div className="fixed bottom-0 left-0 right-0 p-3 bg-[#0a0f1d]/95 backdrop-blur-md border-t border-[#1e293b] z-40">
+        <div className="max-w-2xl mx-auto flex gap-2">
+          <button
+            type="button"
+            onClick={handleSaveAll}
+            className="flex-1 bg-[#FFD000] hover:bg-yellow-300 text-black font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all"
+          >
+            <Check className="w-4 h-4 stroke-[3]" />
+            <span>حفظ التعديلات</span>
+          </button>
+        </div>
+      </div>
+
     </div>
   );
 };
+
+export default OwnerDashboardPage;
