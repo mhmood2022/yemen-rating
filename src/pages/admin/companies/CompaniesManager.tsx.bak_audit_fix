@@ -190,7 +190,6 @@ export const CompaniesManager: React.FC = () => {
   };
 
   const [categoriesMap, setCategoriesMap] = useState<Record<string, { id: string; name: string; slug: string }>>({});
-  const [dynamicCategories, setDynamicCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCity, setFilterCity] = useState('all');
@@ -347,37 +346,32 @@ export const CompaniesManager: React.FC = () => {
   ];
 
   const categoryDropdownOptions = useMemo(() => {
-    if (dynamicCategories.length > 0) {
-      return dynamicCategories.map(c => ({ value: c.id, label: c.name }));
-    }
     return OFFICIAL_CATEGORIES.map(c => {
       const dbCat = categoriesMap[c.slug];
       const val = dbCat ? dbCat.id : c.id;
       return { value: val, label: c.name };
     });
-  }, [dynamicCategories, categoriesMap]);
+  }, [categoriesMap]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      // جلب التصنيفات والمنشآت بالتوازي فائق السرعة
-      const [catRes, bizRes] = await Promise.all([
-        supabase.from('categories').select('id, name, slug'),
-        supabase.from('businesses').select('*').order('created_at', { ascending: false })
-      ]);
-
+      const { data: catData } = await supabase.from('categories').select('id, name, slug');
       const catMap: Record<string, { id: string; name: string; slug: string }> = {};
-      if (catRes.data) {
-        setDynamicCategories(catRes.data);
-        catRes.data.forEach(c => {
+      if (catData) {
+        catData.forEach(c => {
           catMap[c.id] = c;
           catMap[c.slug] = c;
         });
         setCategoriesMap(catMap);
       }
 
-      const bData = bizRes.data;
-      if (bizRes.error) throw bizRes.error;
+      const { data: bData, error } = await supabase
+        .from('businesses')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
 
       const enriched: BusinessRecord[] = (bData || []).map(b => ({
         ...b,
@@ -535,7 +529,6 @@ export const CompaniesManager: React.FC = () => {
 
     const sec = b.sections_config || {};
     const feat = sec.features || {};
-    const bankSpecs = sec.bank_specs || {};
 
     const gallery4: (string | null)[] = [null, null, null, null];
     if (Array.isArray(b.gallery_urls)) {
@@ -621,14 +614,6 @@ export const CompaniesManager: React.FC = () => {
         ad_unit_feed: formData.ad_unit_feed,
         ad_unit_sticky: formData.ad_unit_sticky,
         working_hours: formData.working_hours,
-        bank_specs: {
-          swift_code: (formData as any).swift_code || null,
-          license_number: (formData as any).license_number || null,
-          commercial_reg: (formData as any).commercial_reg || null,
-          established_year: (formData as any).established_year || null,
-          app_store_url: (formData as any).app_store_url || null,
-          play_store_url: (formData as any).play_store_url || null,
-        },
         features: {
           rooms_count: formData.rooms_count,
           has_pool: formData.has_pool,
@@ -1303,12 +1288,12 @@ export const CompaniesManager: React.FC = () => {
 
                     {/* شرائح العروض المضافة */}
                     <div className="flex flex-wrap gap-2 pt-1">
-                      {((formData as any).biz_promotions || []).map((offer: any, index: number) => (
+                      {((formData as any).biz_promotions || []).map((offer: string, index: number) => (
                         <span
                           key={index}
                           className="inline-flex items-center gap-1.5 bg-[#0B0F17] border border-amber-500/30 text-amber-400 text-xs font-bold px-3.5 py-2 rounded-xl shadow"
                         >
-                          <span>🎁 {typeof offer === 'string' ? offer : (offer?.title || 'عرض خاص')}</span>
+                          <span>🎁 {offer}</span>
                           <button
                             type="button"
                             onClick={() => {

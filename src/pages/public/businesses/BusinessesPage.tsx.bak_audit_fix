@@ -13,7 +13,6 @@ import { ClaimOwnershipModal } from '../../../components/business/ClaimOwnership
 
 export const CATEGORY_CONFIG: { [slug: string]: { name: string; icon: any } } = {
   'all': { name: 'المنشآت والشركات', icon: Layers },
-  'banks': { name: 'البنوك والصرافة', icon: Building },
   'transport': { name: 'شركات النقل', icon: Truck },
   'hospitals': { name: 'المستشفيات', icon: HeartPulse },
   'clinics': { name: 'العيادات', icon: Stethoscope },
@@ -55,7 +54,6 @@ export const BusinessesPage: React.FC = () => {
   const categoryConfig = CATEGORY_CONFIG[currentCategorySlug] || { name: 'دليل المنشآت والشركات', icon: Layers };
   const CategoryIcon = categoryConfig.icon;
 
-  const [categoryTitle, setCategoryTitle] = useState<string>(categoryConfig.name);
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [reviewsMap, setReviewsMap] = useState<Map<string, { avg: number; count: number }>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -166,7 +164,7 @@ export const BusinessesPage: React.FC = () => {
         <div className="flex items-center gap-2 text-right">
           <CategoryIcon className="w-5 h-5 text-[#EAB308] shrink-0" />
           <h1 className="text-base sm:text-lg font-bold text-white leading-none">
-            دليل {categoryTitle} ({businesses.length})
+            دليل {categoryConfig.name} ({businesses.length})
           </h1>
         </div>
 

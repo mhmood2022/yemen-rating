@@ -1,6 +1,6 @@
 import { AdminOwnersHub } from "./components/admin/AdminOwnersHub";
 import React from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 
 // الهيكل الموحد App Shell
 import { AppShell } from './components/layout/AppShell';
@@ -113,7 +113,7 @@ export function App() {
           <Route index element={<AdminDashboardOverview />} />
           <Route path="companies" element={<CompaniesManager />} />
           <Route path="ratings" element={<RatingsManager />} />
-          <Route path="banks" element={<Navigate to="/admin/companies?category=banks" replace />} />
+          <Route path="banks" element={<BanksManager />} />
           <Route path="categories" element={<CategoriesManager />} />
           <Route path="claims" element={<ClaimsManager />} />
           <Route path="markets" element={<MarketsManager />} />

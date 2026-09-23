@@ -681,7 +681,15 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           bankData.services = adminServices;
 
           // 3. العروض: مهيأة لقراءة أي بيانات تعبئها الإدارة في sections_config أو offers
-          const adminOffers = (b.sections_config && Array.isArray(b.sections_config.offers)) ? b.sections_config.offers : (Array.isArray(b.offers) ? b.offers : []);
+          const adminOffers = (b.sections_config?.features?.biz_promotions && Array.isArray(b.sections_config.features.biz_promotions) && b.sections_config.features.biz_promotions.length > 0)
+          ? b.sections_config.features.biz_promotions
+          : (b.sections_config?.biz_promotions && Array.isArray(b.sections_config.biz_promotions))
+            ? b.sections_config.biz_promotions
+            : (b.biz_promotions && Array.isArray(b.biz_promotions))
+              ? b.biz_promotions
+              : (b.sections_config && Array.isArray(b.sections_config.offers))
+                ? b.sections_config.offers
+                : (Array.isArray(b.offers) ? b.offers : []);
           bankData.offers = adminOffers;
 
           // جلب التقييمات الحقيقية للمنشأة
@@ -850,7 +858,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
                 <span class="text-[10px] text-zinc-400 font-medium">${offer.expiry || ""}</span>
               </div>
               <h4 class="text-sm font-bold text-white leading-snug">${offer.title}</h4>
-              <p class="text-xs text-zinc-400 mt-1.5 leading-relaxed">${offer.desc}</p>
+              <p class="text-xs text-zinc-400 mt-1.5 leading-relaxed">${offer.description || offer.desc || ""}</p>
             </div>
           `).join('');
         }

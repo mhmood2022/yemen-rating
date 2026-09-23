@@ -255,28 +255,12 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
 
     async function fetchRealBanks() {
       try {
-        // 1. جلب المنشآت المصنفة كبنوك من جدول businesses
-        const bizResp = await fetch(`${SUPABASE_URL}/rest/v1/businesses?category_id=eq.3d1d9c82-c396-4f90-9f20-7736116d507e&select=*`, {
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/banks?select=*`, {
           headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
         });
-        const bizRows = bizResp.ok ? await bizResp.json() : [];
+        if (!resp.ok) throw new Error("تعذر جلب البنوك");
+        const rows = await resp.json();
 
-        // 2. جلب البنوك من جدول banks كاحتياط للبنوك القديمة
-        const bankResp = await fetch(`${SUPABASE_URL}/rest/v1/banks?select=*`, {
-          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
-        });
-        const bankRows = bankResp.ok ? await bankResp.json() : [];
-
-        // 3. دمج المجموعتين مع استبعاد التكرار بالاسم
-        const seenNames = new Set();
-        const rows = [];
-        for (const item of [...bizRows, ...bankRows]) {
-          const normName = (item.name || '').trim().toLowerCase();
-          if (normName && !seenNames.has(normName)) {
-            seenNames.add(normName);
-            rows.push(item);
-          }
-        }
         let reviewsMap = {};
         try {
           const revResp = await fetch(`${SUPABASE_URL}/rest/v1/reviews?select=entity_id,stars`, {
@@ -302,7 +286,7 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
             city: b.city || b.address || "اليمن",
             address: b.address || b.city || "",
             description: b.description || b.short_description || "",
-            verified: b.verified === true || b.is_verified === true,
+            verified: b.verified === true,
             badge_type: b.badge_type || "gold",
             logo_url: b.logo_url || b.logo || "",
             cover_url: b.cover_url || b.cover || b.banner_url || "",
