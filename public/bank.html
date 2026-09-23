@@ -402,7 +402,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
           <div>
             <label class="block text-white font-bold mb-1">الصفة أو المسمى الوظيفي <span class="text-brand-gold">*</span></label>
-            <input type="text" id="claim-applicant-role" required placeholder="مثال: مدير الفرع / الممثل القانوني / مسؤول التسويق" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
+            <input type="text" id="claim-applicant-role" required placeholder="مثال: المالك / المدير العام / الممثل القانوني / المفوض" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
           </div>
 
           <div>
@@ -767,7 +767,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         // إخفاء زر إثبات الملكية نهائياً إذا كانت المنشأة موثقة
         const claimBtn = document.getElementById('claim-btn');
         if (claimBtn) {
-          if (currentBank.ownership_status === 'VERIFIED' || currentBank.claim_status === 'APPROVED') {
+          if (currentBank.ownership_status === 'VERIFIED' || currentBank.claim_status === 'APPROVED' || currentBank.is_claimed === true || currentBank.is_verified === true) {
             claimBtn.classList.add('hidden');
           } else {
             claimBtn.classList.remove('hidden');
@@ -1142,13 +1142,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       btn.innerText = 'جاري الإرسال...';
 
       try {
+        const categoryName = currentBank.category || currentBank.sector || 'منشأة عامة';
         const payload = {
           entity_id: currentBank.id,
-          entity_type: 'bank',
+          entity_type: categoryName,
           applicant_name: name,
           applicant_role: role,
           phone: phone,
-          notes: notes,
+          notes: `المنشأة: ${currentBank.name || ''} | التصنيف: ${categoryName} | التفاصيل: ${notes}`,
           status: 'PENDING'
         };
 

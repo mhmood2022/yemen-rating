@@ -101,7 +101,7 @@ export const ClaimsManager: React.FC = () => {
           is_verified: true,
           verified_badge_type: 'gold',
           ownership_status: 'VERIFIED',
-          is_claimed: true,
+          is_claimed: true, claim_status: 'APPROVED',
           verified_at: new Date().toISOString()
         };
 

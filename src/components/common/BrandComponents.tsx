@@ -9,7 +9,7 @@ export const YemenRatingLogo: React.FC<{ isDark?: boolean; className?: string }>
         <Star className="w-3 h-3 text-[#FFC500] absolute" fill="#FFC500" />
       </div>
       <div className="flex flex-col text-right leading-none">
-        <span className="font-["'Cairo'"] font-black text-base tracking-tight text-[#FFC500]">
+        <span className="font-['Cairo'] font-black text-base tracking-tight text-[#FFC500]">
           يمن ريتنغ
         </span>
         <span className="font-inter font-bold text-[10px] tracking-[0.18em] text-[#001E00] mt-0.5">
