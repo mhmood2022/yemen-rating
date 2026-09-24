@@ -357,7 +357,7 @@ export const UsersRolesManager: React.FC = () => {
           
           {/* شريط الفرز والبحث المصغر */}
           <div className="bg-[#10172a] border border-[#1e293b] p-3 rounded-xl space-y-2 shadow-md">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
               
               <div className="relative lg:col-span-2">
                 <Search className="w-3.5 h-3.5 absolute right-3 top-3 text-slate-400" />
@@ -389,6 +389,16 @@ export const UsersRolesManager: React.FC = () => {
                 ]}
               />
 
+              <CustomDarkSelect
+                value={filterStatus}
+                onChange={val => { setFilterStatus(val); setCurrentPage(1); }}
+                options={[
+                  { value: 'all', label: 'كافة الحالات' },
+                  { value: 'active', label: 'نشط' },
+                  { value: 'suspended', label: 'معلق' },
+                  { value: 'disabled', label: 'معطل' },
+                ]}
+              />
               <CustomDarkSelect
                 value={sortBy}
                 onChange={val => setSortBy(val as any)}
@@ -423,6 +433,8 @@ export const UsersRolesManager: React.FC = () => {
                       <th className="py-2.5 px-2 font-bold text-center">الدور</th>
                       <th className="py-2.5 px-2 font-bold text-center">الحالة</th>
                       <th className="py-2.5 px-2 font-bold">الهاتف</th>
+<th className="py-2.5 px-2 font-bold">التسجيل</th>
+<th className="py-2.5 px-2 font-bold">آخر دخول</th>
                       <th className="py-2.5 px-2 font-bold text-center">إجراء</th>
                     </tr>
                   </thead>
@@ -445,7 +457,7 @@ export const UsersRolesManager: React.FC = () => {
                                 {isMainAdmin ? (
                                   <Crown className="w-4 h-4 text-[#FFD000]" />
                                 ) : (
-                                  (u.full_name?.charAt(0) || u.email?.charAt(0) || 'م').toUpperCase()
+                                  u.avatar_url ? <img src={u.avatar_url} alt="" className="w-full h-full rounded-lg object-cover" /> : (u.full_name?.charAt(0) || u.email?.charAt(0) || 'م').toUpperCase()
                                 )}
                               </div>
                               <div className="min-w-0">
@@ -499,6 +511,8 @@ export const UsersRolesManager: React.FC = () => {
                           <td className="py-2.5 px-2 font-mono text-[10px] text-slate-300 whitespace-nowrap" dir="ltr">
                             {u.phone || '—'}
                           </td>
+<td className="py-2.5 px-2 text-[10px] text-slate-300 whitespace-nowrap">{u.created_at ? new Date(u.created_at).toLocaleDateString('ar-YE') : '—'}</td>
+<td className="py-2.5 px-2 text-[10px] text-slate-300 whitespace-nowrap">{u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString('ar-YE') : '—'}</td>
 
                           {/* زر الإدارة */}
                           <td className="py-2.5 px-2 text-center" onClick={e => e.stopPropagation()}>
@@ -829,6 +843,21 @@ export const UsersRolesManager: React.FC = () => {
                     </button>
                   ))}
                 </div>
+              </div>
+            </div>
+
+            {/* الصلاحيات الناتجة عن الدور */}
+            <div className="space-y-1.5 bg-[#10172a] border border-[#1e293b] p-3 rounded-xl text-[11px]">
+              <span className="text-slate-400 block">الصلاحيات الناتجة عن الدور:</span>
+              <div className="flex flex-wrap gap-1">
+                {(ROLE_PERMISSIONS_MAP[editingRole] || []).map((id: string) => (
+                  <span key={id} className="px-1.5 py-0.5 rounded bg-[#162238] border border-[#243354] text-slate-200 font-mono text-[9px]">{id}</span>
+                ))}
+              </div>
+              <div className="text-[10px] text-slate-500 pt-1 border-t border-[#1e293b]">
+                تاريخ التسجيل: {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleString('ar-YE') : '—'}
+                <br />آخر دخول: {selectedUser.last_sign_in_at ? new Date(selectedUser.last_sign_in_at).toLocaleString('ar-YE') : '—'}
+                <br />المنشآت المرتبطة • طلبات الملكية • النشاط: (لاحقًا)
               </div>
             </div>
 
