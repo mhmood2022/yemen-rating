@@ -82,6 +82,7 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
       localStorage.setItem('yr_ownership_claims', JSON.stringify([newClaim, ...existingClaims]));
 
       // 3. إرسال إشعار فوري لمركز إشعارات الإدارة العامة
+      if (typeof window !== 'undefined') { window.dispatchEvent(new Event('new_admin_notification')); }
       await notificationService.createNotification({
         title: `طلب إثبات ملكية: ${businessName || 'فندق بلقيس'}`,
         message: `قام (${name.trim()}) بطلب توثيق ملكية المنشأة برقم هاتف (${fullPhone}).`,

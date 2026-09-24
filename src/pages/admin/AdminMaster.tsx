@@ -48,50 +48,82 @@ export const AdminMaster: React.FC = () => {
 
   // جلب كل أنشطة وإشعارات الموقع (توثيق، بلاغات، عمولات، مزادات)
   const fetchAllNotifications = async () => {
-    // كاش فوري للإشعارات للإدارة بدون انتظار
     try {
-      const cachedNotes = localStorage.getItem("yr_swr_admin_notes");
-      if (cachedNotes) {
-        const parsed = JSON.parse(cachedNotes);
-        setNotifications(parsed);
-        setUnreadCount(parsed.filter((n: any) => !n.is_read).length);
+      const allAlerts: SystemNotification[] = [];
+
+      // أ) جلب طلبات إثبات الملكية الحقيقية من business_claims
+      if (supabase) {
+        const { data: bClaims } = await supabase
+          .from("business_claims")
+          .select("*, businesses(name)")
+          .eq("status", "PENDING")
+          .order("created_at", { ascending: false });
+
+        if (bClaims) {
+          bClaims.forEach((c: any) => {
+            const bName = c.businesses?.name || c.notes?.split("-")[0] || "منشأة تجارية";
+            allAlerts.push({
+              id: `claim-${c.id}`,
+              title: `🛡️ طلب توثيق ملكية: ${bName}`,
+              message: `مقدم الطلب: ${c.claimant_name || "مستخدم"} (${c.claimant_phone || ""})`,
+              type: "claim",
+              link: "/admin/owners",
+              is_read: false,
+              created_at: c.created_at || new Date().toISOString()
+            });
+          });
+        }
+
+        // ب) جلب طلبات إضافة المنشآت من owner_requests
+        const { data: oReqs } = await supabase
+          .from("owner_requests")
+          .select("*")
+          .eq("status", "under_review")
+          .order("created_at", { ascending: false });
+
+        if (oReqs) {
+          oReqs.forEach((r: any) => {
+            allAlerts.push({
+              id: `req-${r.id}`,
+              title: `🏢 طلب إضافة منشأة: ${r.business_name}`,
+              message: `طلب في قطاع (${r.business_category || ""}) - هاتف: ${r.contact_phone || ""}`,
+              type: "claim",
+              link: "/admin/owners",
+              is_read: false,
+              created_at: r.created_at || new Date().toISOString()
+            });
+          });
+        }
       }
-    } catch (_) {}
 
-    try {
-      // 1. جلب الإشعارات العامة من admin_notifications
-      const { data: generalNotes } = await supabase
-        .from('admin_notifications')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20);
+      // ج) دمج إشعارات الذاكرة المحلية لضمان عدم ضياع أي طلب أوفلاين
+      const localNotes = localStorage.getItem("yr_admin_notifications");
+      if (localNotes) {
+        try {
+          const parsed = JSON.parse(localNotes);
+          if (Array.isArray(parsed)) {
+            parsed.forEach((ln: any) => {
+              if (!allAlerts.some(a => a.id === ln.id)) {
+                allAlerts.push({
+                  id: ln.id,
+                  title: ln.title,
+                  message: ln.message,
+                  type: ln.type || "claim",
+                  link: "/admin/owners",
+                  is_read: ln.is_read || false,
+                  created_at: ln.created_at || new Date().toISOString()
+                });
+              }
+            });
+          }
+        } catch (_) {}
+      }
 
-      // 2. جلب طلبات إثبات الملكية المعلقة من verification_requests
-      const { data: pendingClaims } = await supabase
-        .from('verification_requests')
-        .select('id, applicant_name, applicant_role, notes, created_at')
-        .eq('status', 'PENDING')
-        .order('created_at', { ascending: false });
+      // ترتيب كل الإشعارات زمنياً من الأحدث للأقدم
+      allAlerts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-      const claimsMapped: SystemNotification[] = (pendingClaims || []).map((c: any) => ({
-        id: `claim-${c.id}`,
-        title: '🛡️ طلب إثبات ملكية جديد',
-        message: `مقدم الطلب: ${c.applicant_name} (${c.applicant_role || 'مفوض'}) - ${c.notes || ''}`,
-        type: 'claim',
-        link: '/admin/claims',
-        is_read: false,
-        created_at: c.created_at
-      }));
-
-      // دمج وترتيب كل الأنشطة زمنياً
-      const combined: SystemNotification[] = [
-        ...claimsMapped,
-        ...((generalNotes as SystemNotification[]) || [])
-      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-      setNotifications(combined);
-      try { localStorage.setItem("yr_swr_admin_notes", JSON.stringify(combined)); } catch (_) {}
-      setUnreadCount(combined.filter(n => !n.is_read).length);
+      setNotifications(allAlerts);
+      setUnreadCount(allAlerts.filter(n => !n.is_read).length);
     } catch (err) {
       console.error('Error fetching admin hub notifications:', err);
     }
@@ -100,7 +132,9 @@ export const AdminMaster: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchAllNotifications();
-      const interval = setInterval(fetchAllNotifications, 15000); // فحص دوري كل 15 ثانية
+      const interval = setInterval(fetchAllNotifications, 10000);
+      window.addEventListener("new_admin_notification", fetchAllNotifications);
+      window.addEventListener("storage", fetchAllNotifications); // فحص دوري كل 15 ثانية
       return () => clearInterval(interval);
     }
   }, [isAuthenticated]);
@@ -253,7 +287,7 @@ export const AdminMaster: React.FC = () => {
                   <div className="pt-2 border-t border-[#1F2937] mt-2 flex justify-between items-center text-[11px]">
                     <span className="text-gray-400">تحديث لحظي لجميع الأنشطة</span>
                     <button
-                      onClick={() => { setNotificationsOpen(false); navigate('/admin/claims'); }}
+                      onClick={() => { setNotificationsOpen(false); navigate('/admin/owners'); }}
                       className="text-[#FFC500] hover:underline font-bold"
                     >
                       إدارة التوثيق ⬅️

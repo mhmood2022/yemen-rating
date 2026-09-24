@@ -53,6 +53,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       },
     });
 
+    // إدراج المستخدم الحقيقي فوراً في جدول profiles ليظهر في لوحة الإدارة
+    if (!error && data?.user) {
+      try {
+        await supabase.from("profiles").upsert([{
+          id: data.user.id,
+          full_name: fullName.trim(),
+          email: email.trim(),
+          account_type: "visitor",
+          role: "visitor",
+          status: "active",
+          created_at: new Date().toISOString()
+        }]);
+      } catch (e) {
+        console.warn("Profile auto-creation:", e);
+      }
+    }
+
     if (error) {
       setErrorMsg(error.message === 'User already registered' ? 'هذا البريد مسجل مسبقاً، يمكنك تسجيل الدخول.' : error.message);
       setLoading(false);
