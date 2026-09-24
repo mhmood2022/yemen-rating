@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Building2, 
   ShieldCheck, 
@@ -12,8 +12,11 @@ import {
   PhoneCall,
   CheckCircle2,
   AlertTriangle,
-  X
+  X,
+  RefreshCw
 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { notificationService } from '../../services/notificationService';
 
 interface OwnershipClaim {
   id: string;
@@ -24,6 +27,8 @@ interface OwnershipClaim {
   commercialRegisterNo: string;
   documentUrl?: string;
   requestDate: string;
+  rawSource?: 'supabase' | 'local';
+  originalId?: string;
 }
 
 interface VerifiedOwner {
@@ -41,8 +46,14 @@ const STORAGE_OWNERS_KEY = 'yr_verified_owners';
 export const AdminOwnersHub: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'verified'>('pending');
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // حالة النوافذ والتنبيهات المخصصة
+  const [claims, setClaims] = useState<OwnershipClaim[]>([]);
+  const [verifiedOwners, setVerifiedOwners] = useState<VerifiedOwner[]>(() => {
+    const saved = localStorage.getItem(STORAGE_OWNERS_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'error' | 'warning' }>({
     show: false,
     message: '',
@@ -56,7 +67,6 @@ export const AdminOwnersHub: React.FC = () => {
 
   const [rejectReason, setRejectReason] = useState('');
 
-  // عرض الإشعار التلقائي
   const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
     setToast({ show: true, message, type });
     setTimeout(() => {
@@ -64,59 +74,113 @@ export const AdminOwnersHub: React.FC = () => {
     }, 2800);
   };
 
-  const [claims, setClaims] = useState<OwnershipClaim[]>(() => {
-    const saved = localStorage.getItem(STORAGE_CLAIMS_KEY);
-    return saved ? JSON.parse(saved) : [
-      {
-        id: 'claim_1',
-        facilityName: 'فندق بلقيس الدولي',
-        sector: 'الفنادق',
-        applicantName: 'محمد عبدالله السنيدار',
-        phone: '+967770000111',
-        commercialRegisterNo: '109842 / صنعاء',
-        documentUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80',
-        requestDate: 'اليوم 10:30 ص'
-      },
-      {
-        id: 'claim_2',
-        facilityName: 'مستشفى الأمل التخصصي',
-        sector: 'المستشفيات',
-        applicantName: 'د. خالد عبدالملك',
-        phone: '+967771222333',
-        commercialRegisterNo: '55412 / عدن',
-        documentUrl: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?auto=format&fit=crop&w=800&q=80',
-        requestDate: 'أمس 04:15 م'
-      }
-    ];
-  });
+  // جلب كافة الطلبات الحقيقية من Supabase والتخزين المحلي معاً
+  const fetchAllClaims = useCallback(async () => {
+    setLoading(true);
+    const combinedClaims: OwnershipClaim[] = [];
 
-  const [verifiedOwners, setVerifiedOwners] = useState<VerifiedOwner[]>(() => {
-    const saved = localStorage.getItem(STORAGE_OWNERS_KEY);
-    return saved ? JSON.parse(saved) : [
-      {
-        id: 'owner_1',
-        facilityName: 'مطعم الشيباني الحديث',
-        sector: 'المطاعم والأغذية',
-        ownerName: 'علي بن أحمد الشيباني',
-        phone: '+967773444555',
-        approvedDate: '2025-01-10'
+    // 1. القراءة من التخزين المحلي
+    const localSaved = localStorage.getItem(STORAGE_CLAIMS_KEY);
+    if (localSaved) {
+      try {
+        const parsed = JSON.parse(localSaved);
+        if (Array.isArray(parsed)) {
+          combinedClaims.push(...parsed);
+        }
+      } catch (e) {}
+    }
+
+    // 2. الاستعلام المباشر من جدول business_claims في Supabase
+    if (supabase) {
+      try {
+        const { data: dbClaims, error } = await supabase
+          .from('business_claims')
+          .select('*, businesses(name, city)')
+          .order('created_at', { ascending: false });
+
+        if (!error && dbClaims) {
+          dbClaims.forEach((item: any) => {
+            // تجنب التكرار
+            if (!combinedClaims.some(c => c.id === item.id || c.originalId === item.id)) {
+              combinedClaims.push({
+                id: item.id,
+                originalId: item.id,
+                facilityName: item.businesses?.name || item.notes?.split('-')[0] || 'منشأة تجارية',
+                sector: 'الفنادق والخدمات',
+                applicantName: item.claimant_name || 'مقدم الطلب',
+                phone: item.claimant_phone?.startsWith('+') ? item.claimant_phone : `+967${item.claimant_phone}`,
+                commercialRegisterNo: item.notes || 'قيد التحقق',
+                documentUrl: item.commercial_register_url || item.id_card_url,
+                requestDate: new Date(item.created_at || Date.now()).toLocaleDateString('ar-YE'),
+                rawSource: 'supabase'
+              });
+            }
+          });
+        }
+
+        // 3. الاستعلام من جدول owner_requests (طلبات إضافة المنشآت)
+        const { data: ownerReqs } = await supabase
+          .from('owner_requests')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (ownerReqs) {
+          ownerReqs.forEach((item: any) => {
+            if (!combinedClaims.some(c => c.id === item.id || c.facilityName === item.business_name)) {
+              combinedClaims.push({
+                id: item.id,
+                originalId: item.id,
+                facilityName: item.business_name,
+                sector: item.business_category || 'منشأة جديدة',
+                applicantName: 'مالك المنشأة',
+                phone: item.contact_phone || '',
+                commercialRegisterNo: item.notes || 'طلب إضافة جديد',
+                requestDate: new Date(item.created_at || Date.now()).toLocaleDateString('ar-YE'),
+                rawSource: 'supabase'
+              });
+            }
+          });
+        }
+      } catch (err) {
+        console.warn('Supabase fetch claims error:', err);
       }
-    ];
-  });
+    }
+
+    setClaims(combinedClaims);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_CLAIMS_KEY, JSON.stringify(claims));
-  }, [claims]);
+    fetchAllClaims();
+  }, [fetchAllClaims]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_OWNERS_KEY, JSON.stringify(verifiedOwners));
   }, [verifiedOwners]);
 
-  // تنفيذ الموافقة بعد تأكيد النافذة
-  const confirmApprove = () => {
+  // تأكيد الاعتماد ومنح اللوحة
+  const confirmApprove = async () => {
     const claim = activeModal.data as OwnershipClaim;
     if (!claim) return;
 
+    // 1. تحديث الحالة في Supabase
+    if (supabase && claim.originalId) {
+      try {
+        await supabase
+          .from('business_claims')
+          .update({ status: 'APPROVED', reviewed_at: new Date().toISOString() })
+          .eq('id', claim.originalId);
+
+        await supabase
+          .from('owner_requests')
+          .update({ status: 'approved', updated_at: new Date().toISOString() })
+          .eq('id', claim.originalId);
+      } catch (e) {
+        console.warn('Update claim status error:', e);
+      }
+    }
+
+    // 2. إضافة إلى قائمة الملاك المعتمدين
     const newOwner: VerifiedOwner = {
       id: `owner_${Date.now()}`,
       facilityName: claim.facilityName,
@@ -126,9 +190,15 @@ export const AdminOwnersHub: React.FC = () => {
       approvedDate: new Date().toLocaleDateString('ar-YE')
     };
 
-    setVerifiedOwners([newOwner, ...verifiedOwners]);
-    setClaims(claims.filter(c => c.id !== claim.id));
+    const updatedVerified = [newOwner, ...verifiedOwners];
+    setVerifiedOwners(updatedVerified);
 
+    // 3. إزالة من قائمة الانتظار
+    const updatedClaims = claims.filter(c => c.id !== claim.id);
+    setClaims(updatedClaims);
+    localStorage.setItem(STORAGE_CLAIMS_KEY, JSON.stringify(updatedClaims));
+
+    // 4. تفعيل بروفايل المالك للدخول لـ /owner
     localStorage.setItem('yr_active_owner_profile', JSON.stringify({
       facilityName: claim.facilityName,
       ownerName: claim.applicantName,
@@ -137,11 +207,11 @@ export const AdminOwnersHub: React.FC = () => {
     }));
 
     setActiveModal({ type: null });
-    showToast(`تم اعتماد (${claim.facilityName}) ومنح الصلاحية بنجاح!`, 'success');
+    showToast(`✅ تم اعتماد (${claim.facilityName}) وفتح الصلاحية للمالك بنجاح!`, 'success');
   };
 
-  // تنفيذ الرفض بعد كتابة السبب
-  const confirmReject = () => {
+  // تأكيد الرفض مع السبب
+  const confirmReject = async () => {
     const claim = activeModal.data as OwnershipClaim;
     if (!claim) return;
 
@@ -150,20 +220,33 @@ export const AdminOwnersHub: React.FC = () => {
       return;
     }
 
-    setClaims(claims.filter(c => c.id !== claim.id));
+    if (supabase && claim.originalId) {
+      try {
+        await supabase
+          .from('business_claims')
+          .update({ status: 'REJECTED', rejection_reason: rejectReason, reviewed_at: new Date().toISOString() })
+          .eq('id', claim.originalId);
+
+        await supabase
+          .from('owner_requests')
+          .update({ status: 'rejected', admin_notes: rejectReason, updated_at: new Date().toISOString() })
+          .eq('id', claim.originalId);
+      } catch (e) {}
+    }
+
+    const updatedClaims = claims.filter(c => c.id !== claim.id);
+    setClaims(updatedClaims);
+    localStorage.setItem(STORAGE_CLAIMS_KEY, JSON.stringify(updatedClaims));
+
     setActiveModal({ type: null });
     setRejectReason('');
-    showToast(`تم رفض الطلب وإرسال السبب لمقدم الطلب.`, 'error');
+    showToast(`تم رفض الطلب وتسجيل السبب.`, 'error');
   };
 
-  // تنفيذ سحب الصلاحية بعد التأكيد
-  const confirmRevoke = () => {
-    const owner = activeModal.data as VerifiedOwner;
-    if (!owner) return;
-
+  const confirmRevoke = (owner: VerifiedOwner) => {
     setVerifiedOwners(verifiedOwners.filter(o => o.id !== owner.id));
     setActiveModal({ type: null });
-    showToast(`تم سحب ملكية (${owner.facilityName}) بنجاح.`, 'warning');
+    showToast(`تم سحب ملكية (${owner.facilityName}).`, 'warning');
   };
 
   const filteredClaims = claims.filter(c => 
@@ -181,7 +264,7 @@ export const AdminOwnersHub: React.FC = () => {
   return (
     <div className="min-h-screen text-white p-3.5 sm:p-5 max-w-3xl mx-auto space-y-4 relative" dir="rtl">
       
-      {/* 1. إشعار النجاح / الخطأ المنسدل بالأعلى (Custom Toast) */}
+      {/* Toast Alert */}
       {toast.show && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-md w-[90%] animate-in fade-in slide-in-from-top-4 duration-200">
           <div className={`p-3.5 rounded-xl border shadow-2xl flex items-center gap-3 backdrop-blur-md ${
@@ -189,32 +272,43 @@ export const AdminOwnersHub: React.FC = () => {
               ? 'bg-[#10172a]/95 border-[#10b981]/50 text-white shadow-emerald-950/40' 
               : toast.type === 'error'
               ? 'bg-[#10172a]/95 border-[#ef4444]/50 text-white shadow-red-950/40'
-              : 'bg-[#10172a]/95 border-[#f59e0b]/50 text-white shadow-amber-950/40'
+              : 'bg-[#10172a]/95 border-[#FFD000]/50 text-white shadow-amber-950/40'
           }`}>
             {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-[#10b981] shrink-0" />}
             {toast.type === 'error' && <X className="w-5 h-5 text-[#ef4444] shrink-0" />}
-            {toast.type === 'warning' && <AlertTriangle className="w-5 h-5 text-[#f59e0b] shrink-0" />}
+            {toast.type === 'warning' && <AlertTriangle className="w-5 h-5 text-[#FFD000] shrink-0" />}
             <span className="text-xs font-bold leading-relaxed">{toast.message}</span>
           </div>
         </div>
       )}
 
-      {/* 2. العنوان المصغر والأنيق */}
-      <div className="flex items-center gap-3 pb-1 border-b border-slate-800/80">
-        <div className="w-10 h-10 rounded-xl bg-[#172238] border border-[#243354] flex items-center justify-center text-[#f59e0b] shrink-0">
-          <ShieldCheck className="w-5 h-5" />
+      {/* الترويسة الرئيسية مع زر التحديث السريع */}
+      <div className="flex items-center justify-between pb-1 border-b border-slate-800/80">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#172238] border border-[#243354] flex items-center justify-center text-[#FFD000] shrink-0">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-base sm:text-lg font-black text-white leading-tight">
+              إدارة الملاك وطلبات التوثيق
+            </h1>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              مراجعة وثائق إثبات الملكية واعتماد الصلاحيات الرسمية للمنشآت.
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-base sm:text-lg font-black text-white leading-tight">
-            إدارة الملاك وطلبات التوثيق
-          </h1>
-          <p className="text-[11px] text-slate-400 mt-0.5">
-            مراجعة وثائق إثبات الملكية واعتماد الصلاحيات الرسمية للمنشآت.
-          </p>
-        </div>
+
+        <button
+          onClick={fetchAllClaims}
+          disabled={loading}
+          className="p-2 bg-[#172238] hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl border border-[#243354] transition-all"
+          title="تحديث الطلبات من السيرفر"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#FFD000]' : ''}`} />
+        </button>
       </div>
 
-      {/* 3. بطاقات الإحصائيات المصغرة */}
+      {/* بطاقات الإحصائيات المصغرة */}
       <div className="grid grid-cols-2 gap-2.5">
         <div className="bg-[#10172a] border border-[#1e293b] rounded-xl p-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -241,14 +335,14 @@ export const AdminOwnersHub: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. شريط التبويبات والبحث */}
+      {/* شريط التبويبات والبحث */}
       <div className="bg-[#10172a] border border-[#1e293b] p-3 rounded-xl space-y-2.5 shadow-lg">
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => setActiveTab('pending')}
             className={`py-2 px-3 rounded-lg text-xs font-bold transition-all text-center ${
               activeTab === 'pending'
-                ? 'bg-[#f59e0b] text-[#0a0f1d] shadow-sm'
+                ? 'bg-[#FFD000] text-black shadow-sm font-black'
                 : 'bg-[#172238] text-slate-300 hover:text-white border border-[#243354]'
             }`}
           >
@@ -259,7 +353,7 @@ export const AdminOwnersHub: React.FC = () => {
             onClick={() => setActiveTab('verified')}
             className={`py-2 px-3 rounded-lg text-xs font-bold transition-all text-center ${
               activeTab === 'verified'
-                ? 'bg-[#f59e0b] text-[#0a0f1d] shadow-sm'
+                ? 'bg-[#FFD000] text-black shadow-sm font-black'
                 : 'bg-[#172238] text-slate-300 hover:text-white border border-[#243354]'
             }`}
           >
@@ -274,18 +368,19 @@ export const AdminOwnersHub: React.FC = () => {
             placeholder="ابحث بالاسم، المنشأة، الهاتف..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pr-9 pl-3 py-2 bg-[#172238] border border-[#243354] rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#f59e0b]"
+            className="w-full pr-9 pl-3 py-2 bg-[#172238] border border-[#243354] rounded-lg text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#FFD000]"
           />
         </div>
       </div>
 
-      {/* 5. بطاقات طلبات إثبات الملكية */}
+      {/* قائمة طلبات إثبات الملكية */}
       {activeTab === 'pending' && (
         <div className="space-y-3">
           {filteredClaims.length === 0 ? (
             <div className="bg-[#10172a] border border-[#1e293b] rounded-xl p-8 text-center space-y-2">
               <Inbox className="w-10 h-10 mx-auto text-slate-500" />
-              <h3 className="text-sm font-bold text-white">لا توجد طلبات إثبات ملكية معلقة</h3>
+              <h3 className="text-sm font-bold text-white">لا توجد طلبات إثبات ملكية معلقة حالياً</h3>
+              <p className="text-xs text-slate-400">أي طلب يتم إرساله من الموقع سيظهر هنا فوراً.</p>
             </div>
           ) : (
             filteredClaims.map((claim) => (
@@ -295,14 +390,14 @@ export const AdminOwnersHub: React.FC = () => {
               >
                 <div className="flex justify-between items-start gap-2">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-lg bg-[#172238] border border-[#243354] flex items-center justify-center text-[#f59e0b] shrink-0">
+                    <div className="w-9 h-9 rounded-lg bg-[#172238] border border-[#243354] flex items-center justify-center text-[#FFD000] shrink-0">
                       <Building2 className="w-4 h-4" />
                     </div>
                     <div>
                       <h2 className="text-sm sm:text-base font-bold text-white leading-tight">
                         {claim.facilityName}
                       </h2>
-                      <span className="text-[11px] text-[#f59e0b] font-medium block">
+                      <span className="text-[11px] text-[#FFD000] font-medium block">
                         {claim.sector}
                       </span>
                     </div>
@@ -336,8 +431,8 @@ export const AdminOwnersHub: React.FC = () => {
                   </div>
 
                   <div className="flex justify-between items-center border-t border-[#243354]/60 pt-1.5">
-                    <span className="text-slate-400">رقم السجل التجاري:</span>
-                    <span className="text-[#f59e0b] font-mono font-bold">{claim.commercialRegisterNo}</span>
+                    <span className="text-slate-400">ملاحظات / السجل:</span>
+                    <span className="text-[#FFD000] font-mono font-bold">{claim.commercialRegisterNo}</span>
                   </div>
                 </div>
 
@@ -349,14 +444,13 @@ export const AdminOwnersHub: React.FC = () => {
                     className="flex items-center justify-between p-2.5 bg-[#172238] hover:bg-[#1c2a47] border border-[#243354] rounded-lg text-xs text-slate-200 transition-colors"
                   >
                     <span className="flex items-center gap-2 font-medium">
-                      <FileText className="w-3.5 h-3.5 text-[#f59e0b]" />
+                      <FileText className="w-3.5 h-3.5 text-[#FFD000]" />
                       <span>معاينة وثيقة إثبات الملكية / السجل</span>
                     </span>
                     <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
                   </a>
                 )}
 
-                {/* أزرار الإجراءات بدون أيقونات */}
                 <div className="flex gap-2 pt-0.5">
                   <button
                     onClick={() => setActiveModal({ type: 'approve', data: claim })}
@@ -382,7 +476,7 @@ export const AdminOwnersHub: React.FC = () => {
         </div>
       )}
 
-      {/* 6. قسم الملاك المعتمدين */}
+      {/* قسم الملاك المعتمدين */}
       {activeTab === 'verified' && (
         <div className="space-y-3">
           {filteredOwners.length === 0 ? (
@@ -401,7 +495,7 @@ export const AdminOwnersHub: React.FC = () => {
                       <ShieldCheck className="w-4 h-4 text-[#10b981]" />
                       {owner.facilityName}
                     </h2>
-                    <span className="text-[11px] text-[#f59e0b] font-medium block">{owner.sector}</span>
+                    <span className="text-[11px] text-[#FFD000] font-medium block">{owner.sector}</span>
                   </div>
                   <span className="bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30 text-[10px] font-bold px-2 py-0.5 rounded">
                     مالك معتمد
@@ -434,7 +528,7 @@ export const AdminOwnersHub: React.FC = () => {
                   </a>
 
                   <button
-                    onClick={() => setActiveModal({ type: 'revoke', data: owner })}
+                    onClick={() => confirmRevoke(owner)}
                     className="px-3 bg-[#ef4444]/15 hover:bg-[#ef4444] text-[#ef4444] hover:text-white border border-[#ef4444]/30 py-2 rounded-lg text-xs font-bold transition-all"
                   >
                     سحب الصلاحية
@@ -446,13 +540,9 @@ export const AdminOwnersHub: React.FC = () => {
         </div>
       )}
 
-      {/* ======================================================== */}
-      {/* نوافذ التأكيد المخصصة الفخمة (بنفس الستايل الكحلي) */}
-      {/* ======================================================== */}
-
-      {/* نافذة تأكيد الاعتماد */}
+      {/* نوافذ التأكيد المخصصة */}
       {activeModal.type === 'approve' && activeModal.data && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#10172a] border border-[#243354] rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-center">
             <div className="w-12 h-12 mx-auto rounded-2xl bg-[#10b981]/15 text-[#10b981] flex items-center justify-center border border-[#10b981]/30">
               <ShieldCheck className="w-6 h-6" />
@@ -483,14 +573,13 @@ export const AdminOwnersHub: React.FC = () => {
         </div>
       )}
 
-      {/* نافذة سبب الرفض المخصصة */}
       {activeModal.type === 'reject' && activeModal.data && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#10172a] border border-[#243354] rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-right">
             <div>
               <h3 className="text-base font-black text-white">رفض طلب الملكية</h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                يرجى كتابة سبب الرفض لإبلاغ <span className="text-white font-bold">({activeModal.data.applicantName})</span>:
+                يرجى كتابة سبب الرفض:
               </p>
             </div>
 
@@ -498,7 +587,7 @@ export const AdminOwnersHub: React.FC = () => {
               rows={3}
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="مثال: صورة السجل التجاري غير واضحة، أو المنشأة مسجلة باسم شخص آخر..."
+              placeholder="اكتب سبب الرفض هنا..."
               className="w-full bg-[#172238] border border-[#243354] rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ef4444] resize-none"
             />
 
@@ -514,39 +603,6 @@ export const AdminOwnersHub: React.FC = () => {
                 className="px-4 bg-[#172238] hover:bg-[#1e2c48] text-slate-300 font-bold py-2.5 rounded-xl text-xs transition-all border border-[#243354]"
               >
                 تراجع
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* نافذة تأكيد سحب الصلاحية */}
-      {activeModal.type === 'revoke' && activeModal.data && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-[#10172a] border border-[#243354] rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-center">
-            <div className="w-12 h-12 mx-auto rounded-2xl bg-[#ef4444]/15 text-[#ef4444] flex items-center justify-center border border-[#ef4444]/30">
-              <AlertTriangle className="w-6 h-6" />
-            </div>
-
-            <div>
-              <h3 className="text-base font-black text-white">تحذير سحب الصلاحية</h3>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                هل أنت متأكد من سحب ملكية <strong className="text-white">({activeModal.data.facilityName})</strong> من <strong className="text-white">({activeModal.data.ownerName})</strong>؟
-              </p>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <button
-                onClick={confirmRevoke}
-                className="flex-1 bg-[#ef4444] hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md shadow-red-500/20"
-              >
-                نعم، اسحب الصلاحية
-              </button>
-              <button
-                onClick={() => setActiveModal({ type: null })}
-                className="px-4 bg-[#172238] hover:bg-[#1e2c48] text-slate-300 font-bold py-2.5 rounded-xl text-xs transition-all border border-[#243354]"
-              >
-                إلغاء
               </button>
             </div>
           </div>

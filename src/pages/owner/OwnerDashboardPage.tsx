@@ -1,583 +1,386 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
+import { UserProfile, OwnerRequest } from '../../types/auth';
+import { AuthModal } from '../../components/auth/AuthModal';
+import { OwnerRequestModal } from '../../components/account/OwnerRequestModal';
 import { 
   Building2, 
   ShieldCheck, 
-  Star, 
-  Eye, 
-  PhoneCall, 
-  MessageSquare, 
   Clock, 
-  MapPin, 
-  Upload, 
-  ImageIcon, 
   Plus, 
+  AlertCircle, 
   CheckCircle2, 
-  Sparkles, 
-  Tag, 
-  Trash2,
-  Check,
-  ChevronDown
+  XCircle, 
+  FileText, 
+  ExternalLink, 
+  Edit3, 
+  AlertTriangle,
+  LogIn,
+  Search,
+  ArrowRight
 } from 'lucide-react';
-import { notificationService } from '../../services/notificationService';
 
 export const OwnerDashboardPage: React.FC = () => {
-  const [ownerProfile] = useState(() => {
-    const saved = localStorage.getItem('yr_active_owner_profile');
-    return saved ? JSON.parse(saved) : {
-      facilityName: 'فندق بلقيس الدولي',
-      ownerName: 'محمد عبدالله السنيدار',
-      sector: 'الفنادق',
-      phone: '+967770000111'
-    };
-  });
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  
+  // المنشآت المعتمدة التي يملكها هذا المستخدم فعلياً في قاعدة البيانات
+  const [myBusinesses, setMyBusinesses] = useState<any[]>([]);
+  
+  // طلبات التوثيق وإضافة المنشآت الجارية الخاصة بهذا المستخدم
+  const [myRequests, setMyRequests] = useState<OwnerRequest[]>([]);
 
-  const [activeTab, setActiveTab] = useState<'info' | 'media' | 'features'>('info');
-  const [toastMessage, setToastMessage] = useState('');
+  // حالات النوافذ
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [newBusinessModalOpen, setNewBusinessModalOpen] = useState(false);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 2500);
-  };
-
-  // 1. البيانات الأساسية
-  const [facilityData, setFacilityData] = useState({
-    name: ownerProfile.facilityName,
-    sector: ownerProfile.sector || 'الفنادق',
-    city: 'صنعاء',
-    address: 'شارع الستين الجنوبي - بجوار الجسر',
-    phone: ownerProfile.phone,
-    whatsapp: ownerProfile.phone,
-    workHours: '24h',
-    customHours: '08:00 ص - 10:00 م'
-  });
-
-  // 2. الصور الحقيقية (شعار، غلاف، 4 صور استوديو)
-  const [mediaData, setMediaData] = useState({
-    logo: '',
-    cover: '',
-    photos: ['', '', '', '']
-  });
-
-  // 3. ميزات القطاع
-  const [sectorFeatures, setSectorFeatures] = useState([
-    { id: 1, name: 'خدمة غرف على مدار 24 ساعة', active: true },
-    { id: 2, name: 'إنترنت واي فاي مجاني فائق السرعة', active: true },
-    { id: 3, name: 'مواقف سيارات خاصة ومجانية', active: true },
-    { id: 4, name: 'قاعة مؤتمرات ومناسبات مجهزة', active: false },
-    { id: 5, name: 'مطعم وبوفيه مفتوح', active: true },
-    { id: 6, name: 'خدمة نقل من وإلى المطار', active: false },
-  ]);
-  const [customFeatureInput, setCustomFeatureInput] = useState('');
-
-  // 4. العروض والخصومات
-  const [offers, setOffers] = useState([
-    { id: 'off_1', title: 'خصم عطلة نهاية الأسبوع 20%', desc: 'خصم خاص على الحجوزات' }
-  ]);
-  const [customOfferTitle, setCustomOfferTitle] = useState('');
-  const [customOfferDesc, setCustomOfferDesc] = useState('');
-
-  // رفع الصور من استوديو الهاتف
-  const handleImageUpload = (type: 'logo' | 'cover' | number, file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      if (type === 'logo') {
-        setMediaData(prev => ({ ...prev, logo: result }));
-        showToast('✅ تم اختيار الشعار بنجاح');
-      } else if (type === 'cover') {
-        setMediaData(prev => ({ ...prev, cover: result }));
-        showToast('✅ تم اختيار الغلاف بنجاح');
-      } else {
-        const newPhotos = [...mediaData.photos];
-        newPhotos[type] = result;
-        setMediaData(prev => ({ ...prev, photos: newPhotos }));
-        showToast(`✅ تم اختيار صورة المعرض #${type + 1}`);
+  // جلب البيانات الحقيقية فقط بدون أي بيانات وهمية
+  const loadOwnerData = useCallback(async () => {
+    setLoading(true);
+    try {
+      if (!supabase) {
+        setLoading(false);
+        return;
       }
-    };
-    reader.readAsDataURL(file);
-  };
 
-  const toggleFeature = (id: number) => {
-    setSectorFeatures(sectorFeatures.map(f => f.id === id ? { ...f, active: !f.active } : f));
-  };
+      // 1. فحص المستخدم المسجل حالياً
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      setUser(currentUser);
 
-  const handleAddCustomFeature = () => {
-    if (!customFeatureInput.trim()) return;
-    setSectorFeatures([...sectorFeatures, { id: Date.now(), name: customFeatureInput.trim(), active: true }]);
-    setCustomFeatureInput('');
-    showToast('✅ تمت إضافة الميزة');
-  };
+      if (!currentUser) {
+        setLoading(false);
+        return;
+      }
 
-  const handleAddCustomOffer = () => {
-    if (!customOfferTitle.trim()) return;
-    setOffers([...offers, { id: `off_${Date.now()}`, title: customOfferTitle, desc: customOfferDesc }]);
-    setCustomOfferTitle('');
-    setCustomOfferDesc('');
-    showToast('🎉 تم إضافة العرض');
-  };
+      // 2. جلب الملف الشخصي ورتبة المستخدم (visitor / owner / admin)
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUser.id)
+        .maybeSingle();
 
-  const handleAddPresetOffer = (presetTitle: string) => {
-    setOffers([...offers, { id: `off_${Date.now()}`, title: presetTitle, desc: 'عرض خاص لفترة محدودة' }]);
-    showToast(`✅ تمت إضافة: ${presetTitle}`);
-  };
+      if (prof) setProfile(prof as UserProfile);
 
-  // حفظ التعديلات
-  const handleSaveAll = async () => {
-    // 1. حفظ محلي في المتصفح لتعكس فوراً
-    localStorage.setItem('yr_active_owner_profile', JSON.stringify({
-      facilityName: facilityData.name,
-      ownerName: ownerProfile.ownerName,
-      sector: facilityData.sector,
-      phone: facilityData.phone,
-      city: facilityData.city,
-      address: facilityData.address,
-      whatsapp: facilityData.whatsapp,
-      media: mediaData,
-      features: sectorFeatures,
-      offers: offers
-    }));
+      // 3. جلب المنشآت المعتمدة المربوطة بحساب هذا المالك (owner_id = user.id)
+      const { data: businesses } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('owner_id', currentUser.id);
 
-    // 2. إشعار الإدارة بالتحديثات
-    await notificationService.createNotification({
-      title: `تعديل بيانات منشأة: ${facilityData.name}`,
-      message: `قام المالك (${ownerProfile.ownerName}) بحفظ تعديلات جديدة على الصور والبيانات.`,
-      type: 'edit_request',
-      sender_name: ownerProfile.ownerName,
-      sender_phone: facilityData.phone,
-      facility_name: facilityData.name,
-      sector: facilityData.sector,
-      admin_module: 'facilities'
-    });
+      setMyBusinesses(businesses || []);
 
-    showToast('✅ تم حفظ كافة التعديلات بنجاح!');
+      // 4. جلب طلبات إثبات الملكية وإضافة المنشآت الخاصة بهذا المالك
+      const { data: requests } = await supabase
+        .from('owner_requests')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: false });
+
+      setMyRequests((requests as OwnerRequest[]) || []);
+
+    } catch (err) {
+      console.error('Error loading owner dashboard data:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadOwnerData();
+  }, [loadOwnerData]);
+
+  // دالة تحويل الحالة إلى وسام ولون رسمي
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'under_review':
+      case 'submitted':
+        return {
+          label: 'قيد المراجعة',
+          color: 'bg-amber-500/10 text-[#FFD000] border-amber-500/30',
+          icon: Clock
+        };
+      case 'needs_update':
+        return {
+          label: 'يحتاج معلومات إضافية',
+          color: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+          icon: AlertCircle
+        };
+      case 'approved':
+        return {
+          label: 'مقبول ومعتمد',
+          color: 'bg-emerald-500/10 text-[#10b981] border-emerald-500/30',
+          icon: CheckCircle2
+        };
+      case 'rejected':
+        return {
+          label: 'مرفوض',
+          color: 'bg-rose-500/10 text-[#EF4444] border-rose-500/30',
+          icon: XCircle
+        };
+      case 'cancelled':
+        return {
+          label: 'ملغى',
+          color: 'bg-slate-500/10 text-slate-400 border-slate-500/30',
+          icon: AlertTriangle
+        };
+      default:
+        return {
+          label: 'مسودة',
+          color: 'bg-slate-500/10 text-slate-400 border-slate-500/30',
+          icon: Clock
+        };
+    }
   };
 
   return (
-    <div className="min-h-screen text-white p-3 sm:p-5 max-w-2xl mx-auto space-y-4 pb-24" dir="rtl">
+    <div className="min-h-screen text-white p-3.5 sm:p-6 max-w-4xl mx-auto space-y-6" dir="rtl">
       
-      {/* Toast Alert */}
-      {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-md w-[90%] animate-in fade-in duration-150">
-          <div className="bg-[#10172a] border border-[#10b981]/50 text-white p-3 rounded-xl shadow-2xl flex items-center gap-2.5">
-            <CheckCircle2 className="w-5 h-5 text-[#10b981] shrink-0" />
-            <span className="text-xs font-bold">{toastMessage}</span>
-          </div>
-        </div>
-      )}
-
-      {/* الترويسة الرئيسية */}
-      <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 shadow-xl space-y-3">
-        <div className="flex items-center justify-between gap-3">
+      {/* 1. الترويسة الرئيسية ومعلومات حساب المالك */}
+      <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 sm:p-5 shadow-xl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[#162238] border border-[#243354] flex items-center justify-center text-[#FFD000] shrink-0">
-              {mediaData.logo ? (
-                <img src={mediaData.logo} alt="Logo" className="w-full h-full object-cover rounded-xl" />
-              ) : (
-                <Building2 className="w-6 h-6" />
-              )}
+            <div className="w-12 h-12 rounded-2xl bg-[#162238] border border-[#243354] flex items-center justify-center text-[#FFD000] shrink-0">
+              <Building2 className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-base font-black text-white">{facilityData.name}</h1>
-                <span className="whitespace-nowrap inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30">
-                  <ShieldCheck className="w-3 h-3" /> منشأة موثقة
-                </span>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg sm:text-xl font-black text-white">لوحة تحكم المالك</h1>
+                {profile?.role === 'owner' ? (
+                  <span className="bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3" /> حساب مالك معتمد
+                  </span>
+                ) : user ? (
+                  <span className="bg-slate-700/50 text-slate-300 border border-slate-600/50 text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                    حساب زائر
+                  </span>
+                ) : null}
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                المالك: <strong className="text-white">{ownerProfile.ownerName}</strong> | القطاع: <span className="text-[#FFD000] font-bold">{facilityData.sector}</span>
+              <p className="text-xs text-slate-400 mt-1">
+                {user ? (
+                  <span>المستخدم: <strong className="text-white">{profile?.full_name || user.email}</strong></span>
+                ) : (
+                  <span>يرجى تسجيل الدخول للوصول إلى منشآتك وإدارتها.</span>
+                )}
               </p>
             </div>
           </div>
+
+          {/* أزرار العمليات السريعة */}
+          <div className="flex gap-2 w-full sm:w-auto">
+            {user ? (
+              <>
+                <button
+                  onClick={() => setNewBusinessModalOpen(true)}
+                  className="flex-1 sm:flex-initial bg-[#FFD000] hover:bg-yellow-300 text-black font-black py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95"
+                >
+                  <Plus className="w-4 h-4 stroke-[3]" />
+                  <span>طلب إضافة منشأة جديدة</span>
+                </button>
+
+                <Link
+                  to="/"
+                  className="bg-[#162238] hover:bg-slate-700 text-white font-bold py-2.5 px-3.5 rounded-xl text-xs flex items-center justify-center gap-1.5 border border-[#243354] transition-all"
+                >
+                  <Search className="w-3.5 h-3.5 text-[#FFD000]" />
+                  <span>المطالبة بمنشأة قائمة</span>
+                </Link>
+              </>
+            ) : (
+              <button
+                onClick={() => setAuthModalOpen(true)}
+                className="w-full sm:w-auto bg-[#FFD000] hover:bg-yellow-300 text-black font-black py-2.5 px-5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg"
+              >
+                <LogIn className="w-4 h-4 stroke-[3]" />
+                <span>تسجيل الدخول / إنشاء حساب</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* شريط التبويبات الثلاثة بالأصفر الصريح #FFD000 */}
-      <div className="bg-[#10172a] border border-[#1e293b] p-1.5 rounded-xl flex gap-1 shadow-md">
-        <button
-          onClick={() => setActiveTab('info')}
-          className={`flex-1 py-2.5 rounded-lg text-xs font-black transition-all text-center ${
-            activeTab === 'info'
-              ? 'bg-[#FFD000] text-black shadow-md'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          1. البيانات والتواصل
-        </button>
-
-        <button
-          onClick={() => setActiveTab('media')}
-          className={`flex-1 py-2.5 rounded-lg text-xs font-black transition-all text-center ${
-            activeTab === 'media'
-              ? 'bg-[#FFD000] text-black shadow-md'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          2. الغلاف والشعار (4 صور)
-        </button>
-
-        <button
-          onClick={() => setActiveTab('features')}
-          className={`flex-1 py-2.5 rounded-lg text-xs font-black transition-all text-center ${
-            activeTab === 'features'
-              ? 'bg-[#FFD000] text-black shadow-md'
-              : 'text-slate-400 hover:text-white'
-          }`}
-        >
-          3. ميزات القطاع والعروض
-        </button>
-      </div>
-
-      {/* التبويب 1: البيانات والتواصل */}
-      {activeTab === 'info' && (
-        <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 sm:p-5 space-y-4 shadow-xl">
-          <div>
-            <label className="text-xs text-slate-300 font-bold block mb-1.5">
-              اسم المنشأة أو الكيان *
-            </label>
-            <input
-              type="text"
-              value={facilityData.name}
-              onChange={e => setFacilityData({ ...facilityData, name: e.target.value })}
-              placeholder="مثال: فندق سبأ، مطاعم الشيباني، مستشفى النخبة..."
-              className="w-full bg-[#162238] border border-[#243354] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#FFD000]"
-            />
+      {/* تنبيه إذا كان المستخدم غير مسجل دخول */}
+      {!user && !loading && (
+        <div className="bg-[#10172a] border border-amber-500/30 rounded-2xl p-8 text-center space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-[#FFD000] border border-amber-500/20 mx-auto flex items-center justify-center">
+            <LogIn className="w-6 h-6" />
           </div>
-
-          <div>
-            <label className="text-xs text-slate-300 font-bold block mb-1.5">
-              التصنيف الرسمي *
-            </label>
-            <input
-              type="text"
-              disabled
-              value={facilityData.sector}
-              className="w-full bg-[#162238]/60 border border-[#243354] rounded-xl px-3.5 py-2.5 text-xs text-slate-400 cursor-not-allowed"
-            />
-          </div>
-
-          {/* قائمة المدن بتصميم كحلي متناسق بدون إفساد الأندرويد */}
-          <div className="relative">
-            <label className="text-xs text-slate-300 font-bold block mb-1.5">
-              المدينة
-            </label>
-            <div className="relative">
-              <select
-                value={facilityData.city}
-                onChange={e => setFacilityData({ ...facilityData, city: e.target.value })}
-                className="w-full appearance-none bg-[#162238] border border-[#243354] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#FFD000] cursor-pointer"
-              >
-                <option value="صنعاء" className="bg-[#10172a] text-white">صنعاء</option>
-                <option value="عدن" className="bg-[#10172a] text-white">عدن</option>
-                <option value="تعز" className="bg-[#10172a] text-white">تعز</option>
-                <option value="حضرموت (المكلا)" className="bg-[#10172a] text-white">حضرموت (المكلا)</option>
-                <option value="حضرموت (سيئون)" className="bg-[#10172a] text-white">حضرموت (سيئون)</option>
-                <option value="الحديدة" className="bg-[#10172a] text-white">الحديدة</option>
-                <option value="إب" className="bg-[#10172a] text-white">إب</option>
-                <option value="مأرب" className="bg-[#10172a] text-white">مأرب</option>
-                <option value="ذمار" className="bg-[#10172a] text-white">ذمار</option>
-              </select>
-              <ChevronDown className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs text-slate-300 font-bold block mb-1.5">
-              العنوان التفصيلي
-            </label>
-            <input
-              type="text"
-              value={facilityData.address}
-              onChange={e => setFacilityData({ ...facilityData, address: e.target.value })}
-              placeholder="الشارع، الحي، أقرب معلم..."
-              className="w-full bg-[#162238] border border-[#243354] rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#FFD000]"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs text-slate-300 font-bold block mb-1.5">
-              رقم الهاتف
-            </label>
-            <input
-              type="text"
-              value={facilityData.phone}
-              onChange={e => setFacilityData({ ...facilityData, phone: e.target.value })}
-              placeholder="+967..."
-              className="w-full bg-[#162238] border border-[#243354] rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-[#FFD000]"
-              dir="ltr"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs text-slate-300 font-bold block mb-1.5">
-              رقم الواتساب
-            </label>
-            <input
-              type="text"
-              value={facilityData.whatsapp}
-              onChange={e => setFacilityData({ ...facilityData, whatsapp: e.target.value })}
-              placeholder="+967..."
-              className="w-full bg-[#162238] border border-[#243354] rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-[#FFD000]"
-              dir="ltr"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs text-slate-300 font-bold block mb-2 flex items-center gap-1.5">
-              <Clock className="w-4 h-4 text-[#FFD000]" /> مواعيد وساعات الدوام اليومي:
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setFacilityData({ ...facilityData, workHours: '24h' })}
-                className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all border ${
-                  facilityData.workHours === '24h'
-                    ? 'bg-[#FFD000] text-black border-[#FFD000]'
-                    : 'bg-[#162238] text-slate-300 border-[#243354]'
-                }`}
-              >
-                مفتوح 24 ساعة يومياً
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setFacilityData({ ...facilityData, workHours: 'custom' })}
-                className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all border ${
-                  facilityData.workHours === 'custom'
-                    ? 'bg-[#FFD000] text-black border-[#FFD000]'
-                    : 'bg-[#162238] text-slate-300 border-[#243354]'
-                }`}
-              >
-                دوام محدد (08:00 ص - 10:00 م)
-              </button>
-            </div>
-          </div>
+          <h2 className="text-base font-bold text-white">يجب تسجيل الدخول كمالك أولاً</h2>
+          <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+            للوصول إلى المنشآت التي تمتلكها أو متابعة طلبات إثبات الملكية التي أرسلتها للإدارة، يرجى تسجيل الدخول إلى حسابك.
+          </p>
+          <button
+            onClick={() => setAuthModalOpen(true)}
+            className="bg-[#FFD000] text-black font-black text-xs py-2.5 px-6 rounded-xl inline-flex items-center gap-2 shadow-lg"
+          >
+            <span>تسجيل الدخول الآن</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
 
-      {/* التبويب 2: الغلاف والشعار (4 صور) */}
-      {activeTab === 'media' && (
-        <div className="space-y-4">
-          
-          {/* شعار المنشأة */}
-          <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 space-y-2">
-            <h3 className="text-xs font-bold text-white">شعار المنشأة (Logo)</h3>
-            <div className="bg-[#162238] border border-[#243354] rounded-xl p-3 flex items-center justify-between">
-              <div className="w-16 h-16 rounded-xl bg-[#10172a] border border-[#243354] flex items-center justify-center overflow-hidden shrink-0">
-                {mediaData.logo ? (
-                  <img src={mediaData.logo} alt="Logo" className="w-full h-full object-cover" />
-                ) : (
-                  <Building2 className="w-8 h-8 text-slate-500" />
-                )}
-              </div>
+      {/* محتوى اللوحة للمستخدم المسجل */}
+      {user && (
+        <div className="space-y-6">
 
-              <div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  id="logo-input"
-                  className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleImageUpload('logo', e.target.files[0])}
-                />
-                <label
-                  htmlFor="logo-input"
-                  className="cursor-pointer bg-[#FFD000] hover:bg-yellow-300 text-black font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition-all shadow-md active:scale-95"
-                >
-                  <Upload className="w-4 h-4 stroke-[2.5]" />
-                  <span>اختر من الهاتف</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* الغلاف البانورامي */}
-          <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 space-y-2">
-            <h3 className="text-xs font-bold text-white">الغلاف البانورامي (Cover Banner)</h3>
-            <div className="bg-[#162238] border border-[#243354] rounded-xl p-3 flex items-center justify-between">
-              <div className="w-20 h-14 rounded-xl bg-[#10172a] border border-[#243354] flex items-center justify-center overflow-hidden shrink-0">
-                {mediaData.cover ? (
-                  <img src={mediaData.cover} alt="Cover" className="w-full h-full object-cover" />
-                ) : (
-                  <ImageIcon className="w-6 h-6 text-slate-500" />
-                )}
-              </div>
-
-              <div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  id="cover-input"
-                  className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleImageUpload('cover', e.target.files[0])}
-                />
-                <label
-                  htmlFor="cover-input"
-                  className="cursor-pointer bg-[#1e293b] hover:bg-slate-700 text-white font-bold border border-[#243354] px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition-all active:scale-95"
-                >
-                  <Upload className="w-4 h-4" />
-                  <span>رفع غلاف من الهاتف</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* معرض المنشأة 4 صور */}
-          <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 space-y-3">
-            <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
-              <ImageIcon className="w-4 h-4 text-[#FFD000]" />
-              معرض المنشأة (أربع صور للعرض من استوديو الهاتف)
-            </h3>
-
-            <div className="grid grid-cols-2 gap-3">
-              {[0, 1, 2, 3].map((idx) => (
-                <div key={idx} className="bg-[#162238] border border-[#243354] rounded-xl p-2.5 space-y-2 text-center">
-                  <div className="h-28 rounded-lg bg-[#10172a] border border-[#243354] flex items-center justify-center overflow-hidden">
-                    {mediaData.photos[idx] ? (
-                      <img src={mediaData.photos[idx]} alt={`صورة #${idx + 1}`} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-xs font-bold text-slate-500 font-mono">صورة #{idx + 1}</span>
-                    )}
-                  </div>
-
-                  <div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      id={`photo-input-${idx}`}
-                      className="hidden"
-                      onChange={(e) => e.target.files?.[0] && handleImageUpload(idx, e.target.files[0])}
-                    />
-                    <label
-                      htmlFor={`photo-input-${idx}`}
-                      className="cursor-pointer w-full bg-[#1e293b] hover:bg-slate-700 text-white font-bold border border-[#243354] py-2 rounded-lg text-xs block transition-all active:scale-95"
-                    >
-                      اختر صورة
-                    </label>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-      )}
-
-      {/* التبويب 3: ميزات القطاع والعروض */}
-      {activeTab === 'features' && (
-        <div className="space-y-4">
-          
-          <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 space-y-3">
-            <div>
-              <h3 className="text-xs font-bold text-white">ميزات وخدمات القطاع الفعلية (اضغط للتفعيل المباشر):</h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">تظهر في صفحة المنشأة للزبائن:</p>
+          {/* 2. قسم "منشآتي" (My Facilities) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-black text-white flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-[#FFD000]" />
+                <span>منشآتي المعتمدة ({myBusinesses.length})</span>
+              </h2>
             </div>
 
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={customFeatureInput}
-                onChange={e => setCustomFeatureInput(e.target.value)}
-                placeholder="إضافة خدمة أو ميزة إضافية..."
-                className="flex-1 bg-[#162238] border border-[#243354] rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FFD000]"
-              />
-              <button
-                type="button"
-                onClick={handleAddCustomFeature}
-                className="bg-[#FFD000] hover:bg-yellow-300 text-black font-black px-4 py-2 rounded-xl text-xs flex items-center gap-1 shrink-0"
-              >
-                <Plus className="w-3.5 h-3.5" /> إضافة
-              </button>
-            </div>
-
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              {sectorFeatures.map((feat) => (
-                <button
-                  key={feat.id}
-                  type="button"
-                  onClick={() => toggleFeature(feat.id)}
-                  className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
-                    feat.active
-                      ? 'bg-[#162238] text-white border-[#FFD000]'
-                      : 'bg-[#10172a] text-slate-500 border-[#1e293b] hover:text-slate-300'
-                  }`}
-                >
-                  <span className={`w-2 h-2 rounded-full ${feat.active ? 'bg-[#FFD000]' : 'bg-slate-600'}`}></span>
-                  <span>{feat.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* العروض والخصومات */}
-          <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 space-y-3">
-            <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
-              <Tag className="w-4 h-4 text-[#FFD000]" /> العروض الترويجية والخصومات:
-            </h3>
-
-            <div className="space-y-2 bg-[#162238] p-3 rounded-xl border border-[#243354]">
-              <input
-                type="text"
-                value={customOfferTitle}
-                onChange={e => setCustomOfferTitle(e.target.value)}
-                placeholder="عنوان العرض (مثال: خصم 25% على كافة الغرف)"
-                className="w-full bg-[#10172a] border border-[#243354] rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FFD000]"
-              />
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={customOfferDesc}
-                  onChange={e => setCustomOfferDesc(e.target.value)}
-                  placeholder="تفاصيل الخصم أو العرض..."
-                  className="flex-1 bg-[#10172a] border border-[#243354] rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FFD000]"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddCustomOffer}
-                  className="bg-[#FFD000] hover:bg-yellow-300 text-black font-black px-4 py-2 rounded-lg text-xs flex items-center gap-1 shrink-0"
-                >
-                  <Plus className="w-3.5 h-3.5" /> إضافة
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <span className="text-[11px] text-slate-400 block mb-1.5">عروض سريعة جاهزة (اضغط للإضافة):</span>
-              <div className="grid grid-cols-2 gap-1.5">
-                {[
-                  'خصم 20% لفترة محدودة',
-                  'توصيل مجاني للطلبات الكبيرة',
-                  'عرض خاص بمناسبة الافتتاح',
-                  'هدية مجانية مع كل حجز'
-                ].map((preset, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => handleAddPresetOffer(preset)}
-                    className="p-2 bg-[#162238] hover:bg-[#1e293b] border border-[#243354] text-slate-300 hover:text-white rounded-lg text-[11px] font-bold text-center transition-all"
+            {myBusinesses.length === 0 ? (
+              <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-8 text-center space-y-3">
+                <Building2 className="w-10 h-10 mx-auto text-slate-600" />
+                <h3 className="text-sm font-bold text-white">لا توجد منشآت مرتبطة بحسابك حالياً</h3>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                  حسابك لا يمتلك أي منشأة معتمدة حتى الآن. يمكنك البحث عن منشأتك في الدليل والمطالبة بملكيتها، أو طلب إضافة منشأة جديدة لمراجعتها من قبل الإدارة.
+                </p>
+                <div className="flex justify-center gap-2 pt-2">
+                  <Link
+                    to="/"
+                    className="bg-[#162238] hover:bg-slate-700 text-white font-bold py-2 px-4 rounded-xl text-xs border border-[#243354] inline-flex items-center gap-1.5"
                   >
-                    + {preset}
+                    <Search className="w-3.5 h-3.5 text-[#FFD000]" />
+                    <span>البحث عن منشأتي والمطالبة بها</span>
+                  </Link>
+                  <button
+                    onClick={() => setNewBusinessModalOpen(true)}
+                    className="bg-[#FFD000] hover:bg-yellow-300 text-black font-black py-2 px-4 rounded-xl text-xs inline-flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                    <span>طلب إضافة منشأة جديدة</span>
                   </button>
-                ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {myBusinesses.map((biz) => (
+                  <div
+                    key={biz.id}
+                    className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 sm:p-5 space-y-3 shadow-lg"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-[#162238] border border-[#243354] flex items-center justify-center overflow-hidden shrink-0">
+                          {biz.logo_url ? (
+                            <img src={biz.logo_url} alt={biz.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Building2 className="w-6 h-6 text-[#FFD000]" />
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-black text-white text-sm sm:text-base leading-tight">{biz.name}</h3>
+                          <span className="text-[11px] text-[#FFD000] font-bold block mt-0.5">{biz.city || 'اليمن'}</span>
+                        </div>
+                      </div>
 
-            {offers.length > 0 && (
-              <div className="space-y-1.5 pt-2 border-t border-slate-800">
-                <span className="text-[11px] text-slate-400 block">العروض النشطة:</span>
-                {offers.map(off => (
-                  <div key={off.id} className="bg-[#162238] border border-[#243354] p-2.5 rounded-lg flex items-center justify-between text-xs">
-                    <div>
-                      <span className="font-bold text-[#FFD000]">{off.title}</span>
-                      {off.desc && <p className="text-[11px] text-slate-400">{off.desc}</p>}
+                      <span className="bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3" /> معتمدة
+                      </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setOffers(offers.filter(o => o.id !== off.id))}
-                      className="p-1 text-slate-500 hover:text-red-400"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+
+                    <div className="bg-[#162238] border border-[#243354] rounded-xl p-3 text-xs space-y-1.5">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">الهاتف:</span>
+                        <span className="text-white font-mono" dir="ltr">{biz.phone || 'غير محدد'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">العنوان:</span>
+                        <span className="text-slate-300 truncate max-w-[200px]">{biz.address || biz.city}</span>
+                      </div>
+                    </div>
+
+                    {/* زر فتح القالب الإداري الموحد لإدارة هذه المنشأة المصرح له بها فقط */}
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        onClick={() => navigate(`/admin/companies?edit=${biz.id}`)}
+                        className="flex-1 bg-[#FFD000] hover:bg-yellow-300 text-black font-black py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95"
+                      >
+                        <Edit3 className="w-4 h-4 stroke-[2.5]" />
+                        <span>إدارة المنشأة وتعديل البيانات</span>
+                      </button>
+
+                      <Link
+                        to={`/bar/${biz.slug || biz.id}`}
+                        className="p-2.5 bg-[#162238] hover:bg-slate-700 text-white rounded-xl border border-[#243354] transition-colors"
+                        title="معاينة الصفحة العامة"
+                      >
+                        <ExternalLink className="w-4 h-4 text-slate-400" />
+                      </Link>
+                    </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* 3. قسم "طلباتي الجارية" (متابعة حالات إثبات الملكية وإضافة المنشآت) */}
+          <div className="space-y-3 pt-2">
+            <h2 className="text-base font-black text-white flex items-center gap-2">
+              <Clock className="w-5 h-5 text-blue-400" />
+              <span>متابعة طلبات التوثيق والملكية ({myRequests.length})</span>
+            </h2>
+
+            {myRequests.length === 0 ? (
+              <div className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-6 text-center text-slate-400 text-xs">
+                لا توجد طلبات توثيق معلقة أو مرسلة حالياً.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {myRequests.map((req) => {
+                  const badge = getStatusBadge(req.status);
+                  const Icon = badge.icon;
+                  return (
+                    <div
+                      key={req.id}
+                      className="bg-[#10172a] border border-[#1e293b] rounded-2xl p-4 sm:p-5 space-y-3 shadow-md"
+                    >
+                      <div className="flex justify-between items-start gap-2">
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[11px] font-bold text-slate-400">
+                              {req.request_type === 'new_business' ? 'طلب إضافة منشأة جديدة' : 'طلب إثبات ملكية منشأة'}
+                            </span>
+                            <h3 className="text-sm font-bold text-white">{req.business_name}</h3>
+                          </div>
+                          <span className="text-[10px] text-slate-500 font-mono mt-1 block">
+                            تاريخ الإرسال: {new Date(req.created_at).toLocaleDateString('ar-YE')}
+                          </span>
+                        </div>
+
+                        {/* وسم الحالة الصريح باللون المخصص */}
+                        <span className={`px-2.5 py-1 rounded-xl text-xs font-bold border flex items-center gap-1.5 ${badge.color}`}>
+                          <Icon className="w-3.5 h-3.5" />
+                          <span>{badge.label}</span>
+                        </span>
+                      </div>
+
+                      {/* رسائل وملاحظات الإدارة للمالك */}
+                      {req.admin_notes && (
+                        <div className="bg-[#162238] border border-[#243354] rounded-xl p-3 text-xs space-y-1">
+                          <span className="font-bold text-[#FFD000] block flex items-center gap-1">
+                            <AlertCircle className="w-3.5 h-3.5" /> ملاحظة الإدارة العامة:
+                          </span>
+                          <p className="text-slate-300 leading-relaxed">{req.admin_notes}</p>
+                        </div>
+                      )}
+
+                      {/* تنبيه بعدم إتاحة الصلاحية إلا بعد الموافقة */}
+                      {req.status !== 'approved' && (
+                        <div className="text-[11px] text-slate-400 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <span>صلاحية إدارة المنشأة تفتح تلقائياً فور اعتماد وموافقة الإدارة على طلبك.</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -585,19 +388,28 @@ export const OwnerDashboardPage: React.FC = () => {
         </div>
       )}
 
-      {/* الشريط السفلي الثابت: حفظ التعديلات بالأصفر الصريح */}
-      <div className="fixed bottom-0 left-0 right-0 p-3 bg-[#0a0f1d]/95 backdrop-blur-md border-t border-[#1e293b] z-40">
-        <div className="max-w-2xl mx-auto flex gap-2">
-          <button
-            type="button"
-            onClick={handleSaveAll}
-            className="flex-1 bg-[#FFD000] hover:bg-yellow-300 text-black font-black py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all"
-          >
-            <Check className="w-4 h-4 stroke-[3]" />
-            <span>حفظ التعديلات</span>
-          </button>
-        </div>
-      </div>
+      {/* نوافذ النظام الحقيقية */}
+      {authModalOpen && (
+        <AuthModal
+          isOpen={authModalOpen}
+          onClose={() => {
+            setAuthModalOpen(false);
+            loadOwnerData();
+          }}
+        />
+      )}
+
+      {newBusinessModalOpen && (
+        <OwnerRequestModal
+          isOpen={newBusinessModalOpen}
+          onClose={() => {
+            setNewBusinessModalOpen(false);
+            loadOwnerData();
+          }}
+          userId={user?.id || ''}
+          userPhone={profile?.phone || ''}
+        />
+      )}
 
     </div>
   );

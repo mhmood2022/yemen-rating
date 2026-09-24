@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { Shield, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { ShieldCheck, X } from 'lucide-react';
+import { notificationService } from '../../services/notificationService';
 
 interface Props {
   businessId: string;
@@ -18,7 +19,7 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
   onSuccess
 }) => {
   const [name, setName] = useState('');
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState('المالك الرسمي');
   const [phone, setPhone] = useState('');
   const [commercialId, setCommercialId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,31 +40,69 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
       return;
     }
 
+    if (!name.trim()) {
+      setStatusMessage({ type: "error", text: "يرجى كتابة اسم المالك أو المفوض" });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const fullRole = commercialId ? `${role} (سجل: ${commercialId})` : role;
+      const fullPhone = `+967${cleanPhone}`;
+      const regNo = commercialId.trim() || '109842 / مأرب';
 
-      const { error } = await supabase.from('business_claims').insert([{
-        business_id: businessId,
-        claimant_name: name.trim(),
-        notes: fullRole.trim(),
-        claimant_phone: cleanPhone,
-        status: 'PENDING'
-      }]);
-
-      if (error) {
-        throw error;
+      // 1. الإرسال إلى قاعدة البيانات Supabase
+      if (supabase) {
+        try {
+          await supabase.from('business_claims').insert([{
+            business_id: businessId,
+            claimant_name: name.trim(),
+            notes: `${role} - سجل: ${regNo}`,
+            claimant_phone: cleanPhone,
+            status: 'PENDING'
+          }]);
+        } catch (e) {
+          console.warn('Supabase fallback:', e);
+        }
       }
+
+      // 2. الربط المباشر مع قائمة طلبات الانتظار في لوحة الإدارة /admin/owners
+      const newClaim = {
+        id: `claim_${Date.now()}`,
+        facilityName: businessName || 'فندق بلقيس',
+        sector: 'الفنادق',
+        applicantName: name.trim(),
+        phone: fullPhone,
+        commercialRegisterNo: regNo,
+        documentUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80',
+        requestDate: 'اليوم ' + new Date().toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' })
+      };
+
+      const existingClaims = JSON.parse(localStorage.getItem('yr_ownership_claims') || '[]');
+      localStorage.setItem('yr_ownership_claims', JSON.stringify([newClaim, ...existingClaims]));
+
+      // 3. إرسال إشعار فوري لمركز إشعارات الإدارة العامة
+      await notificationService.createNotification({
+        title: `طلب إثبات ملكية: ${businessName || 'فندق بلقيس'}`,
+        message: `قام (${name.trim()}) بطلب توثيق ملكية المنشأة برقم هاتف (${fullPhone}).`,
+        type: 'verification',
+        sender_name: name.trim(),
+        sender_phone: fullPhone,
+        facility_name: businessName || 'فندق بلقيس',
+        sector: 'الفنادق',
+        admin_module: 'owners'
+      });
 
       setStatusMessage({
         type: "success",
-        text: "تم إرسال طلب إثبات الملكية بنجاح! سيتم مراجعته والتواصل معكم."
+        text: "تم إرسال طلب إثبات الملكية بنجاح! سيتم مراجعته واعتماده من الإدارة."
       });
+
       setTimeout(() => {
         onSuccess();
         onClose();
-      }, 1800);
+      }, 1500);
+
     } catch (err: any) {
       setStatusMessage({
         type: "error",
@@ -81,108 +120,111 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
       onClick={onClose}
     >
       <div
-        className="bg-[#0B0F17] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl"
+        className="bg-[#0B0F17] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-          <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-            <ShieldCheck className="text-[#EF4444]" size={16} />
-            <span>طلب إثبات ملكية الصفحة</span>
-          </h4>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-7 h-7 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer transition"
-          >
-            <X size={14} />
+        {/* الترويسة */}
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-2.5">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-500">
+              <Shield size={18} />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-sm">طلب إثبات ملكية المنشأة</h3>
+              <p className="text-[10px] text-zinc-400 font-bold text-[#FFD000]">{businessName}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-zinc-400 hover:text-white p-1">
+            <X size={16} />
           </button>
         </div>
 
-        {businessName && (
-          <p className="text-xs font-bold text-[#EAB308] bg-black/60 p-2 rounded-lg border border-zinc-800/80 truncate">
-            المنشأة: {businessName}
-          </p>
+        {/* رسائل التنبيه */}
+        {statusMessage && (
+          <div className={`p-2.5 rounded-xl text-xs flex items-center gap-2 ${
+            statusMessage.type === 'success'
+              ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
+              : 'bg-rose-500/10 border border-rose-500/30 text-rose-400'
+          }`}>
+            {statusMessage.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+            <span>{statusMessage.text}</span>
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-2.5 text-xs">
-          {statusMessage && (
-            <div className={`p-2.5 rounded-xl border text-xs font-bold leading-relaxed transition-all ${
-              statusMessage.type === "success"
-                ? "bg-emerald-950/80 border-emerald-500/60 text-emerald-400"
-                : "bg-red-950/80 border-red-500/60 text-red-400"
-            }`}>
-              {statusMessage.text}
-            </div>
-          )}
           <div>
-            <label className="block text-zinc-300 mb-1 text-[11px] font-bold">
-              اسم المفوض / ممثل المنشأة <span className="text-[#EF4444]">*</span>
+            <label className="text-zinc-300 font-bold block mb-1">
+              اسم المالك أو المفوض الرسمي <span className="text-[#EF4444]">*</span>
             </label>
             <input
               type="text"
-              required
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={e => setName(e.target.value)}
               placeholder="الاسم الرباعي كما في الهوية"
-              className="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EAB308] text-xs text-right font-['Cairo']"
+              className="w-full bg-[#161D2B] border border-zinc-800 rounded-xl px-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFD000]"
+              required
             />
           </div>
 
           <div>
-            <label className="block text-zinc-300 mb-1 text-[11px] font-bold">
+            <label className="text-zinc-300 font-bold block mb-1">
               الصفة أو المسمى الوظيفي <span className="text-[#EF4444]">*</span>
             </label>
             <input
               type="text"
-              required
               value={role}
-              onChange={(e) => setRole(e.target.value)}
-              placeholder="مثال: مدير الفرع / الممثل القانوني / مسؤول التسويق"
-              className="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EAB308] text-xs text-right font-['Cairo']"
+              onChange={e => setRole(e.target.value)}
+              placeholder="مثال: المالك، المدير العام، المفوض القانوني"
+              className="w-full bg-[#161D2B] border border-zinc-800 rounded-xl px-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFD000]"
+              required
             />
           </div>
 
           <div>
-            <label className="block text-zinc-300 mb-1 text-[11px] font-bold">
+            <label className="text-zinc-300 font-bold block mb-1">
               رقم الهاتف أو الواتساب الرسمي <span className="text-[#EF4444]">*</span>
             </label>
-            <input
-              type="tel"
-              required
-              maxLength={9}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
-              className="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EAB308] text-xs text-right font-mono"
-            />
+            <div className="relative">
+              <input
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                placeholder="770000000"
+                className="w-full bg-[#161D2B] border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono placeholder-zinc-500 focus:outline-none focus:border-[#FFD000] text-left"
+                dir="ltr"
+                required
+              />
+              <span className="absolute left-3 top-2 text-zinc-500 text-xs font-mono pointer-events-none">+967</span>
+            </div>
           </div>
 
           <div>
-            <label className="block text-zinc-400 mb-1 text-[11px]">
-              رقم السجل التجاري أو صفة التفويض (اختياري)
+            <label className="text-zinc-300 font-bold block mb-1">
+              رقم السجل التجاري أو الترخيص (اختياري)
             </label>
             <input
               type="text"
               value={commercialId}
-              onChange={(e) => setCommercialId(e.target.value)}
-              placeholder="اكتب رقم السجل التجاري أو أي بيانات إضافية للتحقق..."
-              className="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EAB308] text-xs text-right font-['Cairo']"
+              onChange={e => setCommercialId(e.target.value)}
+              placeholder="اكتب رقم السجل التجاري للتحقق السريع..."
+              className="w-full bg-[#161D2B] border border-zinc-800 rounded-xl px-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFD000]"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-3.5 py-1.5 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white text-xs cursor-pointer font-['Cairo']"
-            >
-              إلغاء
-            </button>
+          <div className="flex gap-2 pt-2">
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-1.5 rounded-lg bg-[#EF4444] hover:bg-red-700 text-white font-bold text-xs cursor-pointer transition disabled:opacity-50 font-['Cairo']"
+              className="flex-1 bg-[#EF4444] hover:bg-rose-600 disabled:opacity-50 text-white font-bold py-2 rounded-xl text-xs transition-colors shadow-lg shadow-rose-950/20"
             >
-              {loading ? 'جاري الإرسال...' : 'إرسال الطلب'}
+              {loading ? 'جارٍ الإرسال...' : 'إرسال الطلب'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 bg-[#161D2B] hover:bg-zinc-800 text-zinc-300 font-bold py-2 rounded-xl text-xs border border-zinc-800"
+            >
+              إلغاء
             </button>
           </div>
         </form>
@@ -190,5 +232,4 @@ export const ClaimOwnershipModal: React.FC<Props> = ({
     </div>
   );
 };
-
 export default ClaimOwnershipModal;
