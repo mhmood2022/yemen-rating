@@ -7,6 +7,7 @@ import {
   ShieldCheck, AlertTriangle, DollarSign, Gavel, Star, CheckCheck, X, ArrowRight 
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { getAccess, AccessInfo } from '../../lib/access';
 
 interface SystemNotification {
   id: string;
@@ -31,19 +32,22 @@ export const AdminMaster: React.FC = () => {
   const [selectedNotification, setSelectedNotification] = useState<SystemNotification | null>(null);
   const navigate = useNavigate();
 
+  const [access, setAccess] = useState<AccessInfo | null>(null);
+
   useEffect(() => {
-    const session = localStorage.getItem('yr_admin_session');
-    if (session) {
-      try {
-        const data = JSON.parse(session);
-        if (data.authenticated) {
-          setIsAuthenticated(true);
-        }
-      } catch (e) {
-        localStorage.removeItem('yr_admin_session');
-      }
-    }
-    setChecking(false);
+    let alive = true;
+    const load = async () => {
+      const a = await getAccess();
+      if (!alive) return;
+      setAccess(a);
+      setIsAuthenticated(a.isStaff);
+      setChecking(false);
+    };
+    load();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      setTimeout(load, 0);
+    });
+    return () => { alive = false; subscription.unsubscribe(); };
   }, []);
 
   // جلب كل أنشطة وإشعارات الموقع (توثيق، بلاغات، عمولات، مزادات)
@@ -139,8 +143,8 @@ export const AdminMaster: React.FC = () => {
     }
   }, [isAuthenticated]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('yr_admin_session');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setIsAuthenticated(false);
   };
 
@@ -187,7 +191,7 @@ export const AdminMaster: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    return <AdminLogin onSuccess={() => setIsAuthenticated(true)} />;
+    return <AdminLogin access={access} />;
   }
 
   return (

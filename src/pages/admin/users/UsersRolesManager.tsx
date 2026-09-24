@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile, UserRole, UserStatus, AccountType } from '../../../types/auth';
-import { SYSTEM_PERMISSIONS, ROLE_PERMISSIONS_MAP as INITIAL_PERMS, ROLE_DETAILS as INITIAL_ROLES } from '../../../constants/permissions';
+import { getAccess, AccessInfo } from '../../../lib/access';
+import { SYSTEM_PERMISSIONS, ROLE_PERMISSIONS_MAP as INITIAL_PERMS, ROLE_PERMISSIONS_MAP, ROLE_DETAILS as INITIAL_ROLES } from '../../../constants/permissions';
 import { 
   Users, 
   Shield, 
@@ -29,8 +30,6 @@ import {
   Edit3
 } from 'lucide-react';
 
-const STORAGE_ROLES_PERMS_KEY = 'yr_dynamic_role_permissions';
-const STORAGE_CUSTOM_ROLES_KEY = 'yr_custom_roles_list';
 
 // مكون منسدل داكن مصغر وخفيف للهاتف
 const CustomDarkSelect: React.FC<{
@@ -94,6 +93,8 @@ export const UsersRolesManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'users' | 'roles'>('users');
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [access, setAccess] = useState<AccessInfo | null>(null);
+  useEffect(() => { getAccess().then(setAccess); }, []);
   
   // شريط البحث والفلاتر
   const [searchTerm, setSearchTerm] = useState('');
@@ -117,15 +118,9 @@ export const UsersRolesManager: React.FC = () => {
   const [isUpdating, setIsUpdating] = useState(false);
 
   // مصفوفة الأدوار والصلاحيات
-  const [rolePermissions, setRolePermissions] = useState<Record<string, string[]>>(() => {
-    const saved = localStorage.getItem(STORAGE_ROLES_PERMS_KEY);
-    return saved ? JSON.parse(saved) : INITIAL_PERMS;
-  });
+  const [rolePermissions, setRolePermissions] = useState<Record<string, string[]>>(INITIAL_PERMS);
 
-  const [rolesList, setRolesList] = useState<Record<string, { label: string; desc: string; color: string }>>(() => {
-    const saved = localStorage.getItem(STORAGE_CUSTOM_ROLES_KEY);
-    return saved ? JSON.parse(saved) : INITIAL_ROLES;
-  });
+  const [rolesList] = useState<Record<string, { label: string; desc: string; color: string }>>(INITIAL_ROLES);
 
   const [selectedRoleKey, setSelectedRoleKey] = useState<string>('super_admin');
   const [isSavingRolePerms, setIsSavingRolePerms] = useState(false);
@@ -166,14 +161,18 @@ export const UsersRolesManager: React.FC = () => {
         .select('id, name, owner_id')
         .not('owner_id', 'is', null);
 
-      const bizMap = (businesses || []).reduce((acc, b) => {
+      const bizMap = (businesses || []).reduce((acc: Record<string, string>, b: any) => {
         acc[b.owner_id] = b.name;
         return acc;
-      }, {});
+      }, {} as Record<string, string>);
 
+      const { data: authInfo } = await supabase.rpc('admin_users_auth_info');
+      const authMap = new Map<string, any>((authInfo || []).map((a: any) => [a.id, a]));
       const enriched = (data || []).map((u: any) => ({
         ...u,
-        owned_business_name: bizMap[u.id] || null
+        status: String(u.status || 'active').toLowerCase(),
+        last_sign_in_at: authMap.get(u.id)?.last_sign_in_at ?? null,
+        owned_business_name: bizMap[u.id] || null,
       }));
 
       setUsers(enriched);
@@ -211,129 +210,38 @@ export const UsersRolesManager: React.FC = () => {
   const handleSaveUserChanges = async () => {
     if (!selectedUser) return;
     setIsUpdating(true);
-
     try {
-      const updateData: any = {
+      const patch: Record<string, any> = {
         full_name: editName.trim(),
         phone: editPhone.trim(),
         role: editingRole,
         status: editingStatus,
-        updated_at: new Date().toISOString()
+        account_type: editingAccountType,
+        updated_at: new Date().toISOString(),
       };
-
-      if (supabase) {
-        let { error } = await supabase
-          .from('profiles')
-          .update({ ...updateData, account_type: editingAccountType })
-          .eq('id', selectedUser.id);
-
-        if (error && error.message.includes('account_type')) {
-          const res = await supabase.from('profiles').update(updateData).eq('id', selectedUser.id);
-          error = res.error;
-        }
-
-        if (error && error.message.includes('role')) {
-          const res = await supabase.from('profiles').update({ ...updateData, role: 'admin' }).eq('id', selectedUser.id);
-          error = res.error;
-        }
-
-        if (error) throw error;
-      }
-
-      setUsers(prev => prev.map(u => u.id === selectedUser.id ? {
-        ...u,
-        full_name: editName.trim(),
-        phone: editPhone.trim(),
-        role: editingRole,
-        status: editingStatus,
-        account_type: editingAccountType
-      } : u));
-
-      setSelectedUser(prev => prev ? {
-        ...prev,
-        full_name: editName.trim(),
-        phone: editPhone.trim(),
-        role: editingRole,
-        status: editingStatus,
-        account_type: editingAccountType
-      } : null);
-
-      showToast(`تم حفظ وتحديث "${editName || selectedUser.email}" بنجاح!`, 'success');
+      const { data, error } = await supabase
+        .from('profiles').update(patch).eq('id', selectedUser.id).select('id');
+      if (error) throw error;
+      if (!data || data.length === 0) throw new Error('ليست لديك صلاحية تعديل هذا الحساب');
+      const merged = { ...selectedUser, ...patch };
+      setUsers(prev => prev.map(u => (u.id === selectedUser.id ? { ...u, ...merged } : u)));
+      setSelectedUser(merged as any);
+      showToast('تم الحفظ بنجاح');
     } catch (err: any) {
-      showToast('تعذر الحفظ في السيرفر: ' + (err?.message || ''), 'error');
+      showToast('تعذر الحفظ: ' + (err?.message || ''), 'error');
     } finally {
       setIsUpdating(false);
     }
   };
 
   // تبديل صلاحية
-  const togglePermissionForRole = (permissionId: string) => {
-    const currentPerms = rolePermissions[selectedRoleKey] || [];
-    const hasPerm = currentPerms.includes(permissionId);
-    const updated = hasPerm ? currentPerms.filter(p => p !== permissionId) : [...currentPerms, permissionId];
-    setRolePermissions(prev => ({ ...prev, [selectedRoleKey]: updated }));
-  };
-
-  const handleGrantAllPermissions = () => {
-    const allIds = SYSTEM_PERMISSIONS.map(p => p.id);
-    setRolePermissions(prev => ({ ...prev, [selectedRoleKey]: allIds }));
-    showToast(`تم منح كافة الصلاحيات لدور (${rolesList[selectedRoleKey]?.label})`);
-  };
-
-  const handleRevokeAllPermissions = () => {
-    setRolePermissions(prev => ({ ...prev, [selectedRoleKey]: [] }));
-    showToast(`تم سحب كافة الصلاحيات عن دور (${rolesList[selectedRoleKey]?.label})`);
-  };
-
-  const handleSaveRolePermissions = () => {
-    setIsSavingRolePerms(true);
-    try {
-      localStorage.setItem(STORAGE_ROLES_PERMS_KEY, JSON.stringify(rolePermissions));
-      localStorage.setItem(STORAGE_CUSTOM_ROLES_KEY, JSON.stringify(rolesList));
-      showToast(`تم حفظ صلاحيات (${rolesList[selectedRoleKey]?.label}) بنجاح!`);
-    } catch (e) {
-      showToast('حدث خطأ أثناء الحفظ', 'error');
-    } finally {
-      setIsSavingRolePerms(false);
-    }
-  };
-
-  const handleResetToDefaults = () => {
-    if (confirm('هل ترغب باستعادة الصلاحيات القياسية المعتمدة؟')) {
-      const defaultPerms = (INITIAL_PERMS as any)[selectedRoleKey] || [];
-      setRolePermissions(prev => ({ ...prev, [selectedRoleKey]: defaultPerms }));
-      showToast('تمت استعادة الصلاحيات الافتراضية');
-    }
-  };
-
-  const handleCreateNewRole = (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanKey = newRoleKey.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_');
-    if (!cleanKey || !newRoleLabel.trim()) return;
-
-    const updatedRoles = {
-      ...rolesList,
-      [cleanKey]: {
-        label: newRoleLabel.trim(),
-        desc: newRoleDesc.trim() || 'دور إداري مخصص',
-        color: 'bg-purple-500/15 text-purple-400 border-purple-500/30'
-      }
-    };
-
-    setRolesList(updatedRoles);
-    setRolePermissions(prev => ({ ...prev, [cleanKey]: [] }));
-    setSelectedRoleKey(cleanKey);
-
-    localStorage.setItem(STORAGE_CUSTOM_ROLES_KEY, JSON.stringify(updatedRoles));
-    localStorage.setItem(STORAGE_ROLES_PERMS_KEY, JSON.stringify({ ...rolePermissions, [cleanKey]: [] }));
-
-    setIsNewRoleModalOpen(false);
-    setNewRoleKey('');
-    setNewRoleLabel('');
-    setNewRoleDesc('');
-    showToast(`تم إنشاء دور (${newRoleLabel}) بنجاح!`);
-  };
-
+  const readOnlyRoles = () => showToast('الأدوار والصلاحيات ثابتة ومطبّقة في قاعدة البيانات، ولا تُعدَّل من هنا', 'error');
+  const togglePermissionForRole = (_id: string) => readOnlyRoles();
+  
+  
+  
+  
+  
   // مسميات الأوسمة المختصرة الأنيقة للهواتف
   const getShortRoleBadge = (role: string) => {
     switch(role) {
@@ -650,7 +558,7 @@ export const UsersRolesManager: React.FC = () => {
               </h2>
 
               <button
-                onClick={() => setIsNewRoleModalOpen(true)}
+                onClick={readOnlyRoles}
                 className="bg-[#FFD000] text-black font-black py-1.5 px-3 rounded-lg text-[11px] flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5 stroke-[3]" />
