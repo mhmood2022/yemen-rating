@@ -25,6 +25,7 @@ import { AuctionDetailsPage } from './pages/templates/AuctionDetailsPage';
 
 // لوحة تحكم مالك المنشأة المعتمد
 import { OwnerDashboardPage } from './pages/owner/OwnerDashboardPage';
+import { UserProfilePage } from './pages/user/UserProfilePage';
 import { AccountPage } from "./pages/AccountPage";
 
 // لوحة التحكم الإدارية
@@ -106,6 +107,7 @@ export function App() {
 
         {/* لوحة تحكم مالك المنشأة */}
         <Route path="/owner" element={<AppShell><OwnerDashboardPage /></AppShell>} />
+        <Route path="/profile" element={<AppShell><UserProfilePage /></AppShell>} />
 
                                                                     {/* لوحة التحكم الإدارية الموحدة /admin */}
         <Route path="/admin" element={<AdminMaster />}>

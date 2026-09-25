@@ -446,26 +446,28 @@ export const CompaniesManager: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // جلب التصنيفات والمنشآت بالتوازي فائق السرعة
-      const [catRes, bizRes] = await Promise.all([
-        supabase.from('categories').select('id, name, slug'),
-        supabase.from('businesses').select('*').order('created_at', { ascending: false })
-      ]);
-
+      // 1. جلب التصنيفات بأمان
+      const { data: catData } = await supabase.from('categories').select('id, name, slug');
       const catMap: Record<string, { id: string; name: string; slug: string }> = {};
-      if (catRes.data) {
-        setDynamicCategories(catRes.data);
-        catRes.data.forEach(c => {
+      if (catData && catData.length > 0) {
+        setDynamicCategories(catData);
+        catData.forEach(c => {
           catMap[c.id] = c;
           catMap[c.slug] = c;
         });
         setCategoriesMap(catMap);
       }
 
-      const bData = bizRes.data;
-      if (bizRes.error) throw bizRes.error;
+      // 2. جلب المنشآت بدون تعليق
+      let bizQuery = supabase.from('businesses').select('*');
+      const { data: bData, error: bError } = await bizQuery;
+      
+      if (bError) {
+        console.warn('Businesses query warning:', bError);
+      }
 
-      const enriched: BusinessRecord[] = (bData || []).map(b => ({
+      const list = bData || [];
+      const enriched: BusinessRecord[] = list.map((b: any) => ({
         ...b,
         gallery_urls: Array.isArray(b.gallery_urls) ? b.gallery_urls : [],
         category_name: catMap[b.category_id]?.name || 'منشأة عامة',
@@ -475,6 +477,7 @@ export const CompaniesManager: React.FC = () => {
       setBusinesses(enriched);
     } catch (err: any) {
       console.error('Fetch error:', err);
+      setBusinesses([]);
     } finally {
       setLoading(false);
     }
