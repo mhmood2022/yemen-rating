@@ -126,8 +126,15 @@ export const AdminMaster: React.FC = () => {
       // ترتيب كل الإشعارات زمنياً من الأحدث للأقدم
       allAlerts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-      setNotifications(allAlerts);
-      setUnreadCount(allAlerts.filter(n => !n.is_read).length);
+      // تصفية الإشعارات التي قام الأدمن بحذفها مسبقاً
+      let dismissedIds: string[] = [];
+      try {
+        dismissedIds = JSON.parse(localStorage.getItem("yr_dismissed_notifications") || "[]");
+      } catch(_) {}
+
+      const activeAlerts = allAlerts.filter(a => !dismissedIds.includes(a.id));
+      setNotifications(activeAlerts);
+      setUnreadCount(activeAlerts.filter(n => !n.is_read).length);
     } catch (err) {
       console.error('Error fetching admin hub notifications:', err);
     }
@@ -166,6 +173,39 @@ export const AdminMaster: React.FC = () => {
       default:
         return <Bell className="text-gray-400 shrink-0" size={16} />;
     }
+  };
+
+  
+  // حذف إشعار فردي ومنع عودته نهائياً
+  const handleDismissNotification = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    try {
+      const dismissed = JSON.parse(localStorage.getItem("yr_dismissed_notifications") || "[]");
+      if (!dismissed.includes(id)) {
+        dismissed.push(id);
+        localStorage.setItem("yr_dismissed_notifications", JSON.stringify(dismissed));
+      }
+    } catch(err) {}
+
+    setNotifications(prev => {
+      const updated = prev.filter(n => n.id !== id);
+      setUnreadCount(updated.filter(n => !n.is_read).length);
+      return updated;
+    });
+  };
+
+  // مسح كافة الإشعارات الحالية ومنع عودتها نهائياً
+  const handleClearAllNotifications = () => {
+    try {
+      const currentIds = notifications.map(n => n.id);
+      const dismissed = JSON.parse(localStorage.getItem("yr_dismissed_notifications") || "[]");
+      const combined = Array.from(new Set([...dismissed, ...currentIds]));
+      localStorage.setItem("yr_dismissed_notifications", JSON.stringify(combined));
+      localStorage.removeItem("yr_admin_notifications");
+    } catch(err) {}
+
+    setNotifications([]);
+    setUnreadCount(0);
   };
 
   const handleNotificationClick = async (item: SystemNotification) => {
@@ -248,9 +288,20 @@ export const AdminMaster: React.FC = () => {
                     <span className="text-xs font-bold text-[#FFC500] flex items-center gap-1.5">
                       <Bell size={14} /> مركز تنبيهات وأنشطة المنصة
                     </span>
-                    <span className="text-[10px] text-gray-400 font-mono">
-                      {unreadCount} تنبيه نشط
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-gray-400 font-mono">
+                        {unreadCount} نشط
+                      </span>
+                      {notifications.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleClearAllNotifications}
+                          className="text-[10px] text-red-400 hover:text-red-300 font-bold px-1.5 py-0.5 rounded bg-red-500/10 hover:bg-red-500/20 transition cursor-pointer"
+                        >
+                          مسح الكل
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {notifications.length === 0 ? (

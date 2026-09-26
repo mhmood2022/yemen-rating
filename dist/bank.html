@@ -618,6 +618,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           bankData.sector_features = b.sector_features || b.sections_config?.features?.sector_features || b.features || [];
           bankData.sections_config = b.sections_config || {};
           bankData.is_verified = (b.verified === true || b.is_verified === true);
+          bankData.owner_id = b.owner_id || b.claimed_by_user_id;
+          bankData.claim_status = b.claim_status || b.ownership_status;
+          bankData.is_claimed = b.is_claimed;
+          bankData.ownership_status = b.ownership_status || (b.is_claimed ? 'CLAIMED' : 'UNCLAIMED');
           bankData.phone = b.phone || bankData.phone;
           bankData.whatsapp = b.whatsapp || bankData.whatsapp;
           bankData.email = b.email || bankData.email;
@@ -758,11 +762,54 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
   
     function renderUI() {
 
-        // إخفاء زر إثبات الملكية نهائياً إذا كانت المنشأة موثقة
+                        // التحقق الذكي من المالك وإثبات الملكية
         const claimBtn = document.getElementById('claim-btn');
         if (claimBtn) {
-          if (currentBank.ownership_status === 'VERIFIED' || currentBank.claim_status === 'APPROVED') {
-            claimBtn.classList.add('hidden');
+          const isVerifiedOrClaimed = 
+            currentBank.claim_status === 'CLAIMED' || 
+            currentBank.claim_status === 'APPROVED' || 
+            currentBank.ownership_status === 'VERIFIED' || 
+            currentBank.is_claimed === true || 
+            currentBank.is_verified === true;
+
+          if (isVerifiedOrClaimed) {
+            // جلب المستخدم المسجل حالياً من الذاكرة المحلية بأمان تام
+            let currentUserId = null;
+            try {
+              for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && (k.includes('auth-token') || k.includes('supabase.auth.token'))) {
+                  const raw = localStorage.getItem(k) || '{}';
+                  const parsed = JSON.parse(raw);
+                  currentUserId = parsed?.user?.id || parsed?.currentSession?.user?.id || parsed?.id;
+                  if (currentUserId) break;
+                }
+              }
+              if (!currentUserId) {
+                // محاولة إضافية عبر كائن yr_user أو auth_user المخزن محلياً
+                const yrUser = JSON.parse(localStorage.getItem('yr_user') || '{}');
+                currentUserId = yrUser?.id;
+              }
+            } catch (_) {}
+
+            const isOwner = currentUserId && (
+              currentBank.owner_id === currentUserId || 
+              currentBank.claimed_by_user_id === currentUserId
+            );
+
+            if (isOwner) {
+              // المالك: تحويل الزر إلى زر التعديل الذهبي الفاخر
+              claimBtn.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFC500] hover:bg-amber-400 text-black text-xs font-black shadow-lg transition active:scale-95 animate-pulse cursor-pointer border border-[#FFC500]";
+              claimBtn.innerHTML = '<i class="fa-solid fa-crown text-black text-xs"></i><span>👑 أنت المالك</span>';
+              claimBtn.onclick = () => {
+                window.location.href = `/owner?id=${currentBank.id}`;
+              };
+            } else {
+              // زائر عادي: شارة تم إثبات الملكية
+              claimBtn.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold";
+              claimBtn.innerHTML = '<i class="fa-solid fa-shield-check text-emerald-400 text-xs"></i><span>موثقة رسمياً</span>';
+              claimBtn.onclick = null;
+            }
           } else {
             claimBtn.classList.remove('hidden');
           }

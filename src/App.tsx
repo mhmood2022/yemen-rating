@@ -32,6 +32,7 @@ import { AccountPage } from "./pages/AccountPage";
 import { AdminMaster } from './pages/admin/AdminMaster';
 import { AdminDashboardOverview } from './pages/admin/AdminDashboardOverview';
 import { CompaniesManager } from './pages/admin/companies/CompaniesManager';
+import { ReportsManager } from './pages/admin/reports/ReportsManager';
 import { RatingsManager } from './pages/admin/ratings/RatingsManager';
 import { BanksManager } from './pages/admin/banks/BanksManager';
 import { AuctionsManager } from './pages/admin/auctions/AuctionsManager';
@@ -114,6 +115,7 @@ export function App() {
           <Route path="owners" element={<AdminOwnersHub />} />
           <Route index element={<AdminDashboardOverview />} />
           <Route path="companies" element={<CompaniesManager />} />
+          <Route path="reports" element={<ReportsManager />} />
           <Route path="ratings" element={<RatingsManager />} />
           <Route path="banks" element={<Navigate to="/admin/companies?category=banks" replace />} />
           <Route path="categories" element={<CategoriesManager />} />

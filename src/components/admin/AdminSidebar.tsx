@@ -11,7 +11,7 @@ import { Sparkles,
   Users,
   BarChart3,
   Settings,
-  Building2,
+  Building2, Briefcase, Home, ShieldAlert,
   ChevronDown,
   ChevronUp,
   Star
@@ -19,19 +19,21 @@ import { Sparkles,
 
 const ADMIN_OPERATIONS = [
   { id: 'dashboard', label: 'لوحة التحكم الرئيسية', icon: LayoutDashboard, path: '/admin' },
-  { id: 'owners', label: 'صفحات الملاك والطلبات', icon: Sparkles, path: '/admin/owners' },
   { id: 'all_companies', label: 'كافة المنشآت والأنشطة', icon: Building2, path: '/admin/companies' },
+  { id: 'claims', label: 'إثبات الملكية والمطالبات', icon: ShieldCheck, path: '/admin/claims' },
+  { id: 'reports', label: 'البلاغات والشكاوى', icon: ShieldAlert, path: '/admin/reports' },
+  { id: 'real-estate', label: 'العقارات والاستثمار', icon: Home, path: '/admin/real-estate' },
+  { id: 'jobs', label: 'الوظائف الشاغرة', icon: Briefcase, path: '/admin/jobs' },
+  { id: 'owners', label: 'صفحات الملاك والطلبات', icon: Sparkles, path: '/admin/owners' },
   { id: 'ratings', label: 'التحكم بالتقييمات والنسب', icon: Star, path: '/admin/ratings' },
   { id: 'categories', label: 'إدارة التصنيفات الرسمية', icon: FolderTree, path: '/admin/categories' },
-  { id: 'claims', label: 'إثبات الملكية والتوثيق', icon: ShieldCheck, path: '/admin/claims' },
   { id: 'ads', label: 'الإعلانات و YR Ads', icon: Megaphone, path: '/admin/ads' },
-    { id: 'auctions', label: 'المزادات والعمولات', icon: Gavel, path: '/admin/auctions' },
+  { id: 'auctions', label: 'المزادات والعمولات', icon: Gavel, path: '/admin/auctions' },
   { id: 'markets', label: 'الأسواق ومؤشرات الأسعار', icon: Store, path: '/admin/markets' },
   { id: 'users', label: 'المستخدمون والأدوار', icon: Users, path: '/admin/users' },
   { id: 'analytics', label: 'التقارير والمالية', icon: BarChart3, path: '/admin/analytics' },
   { id: 'settings', label: 'السجل والإعدادات', icon: Settings, path: '/admin/settings' },
 ];
-
 export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const location = useLocation();
   const [sectorsOpen, setSectorsOpen] = useState(true);

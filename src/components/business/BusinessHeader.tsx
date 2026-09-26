@@ -22,11 +22,25 @@ interface BusinessHeaderProps {
   onNavigate?: (path: string) => void;
 }
 
-export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavigate }) => {
+export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
+  const navigate = useNavigate();
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) setCurrentUserId(session.user.id);
+    });
+  }, []);
+ business, onNavigate }) => {
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
-  const [claimStatus, setClaimStatus] = useState<string>(
-    business.ownershipStatus || 'UNCLAIMED'
-  );
+  const bAny = business as any;
+  const initialStatus = 
+    bAny.claim_status || 
+    bAny.claimStatus || 
+    bAny.ownership_status || 
+    bAny.ownershipStatus || 
+    (bAny.is_claimed ? 'CLAIMED' : 'UNCLAIMED');
+
+  const [claimStatus, setClaimStatus] = useState<string>(initialStatus);
 
   const handleCall = () => {
     if (business.phone) {
@@ -138,10 +152,22 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavi
               )}
 
               {claimStatus === 'CLAIMED' && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30">
-                  <ShieldCheck size={12} strokeWidth={2.5} />
-                  <span>تم إثبات الملكية</span>
-                </span>
+                currentUserId && (bAny.owner_id === currentUserId || bAny.ownerId === currentUserId || bAny.claimed_by_user_id === currentUserId) ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/owner?id=${business.id}`)}
+                    className="inline-flex items-center gap-1 text-[11px] font-black px-3 py-1 rounded-full bg-[#FFC500] hover:bg-amber-400 text-black shadow-md transition-all active:scale-95 cursor-pointer animate-pulse"
+                    title="أنت المالك - انقر للانتقال للوحة التحكم والتعديل"
+                  >
+                    <ShieldCheck size={12} strokeWidth={2.5} />
+                    <span>👑 أنت المالك • اضغط لتعديل المنشأة</span>
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30">
+                    <ShieldCheck size={12} strokeWidth={2.5} />
+                    <span>تم إثبات الملكية</span>
+                  </span>
+                )
               )}
             </div>
 
