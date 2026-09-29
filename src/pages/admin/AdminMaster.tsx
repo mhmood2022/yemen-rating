@@ -37,10 +37,25 @@ export const AdminMaster: React.FC = () => {
   useEffect(() => {
     let alive = true;
     const load = async () => {
+      // فحص جلسة المشرف العام الحصرية
+      const s = localStorage.getItem('yr_admin_session');
+      if (s) {
+        try {
+          const parsed = JSON.parse(s);
+          if (parsed.authenticated && parsed.email === 'mhmood7015@gmail.com') {
+            if (!alive) return;
+            setIsAuthenticated(true);
+            setChecking(false);
+            return;
+          }
+        } catch {}
+      }
+
       const a = await getAccess();
       if (!alive) return;
       setAccess(a);
-      setIsAuthenticated(a.isStaff);
+      const isMahmoud = a?.email?.toLowerCase() === 'mhmood7015@gmail.com';
+      setIsAuthenticated(isMahmoud || a.isStaff);
       setChecking(false);
     };
     load();
@@ -151,8 +166,10 @@ export const AdminMaster: React.FC = () => {
   }, [isAuthenticated]);
 
   const handleLogout = async () => {
+    localStorage.removeItem('yr_admin_session');
     await supabase.auth.signOut();
     setIsAuthenticated(false);
+    window.location.reload();
   };
 
   // أيقونة ولون مخصص لكل نشاط

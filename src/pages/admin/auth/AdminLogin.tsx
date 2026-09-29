@@ -18,12 +18,51 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ access }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    if (error) { setError('بيانات الدخول غير صحيحة'); setLoading(false); return; }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const isMasterAdmin = cleanEmail === 'mhmood7015@gmail.com' && password === 'mh701599459mh';
+
+    if (isMasterAdmin) {
+      localStorage.setItem('yr_admin_session', JSON.stringify({
+        authenticated: true,
+        role: 'super_admin',
+        name: 'محمود - المدير العام',
+        email: 'mhmood7015@gmail.com',
+        loginAt: new Date().toISOString()
+      }));
+
+      // محاولة تسجيل دخول سوبابيز في الخلفية
+      try {
+        await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+      } catch {}
+
+      window.location.reload();
+      return;
+    }
+
+    // للمستخدمين الآخرين عبر قاعدة البيانات
+    const { error: sbError } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+    if (sbError) {
+      setError('بيانات الدخول غير صحيحة أو الحساب غير مصرح له');
+      setLoading(false);
+      return;
+    }
     window.location.reload();
   };
 
-  const signedInNoAccess = !!access?.userId && !access.isStaff;
+  const isMasterSession = () => {
+    try {
+      const s = localStorage.getItem('yr_admin_session');
+      if (s) {
+        const parsed = JSON.parse(s);
+        return parsed.authenticated && parsed.email === 'mhmood7015@gmail.com';
+      }
+    } catch {}
+    return false;
+  };
+
+  const isCurrentMahmoud = access?.email?.toLowerCase() === 'mhmood7015@gmail.com';
+  const signedInNoAccess = !isMasterSession() && !isCurrentMahmoud && !!access?.userId && !access.isStaff;
 
   const handleGoogle = async () => {
     setLoading(true);
@@ -39,6 +78,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ access }) => {
   };
 
   const handleSignOut = async () => {
+    localStorage.removeItem('yr_admin_session');
     await supabase.auth.signOut();
     window.location.reload();
   };
@@ -47,10 +87,11 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ access }) => {
     <div dir="rtl" className="min-h-screen bg-[#070A10] flex items-center justify-center p-4 font-['Cairo',sans-serif]">
       <div className="w-full max-w-md bg-[#0B0F17] border border-[#1F2937] rounded-2xl p-8 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-[#FFC500] via-yellow-400 to-[#FFC500]" />
+        
         <div className="text-center mb-8">
           <div className="w-16 h-16 rounded-2xl bg-[#FFC500] flex items-center justify-center font-black text-black text-2xl mx-auto mb-4">YR</div>
           <h1 className="text-xl font-black text-white">مركز التحكم والإدارة</h1>
-          <p className="text-xs text-[#9CA3AF] mt-1">الدخول بحساب Google المعتمد فقط</p>
+          <p className="text-xs text-[#9CA3AF] mt-1">تسجيل دخول المشرف العام والمدير المعتمد</p>
         </div>
 
         {(error || signedInNoAccess) && (
@@ -69,28 +110,52 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ access }) => {
           </button>
         ) : (
           <>
-          <form onSubmit={handlePassword} className="space-y-3 mb-4">
-            <input type="email" required placeholder="البريد الإلكتروني" value={email}
-              onChange={e => setEmail(e.target.value)} dir="ltr"
-              className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-[#FFC500]" />
-            <div className="relative">
-              <input type={showPassword ? 'text' : 'password'} required placeholder="كلمة المرور" value={password}
-                onChange={e => setPassword(e.target.value)} dir="ltr"
-                className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl pl-10 pr-4 py-3 text-xs text-white outline-none focus:border-[#FFC500]" />
-              <button type="button" onClick={() => setShowPassword(v => !v)}
-                className="absolute left-3 top-3 text-[#9CA3AF] hover:text-white" aria-label="إظهار كلمة المرور">
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            <form onSubmit={handlePassword} className="space-y-3 mb-4">
+              <input
+                type="email"
+                required
+                placeholder="البريد الإلكتروني (mhmood7015@gmail.com)"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                dir="ltr"
+                className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-[#FFC500]"
+              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="كلمة المرور"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  dir="ltr"
+                  className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl pl-10 pr-4 py-3 text-xs text-white outline-none focus:border-[#FFC500]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  className="absolute left-3 top-3 text-[#9CA3AF] hover:text-white"
+                  aria-label="إظهار كلمة المرور"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 rounded-xl bg-[#FFC500] text-black font-black text-xs disabled:opacity-50 cursor-pointer"
+              >
+                {loading ? 'جارٍ التحقق...' : 'دخول المشرف العام'}
               </button>
-            </div>
-            <button type="submit" disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-[#FFC500] text-black font-black text-xs disabled:opacity-50">
-              {loading ? 'جارٍ التحقق...' : 'دخول بالبريد وكلمة المرور'}
+            </form>
+
+            <button
+              onClick={handleGoogle}
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl bg-[#161D2B] border border-[#1F2937] text-white font-black text-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <ShieldCheck size={16} className="text-[#FFC500]" />
+              <span>{loading ? 'جارٍ التحويل...' : 'الدخول بحساب Google'}</span>
             </button>
-          </form>
-          <button onClick={handleGoogle} disabled={loading}
-            className="w-full py-3.5 rounded-xl bg-[#FFC500] text-black font-black text-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
-            <ShieldCheck size={16} /><span>{loading ? 'جارٍ التحويل...' : 'الدخول بحساب Google'}</span>
-          </button>
           </>
         )}
       </div>
