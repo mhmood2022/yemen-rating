@@ -459,16 +459,28 @@ export const CompaniesManager: React.FC = () => {
       }
 
       // 2. جلب المنشآت بدون تعليق
-      let bizQuery = supabase.from('businesses').select('*');
-      const { data: bData, error: bError } = await bizQuery;
+      let bizQuery = supabase.from('businesses').select('id,slug,name,category_id,sub_category,description,phone,whatsapp,email,website_url,city,address,latitude,longitude,yr_score,rating,review_count,tier_level,badge_type,is_verified,claim_status,claimed_by_user_id,status,created_at,updated_at,is_active,views_count,is_featured,featured_until,tier,owner_id,is_claimed,map_url,website,working_hours,call_clicks,whatsapp_clicks');
+      let bData: any = null; let bError: any = null;
+      for (let attempt = 1; attempt <= 4; attempt++) {
+        const res: any = await bizQuery;
+        bData = res.data; bError = res.error;
+        if (!bError) break;
+        await new Promise(r => setTimeout(r, 1200));
+      }
       
       if (bError) {
         console.warn('Businesses query warning:', bError);
       }
 
       const list = bData || [];
+      const imgMap: Record<string, any> = {};
+      for (const col of ['logo_url', 'cover_url']) {
+        const { data: imgs } = await supabase.from('businesses').select('id,' + col).not(col, 'like', 'data:%');
+        (imgs || []).forEach((r: any) => { imgMap[r.id] = { ...(imgMap[r.id] || {}), [col]: r[col] }; });
+      }
       const enriched: BusinessRecord[] = list.map((b: any) => ({
         ...b,
+        ...(imgMap[b.id] || {}),
         gallery_urls: Array.isArray(b.gallery_urls) ? b.gallery_urls : [],
         category_name: catMap[b.category_id]?.name || 'منشأة عامة',
         category_slug: catMap[b.category_id]?.slug || '',
@@ -616,7 +628,13 @@ export const CompaniesManager: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleOpenEditModal = (b: BusinessRecord) => {
+  const handleOpenEditModal = async (listItem: BusinessRecord) => {
+    const { data: full, error: fullErr } = await supabase.from('businesses').select('*').eq('id', listItem.id).single();
+    if (fullErr || !full) {
+      alert('تعذر تحميل بيانات المنشأة كاملة، لم يُفتح التعديل حفاظاً على الصور والإعدادات. حاول مرة أخرى.');
+      return;
+    }
+    const b: BusinessRecord = { ...listItem, ...full, gallery_urls: Array.isArray(full.gallery_urls) ? full.gallery_urls : [] } as BusinessRecord;
     setEditingId(b.id);
     setErrorMessage(null);
     setSavedSuccessfully(false);
@@ -876,7 +894,7 @@ export const CompaniesManager: React.FC = () => {
           <p className="text-base font-bold text-gray-200">
             {activeOfficialCategory
               ? `لا توجد ${activeOfficialCategory.name} مسجلة حالياً (العدد: 0)`
-              : 'لا توجد منشآت مطابقة للبحث'}
+              : `لا توجد منشآت مطابقة للبحث`}
           </p>
           <p className="text-xs text-gray-400 max-w-md mx-auto leading-relaxed">
             يمكنك الآن إضافة وتجهيز صفحات {activeOfficialCategory?.name || 'المنشآت'} ورفع الغلاف والشعار والصور ليطالب أصحابها بـ «إثبات الملكية» لاحقاً.

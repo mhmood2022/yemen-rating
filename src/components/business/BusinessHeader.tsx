@@ -1,5 +1,7 @@
 import { YRBadge, BadgeType } from '../common/YRBadge';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
 import {
   ArrowRight,
   MoreVertical,
@@ -22,7 +24,7 @@ interface BusinessHeaderProps {
   onNavigate?: (path: string) => void;
 }
 
-export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
+export const BusinessHeader: React.FC<BusinessHeaderProps> = ({ business, onNavigate }) => {
   const navigate = useNavigate();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   useEffect(() => {
@@ -30,7 +32,6 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
       if (session?.user) setCurrentUserId(session.user.id);
     });
   }, []);
- business, onNavigate }) => {
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
   const bAny = business as any;
   const initialStatus = 

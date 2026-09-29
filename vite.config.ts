@@ -4,6 +4,16 @@ import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/sb': {
+        target: 'https://wkdqeghotlipciqiytuj.supabase.co',
+        changeOrigin: true,
+        ws: true,
+        rewrite: (path) => path.replace(/^\/sb/, ''),
+      },
+    },
+  },
   build: {
     rollupOptions: {
       input: {

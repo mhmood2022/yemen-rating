@@ -13,15 +13,15 @@ export const AdsManager: React.FC = () => {
     // جلب كافة الإعلانات الحية من Supabase للوحة التحكم
     const loadAllAdsFromCloud = async () => {
       try {
-        const cloudAds = await adsDatabaseService.getActiveAds();
-        if (cloudAds && cloudAds.length > 0) {
+        const cloudAds = await adsDatabaseService.getAllAds();
+        if (cloudAds) {
           setAds(cloudAds);
           try {
             localStorage.setItem('yr_published_ads', JSON.stringify(cloudAds));
           } catch (_) {}
         }
       } catch (err) {
-        console.error("Error loading ads from cloud:", err);
+        console.error("Error loading ads from cloud:", err); alert("تعذر جلب الإعلانات من قاعدة البيانات: " + ((err as any)?.message || err));
       }
     };
     loadAllAdsFromCloud();
@@ -29,16 +29,6 @@ export const AdsManager: React.FC = () => {
   const [ads, setAds] = useState<PublishedAd[]>([]);
   const [viewFormat, setViewFormat] = useState<'grid' | 'table'>('grid');
 
-  useEffect(() => {
-    const saved = localStorage.getItem('yr_published_ads');
-    if (saved) {
-      try {
-        setAds(JSON.parse(saved));
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }, []);
 
   const toggleAdStatus = (id: string) => {
     const updated = ads.map(a => a.id === id ? { ...a, status: a.status === 'active' ? 'paused' : 'active' } as PublishedAd : a);

@@ -136,7 +136,7 @@ export const UsersRolesManager: React.FC = () => {
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ show: true, msg, type });
-    setTimeout(() => setToast({ show: false, msg: '', type: 'success' }), 2500);
+    setTimeout(() => setToast({ show: false, msg: '', type: 'success' }), 30000);
   };
 
   // جلب المستخدمين الحقيقيين من Supabase
@@ -154,6 +154,7 @@ export const UsersRolesManager: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      showToast('profiles rows: ' + (data?.length ?? 'null'), 'success');
 
       // جلب المنشآت المملوكة للملاك الحقيقيين
       const { data: businesses } = await supabase
@@ -177,7 +178,7 @@ export const UsersRolesManager: React.FC = () => {
 
       setUsers(enriched);
     } catch (err: any) {
-      console.error('Error fetching real users:', err);
+      console.error('Error fetching real users:', err); (async () => { const { data: { session } } = await supabase.auth.getSession(); const r = await fetch(window.location.origin + '/sb/rest/v1/profiles?select=id&limit=1', { headers: { apikey: (supabase as any).supabaseKey, Authorization: 'Bearer ' + (session?.access_token || '') } }); alert('session:' + (session ? 'yes' : 'no') + ' status:' + r.status + ' body:' + (await r.text()).slice(0, 300)); })();
     } finally {
       setLoading(false);
     }
@@ -235,8 +236,93 @@ export const UsersRolesManager: React.FC = () => {
   };
 
   // تبديل صلاحية
-  const readOnlyRoles = () => showToast('الأدوار والصلاحيات ثابتة ومطبّقة في قاعدة البيانات، ولا تُعدَّل من هنا', 'error');
-  const togglePermissionForRole = (_id: string) => readOnlyRoles();
+  const readOnlyRoles = () => showToast('إضافة أدوار جديدة غير متاحة حالياً. الأدوار ثابتة، وتُمنح الصلاحيات لكل موظف من ملفه', 'error');
+
+  // ===== الصلاحيات الفعلية (تُحفظ في Supabase) =====
+  const isSuperAdminUser = access?.role === 'super_admin';
+  const [userOverrides, setUserOverrides] = useState<Record<string, boolean>>({});
+  const [isSavingUserPerms, setIsSavingUserPerms] = useState(false);
+
+  const requireSuper = () => {
+    if (!isSuperAdminUser) { showToast('للمشرف العام فقط | ' + String(access?.email) + ' | ' + String(access?.role), 'error'); return false; }
+    return true;
+  };
+
+  const loadRolePermissions = useCallback(async () => {
+    const { data, error } = await supabase.from('rbac_role_permissions').select('role, permission');
+    if (error || !data || data.length === 0) return;
+    const map: Record<string, string[]> = {};
+    Object.keys(INITIAL_ROLES).forEach(k => { map[k] = []; });
+    data.forEach((r: any) => { if (!map[r.role]) map[r.role] = []; map[r.role].push(r.permission); });
+    setRolePermissions(map);
+  }, []);
+  useEffect(() => { loadRolePermissions(); }, [loadRolePermissions]);
+
+  const setRolePerms = (fn: (cur: string[]) => string[]) => {
+    if (!requireSuper()) return;
+    if (selectedRoleKey === 'super_admin') { showToast('صلاحيات المشرف العام ثابتة (كل الصلاحيات)', 'error'); return; }
+    setRolePermissions(prev => ({ ...prev, [selectedRoleKey]: fn(prev[selectedRoleKey] || []) }));
+  };
+  const togglePermissionForRole = (id: string) => setRolePerms(cur => cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id]);
+  const handleGrantAllPermissions = () => setRolePerms(() => SYSTEM_PERMISSIONS.map(p => p.id));
+  const handleRevokeAllPermissions = () => setRolePerms(() => []);
+  const handleSaveRolePermissions = async () => {
+    if (!requireSuper()) return;
+    if (selectedRoleKey === 'super_admin') { showToast('صلاحيات المشرف العام ثابتة', 'error'); return; }
+    setIsSavingRolePerms(true);
+    try {
+      const { error } = await supabase.rpc('set_role_permissions', { p_role: selectedRoleKey, p_perms: rolePermissions[selectedRoleKey] || [] });
+      if (error) throw error;
+      showToast('تم حفظ صلاحيات الدور');
+    } catch (err: any) {
+      showToast('تعذر الحفظ: ' + (err?.message || ''), 'error');
+    } finally {
+      setIsSavingRolePerms(false);
+    }
+  };
+  const handleCreateNewRole = (e: React.FormEvent) => { e.preventDefault(); readOnlyRoles(); };
+
+  useEffect(() => {
+    setUserOverrides({});
+    if (!selectedUser) return;
+    let cancelled = false;
+    supabase.from('rbac_user_permissions').select('permission, granted').eq('user_id', selectedUser.id)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const m: Record<string, boolean> = {};
+        (data || []).forEach((r: any) => { m[r.permission] = r.granted; });
+        setUserOverrides(m);
+      });
+    return () => { cancelled = true; };
+  }, [selectedUser?.id]);
+
+  const targetLocked = !!selectedUser && (selectedUser.role === 'super_admin' || selectedUser.id === access?.userId);
+  const roleDefault = (perm: string) => (rolePermissions[editingRole] || []).includes(perm);
+  const effective = (perm: string) => editingRole === 'super_admin' ? true : (perm in userOverrides ? userOverrides[perm] : roleDefault(perm));
+  const toggleUserPerm = (perm: string) => {
+    if (!requireSuper()) return;
+    if (targetLocked) { showToast('لا تُعدَّل صلاحيات المشرف العام أو حسابك الشخصي', 'error'); return; }
+    const next = !effective(perm);
+    setUserOverrides(prev => {
+      const c = { ...prev };
+      if (next === roleDefault(perm)) delete c[perm]; else c[perm] = next;
+      return c;
+    });
+  };
+  const handleSaveUserPermissions = async () => {
+    if (!selectedUser || !requireSuper()) return;
+    if (targetLocked) { showToast('لا تُعدَّل صلاحيات هذا الحساب', 'error'); return; }
+    setIsSavingUserPerms(true);
+    try {
+      const { error } = await supabase.rpc('set_user_permissions', { p_user: selectedUser.id, p_overrides: userOverrides });
+      if (error) throw error;
+      showToast('تم حفظ صلاحيات الموظف');
+    } catch (err: any) {
+      showToast('تعذر الحفظ: ' + (err?.message || ''), 'error');
+    } finally {
+      setIsSavingUserPerms(false);
+    }
+  };
   
   
   
@@ -847,21 +933,57 @@ export const UsersRolesManager: React.FC = () => {
             </div>
 
             {/* الصلاحيات الناتجة عن الدور */}
-            <div className="space-y-1.5 bg-[#10172a] border border-[#1e293b] p-3 rounded-xl text-[11px]">
-              <span className="text-slate-400 block">الصلاحيات الناتجة عن الدور:</span>
-              <div className="flex flex-wrap gap-1">
-                {(ROLE_PERMISSIONS_MAP[editingRole] || []).map((id: string) => (
-                  <span key={id} className="px-1.5 py-0.5 rounded bg-[#162238] border border-[#243354] text-slate-200 font-mono text-[9px]">{id}</span>
-                ))}
-              </div>
+            <div className="space-y-2 bg-[#10172a] border border-[#1e293b] p-3 rounded-xl text-[11px]">
+              <span className="text-slate-400 block">صلاحيات الحساب (صلاحيات الدور + استثناءات هذا الموظف):</span>
+              {[
+                { domain: 'users', title: 'المستخدمون والحسابات' },
+                { domain: 'facilities', title: 'دليل المنشآت والأنشطة' },
+                { domain: 'ads', title: 'الإعلانات والترويج' },
+                { domain: 'settings', title: 'إعدادات النظام والمالية' },
+              ].map(sec => (
+                <div key={sec.domain} className="space-y-1">
+                  <div className="text-[10px] font-bold text-[#FFD000]">{sec.title}</div>
+                  {SYSTEM_PERMISSIONS.filter(p => p.domain === sec.domain).map(p => {
+                    const on = effective(p.id);
+                    const isOverride = p.id in userOverrides;
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => toggleUserPerm(p.id)}
+                        className={`p-2 rounded-lg border flex items-center justify-between cursor-pointer ${
+                          on ? 'bg-[#162238] border-[#10b981]/50 text-white' : 'bg-[#162238]/50 border-[#243354]/60 text-slate-400'
+                        }`}
+                      >
+                        <div className="min-w-0">
+                          <span className="font-bold text-[11px] block">{p.name}</span>
+                          <span className="text-[9px] text-slate-500 block">
+                            {isOverride ? (on ? 'مُنحت له خصيصاً' : 'سُحبت منه') : (on ? 'من الدور' : 'غير ممنوحة')}
+                          </span>
+                        </div>
+                        <div className={`w-8 h-4 rounded-full relative flex items-center px-0.5 shrink-0 ${on ? 'bg-[#10b981]' : 'bg-slate-700'}`}>
+                          <div className={`w-3.5 h-3.5 rounded-full bg-white transition-transform ${on ? '-translate-x-3.5' : 'translate-x-0'}`} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+              <button
+                type="button"
+                disabled={isSavingUserPerms || targetLocked}
+                onClick={handleSaveUserPermissions}
+                className="w-full bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 font-black py-1.5 rounded-lg text-[11px] disabled:opacity-40"
+              >
+                {isSavingUserPerms ? 'جارٍ الحفظ...' : 'حفظ صلاحيات الموظف'}
+              </button>
               <div className="text-[10px] text-slate-500 pt-1 border-t border-[#1e293b]">
                 تاريخ التسجيل: {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleString('ar-YE') : '—'}
                 <br />آخر دخول: {selectedUser.last_sign_in_at ? new Date(selectedUser.last_sign_in_at).toLocaleString('ar-YE') : '—'}
-                <br />المنشآت المرتبطة • طلبات الملكية • النشاط: (لاحقًا)
               </div>
             </div>
 
             {/* الأزرار */}
+
             <div className="flex gap-1.5 pt-1 border-t border-[#1e293b]">
               <button
                 type="button"

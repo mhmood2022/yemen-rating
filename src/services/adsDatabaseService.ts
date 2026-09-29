@@ -38,6 +38,23 @@ export const adsDatabaseService = {
     }
   },
 
+  // جلب كل الإعلانات (نشطة وموقوفة) للوحة التحكم، مع إظهار الخطأ
+  async getAllAds(): Promise<PublishedAd[]> {
+    const { data, error } = await supabase
+      .from('published_ads')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data || []).map((item: any) => ({
+      ...(item.data || {}),
+      id: item.id,
+      placementId: item.placement_id,
+      status: item.status,
+      views: item.views || 0,
+      clicks: item.clicks || 0,
+    }));
+  },
+
   // 2. نشر وحفظ الإعلان في قاعدة بيانات Supabase
   async publishAd(ad: PublishedAd): Promise<boolean> {
     try {
