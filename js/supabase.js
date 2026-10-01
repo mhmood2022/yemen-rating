@@ -1,7 +1,7 @@
 cat > js/supabase.js << 'ENDOFFILE'
 // === YEMEN RATING - Supabase Connection ===
 // ⚠️ ضع مفاتيحك الحقيقية هنا ⚠️
-const SUPABASE_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
+const SUPABASE_URL = 'https://rnmuncxkfyoknmqejghl.supabase.co';
 
 const SUPABASE_KEY = 'sb_publishable_4StPj676njVXlDg4UUwaJg_xSqhsIuT';
 

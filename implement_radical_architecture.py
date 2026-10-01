@@ -10,7 +10,7 @@ for p in [".env", ".env.local", "src/lib/supabase.ts"]:
 url_m = re.search(r'(https://[a-zA-Z0-9-]+\.supabase\.co)', env_text)
 key_m = re.search(r'(eyJ[a-zA-Z0-9_\-\.]+)', env_text)
 
-supa_url = url_m.group(1) if url_m else "https://wkdqeghotlipciqiytuj.supabase.co"
+supa_url = url_m.group(1) if url_m else "https://rnmuncxkfyoknmqejghl.supabase.co"
 supa_key = key_m.group(1) if key_m else ""
 
 # ==============================================================================

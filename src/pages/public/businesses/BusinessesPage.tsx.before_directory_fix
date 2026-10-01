@@ -59,8 +59,8 @@ export const BusinessesPage: React.FC = () => {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [reviewsMap, setReviewsMap] = useState<Map<string, { avg: number; count: number }>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
-  const [selectedCity, setSelectedCity] = useState(() => searchParams.get('city') || 'all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCity, setSelectedCity] = useState('all');
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
   const cityDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -134,23 +134,10 @@ export const BusinessesPage: React.FC = () => {
 
   const filtered = businesses.filter((item) => {
     const q = searchQuery.toLowerCase().trim();
-    const searchableText = [
-      item.name,
-      item.description,
-      item.city,
-      item.address,
-      item.phone,
-      item.services,
-      item.offers
-    ]
-      .filter(Boolean)
-      .map(value => Array.isArray(value) ? value.join(' ') : String(value))
-      .join(' ')
-      .toLowerCase();
-
-    const matchesSearch = !q || searchableText.includes(q);
+    const matchesSearch = !q ||
+      (item.name || '').toLowerCase().includes(q) ||
+      (item.description || '').toLowerCase().includes(q);
     const matchesCity = selectedCity === 'all' || item.city === selectedCity;
-
     return matchesSearch && matchesCity;
   });
 

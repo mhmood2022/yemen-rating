@@ -51,10 +51,13 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
           .maybeSingle();
 
         let query = supabase.from('businesses').select('*');
-        if (catRow && catRow.id) {
-          query = query.or(`category_id.eq.${catRow.id},category_id.eq.${categorySlug}`);
+
+        if (catRow?.id) {
+          query = query.eq('category_id', catRow.id);
         } else {
-          query = query.eq('category_id', categorySlug);
+          console.warn(`Category not found for slug: ${categorySlug}`);
+          if (isMounted) setLiveBusinesses([]);
+          return;
         }
 
         const { data: bRows, error } = await query.order('created_at', { ascending: false });

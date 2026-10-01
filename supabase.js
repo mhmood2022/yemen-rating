@@ -4,7 +4,7 @@
    في بقية الصفحات عند تحويلها من YR_DB إلى Supabase الحقيقي.
 ═══════════════════════════════════════════════════════════ */
 
-const SUPABASE_URL = 'https://wkdqeghotlipciqiytuj.supabase.co';
+const SUPABASE_URL = 'https://rnmuncxkfyoknmqejghl.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_4StPj676njVXlDg4UUwaJg_xSqhsIuT';
 
 // كل الصفحات تنتظر هذا الـ Promise قبل أي استعلام، فلا يوجد أبدًا

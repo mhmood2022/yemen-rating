@@ -1,6 +1,6 @@
 import urllib.request, json, urllib.error
 
-URL = 'https://wkdqeghotlipciqiytuj.supabase.co'
+URL = 'https://rnmuncxkfyoknmqejghl.supabase.co'
 KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrZHFlZ2hvdGxpcGNpcWl5dHVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5MDM4NzEsImV4cCI6MjEwMjQ3OTg3MX0.ahqq5okKMXMxuI-8sArjxcVIpPDRmX20mhscs8BaCTE'
 
 headers = {
