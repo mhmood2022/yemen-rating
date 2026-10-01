@@ -1,3 +1,4 @@
+import { compressImage } from '../../../lib/imageUtils';
 
 // دالة آمنة تمنع خطأ React عند محاولة رسم الكائنات مباشرة
 function getSafeOfferString(item: any): string {
@@ -512,59 +513,46 @@ export const CompaniesManager: React.FC = () => {
     });
   }, [businesses, currentCategorySlug, searchTerm, filterCity, filterStatus, filterBadge, categoriesMap]);
 
-  const handleUploadFile = (target: 'logo' | 'cover' | number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleUploadFile = async (target: 'logo' | 'cover' | number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const file = input.files?.[0];
     if (!file) return;
 
     setUploadingTarget(String(target));
     setErrorMessage(null);
+    // ندع المتصفح يرسم مؤشر التحميل قبل بدء المعالجة الثقيلة
+    await new Promise((r) => setTimeout(r, 60));
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const localBase64 = event.target?.result as string;
-      if (target === 'logo') setFormData(p => ({ ...p, logo_url: localBase64 }));
-      else if (target === 'cover') setFormData(p => ({ ...p, cover_url: localBase64 }));
+    try {
+      const blob = await compressImage(file);
+      const folder = target === 'logo' ? 'logos' : (target === 'cover' ? 'covers' : 'gallery');
+      const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(7)}.webp`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from('businesses')
+        .upload(fileName, blob, { upsert: true, contentType: 'image/webp' });
+      if (uploadErr) throw uploadErr;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('businesses')
+        .getPublicUrl(fileName);
+
+      if (target === 'logo') setFormData(p => ({ ...p, logo_url: publicUrl }));
+      else if (target === 'cover') setFormData(p => ({ ...p, cover_url: publicUrl }));
       else if (typeof target === 'number') {
         setFormData(p => {
           const next = [...p.gallery_urls];
-          next[target] = localBase64;
+          next[target] = publicUrl;
           return { ...p, gallery_urls: next };
         });
       }
-
-      try {
-        const ext = file.name.split('.').pop() || 'jpg';
-        const folder = target === 'logo' ? 'logos' : (target === 'cover' ? 'covers' : 'gallery');
-        const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
-
-        const { error: uploadErr } = await supabase.storage
-          .from('businesses')
-          .upload(fileName, file, { upsert: true });
-
-        if (!uploadErr) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('businesses')
-            .getPublicUrl(fileName);
-
-          if (publicUrl) {
-            if (target === 'logo') setFormData(p => ({ ...p, logo_url: publicUrl }));
-            else if (target === 'cover') setFormData(p => ({ ...p, cover_url: publicUrl }));
-            else if (typeof target === 'number') {
-              setFormData(p => {
-                const next = [...p.gallery_urls];
-                next[target] = publicUrl;
-                return { ...p, gallery_urls: next };
-              });
-            }
-          }
-        }
-      } catch (uploadErr) {
-        console.warn('Storage background upload notice:', uploadErr);
-      } finally {
-        setUploadingTarget(null);
-      }
-    };
-    reader.readAsDataURL(file);
+    } catch (err: any) {
+      console.error('Upload failed:', err);
+      setErrorMessage('فشل رفع الصورة: ' + (err?.message || 'خطأ غير معروف'));
+    } finally {
+      setUploadingTarget(null);
+      input.value = '';
+    }
   };
 
   const handleOpenAddModal = () => {
@@ -683,6 +671,12 @@ export const CompaniesManager: React.FC = () => {
     const isEdit = !!editingId;
     const generatedSlug = formData.slug.trim() || formData.name.trim().toLowerCase().replace(/\s+/g, '-');
     const cleanGallery = formData.gallery_urls.filter(Boolean) as string[];
+    const isHeavyB64 = (v: any) => typeof v === "string" && v.startsWith("data:") && v.length > 10000;
+    if (isHeavyB64(formData.logo_url) || isHeavyB64(formData.cover_url) || cleanGallery.some(isHeavyB64)) {
+      setErrorMessage("توجد صورة ثقيلة لم تُرفع بشكل صحيح. أعد رفعها ثم احفظ.");
+      setSaving(false);
+      return;
+    }
 
     const payload = {
       name: formData.name.trim(),
@@ -1199,7 +1193,7 @@ export const CompaniesManager: React.FC = () => {
                         </div>
                         <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-[#FFC500] text-black font-black text-xs flex items-center gap-2 shadow-md">
                           <Upload size={14} />
-                          {uploadingTarget === 'logo' ? 'جاري المعاينة...' : 'اختر من الهاتف'}
+                          {uploadingTarget === 'logo' ? 'جاري الرفع...' : 'اختر من الهاتف'}
                           <input
                             type="file"
                             accept="image/*"

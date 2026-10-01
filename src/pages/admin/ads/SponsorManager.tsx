@@ -123,6 +123,29 @@ export const SponsorManager: React.FC = () => {
     loadSponsorData();
   }, []);
 
+  // ضغط الصورة داخل المتصفح قبل الرفع (أقصى عرض 1200 بكسل، WebP)
+  const compressImage = (file: File, maxW = 1200, quality = 0.8): Promise<Blob> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext("2d");
+        URL.revokeObjectURL(url);
+        if (!ctx) return reject(new Error("canvas"));
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob"))), "image/webp", quality);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("img"));
+      };
+      img.src = url;
+    });
+
   // معالجة رفع الملفات من استوديو الهاتف
   const handlePhoneFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -132,15 +155,31 @@ export const SponsorManager: React.FC = () => {
     if (!file) return;
 
     const isVideo = file.type.startsWith("video/");
+    const MAX_VIDEO_MB = 5;
+    if (isVideo && file.size > MAX_VIDEO_MB * 1024 * 1024) {
+      showToast("error", `حجم الفيديو أكبر من ${MAX_VIDEO_MB} MB. اختر فيديو أصغر.`);
+      e.target.value = "";
+      return;
+    }
+
     showToast("warning", `جارِ رفع ${isVideo ? "فيديو" : "شعار"} الراعي إلى السيرفر...`);
 
     try {
-      const fileExt = file.name.split(".").pop() || (isVideo ? "mp4" : "jpg");
+      let body: Blob | File = file;
+      let fileExt = file.name.split(".").pop() || (isVideo ? "mp4" : "jpg");
+      let contentType = file.type;
+
+      if (!isVideo) {
+        body = await compressImage(file);
+        fileExt = "webp";
+        contentType = "image/webp";
+      }
+
       const fileName = `sponsors/${target}_${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("public")
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, body, { upsert: true, contentType });
 
       if (uploadError) throw uploadError;
 
@@ -156,20 +195,11 @@ export const SponsorManager: React.FC = () => {
         setMediaType(isVideo ? "video" : "image");
         showToast("success", `تم رفع ${isVideo ? "فيديو" : "صورة"} الإعلان بنجاح ✅`);
       }
-    } catch (err) {
-      console.error("Storage upload fallback to reader:", err);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === "string") {
-          if (target === "logo") setLogoUrl(reader.result);
-          else {
-            setMediaUrl(reader.result);
-            setMediaType(isVideo ? "video" : "image");
-          }
-          showToast("success", "تم حفظ الملف بنجاح ✅");
-        }
-      };
-      reader.readAsDataURL(file);
+    } catch (err: any) {
+      console.error("Storage upload failed:", err);
+      showToast("error", `فشل الرفع: ${err?.message || "خطأ غير معروف"}`);
+    } finally {
+      e.target.value = "";
     }
   };
 
