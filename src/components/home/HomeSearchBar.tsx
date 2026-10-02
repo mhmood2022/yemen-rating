@@ -225,7 +225,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
       const [bankRes, bizRes] = await Promise.allSettled([bankQuery, bizQuery]);
 
       if (bankRes.status === "fulfilled" && bankRes.value.data) {
-        setMatchedBanks(bankRes.value.data);
+        setMatchedBanks([]);
       } else {
         setMatchedBanks([]);
       }
@@ -550,7 +550,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
           ) : (
             <>
               {/* البنوك والمصارف */}
-              {matchedBanks.length > 0 && (
+              {false && matchedBanks.length > 0 && (
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">
                     البنوك والمصارف
