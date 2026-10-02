@@ -66,6 +66,12 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     mediaUrl?: string;
     mediaType?: "image" | "video";
     sponsorTag?: string;
+    ctaText?: string;
+    animationEffect?: string;
+    textColor?: string;
+    btnBgColor?: string;
+    btnTextColor?: string;
+    accentColor?: string;
   } | null>(null);
 
   const [matchedCategories, setMatchedCategories] = useState<any[]>([]);
@@ -108,6 +114,13 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
           );
 
           const name = ad.sponsor_name || adData.advertiserName || ad.title;
+          const expiryDate = adData.contractExpiry || ad.contract_expiry;
+          const today = new Date().toISOString().split("T")[0];
+          // إذا انتهى تاريخ العقد، لا يظهر الإعلان نهائياً في الموقع العام
+          if (expiryDate && expiryDate < today) {
+            if (isMounted) setRealSponsorAd(null);
+            return;
+          }
 
           if (name) {
             setRealSponsorAd({
@@ -117,7 +130,13 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
               logoUrl: sponsorLogoOnly,
               mediaUrl: adVideoOrImage,
               mediaType: isVideo ? "video" : "image",
-              sponsorTag: ad.sponsor_tag || adData.sponsorTag || "الراعي الرسمي"
+              sponsorTag: ad.sponsor_tag || adData.sponsorTag || "الراعي الرسمي",
+              ctaText: adData.ctaText,
+              animationEffect: adData.styles?.animationEffect || "none",
+              textColor: adData.styles?.textColor,
+              btnBgColor: adData.styles?.btnBgColor,
+              btnTextColor: adData.styles?.btnTextColor,
+              accentColor: adData.styles?.accentColor
             });
             return;
           }
@@ -263,6 +282,38 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
     <div ref={containerRef} dir="rtl" className={`relative z-40 font-['Cairo',sans-serif] w-full ${className}`}>
       <div className="bg-[#090E1A] border border-slate-800 shadow-2xl rounded-none overflow-visible">
 
+        
+      {/* 🔮 حركات الوسائط والزر التفاعلية */}
+      <style>{`
+        @keyframes yrPulseAnim {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.04); }
+        }
+        @keyframes yrGlowAnim {
+          0%, 100% { filter: brightness(1) contrast(1); }
+          50% { filter: brightness(1.25) contrast(1.1); }
+        }
+        @keyframes yrShimmerAnim {
+          0% { transform: translateX(-150%) skewX(-20deg); }
+          100% { transform: translateX(250%) skewX(-20deg); }
+        }
+        @keyframes yrBtnPulseAnim {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 196, 0, 0.4); }
+          50% { transform: scale(1.05); box-shadow: 0 0 10px 2px rgba(245, 196, 0, 0.6); }
+        }
+        .sp-anim-pulse { animation: yrPulseAnim 3.5s ease-in-out infinite !important; }
+        .sp-anim-glow { animation: yrGlowAnim 2.8s ease-in-out infinite alternate !important; }
+        .sp-shimmer-sweep {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.25) 50%, transparent 100%);
+          animation: yrShimmerAnim 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          pointer-events: none;
+          z-index: 15;
+        }
+        .sp-btn-animated { animation: yrBtnPulseAnim 2.2s ease-in-out infinite !important; }
+      `}</style>
+
         {/* ⭐ إعلان الراعي الرسمي: الفيديو الحقيقي فقط في الخلفية، والشعار في الدائرة الصغيرة */}
         {realSponsorAd && (
           <div className="bg-[#050811] border-b border-slate-800 rounded-none overflow-hidden transition-all">
@@ -283,13 +334,19 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                     muted
                     playsInline
                     preload="auto"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-none"
+                    className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-none ${
+                      realSponsorAd.animationEffect === "pulse" ? "sp-anim-pulse" :
+                      realSponsorAd.animationEffect === "glow" ? "sp-anim-glow" : ""
+                    }`}
                   />
                 ) : (
                   <img
                     src={realSponsorAd.mediaUrl}
                     alt={realSponsorAd.advertiserName}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-none"
+                    className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-none ${
+                      realSponsorAd.animationEffect === "pulse" ? "sp-anim-pulse" :
+                      realSponsorAd.animationEffect === "glow" ? "sp-anim-glow" : ""
+                    }`}
                   />
                 )}
 
@@ -303,8 +360,16 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
 
                     <div className="flex items-center gap-1">
                       {realSponsorAd.targetUrl && (
-                        <span className="text-[9px] text-black bg-[#F5C400] font-black px-2 py-0.5 rounded-none flex items-center gap-0.5 shadow-md">
-                          <span>زيارة</span>
+                        <span
+                          style={{
+                            backgroundColor: realSponsorAd.btnBgColor || "#F5C400",
+                            color: realSponsorAd.btnTextColor || "#000000"
+                          }}
+                          className={`text-[9px] font-black px-2.5 py-0.5 rounded-none flex items-center gap-1 shadow-md transition-all ${
+                            realSponsorAd.animationEffect && realSponsorAd.animationEffect !== "none" ? "sp-btn-animated" : ""
+                          }`}
+                        >
+                          <span>{realSponsorAd.ctaText || "زيارة"}</span>
                           <ExternalLink size={9} />
                         </span>
                       )}
@@ -321,13 +386,21 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                     {/* الشعار الدائري الصغير فقط + اسم الراعي */}
                     <div className="flex items-center gap-2 min-w-0">
                       {realSponsorAd.logoUrl && (
-                        <img src={realSponsorAd.logoUrl} alt="logo" className="w-6 h-6 rounded-full object-cover border border-white/40 bg-black/60 shrink-0" />
+                        <img
+                          src={realSponsorAd.logoUrl}
+                          alt="logo"
+                          style={{ borderColor: realSponsorAd.accentColor || "rgba(255,255,255,0.4)" }}
+                          className="w-5 h-5 rounded-full object-cover border bg-black/60 shrink-0 transition-colors"
+                        />
                       )}
-                      <h4 className="text-white text-xs sm:text-sm font-black truncate drop-shadow-md">{realSponsorAd.advertiserName}</h4>
+                      <h4 className="text-white text-[11px] sm:text-xs font-bold truncate drop-shadow-md">{realSponsorAd.advertiserName}</h4>
                     </div>
 
                     {realSponsorAd.title && (
-                      <p className="text-[#F5C400] text-[10px] font-bold drop-shadow-md shrink-0 text-left">
+                      <p
+                        style={{ color: realSponsorAd.textColor || "#F5C400" }}
+                        className="text-[10px] font-bold drop-shadow-md shrink-0 text-left"
+                      >
                         {realSponsorAd.title}
                       </p>
                     )}

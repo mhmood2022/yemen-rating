@@ -324,37 +324,94 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
     loadBusiness();
   }, [businessId]);
 
-  const handleUploadFile = async (target: 'logo' | 'cover' | number, e: React.ChangeEvent<HTMLInputElement>) => {
+  // محرك ضغط الصور الذكي في هاتف العميل (يحول من 10MB إلى 150KB WebP)
+  const compressImage = async (file: File, maxWidth = 1200, quality = 0.75): Promise<Blob> => {
+    return new Promise((resolve) => {
+      if (!file.type.startsWith("image/")) {
+        resolve(file);
+        return;
+      }
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) { resolve(file); return; }
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => resolve(blob || file),
+            "image/webp",
+            quality
+          );
+        };
+        img.onerror = () => resolve(file);
+      };
+      reader.onerror = () => resolve(file);
+    });
+  };
+
+  const handleUploadFile = async (target: "logo" | "cover" | number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // 1. معاينة فورية لحظية في جزء من الثانية دون أي تأخير
+    const localPreviewUrl = URL.createObjectURL(file);
+    if (target === "logo") {
+      setFormData(p => ({ ...p, logo_url: localPreviewUrl }));
+    } else if (target === "cover") {
+      setFormData(p => ({ ...p, cover_url: localPreviewUrl }));
+    } else if (typeof target === "number") {
+      const next = [...formData.gallery_urls];
+      next[target] = localPreviewUrl;
+      setFormData(p => ({ ...p, gallery_urls: next }));
+    }
+
     setUploadingTarget(String(target));
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      // 2. ضغط الصورة في الهاتف قبل رفعها (شعار 500px، غلاف وصور 1200px)
+      const maxWidth = target === "logo" ? 500 : 1200;
+      const compressedBlob = await compressImage(file, maxWidth, 0.75);
+
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.webp`;
       const filePath = `businesses/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file);
-      
-      let finalUrl = '';
-      if (!uploadError) {
-        const { data } = supabase.storage.from('media').getPublicUrl(filePath);
-        finalUrl = data.publicUrl;
-      } else {
-        finalUrl = URL.createObjectURL(file);
-      }
+      // 3. رفع الصورة المضغوطة بصيغة WebP مع حماية الباندويث بكاش لمدة سنة
+      const { error: uploadError } = await supabase.storage.from("media").upload(filePath, compressedBlob, {
+        contentType: "image/webp",
+        cacheControl: "31536000",
+        upsert: true
+      });
 
-      if (target === 'logo') {
-        setFormData(p => ({ ...p, logo_url: finalUrl }));
-      } else if (target === 'cover') {
-        setFormData(p => ({ ...p, cover_url: finalUrl }));
-      } else if (typeof target === 'number') {
-        const next = [...formData.gallery_urls];
-        next[target] = finalUrl;
-        setFormData(p => ({ ...p, gallery_urls: next }));
+      if (!uploadError) {
+        const { data } = supabase.storage.from("media").getPublicUrl(filePath);
+        const finalUrl = data.publicUrl;
+
+        // 4. تثبيت الرابط الدائم في قاعدة البيانات
+        if (target === "logo") {
+          setFormData(p => ({ ...p, logo_url: finalUrl }));
+        } else if (target === "cover") {
+          setFormData(p => ({ ...p, cover_url: finalUrl }));
+        } else if (typeof target === "number") {
+          const next = [...formData.gallery_urls];
+          next[target] = finalUrl;
+          setFormData(p => ({ ...p, gallery_urls: next }));
+        }
+      } else {
+        console.error("Supabase Storage Error:", uploadError);
       }
     } catch (err) {
-      console.error('Upload error:', err);
+      console.error("Upload error:", err);
     } finally {
       setUploadingTarget(null);
     }

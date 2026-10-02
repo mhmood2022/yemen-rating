@@ -147,7 +147,7 @@ export const AdminOwnersHub: React.FC = () => {
         const isOwnerAccount = 
           p.role === 'owner' || 
           p.account_type === 'owner' || 
-          p.email === 'mhmood7015@gmail.com' ||
+          p.email === 'info.yemenrating@gmail.com' ||
           p.full_name?.includes('المكش') ||
           (dbOwnerReqs || []).some((r: any) => r.user_id === p.id);
 

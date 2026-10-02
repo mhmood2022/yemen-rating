@@ -2,25 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   Sparkles,
-  CheckCircle2,
-  AlertCircle,
   ExternalLink,
   Power,
-  RefreshCw,
   Save,
-  ImagePlus,
-  Video,
   Trash2,
   X,
   ArrowRight,
-  Upload,
-  Palette,
-  Sliders,
+  Eye,
+  ChevronDown,
+  Image as ImageIcon,
+  Film,
   Check,
-  Globe,
-  Tag,
-  Phone,
-  MessageSquare
+  MessageCircle,
+  Globe
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 
@@ -29,12 +23,29 @@ interface ToastState {
   text: string;
 }
 
+const SPONSOR_TAG_OPTIONS = [
+  'الراعي الرسمي',
+  'الراعي الذهبي',
+  'الراعي الماسي',
+  'الراعي الفضي',
+  'شريك استراتيجي',
+  'عرض حصري',
+  'راعي الفعالية',
+  'إعلان مميز'
+];
+
+const ANIMATION_OPTIONS = [
+  { id: 'none', label: 'بدون حركة' },
+  { id: 'shimmer', label: 'لمعان دوري (Shimmer)' },
+  { id: 'pulse', label: 'نبض هادئ (Pulse)' },
+  { id: 'glow', label: 'توهج ناصع (Glow)' }
+];
+
 export const SponsorManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<ToastState | null>(null);
 
-  // معرّف السجل الحالي في قاعدة البيانات
   const [sponsorRecordId, setSponsorRecordId] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(false);
   const [viewsCount, setViewsCount] = useState(0);
@@ -45,30 +56,74 @@ export const SponsorManager: React.FC = () => {
   const [sponsorTag, setSponsorTag] = useState('الراعي الرسمي');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [targetUrl, setTargetUrl] = useState('');
-  const [ctaText, setCtaText] = useState('زيارة الراعي');
   const [contractExpiry, setContractExpiry] = useState('');
 
-  // 2. الوسائط (رفع من استوديو الهاتف)
+  // 2. تحكم الرابط الذكي (واتساب أو موقع)
+  const [linkType, setLinkType] = useState<'whatsapp' | 'website'>('whatsapp');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [websiteUrl, setWebsiteUrl] = useState('');
+  const [ctaText, setCtaText] = useState('تواصل واتساب');
+
+  // 3. الوسائط
   const [logoUrl, setLogoUrl] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
 
-  // 3. التخصيص البصري والأبعاد والحركة
+  // 4. التخصيص البصري
   const [bgColor, setBgColor] = useState('#090E1A');
   const [accentColor, setAccentColor] = useState('#F5C400');
   const [textColor, setTextColor] = useState('#FFFFFF');
-  const [btnBgColor, setBtnBgColor] = useState('#F5C400');
-  const [btnTextColor, setBtnTextColor] = useState('#000000');
+  const [btnBgColor, setBtnBgColor] = useState('#16A34A');
+  const [btnTextColor, setBtnTextColor] = useState('#FFFFFF');
   const [animationEffect, setAnimationEffect] = useState<'none' | 'shimmer' | 'pulse' | 'glow'>('shimmer');
-  const [customHeight, setCustomHeight] = useState(160);
+  const [customHeight, setCustomHeight] = useState(130);
+
+  // مراجع عناصر الإدخال
+  const logoGalleryRef = useRef<HTMLInputElement>(null);
+  const mediaGalleryRef = useRef<HTMLInputElement>(null);
+  const mediaVideoRef = useRef<HTMLInputElement>(null);
+
+  // حالات القوائم المنسدلة
+  const [openTagDropdown, setOpenTagDropdown] = useState(false);
+  const [openAnimDropdown, setOpenAnimDropdown] = useState(false);
+  const tagDropdownRef = useRef<HTMLDivElement>(null);
+  const animDropdownRef = useRef<HTMLDivElement>(null);
 
   const showToast = (type: 'success' | 'error' | 'warning', text: string) => {
     setToast({ type, text });
-    setTimeout(() => setToast(null), 4000);
+    setTimeout(() => setToast(null), 3500);
   };
 
-  // جلب بيانات الراعي من Supabase
+  // توليد الرابط المعتمد النهائي تلقائياً
+  const getFinalTargetUrl = () => {
+    if (linkType === 'whatsapp') {
+      const cleanDigits = whatsappNumber.replace(/[^0-9]/g, '');
+      if (!cleanDigits) return '';
+      if (cleanDigits.startsWith('967')) return `https://wa.me/${cleanDigits}`;
+      if (cleanDigits.length === 9) return `https://wa.me/967${cleanDigits}`;
+      if (cleanDigits.length === 10 && cleanDigits.startsWith('0')) return `https://wa.me/967${cleanDigits.slice(1)}`;
+      return `https://wa.me/${cleanDigits}`;
+    } else {
+      let raw = websiteUrl.trim();
+      if (!raw) return '';
+      if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+      return `https://${raw}`;
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (tagDropdownRef.current && !tagDropdownRef.current.contains(e.target as Node)) {
+        setOpenTagDropdown(false);
+      }
+      if (animDropdownRef.current && !animDropdownRef.current.contains(e.target as Node)) {
+        setOpenAnimDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const loadSponsorData = async () => {
     try {
       setLoading(true);
@@ -91,29 +146,34 @@ export const SponsorManager: React.FC = () => {
         setSponsorTag(d.sponsorTag || 'الراعي الرسمي');
         setTitle(d.title || data.title || '');
         setDescription(d.description || data.description || '');
-        setTargetUrl(d.targetUrl || data.target_url || '');
-        setCtaText(d.ctaText || 'زيارة الراعي');
         setContractExpiry(d.contractExpiry || data.contract_expiry || '');
 
+        const savedUrl = d.targetUrl || data.target_url || '';
+        if (savedUrl.includes('wa.me/')) {
+          setLinkType('whatsapp');
+          const num = savedUrl.split('wa.me/')[1]?.replace('967', '') || '';
+          setWhatsappNumber(num);
+        } else if (savedUrl) {
+          setLinkType('website');
+          setWebsiteUrl(savedUrl.replace(/^https?:\/\//, ''));
+        }
+
+        setCtaText(d.ctaText || 'تواصل واتساب');
         setLogoUrl(d.logoUrl || data.logo_url || '');
         setMediaUrl(d.mediaUrl || data.media_url || data.image_url || '');
         setMediaType(d.mediaType || (data.media_url?.endsWith('.mp4') ? 'video' : 'image'));
 
-        if (d.styles) {
-          if (d.styles.bgColor) setBgColor(d.styles.bgColor);
-          if (d.styles.accentColor) setAccentColor(d.styles.accentColor);
-          if (d.styles.textColor) setTextColor(d.styles.textColor);
-          if (d.styles.btnBgColor) setBtnBgColor(d.styles.btnBgColor);
-          if (d.styles.btnTextColor) setBtnTextColor(d.styles.btnTextColor);
-          if (d.styles.animationEffect) setAnimationEffect(d.styles.animationEffect);
-          if (d.styles.customHeight) setCustomHeight(d.styles.customHeight);
-        }
-      } else {
-        setIsActive(false);
-        setSponsorRecordId(null);
+        const styles = d.styles || {};
+        if (styles.bgColor) setBgColor(styles.bgColor);
+        if (styles.accentColor) setAccentColor(styles.accentColor);
+        if (styles.textColor) setTextColor(styles.textColor);
+        if (styles.btnBgColor) setBtnBgColor(styles.btnBgColor);
+        if (styles.btnTextColor) setBtnTextColor(styles.btnTextColor);
+        if (styles.animationEffect) setAnimationEffect(styles.animationEffect);
+        if (styles.customHeight) setCustomHeight(styles.customHeight);
       }
     } catch {
-      showToast('error', 'تعذر تحميل بيانات الراعي الرسمي من الخادم');
+      showToast('error', 'تعذر تحميل بيانات الراعي من السيرفر');
     } finally {
       setLoading(false);
     }
@@ -123,8 +183,7 @@ export const SponsorManager: React.FC = () => {
     loadSponsorData();
   }, []);
 
-  // ضغط الصورة داخل المتصفح قبل الرفع (أقصى عرض 1200 بكسل، WebP)
-  const compressImage = (file: File, maxW = 1200, quality = 0.8): Promise<Blob> =>
+  const compressImage = (file: File, maxW = 900, quality = 0.75): Promise<{ blob: Blob; base64: string }> =>
     new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(file);
@@ -137,73 +196,86 @@ export const SponsorManager: React.FC = () => {
         URL.revokeObjectURL(url);
         if (!ctx) return reject(new Error("canvas"));
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob"))), "image/webp", quality);
+        const base64 = canvas.toDataURL("image/webp", quality);
+        canvas.toBlob((b) => {
+          if (b) resolve({ blob: b, base64 });
+          else reject(new Error("toBlob failed"));
+        }, "image/webp", quality);
       };
       img.onerror = () => {
         URL.revokeObjectURL(url);
-        reject(new Error("img"));
+        reject(new Error("img load error"));
       };
       img.src = url;
     });
 
-  // معالجة رفع الملفات من استوديو الهاتف
   const handlePhoneFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    target: "logo" | "media"
+    target: "logo" | "media",
+    forcedType?: 'image' | 'video'
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const isVideo = file.type.startsWith("video/");
-    const MAX_VIDEO_MB = 5;
+    const isVideo = forcedType === 'video' || file.type.startsWith("video/");
+    const MAX_VIDEO_MB = 10;
     if (isVideo && file.size > MAX_VIDEO_MB * 1024 * 1024) {
-      showToast("error", `حجم الفيديو أكبر من ${MAX_VIDEO_MB} MB. اختر فيديو أصغر.`);
+      showToast("error", `حجم الفيديو أكبر من ${MAX_VIDEO_MB} ميجابايت.`);
       e.target.value = "";
       return;
     }
 
-    showToast("warning", `جارِ رفع ${isVideo ? "فيديو" : "شعار"} الراعي إلى السيرفر...`);
+    showToast("warning", `جارِ معالجة ورفع ${isVideo ? "فيديو" : "صورة"} الراعي...`);
 
     try {
       let body: Blob | File = file;
-      let fileExt = file.name.split(".").pop() || (isVideo ? "mp4" : "jpg");
-      let contentType = file.type;
+      let fallbackBase64 = "";
 
       if (!isVideo) {
-        body = await compressImage(file);
-        fileExt = "webp";
-        contentType = "image/webp";
+        const compressed = await compressImage(file, target === 'logo' ? 400 : 900);
+        body = compressed.blob;
+        fallbackBase64 = compressed.base64;
       }
 
-      const fileName = `sponsors/${target}_${Date.now()}.${fileExt}`;
+      const fileExt = isVideo ? (file.name.split(".").pop() || "mp4") : "webp";
+      const fileName = `ads/sponsors_${target}_${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("public")
-        .upload(fileName, body, { upsert: true, contentType });
+        .from("businesses")
+        .upload(fileName, body, { upsert: true, contentType: isVideo ? file.type : "image/webp" });
 
-      if (uploadError) throw uploadError;
+      if (!uploadError) {
+        const { data: { publicUrl } } = supabase.storage
+          .from("businesses")
+          .getPublicUrl(fileName);
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("public")
-        .getPublicUrl(fileName);
-
-      if (target === "logo") {
-        setLogoUrl(publicUrl);
-        showToast("success", "تم رفع شعار الراعي بنجاح ✅");
+        if (target === "logo") {
+          setLogoUrl(publicUrl);
+        } else {
+          setMediaUrl(publicUrl);
+          setMediaType(isVideo ? "video" : "image");
+        }
+        showToast("success", `تم رفع ${isVideo ? "الفيديو" : "الشعار"} بنجاح للسحابة ✅`);
       } else {
-        setMediaUrl(publicUrl);
-        setMediaType(isVideo ? "video" : "image");
-        showToast("success", `تم رفع ${isVideo ? "فيديو" : "صورة"} الإعلان بنجاح ✅`);
+        if (!isVideo && fallbackBase64) {
+          if (target === "logo") setLogoUrl(fallbackBase64);
+          else {
+            setMediaUrl(fallbackBase64);
+            setMediaType("image");
+          }
+          showToast("success", "تم حفظ الصورة بنجاح ✅");
+        } else {
+          throw uploadError;
+        }
       }
     } catch (err: any) {
-      console.error("Storage upload failed:", err);
-      showToast("error", `فشل الرفع: ${err?.message || "خطأ غير معروف"}`);
+      console.error("Storage upload:", err);
+      showToast("error", `فشل الرفع: ${err?.message || "خطأ غير متوقع"}`);
     } finally {
       e.target.value = "";
     }
   };
 
-  // حفظ وتفعيل إعلان الراعي
   const handleSaveSponsor = async (desiredStatus?: boolean) => {
     const statusToSave = desiredStatus !== undefined ? desiredStatus : isActive;
 
@@ -212,15 +284,22 @@ export const SponsorManager: React.FC = () => {
       return;
     }
 
-    const trimmedUrl = targetUrl.trim();
-    if (trimmedUrl && !trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://') && !trimmedUrl.startsWith('tel:') && !trimmedUrl.startsWith('https://wa.me')) {
-      showToast('warning', 'يرجى إدخال رابط يبدأ بـ https:// أو رقم هاتف صحيح');
-      return;
-    }
+    const targetUrl = getFinalTargetUrl();
 
     try {
       setSaving(true);
       const generatedId = sponsorRecordId || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "sponsor_" + Date.now());
+
+      const stylesData = {
+        bgColor,
+        accentColor,
+        textColor,
+        btnBgColor,
+        btnTextColor,
+        animationEffect,
+        customHeight
+      };
+
       const payload: any = {
         id: generatedId,
         is_sponsor: true,
@@ -234,21 +313,13 @@ export const SponsorManager: React.FC = () => {
           sponsorTag: sponsorTag.trim(),
           title: title.trim(),
           description: description.trim(),
-          targetUrl: trimmedUrl,
-          ctaText: ctaText.trim() || 'زيارة الراعي',
+          targetUrl: targetUrl,
+          ctaText: ctaText.trim() || (linkType === 'whatsapp' ? 'تواصل واتساب' : 'زيارة الموقع'),
           contractExpiry: contractExpiry.trim(),
           logoUrl: logoUrl,
           mediaUrl: mediaUrl,
           mediaType: mediaType,
-          styles: {
-            bgColor,
-            accentColor,
-            textColor,
-            btnBgColor,
-            btnTextColor,
-            animationEffect,
-            customHeight
-          }
+          styles: stylesData
         },
         views: viewsCount,
         clicks: clicksCount,
@@ -263,7 +334,7 @@ export const SponsorManager: React.FC = () => {
           .eq('id', sponsorRecordId);
         opError = error;
       } else {
-        const { data: newRec, error } = await supabase
+        const { error } = await supabase
           .from('published_ads')
           .insert([payload])
           .select()
@@ -274,527 +345,615 @@ export const SponsorManager: React.FC = () => {
 
       if (opError) throw opError;
 
-      // مزامنة التخزين المحلي فوراً
+      // مزامنة التخزين المحلي الفوري
       try {
         const saved = localStorage.getItem('yr_published_ads');
         const list = saved ? JSON.parse(saved) : [];
         const filtered = list.filter((a: any) => String(a.placementId) !== 'home_sponsor');
         if (statusToSave) {
           filtered.unshift({
-            id: sponsorRecordId || 'home_sponsor_live',
+            id: sponsorRecordId || generatedId,
             placementId: 'home_sponsor',
-            placementName: 'الراعي الرسمي للصفحة الرئيسية',
+            placementName: 'الراعي الرسمي',
             status: 'active',
             title: title || advertiserName,
             advertiserName: advertiserName,
-            targetUrl: trimmedUrl,
+            targetUrl: targetUrl,
             mediaUrl: mediaUrl,
             logoUrl: logoUrl,
-            ctaText: ctaText,
+            ctaText: ctaText.trim() || (linkType === 'whatsapp' ? 'تواصل واتساب' : 'زيارة الموقع'),
             createdAt: new Date().toLocaleDateString('ar-YE'),
-          views: 0,
-          clicks: 0
+            views: viewsCount,
+            clicks: clicksCount,
+            styles: stylesData
           });
         }
         localStorage.setItem('yr_published_ads', JSON.stringify(filtered));
       } catch (_) {}
 
       setIsActive(statusToSave);
-      showToast('success', statusToSave ? '🎉 تم حفظ وتفعيل إعلان الراعي بنجاح في المنصة!' : 'تم حفظ الإعلان وإيقاف ظهوره مؤقتاً.');
-    } catch {
-      const msg = opError?.message || opError?.details || err?.message || "خطأ غير محدد"; console.error("Supabase Error:", opError || err); showToast("error", `فشل الحفظ: ${msg}`);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // حذف إعلان الراعي
-  const handleDeleteSponsor = async () => {
-    if (!window.confirm('هل أنت متأكد من رغبتك في حذف بيانات إعلان الراعي نهائياً؟')) return;
-    try {
-      setSaving(true);
-      if (sponsorRecordId) {
-        await supabase.from('published_ads').delete().eq('id', sponsorRecordId);
-      }
-      try {
-        const saved = localStorage.getItem('yr_published_ads');
-        if (saved) {
-          const list = JSON.parse(saved).filter((a: any) => String(a.placementId) !== 'home_sponsor');
-          localStorage.setItem('yr_published_ads', JSON.stringify(list));
-        }
-      } catch (_) {}
-
-      setSponsorRecordId(null);
-      setIsActive(false);
-      setAdvertiserName('');
-      setTitle('');
-      setDescription('');
-      setTargetUrl('');
-      setLogoUrl('');
-      setMediaUrl('');
-      showToast('success', '✅ تم حذف سجل إعلان الراعي بنجاح.');
-    } catch {
-      showToast('error', 'تعذر حذف الإعلان من قاعدة البيانات.');
+      showToast('success', statusToSave ? '🎉 تم حفظ وتفعيل إعلان الراعي بالمنصة!' : 'تم حفظ الإعلان وإيقافه مؤقتاً.');
+    } catch (err: any) {
+      showToast('error', `فشل الحفظ: ${err?.message || "خطأ غير معروف"}`);
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div dir="rtl" className="space-y-6 font-['Cairo',sans-serif] text-white p-3 sm:p-6 max-w-6xl mx-auto pb-20">
+    <div dir="rtl" className="space-y-3 font-['Cairo',sans-serif] text-white p-2 sm:p-4 max-w-4xl mx-auto pb-16">
       
-      {/* 🔔 التنبيهات المنبثقة الفخمة */}
+      {/* 🔮 أنماط حركات المعاينة الحية المباشرة */}
+      <style>{`
+        @keyframes yrPulseAnim {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.04); }
+        }
+        @keyframes yrGlowAnim {
+          0%, 100% { filter: brightness(1) contrast(1); }
+          50% { filter: brightness(1.25) contrast(1.1); }
+        }
+        @keyframes yrShimmerAnim {
+          0% { transform: translateX(-150%) skewX(-20deg); }
+          100% { transform: translateX(250%) skewX(-20deg); }
+        }
+        @keyframes yrBtnPulseAnim {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 196, 0, 0.4); }
+          50% { transform: scale(1.05); box-shadow: 0 0 10px 2px rgba(245, 196, 0, 0.6); }
+        }
+        .sp-anim-pulse { animation: yrPulseAnim 3.5s ease-in-out infinite !important; }
+        .sp-anim-glow { animation: yrGlowAnim 2.8s ease-in-out infinite alternate !important; }
+        .sp-shimmer-sweep {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.25) 50%, transparent 100%);
+          animation: yrShimmerAnim 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          pointer-events: none;
+          z-index: 15;
+        }
+        .sp-btn-animated { animation: yrBtnPulseAnim 2.2s ease-in-out infinite !important; }
+      `}</style>
+
+      {/* التنبيهات */}
       {toast && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[9999] transition-all duration-300 w-[90%] max-w-md">
-          <div className={`p-4 rounded-2xl shadow-2xl flex items-center gap-3 border backdrop-blur-md ${
+        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-[9999] w-[90%] max-w-sm">
+          <div className={`p-2.5 rounded-xl shadow-lg flex items-center justify-between border backdrop-blur-md text-xs font-bold ${
             toast.type === 'success'
-              ? 'bg-[#0D1527]/95 border-emerald-500/60 text-emerald-400'
+              ? 'bg-[#0D1527]/95 border-emerald-500/50 text-emerald-400'
               : toast.type === 'warning'
-              ? 'bg-[#0D1527]/95 border-[#F5C400]/60 text-[#F5C400]'
-              : 'bg-[#0D1527]/95 border-red-500/60 text-red-400'
+              ? 'bg-[#0D1527]/95 border-amber-500/50 text-amber-300'
+              : 'bg-[#0D1527]/95 border-rose-500/50 text-rose-400'
           }`}>
-            {toast.type === 'success' ? (
-              <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
-            ) : (
-              <AlertCircle size={20} className="shrink-0" />
-            )}
-            <span className="text-xs sm:text-sm font-bold leading-relaxed flex-1">{toast.text}</span>
-            <button onClick={() => setToast(null)} className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white">
-              <X size={16} />
+            <span>{toast.text}</span>
+            <button onClick={() => setToast(null)} className="p-0.5 text-gray-400 hover:text-white">
+              <X size={14} />
             </button>
           </div>
         </div>
       )}
 
-      {/* 🔙 شريط الرأس مع زر الخروج والتراجع الآمن */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[#0B101D] border border-slate-800 p-4 sm:p-5 rounded-2xl shadow-xl">
-        <div className="flex items-center gap-3">
+      {/* 🔙 شريط الرأس الرشيق */}
+      <div className="flex items-center justify-between flex-wrap gap-2 bg-[#0B0F17] border border-[#1F2937] p-2.5 sm:p-3 rounded-xl">
+        <div className="flex items-center gap-2">
           <NavLink
             to="/admin/ads"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 min-h-[44px] rounded-xl bg-[#161D2B] text-yellow-400 hover:text-yellow-300 hover:bg-[#1F2937] border border-[#1F2937] transition-all font-black text-xs active:scale-95 shrink-0"
-            title="إلغاء وخروج إلى إدارة الإعلانات"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#161D2B] text-yellow-400 hover:bg-[#1F2937] border border-[#1F2937] transition font-bold text-xs shrink-0"
+            title="رجوع لمعرض الإعلانات"
           >
-            <ArrowRight size={16} className="stroke-[2.5]" />
-            <span>إلغاء وخروج</span>
+            <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>رجوع</span>
           </NavLink>
           <div>
-            <h1 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
-              <Sparkles className="text-[#F5C400] shrink-0" size={20} />
-              <span>استوديو إعلان الراعي الرسمي (Sponsor Studio)</span>
+            <h1 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
+              <Sparkles className="text-[#FFC500]" size={15} />
+              <span>إعلان الراعي الرسمي</span>
             </h1>
-            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
-              تحكم متكامل في إعلان وهوية الراعي مع استعراض حي وفوري.
-            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <button
-            onClick={loadSponsorData}
-            disabled={loading}
-            className="flex-1 sm:flex-none px-4 py-2.5 min-h-[44px] bg-[#161D2B] border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95"
-          >
-            <RefreshCw size={14} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
-            <span>تحديث</span>
-          </button>
-          <button
-            onClick={() => handleSaveSponsor(true)}
-            disabled={saving}
-            className="flex-1 sm:flex-none px-6 py-2.5 min-h-[44px] bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black text-xs rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95"
-          >
-            <Save size={15} />
-            <span>{saving ? 'جارِ الحفظ...' : 'حفظ وتفعيل'}</span>
-          </button>
-        </div>
+        <button
+          onClick={() => handleSaveSponsor(!isActive)}
+          disabled={saving}
+          className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+            isActive 
+              ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500/25' 
+              : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25'
+          }`}
+        >
+          <Power size={13} />
+          <span>{isActive ? 'إيقاف الراعي' : 'تفعيل الراعي'}</span>
+        </button>
       </div>
 
-      {/* 📱 شاشة المشاهدة الحية التفاعلية المباشرة لإعلان الراعي (Live Preview) */}
-      <div className="bg-[#0B101D] border-2 border-[#F5C400]/40 rounded-2xl p-4 sm:p-5 shadow-2xl space-y-3">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-[#F5C400]/20 rounded-lg text-[#F5C400]">
-              <Sparkles size={16} className="animate-spin" />
-            </span>
-            <span className="text-xs sm:text-sm font-black text-white">
-              المعاينة الحية الفورية لإعلان الراعي (Live Sponsor Preview)
-            </span>
+      {/* 📱 المعاينة الحية المباشرة (مطابقة للموقع العام بالملي) */}
+      <div className="bg-[#0B0F17] border border-[#1F2937] rounded-xl p-2.5 sm:p-3 space-y-2">
+        <div className="flex items-center justify-between text-xs pb-1 border-b border-[#1F2937]">
+          <div className="flex items-center gap-1.5 text-gray-300 font-semibold text-[11px]">
+            <Eye size={13} className="text-[#FFC500]" />
+            <span>معاينة حية فورية (كما يظهر في الموقع تماماً):</span>
           </div>
-          <span className="text-[10px] sm:text-xs bg-[#161D2B] border border-slate-700 text-[#F5C400] font-mono px-2.5 py-1 rounded-lg">
-            الارتفاع: {customHeight}px • الحالة: {isActive ? '🟢 نشط' : '⚪ متوقف'}
+          <span className={`text-[10px] font-bold ${isActive ? 'text-emerald-400' : 'text-amber-400'}`}>
+            {isActive ? '● نشط' : '○ متوقف'}
           </span>
         </div>
 
-        {/* بطاقة الإعلان الحقيقية كما تظهر للمستخدم */}
+        {/* مجسم الإعلان الحقيقي */}
         <div
-          className={`relative w-full rounded-2xl overflow-hidden border transition-all duration-300 shadow-2xl ${
-            animationEffect === 'pulse' ? 'animate-pulse' :
-            animationEffect === 'glow' ? 'shadow-[0_0_35px_rgba(245,196,0,0.35)]' : ''
-          }`}
+          className="relative w-full rounded-none overflow-hidden transition-all duration-300 border-b-2"
           style={{
             backgroundColor: bgColor,
             borderColor: accentColor,
             minHeight: `${customHeight}px`
           }}
         >
-          {/* تأثير لمعان Shimmer */}
-          {animationEffect === 'shimmer' && (
-            <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none z-10" />
-          )}
-
-          {/* شريط رأس الراعي */}
-          <div className="px-4 py-2.5 bg-black/40 border-b border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span
-                className="px-2 py-0.5 rounded-md text-[10px] font-black border flex items-center gap-1 shrink-0"
-                style={{
-                  backgroundColor: `${accentColor}25`,
-                  color: accentColor,
-                  borderColor: accentColor
-                }}
-              >
-                <Sparkles size={11} />
-                <span>{sponsorTag || 'الراعي الرسمي'}</span>
-              </span>
-
-              {logoUrl && (
+          {mediaUrl ? (
+            <div className="relative w-full h-24 sm:h-28 bg-[#0B101D] overflow-hidden group">
+              {/* وسائط الإعلان مع الحركة الحية */}
+              {mediaType === 'video' ? (
+                <video
+                  src={mediaUrl}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className={`w-full h-full object-cover transition-transform duration-500 ${
+                    animationEffect === 'pulse' ? 'sp-anim-pulse' :
+                    animationEffect === 'glow' ? 'sp-anim-glow' : ''
+                  }`}
+                />
+              ) : (
                 <img
-                  src={logoUrl}
-                  alt="sponsor-logo"
-                  className="w-6 h-6 rounded-full object-cover border border-white/20 shrink-0 bg-black/40"
+                  src={mediaUrl}
+                  alt="preview"
+                  className={`w-full h-full object-cover transition-transform duration-500 ${
+                    animationEffect === 'pulse' ? 'sp-anim-pulse' :
+                    animationEffect === 'glow' ? 'sp-anim-glow' : ''
+                  }`}
                 />
               )}
 
-              <span className="text-xs sm:text-sm font-black truncate" style={{ color: textColor }}>
-                {advertiserName || 'اسم الجهة الراعية يظهر هنا'}
+              {/* لمعان Shimmer الحي */}
+              {animationEffect === 'shimmer' && <div className="sp-shimmer-sweep" />}
+
+              {/* طبقة التظليل والعناصر */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/50 flex flex-col justify-between p-2 z-10">
+                <div className="flex items-center justify-between">
+                  <span
+                    style={{
+                      backgroundColor: `${accentColor}25`,
+                      color: accentColor,
+                      borderColor: `${accentColor}50`
+                    }}
+                    className="px-1.5 py-0.5 border text-[9px] font-black rounded-none flex items-center gap-1 backdrop-blur-sm"
+                  >
+                    <Sparkles size={10} />
+                    <span>{sponsorTag}</span>
+                  </span>
+
+                  <div className="flex items-center gap-1">
+                    <span
+                      style={{
+                        backgroundColor: btnBgColor,
+                        color: btnTextColor
+                      }}
+                      className={`text-[9px] font-black px-2.5 py-0.5 rounded-none flex items-center gap-1 shadow-md transition-all ${
+                        animationEffect !== 'none' ? 'sp-btn-animated' : ''
+                      }`}
+                    >
+                      <span>{ctaText || (linkType === 'whatsapp' ? 'تواصل واتساب' : 'زيارة الموقع')}</span>
+                      <ExternalLink size={9} />
+                    </span>
+                    <span className="text-[8px] text-zinc-300 bg-black/70 border border-white/15 px-1.5 py-0.5 rounded-none">
+                      إعلان راعٍ ⓘ
+                    </span>
+                    <span className="text-[8px] font-black text-zinc-100 bg-white/15 border border-white/25 px-1 py-0.5 rounded-none font-sans">
+                      AD
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-end justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {logoUrl && (
+                      <img
+                        src={logoUrl}
+                        alt="logo"
+                        style={{ borderColor: accentColor }}
+                        className="w-5 h-5 rounded-full object-cover border bg-black/60 shrink-0"
+                      />
+                    )}
+                    <h4 className="text-white text-[11px] sm:text-xs font-bold truncate drop-shadow-md">
+                      {advertiserName || 'اسم الجهة الراعية'}
+                    </h4>
+                  </div>
+
+                  {title && (
+                    <p
+                      style={{ color: textColor }}
+                      className="text-[10px] font-bold drop-shadow-md shrink-0 text-left"
+                    >
+                      {title}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* في حال عدم رفع وسائط (المعاينة النصية) */
+            <div className="p-2.5 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  style={{ color: accentColor, borderColor: accentColor }}
+                  className="px-1.5 py-0.5 text-[9px] font-bold border rounded-none flex items-center gap-1"
+                >
+                  <Sparkles size={9} />
+                  <span>{sponsorTag}</span>
+                </span>
+                {logoUrl && (
+                  <img src={logoUrl} alt="logo" className="w-5 h-5 rounded-full object-cover border" style={{ borderColor: accentColor }} />
+                )}
+                <span className="text-white text-xs font-bold truncate">
+                  {advertiserName || 'اسم الجهة الراعية'}
+                </span>
+              </div>
+              <span
+                style={{ backgroundColor: btnBgColor, color: btnTextColor }}
+                className="text-[9px] font-black px-2 py-0.5 rounded-none flex items-center gap-0.5 shadow-md"
+              >
+                <span>{ctaText || 'زيارة'}</span>
+                <ExternalLink size={9} />
               </span>
             </div>
-
-            <span className="text-[10px] text-zinc-400 font-bold shrink-0">إعلان معتمد</span>
-          </div>
-
-          {/* محتوى الإعلان ووسائطه وزر الإجراء */}
-          <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex-1 text-right space-y-1.5 min-w-0 w-full">
-              <h3 className="text-sm sm:text-base font-black truncate" style={{ color: textColor }}>
-                {title || 'عنوان إعلان الراعي الرئيسي'}
-              </h3>
-              <p className="text-xs opacity-80 line-clamp-2" style={{ color: textColor }}>
-                {description || 'الوصف التسويقي المميز لخدمات وعروض الراعي الرسمي يظهر هنا بشكل أنيق ومتناسق...'}
-              </p>
-            </div>
-
-            {mediaUrl && (
-              <div className="w-full sm:w-44 h-24 rounded-xl overflow-hidden bg-black/50 border border-white/10 shrink-0">
-                {mediaType === 'video' ? (
-                  <video src={mediaUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
-                ) : (
-                  <img src={mediaUrl} alt="media" className="w-full h-full object-cover" />
-                )}
-              </div>
-            )}
-
-            <div
-              className="w-full sm:w-auto px-5 py-2.5 min-h-[44px] rounded-xl text-xs font-black shadow-lg flex items-center justify-center gap-2 shrink-0 cursor-pointer active:scale-95 transition-transform"
-              style={{
-                backgroundColor: btnBgColor,
-                color: btnTextColor
-              }}
-            >
-              <span>{ctaText || 'زيارة الراعي'}</span>
-              <ExternalLink size={13} />
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* 🛠️ لوحة إدخال البيانات والوسائط (Touch-Optimized) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      {/* 📝 نموذج التعديل المتكامل والذكي */}
+      <div className="bg-[#0B0F17] border border-[#1F2937] rounded-xl p-3 sm:p-4 space-y-3">
         
-        {/* القسم الأيمن: بيانات ونصوص الراعي */}
-        <div className="bg-[#0B101D] border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4 shadow-xl">
-          <h2 className="text-xs sm:text-sm font-black text-[#F5C400] flex items-center gap-1.5 border-b border-slate-800 pb-2.5">
-            <Tag size={16} />
-            <span>بيانات ونصوص إعلان الراعي</span>
-          </h2>
+        {/* بيانات الإعلان الأساسية */}
+        <div className="space-y-2">
+          <div className="text-xs font-bold text-gray-300 pb-1 border-b border-[#1F2937]">بيانات ونصوص الراعي:</div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5">اسم الراعي / الشركة المعلنة *</label>
-            <input
-              type="text"
-              value={advertiserName}
-              onChange={(e) => setAdvertiserName(e.target.value)}
-              placeholder="مثال: بنك الكريمي للتمويل الأصغر الإسلامي"
-              className="w-full min-h-[46px] bg-[#050811] border border-slate-700 focus:border-[#F5C400] rounded-xl px-3.5 text-xs sm:text-sm text-white outline-none transition-colors"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">عبارة الرعاية (الشارة)</label>
+              <label className="block text-[11px] text-gray-400 mb-1">اسم الراعي / الشركة *</label>
               <input
                 type="text"
-                value={sponsorTag}
-                onChange={(e) => setSponsorTag(e.target.value)}
-                placeholder="مثال: الراعي الرسمي، شريك بلاتيني"
-                className="w-full min-h-[46px] bg-[#050811] border border-slate-700 focus:border-[#F5C400] rounded-xl px-3 text-xs text-white outline-none"
+                value={advertiserName}
+                onChange={(e) => setAdvertiserName(e.target.value)}
+                placeholder="مثال: فندق بلقيس مأرب"
+                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#1F2937] text-white focus:outline-none focus:border-[#FFC500] text-xs"
+              />
+            </div>
+
+            {/* عبارة الشارة */}
+            <div className="relative" ref={tagDropdownRef}>
+              <label className="block text-[11px] text-gray-400 mb-1">عبارة الشارة</label>
+              <button
+                type="button"
+                onClick={() => setOpenTagDropdown(!openTagDropdown)}
+                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#1F2937] text-white text-xs flex items-center justify-between"
+              >
+                <span>{sponsorTag}</span>
+                <ChevronDown size={14} className="text-[#FFC500]" />
+              </button>
+
+              {openTagDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-[#121824] border border-[#2D3748] rounded-xl shadow-2xl z-50 overflow-hidden py-1 max-h-48 overflow-y-auto">
+                  {SPONSOR_TAG_OPTIONS.map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => {
+                        setSponsorTag(tag);
+                        setOpenTagDropdown(false);
+                      }}
+                      className={`w-full px-3 py-1.5 text-right text-xs flex items-center justify-between ${
+                        sponsorTag === tag ? 'bg-[#FFC500]/15 text-[#FFC500] font-bold' : 'text-gray-200 hover:bg-[#1A2234]'
+                      }`}
+                    >
+                      <span>{tag}</span>
+                      {sponsorTag === tag && <Check size={13} className="text-[#FFC500]" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-[11px] text-gray-400 mb-1">عنوان الإعلان الرئيسي</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="مثال: انضم الآن"
+                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#1F2937] text-white focus:outline-none focus:border-[#FFC500] text-xs"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">نص زر الإجراء</label>
+              <label className="block text-[11px] text-gray-400 mb-1">نص زر الإجراء</label>
               <input
                 type="text"
                 value={ctaText}
                 onChange={(e) => setCtaText(e.target.value)}
-                placeholder="مثال: اطلب الآن، زيارة، تواصل"
-                className="w-full min-h-[46px] bg-[#050811] border border-slate-700 focus:border-[#F5C400] rounded-xl px-3 text-xs text-white outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5">عنوان الإعلان الرئيسي</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="مثال: شريك الريادة والتميز المصرفي في اليمن"
-              className="w-full min-h-[46px] bg-[#050811] border border-slate-700 focus:border-[#F5C400] rounded-xl px-3.5 text-xs sm:text-sm text-white outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-300 mb-1.5">الوصف التسويقي للإعلان</label>
-            <textarea
-              rows={2}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="اكتب وصفاً موجزاً وجذاباً للخدمات أو العروض المقدمة من الراعي..."
-              className="w-full bg-[#050811] border border-slate-700 focus:border-[#F5C400] rounded-xl p-3 text-xs sm:text-sm text-white outline-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">رابط الزر (أو واتساب / هاتف)</label>
-              <input
-                type="text"
-                value={targetUrl}
-                onChange={(e) => setTargetUrl(e.target.value)}
-                placeholder="https://example.com أو https://wa.me/..."
-                className="w-full min-h-[46px] bg-[#050811] border border-slate-700 focus:border-[#F5C400] rounded-xl px-3 text-xs text-white outline-none font-mono"
+                placeholder="مثال: تواصل واتساب أو زيارة الرابط"
+                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#1F2937] text-white focus:outline-none focus:border-[#FFC500] text-xs"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">تاريخ انتهاء العقد</label>
-              <input
-                type="date"
-                value={contractExpiry}
-                onChange={(e) => setContractExpiry(e.target.value)}
-                className="w-full min-h-[46px] bg-[#050811] border border-slate-700 focus:border-[#F5C400] rounded-xl px-3 text-xs text-white outline-none"
+            <div className="sm:col-span-2">
+              <label className="block text-[11px] text-gray-400 mb-1">الوصف التسويقي</label>
+              <textarea
+                rows={2}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="اكتب وصفاً موجزاً للخدمات أو العرض..."
+                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#1F2937] text-white focus:outline-none focus:border-[#FFC500] text-xs resize-none"
               />
             </div>
           </div>
         </div>
 
-        {/* القسم الأيسر: رفع الوسائط من الهاتف والتحكم بالمظهر والمقاس */}
-        <div className="space-y-5">
-          
-          {/* رفع الوسائط من استوديو الهاتف مع استعراض بصري */}
-          <div className="bg-[#0B101D] border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4 shadow-xl">
-            <h2 className="text-xs sm:text-sm font-black text-[#F5C400] flex items-center gap-1.5 border-b border-slate-800 pb-2.5">
-              <Upload size={16} />
-              <span>الرفع المباشر من الهاتف (الاستوديو والملفات)</span>
-            </h2>
-
-            {/* 1. رفع شعار الراعي */}
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">شعار الراعي (Logo)</label>
-              {logoUrl ? (
-                <div className="flex items-center gap-3 p-2.5 bg-[#050811] border border-emerald-500/40 rounded-xl min-h-[50px]">
-                  <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded-lg object-contain bg-black/60 border border-slate-700 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <span className="text-xs font-bold text-emerald-400 block truncate">تم تحميل الشعار بنجاح ✅</span>
-                    <span className="text-[10px] text-slate-400">معروض في شريط الراعي</span>
-                  </div>
-                  <label className="px-3 py-2 min-h-[40px] bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold cursor-pointer flex items-center shrink-0">
-                    <span>تغيير</span>
-                    <input type="file" accept="image/*" onChange={(e) => handlePhoneFileUpload(e, 'logo')} className="hidden" />
-                  </label>
-                  <button type="button" onClick={() => setLogoUrl('')} className="p-2 text-slate-400 hover:text-red-400 shrink-0" title="حذف">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              ) : (
-                <label className="flex items-center justify-center gap-2 p-3.5 min-h-[48px] bg-[#050811] border border-dashed border-slate-700 hover:border-[#F5C400] rounded-xl cursor-pointer transition-colors group">
-                  <ImagePlus size={18} className="text-[#F5C400] group-hover:scale-110 transition-transform shrink-0" />
-                  <span className="text-xs font-bold text-slate-300 group-hover:text-[#F5C400]">
-                    اضغط لاختيار شعار الراعي من استوديو هاتفك
-                  </span>
-                  <input type="file" accept="image/*" onChange={(e) => handlePhoneFileUpload(e, 'logo')} className="hidden" />
-                </label>
-              )}
-            </div>
-
-            {/* 2. رفع صورة أو فيديو الإعلان */}
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">صورة أو فيديو الإعلان الرئيسي من الهاتف</label>
-              {mediaUrl ? (
-                <div className="flex items-center gap-3 p-2.5 bg-[#050811] border border-emerald-500/40 rounded-xl min-h-[50px]">
-                  {mediaType === 'video' ? (
-                    <video src={mediaUrl} className="w-12 h-10 rounded-lg object-cover bg-black shrink-0" />
-                  ) : (
-                    <img src={mediaUrl} alt="Media" className="w-12 h-10 rounded-lg object-cover bg-black shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <span className="text-xs font-bold text-emerald-400 block truncate">تم تحميل الوسائط بنجاح ✅</span>
-                    <span className="text-[10px] text-slate-400">{mediaType === 'video' ? 'فيديو إعلاني من هاتفك' : 'صورة إعلانية من هاتفك'}</span>
-                  </div>
-                  <label className="px-3 py-2 min-h-[40px] bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold cursor-pointer flex items-center shrink-0">
-                    <span>تغيير</span>
-                    <input type="file" accept="image/*,video/*" onChange={(e) => handlePhoneFileUpload(e, 'media')} className="hidden" />
-                  </label>
-                  <button type="button" onClick={() => setMediaUrl('')} className="p-2 text-slate-400 hover:text-red-400 shrink-0" title="حذف">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              ) : (
-                <label className="flex items-center justify-center gap-2 p-3.5 min-h-[48px] bg-[#050811] border border-dashed border-slate-700 hover:border-[#F5C400] rounded-xl cursor-pointer transition-colors group">
-                  <Video size={18} className="text-[#F5C400] group-hover:scale-110 transition-transform shrink-0" />
-                  <span className="text-xs font-bold text-slate-300 group-hover:text-[#F5C400]">
-                    اضغط لرفع صورة أو فيديو الإعلان من هاتفك
-                  </span>
-                  <input type="file" accept="image/*,video/*" onChange={(e) => handlePhoneFileUpload(e, 'media')} className="hidden" />
-                </label>
-              )}
+        {/* 🟢 قسم الرابط المباشر للواتساب أو الموقع بدون أي لصق يدوي */}
+        <div className="space-y-2 pt-2 border-t border-[#1F2937]">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-gray-300">توجيه الزر:</span>
+            <div className="flex items-center gap-1 bg-[#161D2B] p-0.5 rounded-lg border border-[#1F2937]">
+              <button
+                type="button"
+                onClick={() => {
+                  setLinkType('whatsapp');
+                  setCtaText('تواصل واتساب');
+                  setBtnBgColor('#16A34A');
+                  setBtnTextColor('#FFFFFF');
+                }}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1 transition-all ${
+                  linkType === 'whatsapp' ? 'bg-[#16A34A] text-white shadow' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <MessageCircle size={12} />
+                <span>واتساب مباشر</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLinkType('website');
+                  setCtaText('زيارة الموقع');
+                  setBtnBgColor('#F5C400');
+                  setBtnTextColor('#000000');
+                }}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-bold flex items-center gap-1 transition-all ${
+                  linkType === 'website' ? 'bg-[#F5C400] text-black shadow' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                <Globe size={12} />
+                <span>موقع إلكتروني</span>
+              </button>
             </div>
           </div>
 
-          {/* 🎨 تخصيص الألوان والمقاس والتأثير الحركي */}
-          <div className="bg-[#0B101D] border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4 shadow-xl">
-            <h2 className="text-xs sm:text-sm font-black text-[#F5C400] flex items-center gap-1.5 border-b border-slate-800 pb-2.5">
-              <Palette size={16} />
-              <span>التحكم الذاتي بالألوان والأبعاد والحركة</span>
-            </h2>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              <div>
-                <label className="block text-[11px] text-slate-400 mb-1">الخلفية</label>
-                <div className="flex items-center gap-2 bg-[#050811] p-2 rounded-xl border border-slate-800 min-h-[44px]">
-                  <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="w-7 h-7 rounded cursor-pointer bg-transparent border-0" />
-                  <span className="text-[10px] text-white font-mono truncate">{bgColor}</span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] text-slate-400 mb-1">الإبراز / الشارة</label>
-                <div className="flex items-center gap-2 bg-[#050811] p-2 rounded-xl border border-slate-800 min-h-[44px]">
-                  <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="w-7 h-7 rounded cursor-pointer bg-transparent border-0" />
-                  <span className="text-[10px] text-white font-mono truncate">{accentColor}</span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] text-slate-400 mb-1">زر الإجراء</label>
-                <div className="flex items-center gap-2 bg-[#050811] p-2 rounded-xl border border-slate-800 min-h-[44px]">
-                  <input type="color" value={btnBgColor} onChange={(e) => setBtnBgColor(e.target.value)} className="w-7 h-7 rounded cursor-pointer bg-transparent border-0" />
-                  <span className="text-[10px] text-white font-mono truncate">{btnBgColor}</span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] text-slate-400 mb-1">نص الزر</label>
-                <div className="flex items-center gap-2 bg-[#050811] p-2 rounded-xl border border-slate-800 min-h-[44px]">
-                  <input type="color" value={btnTextColor} onChange={(e) => setBtnTextColor(e.target.value)} className="w-7 h-7 rounded cursor-pointer bg-transparent border-0" />
-                  <span className="text-[10px] text-white font-mono truncate">{btnTextColor}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">تأثير الحركة البصري</label>
-                <select
-                  value={animationEffect}
-                  onChange={(e: any) => setAnimationEffect(e.target.value)}
-                  className="w-full min-h-[46px] bg-[#050811] border border-slate-700 rounded-xl px-3 text-xs text-white outline-none cursor-pointer"
-                >
-                  <option value="none">ثابت بدون حركة</option>
-                  <option value="shimmer">لمعان ذهبي دوري (Shimmer)</option>
-                  <option value="pulse">نبض هادئ (Pulse)</option>
-                  <option value="glow">توهج ملكي مستمر (Glow)</option>
-                </select>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs font-bold text-slate-300 mb-1">
-                  <span>ارتفاع الإعلان المخصص</span>
-                  <span className="text-[#F5C400] font-mono">{customHeight}px</span>
-                </div>
+          {linkType === 'whatsapp' ? (
+            <div className="p-2.5 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-1">
+              <label className="block text-[11px] font-bold text-emerald-400">رقم هاتف الواتساب (9 أرقام فقط):</label>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1.5 bg-[#161D2B] border border-[#1F2937] rounded-lg text-xs font-mono text-gray-300 dir-ltr">
+                  +967
+                </span>
                 <input
-                  type="range"
-                  min="120"
-                  max="320"
-                  step="10"
-                  value={customHeight}
-                  onChange={(e) => setCustomHeight(Number(e.target.value))}
-                  className="w-full accent-[#F5C400] cursor-pointer mt-2"
+                  type="tel"
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder="مثال: 772457898"
+                  maxLength={9}
+                  className="flex-1 px-3 py-1.5 rounded-lg bg-[#161D2B] border border-emerald-500/40 text-white font-mono text-sm focus:outline-none focus:border-emerald-400 text-left dir-ltr"
                 />
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 🔘 شريط أزرار التحكم النهائي باللمس (حفظ، تفعيل/إيقاف، حذف) */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#0B101D] border border-slate-800 p-4 sm:p-5 rounded-2xl shadow-xl">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          {/* زر التفعيل / الإيقاف المؤقت */}
-          <button
-            type="button"
-            onClick={() => handleSaveSponsor(!isActive)}
-            disabled={saving}
-            className={`flex-1 sm:flex-none px-4 py-3 min-h-[48px] rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer ${
-              isActive
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30'
-                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30'
-            }`}
-          >
-            <Power size={16} />
-            <span>{isActive ? 'إيقاف الرعاية مؤقتاً' : 'تفعيل ونشر الرعاية'}</span>
-          </button>
-
-          {/* زر الحذف */}
-          {sponsorRecordId && (
-            <button
-              type="button"
-              onClick={handleDeleteSponsor}
-              disabled={saving}
-              className="px-4 py-3 min-h-[48px] rounded-xl text-xs font-black bg-red-500/15 text-red-400 border border-red-500/40 hover:bg-red-500/25 transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Trash2 size={16} />
-              <span className="hidden sm:inline">حذف</span>
-            </button>
+          ) : (
+            <div className="p-2.5 rounded-xl bg-amber-950/20 border border-amber-500/30 space-y-1">
+              <label className="block text-[11px] font-bold text-amber-400">رابط الموقع الإلكتروني:</label>
+              <input
+                type="text"
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                placeholder="google.com أو رابط الموقع"
+                className="w-full px-3 py-1.5 rounded-lg bg-[#161D2B] border border-amber-500/40 text-white text-xs focus:outline-none focus:border-amber-400 text-left dir-ltr"
+              />
+            </div>
           )}
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <NavLink
-            to="/admin/ads"
-            className="flex-1 sm:flex-none px-5 py-3 min-h-[48px] rounded-xl text-xs font-bold text-slate-300 bg-[#161D2B] border border-slate-700 hover:bg-[#1F2937] flex items-center justify-center gap-1.5 transition-all active:scale-95"
-          >
-            <span>إلغاء وخروج</span>
-          </NavLink>
+        {/* 🎨 وسائط الإعلان (المعرض والاستوديو) */}
+        <div className="pt-2 border-t border-[#1F2937] space-y-2">
+          <label className="block text-[11px] text-gray-300 font-bold">وسائط الإعلان (المعرض والاستوديو):</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            
+            {/* رفع الشعار */}
+            <div className="relative">
+              <input
+                ref={logoGalleryRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => handlePhoneFileUpload(e, 'logo', 'image')}
+                className="hidden"
+              />
+              <div
+                onClick={() => logoGalleryRef.current?.click()}
+                className="flex flex-col items-center justify-center gap-1 p-2.5 rounded-xl bg-[#161D2B]/80 border-2 border-dashed border-[#FFC500] hover:bg-[#FFC500]/5 transition-all cursor-pointer text-center active:scale-98"
+              >
+                <ImageIcon size={16} className="text-[#FFC500]" />
+                <span className="text-[10px] font-bold text-white">
+                  {logoUrl ? 'تغيير شعار الراعي' : 'اختيار شعار الراعي'}
+                </span>
+                <span className="text-[8.5px] text-[#FFC500]">استوديو ومعرض الصور</span>
+              </div>
+              {logoUrl && (
+                <button
+                  type="button"
+                  onClick={() => setLogoUrl('')}
+                  className="absolute top-1.5 left-1.5 p-1 rounded-md bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white transition-colors"
+                  title="حذف الشعار"
+                >
+                  <Trash2 size={11} />
+                </button>
+              )}
+            </div>
 
+            {/* رفع وسائط الإعلان */}
+            <div className="relative flex flex-col gap-1">
+              <input
+                ref={mediaGalleryRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => handlePhoneFileUpload(e, 'media', 'image')}
+                className="hidden"
+              />
+              <input
+                ref={mediaVideoRef}
+                type="file"
+                accept="video/*"
+                onChange={(e) => handlePhoneFileUpload(e, 'media', 'video')}
+                className="hidden"
+              />
+
+              <div className="grid grid-cols-2 gap-1.5">
+                <div
+                  onClick={() => mediaGalleryRef.current?.click()}
+                  className="flex flex-col items-center justify-center gap-1 p-2 rounded-xl bg-[#161D2B]/80 border-2 border-dashed border-[#FFC500] hover:bg-[#FFC500]/5 transition-all cursor-pointer text-center active:scale-98"
+                >
+                  <ImageIcon size={15} className="text-[#FFC500]" />
+                  <span className="text-[9.5px] font-bold text-white">صورة من المعرض</span>
+                </div>
+
+                <div
+                  onClick={() => mediaVideoRef.current?.click()}
+                  className="flex flex-col items-center justify-center gap-1 p-2 rounded-xl bg-[#161D2B]/80 border-2 border-dashed border-[#FFC500] hover:bg-[#FFC500]/5 transition-all cursor-pointer text-center active:scale-98"
+                >
+                  <Film size={15} className="text-[#FFC500]" />
+                  <span className="text-[9.5px] font-bold text-white">فيديو من المعرض</span>
+                </div>
+              </div>
+
+              {mediaUrl && (
+                <div className="flex items-center justify-between p-1 rounded-lg bg-[#161D2B] border border-[#1F2937] text-[10px]">
+                  <span className="text-emerald-400 font-bold truncate max-w-[190px]">✓ تم اختيار {mediaType === 'video' ? 'الفيديو' : 'الصورة'}</span>
+                  <button
+                    type="button"
+                    onClick={() => setMediaUrl('')}
+                    className="p-1 rounded text-rose-400 hover:text-white"
+                    title="حذف الوسائط"
+                  >
+                    <Trash2 size={11} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+
+        {/* 🎨 تخصيص ألوان الزر والنصوص والبطاقة */}
+        <div className="pt-2 border-t border-[#1F2937] space-y-2">
+          <label className="block text-[11px] text-gray-300 font-bold">ألوان الزر والنصوص والحركة:</label>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10px]">
+            <div className="p-1.5 bg-[#161D2B] rounded-lg border border-[#1F2937] flex items-center justify-between">
+              <div>
+                <span className="text-white font-bold block">لون خلفية الزر</span>
+                <span className="text-[8.5px] text-gray-400 font-mono">{btnBgColor}</span>
+              </div>
+              <input type="color" value={btnBgColor} onChange={(e) => setBtnBgColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
+            </div>
+
+            <div className="p-1.5 bg-[#161D2B] rounded-lg border border-[#1F2937] flex items-center justify-between">
+              <div>
+                <span className="text-white font-bold block">لون نص الزر</span>
+                <span className="text-[8.5px] text-gray-400 font-mono">{btnTextColor}</span>
+              </div>
+              <input type="color" value={btnTextColor} onChange={(e) => setBtnTextColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
+            </div>
+
+            <div className="p-1.5 bg-[#161D2B] rounded-lg border border-[#1F2937] flex items-center justify-between">
+              <div>
+                <span className="text-white font-bold block">لون العنوان</span>
+                <span className="text-[8.5px] text-gray-400 font-mono">{textColor}</span>
+              </div>
+              <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
+            </div>
+
+            <div className="p-1.5 bg-[#161D2B] rounded-lg border border-[#1F2937] flex items-center justify-between">
+              <div>
+                <span className="text-white font-bold block">لون الإطار</span>
+                <span className="text-[8.5px] text-gray-400 font-mono">{accentColor}</span>
+              </div>
+              <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
+            {/* حركة الزر والوسائط */}
+            <div className="relative" ref={animDropdownRef}>
+              <label className="block text-[10px] text-gray-400 mb-1">تأثير الحركة البصرية</label>
+              <button
+                type="button"
+                onClick={() => setOpenAnimDropdown(!openAnimDropdown)}
+                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#1F2937] text-white text-xs flex items-center justify-between"
+              >
+                <span>{ANIMATION_OPTIONS.find(o => o.id === animationEffect)?.label || 'بدون حركة'}</span>
+                <ChevronDown size={13} className="text-[#FFC500]" />
+              </button>
+
+              {openAnimDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-[#121824] border border-[#2D3748] rounded-xl shadow-2xl z-50 overflow-hidden py-1">
+                  {ANIMATION_OPTIONS.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setAnimationEffect(item.id as any);
+                        setOpenAnimDropdown(false);
+                      }}
+                      className={`w-full px-3 py-1.5 text-right text-xs flex items-center justify-between ${
+                        animationEffect === item.id ? 'bg-[#FFC500]/15 text-[#FFC500] font-bold' : 'text-gray-200 hover:bg-[#1A2234]'
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {animationEffect === item.id && <Check size={13} className="text-[#FFC500]" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <div className="flex justify-between text-[10px] text-gray-400 mb-1">
+                <span>ارتفاع الإعلان</span>
+                <span className="font-mono text-[#FFC500]">{customHeight}px</span>
+              </div>
+              <input
+                type="range"
+                min={110}
+                max={200}
+                step={5}
+                value={customHeight}
+                onChange={(e) => setCustomHeight(Number(e.target.value))}
+                className="w-full accent-[#FFC500] cursor-pointer"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* زر الحفظ النهائي الرشيق */}
+        <div className="pt-1">
           <button
-            type="button"
             onClick={() => handleSaveSponsor(true)}
             disabled={saving}
-            className="flex-1 sm:flex-none px-7 py-3 min-h-[48px] rounded-xl text-xs font-black text-black bg-[#F5C400] hover:bg-[#DDAF00] shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
+            className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-[0.99] cursor-pointer"
           >
-            <Save size={16} />
-            <span>{saving ? 'جارِ الحفظ...' : 'حفظ ونشر الإعلان فوراً'}</span>
+            <Save size={14} />
+            <span>{saving ? 'جارِ الحفظ...' : 'حفظ وتفعيل إعلان الراعي فوراً'}</span>
           </button>
         </div>
       </div>

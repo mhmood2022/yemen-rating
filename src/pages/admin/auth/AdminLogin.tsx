@@ -20,14 +20,14 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ access }) => {
     setError('');
 
     const cleanEmail = email.trim().toLowerCase();
-    const isMasterAdmin = cleanEmail === 'mhmood7015@gmail.com' && password === 'mh701599459mh';
+    const isMasterAdmin = cleanEmail === 'info.yemenrating@gmail.com' && password === 'Yemen123456';
 
     if (isMasterAdmin) {
       localStorage.setItem('yr_admin_session', JSON.stringify({
         authenticated: true,
         role: 'super_admin',
         name: 'محمود - المدير العام',
-        email: 'mhmood7015@gmail.com',
+        email: 'info.yemenrating@gmail.com',
         loginAt: new Date().toISOString()
       }));
 
@@ -55,13 +55,13 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ access }) => {
       const s = localStorage.getItem('yr_admin_session');
       if (s) {
         const parsed = JSON.parse(s);
-        return parsed.authenticated && parsed.email === 'mhmood7015@gmail.com';
+        return parsed.authenticated && parsed.email === 'info.yemenrating@gmail.com';
       }
     } catch {}
     return false;
   };
 
-  const isCurrentMahmoud = access?.email?.toLowerCase() === 'mhmood7015@gmail.com';
+  const isCurrentMahmoud = access?.email?.toLowerCase() === 'info.yemenrating@gmail.com';
   const signedInNoAccess = !isMasterSession() && !isCurrentMahmoud && !!access?.userId && !access.isStaff;
 
   const handleGoogle = async () => {

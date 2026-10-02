@@ -124,27 +124,90 @@ export const AdGeneratorStudio: React.FC = () => {
   const [isMediaUploading, setIsMediaUploading] = useState<boolean>(false);
   const [uploadStatusText, setUploadStatusText] = useState<string>('');
 
-  // تحميل بيانات الإعلان إذا كان المطلوب تعديله
+    // تحميل بيانات الإعلان بدقة في حال كان المطلوب تعديله
   useEffect(() => {
     if (editId) {
       const loadAdForEdit = async () => {
         try {
-          const adsList = await adsDatabaseService.getActiveAds();
-          const targetAd = adsList.find(a => String(a.id) === String(editId));
+          const targetAd = await adsDatabaseService.getAdById(String(editId));
           if (targetAd) {
-            if (targetAd.headline) setHeadline(targetAd.headline);
-            if (targetAd.description) setDescription(targetAd.description);
-            if (targetAd.mediaUrl) setMediaFileUrl(targetAd.mediaUrl);
+            if (targetAd.placementId) {
+              const found = YR_AD_PLACEMENTS.find(p => String(p.id) === String(targetAd.placementId));
+              if (found) setSelectedPlacement(found);
+            }
+            if (targetAd.adTier) setAdTier(targetAd.adTier);
+            if (targetAd.adCategoryType) setAdCategoryType(targetAd.adCategoryType);
+            if (targetAd.designTheme) setDesignTheme(targetAd.designTheme);
+            if (targetAd.layoutStyle) setLayoutStyle(targetAd.layoutStyle);
+
+            if (targetAd.mediaUrl !== undefined) setMediaFileUrl(targetAd.mediaUrl);
             if (targetAd.mediaType) setMediaType(targetAd.mediaType);
-            if (targetAd.ctaText) setCtaText(targetAd.ctaText);
-            if (targetAd.targetUrl) setTargetUrl(targetAd.targetUrl);
+            if (targetAd.imageFit) setImageFit(targetAd.imageFit);
+            if (targetAd.useBlurBackground !== undefined) setUseBlurBackground(targetAd.useBlurBackground);
+            if (targetAd.imgPosX !== undefined) setImgPosX(targetAd.imgPosX);
+            if (targetAd.imgPosY !== undefined) setImgPosY(targetAd.imgPosY);
+            if (targetAd.imgScale !== undefined) setImgScale(targetAd.imgScale);
+            if (targetAd.brightness !== undefined) setBrightness(targetAd.brightness);
+            if (targetAd.contrast !== undefined) setContrast(targetAd.contrast);
+            if (targetAd.imgOverlay !== undefined) setImgOverlay(targetAd.imgOverlay);
+
+            if (targetAd.showLogo !== undefined) setShowLogo(targetAd.showLogo);
+            if (targetAd.logoUrl !== undefined) setLogoUrl(targetAd.logoUrl);
+            if (targetAd.logoPosition) setLogoPosition(targetAd.logoPosition);
+            if (targetAd.logoSize !== undefined) setLogoSize(targetAd.logoSize);
+
+            if (targetAd.showBadge !== undefined) setShowBadge(targetAd.showBadge);
+            if (targetAd.badgeText !== undefined) setBadgeText(targetAd.badgeText);
+            if (targetAd.badgeBgColor) setBadgeBgColor(targetAd.badgeBgColor);
+            if (targetAd.badgeTextColor) setBadgeTextColor(targetAd.badgeTextColor);
+
+            if (targetAd.showHeadline !== undefined) setShowHeadline(targetAd.showHeadline);
+            if (targetAd.headline !== undefined) setHeadline(targetAd.headline);
+            if (targetAd.headlineColor) setHeadlineColor(targetAd.headlineColor);
+            if (targetAd.headlineFont) setHeadlineFont(targetAd.headlineFont);
+            if (targetAd.headlineSize) setHeadlineSize(targetAd.headlineSize);
+            if (targetAd.headlineWeight) setHeadlineWeight(targetAd.headlineWeight);
+            if (targetAd.hasTextShadow !== undefined) setHasTextShadow(targetAd.hasTextShadow);
+
+            if (targetAd.showDescription !== undefined) setShowDescription(targetAd.showDescription);
+            if (targetAd.description !== undefined) setDescription(targetAd.description);
+            if (targetAd.descColor) setDescColor(targetAd.descColor);
+            if (targetAd.descLines !== undefined) setDescLines(targetAd.descLines);
+            if (targetAd.textAlign) setTextAlign(targetAd.textAlign);
+
+            if (targetAd.showPricing !== undefined) setShowPricing(targetAd.showPricing);
+            if (targetAd.currentPrice !== undefined) setCurrentPrice(targetAd.currentPrice);
+            if (targetAd.oldPrice !== undefined) setOldPrice(targetAd.oldPrice);
+            if (targetAd.discountPercentage !== undefined) setDiscountPercentage(targetAd.discountPercentage);
+            if (targetAd.currency) setCurrency(targetAd.currency);
+
+            if (targetAd.showRating !== undefined) setShowRating(targetAd.showRating);
+            if (targetAd.ratingValue !== undefined) setRatingValue(targetAd.ratingValue);
+
+            if (targetAd.showLocation !== undefined) setShowLocation(targetAd.showLocation);
+            if (targetAd.locationText !== undefined) setLocationText(targetAd.locationText);
+
+            if (targetAd.showVerifiedBadge !== undefined) setShowVerifiedBadge(targetAd.showVerifiedBadge);
+            if (targetAd.showQrCode !== undefined) setShowQrCode(targetAd.showQrCode);
+            if (targetAd.promoSticker) setPromoSticker(targetAd.promoSticker);
+
+            if (targetAd.showButton !== undefined) setShowButton(targetAd.showButton);
+            if (targetAd.ctaText !== undefined) setCtaText(targetAd.ctaText);
             if (targetAd.btnBgColor) setBtnBgColor(targetAd.btnBgColor);
             if (targetAd.btnTextColor) setBtnTextColor(targetAd.btnTextColor);
             if (targetAd.btnShape) setBtnShape(targetAd.btnShape);
+            if (targetAd.btnSize) setBtnSize(targetAd.btnSize);
             if (targetAd.btnAnimation) setBtnAnimation(targetAd.btnAnimation);
-            if (targetAd.currentPrice) setCurrentPrice(targetAd.currentPrice);
-            if (targetAd.oldPrice) setOldPrice(targetAd.oldPrice);
-            if (targetAd.showPricing !== undefined) setShowPricing(targetAd.showPricing);
+
+            if (targetAd.actionType) setActionType(targetAd.actionType);
+            if (targetAd.targetUrl !== undefined) setTargetUrl(targetAd.targetUrl);
+            if (targetAd.whatsappPhone !== undefined) setWhatsappPhone(targetAd.whatsappPhone);
+            if (targetAd.whatsappMessage !== undefined) setWhatsappMessage(targetAd.whatsappMessage);
+            if (targetAd.callPhone !== undefined) setCallPhone(targetAd.callPhone);
+
+            if (targetAd.targetCity) setTargetCity(targetAd.targetCity);
+            if (targetAd.targetCategory) setTargetCategory(targetAd.targetCategory);
+            if (targetAd.endDate) setEndDate(targetAd.endDate);
           }
         } catch (err) {
           console.error("Error loading ad for edit:", err);
@@ -161,7 +224,7 @@ export const AdGeneratorStudio: React.FC = () => {
   const [viewMode, setViewMode] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
 
   // الوسائط
-  const [mediaFileUrl, setMediaFileUrl] = useState<string>('https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=85');
+  const [mediaFileUrl, setMediaFileUrl] = useState<string>('');
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
   const [imageFit, setImageFit] = useState<'contain' | 'cover'>('cover');
   const [useBlurBackground, setUseBlurBackground] = useState(true);
@@ -187,7 +250,7 @@ export const AdGeneratorStudio: React.FC = () => {
   const [badgeTextColor, setBadgeTextColor] = useState('#FFC500');
 
   const [showHeadline, setShowHeadline] = useState(true);
-  const [headline, setHeadline] = useState('أحدث عروض يمن ريتنغ الحصرية');
+  const [headline, setHeadline] = useState('');
   const [headlineColor, setHeadlineColor] = useState('#FFFFFF');
   const [headlineFont, setHeadlineFont] = useState('Cairo');
   const [headlineSize, setHeadlineSize] = useState<PublishedAd['headlineSize']>('lg');
@@ -195,38 +258,38 @@ export const AdGeneratorStudio: React.FC = () => {
   const [hasTextShadow, setHasTextShadow] = useState(true);
 
   const [showDescription, setShowDescription] = useState(true);
-  const [description, setDescription] = useState('تغطية شاملة لأفضل الشركات والخدمات مع خصومات حصرية لكافة العملاء.');
+  const [description, setDescription] = useState('');
   const [descColor, setDescColor] = useState('#E5E7EB');
   const [descLines, setDescLines] = useState<PublishedAd['descLines']>(2);
   const [textAlign, setTextAlign] = useState<PublishedAd['textAlign']>('right');
 
   // الأسعار
   const [showPricing, setShowPricing] = useState(false);
-  const [currentPrice, setCurrentPrice] = useState('45,000');
-  const [oldPrice, setOldPrice] = useState('60,000');
-  const [discountPercentage, setDiscountPercentage] = useState('25%');
+  const [currentPrice, setCurrentPrice] = useState('');
+  const [oldPrice, setOldPrice] = useState('');
+  const [discountPercentage, setDiscountPercentage] = useState('');
   const [currency, setCurrency] = useState('YER');
   const [showRating, setShowRating] = useState(false);
   const [ratingValue, setRatingValue] = useState(4.9);
   const [showLocation, setShowLocation] = useState(false);
-  const [locationText, setLocationText] = useState('صنعاء — شارع حدة');
+  const [locationText, setLocationText] = useState('');
   const [showVerifiedBadge, setShowVerifiedBadge] = useState(true);
   const [showQrCode, setShowQrCode] = useState(false);
   const [promoSticker, setPromoSticker] = useState<PublishedAd['promoSticker']>('none');
 
   // الزر والتحويل
   const [showButton, setShowButton] = useState(true);
-  const [ctaText, setCtaText] = useState('اطلب الآن');
+  const [ctaText, setCtaText] = useState('');
   const [btnBgColor, setBtnBgColor] = useState('#FFC500');
   const [btnTextColor, setBtnTextColor] = useState('#000000');
   const [btnShape, setBtnShape] = useState<PublishedAd['btnShape']>('pill');
   const [btnSize, setBtnSize] = useState<PublishedAd['btnSize']>('md');
   const [btnAnimation, setBtnAnimation] = useState<PublishedAd['btnAnimation']>('shimmer');
   const [actionType, setActionType] = useState<PublishedAd['actionType']>('link');
-  const [targetUrl, setTargetUrl] = useState('https://yemen-rating.com');
-  const [whatsappPhone, setWhatsappPhone] = useState('967777000111');
-  const [whatsappMessage, setWhatsappMessage] = useState('مرحباً، أرغب بالاستفسار عن العرض المعلن في منصة يمن ريتنغ');
-  const [callPhone, setCallPhone] = useState('967777000111');
+  const [targetUrl, setTargetUrl] = useState('');
+  const [whatsappPhone, setWhatsappPhone] = useState('');
+  const [whatsappMessage, setWhatsappMessage] = useState('');
+  const [callPhone, setCallPhone] = useState('');
 
   // الاستهداف
   const [targetCity, setTargetCity] = useState('كل المحافظات');
@@ -443,7 +506,7 @@ export const AdGeneratorStudio: React.FC = () => {
     };
 
     const existing = JSON.parse(localStorage.getItem('yr_published_ads') || '[]');
-    localStorage.setItem('yr_published_ads', JSON.stringify([newAd, ...existing]));
+    if (editId) { localStorage.setItem('yr_published_ads', JSON.stringify(existing.map((a: any) => a.id === editId ? newAd : a))); } else { localStorage.setItem('yr_published_ads', JSON.stringify([newAd, ...existing])); }
     adsDatabaseService.publishAd(newAd);
     adminAuditService.logAction('نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
 
@@ -720,61 +783,65 @@ export const AdGeneratorStudio: React.FC = () => {
       )}
 
       {/* 2. شريط المواضع الـ 10 ومستويات الإعلان */}
-      <div className="bg-[#0B0F17] p-4 rounded-2xl border border-[#1F2937] space-y-3">
+      <div className="bg-[#0B0F17] p-3 rounded-xl border border-[#1F2937] space-y-2.5">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <label className="text-xs font-bold text-[#FFC500]">موضع العرض في المنصة:</label>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-[#9CA3AF]">مستوى الإعلان:</span>
-            {(['basic', 'professional', 'premium'] as const).map(tier => (
+          <label className="text-[11px] font-bold text-gray-300">موضع العرض:</label>
+          <div className="flex items-center gap-1 bg-[#161D2B] p-0.5 rounded-lg border border-[#1F2937]">
+            {(["basic", "professional", "premium"] as const).map(tier => (
               <button
                 key={tier}
                 onClick={() => setAdTier(tier)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                  adTier === tier ? 'bg-[#FFC500] text-black' : 'bg-[#161D2B] text-[#9CA3AF]'
+                className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
+                  adTier === tier ? "bg-[#FFC500] text-black shadow-sm" : "text-[#9CA3AF] hover:text-white"
                 }`}
               >
-                {tier === 'basic' ? 'بسيط' : tier === 'professional' ? 'احترافي' : 'فاخر VIP'}
+                {tier === "basic" ? "بسيط" : tier === "professional" ? "احترافي" : "VIP"}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
-          {YR_AD_PLACEMENTS.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => setSelectedPlacement(p)}
-              className={`shrink-0 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
-                selectedPlacement.id === p.id ? 'bg-[#FFC500] text-black border-[#FFC500] shadow-md' : 'bg-[#161D2B] text-[#9CA3AF] border-[#1F2937]'
-              }`}
-            >
-              #{p.id} {p.name}
-            </button>
-          ))}
+        <div className="flex gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+          {YR_AD_PLACEMENTS.map((p) => {
+            const cleanName = p.name.replace(/\(.*?\)/g, "").replace(/^[^\s]+—\s*/, "").trim() || p.name;
+            return (
+              <button
+                key={p.id}
+                onClick={() => setSelectedPlacement(p)}
+                className={`shrink-0 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+                  selectedPlacement.id === p.id 
+                    ? "bg-[#FFC500] text-black border-[#FFC500] font-bold shadow-sm" 
+                    : "bg-[#161D2B] text-[#9CA3AF] border-[#1F2937] hover:text-white"
+                }`}
+              >
+                #{p.id} {cleanName}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* 3. شريط أدوات الاستوديو الشامل */}
-      <div className="bg-[#0B0F17] p-5 rounded-2xl border border-[#1F2937] space-y-5">
-        
+      <div className="bg-[#0B0F17] p-3.5 sm:p-4 rounded-xl border border-[#1F2937] space-y-4">
+
         {/* التبويبات المكتملة */}
-        <div className="flex gap-1 overflow-x-auto pb-1 p-1 bg-[#161D2B] rounded-xl border border-[#1F2937] text-xs font-black custom-scrollbar">
+        <div className="flex gap-1 overflow-x-auto pb-1 p-1 bg-[#161D2B] rounded-lg border border-[#1F2937] text-[11px] font-medium custom-scrollbar">
           {[
-            { id: 'layout', label: 'التخطيط والنوع' },
-            { id: 'media', label: 'الصور والشعار' },
-            { id: 'typography', label: 'النصوص والخطوط' },
-            { id: 'pricing', label: 'الأسعار والتقييم' },
-            { id: 'action', label: 'الزر والتحويل' },
-            { id: 'motion', label: 'الحركات Animation' },
-            { id: 'colors', label: 'الألوان والسمة' },
-            { id: 'border', label: 'الحواف والظل' },
-            { id: 'target', label: 'الاستهداف' },
+            { id: "layout", label: "التخطيط" },
+            { id: "media", label: "الوسائط والشعار" },
+            { id: "typography", label: "النصوص" },
+            { id: "pricing", label: "السعر والتقييم" },
+            { id: "action", label: "زر الإجراء" },
+            { id: "motion", label: "الحركات" },
+            { id: "colors", label: "الألوان" },
+            { id: "border", label: "الحواف والظل" },
+            { id: "target", label: "الاستهداف" },
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`shrink-0 px-3 py-2 rounded-lg transition-all ${
-                activeTab === tab.id ? 'bg-[#FFC500] text-black shadow-md' : 'text-[#9CA3AF] hover:text-white'
+              className={`shrink-0 px-2.5 py-1 rounded-md transition-all ${
+                activeTab === tab.id ? "bg-[#FFC500] text-black font-bold shadow-sm" : "text-[#9CA3AF] hover:text-white"
               }`}
             >
               {tab.label}
@@ -783,30 +850,32 @@ export const AdGeneratorStudio: React.FC = () => {
         </div>
 
         {/* تبويب 1: التخطيط والنوع والنمط */}
-        {activeTab === 'layout' && (
-          <div className="space-y-4">
+        {activeTab === "layout" && (
+          <div className="space-y-3">
             <div>
-              <label className="text-xs font-bold text-[#FFC500] block mb-1.5">نوع الإعلان (Ad Type):</label>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+              <label className="text-[11px] font-semibold text-gray-400 block mb-1">نوع الإعلان:</label>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
                 {[
-                  { id: 'image_text', label: 'صورة + نص' },
-                  { id: 'image', label: 'إعلان صورة' },
-                  { id: 'text_only', label: 'إعلان نصي' },
-                  { id: 'video', label: 'إعلان فيديو' },
-                  { id: 'discount', label: 'عرض / خصم' },
-                  { id: 'service', label: 'إعلان خدمة' },
-                  { id: 'product', label: 'إعلان منتج' },
-                  { id: 'event', label: 'مناسبة وفعالية' },
-                  { id: 'job', label: 'إعلان توظيف' },
+                  { id: "image_text", label: "صورة + نص" },
+                  { id: "image", label: "صورة فقط" },
+                  { id: "text_only", label: "نص فقط" },
+                  { id: "video", label: "فيديو" },
+                  { id: "discount", label: "خصم وعرض" },
+                  { id: "service", label: "خدمة" },
+                  { id: "product", label: "منتج" },
+                  { id: "event", label: "مناسبة" },
+                  { id: "job", label: "وظيفة" },
                 ].map(type => (
                   <button
                     key={type.id}
                     onClick={() => {
                       setAdCategoryType(type.id as any);
-                      if (type.id === 'discount') setShowPricing(true);
+                      if (type.id === "discount") setShowPricing(true);
                     }}
-                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all ${
-                      adCategoryType === type.id ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#161D2B] text-[#9CA3AF] border-[#1F2937]'
+                    className={`py-1.5 px-2 rounded-lg border text-[11px] font-medium transition-all ${
+                      adCategoryType === type.id 
+                        ? "bg-[#FFC500] text-black border-[#FFC500] font-bold shadow-sm" 
+                        : "bg-[#161D2B] text-gray-300 border-[#1F2937] hover:border-gray-600"
                     }`}
                   >
                     {type.label}
@@ -816,20 +885,22 @@ export const AdGeneratorStudio: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-[#FFC500] block mb-1.5">تخطيط الإعلان (Layout):</label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <label className="text-[11px] font-semibold text-gray-400 block mb-1">تخطيط العناصر:</label>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
                 {[
-                  { id: 'full_overlay', label: 'صورة كاملة + نص فوقها' },
-                  { id: 'image_right', label: 'صورة يمين + نص يسار' },
-                  { id: 'image_left', label: 'صورة يسار + نص يمين' },
-                  { id: 'image_top', label: 'صورة بالأعلى + نص أسفلها' },
-                  { id: 'text_only', label: 'نص فقط وبطاقة' },
+                  { id: "full_overlay", label: "تراكب كامل" },
+                  { id: "image_right", label: "يمين / يسار" },
+                  { id: "image_left", label: "يسار / يمين" },
+                  { id: "image_top", label: "عمودي" },
+                  { id: "text_only", label: "بطاقة نصية" },
                 ].map(l => (
                   <button
                     key={l.id}
                     onClick={() => setLayoutStyle(l.id as any)}
-                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all ${
-                      layoutStyle === l.id ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#161D2B] text-[#9CA3AF] border-[#1F2937]'
+                    className={`py-1.5 px-2 rounded-lg border text-[11px] font-medium transition-all ${
+                      layoutStyle === l.id 
+                        ? "bg-[#FFC500] text-black border-[#FFC500] font-bold shadow-sm" 
+                        : "bg-[#161D2B] text-gray-300 border-[#1F2937] hover:border-gray-600"
                     }`}
                   >
                     {l.label}
@@ -839,23 +910,25 @@ export const AdGeneratorStudio: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-[#FFC500] block mb-1.5">نمط التصميم (Theme):</label>
-              <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
+              <label className="text-[11px] font-semibold text-gray-400 block mb-1">النمط البصري:</label>
+              <div className="grid grid-cols-4 sm:grid-cols-8 gap-1">
                 {[
-                  { id: 'pro', label: 'احترافي' },
-                  { id: 'modern', label: 'عصري' },
-                  { id: 'luxury', label: 'فاخر' },
-                  { id: 'minimal', label: 'بسيط' },
-                  { id: 'bold', label: 'جريء' },
-                  { id: 'formal', label: 'رسمي' },
-                  { id: 'youth', label: 'شبابي' },
-                  { id: 'marketing', label: 'تسويقي' },
+                  { id: "pro", label: "احترافي" },
+                  { id: "modern", label: "عصري" },
+                  { id: "luxury", label: "فاخر" },
+                  { id: "minimal", label: "بسيط" },
+                  { id: "bold", label: "جريء" },
+                  { id: "formal", label: "رسمي" },
+                  { id: "youth", label: "شبابي" },
+                  { id: "marketing", label: "تسويقي" },
                 ].map(th => (
                   <button
                     key={th.id}
                     onClick={() => setDesignTheme(th.id as any)}
-                    className={`py-2 px-1 rounded-lg border text-[11px] font-bold transition-all ${
-                      designTheme === th.id ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#161D2B] text-[#9CA3AF] border-[#1F2937]'
+                    className={`py-1.5 px-1 rounded-md border text-[10.5px] font-medium transition-all ${
+                      designTheme === th.id 
+                        ? "bg-[#FFC500] text-black border-[#FFC500] font-bold shadow-sm" 
+                        : "bg-[#161D2B] text-[#9CA3AF] border-[#1F2937] hover:border-gray-600"
                     }`}
                   >
                     {th.label}
@@ -865,8 +938,8 @@ export const AdGeneratorStudio: React.FC = () => {
             </div>
           </div>
         )}
-
-        {/* تبويب 2: الوسائط والشعار */}
+        
+{/* تبويب 2: الوسائط والشعار */}
         {activeTab === 'media' && (
           <div className="space-y-4">
             <div>
@@ -1300,17 +1373,17 @@ export const AdGeneratorStudio: React.FC = () => {
 
         {/* زر النشر النهائي المحمي */}
         <button
-          onClick={handleSaveAndPublish}
-          disabled={isMediaUploading}
-          className={`w-full py-4 rounded-xl font-black text-sm transition-all shadow-xl flex items-center justify-center gap-2 ${
-            isMediaUploading
-              ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'
-              : 'bg-[#FFC500] text-black hover:bg-[#FFC500]/90 shadow-[#FFC500]/20 cursor-pointer active:scale-98'
-          }`}
-        >
-          <Sparkles size={18} />
-          <span>{isMediaUploading ? '⏳ جاري رفع الوسائط للسحابة... انتظر لحظات' : 'حفظ ونشر الإعلان فوراً في المعرض المرئي'}</span>
-        </button>
+            onClick={handleSaveAndPublish}
+            disabled={isMediaUploading}
+            className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md ${
+              isMediaUploading
+                ? "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700"
+                : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20 active:scale-[0.99] cursor-pointer"
+            }`}
+          >
+            <Sparkles size={15} />
+            <span>{isMediaUploading ? "جاري رفع الوسائط..." : "حفظ ونشر الإعلان في المنصة"}</span>
+          </button>
       </div>
 
     </div>

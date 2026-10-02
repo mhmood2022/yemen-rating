@@ -587,7 +587,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         const filterCol = isUUID ? "id" : "slug";
 
         // 1. فحص جدول businesses أولاً لدعم كل المنشآت والشركات
-        let apiUrl = `${SUPABASE_URL}/rest/v1/businesses?${filterCol}=eq.${bankId}&select=*`;
+        let apiUrl = `${SUPABASE_URL}/rest/v1/businesses?${filterCol}=eq.${encodeURIComponent(bankId)}&select=*`;
         let res = await fetch(apiUrl, {
           headers: {
             "apikey": SUPABASE_KEY,
@@ -599,7 +599,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
         // 2. إذا لم تكن في businesses، الفحص في جدول banks
         if (!b) {
-          apiUrl = `${SUPABASE_URL}/rest/v1/banks?${filterCol}=eq.${bankId}&select=*`;
+          apiUrl = `${SUPABASE_URL}/rest/v1/banks?${filterCol}=eq.${encodeURIComponent(bankId)}&select=*`;
           res = await fetch(apiUrl, {
             headers: {
               "apikey": SUPABASE_KEY,

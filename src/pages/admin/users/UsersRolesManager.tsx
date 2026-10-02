@@ -442,7 +442,7 @@ export const UsersRolesManager: React.FC = () => {
                     {paginatedUsers.map((u) => {
                       const accountType = u.account_type || (u.role === 'owner' ? 'owner' : 'visitor');
                       const roleMeta = getShortRoleBadge(u.role || 'visitor');
-                      const isMainAdmin = u.email === 'mhmood7015@gmail.com';
+                      const isMainAdmin = u.email === 'info.yemenrating@gmail.com';
                       
                       return (
                         <tr 
@@ -750,7 +750,7 @@ export const UsersRolesManager: React.FC = () => {
             <div className="flex items-center justify-between border-b border-[#1e293b] pb-2.5">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-lg bg-[#162238] border border-[#243354] flex items-center justify-center text-[#FFD000] font-black text-xs shrink-0">
-                  {selectedUser.email === 'mhmood7015@gmail.com' ? <Crown className="w-5 h-5 text-[#FFD000]" /> : (editName?.charAt(0) || 'م')}
+                  {selectedUser.email === 'info.yemenrating@gmail.com' ? <Crown className="w-5 h-5 text-[#FFD000]" /> : (editName?.charAt(0) || 'م')}
                 </div>
                 <div className="min-w-0">
                   <h3 className="text-xs font-bold text-white truncate">{editName || 'مستخدم'}</h3>
@@ -761,7 +761,7 @@ export const UsersRolesManager: React.FC = () => {
             </div>
 
             {/* تمييز حساب المدير العام */}
-            {selectedUser.email === 'mhmood7015@gmail.com' && (
+            {selectedUser.email === 'info.yemenrating@gmail.com' && (
               <div className="bg-amber-500/10 border border-[#FFD000]/40 p-2 rounded-xl flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5">
                   <Crown className="w-4 h-4 text-[#FFD000]" />

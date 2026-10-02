@@ -35,7 +35,7 @@ export async function getAccess(): Promise<AccessInfo> {
     if (!session?.user) return empty;
 
     const email = (session.user.email || '').toLowerCase();
-    const isMainAdmin = email === 'mhmood7015@gmail.com';
+    const isMainAdmin = email === 'info.yemenrating@gmail.com';
 
     const { data: p } = await supabase
       .from('profiles')

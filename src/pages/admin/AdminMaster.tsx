@@ -42,7 +42,7 @@ export const AdminMaster: React.FC = () => {
       if (s) {
         try {
           const parsed = JSON.parse(s);
-          if (parsed.authenticated && parsed.email === 'mhmood7015@gmail.com') {
+          if (parsed.authenticated && parsed.email === 'info.yemenrating@gmail.com') {
             if (!alive) return;
             setIsAuthenticated(true);
             setChecking(false);
@@ -54,7 +54,7 @@ export const AdminMaster: React.FC = () => {
       const a = await getAccess();
       if (!alive) return;
       setAccess(a);
-      const isMahmoud = a?.email?.toLowerCase() === 'mhmood7015@gmail.com';
+      const isMahmoud = a?.email?.toLowerCase() === 'info.yemenrating@gmail.com';
       setIsAuthenticated(isMahmoud || a.isStaff);
       setChecking(false);
     };
