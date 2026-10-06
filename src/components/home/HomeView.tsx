@@ -1,3 +1,4 @@
+import { JobCard } from '../jobs/JobCard';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -790,35 +791,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
         {liveJobs.length > 0 ? (
           <div className="space-y-2.5">
             {liveJobs.slice(0, 2).map((job: any) => (
-              <div
-                key={job.id}
-                onClick={onNavigateJobs}
-                className="p-3 rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/50 transition-all cursor-pointer space-y-2.5 shadow-md"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-bold flex items-center gap-1">
-                    <Briefcase size={11} /> إعلان وظيفة
-                  </span>
-                </div>
-
-                <h4 className="font-bold text-xs text-white leading-relaxed">
-                  {job.title}
-                </h4>
-
-                <div className="flex items-center justify-between text-[10px] text-zinc-300 pt-1 border-t border-white/5">
-                  <span className="flex items-center gap-1">
-                    <MapPin size={10} className="text-[#FFC500]" /> <strong className="text-white">{job.city}</strong>
-                  </span>
-                  <span>الراتب: <strong className="text-emerald-400">{job.salary || 'بعد المقابلة'}</strong></span>
-                  <span>الجنس: <strong className="text-white">{job.gender || 'الكل'}</strong></span>
-                  <span>الدوام: <strong className="text-white">{job.type || 'كلي'}</strong></span>
-                </div>
-
-                <button className="w-28 py-1 rounded-lg bg-[#FFC500] hover:bg-[#E5B200] text-black font-black text-[10px] cursor-pointer">
-                  عرض كامل المواد
-                </button>
-              </div>
-            ))}
+            <JobCard key={job.id} job={job} />
+          ))}
           </div>
         ) : (
           <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] text-center text-xs text-zinc-400">

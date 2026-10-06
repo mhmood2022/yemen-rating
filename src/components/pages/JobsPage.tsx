@@ -1,5 +1,7 @@
+import { PublicAddJobModal } from "../jobs/PublicAddJobModal";
+import { JobFormData } from "../../pages/admin/jobs/AddJobModal";
 import React, { useState, useEffect } from 'react';
-import { Briefcase, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X } from 'lucide-react';
+import { Briefcase, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X, Building2, MapPin, Coins, PhoneCall, FileText, Lock, Sparkles } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { adminAuctionsService } from '../../services/adminService';
 import { AdBanner } from '../common/AdBanner';
@@ -109,6 +111,44 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     setEmployerPhone(numeric);
   };
 
+  
+  const handleSaveJobFromModal = async (newJob: JobFormData): Promise<{ success: boolean; error?: string }> => {
+    try {
+      let salaryText = "";
+      if (newJob.salaryMin || newJob.salaryMax) {
+        salaryText = `${newJob.salaryMin || "0"} - ${newJob.salaryMax || ""} ${newJob.currency || "YER"}`;
+        if (newJob.isSalaryNegotiable) salaryText += " (قابل للتفاوض)";
+      }
+
+      const payload: any = {
+        title: (newJob.title || "").trim(),
+        company_id: newJob.companyId || null,
+        city: (newJob.governorate || newJob.companyCity || "صنعاء").trim(),
+        salary: salaryText || null,
+        type: newJob.workType || "دوام كامل",
+        experience: newJob.experienceLevel || "متوسط (2-4 سنوات)",
+        description: (newJob.description || "").trim(),
+        requirements: Array.isArray(newJob.requirements) ? newJob.requirements : [],
+        skills: Array.isArray(newJob.responsibilities) ? newJob.responsibilities : [],
+        status: "PUBLISHED",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase.from("jobs").insert([payload]).select();
+      if (error) throw error;
+
+      if (data && data[0]) {
+        setJobs(prev => [data[0], ...prev]);
+      }
+      setIsAddModalOpen(false);
+      return { success: true };
+    } catch (err: any) {
+      console.error("Save job error:", err);
+      return { success: false, error: err.message || "حدث خطأ أثناء حفظ الشاغر الوظيفي" };
+    }
+  };
+
   const handleAddJob = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !agreedToEmployerPolicy) return;
@@ -184,18 +224,18 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
       {/* الرأس مع زر أضف وظيفة */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
-        <div className="flex items-center gap-2.5">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="p-2 rounded-xl bg-[#0D1527] border border-slate-800 text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all"
-            >
-              <ArrowRight size={16} className="rtl:rotate-180" />
-            </button>
-          )}
-          <div className="flex items-center gap-2">
-            <Briefcase className="w-6 h-6 text-[#F5C400]" />
-            <h1 className="text-lg sm:text-xl font-black text-white">فرص العمل والوظائف الشاغرة</h1>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => { window.location.href = '/'; }}
+            title="رجوع للرئيسية"
+            className="p-2 rounded-xl bg-[#0B0F19] border border-slate-800 text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all cursor-pointer shadow-sm"
+          >
+            <ArrowRight size={16} />
+          </button>
+          <div className="flex items-center gap-1.5">
+            <Briefcase className="w-5 h-5 text-[#F5C400]" />
+            <h1 className="text-sm sm:text-base font-black text-white">فرص العمل والوظائف</h1>
           </div>
         </div>
 
@@ -235,11 +275,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             placeholder="كافة أنواع الدوام"
           />
         </div>
-        <div className="flex justify-end pt-1">
-          <span className="text-xs text-[#F5C400] font-bold">
-            الوظائف المتاحة: {filteredJobs.length}
-          </span>
-        </div>
+        
       </div>
 
       {/* المحتوى */}
@@ -262,144 +298,12 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* نافذة أضف وظيفة */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0D1527] border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Cairo'] text-white shadow-2xl">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
-                <Plus size={16} className="text-[#F5C400]" /> إضافة شاغر وظيفي جديد
-              </h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="p-1 rounded-lg bg-[#060A13] text-slate-400 hover:text-white">
-                <X size={16} />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddJob} className="space-y-3 text-xs">
-              <div>
-                <label className="block text-white mb-1">المسمى الوظيفي *</label>
-                <input
-                  required
-                  type="text"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="مثال: محاسب مالي أول"
-                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-white mb-1">القطاع الوظيفي *</label>
-                  <YRSelect
-                    value={newSector}
-                    options={SECTORS}
-                    onChange={(val) => setNewSector(val)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-white mb-1">المحافظة *</label>
-                  <YRSelect
-                    value={newCity}
-                    options={YEMEN_GOVERNORATES.filter((g) => g.value !== 'all')}
-                    onChange={(val) => setNewCity(val)}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-white mb-1">نوع العمل *</label>
-                  <YRSelect
-                    value={newWorkType}
-                    options={WORK_TYPES.filter((t) => t.value !== 'all')}
-                    onChange={(val) => setNewWorkType(val)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-white mb-1">الراتب المقترح</label>
-                  <input
-                    type="text"
-                    value={newSalaryRange}
-                    onChange={(e) => setNewSalaryRange(e.target.value)}
-                    placeholder="مثال: 450,000 ريال"
-                    className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-white mb-1">
-                  رقم هاتف مسؤول التوظيف * <span className="text-[#F5C400] text-[10px]">(9 أرقام بالضبط - سري للوساطة)</span>
-                </label>
-                <input
-                  required
-                  type="tel"
-                  maxLength={9}
-                  value={employerPhone}
-                  onChange={handlePhoneChange}
-                  placeholder="77XXXXXXX"
-                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white text-left font-mono focus:outline-none focus:border-[#F5C400]"
-                />
-                <span className="text-[10px] text-slate-300 block mt-0.5">
-                  تم إدخال: {employerPhone.length} من 9 أرقام
-                </span>
-              </div>
-
-              <div>
-                <label className="block text-white mb-1">الوصف وشروط التقديم *</label>
-                <textarea
-                  required
-                  rows={3}
-                  value={newDescription}
-                  onChange={(e) => setNewDescription(e.target.value)}
-                  placeholder="اكتب المهام والمسؤوليات والمؤهلات المطلوبة..."
-                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
-                />
-              </div>
-
-              {/* شرط مقدم التوظيف الإلزامي بالخلفية الخضراء الشفافة */}
-              <div className="p-3.5 rounded-xl bg-[#16A34A]/15 border border-[#16A34A]/40 space-y-2 text-right">
-                <div className="flex items-center gap-1.5 text-[#16A34A] font-bold text-xs">
-                  <ShieldCheck size={16} />
-                  <span>تنبيه إلزامي:</span>
-                </div>
-                <p className="text-[11px] text-gray-200 leading-relaxed">
-                  توفر منصة يمن ريتغ خدمة الوساطة والتوظيف للوصول إلى المتقدمين المناسبين، ويتم إشعار صاحب العمل عند قبول المتقدم وبدء عمله. وبتقديم طلب التوظيف، يقرّ صاحب العمل بموافقته على شروط الوساطة، ويلتزم بإبلاغ الموظف وإلزامه بسداد عمولة الوساطة المستحقة للمنصة والبالغة ({jobCommText}) من راتب الشهر الأول، عند إتمام التوظيف وبدء العمل.
-                </p>
-                <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={agreedToEmployerPolicy}
-                    onChange={(e) => setAgreedToEmployerPolicy(e.target.checked)}
-                    className="w-4 h-4 accent-[#16A34A] rounded cursor-pointer"
-                  />
-                  <span className="text-[11px] font-bold text-white">
-                    أوافق على شروط الوساطة وإلزام سداد عمولة المنصة ({jobCommText})
-                  </span>
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-1 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#060A13] border border-slate-800 text-white text-xs font-bold"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  disabled={!agreedToEmployerPolicy || employerPhone.length !== 9 || submitting}
-                  className="px-5 py-2 rounded-xl bg-[#F5C400] disabled:opacity-40 text-black font-black text-xs transition-colors shadow-md"
-                >
-                  {submitting ? 'جاري النشر...' : 'نشر الشاغر الوظيفي'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* نافذة أضف وظيفة - القالب الفاخر المعتمد 842 سطراً */}
+        <PublicAddJobModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onSubmit={handleSaveJobFromModal}
+        />
     </div>
   );
 };

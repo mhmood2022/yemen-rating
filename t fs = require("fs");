@@ -1,0 +1,31 @@
+[1mdiff --git a/src/components/home/HomeSearchBar.tsx b/src/components/home/HomeSearchBar.tsx[m
+[1mindex b6096e2..1a647b6 100644[m
+[1m--- a/src/components/home/HomeSearchBar.tsx[m
+[1m+++ b/src/components/home/HomeSearchBar.tsx[m
+[36m@@ -225,7 +225,7 @@[m [mexport const HomeSearchBar: React.FC<HomeSearchBarProps> = ({[m
+       const [bankRes, bizRes] = await Promise.allSettled([bankQuery, bizQuery]);[m
+ [m
+       if (bankRes.status === "fulfilled" && bankRes.value.data) {[m
+[31m-        setMatchedBanks(bankRes.value.data);[m
+[32m+[m[32m        setMatchedBanks([]);[m
+       } else {[m
+         setMatchedBanks([]);[m
+       }[m
+[36m@@ -473,7 +473,7 @@[m [mexport const HomeSearchBar: React.FC<HomeSearchBarProps> = ({[m
+               boxShadow: "none",[m
+               WebkitTapHighlightColor: "transparent"[m
+             }}[m
+[31m-            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm text-white placeholder-slate-400 font-medium text-right border-0 focus:outline-none focus:ring-0 ring-0 shadow-none p-0 m-0"[m
+[32m+[m[32m            className="flex-1 min-w-0 bg-transparent text-xs sm:text-sm text-white placeholder-slate-400 font-medium text-right border border-[#F5C400]/35 hover:border-[#F5C400]/55 focus:border-[#F5C400]/75 rounded-md px-2.5 h-7 min-h-[28px] max-h-[28px] box-border leading-normal transition-colors duration-150 outline-none"[m
+           />[m
+ [m
+           {searchTerm && ([m
+[36m@@ -550,7 +550,7 @@[m [mexport const HomeSearchBar: React.FC<HomeSearchBarProps> = ({[m
+           ) : ([m
+             <>[m
+               {/* البنوك والمصارف */}[m
+[31m-              {matchedBanks.length > 0 && ([m
+[32m+[m[32m              {false && matchedBanks.length > 0 && ([m
+                 <div>[m
+                   <span className="text-[10px] font-bold text-slate-400 px-2 block mb-1">[m
+                     البنوك والمصارف[m

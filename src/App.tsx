@@ -91,7 +91,7 @@ export function App() {
         <Route path="/businesses/:slug" element={<AppShell><BusinessProfilePage /></AppShell>} />
 
         {/* مسارات الوظائف (دليل + قالب ديناميكي) */}
-        <Route path="/jobs" element={<AppShell><JobsPage onBack={() => window.history.back()} /></AppShell>} />
+        <Route path="/jobs" element={<AppShell><JobsPage onBack={() => { window.location.href = '/'; }} /></AppShell>} />
         <Route path="/jobs/:slug" element={<AppShell><JobDetailsPage /></AppShell>} />
 
         {/* مسارات العقارات (دليل + قالب ديناميكي) */}

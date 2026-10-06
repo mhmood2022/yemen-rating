@@ -1,72 +1,122 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Briefcase, MapPin, ShieldCheck, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface Props {
-  onNavigate: (path: string) => void;
+  onNavigate?: (path: string) => void;
+  onBack?: () => void;
 }
 
-export const JobsPage: React.FC<Props> = ({ onNavigate }) => {
-  const [selectedCity, setSelectedCity] = useState('all');
+export const JobsPage: React.FC<Props> = ({ onNavigate, onBack }) => {
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const jobs = [
-    { id: 'job-1', title: 'محاسب مالي أول (تدقيق ومصارف)', city: 'صنعاء', salary: '$800 - $1,200', type: 'دوام كامل', exp: 3, skills: ['محاسبة', 'Excel', 'تدقيق'] },
-    { id: 'job-2', title: 'مدير مبيعات وتسويق تجزئة', city: 'عدن', salary: '$600 - $900', type: 'دوام كامل', exp: 2, skills: ['مبيعات', 'تسويق', 'خدمة عملاء'] }
-  ];
+  useEffect(() => {
+    loadPublicJobs();
+  }, []);
+
+  const loadPublicJobs = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .eq('status', 'PUBLISHED')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setJobs(data || []);
+    } catch (err) {
+      console.error('Error fetching public jobs:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#08080B] text-white font-sans pb-24 max-w-4xl mx-auto px-4 pt-4 space-y-4" dir="rtl">
+    <div className="min-h-screen bg-[#08080B] text-white font-['Cairo',sans-serif] pb-24 max-w-4xl mx-auto px-4 pt-4 space-y-4" dir="rtl">
+      {/* الرأس */}
       <div className="flex justify-between items-center pb-3 border-b border-[#22222E]">
         <h1 className="text-base font-black text-white flex items-center gap-2">
-          <i className="fa-solid fa-briefcase text-amber-400"></i>
+          <Briefcase className="text-[#FFC500] w-5 h-5" />
           <span>بوابة الوظائف والوساطة الذكية</span>
         </h1>
-        <button onClick={() => onNavigate('/')} className="text-xs text-neutral-400 hover:text-white">
-          <i className="fa-solid fa-house ml-1"></i> الرئيسية
+        <button 
+          onClick={() => onBack ? onBack() : onNavigate ? onNavigate('/') : window.history.back()} 
+          className="text-xs text-neutral-400 hover:text-white flex items-center gap-1 cursor-pointer"
+        >
+          الرئيسية
         </button>
       </div>
 
-      <div className="bg-[#14141C] border border-amber-400/30 rounded-2xl p-4 text-xs text-neutral-300 leading-relaxed flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-amber-400 text-black flex items-center justify-center text-lg flex-shrink-0 font-bold">
-          <i className="fa-solid fa-shield-halved"></i>
+      {/* بنر الخصوصية والوساطة */}
+      <div className="bg-[#14141C] border border-[#FFC500]/30 rounded-2xl p-4 text-xs text-neutral-300 leading-relaxed flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-[#FFC500] text-black flex items-center justify-center text-lg shrink-0 font-bold">
+          <ShieldCheck size={20} />
         </div>
         <div>
-          <div className="font-bold text-white mb-0.5">وساطة يمن ريتغ المعتمدة</div>
-          <div>يتم استقبال طلبات التوظيف ومطابقتها بالذكاء الاصطناعي دون كشف بيانات الاتصال المباشرة لطرف ثالث لحفظ الخصوصية.</div>
+          <div className="font-bold text-white mb-0.5">وساطة يمن ريتنغ المعتمدة</div>
+          <div>يتم استقبال طلبات التوظيف ومطابقتها بالذكاء الاصطناعي مع حفظ سرية بيانات الأطراف والعمولات.</div>
         </div>
       </div>
 
-      <div className="space-y-3">
-        {jobs.map(j => (
-          <div key={j.id} className="bg-[#14141C] border border-[#22222E] rounded-2xl p-4 space-y-3">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="text-sm font-black text-white">{j.title}</h3>
-                <div className="text-[11px] text-neutral-400 mt-1 flex items-center gap-3">
-                  <span><i className="fa-solid fa-location-dot text-amber-400 ml-1"></i>{j.city}</span>
-                  <span><i className="fa-solid fa-clock text-amber-400 ml-1"></i>{j.type}</span>
-                  <span><i className="fa-solid fa-graduation-cap text-amber-400 ml-1"></i>خبرة {j.exp} سنوات</span>
-                </div>
-              </div>
-              <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-black px-2.5 py-1 rounded-lg">
-                {j.salary}
-              </span>
-            </div>
-
-            <div className="flex gap-1.5 flex-wrap">
-              {j.skills.map((s, i) => (
-                <span key={i} className="bg-[#1A1A24] border border-[#22222E] text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
-                  <i className="fa-solid fa-check text-[8px]"></i>
-                  <span>{s}</span>
+      {/* قائمة الوظائف المنشورة */}
+      {loading ? (
+        <div className="py-16 flex flex-col items-center justify-center gap-3 text-slate-400">
+          <Loader2 className="w-7 h-7 animate-spin text-[#FFC500]" />
+          <span className="text-xs">جارٍ جلب أحدث الشواغر المعتمدة...</span>
+        </div>
+      ) : jobs.length === 0 ? (
+        <div className="py-16 text-center text-slate-500 text-xs bg-[#111118] border border-slate-800 rounded-2xl p-6">
+          لا توجد شواغر منشورة حالياً. يمكنك متابعة الإعلانات الجديدة قريباً!
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {jobs.map((job) => (
+            <div 
+              key={job.id} 
+              className="p-4 rounded-2xl bg-[#111118] border border-slate-800/80 hover:border-[#FFC500]/50 transition-all space-y-2.5 shadow-lg"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-full">
+                  {job.type || 'دوام كامل'}
                 </span>
-              ))}
-            </div>
+                <span className="text-[11px] font-bold text-slate-400">
+                  {job.experience || 'خبرة متوسطة'}
+                </span>
+              </div>
 
-            <button onClick={() => alert('تم فتح نموذج التقديم وفحص المطابقة الذكية')} className="w-full py-2 bg-amber-400 hover:bg-amber-500 text-black font-black text-xs rounded-xl shadow transition flex items-center justify-center gap-2">
-              <i className="fa-solid fa-bolt text-xs"></i>
-              <span>تقديم طلب توظيف فوري (AI Match)</span>
-            </button>
-          </div>
-        ))}
-      </div>
+              <h2 className="text-sm sm:text-base font-bold text-white">{job.title}</h2>
+
+              <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                {job.description}
+              </p>
+
+              <div className="flex flex-wrap items-center justify-between pt-2 border-t border-slate-800/50 text-xs text-slate-400">
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1">
+                    <MapPin size={13} className="text-[#FFC500]" /> {job.city || 'اليمن'}
+                  </span>
+                  {job.salary && (
+                    <span className="text-emerald-400 font-bold">
+                      {job.salary}
+                    </span>
+                  )}
+                </div>
+
+                <button 
+                  onClick={() => alert('سيتم فتح نموذج التقديم الذكي لهذه الوظيفة')}
+                  className="px-4 py-1.5 rounded-xl bg-[#FFC500] hover:bg-amber-400 text-black font-black text-xs shadow cursor-pointer transition-colors"
+                >
+                  تقديم الآن
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
+
+export default JobsPage;

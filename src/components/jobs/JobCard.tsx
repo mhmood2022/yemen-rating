@@ -1,99 +1,113 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, ArrowLeft } from 'lucide-react';
-
-export interface JobCardData {
-  id: string;
-  title: string;
-  city: string;
-  sector?: string;
-  work_type?: string;
-  workType?: string;
-  experience_level?: string;
-  salary_range?: string | null;
-  salaryRange?: string | null;
-  deadline?: string | null;
-  status: string;
-  created_at?: string;
-}
+import { MapPin, Clock, ArrowLeft, Building2, ShieldCheck, Sparkles, Briefcase } from 'lucide-react';
 
 interface JobCardProps {
-  job: JobCardData | any;
+  job: any;
   onApply?: (job: any) => void;
-  onNavigateCompany?: (companyId: string) => void;
 }
 
 export const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
-  const workType = job.work_type || job.workType;
-  const salary = job.salary_range || job.salaryRange;
+
+  // دالة تنظيف الوصف من نصوص الوساطة السرية
+  const cleanExcerpt = (raw: string = '') => {
+    if (!raw) return '';
+    let c = raw.split('--- [بيانات جهة النشر والوساطة] ---')[0];
+    c = c.split('[معلومات جهة العمل والتواصل]')[0];
+    c = c.split('[ملف الوصف الوظيفي PDF]')[0];
+    return c.trim();
+  };
+
+  // دالة تنظيف وتنسيق الراتب
+  const formatSalary = (raw: string = '') => {
+    if (!raw) return 'عند المقابلة';
+    let s = raw.trim();
+    if (s.includes('عند المقابلة') || s.includes('بحسب المقابلة')) {
+      return 'عند المقابلة';
+    }
+    s = s.replace(/\s*\(قابل للتفاوض\)/g, '').trim();
+    return s;
+  };
+
+  const jobType = job.type || job.work_type || 'دوام كامل';
+  const salary = job.salary || job.salary_range;
 
   return (
-    <div className="flex flex-col bg-[#0D1527] border border-slate-800 hover:border-[#F5C400]/50 rounded-2xl p-4 sm:p-5 shadow-lg transition-all duration-300 font-['Cairo']">
-      <div className="flex items-start justify-between gap-3 mb-2.5">
-        <h3 className="text-sm sm:text-base font-bold text-white line-clamp-1 leading-snug">
+    <div className="flex flex-col justify-between bg-[#0B0F19] border border-slate-800/90 hover:border-[#FFC500]/50 rounded-2xl p-3.5 sm:p-4 shadow-xl transition-all duration-300 font-['Cairo',sans-serif] group relative overflow-hidden">
+      
+      {/* توهج خفيف على الزاوية عند التحويم */}
+      <div className="absolute top-0 right-0 w-24 h-24 bg-[#FFC500]/5 rounded-bl-full pointer-events-none group-hover:bg-[#FFC500]/10 transition-colors" />
+
+      <div>
+        {/* الرأس: وساطة معتمدة + حالة التقديم */}
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#FFC500]/10 border border-[#FFC500]/30 text-[#FFC500] text-[11px] font-bold shadow-sm">
+            <Briefcase size={12} className="text-[#FFC500]" />
+            <span>وظيفة</span>
+          </span>
+          <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            متاحة للتقديم
+          </span>
+        </div>
+
+        {/* مسمى الوظيفة */}
+        <h3 className="text-base font-black text-white group-hover:text-[#FFC500] transition-colors line-clamp-1 mb-2">
           {job.title}
         </h3>
-        <span className="px-2 py-0.5 text-xs font-bold rounded bg-[#060A13] text-emerald-400 border border-emerald-500/30 shrink-0">
-          {(job.status === 'ACTIVE' || job.status === 'PUBLISHED') ? 'متاحة للتقديم' : (job.status || 'متاحة')}
-        </span>
-      </div>
 
-      <div className="flex flex-wrap items-center gap-2 mb-3 text-xs">
-        {job.city && (
-          <span className="flex items-center gap-1 text-slate-300">
-            <MapPin className="w-3 h-3 text-[#F5C400] shrink-0" />
-            <span>{job.city}</span>
-          </span>
-        )}
-        {workType && (
-          <span className="px-2 py-0.5 rounded bg-[#060A13] border border-slate-800 text-slate-300 font-bold">
-            {workType}
-          </span>
-        )}
-        {job.sector && (
-          <span className="px-2 py-0.5 rounded bg-[#060A13] border border-slate-800 text-slate-300">
-            {job.sector}
-          </span>
-        )}
-      </div>
-
-      <div className="py-2.5 border-y border-slate-800/80 flex flex-wrap items-center justify-between text-xs gap-2">
-        {salary ? (
-          <span className="text-[#F5C400] font-bold">
-            {salary}
-          </span>
+        {/* سرية المنشأة */}
+        {job.description ? (
+          <p className="text-xs text-slate-300 leading-relaxed line-clamp-2 mb-3.5 min-h-[2rem]">
+            {cleanExcerpt(job.description)}
+          </p>
         ) : (
-          <span className="text-slate-400">الراتب بحسب المقابلة</span>
+          <div className="h-4 mb-3.5" />
         )}
 
-        {job.deadline && (
-          <div className="flex items-center gap-1 text-slate-400 text-[11px]">
-            <Clock className="w-3 h-3 text-amber-400 shrink-0" />
-            <span>تنتهي: {job.deadline}</span>
-          </div>
-        )}
+        {/* البادجات: المدينة، نوع العمل، الخبرة */}
+        <div className="flex flex-wrap items-center gap-2 mb-4 text-xs">
+          {job.city && (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#111625] border border-slate-800 text-slate-300 font-medium">
+              <MapPin size={12} className="text-[#FFC500]" />
+              <span>{job.city}</span>
+            </span>
+          )}
+          <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold">
+            {jobType}
+          </span>
+          {job.gender && (
+            <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[11px] font-bold">
+              {job.gender}
+            </span>
+          )}
+          {job.experience && (
+            <span className="px-2.5 py-1 rounded-lg bg-[#111625] border border-slate-800 text-slate-300">
+              {job.experience}
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="mt-3.5 flex justify-end">
-        {onApply ? (
-          <button
-            type="button"
-            onClick={() => onApply(job)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#F5C400] hover:bg-[#DDAF00] text-black text-xs font-black rounded-lg transition-colors shadow-sm"
-          >
-            <span>عرض الوظيفة والتقديم</span>
-            <ArrowLeft className="w-3.5 h-3.5" />
-          </button>
-        ) : (
-          <Link
-            to={`/jobs/${job.id}`}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#F5C400] hover:bg-[#DDAF00] text-black text-xs font-black rounded-lg transition-colors shadow-sm"
-          >
-            <span>عرض الوظيفة والتقديم</span>
-            <ArrowLeft className="w-3.5 h-3.5" />
-          </Link>
-        )}
+      {/* أسفل الكرت: الراتب وزر التقديم */}
+      <div className="pt-3.5 border-t border-slate-800/80 flex items-center justify-between text-xs gap-2 mt-auto">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[11px] font-bold text-slate-400 shrink-0">الراتب:</span>
+          <span className="text-xs font-black text-[#FFC500] whitespace-nowrap">
+            {formatSalary(salary)}
+          </span>
+        </div>
+
+        <Link
+          to={`/jobs/${job.id}`}
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FFC500] hover:bg-amber-400 text-black text-xs font-black rounded-xl transition-all shadow-md group-hover:shadow-[#FFC500]/20 cursor-pointer"
+        >
+          <span>عرض الوظيفة</span>
+          <ArrowLeft size={13} className="rtl:rotate-0" />
+        </Link>
       </div>
+
     </div>
   );
 };
+
+export default JobCard;

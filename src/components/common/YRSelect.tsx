@@ -63,7 +63,7 @@ export const YRSelect: React.FC<YRSelectProps> = ({
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={"w-full bg-[#18181C] border border-[#27272A] hover:border-zinc-500 text-white flex items-center justify-between outline-none transition-all cursor-pointer select-none active:scale-[0.99] " +
+        className={"w-full bg-[#0E1424] border border-slate-700/80 hover:border-[#FFC500]/60 text-white flex items-center justify-between outline-none transition-all cursor-pointer select-none active:scale-[0.99] " +
           (compact ? "h-9 px-2 text-[10.5px] font-bold rounded-lg " : "h-11 px-3 text-xs font-bold rounded-xl ") +
           (isOpen ? "border-[#FFC500]/60 ring-1 ring-[#FFC500]/20 " : "") +
           (disabled ? "opacity-50 cursor-not-allowed " : "")}
@@ -76,7 +76,7 @@ export const YRSelect: React.FC<YRSelectProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 left-0 mt-1 z-50 bg-[#141418] border border-[#27272A] rounded-xl shadow-2xl overflow-hidden max-h-52 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute top-full right-0 left-0 mt-1 z-50 bg-[#0B0F19] border border-slate-800 rounded-xl shadow-2xl overflow-hidden max-h-52 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
           <div className="p-1 space-y-0.5">
             {normalizedOptions.map((option) => {
               const isSelected = option.value === value;
@@ -91,7 +91,7 @@ export const YRSelect: React.FC<YRSelectProps> = ({
                     (compact ? "px-2.5 py-1.5 text-[11px] " : "px-3.5 py-2.5 text-xs ") +
                     (isSelected
                       ? "bg-[#FFC500]/15 text-[#FFC500]"
-                      : "text-gray-300 hover:bg-[#1F2937] hover:text-white active:bg-[#1F2937]")}
+                      : "text-gray-300 hover:bg-[#131B2E] hover:text-[#FFC500] active:bg-[#131B2E]")}
                 >
                   <span className="truncate">{option.label}</span>
                   {isSelected && <Check size={compact ? 12 : 14} className="text-[#FFC500] shrink-0 mr-1.5" />}

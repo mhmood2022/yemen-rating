@@ -4,7 +4,7 @@ import { AdminSidebar } from '../../components/admin/AdminSidebar';
 import { AdminLogin } from './auth/AdminLogin';
 import { 
   Menu, ShieldAlert, LogOut, Bell, 
-  ShieldCheck, AlertTriangle, DollarSign, Gavel, Star, CheckCheck, X, ArrowRight 
+  ShieldCheck, AlertTriangle, DollarSign, Gavel, Star, CheckCheck, X, ArrowRight, Briefcase 
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getAccess, AccessInfo } from '../../lib/access';
@@ -30,6 +30,7 @@ export const AdminMaster: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [notificationsOpen, setNotificationsOpen] = useState<boolean>(false);
   const [selectedNotification, setSelectedNotification] = useState<SystemNotification | null>(null);
+  const [notifTab, setNotifTab] = useState<'unread' | 'all'>('all');
   const navigate = useNavigate();
 
   const [access, setAccess] = useState<AccessInfo | null>(null);
@@ -65,13 +66,34 @@ export const AdminMaster: React.FC = () => {
     return () => { alive = false; subscription.unsubscribe(); };
   }, []);
 
-  // جلب كل أنشطة وإشعارات الموقع (توثيق، بلاغات، عمولات، مزادات)
+  // جلب كل أنشطة وإشعارات الموقع
   const fetchAllNotifications = async () => {
     try {
       const allAlerts: SystemNotification[] = [];
 
-      // أ) جلب طلبات إثبات الملكية الحقيقية من business_claims
+      // أ) المصدر الأساسي: جدول admin_notifications في Supabase
       if (supabase) {
+        const { data: dbNotifs, error: dbErr } = await supabase
+          .from("admin_notifications")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(60);
+
+        if (dbNotifs && !dbErr) {
+          dbNotifs.forEach((n: any) => {
+            allAlerts.push({
+              id: n.id,
+              title: n.title,
+              message: n.message,
+              type: n.type || "system",
+              link: n.link || "/admin",
+              is_read: !!n.is_read,
+              created_at: n.created_at || new Date().toISOString()
+            });
+          });
+        }
+
+        // ب) جلب طلبات إثبات الملكية من business_claims
         const { data: bClaims } = await supabase
           .from("business_claims")
           .select("*, businesses(name)")
@@ -80,78 +102,27 @@ export const AdminMaster: React.FC = () => {
 
         if (bClaims) {
           bClaims.forEach((c: any) => {
-            const bName = c.businesses?.name || c.notes?.split("-")[0] || "منشأة تجارية";
+            const bName = c.businesses?.name || "منشأة تجارية";
             allAlerts.push({
               id: `claim-${c.id}`,
               title: `🛡️ طلب توثيق ملكية: ${bName}`,
               message: `مقدم الطلب: ${c.claimant_name || "مستخدم"} (${c.claimant_phone || ""})`,
               type: "claim",
-              link: "/admin/owners",
+              link: "/admin/claims",
               is_read: false,
               created_at: c.created_at || new Date().toISOString()
             });
           });
         }
-
-        // ب) جلب طلبات إضافة المنشآت من owner_requests
-        const { data: oReqs } = await supabase
-          .from("owner_requests")
-          .select("*")
-          .eq("status", "under_review")
-          .order("created_at", { ascending: false });
-
-        if (oReqs) {
-          oReqs.forEach((r: any) => {
-            allAlerts.push({
-              id: `req-${r.id}`,
-              title: `🏢 طلب إضافة منشأة: ${r.business_name}`,
-              message: `طلب في قطاع (${r.business_category || ""}) - هاتف: ${r.contact_phone || ""}`,
-              type: "claim",
-              link: "/admin/owners",
-              is_read: false,
-              created_at: r.created_at || new Date().toISOString()
-            });
-          });
-        }
-      }
-
-      // ج) دمج إشعارات الذاكرة المحلية لضمان عدم ضياع أي طلب أوفلاين
-      const localNotes = localStorage.getItem("yr_admin_notifications");
-      if (localNotes) {
-        try {
-          const parsed = JSON.parse(localNotes);
-          if (Array.isArray(parsed)) {
-            parsed.forEach((ln: any) => {
-              if (!allAlerts.some(a => a.id === ln.id)) {
-                allAlerts.push({
-                  id: ln.id,
-                  title: ln.title,
-                  message: ln.message,
-                  type: ln.type || "claim",
-                  link: "/admin/owners",
-                  is_read: ln.is_read || false,
-                  created_at: ln.created_at || new Date().toISOString()
-                });
-              }
-            });
-          }
-        } catch (_) {}
       }
 
       // ترتيب كل الإشعارات زمنياً من الأحدث للأقدم
       allAlerts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-      // تصفية الإشعارات التي قام الأدمن بحذفها مسبقاً
-      let dismissedIds: string[] = [];
-      try {
-        dismissedIds = JSON.parse(localStorage.getItem("yr_dismissed_notifications") || "[]");
-      } catch(_) {}
-
-      const activeAlerts = allAlerts.filter(a => !dismissedIds.includes(a.id));
-      setNotifications(activeAlerts);
-      setUnreadCount(activeAlerts.filter(n => !n.is_read).length);
+      setNotifications(allAlerts);
+      setUnreadCount(allAlerts.filter(n => !n.is_read).length);
     } catch (err) {
-      console.error('Error fetching admin hub notifications:', err);
+      console.error("Error fetching admin hub notifications:", err);
     }
   };
 
@@ -159,9 +130,21 @@ export const AdminMaster: React.FC = () => {
     if (isAuthenticated) {
       fetchAllNotifications();
       const interval = setInterval(fetchAllNotifications, 10000);
-      window.addEventListener("new_admin_notification", fetchAllNotifications);
-      window.addEventListener("storage", fetchAllNotifications); // فحص دوري كل 15 ثانية
-      return () => clearInterval(interval);
+
+      // استماع لحظي Realtime لتحديث الإشعارات فور وصولها
+      let channel: any = null;
+      if (supabase) {
+        channel = supabase.channel("admin-notifs-realtime")
+          .on("postgres_changes", { event: "*", schema: "public", table: "admin_notifications" }, () => {
+            fetchAllNotifications();
+          })
+          .subscribe();
+      }
+
+      return () => {
+        clearInterval(interval);
+        if (channel && supabase) supabase.removeChannel(channel);
+      };
     }
   }, [isAuthenticated]);
 
@@ -175,6 +158,9 @@ export const AdminMaster: React.FC = () => {
   // أيقونة ولون مخصص لكل نشاط
   const getNotificationIcon = (type: string) => {
     switch (type) {
+      case "job_application":
+      case "job":
+        return <Briefcase className="text-[#38BDF8] shrink-0" size={16} />;
       case 'claim':
       case 'verification':
         return <ShieldCheck className="text-[#FFC500] shrink-0" size={16} />;
@@ -228,15 +214,40 @@ export const AdminMaster: React.FC = () => {
   const handleNotificationClick = async (item: SystemNotification) => {
     setNotificationsOpen(false);
 
-    if (!item.id.startsWith('claim-')) {
-      await supabase
-        .from('admin_notifications')
-        .update({ is_read: true })
-        .eq('id', item.id);
+    // تحديث الإشعار فورياً كمقروء في الواجهة
+    if (!item.is_read) {
+      setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, is_read: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+
+      if (supabase && !item.id.startsWith("claim-") && !item.id.startsWith("req-")) {
+        await supabase
+          .from("admin_notifications")
+          .update({ is_read: true })
+          .eq("id", item.id);
+      }
     }
 
-    // فتح نافذة تفاصيل الإشعار بالكامل
-    setSelectedNotification(item);
+    // الانتقال التلقائي للصفحة الخاصة بالطلب
+    if (item.link) {
+      navigate(item.link);
+    } else {
+      setSelectedNotification(item);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      setUnreadCount(0);
+      if (supabase) {
+        await supabase
+          .from("admin_notifications")
+          .update({ is_read: true })
+          .eq("is_read", false);
+      }
+    } catch (e) {
+      console.error("Error marking all read:", e);
+    }
   };
 
   if (checking) {
@@ -295,77 +306,146 @@ export const AdminMaster: React.FC = () => {
                 <>
                   {/* خلفية لإغلاق القائمة عند النقر خارجها */}
                   <div
-                    className="fixed inset-0 z-40 bg-black/40 sm:bg-transparent"
+                    className="fixed inset-0 z-40 bg-black/50 backdrop-blur-xs sm:bg-transparent"
                     onClick={() => setNotificationsOpen(false)}
                     aria-hidden="true"
                   />
+
                   {/* لوحة الإشعارات المتوافقة مع الهاتف والكمبيوتر */}
-                  <div className="fixed sm:absolute top-16 sm:top-full left-2 right-2 sm:left-0 sm:right-auto sm:mt-2 sm:w-96 bg-[#0B0F17] border border-[#1F2937] rounded-xl shadow-2xl p-3 z-50 text-right max-h-[80vh] sm:max-h-[500px] flex flex-col">
-                  <div className="flex justify-between items-center pb-2 border-b border-[#1F2937] mb-2">
-                    <span className="text-xs font-bold text-[#FFC500] flex items-center gap-1.5">
-                      <Bell size={14} /> مركز تنبيهات وأنشطة المنصة
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-gray-400 font-mono">
-                        {unreadCount} نشط
-                      </span>
-                      {notifications.length > 0 && (
+                  <div className="fixed sm:absolute top-16 sm:top-full left-2 right-2 sm:left-0 sm:right-auto sm:mt-2 sm:w-[410px] bg-[#0B0F17] border border-[#1F2937] rounded-2xl shadow-2xl p-3 z-50 text-right max-h-[85vh] sm:max-h-[520px] flex flex-col font-['Cairo']">
+                    {/* رأس القائمة */}
+                    <div className="flex justify-between items-center pb-2.5 border-b border-[#1F2937]">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
+                        <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <Bell size={15} className="text-[#FFC500]" /> مركز تنبيهات المنصة
+                        </span>
+                      </div>
+                      {unreadCount > 0 && (
                         <button
                           type="button"
-                          onClick={handleClearAllNotifications}
-                          className="text-[10px] text-red-400 hover:text-red-300 font-bold px-1.5 py-0.5 rounded bg-red-500/10 hover:bg-red-500/20 transition cursor-pointer"
+                          onClick={handleMarkAllAsRead}
+                          className="text-[11px] text-[#FFC500] hover:text-[#fde047] font-bold flex items-center gap-1 bg-[#FFC500]/10 hover:bg-[#FFC500]/20 px-2 py-0.5 rounded-md transition cursor-pointer"
                         >
-                          مسح الكل
+                          <CheckCheck size={13} /> تحديد الكل كمقروء
                         </button>
                       )}
                     </div>
-                  </div>
 
-                  {notifications.length === 0 ? (
-                    <div className="text-center py-6 text-xs text-gray-400">
-                      لا توجد أنشطة أو تنبيهات جديدة حالياً.
+                    {/* تبويبات الفرز: غير المقروءة vs الكل */}
+                    <div className="flex items-center gap-1.5 p-1 bg-[#121620] rounded-xl my-2 border border-[#1F2937]/60">
+                      <button
+                        type="button"
+                        onClick={() => setNotifTab('unread')}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                          notifTab === 'unread'
+                            ? 'bg-[#1F2937] text-white shadow'
+                            : 'text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        <span>الجديدة (غير مقروءة)</span>
+                        {unreadCount > 0 && (
+                          <span className="px-1.5 py-0.2 text-[10px] bg-[#EF4444] text-white font-black rounded-full">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNotifTab('all')}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                          notifTab === 'all'
+                            ? 'bg-[#1F2937] text-white shadow'
+                            : 'text-gray-400 hover:text-white'
+                        }`}
+                      >
+                        <span>كل التنبيهات</span>
+                        <span className="text-[10px] text-gray-500 font-mono">
+                          ({notifications.length})
+                        </span>
+                      </button>
                     </div>
-                  ) : (
-                    <div className="space-y-2 max-h-80 overflow-y-auto no-scrollbar">
-                      {notifications.map((item) => (
-                        <div
-                          key={item.id}
-                          onClick={() => handleNotificationClick(item)}
-                          className={`p-2.5 rounded-lg transition cursor-pointer border ${
-                            item.is_read 
-                              ? 'bg-[#121620] border-[#1F2937]/50 opacity-75' 
-                              : 'bg-[#161D2B] border-[#1F2937] hover:border-[#FFC500]/50'
-                          }`}
-                        >
-                          <div className="flex items-start gap-2.5">
-                            <div className="mt-0.5">{getNotificationIcon(item.type)}</div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex justify-between items-center text-[10px]">
-                                <span className="font-bold text-white truncate">{item.title}</span>
-                                <span className="text-gray-400 text-[9px] shrink-0 mr-1">
-                                  {new Date(item.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' })}
-                                </span>
-                              </div>
-                              <p className="text-xs text-[#D1D5DB] mt-1 leading-snug line-clamp-2">
-                                {item.message}
-                              </p>
+
+                    {/* قائمة الإشعارات */}
+                    {(() => {
+                      const displayed = notifTab === 'unread'
+                        ? notifications.filter(n => !n.is_read)
+                        : notifications;
+
+                      if (displayed.length === 0) {
+                        return (
+                          <div className="text-center py-10 px-4">
+                            <div className="w-12 h-12 rounded-full bg-[#161D2B] text-gray-500 flex items-center justify-center mx-auto mb-2">
+                              <Bell size={22} />
                             </div>
+                            <p className="text-xs font-bold text-gray-300">
+                              {notifTab === 'unread'
+                                ? "🎉 رائع! تم الاطلاع على كافة التنبيهات الجديدة."
+                                : "لا توجد أي أنشطة أو تنبيهات مسجلة."}
+                            </p>
+                            <p className="text-[10px] text-gray-500 mt-1">
+                              تصل التنبيهات هنا لحظياً عند حدوث أي نشاط جديد
+                            </p>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        );
+                      }
 
-                  <div className="pt-2 border-t border-[#1F2937] mt-2 flex justify-between items-center text-[11px]">
-                    <span className="text-gray-400">تحديث لحظي لجميع الأنشطة</span>
-                    <button
-                      onClick={() => { setNotificationsOpen(false); navigate('/admin/owners'); }}
-                      className="text-[#FFC500] hover:underline font-bold"
-                    >
-                      إدارة التوثيق ⬅️
-                    </button>
+                      return (
+                        <div className="space-y-1.5 max-h-[340px] overflow-y-auto no-scrollbar pr-0.5">
+                          {displayed.map((item) => (
+                            <div
+                              key={item.id}
+                              onClick={() => handleNotificationClick(item)}
+                              className={`p-2.5 rounded-xl transition cursor-pointer border text-right group relative ${
+                                item.is_read
+                                  ? 'bg-[#111622]/60 border-[#1F2937]/40 hover:bg-[#161D2B]'
+                                  : 'bg-[#161F30] border-[#2563EB]/40 hover:border-[#FFC500]/60 shadow-md'
+                              }`}
+                            >
+                              <div className="flex items-start gap-2.5">
+                                <div className="mt-0.5 p-1.5 rounded-lg bg-[#0B0F17] border border-[#1F2937]">
+                                  {getNotificationIcon(item.type)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex justify-between items-center text-[11px] mb-0.5">
+                                    <span className="font-bold text-white group-hover:text-[#FFC500] transition truncate flex items-center gap-1.5">
+  {item.title}
+  {item.is_read ? (
+    <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded font-normal">تمت المراجعة ✔️</span>
+  ) : (
+    <span className="text-[9px] text-blue-400 bg-blue-500/10 px-1.5 py-0.2 rounded font-bold">جديد 🔵</span>
+  )}
+</span>
+                                    <span className="text-[9px] text-gray-400 shrink-0 font-mono">
+                                      {new Date(item.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-[#CBD5E1] leading-relaxed line-clamp-2">
+                                    {item.message}
+                                  </p>
+                                </div>
+                                {!item.is_read && (
+                                  <span className="w-2 h-2 rounded-full bg-[#38BDF8] shrink-0 mt-1.5 animate-pulse" title="إشعار غير مقروء" />
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+
+                    {/* تذييل القائمة */}
+                    <div className="pt-2.5 border-t border-[#1F2937] mt-2 flex justify-between items-center text-[10px] text-gray-400">
+                      <span>تحديث لحظي ومباشر (Realtime) ⚡</span>
+                      <button
+                        type="button"
+                        onClick={() => { setNotificationsOpen(false); navigate('/admin/jobs?tab=applications'); }}
+                        className="text-[#38BDF8] hover:underline font-bold flex items-center gap-0.5 cursor-pointer"
+                      >
+                        طلبات التوظيف ⬅️
+                      </button>
+                    </div>
                   </div>
-                </div>
                 </>
               )}
             </div>
