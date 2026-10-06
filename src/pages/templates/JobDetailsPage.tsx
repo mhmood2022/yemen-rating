@@ -74,6 +74,50 @@ export const JobDetailsPage: React.FC = () => {
   const [selectedImages, setSelectedImages] = useState<{ file: File; preview: string; name: string }[]>([]);
   const [selectedPdf, setSelectedPdf] = useState<{ file: File; name: string; size: string } | null>(null);
   const [uploadingFiles, setUploadingFiles] = useState(false);
+
+  // دالة ضغط الصور لتقليل الحجم بنسبة 80% مع الحفاظ على وضوح الوثائق
+  const compressImageFile = (file: File): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 1200;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height = Math.round((height * MAX_SIZE) / width);
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width = Math.round((width * MAX_SIZE) / height);
+              height = MAX_SIZE;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => resolve(blob || file),
+            'image/jpeg',
+            0.75
+          );
+        };
+        img.onerror = () => resolve(file);
+      };
+      reader.onerror = () => resolve(file);
+    });
+  };
+
   const [submitting, setSubmitting] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -101,22 +145,143 @@ export const JobDetailsPage: React.FC = () => {
   }, [slug]);
 
   
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // دالة ضغط الصور التلقائي
+  const compressImageBlob = (file: File): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 1200;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height = Math.round((height * MAX_SIZE) / width);
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width = Math.round((width * MAX_SIZE) / height);
+              height = MAX_SIZE;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          canvas.toBlob((blob) => resolve(blob || file), 'image/jpeg', 0.75);
+        };
+        img.onerror = () => resolve(file);
+      };
+      reader.onerror = () => resolve(file);
+    });
+  };
+
+  const [pdfUploadStatus, setPdfUploadStatus] = useState<string | null>(null);
+  const [imagesUploadStatus, setImagesUploadStatus] = useState<string | null>(null);
+  const [directCvUrl, setDirectCvUrl] = useState<string | null>(null);
+  const [directImageUrls, setDirectImageUrls] = useState<string[]>([]);
+
+  // الرفع الفوري التلقائي لملف الـ PDF فور اختياره
+  const handlePdfSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      setModalError('يرجى اختيار ملف بصيغة PDF فقط للسيرة الذاتية');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setModalError('حجم ملف الـ PDF يجب ألا يتجاوز 10 ميجابايت');
+      return;
+    }
+
+    setModalError(null);
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+    setSelectedPdf({ file, name: file.name, size: sizeMb + ' ميجابايت' });
+    setUploadingFiles(true);
+    setPdfUploadStatus('جارٍ رفع ملف السيرة الذاتية...');
+
+    try {
+      const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '') || 'cv.pdf';
+      const filePath = `jobs/cvs/${Date.now()}_${cleanName}`;
+
+      const { error: upErr } = await supabase.storage.from("media").upload(filePath, file, {
+        contentType: 'application/pdf',
+        upsert: true
+      });
+
+      if (upErr) throw upErr;
+
+      const { data: urlData } = supabase.storage.from("media").getPublicUrl(filePath);
+      if (urlData?.publicUrl) {
+        setDirectCvUrl(urlData.publicUrl);
+        setPdfUploadStatus('✅ تم رفع ملف السيرة الذاتية بنجاح!');
+      }
+    } catch (err: any) {
+      console.error('Upload CV error:', err);
+      setModalError('تعذر رفع ملف السيرة الذاتية: ' + (err.message || 'خطأ في التخزين'));
+      setPdfUploadStatus('❌ فشل الرفع');
+    } finally {
+      setUploadingFiles(false);
+      e.target.value = '';
+    }
+  };
+
+  // الضغط والرفع الفوري التلقائي لصور الشهادات
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
+
     const remainingSlots = 4 - selectedImages.length;
     if (remainingSlots <= 0) {
       setModalError('الحد الأقصى للمرفقات هو 4 صور فقط');
       return;
     }
+
+    setModalError(null);
     const newFiles = Array.from(files).slice(0, remainingSlots);
-    const added = newFiles.map(f => ({
+    const addedPreviews = newFiles.map(f => ({
       file: f,
       name: f.name,
       preview: URL.createObjectURL(f)
     }));
-    setSelectedImages(prev => [...prev, ...added]);
-    e.target.value = '';
+    setSelectedImages(prev => [...prev, ...addedPreviews]);
+    setUploadingFiles(true);
+    setImagesUploadStatus('جارٍ ضغط ورفع الصور...');
+
+    try {
+      const uploaded: string[] = [];
+      for (let i = 0; i < newFiles.length; i++) {
+        const f = newFiles[i];
+        const compressed = await compressImageBlob(f);
+        const cleanName = f.name.replace(/[^a-zA-Z0-9.]/g, '') || 'cert.jpg';
+        const filePath = `jobs/applicants/${Date.now()}_${i}_${cleanName}`;
+
+        const { error: upErr } = await supabase.storage.from("media").upload(filePath, compressed, {
+          contentType: 'image/jpeg',
+          upsert: true
+        });
+
+        if (!upErr) {
+          const { data: urlData } = supabase.storage.from("media").getPublicUrl(filePath);
+          if (urlData?.publicUrl) uploaded.push(urlData.publicUrl);
+        }
+      }
+
+      setDirectImageUrls(prev => [...prev, ...uploaded]);
+      setImagesUploadStatus(`✅ تم رفع ${uploaded.length} صور مضغوطة بنجاح!`);
+    } catch (err: any) {
+      console.error('Upload cert error:', err);
+      setModalError('تعذر رفع بعض الصور المرفقة');
+    } finally {
+      setUploadingFiles(false);
+      e.target.value = '';
+    }
   };
 
   const handleRemoveImage = (index: number) => {
@@ -127,17 +292,7 @@ export const JobDetailsPage: React.FC = () => {
     });
   };
 
-  const handlePdfSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.type !== 'application/pdf') {
-      setModalError('يرجى اختيار ملف بصيغة PDF فقط للسيرة الذاتية');
-      return;
-    }
-    const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-    setSelectedPdf({ file, name: file.name, size: sizeMb + ' ميجابايت' });
-    e.target.value = '';
-  };
+  
 
   const handleRemovePdf = () => {
     setSelectedPdf(null);
@@ -152,6 +307,10 @@ export const JobDetailsPage: React.FC = () => {
     e.preventDefault();
     setModalError(null);
 
+    if (uploadingFiles) {
+      setModalError('يرجى الانتظار حتى يكتمل رفع وضغط المرفقات.');
+      return;
+    }
     if (applicantPhone.length !== 9) {
       setModalError('يرجى إدخال رقم هاتف مكون من 9 أرقام (مثال: 77XXXXXXX)');
       return;
@@ -163,50 +322,22 @@ export const JobDetailsPage: React.FC = () => {
 
     try {
       setSubmitting(true);
-      setUploadingFiles(true);
-
-      const uploadedImageUrls: string[] = [];
-      let uploadedPdfUrl = "";
-
-      // رفع الصور إلى storage إن وُجدت
-      for (let i = 0; i < selectedImages.length; i++) {
-        const img = selectedImages[i];
-        try {
-          const filePath = `jobs/applicants/${Date.now()}_${i}_${img.file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
-          const { error: upErr } = await supabase.storage.from("media").upload(filePath, img.file);
-          if (!upErr) {
-            const { data: urlData } = supabase.storage.from("media").getPublicUrl(filePath);
-            if (urlData?.publicUrl) uploadedImageUrls.push(urlData.publicUrl);
-          }
-        } catch (_) {}
-      }
-
-      // رفع ملف الـ PDF (السيرة الذاتية) إن وُجد
-      if (selectedPdf) {
-        try {
-          const filePath = `jobs/cvs/${Date.now()}_${selectedPdf.file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
-          const { error: upErr } = await supabase.storage.from("media").upload(filePath, selectedPdf.file);
-          if (!upErr) {
-            const { data: urlData } = supabase.storage.from("media").getPublicUrl(filePath);
-            if (urlData?.publicUrl) uploadedPdfUrl = urlData.publicUrl;
-          }
-        } catch (_) {}
-      }
 
       // دمج بيانات المتقدم والمرفقات داخل cover_letter
       let combinedCoverLetter = `المدينة والسكن: ${applicantCity.trim() || 'غير محدد'}\n\nالمؤهلات والخبرات:\n${qualifications.trim() || 'لا توجد تفاصيل إضافية'}`;
-      if (uploadedPdfUrl) {
-        combinedCoverLetter += `\n\n[ملف السيرة الذاتية (CV)]: ${uploadedPdfUrl}`;
+      if (directCvUrl) {
+        combinedCoverLetter += `\n\n[ملف السيرة الذاتية (CV)]: ${directCvUrl}`;
       }
-      if (uploadedImageUrls.length > 0) {
-        combinedCoverLetter += `\n\n[وثائق وشهادات المتقدم]:\n${uploadedImageUrls.join('\n')}`;
+      if (directImageUrls.length > 0) {
+        combinedCoverLetter += `\n\n[وثائق وشهادات المتقدم]:\n${directImageUrls.join('\n')}`;
       }
 
-      // مطابقة 100% مع أعمدة جدول job_applications الفعلي
       const payload = {
         job_id: job.id,
         name: applicantName.trim(),
         phone: applicantPhone.trim(),
+        cv_url: directCvUrl || null,
+        cv_file_name: selectedPdf ? selectedPdf.name : null,
         cover_letter: combinedCoverLetter,
         status: 'PENDING',
         created_at: new Date().toISOString()
@@ -608,6 +739,7 @@ export const JobDetailsPage: React.FC = () => {
                           <div className="truncate">
                             <p className="font-bold text-white text-[11px] truncate">{selectedPdf.name}</p>
                             <p className="text-[9px] text-slate-400">{selectedPdf.size}</p>
+                      {pdfUploadStatus && <span className="text-[10px] text-amber-400 font-bold block mt-0.5">{pdfUploadStatus}</span>}
                           </div>
                         </div>
                         <button
@@ -719,7 +851,7 @@ export const JobDetailsPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={!agreedToApplicantPolicy || applicantPhone.length !== 9 || submitting}
+                  disabled={!agreedToApplicantPolicy || applicantPhone.length !== 9 || submitting || uploadingFiles}
                   className="px-6 py-2.5 rounded-xl bg-[#FFC500] hover:bg-amber-400 disabled:opacity-40 text-black font-black text-xs transition-colors shadow-lg flex items-center gap-2 cursor-pointer"
                 >
                   {submitting ? (

@@ -1,10 +1,63 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Briefcase, Plus, DollarSign, Settings, MapPin, CheckCircle2, AlertCircle, Loader2, Users, Phone, MessageCircle, Mail, FileText, Trash2, Clock, Edit3, Pause, Play, ExternalLink, X, Check, ShieldCheck } from "lucide-react";
+import { Briefcase, Plus, DollarSign, Settings, MapPin, CheckCircle2, AlertCircle, Loader2, Users, Phone, MessageCircle, Mail, FileText, Trash2, Clock, Edit3, Pause, Play, ExternalLink, X, Check, ShieldCheck, Download, Eye, Image, Share2 } from "lucide-react";
 import { AddJobModal, JobFormData } from "./AddJobModal";
 import { supabase } from "../../../lib/supabase";
 
 export const JobsManager: React.FC = () => {
+
+  const handleShareApplicant = (app: any, targetCv: string | null, certs: string[]) => {
+    const jobTitle = app.jobs?.title || "شاغر وظيفي";
+    let text = `📄 *طلب توظيف جديد - منصة يمن ريتنغ*\n\n👤 *المتقدم:* ${app.name}\n💼 *الوظيفة:* ${jobTitle}\n📞 *رقم الهاتف:* ${app.phone}\n📅 *تاريخ التقديم:* ${new Date(app.created_at).toLocaleDateString('ar-YE')}\n\n${app.cover_letter || ""}`;
+    
+    if (targetCv) {
+      text += `\n\n📎 *رابط السيرة الذاتية (CV):*\n${targetCv}`;
+    }
+
+    if (navigator.share) {
+      navigator.share({
+        title: `طلب توظيف: ${app.name}`,
+        text: text,
+      }).catch(() => {});
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
+  };
+
+
+  // دالة ذكية لاستخراج مرفقات المتقدم من نص cover_letter
+  const extractApplicantAttachments = (rawText: string = '') => {
+    if (!rawText) return { cleanText: '', cvUrl: null, imageUrls: [] };
+
+    let cleanText = rawText;
+    let cvUrl: string | null = null;
+    let imageUrls: string[] = [];
+
+    // استخراج رابط الـ PDF
+    const cvMatch = rawText.match(/\[ملف السيرة الذاتية \(CV\)\]:\s*([^\n\r\s]+)/);
+    if (cvMatch) {
+      cvUrl = cvMatch[1].trim();
+      cleanText = cleanText.replace(/\[ملف السيرة الذاتية \(CV\)\]:[^\n\r]*/g, '');
+    }
+
+    // استخراج روابط صور الشهادات
+    const certsMatch = rawText.match(/\[وثائق وشهادات المتقدم\]:([\s\S]*?)(?=\n\n\[|$)/);
+    if (certsMatch) {
+      const urlsBlock = certsMatch[1];
+      const matches = urlsBlock.match(/https?:\/\/[^\s\n\r]+/g);
+      if (matches) {
+        imageUrls = matches.map(u => u.trim());
+      }
+      cleanText = cleanText.replace(/\[وثائق وشهادات المتقدم\]:[\s\S]*?(?=\n\n\[|$)/g, '');
+    }
+
+    return {
+      cleanText: cleanText.trim(),
+      cvUrl,
+      imageUrls
+    };
+  };
+
 
   // دالة ذكية لقراءة واستخراج بيانات الناشر والمرفقات من الوصف
   const extractPublisherInfo = (desc: string = "") => {
@@ -693,10 +746,99 @@ export const JobsManager: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* تفاصيل السكن والمؤهلات والخبرات */}
-                  <div className="mt-3 bg-[#080C14] p-3.5 rounded-2xl border border-[#161D2B] text-xs text-slate-300 whitespace-pre-line leading-relaxed">
-                    {app.cover_letter || "لا توجد تفاصيل إضافية مسجلة"}
-                  </div>
+                  {/* تفاصيل السكن والمؤهلات والخبرات + المرفقات الذكية */}
+                  {(() => {
+                    const { cleanText, cvUrl, imageUrls } = extractApplicantAttachments(app.cover_letter);
+                    const effectiveCv = app.cv_url || cvUrl;
+                    const hasAttachments = effectiveCv || imageUrls.length > 0;
+                    const previewUrl = effectiveCv ? `https://docs.google.com/viewer?url=${encodeURIComponent(effectiveCv)}&embedded=true` : null;
+
+                    return (
+                      <div className="mt-3 space-y-3">
+                        {/* النص المنظف للسكن والخبرات */}
+                        <div className="bg-[#080C14] p-3.5 rounded-2xl border border-[#161D2B] text-xs text-slate-300 whitespace-pre-line leading-relaxed">
+                          {cleanText || "لا توجد تفاصيل إضافية مسجلة"}
+                        </div>
+
+                        {/* قسم المرفقات (ملف CV + شهادات ووثائق) */}
+                        {hasAttachments && (
+                          <div className="p-3.5 bg-[#0A0F1D] border border-amber-500/25 rounded-2xl space-y-3">
+                            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                              <span className="text-[11px] font-bold text-[#FFC500] flex items-center gap-1.5">
+                                <FileText size={14} /> مرفقات ووثائق المتقدم:
+                              </span>
+
+                              {/* زر مشاركة المرفقات والبيانات */}
+                              <button
+                                type="button"
+                                onClick={() => handleShareApplicant(app, effectiveCv, imageUrls)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-[#FFC500] border border-amber-500/30 rounded-xl text-xs font-bold transition cursor-pointer"
+                                title="مشاركة بيانات ومرفقات المتقدم"
+                              >
+                                <Share2 size={13} />
+                                <span>مشاركة المرفقات</span>
+                              </button>
+                            </div>
+
+                            {/* أزرار ملف الـ CV (معاينة بالمتصفح + تحميل مباشر) */}
+                            {effectiveCv && (
+                              <div className="flex flex-wrap items-center gap-2 pt-1">
+                                <a
+                                  href={previewUrl!}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600/15 hover:bg-blue-600/25 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-bold transition shadow-sm"
+                                >
+                                  <Eye size={14} />
+                                  <span>معاينة السيرة الذاتية في المتصفح (PDF)</span>
+                                </a>
+
+                                <a
+                                  href={effectiveCv}
+                                  download
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition"
+                                >
+                                  <Download size={13} />
+                                  <span>تحميل الملف الأصلي</span>
+                                </a>
+                              </div>
+                            )}
+
+                            {/* معرض صور الشهادات والوثائق */}
+                            {imageUrls.length > 0 && (
+                              <div className="space-y-1.5">
+                                <span className="text-[10px] text-slate-400 font-bold block">
+                                  صور الشهادات والوثائق ({imageUrls.length} مرفقات):
+                                </span>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                                  {imageUrls.map((imgUrl, imgIdx) => (
+                                    <a
+                                      key={imgIdx}
+                                      href={imgUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="group relative block aspect-video rounded-xl overflow-hidden border border-slate-700 bg-slate-900 hover:border-[#FFC500] transition"
+                                    >
+                                      <img
+                                        src={imgUrl}
+                                        alt={`مرفق ${imgIdx + 1}`}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                      />
+                                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-[10px] font-bold gap-1">
+                                        <Eye size={12} /> تكبير
+                                      </div>
+                                    </a>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* شريط التحكم في حالة الطلب وتاريخ التقديم */}
                   <div className="mt-3 flex flex-wrap justify-between items-center text-[11px] text-gray-400 gap-2">
