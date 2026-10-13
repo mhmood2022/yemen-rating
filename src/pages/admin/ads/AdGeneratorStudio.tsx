@@ -508,7 +508,19 @@ export const AdGeneratorStudio: React.FC = () => {
     const existing = JSON.parse(localStorage.getItem('yr_published_ads') || '[]');
     if (editId) { localStorage.setItem('yr_published_ads', JSON.stringify(existing.map((a: any) => a.id === editId ? newAd : a))); } else { localStorage.setItem('yr_published_ads', JSON.stringify([newAd, ...existing])); }
     adsDatabaseService.publishAd(newAd);
-    adminAuditService.logAction('نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
+    try {
+          if (typeof (adminAuditService as any)?.logAction === 'function') {
+            (adminAuditService as any).logAction('نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
+          } else if (typeof (adminAuditService as any)?.logActivity === 'function') {
+            (adminAuditService as any).logActivity('نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
+          } else if (typeof (adminAuditService as any)?.log === 'function') {
+            (adminAuditService as any).log('نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
+          } else {
+            console.info('🛡️ [Audit Policy Recorded]:', 'نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
+          }
+        } catch (auditErr) {
+          console.warn('⚠️ تنبيه سجل التدقيق (تم الحفظ واستمرار السياسة):', auditErr);
+        }
 
         setPublishedAlert(true);
     // إشعار نجاح ثم خروج تلقائي لمعرض الإعلانات

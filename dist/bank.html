@@ -496,7 +496,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       const calcAvgEl = document.getElementById("calc-avg-rating");
       const calcTotEl = document.getElementById("calc-total-reviews");
 
-      if (!reviewsList || reviewsList.length === 0) {
+      const adminR = (typeof currentBank !== "undefined" && currentBank.rating) ? Number(currentBank.rating) : 0;
+      const adminC = (typeof currentBank !== "undefined" && currentBank.review_count) ? Number(currentBank.review_count) : 0;
+
+      if ((!reviewsList || reviewsList.length === 0) && adminR <= 0) {
         if (avgNumEl) avgNumEl.innerText = "--";
         if (countEl) countEl.innerText = "(لا توجد تقييمات)";
         if (starsSlot) starsSlot.innerHTML = '<span class="text-zinc-500 text-[11px] font-normal">كن أول من يقيّم</span>';
@@ -505,20 +508,27 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         return;
       }
 
-      const total = reviewsList.length;
+      const total = reviewsList ? reviewsList.length : 0;
       let sum = 0;
       const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-      reviewsList.forEach(r => {
-        const rating = Math.min(5, Math.max(1, parseInt(r.stars || r.rating) || 5));
-        counts[rating] = (counts[rating] || 0) + 1;
-        sum += rating;
-      });
+      if (reviewsList && reviewsList.length) {
+        reviewsList.forEach(r => {
+          const rating = Math.min(5, Math.max(1, parseInt(r.stars || r.rating) || 5));
+          counts[rating] = (counts[rating] || 0) + 1;
+          sum += rating;
+        });
+      }
 
-      const avg = (sum / total).toFixed(1);
-      if (avgNumEl) avgNumEl.innerText = avg;
-      if (countEl) countEl.innerText = `(${total} تقييم)`;
-      if (calcAvgEl) calcAvgEl.innerText = avg;
-      if (calcTotEl) calcTotEl.innerText = `${total} تقييم`;
+      // تم الاعتماد على تقييم الأدمن المعرف مسبقاً
+
+      const finalAvg = adminR > 0 ? adminR.toFixed(1) : (total > 0 ? (sum / total).toFixed(1) : "5.0");
+      const avg = Number(finalAvg);
+      const finalCount = adminC > 0 ? adminC : total;
+
+      if (avgNumEl) avgNumEl.innerText = finalAvg;
+      if (countEl) countEl.innerText = `(${finalCount} تقييم)`;
+      if (calcAvgEl) calcAvgEl.innerText = finalAvg;
+      if (calcTotEl) calcTotEl.innerText = `${finalCount} تقييم`;
 
       if (starsSlot) {
         let starsHtml = "";
@@ -540,6 +550,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
         async function loadBankProfile() {
       const bankId = getBankIdentifier();
+      try {
+        sessionStorage.removeItem("yr_instant_entity_" + bankId);
+        localStorage.removeItem("yr_instant_entity_" + bankId);
+      } catch (_) {}
       let bankData = { ...FALLBACK_BANK };
 
       // قراءة فورية للبيانات الحقيقية المخزنة في الذاكرة (تظهر في 0.01 ثانية)
@@ -584,10 +598,16 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
       try {
         const isUUID = /^[0-9a-f-]{36}$/i.test(bankId);
-        const filterCol = isUUID ? "id" : "slug";
+        const rawParam = decodeURIComponent(bankId || '').trim();
+        const withDashes = rawParam.replace(/\s+/g, '-');
+        const withSpaces = rawParam.replace(/-/g, ' ');
+
+        const filterParam = isUUID 
+          ? `id=eq.${rawParam}` 
+          : `or=(slug.eq.${encodeURIComponent(rawParam)},slug.eq.${encodeURIComponent(withDashes)},name.eq.${encodeURIComponent(rawParam)},name.eq.${encodeURIComponent(withSpaces)})`;
 
         // 1. فحص جدول businesses أولاً لدعم كل المنشآت والشركات
-        let apiUrl = `${SUPABASE_URL}/rest/v1/businesses?${filterCol}=eq.${encodeURIComponent(bankId)}&select=*`;
+        let apiUrl = `${SUPABASE_URL}/rest/v1/businesses?${filterParam}&select=*`;
         let res = await fetch(apiUrl, {
           headers: {
             "apikey": SUPABASE_KEY,
@@ -599,7 +619,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
         // 2. إذا لم تكن في businesses، الفحص في جدول banks
         if (!b) {
-          apiUrl = `${SUPABASE_URL}/rest/v1/banks?${filterCol}=eq.${encodeURIComponent(bankId)}&select=*`;
+          apiUrl = `${SUPABASE_URL}/rest/v1/banks?${filterParam}&select=*`;
           res = await fetch(apiUrl, {
             headers: {
               "apikey": SUPABASE_KEY,
@@ -612,6 +632,15 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
         if (b) {
           bankData.id = b.id;
+          let sc = b.sections_config;
+          if (typeof sc === 'string') {
+            try { sc = JSON.parse(sc); } catch (_) { sc = {}; }
+          }
+          sc = sc || {};
+          const feats = (sc && typeof sc.features === 'object') ? sc.features : {};
+          const adminOffers = feats.biz_promotions || sc.biz_promotions || feats.offers || sc.offers || b.biz_promotions || b.offers || [];
+          bankData.offers = Array.isArray(adminOffers) ? adminOffers : (adminOffers ? [adminOffers] : []);
+          bankData.sections_config = sc;
           bankData.name = b.name || bankData.name;
           bankData.description = b.description || b.short_description || bankData.description;
           bankData.badge_type = (b.badge_type && b.badge_type !== "none") ? b.badge_type : null;
@@ -630,6 +659,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           bankData.location = (b.city && b.address) ? `${b.city} - ${b.address}` : (b.city || b.address || "اليمن");
           bankData.logo_url = b.logo_url || "";
           bankData.cover_url = b.cover_url || "";
+          bankData.rating = Number(b.rating) || 0;
+          bankData.review_count = Number(b.review_count) || 0;
 
           // جلب اسم التصنيف الحقيقي من categories
           if (b.category_id) {
@@ -686,9 +717,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           const adminServices = (b.sections_config && Array.isArray(b.sections_config.services)) ? b.sections_config.services : (Array.isArray(b.services) ? b.services : []);
           bankData.services = adminServices;
 
-          // 3. العروض: مهيأة لقراءة أي بيانات تعبئها الإدارة في sections_config أو offers
-          const adminOffers = (b.sections_config && Array.isArray(b.sections_config.offers)) ? b.sections_config.offers : (Array.isArray(b.offers) ? b.offers : []);
-          bankData.offers = adminOffers;
+          // العروض تم استخراجها بنجاح في بداية المعالجة
+          bankData.sections_config = bankData.sections_config || {};
 
           // جلب التقييمات الحقيقية للمنشأة
           try {
@@ -885,27 +915,42 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       // 3. عرض العروض الحقيقية فقط أو بطاقة نظيفة فارغة
       const offersContainer = document.getElementById('offers-container');
       if (offersContainer) {
-        const realOffers = currentBank.offers || [];
+        const rawOffers = currentBank.offers || currentBank.sections_config?.features?.biz_promotions || currentBank.sections_config?.biz_promotions || [];
+        const realOffers = (Array.isArray(rawOffers) ? rawOffers : [rawOffers]).filter(Boolean);
+
         if (realOffers.length === 0) {
           offersContainer.innerHTML = `<div class="py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-zinc-800 text-zinc-500 text-xs">
             <i class="fa-solid fa-tag text-zinc-600 text-2xl mb-2 block"></i>
             <span>لا توجد عروض ترويجية نشطة حالياً لهذه المنشأة.</span>
           </div>`;
         } else {
-          offersContainer.innerHTML = realOffers.map(offer => `
-            <div class="bg-[#0D0D0D] border border-zinc-800 p-3.5 rounded-xl text-right">
-              <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
-                <span class="bg-brand-gold text-black font-black text-[10px] px-2.5 py-0.5 rounded">${offer.tag || "عرض خاص"}</span>
-                <span class="text-[10px] text-zinc-400 font-medium">${offer.expiry || ""}</span>
-              </div>
-              <h4 class="text-sm font-bold text-white leading-snug">${offer.title}</h4>
-              <p class="text-xs text-zinc-400 mt-1.5 leading-relaxed">${offer.desc}</p>
-            </div>
-          `).join('');
+          offersContainer.innerHTML = realOffers.map(offer => {
+            if (typeof offer === 'string') {
+              return `
+                <div class="bg-[#0D0D0D] border border-zinc-800 p-4 rounded-xl text-right">
+                  <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
+                    <span class="bg-brand-gold text-black font-black text-[10px] px-2.5 py-0.5 rounded">عرض خاص</span>
+                  </div>
+                  <p class="text-sm font-bold text-white leading-relaxed">${offer}</p>
+                </div>`;
+            }
+            const title = offer.title || offer.name || offer.headline || 'عرض ترويجي';
+            const desc = offer.description || offer.desc || offer.details || '';
+            const tag = offer.tag || offer.badge || 'عرض خاص';
+            const expiry = offer.expiry || offer.valid_until || '';
+            return `
+              <div class="bg-[#0D0D0D] border border-zinc-800 p-4 rounded-xl text-right">
+                <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
+                  <span class="bg-brand-gold text-black font-black text-[10px] px-2.5 py-0.5 rounded">${tag}</span>
+                  ${expiry ? `<span class="text-[10px] text-zinc-400 font-medium">${expiry}</span>` : ''}
+                </div>
+                <h4 class="text-sm font-bold text-white leading-snug">${title}</h4>
+                ${desc ? `<p class="text-xs text-zinc-400 mt-2 leading-relaxed">${desc}</p>` : ''}
+              </div>`;
+          }).join('');
         }
       }
-
-      // 4. عرض الخدمات الحقيقية فقط أو بطاقة نظيفة فارغة
+      // 4. عرض الخدمات الحقيقية فقط أو بطاقة نظيفة فارغة أو بطاقة نظيفة فارغة أو بطاقة نظيفة فارغة
       const servicesContainer = document.getElementById('services-container');
     if (servicesContainer) {
       let realServices = [];

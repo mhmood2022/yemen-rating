@@ -600,6 +600,7 @@ export const CompaniesManager: React.FC = () => {
       ad_unit_top: true,
       ad_unit_feed: true,
       ad_unit_sticky: false,
+      biz_promotions: [],
     });
     setIsModalOpen(true);
   };
@@ -610,8 +611,11 @@ export const CompaniesManager: React.FC = () => {
     setSavedSuccessfully(false);
     setActiveTab('info');
 
-    const sec = b.sections_config || {};
-    const feat = sec.features || {};
+    let sec = b.sections_config || {};
+    if (typeof sec === 'string') {
+      try { sec = JSON.parse(sec); } catch (_) { sec = {}; }
+    }
+    const feat = (sec && typeof sec.features === 'object') ? sec.features : {};
     const bankSpecs = sec.bank_specs || {};
 
     const gallery4: (string | null)[] = [null, null, null, null];
@@ -654,6 +658,7 @@ export const CompaniesManager: React.FC = () => {
       ad_unit_top: sec.ad_unit_top !== undefined ? !!sec.ad_unit_top : true,
       ad_unit_feed: sec.ad_unit_feed !== undefined ? !!sec.ad_unit_feed : true,
       ad_unit_sticky: !!sec.ad_unit_sticky,
+      biz_promotions: (feat && Array.isArray(feat.biz_promotions)) ? feat.biz_promotions : ((sec && Array.isArray(sec.biz_promotions)) ? sec.biz_promotions : ((b as any).biz_promotions || [])),
     });
     setIsModalOpen(true);
   };

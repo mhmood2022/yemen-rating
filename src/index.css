@@ -161,3 +161,30 @@ html, body, #root, #__next, main {
   background-color: #0a0e1a !important;
   border: 1px solid #18233c !important;
 }
+
+
+/* إخفاء الهيدر بالكامل عند تكبير أي صورة معروض */
+body.image-modal-active header,
+body.image-modal-active nav,
+body.image-modal-active [class*="Header"] {
+  display: none !important;
+}
+
+
+/* تجميد التمرير وإخفاء الهيدر تماماً عند فتح الصورة */
+body.modal-freeze-lock, html.modal-freeze-lock {
+  overflow: hidden !important;
+  touch-action: none !important;
+  overscroll-behavior: none !important;
+}
+body.modal-freeze-lock header, body.modal-freeze-lock nav {
+  display: none !important;
+}
+
+
+/* android-dark-select-force: إجبار أندرويد على الوضع الداكن في كافة القوائم */
+select, select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  color-scheme: dark !important;
+}

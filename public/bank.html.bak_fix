@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+      body, h1, h2, h3, h4, h5, h6, p, span, div, button, input {
+        font-family: 'Cairo', sans-serif !important;
+      }
+    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>بنك التضامن - يمن ريتنغ</title>
+
+  <!-- خط Tajawal الرسمي -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              gold: '#EAB308',         /* الأصفر الذهبي المعتمد رسمياً */
+              goldHover: '#CA8A04',
+              goldLight: '#FEF08A',
+              dark: '#000000',
+              card: '#0D0D0D',
+              cardBorder: '#1F2937'
+            }
+          },
+          fontFamily: {
+            tajawal: ['Tajawal', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+/* إخفاء شريط التمرير الجانبي تماماً في كافة المتصفحات */
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+}
+html, body {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+}
+
+    body {
+      background-color: #000000;
+      color: #FFFFFF;
+      font-family: 'Tajawal', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      touch-action: pan-y;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab-active {
+      color: #FFFFFF !important;
+      border-bottom: 2.5px solid #EAB308;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-black text-white flex justify-center selection:bg-brand-gold selection:text-black">
+
+  <!-- شاشة تجهيز فاخرة تمنع أي وميض وتضمن ظهور البنك مكتملاً ولائقاً -->
+  <div id="page-splash-loader" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center gap-3 transition-opacity duration-300">
+    <div class="relative w-14 h-14 rounded-2xl bg-[#0F0F12] border border-[#FFC500]/30 flex items-center justify-center text-brand-gold shadow-2xl shadow-[#FFC500]/10">
+      <i class="fa-solid fa-landmark text-2xl text-brand-gold"></i>
+      <div class="absolute -inset-1 rounded-2xl border-2 border-brand-gold/40 border-t-transparent animate-spin"></div>
+    </div>
+    <div class="flex items-center gap-1.5 text-xs text-zinc-400 font-bold">
+      <span class="w-1.5 h-1.5 rounded-full bg-brand-gold animate-ping"></span>
+      <span>جاري تجهيز بيانات المنشأة...</span>
+    </div>
+  </div>
+
+
+  <main class="w-full max-w-md md:max-w-3xl lg:max-w-4xl min-h-screen bg-black flex flex-col pb-12 select-none relative mx-auto md:px-4 ">
+
+    <!-- 1. غلاف البنك -->
+    <div id="bank-cover" class="relative w-full h-44 sm:h-52 md:h-60 rounded-none md:rounded-2xl bg-black flex items-center justify-center overflow-hidden mt-0 md:mt-3 shadow-lg">
+      <!-- زر الرجوع الأيقوني الفاخر -->
+      <button type="button" onclick="if (window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) { window.history.back(); } else { window.location.href = '/directory'; }" class="absolute top-3.5 right-3.5 z-20 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/15 text-zinc-300 hover:text-brand-gold flex items-center justify-center transition active:scale-90 shadow-md cursor-pointer group" title="رجوع" aria-label="رجوع">
+        <i class="fa-solid fa-arrow-right text-xs transition-transform group-hover:-translate-x-0.5"></i>
+      </button>
+      
+    </div>
+
+    <!-- 2. الشعار متداخل في اليمين + زر إثبات الملكية في اليسار -->
+    <div class="px-4 relative flex items-end justify-between -mt-10 mb-2">
+      <div class="relative order-1">
+        <div class="w-20 h-20 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden">
+          <img id="bank-logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3C/svg%3E" class="w-full h-full object-contain" alt="شعار البنك" />
+        </div>
+      </div>
+
+      <div class="order-2 mb-1">
+        <button type="button" id="claim-btn" onclick="openClaimModal()" class="inline-flex items-center gap-1.5 bg-[#EF4444] hover:bg-red-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg transition active:scale-95 cursor-pointer">
+          <i class="fa-solid fa-shield-halved text-xs"></i>
+          <span>إثبات الملكية</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 3. بيانات البنك الأساسية -->
+    <div class="px-4 space-y-1.5 text-right">
+      <div class="inline-flex items-center gap-1.5 flex-wrap">
+        <h2 id="bank-name" class="text-sm sm:text-base font-black text-white leading-snug inline"></h2>
+        <span id="bank-badge-slot" class="inline-flex items-center shrink-0"></span>
+      </div>
+
+      <div class="flex items-center justify-start gap-1.5 text-brand-gold text-xs font-bold">
+        <span class="text-white font-medium text-[11px]">★التقييمات</span>
+        <div class="flex text-[10px]" id="header-stars-slot">
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star"></i>
+          <i class="fa-solid fa-star-half-stroke"></i>
+        </div>
+        <span class="text-white text-sm font-black" id="header-rating-num">--</span>
+        <span class="text-zinc-400 font-normal text-[11px]" id="header-rating-count">(جاري التحميل...)</span>
+      </div>
+
+      <p id="bank-bio" class="text-zinc-300 text-xs leading-snug font-medium pt-1">
+        <span class="inline-block w-full h-3.5 bg-zinc-900 rounded animate-pulse mb-1"></span><span class="inline-block w-2/3 h-3.5 bg-zinc-900 rounded animate-pulse"></span>
+      </p>
+
+      <div class="flex items-center justify-start gap-3 text-xs font-semibold text-zinc-400 pt-1 pb-1">
+        <div class="flex items-center gap-1">
+          <i class="fa-solid fa-briefcase text-brand-gold text-xs"></i>
+          <span class="text-zinc-300" id="bank-category">خدمات مالية</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <i class="fa-solid fa-location-dot text-brand-gold text-xs"></i>
+          <span class="text-zinc-300" id="bank-location">Taiz - Yemen</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. تبويبات التصفح الثلاثة -->
+    <div class="border-b border-zinc-800 flex items-center justify-around text-zinc-400 text-sm font-bold mt-2">
+      <button type="button" onclick="switchTab('posts')" id="tab-posts-btn" class="tab-active py-2.5 px-3 flex items-center gap-1.5 transition cursor-pointer">
+        <i class="fa-solid fa-table-cells text-brand-gold text-sm"></i>
+        <span>المنشورات</span>
+      </button>
+
+      <button type="button" onclick="switchTab('offers')" id="tab-offers-btn" class="py-2.5 px-3 flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition cursor-pointer">
+        <i class="fa-solid fa-clipboard-check text-brand-gold text-sm"></i>
+        <span>العروض</span>
+      </button>
+
+      <button type="button" onclick="switchTab('services')" id="tab-services-btn" class="py-2.5 px-3 flex items-center gap-1.5 text-zinc-400 hover:text-zinc-200 transition cursor-pointer">
+        <i class="fa-solid fa-briefcase text-brand-gold text-sm"></i>
+        <span>الخدمات</span>
+      </button>
+    </div>
+
+    <!-- 5. المحتوى الديناميكي للتبويبات -->
+    <div class="p-3">
+      <!-- المنشورات -->
+      <div id="tab-posts" class="space-y-3">
+        <div id="posts-container" class="grid grid-cols-2 gap-2.5"></div>
+      </div>
+
+      <!-- العروض -->
+      <div id="tab-offers" class="hidden space-y-3">
+        <div id="offers-container" class="space-y-3"></div>
+      </div>
+
+      <!-- الخدمات -->
+      <div id="tab-services" class="hidden space-y-2.5">
+        <div id="services-container" class="space-y-2"></div>
+      </div>
+    </div>
+
+    <!-- 6. قسم التقييمات التفاعلي -->
+    <section id="reviews-section" class="px-4 pt-4 space-y-3 border-t border-zinc-900 mt-2">
+      <h3 class="text-right text-sm font-bold text-white">التقييمات</h3>
+
+      <div class="flex items-center justify-between bg-black">
+        <div class="text-right">
+          <span class="text-[10px] text-zinc-400 block">تقييم الزوار</span>
+          <div class="text-3xl font-black text-white leading-tight">
+            <span id="calc-avg-rating">4.5</span> <span class="text-xs text-zinc-400 font-normal">/ 5</span>
+          </div>
+          <div class="flex text-brand-gold text-xs my-0.5 justify-start" id="calc-avg-stars">
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star-half-stroke"></i>
+          </div>
+          <span class="text-[10px] text-zinc-400 block" id="calc-total-reviews">2 تقييم</span>
+        </div>
+
+        <!-- أشرطة نسب النجوم -->
+        <div class="w-6/12 space-y-1 text-[10px]">
+          <div class="flex items-center gap-1.5 justify-start">
+            <span class="text-zinc-300">★ 5</span>
+            <div class="w-20 bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+              <div id="bar-star-5" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 50%"></div>
+            </div>
+            <span id="pct-star-5" class="w-6 text-zinc-400 font-mono text-left">50%</span>
+          </div>
+          <div class="flex items-center gap-1.5 justify-start">
+            <span class="text-zinc-300">★ 4</span>
+            <div class="w-20 bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+              <div id="bar-star-4" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 50%"></div>
+            </div>
+            <span id="pct-star-4" class="w-6 text-zinc-400 font-mono text-left">50%</span>
+          </div>
+          <div class="flex items-center gap-1.5 justify-start">
+            <span class="text-zinc-300">★ 3</span>
+            <div class="w-20 bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+              <div id="bar-star-3" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <span id="pct-star-3" class="w-6 text-zinc-400 font-mono text-left">0%</span>
+          </div>
+          <div class="flex items-center gap-1.5 justify-start">
+            <span class="text-zinc-300">★ 2</span>
+            <div class="w-20 bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+              <div id="bar-star-2" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <span id="pct-star-2" class="w-6 text-zinc-400 font-mono text-left">0%</span>
+          </div>
+          <div class="flex items-center gap-1.5 justify-start">
+            <span class="text-zinc-300">★ 1</span>
+            <div class="w-20 bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+              <div id="bar-star-1" class="bg-brand-gold h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <span id="pct-star-1" class="w-6 text-zinc-400 font-mono text-left">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2">
+        <div class="text-right">
+          <p class="text-xs font-bold text-white">هل تعاملت مع هذه المنشأة؟</p>
+          <p class="text-[10px] text-zinc-400">شارك تجربتك وساعد الآخرين في اتخاذ القرار.</p>
+        </div>
+        <button type="button" onclick="openReviewModal()" class="bg-brand-gold hover:bg-brand-goldHover text-black font-extrabold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1 shadow transition active:scale-95 cursor-pointer">
+          <span>★ قيّم هذه المنشأة</span>
+        </button>
+      </div>
+
+      <div class="space-y-2 pt-2">
+        <h4 class="text-right text-xs font-bold text-zinc-300">اخر التقييمات</h4>
+        <div id="reviews-container" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- 7. تواصل معنا -->
+    <footer class="pt-8 pb-4 text-center">
+      <h4 class="text-sm font-bold text-white underline underline-offset-8 decoration-zinc-700 mb-4">تواصل معنا</h4>
+      <div id="footer-contacts" class="flex items-center justify-center gap-5 text-brand-gold text-xl">
+        <a id="contact-hours" href="#hours" title="ساعات العمل والفروع" class="hover:scale-110 transition"><i class="fa-solid fa-user-clock"></i></a>
+        <a id="contact-map" href="#" target="_blank" title="الموقع الجغرافي" class="hover:scale-110 transition"><i class="fa-solid fa-location-dot"></i></a>
+        <a id="contact-web" href="#" target="_blank" title="الموقع الإلكتروني" class="hover:scale-110 transition"><i class="fa-solid fa-globe"></i></a>
+        <a id="contact-wa" href="#" target="_blank" title="واتساب" class="hover:scale-110 transition"><i class="fa-brands fa-whatsapp"></i></a>
+        <a id="contact-mail" href="#" title="البريد الإلكتروني" class="hover:scale-110 transition"><i class="fa-regular fa-envelope"></i></a>
+      </div>
+    </footer>
+
+    <!-- 8. عارض الصور (Lightbox) -->
+    <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex flex-col justify-between p-4">
+      <div class="flex items-center justify-between text-white border-b border-zinc-800 pb-3">
+        <span id="lightbox-title" class="text-xs font-bold text-brand-gold">عرض الصورة</span>
+        <button type="button" onclick="closeLightbox()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 cursor-pointer">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="relative my-auto flex items-center justify-center w-full max-h-[75vh]">
+        <img id="lightbox-img" src="" class="max-w-full max-h-[70vh] rounded-xl object-contain shadow-2xl transition duration-300" alt="عرض مكبر" />
+      </div>
+
+      <div class="text-center text-zinc-400 text-xs flex items-center justify-between border-t border-zinc-800 pt-3">
+        <button type="button" onclick="navLightbox(-1)" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs cursor-pointer">السابق</button>
+        <span id="lightbox-counter" class="font-mono text-brand-gold">1 / 4</span>
+        <button type="button" onclick="navLightbox(1)" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs cursor-pointer">التالي</button>
+      </div>
+    </div>
+
+    <!-- 9. نافذة التقييم -->
+    <div id="review-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl relative">
+        
+        <!-- بطاقة الشكر والنجاح الفاخرة المدمجة بنفس الاستايل -->
+        <div id="review-success-view" class="hidden text-center py-6 px-3 space-y-3">
+          <div class="w-14 h-14 rounded-full bg-brand-gold/10 border border-brand-gold/30 text-brand-gold flex items-center justify-center mx-auto shadow-lg shadow-brand-gold/10">
+            <i class="fa-solid fa-star text-2xl"></i>
+          </div>
+          <h4 class="text-base font-black text-white">شكراً لمشاركتك القيّمة!</h4>
+          <p class="text-xs text-zinc-400 leading-relaxed">
+            تم تسجيل ونشر تقييمك بنجاح! رأيك الصادق يسهم في تعزيز الشفافية ومساعدة المجتمع في اختيار أفضل المنشآت والخدمات.
+          </p>
+          <button type="button" onclick="closeReviewModal()" class="w-full py-2.5 rounded-xl bg-brand-gold text-black font-black text-xs hover:bg-brand-goldHover transition cursor-pointer shadow-md">
+            حسناً، تم
+          </button>
+        </div>
+
+        <!-- نموذج إضافة التقييم بحقول مميزة وأمثلة واقعية -->
+        <div id="review-form-view">
+          <div class="flex items-center justify-between border-b border-zinc-800 pb-2 mb-3">
+            <h4 class="text-sm font-bold text-brand-gold flex items-center gap-1.5">
+              <i class="fa-solid fa-star"></i> إضافة تقييمك للمنشأة
+            </h4>
+            <button type="button" onclick="closeReviewModal()" class="w-7 h-7 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer transition">
+              <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
+          </div>
+
+          <div id="review-error-box" class="hidden bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-bold p-2.5 rounded-xl text-center"></div>
+          <form id="review-form" onsubmit="submitReview(event)" class="space-y-3 text-xs">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-brand-gold font-bold">التقييم بالنجوم <span class="text-red-500">*</span></label>
+                <span id="rating-hint" class="text-[11px] text-zinc-400 font-medium">اضغط لتحديد النجوم</span>
+              </div>
+              <div class="flex gap-2 text-2xl text-zinc-600 cursor-pointer justify-start my-1" id="rating-stars-input">
+                <span onclick="setRating(1)" class="transition hover:scale-110 select-none">★</span>
+                <span onclick="setRating(2)" class="transition hover:scale-110 select-none">★</span>
+                <span onclick="setRating(3)" class="transition hover:scale-110 select-none">★</span>
+                <span onclick="setRating(4)" class="transition hover:scale-110 select-none">★</span>
+                <span onclick="setRating(5)" class="transition hover:scale-110 select-none">★</span>
+              </div>
+              <input type="hidden" id="selected-rating" value="0" required />
+            </div>
+
+            <div>
+              <label class="block text-brand-gold font-bold mb-1">اسمك الكريم أو اللقب <span class="text-red-500">*</span></label>
+              <input type="text" id="reviewer-name" required placeholder="الاسم الكريم أو اللقب (مثال: م. أحمد الحميري)" class="w-full bg-zinc-950 border border-zinc-800 focus:border-brand-gold rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none transition" />
+            </div>
+
+            <div>
+              <label class="block text-brand-gold font-bold mb-1">تجربتك وتقييمك لخدمات البنك <span class="text-red-500">*</span></label>
+              <textarea id="reviewer-comment" rows="3" required placeholder="شاركنا رأيك الصادق حول سرعة إنجاز المعاملات، التطبيق، أو فروع البنك..." class="w-full bg-zinc-950 border border-zinc-800 focus:border-brand-gold rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none transition"></textarea>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
+              <button type="button" onclick="closeReviewModal()" class="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold transition cursor-pointer">إلغاء</button>
+              <button type="submit" id="review-submit-btn" class="px-5 py-2 rounded-xl bg-brand-gold hover:bg-brand-goldHover text-black font-black transition cursor-pointer shadow-md">إرسال التقييم</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. نافذة إثبات الملكية -->
+    <div id="claim-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl relative">
+        <div id="claim-success-view" class="hidden text-center py-6 px-3 space-y-3">
+          <div class="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
+            <i class="fa-solid fa-check text-2xl"></i>
+          </div>
+          <h4 class="text-base font-black text-white">تم إرسال الطلب بنجاح</h4>
+          <p class="text-xs text-zinc-400 leading-relaxed">
+            تم تسجيل طلب إثبات ملكية الصفحة بنجاح، وسيتم مراجعته والتواصل معكم من قِبل إدارة منصة يمن ريتنغ.
+          </p>
+          <button type="button" onclick="closeClaimModal()" class="w-full py-2.5 rounded-xl bg-brand-gold text-black font-black text-xs hover:bg-brand-goldHover transition">حسناً، تم</button>
+        </div>
+        <div id="claim-form-view">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+          <h4 class="text-sm font-bold text-[#EF4444] flex items-center gap-1.5">
+            <i class="fa-solid fa-shield-halved"></i> طلب إثبات ملكية المنشأة
+          </h4>
+          <button type="button" onclick="closeClaimModal()" class="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <form id="claim-form" onsubmit="submitClaim(event)" class="space-y-3 text-xs">
+          <div>
+            <label class="block text-white font-bold mb-1">اسم المفوض / ممثل البنك <span class="text-brand-gold">*</span></label>
+            <input type="text" id="claim-applicant-name" required placeholder="الاسم الرباعي كما في الهوية" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
+          </div>
+
+          <div>
+            <label class="block text-white font-bold mb-1">الصفة أو المسمى الوظيفي <span class="text-brand-gold">*</span></label>
+            <input type="text" id="claim-applicant-role" required placeholder="مثال: المالك / المدير العام / الممثل القانوني / المفوض" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
+          </div>
+
+          <div>
+            <label class="block text-white font-bold mb-1">رقم الهاتف أو الواتساب الرسمي <span class="text-brand-gold">*</span></label>
+            <input type="tel" id="claim-phone" required maxlength="9" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 9)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
+          </div>
+
+          <div>
+            <label class="block text-zinc-300 font-bold mb-1">رقم السجل التجاري أو صفة التفويض (اختياري)</label>
+            <textarea id="claim-notes" rows="2" placeholder="اكتب رقم السجل التجاري أو أي بيانات إضافية للتحقق..." class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition"></textarea>
+          </div>
+
+          <div class="flex justify-end gap-2 pt-1 border-t border-zinc-800">
+            <button type="button" onclick="closeClaimModal()" class="px-3.5 py-1.5 rounded-lg bg-zinc-900 text-zinc-300 cursor-pointer">إلغاء</button>
+            <button type="submit" id="claim-submit-btn" class="px-4 py-1.5 rounded-lg bg-[#EF4444] hover:bg-red-700 text-white font-bold cursor-pointer transition">إرسال الطلب</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- محرك الصفحة البرمجي المتكامل والخالي من أي أخطاء -->
+  <script>
+    const SUPABASE_URL = 'https://rnmuncxkfyoknmqejghl.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubXVuY3hrZnlva25tcWVqZ2hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjAyNDgsImV4cCI6MjEwNjM5NjI0OH0.brz_j92R3j1FmDUyryxpaoIfn4vK_rcZjelYaCd5T0w';
+
+    const DEFAULT_SHOWCASE_POSTS = [];
+
+        const FALLBACK_BANK = {
+      id: "",
+      name: "",
+      badge_type: "gold",
+      is_verified: false,
+      description: "",
+      category: "",
+      location: "",
+      address: "",
+      phone: "",
+      whatsapp: "",
+      email: "",
+      website_url: "",
+      logo_url: "",
+      cover_url: "",
+      posts: [],
+      offers: [],
+      services: [],
+      reviews: []
+    };
+
+    let currentBank = FALLBACK_BANK;
+    let currentPosts = FALLBACK_BANK.posts;
+    let currentLightboxIdx = 0;
+
+    function getBankIdentifier() {
+      const p = new URLSearchParams(window.location.search);
+      return p.get('id') || p.get('slug') || 'tadhamon';
+    }
+
+    function renderVerificationBadge(badgeType, isVerified, size = 20) {
+  if (isVerified !== true && isVerified !== "true") return "";
+
+  const type = (badgeType || "gold").toLowerCase();
+  let color = "#F59E0B"; // الذهبي الأصلي
+  let title = "موثق رسمياً - الشارة الذهبية";
+
+  if (type === "blue") {
+    color = "#1D9BF0";   // الأزرق الأصلي
+    title = "موثق رسمياً - الشارة الزرقاء";
+  } else if (type === "silver" || type === "gray") {
+    color = "#9CA3AF";   // الفضي الأصلي
+    title = "موثق رسمياً - الشارة الفضية";
+  }
+
+  return `<span class="inline-flex items-center justify-center shrink-0 select-none align-middle" title="${title}">
+    <svg style="width:${size}px; height:${size}px;" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" class="shrink-0 drop-shadow-sm">
+      <!-- جسم الشارة السحابي الدائري الأصلي -->
+      <path d="M512 268c0 17.9-4.3 34.5-12.9 49.7s-20.1 27.1-34.6 35.4c.4 2.7.6 6.9.6 12.6 0 27.1-9.1 50.1-27.1 69.1-18.1 19.1-39.9 28.6-65.4 28.6-11.4 0-22.3-2.1-32.6-6.3-8 16.4-19.5 29.6-34.6 39.7-15 10.2-31.5 15.2-49.4 15.2-18.3 0-34.9-4.9-49.7-14.9-14.9-9.9-26.3-23.2-34.3-40-10.3 4.2-21.1 6.3-32.6 6.3-25.5 0-47.4-9.5-65.7-28.6-18.3-19-27.4-42.1-27.4-69.1 0-3 .4-7.2 1.1-12.6-14.5-8.4-26-20.2-34.6-35.4-8.5-15.2-12.8-31.8-12.8-49.7 0-19 4.8-36.5 14.3-52.3s22.3-27.5 38.3-35.1c-4.2-11.4-6.3-22.9-6.3-34.3 0-27 9.1-50.1 27.4-69.1s40.2-28.6 65.7-28.6c11.4 0 22.3 2.1 32.6 6.3 8-16.4 19.5-29.6 34.6-39.7 15-10.1 31.5-15.2 49.4-15.2s34.4 5.1 49.4 15.1c15 10.1 26.6 23.3 34.6 39.7 10.3-4.2 21.1-6.3 32.6-6.3 25.5 0 47.3 9.5 65.4 28.6s27.1 42.1 27.1 69.1c0 12.6-1.9 24-5.7 34.3 16 7.6 28.8 19.3 38.3 35.1 9.5 15.9 14.3 33.4 14.3 52.4z" fill="${color}"/>
+      <!-- علامة الصح البيضاء الأصلية -->
+      <path d="M245.1 345.1l105.7-158.3c2.7-4.2 3.5-8.8 2.6-13.7-1-4.9-3.5-8.8-7.7-11.4-4.2-2.7-8.8-3.6-13.7-2.9-5 .8-9 3.2-12 7.4l-93.1 140-42.9-42.8c-3.8-3.8-8.2-5.6-13.1-5.4-5 .2-9.3 2-13.1 5.4-3.4 3.4-5.1 7.7-5.1 12.9 0 5.1 1.7 9.4 5.1 12.9l58.9 58.9 2.9 2.3c3.4 2.3 6.9 3.4 10.3 3.4 6.7-.1 11.8-2.9 15.2-8.7z" fill="#FFFFFF"/>
+    </svg>
+  </span>`;
+}
+
+        function updateRatingsDisplay(reviewsList) {
+      const avgNumEl = document.getElementById("header-rating-num");
+      const countEl = document.getElementById("header-rating-count");
+      const starsSlot = document.getElementById("header-stars-slot");
+      const calcAvgEl = document.getElementById("calc-avg-rating");
+      const calcTotEl = document.getElementById("calc-total-reviews");
+
+      if (!reviewsList || reviewsList.length === 0) {
+        if (avgNumEl) avgNumEl.innerText = "--";
+        if (countEl) countEl.innerText = "(لا توجد تقييمات)";
+        if (starsSlot) starsSlot.innerHTML = '<span class="text-zinc-500 text-[11px] font-normal">كن أول من يقيّم</span>';
+        if (calcAvgEl) calcAvgEl.innerText = "0.0";
+        if (calcTotEl) calcTotEl.innerText = "لا توجد تقييمات بعد";
+        return;
+      }
+
+      const total = reviewsList.length;
+      let sum = 0;
+      const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      reviewsList.forEach(r => {
+        const rating = Math.min(5, Math.max(1, parseInt(r.stars || r.rating) || 5));
+        counts[rating] = (counts[rating] || 0) + 1;
+        sum += rating;
+      });
+
+      const avg = (sum / total).toFixed(1);
+      if (avgNumEl) avgNumEl.innerText = avg;
+      if (countEl) countEl.innerText = `(${total} تقييم)`;
+      if (calcAvgEl) calcAvgEl.innerText = avg;
+      if (calcTotEl) calcTotEl.innerText = `${total} تقييم`;
+
+      if (starsSlot) {
+        let starsHtml = "";
+        for (let i = 1; i <= 5; i++) {
+          if (i <= Math.round(avg)) starsHtml += '<i class="fa-solid fa-star"></i>';
+          else starsHtml += '<i class="fa-regular fa-star text-zinc-600"></i>';
+        }
+        starsSlot.innerHTML = starsHtml;
+      }
+
+      for (let star = 1; star <= 5; star++) {
+        const pct = Math.round(((counts[star] || 0) / total) * 100);
+        const barEl = document.getElementById(`bar-star-${star}`);
+        const pctEl = document.getElementById(`pct-star-${star}`);
+        if (barEl) barEl.style.width = `${pct}%`;
+        if (pctEl) pctEl.innerText = `${pct}%`;
+      }
+    }
+
+        async function loadBankProfile() {
+      const bankId = getBankIdentifier();
+      let bankData = { ...FALLBACK_BANK };
+
+      // قراءة فورية للبيانات الحقيقية المخزنة في الذاكرة (تظهر في 0.01 ثانية)
+      try {
+        const cachedStr = sessionStorage.getItem("yr_instant_entity_" + bankId) || localStorage.getItem("yr_instant_entity_" + bankId);
+        if (cachedStr) {
+          const c = JSON.parse(cachedStr);
+          bankData.id = c.id || bankId;
+          bankData.name = c.name || "";
+          bankData.description = c.description || "";
+          bankData.badge_type = c.badge_type || "gold";
+          bankData.is_verified = (c.verified === true || c.is_verified === true);
+          bankData.phone = c.phone || "";
+          bankData.whatsapp = c.whatsapp || "";
+          bankData.address = c.address || c.city || "";
+          bankData.location = (c.city && c.address) ? (c.city + " - " + c.address) : (c.city || c.address || "اليمن");
+          bankData.logo_url = c.logo_url || "";
+          bankData.cover_url = c.cover_url || "";
+          bankData.sector_features = c.sector_features || c.sections_config?.features?.sector_features || c.features || [];
+          bankData.sections_config = c.sections_config || {};
+          bankData.sector_features = c.sector_features || c.sections_config?.features?.sector_features || c.features || [];
+          bankData.sections_config = c.sections_config || {};
+          currentBank = bankData;
+          try { renderUI();
+
+      // زيادة عداد المشاهدات تلقائياً في Supabase عند فتح الصفحة
+      if (currentBank && currentBank.id) {
+        fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_business_views`, {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": "Bearer " + SUPABASE_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ target_id: currentBank.id })
+        }).catch(() => {});
+      } } catch (_) {}
+          const splash = document.getElementById("page-splash-loader");
+          if (splash) splash.style.display = "none";
+        }
+      } catch (_) {}
+
+      try {
+        const isUUID = /^[0-9a-f-]{36}$/i.test(bankId);
+        const filterCol = isUUID ? "id" : "slug";
+
+        // 1. فحص جدول businesses أولاً لدعم كل المنشآت والشركات
+        let apiUrl = `${SUPABASE_URL}/rest/v1/businesses?${filterCol}=eq.${bankId}&select=*`;
+        let res = await fetch(apiUrl, {
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`
+          }
+        });
+        let rows = await res.json().catch(() => []);
+        let b = (Array.isArray(rows) && rows.length > 0) ? rows[0] : null;
+
+        // 2. إذا لم تكن في businesses، الفحص في جدول banks
+        if (!b) {
+          apiUrl = `${SUPABASE_URL}/rest/v1/banks?${filterCol}=eq.${bankId}&select=*`;
+          res = await fetch(apiUrl, {
+            headers: {
+              "apikey": SUPABASE_KEY,
+              "Authorization": `Bearer ${SUPABASE_KEY}`
+            }
+          });
+          rows = await res.json().catch(() => []);
+          b = (Array.isArray(rows) && rows.length > 0) ? rows[0] : null;
+        }
+
+        if (b) {
+          bankData.id = b.id;
+          bankData.name = b.name || bankData.name;
+          bankData.description = b.description || b.short_description || bankData.description;
+          bankData.badge_type = (b.badge_type && b.badge_type !== "none") ? b.badge_type : null;
+          bankData.sector_features = b.sector_features || b.sections_config?.features?.sector_features || b.features || [];
+          bankData.sections_config = b.sections_config || {};
+          bankData.is_verified = (b.verified === true || b.is_verified === true);
+          bankData.owner_id = b.owner_id || b.claimed_by_user_id;
+          bankData.claim_status = b.claim_status || b.ownership_status;
+          bankData.is_claimed = b.is_claimed;
+          bankData.ownership_status = b.ownership_status || (b.is_claimed ? 'CLAIMED' : 'UNCLAIMED');
+          bankData.phone = b.phone || bankData.phone;
+          bankData.whatsapp = b.whatsapp || bankData.whatsapp;
+          bankData.email = b.email || bankData.email;
+          bankData.website_url = b.website_url || b.website || bankData.website_url;
+          bankData.address = b.address || b.city || "";
+          bankData.location = (b.city && b.address) ? `${b.city} - ${b.address}` : (b.city || b.address || "اليمن");
+          bankData.logo_url = b.logo_url || "";
+          bankData.cover_url = b.cover_url || "";
+
+          // جلب اسم التصنيف الحقيقي من categories
+          if (b.category_id) {
+            try {
+              const catResp = await fetch(`${SUPABASE_URL}/rest/v1/categories?id=eq.${b.category_id}&select=id,name,slug`, {
+                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+              });
+              const catRows = await catResp.json();
+              if (catRows && catRows.length > 0) {
+                bankData.category = catRows[0].name;
+              }
+            } catch (_) {}
+          }
+          if (!bankData.category) {
+            bankData.category = b.sub_category || b.category || "منشأة معتمدة";
+          }
+
+                    // قراءة الصور الحقيقية للبنوك (b.posts) والمنشآت الأخرى (b.gallery_urls / sections_config)
+          let finalPosts = [];
+
+          // 1. فحص حقل posts المباشر (الخاص بالبنوك)
+          if (b.posts) {
+            let p = b.posts;
+            if (typeof p === "string") {
+              try { p = JSON.parse(p); } catch (_) {}
+            }
+            if (Array.isArray(p) && p.length > 0) {
+              finalPosts = p;
+            }
+          }
+
+          // 2. فحص حقل gallery_urls (الخاص بالمنشآت العامة والشركات)
+          if (finalPosts.length === 0 && b.gallery_urls && Array.isArray(b.gallery_urls)) {
+            const validUrls = b.gallery_urls.filter(Boolean);
+            if (validUrls.length > 0) {
+              finalPosts = validUrls.map((url, i) => ({
+                id: i + 1,
+                image: url,
+                tag: b.name || "معرض الصور",
+                title: (b.name || "المنشأة") + " - صورة " + (i + 1)
+              }));
+            }
+          }
+
+          // 3. فحص sections_config.posts
+          if (finalPosts.length === 0 && b.sections_config && Array.isArray(b.sections_config.posts)) {
+            finalPosts = b.sections_config.posts;
+          }
+
+          // النتيجة: تظهر صور البنك الحقيقية فوراً، والمنشآت الأخرى إن نشرت صوراً ظهرت، وإن لم تنشر تظل فارغة
+          bankData.posts = finalPosts;
+
+          // 2. الخدمات: مهيأة لقراءة أي بيانات تعبئها الإدارة في sections_config أو services
+          const adminServices = (b.sections_config && Array.isArray(b.sections_config.services)) ? b.sections_config.services : (Array.isArray(b.services) ? b.services : []);
+          bankData.services = adminServices;
+
+          // 3. العروض: مهيأة لقراءة أي بيانات تعبئها الإدارة في sections_config أو offers
+          const adminOffers = (b.sections_config?.features?.biz_promotions && Array.isArray(b.sections_config.features.biz_promotions) && b.sections_config.features.biz_promotions.length > 0)
+          ? b.sections_config.features.biz_promotions
+          : (b.sections_config?.biz_promotions && Array.isArray(b.sections_config.biz_promotions))
+            ? b.sections_config.biz_promotions
+            : (b.biz_promotions && Array.isArray(b.biz_promotions))
+              ? b.biz_promotions
+              : (b.sections_config && Array.isArray(b.sections_config.offers))
+                ? b.sections_config.offers
+                : (Array.isArray(b.offers) ? b.offers : []);
+          bankData.offers = adminOffers;
+
+          // جلب التقييمات الحقيقية للمنشأة
+          try {
+            const revUrl = `${SUPABASE_URL}/rest/v1/reviews?entity_id=eq.${b.id}&order=created_at.desc&select=*`;
+            const revRes = await fetch(revUrl, {
+              headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+            });
+            const revRows = await revRes.json().catch(() => []);
+            if (Array.isArray(revRows) && revRows.length > 0) {
+              bankData.reviews = revRows;
+            }
+          } catch (re) {
+            console.warn("Reviews fetch error:", re);
+          }
+        }
+      } catch (err) {
+        console.warn("Fetch fallback activated:", err);
+      } finally {
+        currentBank = bankData;
+        currentPosts = bankData.posts || FALLBACK_BANK.posts;
+        try {
+          renderUI();
+        } catch (ue) {
+          console.error("renderUI error:", ue);
+        }
+
+        // إخفاء فوري وتلقائي لشاشة التحميل
+        const splash = document.getElementById("page-splash-loader");
+        if (splash) {
+          splash.style.opacity = "0";
+          splash.style.pointerEvents = "none";
+          setTimeout(() => { splash.style.display = "none"; }, 150);
+        }
+      }
+    }
+
+    
+    // محرك الأيقونات الذكي المطابق لميزات وخدمات القطاعات
+    function getServiceIconClass(label) {
+      const t = (label || '').toLowerCase();
+      if (t.includes('طرد') || t.includes('طرود') || t.includes('بضائع') || t.includes('شحن طرود')) return 'fa-solid fa-boxes-packing';
+      if (t.includes('حافلات') || t.includes('باص') || t.includes('أسطول') || t.includes('مركبات')) return 'fa-solid fa-bus-simple';
+      if (t.includes('مبرد') || t.includes('تبريد') || t.includes('ثلج')) return 'fa-solid fa-snowflake';
+      if (t.includes('توصيل') || t.includes('منازل') || t.includes('سفري')) return 'fa-solid fa-truck-fast';
+      if (t.includes('باب')) return 'fa-solid fa-handshake';
+      if (t.includes('صراف') || t.includes('atm')) return 'fa-solid fa-money-bill-transfer';
+      if (t.includes('بطاق') || t.includes('فيزا') || t.includes('ماستركارد')) return 'fa-solid fa-credit-card';
+      if (t.includes('تحويل') || t.includes('حوال')) return 'fa-solid fa-paper-plane';
+      if (t.includes('مصرف') || t.includes('بنك') || t.includes('حساب')) return 'fa-solid fa-building-columns';
+      if (t.includes('تمويل') || t.includes('تسهيل')) return 'fa-solid fa-hand-holding-dollar';
+      if (t.includes('محفظ')) return 'fa-solid fa-wallet';
+      if (t.includes('صرف') || t.includes('عملات')) return 'fa-solid fa-money-bill-wave';
+      if (t.includes('طوارئ') || t.includes('إسعاف')) return 'fa-solid fa-truck-medical';
+      if (t.includes('عناية') || t.includes('icu')) return 'fa-solid fa-heart-pulse';
+      if (t.includes('مختبر') || t.includes('تحاليل')) return 'fa-solid fa-flask-vial';
+      if (t.includes('أشعة') || t.includes('رنين')) return 'fa-solid fa-x-ray';
+      if (t.includes('صيدل') || t.includes('دواء')) return 'fa-solid fa-pills';
+      if (t.includes('مسبح') || t.includes('سباح')) return 'fa-solid fa-water-ladder';
+      if (t.includes('غرف') || t.includes('أجنحة') || t.includes('فندق')) return 'fa-solid fa-bed';
+      if (t.includes('واي فاي') || t.includes('إنترنت')) return 'fa-solid fa-wifi';
+      if (t.includes('مواقف') || t.includes('سيارات')) return 'fa-solid fa-square-parking';
+      if (t.includes('ذهب') || t.includes('مجوهر') || t.includes('عيار')) return 'fa-solid fa-gem';
+      if (t.includes('نظاف') || t.includes('تنظيف')) return 'fa-solid fa-broom';
+      if (t.includes('مطعم') || t.includes('وجبات') || t.includes('أكل')) return 'fa-solid fa-utensils';
+      if (t.includes('قهوة') || t.includes('كافيه')) return 'fa-solid fa-mug-saucer';
+      if (t.includes('حلاق') || t.includes('صالون') || t.includes('شعر')) return 'fa-solid fa-scissors';
+      if (t.includes('نظر') || t.includes('بصري')) return 'fa-solid fa-glasses';
+      if (t.includes('دواجن') || t.includes('بيض')) return 'fa-solid fa-egg';
+      return 'fa-solid fa-hands-holding-circle';
+    }
+  
+    function renderUI() {
+
+                        // التحقق الذكي من المالك وإثبات الملكية
+        const claimBtn = document.getElementById('claim-btn');
+        if (claimBtn) {
+          const isVerifiedOrClaimed = 
+            currentBank.claim_status === 'CLAIMED' || 
+            currentBank.claim_status === 'APPROVED' || 
+            currentBank.ownership_status === 'VERIFIED' || 
+            currentBank.is_claimed === true || 
+            currentBank.is_verified === true;
+
+          if (isVerifiedOrClaimed) {
+            // جلب المستخدم المسجل حالياً من الذاكرة المحلية بأمان تام
+            let currentUserId = null;
+            try {
+              for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k && (k.includes('auth-token') || k.includes('supabase.auth.token'))) {
+                  const raw = localStorage.getItem(k) || '{}';
+                  const parsed = JSON.parse(raw);
+                  currentUserId = parsed?.user?.id || parsed?.currentSession?.user?.id || parsed?.id;
+                  if (currentUserId) break;
+                }
+              }
+              if (!currentUserId) {
+                // محاولة إضافية عبر كائن yr_user أو auth_user المخزن محلياً
+                const yrUser = JSON.parse(localStorage.getItem('yr_user') || '{}');
+                currentUserId = yrUser?.id;
+              }
+            } catch (_) {}
+
+            const isOwner = currentUserId && (
+              currentBank.owner_id === currentUserId || 
+              currentBank.claimed_by_user_id === currentUserId
+            );
+
+            if (isOwner) {
+              // المالك: تحويل الزر إلى زر التعديل الذهبي الفاخر
+              claimBtn.className = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFC500] hover:bg-amber-400 text-black text-xs font-black shadow-lg transition active:scale-95 animate-pulse cursor-pointer border border-[#FFC500]";
+              claimBtn.innerHTML = '<i class="fa-solid fa-crown text-black text-xs"></i><span>👑 أنت المالك</span>';
+              claimBtn.onclick = () => {
+                window.location.href = `/owner?id=${currentBank.id}`;
+              };
+            } else {
+              // زائر عادي: شارة تم إثبات الملكية
+              claimBtn.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold";
+              claimBtn.innerHTML = '<i class="fa-solid fa-shield-check text-emerald-400 text-xs"></i><span>موثقة رسمياً</span>';
+              claimBtn.onclick = null;
+            }
+          } else {
+            claimBtn.classList.remove('hidden');
+          }
+        }
+
+      // تحديث الشعار الحقيقي
+      if (currentBank.logo_url) {
+        const logoImg = document.getElementById('bank-logo');
+        if (logoImg) {
+          logoImg.src = currentBank.logo_url;
+          logoImg.classList.remove('opacity-50');
+        }
+      }
+
+      // تحديث الغلاف الحقيقي
+      if (currentBank.cover_url) {
+        const coverEl = document.getElementById('bank-cover');
+        if (coverEl) {
+          coverEl.style.backgroundImage = 'url(' + currentBank.cover_url + ')';
+          coverEl.style.backgroundSize = 'cover';
+          coverEl.style.backgroundPosition = 'center';
+        }
+      }
+
+      // تفعيل الشعار الحقيقي
+      const logoImg = document.getElementById('bank-logo');
+      if (logoImg && currentBank.logo_url) {
+        logoImg.src = currentBank.logo_url;
+      }
+
+      // 2. تفعيل الغلاف الحقيقي
+      const coverEl = document.getElementById('bank-cover');
+      if (coverEl && currentBank.cover_url) {
+        coverEl.style.backgroundImage = 'url(' + currentBank.cover_url + ')';
+        coverEl.style.backgroundSize = 'cover';
+        coverEl.style.backgroundPosition = 'center';
+      }
+
+      // 3. اسم البنك
+      document.getElementById('bank-name').innerText = currentBank.name;
+      // تم إلغاء الاسم فوق الغلاف
+      document.getElementById('bank-bio').innerText = currentBank.description;
+      document.getElementById('bank-location').innerText = currentBank.address || "اليمن";
+      document.getElementById('bank-badge-slot').innerHTML = renderVerificationBadge(currentBank.badge_type, currentBank.is_verified, 20);
+
+      document.getElementById('contact-web').href = currentBank.website_url || "#";
+      document.getElementById('contact-wa').href = currentBank.whatsapp ? (currentBank.whatsapp.startsWith('http') ? currentBank.whatsapp : `https://wa.me/${currentBank.whatsapp}`) : "#";
+      document.getElementById('contact-mail').href = currentBank.email ? `mailto:${currentBank.email}` : "#";
+
+            // 1. عرض التصنيف الحقيقي للمنشأة
+      const catEl = document.getElementById('bank-category');
+      if (catEl) catEl.innerText = currentBank.category || "منشأة معتمدة";
+
+      // 2. عرض المنشورات الحقيقية فقط أو بطاقة نظيفة فارغة
+      const postsContainer = document.getElementById('posts-container');
+      if (postsContainer) {
+        if (!currentPosts || currentPosts.length === 0) {
+          postsContainer.className = "col-span-2";
+          postsContainer.innerHTML = `<div class="col-span-2 py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-zinc-800 text-zinc-500 text-xs">
+            <i class="fa-solid fa-images text-zinc-600 text-2xl mb-2 block"></i>
+            <span>لا توجد منشورات أو صور مضافة لهذه المنشأة حالياً.</span>
+          </div>`;
+        } else {
+          postsContainer.className = "grid grid-cols-2 gap-2.5";
+          postsContainer.innerHTML = currentPosts.map((post, index) => `
+            <article onclick="openLightbox(${index})" class="group relative bg-[#0D0D0D] rounded-2xl overflow-hidden border border-zinc-800/80 aspect-square cursor-pointer active:scale-95 transition-all shadow-md">
+              <img src="${post.image || post.file_url}" alt="معرض الصور" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+            </article>
+          `).join('');
+        }
+      }
+
+      // 3. عرض العروض الحقيقية فقط أو بطاقة نظيفة فارغة
+      const offersContainer = document.getElementById('offers-container');
+      if (offersContainer) {
+        const realOffers = currentBank.offers || [];
+        if (realOffers.length === 0) {
+          offersContainer.innerHTML = `<div class="py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-zinc-800 text-zinc-500 text-xs">
+            <i class="fa-solid fa-tag text-zinc-600 text-2xl mb-2 block"></i>
+            <span>لا توجد عروض ترويجية نشطة حالياً لهذه المنشأة.</span>
+          </div>`;
+        } else {
+          offersContainer.innerHTML = realOffers.map(offer => `
+            <div class="bg-[#0D0D0D] border border-zinc-800 p-3.5 rounded-xl text-right">
+              <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
+                <span class="bg-brand-gold text-black font-black text-[10px] px-2.5 py-0.5 rounded">${offer.tag || "عرض خاص"}</span>
+                <span class="text-[10px] text-zinc-400 font-medium">${offer.expiry || ""}</span>
+              </div>
+              <h4 class="text-sm font-bold text-white leading-snug">${offer.title}</h4>
+              <p class="text-xs text-zinc-400 mt-1.5 leading-relaxed">${offer.description || offer.desc || ""}</p>
+            </div>
+          `).join('');
+        }
+      }
+
+      // 4. عرض الخدمات الحقيقية فقط أو بطاقة نظيفة فارغة
+      const servicesContainer = document.getElementById('services-container');
+    if (servicesContainer) {
+      let realServices = [];
+      const rawFeats = currentBank.sector_features || currentBank.sections_config?.features?.sector_features || currentBank.features || [];
+      if (Array.isArray(rawFeats)) {
+        realServices = rawFeats.filter(f => f && f.enabled);
+      } else if (rawFeats && typeof rawFeats === 'object') {
+        realServices = Object.keys(rawFeats)
+          .filter(k => rawFeats[k]?.enabled || rawFeats[k] === true)
+          .map(k => ({
+            label: rawFeats[k]?.label || k,
+            details: rawFeats[k]?.details || ''
+          }));
+      }
+
+      if (realServices.length === 0 && Array.isArray(currentBank.services)) {
+        realServices = currentBank.services;
+      }
+
+      if (realServices.length === 0) {
+        servicesContainer.innerHTML = `<div class="py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-zinc-800 text-zinc-500 text-xs" style="font-family: 'Cairo', sans-serif !important;">
+          <i class="fa-solid fa-briefcase text-zinc-600 text-2xl mb-2 block"></i>
+          <span>سيتم إضافة قائمة الخدمات المعتمدة قريباً من قبل إدارة المنشأة.</span>
+        </div>`;
+      } else {
+        servicesContainer.innerHTML = realServices.map(service => {
+          const title = service.label || service.service_name || service.title || '';
+          const detail = service.details || service.description || service.desc || '';
+          const icon = getServiceIconClass(title);
+
+          return `
+            <div class="bg-[#0D0D0D] border border-zinc-800/80 hover:border-[#FFC500]/40 p-3 sm:p-3.5 rounded-xl sm:rounded-2xl flex items-start gap-2.5 sm:gap-3 text-right transition duration-200" style="font-family: 'Cairo', sans-serif !important;" dir="rtl">
+              <div class="text-white text-base sm:text-lg shrink-0 flex items-center justify-center pt-0.5">
+                <i class="${icon}"></i>
+              </div>
+              <div class="flex-1 text-right space-y-0.5">
+                <h4 class="text-xs sm:text-[13px] font-bold text-[#FFC500] leading-snug" style="font-family: 'Cairo', sans-serif !important;">${title}</h4>
+                ${detail ? `<p class="text-[11px] text-white/90 leading-relaxed font-normal" style="font-family: 'Cairo', sans-serif !important;">${detail}</p>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    const revs = currentBank.reviews || FALLBACK_BANK.reviews;
+      updateRatingsDisplay(revs);
+
+            let allRevs = currentBank.reviews || [];
+      const reviewsContainer = document.getElementById("reviews-container");
+      if (!allRevs || allRevs.length === 0) {
+        if (reviewsContainer) {
+          reviewsContainer.innerHTML = '<div class="py-6 px-4 text-center rounded-xl bg-zinc-950 border border-zinc-900 text-xs text-zinc-400">لا توجد تقييمات لهذه المنشأة حتى الآن. كن أول من يقيّم!</div>';
+        }
+      } else {
+        const showRevs = window.showAllReviewsExpanded ? allRevs : allRevs.slice(0, 2);
+        let rHtml = showRevs.map(rev => {
+          let starsHtml = "";
+          const rVal = parseInt(rev.stars || rev.rating) || 5;
+          for (let i = 1; i <= 5; i++) {
+            if (i <= rVal) starsHtml += '<i class="fa-solid fa-star"></i>';
+            else starsHtml += '<i class="fa-regular fa-star text-zinc-600"></i>';
+          }
+          return '<div class="border border-zinc-800 rounded-full py-1.5 px-3 flex items-center justify-between bg-black"><div class="flex items-center gap-2.5">' +
+            ((rev.user_avatar && !rev.user_avatar.includes("unsplash")) ? '<img src="' + rev.user_avatar + '" class="w-7 h-7 rounded-full object-cover border border-zinc-800" alt="avatar" />' : '<div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 shrink-0"><i class="fa-solid fa-user text-[11px]"></i></div>') +
+            '<span class="text-xs text-zinc-200 font-medium">' + (rev.user_name || rev.name) + '</span></div><div class="flex text-brand-gold text-[10px] gap-0.5">' + starsHtml + '</div></div>';
+        }).join("");
+
+        if (allRevs.length > 2) {
+          rHtml += '<button type="button" onclick="window.showAllReviewsExpanded = !window.showAllReviewsExpanded; renderUI();" class="w-full py-2.5 mt-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-brand-gold text-xs font-bold flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer shadow-sm"><span>' + (window.showAllReviewsExpanded ? "عرض أقل" : "عرض جميع التقييمات (" + allRevs.length + ")") + '</span><i class="fa-solid ' + (window.showAllReviewsExpanded ? "fa-chevron-up" : "fa-chevron-down") + ' text-[10px]"></i></button>';
+        }
+        if (reviewsContainer) reviewsContainer.innerHTML = rHtml;
+      }
+    }
+
+    function switchTab(tabName) {
+      const tabs = ['posts', 'offers', 'services'];
+      const reviewsSection = document.getElementById('reviews-section');
+
+      tabs.forEach(t => {
+        const content = document.getElementById('tab-' + t);
+        const btn = document.getElementById('tab-' + t + '-btn');
+        if (t === tabName) {
+          content.classList.remove('hidden');
+          btn.classList.add('tab-active');
+          btn.classList.remove('text-zinc-400');
+        } else {
+          content.classList.add('hidden');
+          btn.classList.remove('tab-active');
+          btn.classList.add('text-zinc-400');
+        }
+      });
+
+      if (tabName === 'posts') {
+        reviewsSection.classList.remove('hidden');
+      } else {
+        reviewsSection.classList.add('hidden');
+      }
+    }
+
+    // دوال عارض الصور
+    
+    let tStartX = 0;
+    let tStartY = 0;
+    window.addEventListener('DOMContentLoaded', () => {
+      const lb = document.getElementById('lightbox-modal');
+      if (lb) {
+        lb.addEventListener('touchstart', e => {
+          tStartX = e.changedTouches[0].screenX;
+          tStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+        lb.addEventListener('touchend', e => {
+          const diffX = e.changedTouches[0].screenX - tStartX;
+          const diffY = e.changedTouches[0].screenY - tStartY;
+          if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX > 0) navLightbox(-1);
+            else navLightbox(1);
+          }
+        }, { passive: true });
+      }
+    });
+
+    function openLightbox(index) {
+      currentLightboxIdx = index;
+      const post = currentPosts[index];
+      document.getElementById('lightbox-img').src = post.image;
+      document.getElementById('lightbox-title').innerText = post.title;
+      document.getElementById('lightbox-counter').innerText = `${index + 1} / ${currentPosts.length}`;
+      document.getElementById('lightbox-modal').classList.remove('hidden');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox-modal').classList.add('hidden');
+    }
+
+    function navLightbox(direction) {
+      currentLightboxIdx += direction;
+      if (currentLightboxIdx < 0) currentLightboxIdx = currentPosts.length - 1;
+      if (currentLightboxIdx >= currentPosts.length) currentLightboxIdx = 0;
+      openLightbox(currentLightboxIdx);
+    }
+
+    // دوال نافذة التقييم
+    function openReviewModal() {
+      const sView = document.getElementById('review-success-view');
+      const fView = document.getElementById('review-form-view');
+      if (sView) sView.classList.add('hidden');
+      if (fView) fView.classList.remove('hidden');
+
+      document.getElementById('review-modal').classList.remove('hidden');
+      setRating(0); // النجوم تبدأ فارغة ليحددها الزائر بنفسه
+      document.getElementById('selected-rating').value = '0';
+      document.getElementById('rating-hint').innerText = 'اضغط لتحديد النجوم';
+      document.getElementById('rating-hint').style.color = '#A1A1AA';
+    }
+
+    function closeReviewModal() {
+      document.getElementById('review-modal').classList.add('hidden');
+    }
+
+    const starDescriptions = {
+      1: 'سيئ جداً (1 من 5)',
+      2: 'مقبول (2 من 5)',
+      3: 'جيد (3 من 5)',
+      4: 'جيد جداً (4 من 5)',
+      5: 'ممتاز وموصى به (5 من 5)'
+    };
+
+    function setRating(val) {
+      document.getElementById('selected-rating').value = val;
+      const stars = document.querySelectorAll('#rating-stars-input span');
+      stars.forEach((s, idx) => {
+        if (idx < val) s.style.color = '#EAB308';
+        else s.style.color = '#3F3F46';
+      });
+      const hint = document.getElementById('rating-hint');
+      if (hint && val > 0) {
+        hint.innerText = starDescriptions[val] || (val + ' من 5');
+        hint.style.color = '#EAB308';
+      }
+    }
+
+        async function submitReview(e) {
+      e.preventDefault();
+      const rating = parseInt(document.getElementById("selected-rating").value);
+      const hintEl = document.getElementById("rating-hint");
+      const errBox = document.getElementById("review-error-box");
+      if (errBox) errBox.classList.add("hidden");
+
+      if (!rating || rating < 1 || rating > 5) {
+        if (hintEl) {
+          hintEl.innerText = "يرجى تحديد النجوم أولاً بالنقر عليها!";
+          hintEl.style.color = "#EF4444";
+        }
+        return;
+      }
+
+      const name = document.getElementById("reviewer-name").value.trim();
+      const comment = document.getElementById("reviewer-comment").value.trim();
+      const btn = document.getElementById("review-submit-btn");
+      btn.disabled = true;
+      btn.innerText = "جاري الحفظ والنشر...";
+
+      const newRev = {
+        entity_type: currentBank.entity_type || "business",
+        entity_id: currentBank.id,
+        user_name: name || "زائر موثوق",
+        user_avatar: null,
+        stars: rating,
+        comment: comment || null,
+        created_at: new Date().toISOString()
+      };
+
+      try {
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/reviews`, {
+          method: "POST",
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify(newRev)
+        });
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          console.error("Supabase review insert error:", resp.status, errData);
+          throw new Error(errData.message || "حدث خطأ أثناء حفظ التقييم");
+        }
+
+        // تحديث الواجهة محلياً بالتقييم الجديد فوراً
+        currentBank.reviews = [newRev, ...(currentBank.reviews || [])];
+        updateRatingsDisplay(currentBank.reviews);
+        try { renderUI(); } catch (_) {}
+
+        // إظهار بطاقة الشكر والنجاح الفاخرة بنفس هوية المنصة (بدون alert)
+        document.getElementById("review-form-view").classList.add("hidden");
+        document.getElementById("review-success-view").classList.remove("hidden");
+        document.getElementById("review-form").reset();
+      } catch (err) {
+        console.error("Submit review error:", err);
+        const errContainer = document.getElementById("review-error-box");
+        if (errContainer) {
+          errContainer.innerText = "تنبيه: " + (err.message || "حدث خطأ أثناء حفظ التقييم، يرجى المحاولة لاحقاً.");
+          errContainer.classList.remove("hidden");
+        }
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "إرسال التقييم";
+      }
+    }
+
+    function openClaimModal() {
+      const sView = document.getElementById('claim-success-view');
+      const fView = document.getElementById('claim-form-view');
+      if (sView) sView.classList.add('hidden');
+      if (fView) fView.classList.remove('hidden');
+      document.getElementById('claim-modal').classList.remove('hidden');
+    }
+
+    function closeClaimModal() {
+      document.getElementById('claim-modal').classList.add('hidden');
+    }
+
+    async function submitClaim(e) {
+      e.preventDefault();
+      const name = document.getElementById('claim-applicant-name').value.trim();
+      const role = document.getElementById('claim-applicant-role').value.trim();
+      const phone = document.getElementById('claim-phone').value.trim();
+      const notes = document.getElementById('claim-notes').value.trim();
+      const btn = document.getElementById('claim-submit-btn');
+
+      btn.disabled = true;
+      btn.innerText = 'جاري الإرسال...';
+
+      try {
+        const categoryName = currentBank.category || currentBank.sector || 'منشأة عامة';
+        const payload = {
+          entity_id: currentBank.id,
+          entity_type: categoryName,
+          applicant_name: name,
+          applicant_role: role,
+          phone: phone,
+          notes: `المنشأة: ${currentBank.name || ''} | التصنيف: ${categoryName} | التفاصيل: ${notes}`,
+          status: 'PENDING'
+        };
+
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/verification_requests`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData.message || 'فشل إرسال الطلب');
+        }
+
+        document.getElementById('claim-form-view').classList.add('hidden');
+        document.getElementById('claim-success-view').classList.remove('hidden');
+        document.getElementById('claim-form').reset();
+      } catch (err) {
+        console.error('Claim submit error:', err);
+        alert('تنبيه: ' + (err.message || 'حدث خطأ أثناء إرسال الطلب'));
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'إرسال الطلب';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadBankProfile);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('claim') === '1' || urlParams.get('claim') === 'true') {
+      setTimeout(() => {
+        if (typeof openClaimModal === 'function') openClaimModal();
+      }, 400);
+    }
+
+
+    setTimeout(() => {
+      const splash = document.getElementById('page-splash-loader');
+      if (splash && splash.style.display !== 'none') {
+        splash.style.opacity = '0';
+        setTimeout(() => { splash.style.display = 'none'; }, 300);
+      }
+    }, 600);
+  
+  </script>
+
+</body>
+</html>

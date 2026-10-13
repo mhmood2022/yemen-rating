@@ -162,8 +162,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
     return [
       ...liveBusinesses.map(b => {
         const rev = reviewsMap.get(b.id);
-        const score = rev ? rev.avg : 0;
-        const count = rev ? rev.count : 0;
+        const adminRating = Number(b.rating || 0);
+        const adminCount = Number(b.review_count || 0);
+        const score = adminRating > 0 ? adminRating : (rev ? rev.avg : 0);
+        const count = adminCount > 0 ? adminCount : (rev ? rev.count : 0);
         const badge = (b.badge_type && b.badge_type !== "none") ? b.badge_type : (b.is_verified ? "blue" : null);
         return {
           ...b,
@@ -176,8 +178,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
       }),
       ...liveBanks.map(bk => {
         const rev = reviewsMap.get(bk.id);
-        const score = rev ? rev.avg : 0;
-        const count = rev ? rev.count : 0;
+        const adminRating = Number(bk.rating || 0);
+        const adminCount = Number(bk.review_count || 0);
+        const score = adminRating > 0 ? adminRating : (rev ? rev.avg : 0);
+        const count = adminCount > 0 ? adminCount : (rev ? rev.count : 0);
         const badge = (bk.badge_type && bk.badge_type !== "none") ? bk.badge_type : (bk.verified ? "blue" : null);
         return {
           ...bk,

@@ -280,7 +280,13 @@ export const BusinessesPage: React.FC = () => {
         /* شبكة الكروت المطابقة طبق الأصل لبنية كرت البنك الفاخر */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((item) => {
-            const rev = reviewsMap.get(item.id) || { avg: Number(item.rating || 0), count: 0 };
+            const liveRev = reviewsMap.get(item.id);
+            const adminRating = Number(item.rating || 0);
+            const adminCount = Number(item.review_count || 0);
+            const rev = {
+              avg: adminRating > 0 ? adminRating : (liveRev?.avg || 0),
+              count: adminCount > 0 ? adminCount : (liveRev?.count || 0)
+            };
             const isUnclaimed = !item.is_verified || item.is_verified === 'false' || item.ownership_status === 'UNCLAIMED';
 
             return (

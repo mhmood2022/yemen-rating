@@ -1,98 +1,204 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Gavel, MapPin, Calendar, ArrowLeft } from 'lucide-react';
+import { Gavel, MapPin, Heart, Tag, User, ShieldCheck, Clock } from 'lucide-react';
 
-export interface AuctionCardData {
-  id: string;
-  title: string;
-  category?: string;
-  city?: string;
-  sale_type?: 'auction' | 'fixed_price' | string;
-  starting_price?: number;
-  current_bid?: number;
-  final_price?: number;
-  currency?: string;
-  status: string;
-  images?: string[];
-  image_url?: string;
-  created_at?: string;
-  end_date?: string;
-}
+export const AuctionCard: React.FC<{ auction: any }> = ({ auction }) => {
+  const isDirectSale = auction.sale_type === 'fixed_price';
+  const isAuctionExpired = Boolean(
+    auction.status === 'completed' ||
+    auction.status === 'ended' ||
+    auction.status === 'sold' ||
+    (auction.end_date && new Date(auction.end_date).getTime() <= Date.now()) ||
+    (auction.end_time && new Date(auction.end_time).getTime() <= Date.now())
+  );
+  const isCompleted = isAuctionExpired;
+  const currentBid = Number(auction.current_bid || auction.starting_price || auction.final_price || 0);
+  const startPrice = Number(auction.starting_price || 0);
+  const currencyCode = auction.currency || 'SAR';
+  const auctionNumber = auction.id ? auction.id.replace(/\D/g, '').slice(0, 5) || '10294' : '10294';
 
-interface AuctionCardProps {
-  auction: AuctionCardData | any;
-}
+  const getImages = (auc: any): string[] => {
+    if (!auc) return [];
+    if (Array.isArray(auc.images) && auc.images.length > 0) return auc.images;
+    if (typeof auc.images === 'string') {
+      try {
+        const parsed = JSON.parse(auc.images);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch {}
+      if (auc.images.startsWith('http') || auc.images.startsWith('data:')) {
+        return auc.images.split(',').map((s: string) => s.trim()).filter(Boolean);
+      }
+    }
+    if (auc.image_url) return [auc.image_url];
+    return [];
+  };
 
-export const AuctionCard: React.FC<AuctionCardProps> = ({ auction }) => {
-  const isAuction = auction.sale_type === 'auction' || auction.saleType === 'auction' || !auction.sale_type;
-  const displayPrice = auction.current_bid || auction.currentBid || auction.starting_price || auction.startingPrice || auction.final_price || auction.finalPrice;
-  const mainImage = (auction.images && auction.images.length > 0) ? auction.images[0] : auction.image_url;
+  const images = getImages(auction);
+  const mainImage = images[0] || null;
+
+  let descriptionText = auction.description || '';
+  if (descriptionText.startsWith('{')) {
+    try {
+      const p = JSON.parse(descriptionText);
+      descriptionText = p.notes || p.description || Object.values(p).join(' - ');
+    } catch {}
+  }
+
+  const calculateTimer = () => {
+    const target = auction.end_date 
+      ? new Date(auction.end_date).getTime() 
+      : (new Date(auction.created_at || Date.now()).getTime() + (3 * 24 * 60 * 60 * 1000));
+    const diff = target - Date.now();
+    if (diff <= 0 || isCompleted) return { days: 0, hours: 0, minutes: 0, seconds: 0, isEnded: true };
+    return {
+      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+      minutes: Math.floor((diff / (1000 * 60)) % 60),
+      seconds: Math.floor((diff / 1000) % 60),
+      isEnded: false
+    };
+  };
+
+  const [timer, setTimer] = useState(calculateTimer);
+  const [isFav, setIsFav] = useState(false);
+
+  useEffect(() => {
+    const t = setInterval(() => setTimer(calculateTimer()), 1000);
+    return () => clearInterval(t);
+  }, [auction.end_date, auction.created_at, isCompleted]);
 
   return (
-    <div className="flex flex-col bg-[#0D1527] border border-slate-800 hover:border-[#F5C400]/50 rounded-2xl overflow-hidden shadow-lg transition-all duration-300 font-['Cairo']">
-      <div className="relative w-full h-44 bg-[#060A13] overflow-hidden">
+    <div className={`flex flex-col bg-[#0A0F1D] border rounded-2xl overflow-hidden shadow-lg transition-all duration-300 font-['Cairo'] text-white ${
+      isCompleted ? 'border-slate-800 opacity-80' : 'border-slate-800 hover:border-[#F5C400]'
+    }`}>
+      <div className="relative w-full h-52 bg-[#060A13] overflow-hidden">
         {mainImage ? (
-          <img
-            src={mainImage}
-            alt={auction.title}
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-          />
+          <img src={mainImage} alt={auction.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-600">
-            <Gavel className="w-12 h-12 text-[#F5C400]/40" />
+          <div className="w-full h-full flex flex-col items-center justify-center text-slate-600 gap-2">
+            <Gavel size={36} className="text-[#F5C400]/30" />
+            <span className="text-[11px] text-slate-500 font-bold">لا توجد صور مرفوعة</span>
           </div>
         )}
-        <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
-          <span className="px-2 py-0.5 text-xs font-bold rounded-md bg-[#060A13]/90 text-emerald-400 border border-emerald-500/30">
-            {auction.status === 'active' ? 'جاري الآن' : auction.status === 'completed' ? 'منتهي' : (auction.status || 'متاح')}
+
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); setIsFav(!isFav); }}
+          className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md flex items-center justify-center text-white transition-colors z-10"
+        >
+          <Heart size={16} className={isFav ? 'fill-rose-500 text-rose-500' : 'text-white'} />
+        </button>
+
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+          <span className="px-2.5 py-1 rounded-lg bg-black/80 text-white border border-slate-700 text-[10px] font-mono font-bold backdrop-blur-md">
+            رقم المزاد: #{auctionNumber}
           </span>
-          <span className="px-2 py-0.5 text-xs font-bold rounded-md bg-[#F5C400] text-black">
-            {isAuction ? 'مزاد' : 'بيع مباشر'}
+          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${
+            isCompleted ? 'bg-rose-950/90 text-rose-400 border border-rose-500/40' 
+              : isDirectSale 
+                ? 'bg-blue-900/90 text-blue-300 border border-blue-500/40' 
+                : 'bg-[#F5C400] text-black font-black'
+          }`}>
+            {isCompleted ? 'منتهي' : isDirectSale ? 'بيع مباشر' : 'مزاد علني'}
           </span>
         </div>
       </div>
 
       <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
         <div>
-          <h3 className="text-sm sm:text-base font-bold text-white line-clamp-2 leading-snug">
+          <div className="flex items-center justify-between text-[11px] mb-1.5 font-bold">
+            <div className="flex items-center gap-1.5">
+              <span className="px-2 py-0.5 rounded-md bg-[#060A13] text-[#F5C400] border border-[#F5C400]/30">
+                {auction.category || 'عام'}
+              </span>
+              {auction.seller_name && (
+                <span className="text-[10px] text-slate-400 truncate max-w-[120px]">
+                  · {auction.seller_name}
+                </span>
+              )}
+            </div>
+            {auction.city && (
+              <span className="inline-flex items-center gap-1 text-slate-300">
+                <MapPin size={11} className="text-[#F5C400]" />
+                <span>{auction.city}</span>
+              </span>
+            )}
+          </div>
+
+          <h3 className="text-base font-black text-white line-clamp-1 leading-snug">
             {auction.title}
           </h3>
 
-          <div className="mt-2.5 flex flex-wrap items-center gap-3 text-xs text-slate-300">
-            {auction.city && (
-              <div className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-[#F5C400] shrink-0" />
-                <span>{auction.city}</span>
-              </div>
-            )}
-            {auction.end_date && (
-              <div className="flex items-center gap-1 text-slate-400">
-                <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                <span>ينتهي: {auction.end_date}</span>
-              </div>
-            )}
+          {descriptionText && (
+            <p className="text-xs text-slate-400 line-clamp-1 mt-1 font-normal">
+              {descriptionText}
+            </p>
+          )}
+
+          {/* بيان شرط التأمين المتفق عليه في البطاقة */}
+          {!isDirectSale && (
+            <div className="mt-2 text-[11px] font-bold">
+              {auction.deposit_required ? (
+                <span className="text-amber-400 flex items-center gap-1">
+                  <ShieldCheck size={12} />
+                  <span>تأمين الدخول: {Number(auction.deposit_amount).toLocaleString()} {currencyCode}</span>
+                </span>
+              ) : (
+                <span className="text-slate-500">دخول المزاد: بدون تأمين مسبق</span>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="pt-2 border-t border-slate-800/80 flex items-baseline justify-between">
+          <span className="text-[11px] text-slate-400 font-bold">
+            {isCompleted 
+              ? 'السعر النهائي للرسو:' 
+              : isDirectSale 
+                ? 'السعر المطلوب للشراء:' 
+                : (currentBid > startPrice ? 'أعلى مزايدة مسجلة:' : 'يبدأ المزاد من:')}
+          </span>
+          <div className="flex items-baseline gap-1 font-mono">
+            <span className="text-xl font-black text-[#F5C400]">
+              {currentBid.toLocaleString()}
+            </span>
+            <span className="text-xs text-slate-400 font-sans font-bold">{currencyCode}</span>
           </div>
         </div>
 
-        <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] text-slate-400 block">
-              {isAuction ? 'السعر الحالي / الابتدائي' : 'السعر المطلوب'}
-            </span>
-            <span className="text-sm font-bold text-[#F5C400]">
-              {displayPrice ? `${displayPrice.toLocaleString()} ${auction.currency || 'YER'}` : 'عند المزايدة'}
-            </span>
-          </div>
+        {!isDirectSale && (
+          isCompleted ? (
+            <div className="py-2 px-3 rounded-xl bg-slate-900 border border-slate-800 text-center text-xs font-bold text-slate-400">
+              تم إغلاق المزاد وانتهاء فترة المزايدة
+            </div>
+          ) : (
+            <div className="py-2 px-2 rounded-xl bg-[#060A13] border border-slate-800 text-white grid grid-cols-4 gap-1 text-center font-mono">
+              <div className="flex flex-col">
+                <span className="font-black text-sm text-emerald-400">{timer.seconds}</span>
+                <span className="text-[9px] font-sans text-slate-700 font-bold">ثانية</span>
+              </div>
+              <div className="flex flex-col border-r border-amber-300/80">
+                <span className="font-black text-sm text-emerald-400">{timer.minutes}</span>
+                <span className="text-[9px] font-sans text-slate-700 font-bold">دقيقة</span>
+              </div>
+              <div className="flex flex-col border-r border-amber-300/80">
+                <span className="font-black text-sm text-emerald-400">{timer.hours}</span>
+                <span className="text-[9px] font-sans text-slate-700 font-bold">ساعة</span>
+              </div>
+              <div className="flex flex-col border-r border-amber-300/80">
+                <span className="font-black text-sm text-emerald-400">{timer.days}</span>
+                <span className="text-[9px] font-sans text-slate-700 font-bold">يوم</span>
+              </div>
+            </div>
+          )
+        )}
 
-          <Link
-            to={`/auctions/${auction.id}`}
-            className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#F5C400] hover:bg-[#DDAF00] text-black text-xs font-black rounded-lg transition-colors shadow-sm"
-          >
-            <span>عرض المزاد</span>
-            <ArrowLeft className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+        <Link
+          to={`/auctions/${auction.id}`}
+          className="w-full py-2.5 bg-[#0F172A] hover:bg-[#1E293B] border border-slate-700 hover:border-[#F5C400] text-white hover:text-[#F5C400] font-black text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+        >
+          <span>{isDirectSale ? 'معاينة وشراء السلعة' : (isCompleted ? 'عرض تفاصيل المزاد المنتهي' : 'المعاينة والمشاركة بالمزاد')}</span>
+        </Link>
       </div>
     </div>
   );

@@ -1,84 +1,68 @@
-import React, { useState, useRef, useEffect } from "react";
-import { ChevronDown, Check } from "lucide-react";
+import React, { useState, useRef, useEffect } from 'react';
+import { ChevronDown, Check } from 'lucide-react';
 
-export interface YROption {
+export interface YRSelectOption {
   value: string;
   label: string;
 }
 
-interface YRSelectProps {
-  label?: string;
-  value: string;
-  options: (string | YROption)[];
+export interface YRSelectProps {
+  value?: string;
+  options: YRSelectOption[];
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
-  compact?: boolean;
   disabled?: boolean;
 }
 
 export const YRSelect: React.FC<YRSelectProps> = ({
-  label,
   value,
   options,
   onChange,
-  placeholder = "اختر...",
-  className = "",
-  compact = false,
-  disabled = false,
+  placeholder = 'اختر من القائمة...',
+  className = '',
+  disabled = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const normalizedOptions: YROption[] = options.map((opt) =>
-    typeof opt === "string" ? { value: opt, label: opt } : opt
-  );
-
-  const currentLabel =
-    normalizedOptions.find((o) => o.value === value)?.label || value || placeholder;
+  const selectedOption = options.find((opt) => opt.value === value);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   return (
-    <div className={"relative w-full text-right font-['Cairo',sans-serif] " + className} ref={containerRef}>
-      {label && (
-        <label className="text-gray-200 font-bold block mb-1 text-[11px] select-none">
-          {label}
-        </label>
-      )}
-
+    <div ref={dropdownRef} className={`relative w-full font-['Cairo'] text-right select-none ${className}`}>
       <button
         type="button"
         disabled={disabled}
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        className={"w-full bg-[#0E1424] border border-slate-700/80 hover:border-[#FFC500]/60 text-white flex items-center justify-between outline-none transition-all cursor-pointer select-none active:scale-[0.99] " +
-          (compact ? "h-9 px-2 text-[10.5px] font-bold rounded-lg " : "h-11 px-3 text-xs font-bold rounded-xl ") +
-          (isOpen ? "border-[#FFC500]/60 ring-1 ring-[#FFC500]/20 " : "") +
-          (disabled ? "opacity-50 cursor-not-allowed " : "")}
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full bg-[#060A13] text-white border border-slate-800 hover:border-[#F5C400]/60 focus:border-[#F5C400] rounded-xl px-3.5 py-2.5 text-xs flex items-center justify-between gap-2 transition-all cursor-pointer shadow-inner ${
+          isOpen ? 'border-[#F5C400] ring-1 ring-[#F5C400]/40' : ''
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <span className="truncate">{currentLabel}</span>
+        <span className={`truncate font-bold ${selectedOption ? 'text-white' : 'text-slate-400'}`}>
+          {selectedOption ? selectedOption.label : placeholder}
+        </span>
         <ChevronDown
-          size={compact ? 13 : 15}
-          className={"text-gray-400 transition-transform duration-200 shrink-0 mr-1.5 " + (isOpen ? "rotate-180 text-[#FFC500]" : "")}
+          size={14}
+          className={`text-[#F5C400] shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 left-0 mt-1 z-50 bg-[#0B0F19] border border-slate-800 rounded-xl shadow-2xl overflow-hidden max-h-52 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
-          <div className="p-1 space-y-0.5">
-            {normalizedOptions.map((option) => {
+        <div className="absolute z-50 w-full mt-1.5 bg-[#0A0F1D] border border-slate-800 rounded-xl shadow-2xl overflow-hidden py-1 max-h-60 overflow-y-auto">
+          {options.length === 0 ? (
+            <div className="px-3.5 py-2 text-xs text-slate-500 text-center font-bold">لا توجد خيارات متاحة</div>
+          ) : (
+            options.map((option) => {
               const isSelected = option.value === value;
               return (
                 <div
@@ -87,18 +71,18 @@ export const YRSelect: React.FC<YRSelectProps> = ({
                     onChange(option.value);
                     setIsOpen(false);
                   }}
-                  className={"rounded-lg font-bold cursor-pointer flex items-center justify-between transition-colors " +
-                    (compact ? "px-2.5 py-1.5 text-[11px] " : "px-3.5 py-2.5 text-xs ") +
-                    (isSelected
-                      ? "bg-[#FFC500]/15 text-[#FFC500]"
-                      : "text-gray-300 hover:bg-[#131B2E] hover:text-[#FFC500] active:bg-[#131B2E]")}
+                  className={`px-3.5 py-2.5 text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#F5C400] text-black font-black'
+                      : 'text-slate-200 hover:bg-[#F5C400]/15 hover:text-[#F5C400]'
+                  }`}
                 >
                   <span className="truncate">{option.label}</span>
-                  {isSelected && <Check size={compact ? 12 : 14} className="text-[#FFC500] shrink-0 mr-1.5" />}
+                  {isSelected && <Check size={14} className="text-black shrink-0" />}
                 </div>
               );
-            })}
-          </div>
+            })
+          )}
         </div>
       )}
     </div>

@@ -1,0 +1,1064 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Gavel, AlertCircle, CheckCircle2, Search,
+  RefreshCw, Calendar, MapPin, Activity,
+  Trash2, Edit, Plus, X, ImagePlus, ShieldCheck,
+  Scale, Tag, Percent, Phone, MessageCircle, Mail, Clock,
+  User, DollarSign
+} from 'lucide-react';
+import { adminAuctionsService } from '../../../services/adminService';
+import { supabase } from '../../../lib/supabase';
+import { YRSelect } from '../../../components/common/YRSelect';
+
+const CATEGORIES = [
+  'سيارات ومركبات',
+  'هواتف وأجهزة ذكية',
+  'أسلحة ومقتنيات شخصية',
+  'عفش وأثاث',
+  'عقارات وأراضي',
+  'أغراض وسلع عامة'
+];
+
+const YEMEN_CITIES = [
+  { value: 'all', label: 'كل المدن والمحافظات' },
+  { value: 'صنعاء', label: 'صنعاء' },
+  { value: 'عدن', label: 'عدن' },
+  { value: 'تعز', label: 'تعز' },
+  { value: 'حضرموت', label: 'حضرموت' },
+  { value: 'الحديدة', label: 'الحديدة' },
+  { value: 'مأرب', label: 'مأرب' },
+  { value: 'إب', label: 'إب' },
+  { value: 'ذمار', label: 'ذمار' }
+];
+
+export const AuctionsManager: React.FC = () => {
+  const navigate = useNavigate();
+
+  // التبويب النشط: المعروضات أو سجل المزايدات والمشترين
+  const [activeTab, setActiveTab] = useState<'listings' | 'bids_log'>('listings');
+
+  // بيانات المعروضات
+  const [listings, setListings] = useState<any[]>([]);
+  const [loadingListings, setLoadingListings] = useState(true);
+  const [filterType, setFilterType] = useState<'all' | 'auction' | 'fixed_price'>('all');
+  const [cityFilter, setCityFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // بيانات سجل المزايدات والمشترين الحقيقي
+  const [bidsLog, setBidsLog] = useState<any[]>([]);
+  const [loadingBids, setLoadingBids] = useState(false);
+
+  // إعدادات نسب العمولة الحقيقية في Supabase
+  const [sellerRate, setSellerRate] = useState<number>(10);
+  const [buyerRate, setBuyerRate] = useState<number>(5);
+  const [defaultMinInc, setDefaultMinInc] = useState<number>(1000);
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [settingsSuccessToast, setSettingsSuccessToast] = useState(false);
+
+  // حالات النوافذ المنبثقة
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState<any | null>(null);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  // حقول نموذج المزاد
+  const [formTitle, setFormTitle] = useState('');
+  const [formSellerName, setFormSellerName] = useState('');
+  const [formSaleType, setFormSaleType] = useState<'auction' | 'fixed_price'>('auction');
+  const [formCategory, setFormCategory] = useState(CATEGORIES[0]);
+  const [formCity, setFormCity] = useState('صنعاء');
+  const [formCurrency, setFormCurrency] = useState('SAR');
+  const [formStartingPrice, setFormStartingPrice] = useState('');
+  const [formMinIncrement, setFormMinIncrement] = useState('1000');
+  const [formMaxIncrement, setFormMaxIncrement] = useState('');
+  const [formStartTime, setFormStartTime] = useState('');
+  const [formEndDate, setFormEndDate] = useState('');
+  const [formPhone, setFormPhone] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [formImages, setFormImages] = useState<string[]>([]);
+  const [compressing, setCompressing] = useState(false);
+  const [formConsent, setFormConsent] = useState(false);
+  const [submittingModal, setSubmittingModal] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // جلب المعروضات
+  const fetchListings = async () => {
+    try {
+      setLoadingListings(true);
+      const { data, error } = await supabase.from('auctions').select('*').order('created_at', { ascending: false });
+      if (!error && data) setListings(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingListings(false);
+    }
+  };
+
+  // جلب سجل المزايدات والمشترين الحقيقي بالأسماء والأرقام
+  const fetchBidsLog = async () => {
+    try {
+      setLoadingBids(true);
+      const { data, error } = await supabase
+        .from('auction_bids')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (!error && data) setBidsLog(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingBids(false);
+    }
+  };
+
+  // جلب نسب العمولات الحقيقية من قاعدة البيانات
+  const fetchSettings = async () => {
+    try {
+      const { data } = await supabase.from('platform_commission_settings').select('*').limit(1).maybeSingle();
+      if (data) {
+        setSellerRate(Number(data.seller_commission_rate) || 10);
+        setBuyerRate(Number(data.buyer_commission_rate) || 5);
+        setDefaultMinInc(Number(data.default_min_increment) || 1000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchListings();
+    fetchBidsLog();
+    fetchSettings();
+  }, []);
+
+  // حفظ نسب العمولة الحقيقية في Supabase
+  const handleSaveCommissionRates = async () => {
+    try {
+      setSavingSettings(true);
+      const payload = {
+        seller_commission_rate: Number(sellerRate),
+        buyer_commission_rate: Number(buyerRate),
+        default_min_increment: Number(defaultMinInc),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data: existing } = await supabase.from('platform_commission_settings').select('id').limit(1).maybeSingle();
+      if (existing?.id) {
+        await supabase.from('platform_commission_settings').update(payload).eq('id', existing.id);
+      } else {
+        await supabase.from('platform_commission_settings').insert([payload]);
+      }
+
+      setSettingsSuccessToast(true);
+      setTimeout(() => setSettingsSuccessToast(false), 3500);
+    } catch (err: any) {
+      alert('خطأ في حفظ النسبة: ' + err.message);
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
+  // ضغط الصور التلقائي
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 1000;
+          let width = img.width;
+          let height = img.height;
+          if (width > height && width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.72));
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const remaining = 6 - formImages.length;
+    if (remaining <= 0) return;
+    try {
+      setCompressing(true);
+      const toProcess = Array.from(files).slice(0, remaining);
+      const list: string[] = [];
+      for (const file of toProcess) {
+        const c = await compressImage(file);
+        list.push(c);
+      }
+      setFormImages((prev) => [...prev, ...list]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCompressing(false);
+    }
+  };
+
+  const openCreateModal = () => {
+    setModalMode('create');
+    setEditingId(null);
+    setFormTitle('');
+    setFormSellerName('');
+    setFormSaleType('auction');
+    setFormCategory(CATEGORIES[0]);
+    setFormCity('صنعاء');
+    setFormCurrency('SAR');
+    setFormStartingPrice('');
+    setFormMinIncrement(String(defaultMinInc || 1000));
+    setFormMaxIncrement('');
+    const now = new Date();
+    setFormStartTime(now.toISOString().slice(0, 16));
+    const end = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    setFormEndDate(end.toISOString().slice(0, 16));
+    setFormPhone('');
+    setFormDescription('');
+    setFormImages([]);
+    setFormConsent(false);
+  };
+
+  const openEditModal = (item: any) => {
+    setModalMode('edit');
+    setEditingId(item.id);
+    setFormTitle(item.title || '');
+    setFormSellerName(item.seller_name || item.sellerName || '');
+    setFormSaleType(item.sale_type || 'auction');
+    setFormCategory(item.category || CATEGORIES[0]);
+    setFormCity(item.city || 'صنعاء');
+    setFormCurrency(item.currency || 'SAR');
+    setFormStartingPrice(String(item.starting_price || item.current_bid || ''));
+    setFormMinIncrement(String(item.min_increment || defaultMinInc || 1000));
+    setFormMaxIncrement(String(item.max_increment || ''));
+    setFormStartTime(item.start_time ? new Date(item.start_time).toISOString().slice(0, 16) : '');
+    setFormEndDate(item.end_date ? new Date(item.end_date).toISOString().slice(0, 16) : '');
+    setFormPhone(item.seller_phone || '');
+    setFormDescription(item.description || '');
+    const imgs = Array.isArray(item.images) ? item.images : (item.image_url ? [item.image_url] : []);
+    setFormImages(imgs);
+    setFormConsent(true);
+  };
+
+  const handleSaveModal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formTitle.trim() || formPhone.length !== 9) {
+      setToastMsg('يرجى كتابة العنوان وإدخال رقم هاتف مكون من 9 أرقام');
+      setTimeout(() => setToastMsg(null), 3500);
+      return;
+    }
+
+    try {
+      setSubmittingModal(true);
+      const priceNum = parseFloat(formStartingPrice) || 0;
+      const minInc = parseFloat(formMinIncrement) || 1000;
+      const maxInc = formMaxIncrement ? parseFloat(formMaxIncrement) : null;
+
+      const payload: any = {
+        title: formTitle.trim(),
+        seller_name: formSellerName.trim() || 'صاحب المعروض المعتمد',
+        sale_type: formSaleType,
+        category: formCategory,
+        city: formCity,
+        currency: formCurrency,
+        starting_price: priceNum,
+        min_increment: minInc,
+        max_increment: maxInc,
+        start_time: formStartTime ? new Date(formStartTime).toISOString() : new Date().toISOString(),
+        end_date: formEndDate ? new Date(formEndDate).toISOString() : new Date(Date.now() + 3 * 24 * 3600 * 1000).toISOString(),
+        seller_phone: formPhone,
+        description: formDescription.trim(),
+        images: formImages
+      };
+
+      if (modalMode === 'create') {
+        payload.current_bid = priceNum;
+        payload.status = 'active';
+        payload.created_at = new Date().toISOString();
+        const { error } = await supabase.from('auctions').insert([payload]);
+        if (error) throw error;
+        setToastMsg('تم نشر المعروض بنجاح');
+      } else if (modalMode === 'edit' && editingId) {
+        const { error } = await supabase.from('auctions').update(payload).eq('id', editingId);
+        if (error) throw error;
+        setToastMsg('تم حفظ وتحديث بيانات المعروض بنجاح');
+      }
+
+      setModalMode(null);
+      setTimeout(() => setToastMsg(null), 3500);
+      fetchListings();
+    } catch (err: any) {
+      setToastMsg(err.message || 'حدث خطأ أثناء الحفظ');
+      setTimeout(() => setToastMsg(null), 3500);
+    } finally {
+      setSubmittingModal(false);
+    }
+  };
+
+  const handleDeleteItem = async () => {
+    if (!deleteConfirmItem) return;
+    try {
+      const { error } = await supabase.from('auctions').delete().eq('id', deleteConfirmItem.id);
+      if (error) throw error;
+      setListings((prev) => prev.filter((i) => i.id !== deleteConfirmItem.id));
+      setDeleteConfirmItem(null);
+      setToastMsg('تم حذف المعروض بنجاح');
+      setTimeout(() => setToastMsg(null), 3500);
+    } catch (err: any) {
+      setToastMsg(err.message || 'تعذر الحذف');
+      setTimeout(() => setToastMsg(null), 3500);
+    }
+  };
+
+  const filteredListings = listings.filter((item) => {
+    if (filterType !== 'all' && item.sale_type !== filterType) return false;
+    if (cityFilter !== 'all' && (!item.city || !item.city.includes(cityFilter))) return false;
+    if (searchTerm.trim() && !item.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    return true;
+  });
+
+  const activeCount = listings.filter((l) => l.status === 'active' && l.sale_type !== 'fixed_price').length;
+  const directCount = listings.filter((l) => l.sale_type === 'fixed_price').length;
+  const completedCount = listings.filter((l) => l.status === 'completed' || l.status === 'ended').length;
+
+  return (
+    <div dir="rtl" className="max-w-7xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white">
+      {/* التنبيهات المنبثقة */}
+      {toastMsg && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#F5C400] text-black px-5 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2 border border-black/10 animate-bounce">
+          <CheckCircle2 size={16} />
+          <span>{toastMsg}</span>
+        </div>
+      )}
+
+      {/* الترويسة الرئيسية */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0A0F1D] border border-slate-800 p-4 rounded-2xl">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#060A13] border border-[#F5C400]/40 flex items-center justify-center text-[#F5C400]">
+            <Gavel size={22} />
+          </div>
+          <div>
+            <h1 className="text-lg sm:text-xl font-black text-white">إدارة المزادات وسجل المشترين والمزايدات</h1>
+            <p className="text-xs text-slate-400 mt-0.5">منصة يمن ريتنج - بيانات حقيقية، أرقام تواصل للمشترين، وتعديل العمولات</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs sm:text-sm shadow-md transition-all active:scale-95 cursor-pointer"
+          >
+            <Plus size={16} />
+            <span>+ إضافة معروض جديد</span>
+          </button>
+          <button
+            onClick={() => { fetchListings(); fetchBidsLog(); }}
+            className="p-2.5 bg-[#060A13] border border-slate-800 rounded-xl text-slate-300 hover:text-white transition-colors cursor-pointer"
+            title="تحديث البيانات"
+          >
+            <RefreshCw size={15} className={loadingListings || loadingBids ? 'animate-spin text-[#F5C400]' : ''} />
+          </button>
+        </div>
+      </div>
+
+      {/* لوحة العرض (KPIs) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="p-4 rounded-2xl bg-[#0A0F1D] border border-slate-800 space-y-1">
+          <span className="text-slate-400 text-xs font-bold block">إجمالي المعروضات</span>
+          <div className="text-2xl font-black text-white font-mono">{listings.length}</div>
+          <span className="text-[10px] text-slate-500 block">معروض مسجل في قاعدة البيانات</span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#0A0F1D] border border-slate-800 space-y-1">
+          <span className="text-slate-400 text-xs font-bold block">المزادات الحية النشطة</span>
+          <div className="text-2xl font-black text-[#F5C400] font-mono">{activeCount}</div>
+          <span className="text-[10px] text-emerald-400 block">متاحة للمزايدة حالياً</span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#0A0F1D] border border-slate-800 space-y-1">
+          <span className="text-slate-400 text-xs font-bold block">سجل السومات والمشتريات</span>
+          <div className="text-2xl font-black text-emerald-400 font-mono">{bidsLog.length}</div>
+          <span className="text-[10px] text-emerald-300 block">عملية مسجلة بأرقام التواصل</span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-[#0A0F1D] border border-slate-800 space-y-1">
+          <span className="text-slate-400 text-xs font-bold block">المزادات المكتملة</span>
+          <div className="text-2xl font-black text-slate-300 font-mono">{completedCount}</div>
+          <span className="text-[10px] text-slate-500 block">صفقات منتهية ورست</span>
+        </div>
+      </div>
+
+      {/* شريط التحكم في نسبة العمولة الحقيقي المتصل بـ Supabase */}
+      <div className="bg-[#0A0F1D] border border-amber-500/40 rounded-2xl p-4 space-y-3 shadow-lg">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div className="flex items-center gap-2">
+            <Percent size={18} className="text-[#F5C400]" />
+            <h3 className="text-sm font-black text-white">إعدادات نسب عمولة المنصة الحقيقية (مربوطة بقاعدة البيانات)</h3>
+          </div>
+          <button
+            type="button"
+            onClick={handleSaveCommissionRates}
+            disabled={savingSettings}
+            className="px-5 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+          >
+            <CheckCircle2 size={15} />
+            <span>{savingSettings ? 'جاري الحفظ في Supabase...' : 'حفظ النسبة في قاعدة البيانات'}</span>
+          </button>
+        </div>
+
+        {settingsSuccessToast && (
+          <div className="p-2.5 rounded-xl bg-emerald-950 text-emerald-300 border border-emerald-500/50 text-xs font-bold flex items-center gap-2">
+            <CheckCircle2 size={15} />
+            <span>تم حفظ وتحديث نسب العمولة بنجاح في Supabase وانعكست في كل الموقع فوراً!</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div>
+            <label className="text-slate-300 block mb-1 font-bold">نسبة عمولة البائع (%):</label>
+            <input
+              type="number"
+              value={sellerRate}
+              onChange={(e) => setSellerRate(Number(e.target.value))}
+              className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono font-bold outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="text-slate-300 block mb-1 font-bold">نسبة عمولة المشتري (%):</label>
+            <input
+              type="number"
+              value={buyerRate}
+              onChange={(e) => setBuyerRate(Number(e.target.value))}
+              className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono font-bold outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="text-slate-300 block mb-1 font-bold">أدنى قفزة للمزايدة (الافتراضية):</label>
+            <input
+              type="number"
+              value={defaultMinInc}
+              onChange={(e) => setDefaultMinInc(Number(e.target.value))}
+              className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono font-bold outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* التبديل بين جدول المعروضات وسجل المزايدات والمشترين */}
+      <div className="flex items-center gap-2 bg-[#0A0F1D] p-1.5 rounded-2xl border border-slate-800">
+        <button
+          onClick={() => setActiveTab('listings')}
+          className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+            activeTab === 'listings' ? 'bg-[#F5C400] text-black shadow-md' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          المعروضات والمزادات ({listings.length})
+        </button>
+
+        <button
+          onClick={() => { setActiveTab('bids_log'); fetchBidsLog(); }}
+          className={`flex-1 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-2 ${
+            activeTab === 'bids_log' ? 'bg-[#F5C400] text-black shadow-md' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <User size={15} />
+          <span>سجل المشترين والمزايدات الحقيقي ({bidsLog.length})</span>
+        </button>
+      </div>
+
+      {/* 1. جدول المعروضات */}
+      {activeTab === 'listings' && (
+        <div className="space-y-4">
+          <div className="bg-[#0A0F1D] p-3 rounded-2xl border border-slate-800 grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+            <div className="relative sm:col-span-2">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="ابحث بالعنوان أو السلعة..."
+                className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl py-2 pr-9 pl-3 text-xs text-white outline-none"
+              />
+              <Search className="absolute right-3 top-2.5 w-3.5 h-3.5 text-slate-400" />
+            </div>
+
+            <div>
+              <select
+                value={filterType}
+                onChange={(e: any) => setFilterType(e.target.value)}
+                className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2 text-xs text-white outline-none"
+              >
+                <option value="all">كل أنواع البيع</option>
+                <option value="auction">مزاد علني فقط</option>
+                <option value="fixed_price">بيع مباشر بسعر محدد</option>
+              </select>
+            </div>
+
+            <div>
+              <YRSelect
+                value={cityFilter}
+                options={YEMEN_CITIES}
+                onChange={(v) => setCityFilter(v)}
+                placeholder="كل المحافظات"
+              />
+            </div>
+          </div>
+
+          <div className="bg-[#0A0F1D] border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            {loadingListings ? (
+              <div className="p-16 text-center text-slate-400 space-y-2">
+                <RefreshCw size={24} className="animate-spin text-[#F5C400] mx-auto" />
+                <span className="text-xs font-bold block">جاري تحميل المعروضات...</span>
+              </div>
+            ) : filteredListings.length === 0 ? (
+              <div className="p-16 text-center text-slate-400 space-y-2">
+                <AlertCircle size={36} className="text-[#F5C400] mx-auto opacity-70" />
+                <span className="text-sm font-bold text-white block">لا توجد معروضات مسجلة</span>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-right text-xs">
+                  <thead className="bg-[#060A13] text-slate-400 border-b border-slate-800 font-bold">
+                    <tr>
+                      <th className="p-3">المعروض</th>
+                  <th className="p-3">صاحب المعروض (البائع)</th>
+                      <th className="p-3">التصنيف</th>
+                      <th className="p-3">المدينة</th>
+                      <th className="p-3">نوع البيع</th>
+                      <th className="p-3">السعر الحالي</th>
+                      <th className="p-3">أدنى قفزة</th>
+                      <th className="p-3">تاريخ الانتهاء</th>
+                      <th className="p-3">الحالة</th>
+                      <th className="p-3 text-center">الإجراءات</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {filteredListings.map((item) => {
+                      const isAuction = item.sale_type === 'auction';
+                      const curPrice = Number(item.current_bid || item.starting_price || 0);
+                      const minInc = Number(item.min_increment || defaultMinInc || 1000);
+                      return (
+                        <tr key={item.id} className="hover:bg-slate-900/40 transition-colors">
+                          <td className="p-3 font-bold text-white max-w-[200px] truncate">{item.title}</td>
+                      <td className="p-3">
+                        <div className="font-bold text-white text-xs">{item.seller_name || 'معتمد'}</div>
+                        {item.seller_phone ? (
+                          <div className="flex items-center gap-1.5 mt-0.5 font-mono text-[11px]">
+                            <span className="text-[#F5C400]">{item.seller_phone}</span>
+                            <a
+                              href={`https://wa.me/967${item.seller_phone.replace(/\D/g, '')}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-emerald-400 hover:text-emerald-300"
+                              title="واتساب البائع"
+                            >
+                              <MessageCircle size={12} />
+                            </a>
+                            <a
+                              href={`tel:${item.seller_phone}`}
+                              className="text-blue-400 hover:text-blue-300"
+                              title="اتصال بالبائع"
+                            >
+                              <Phone size={12} />
+                            </a>
+                          </div>
+                        ) : (
+                          <span className="text-slate-500 text-[10px]">بدون هاتف</span>
+                        )}
+                      </td>
+                          <td className="p-3 text-slate-300">{item.category || 'عام'}</td>
+                          <td className="p-3 text-slate-400">{item.city || 'صنعاء'}</td>
+                          <td className="p-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              isAuction ? 'bg-[#F5C400]/15 text-[#F5C400] border border-[#F5C400]/30' : 'bg-blue-950 text-blue-300 border border-blue-500/40'
+                            }`}>
+                              {isAuction ? 'مزاد علني' : 'بيع مباشر'}
+                            </span>
+                          </td>
+                          <td className="p-3 font-mono font-black text-emerald-400">
+                            {curPrice.toLocaleString()} {item.currency || 'SAR'}
+                          </td>
+                          <td className="p-3 font-mono text-slate-400">+{minInc.toLocaleString()}</td>
+                          <td className="p-3 font-mono text-slate-400 text-[11px]">
+                            {item.end_date ? new Date(item.end_date).toLocaleDateString('ar-YE') : 'غير محدد'}
+                          </td>
+                          <td className="p-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              item.status === 'active' ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/40' : 'bg-slate-800 text-slate-400'
+                            }`}>
+                              {item.status === 'active' ? 'نشط' : (item.status === 'completed' ? 'منتهي' : item.status)}
+                            </span>
+                          </td>
+                          <td className="p-3 text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => openEditModal(item)}
+                                className="p-1.5 rounded-lg bg-blue-950/60 hover:bg-blue-900 text-blue-300 border border-blue-500/30 transition-colors cursor-pointer"
+                                title="تعديل بيانات المزاد"
+                              >
+                                <Edit size={14} />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setDeleteConfirmItem(item)}
+                                className="p-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-500/30 transition-colors cursor-pointer"
+                                title="حذف المزاد نهائياً"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/admin/auctions/${item.id}`)}
+                                className="p-1.5 rounded-lg bg-[#060A13] hover:bg-[#F5C400] text-slate-300 hover:text-black border border-slate-800 transition-colors cursor-pointer"
+                                title="المراقبة اللحظية"
+                              >
+                                <Activity size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 2. جدول سجل المشترين والمزايدات الحقيقي (من زايد ومن اشترى بأرقام الهواتف) */}
+      {activeTab === 'bids_log' && (
+        <div className="space-y-4">
+          <div className="bg-[#0A0F1D] border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-black text-white flex items-center gap-2">
+                <User size={18} className="text-[#F5C400]" />
+                <span>سجل المزايدات وطلبات الشراء الحقيقية (بأرقام الهواتف المباشرة للتواصل)</span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">يعرض كافة الأشخاص الذين قدموا سومات أو اشتروا المعروضات للتواصل معهم فوراً</p>
+            </div>
+            <button
+              type="button"
+              onClick={fetchBidsLog}
+              disabled={loadingBids}
+              className="p-2.5 bg-[#060A13] border border-slate-800 rounded-xl text-slate-300 hover:text-white cursor-pointer"
+            >
+              <RefreshCw size={14} className={loadingBids ? 'animate-spin text-[#F5C400]' : ''} />
+            </button>
+          </div>
+
+          <div className="bg-[#0A0F1D] border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            {loadingBids ? (
+              <div className="p-16 text-center text-slate-400 space-y-2">
+                <RefreshCw size={24} className="animate-spin text-[#F5C400] mx-auto" />
+                <span className="text-xs font-bold block">جاري تحميل سجل المشترين والمزايدات...</span>
+              </div>
+            ) : bidsLog.length === 0 ? (
+              <div className="p-16 text-center text-slate-400 space-y-2">
+                <User size={36} className="text-slate-600 mx-auto" />
+                <span className="text-sm font-bold text-slate-300 block">لا توجد مزايدات أو طلبات شراء حتى الآن</span>
+                <span className="text-xs text-slate-500 block">أي شخص يزايد أو يشتري من الموقع العام ستظهر بياناته ورقم هاتفه هنا فوراً!</span>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-right text-xs">
+                  <thead className="bg-[#060A13] text-slate-400 border-b border-slate-800 font-bold">
+                    <tr>
+                      <th className="p-3">#</th>
+                      <th className="p-3">المعروض / المزاد</th>
+                      <th className="p-3">نوع العملية</th>
+                      <th className="p-3">اسم المشتري / المزايد</th>
+                      <th className="p-3">البريد الإلكتروني</th>
+                      <th className="p-3">رقم الهاتف (تواصل فوري)</th>
+                      <th className="p-3">المبلغ المسدد / المعروض</th>
+                      <th className="p-3">توقيت العملية</th>
+                      <th className="p-3 text-center">إجراءات التواصل</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {bidsLog.map((b, idx) => {
+                      const isDirect = b.bid_type === 'direct_buy';
+                      const phone = b.bidder_phone || '';
+                      return (
+                        <tr key={b.id || idx} className="hover:bg-slate-900/40 transition-colors">
+                          <td className="p-3 font-mono text-slate-500">{idx + 1}</td>
+                          <td className="p-3 font-mono font-bold text-white">#{String(b.auction_id).slice(0, 8)}</td>
+                          <td className="p-3">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              isDirect ? 'bg-blue-950 text-blue-300 border border-blue-500/40' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
+                            }`}>
+                              {isDirect ? 'شراء مباشر بسعر ثابت' : 'مزايدة علنية'}
+                            </span>
+                          </td>
+                          <td className="p-3 font-bold text-white">
+                            {b.bidder_name || b.bidder_code || 'مشتري معتمد'}
+                          </td>
+                          <td className="p-3 font-mono text-slate-300 text-[11px] dir-ltr text-right">
+                            {b.bidder_email && b.bidder_email !== 'غير مسجل' ? b.bidder_email : 'غير مسجل'}
+                          </td>
+                          <td className="p-3 font-mono font-bold text-[#F5C400]">
+                            {phone || 'غير مسجل'}
+                          </td>
+                          <td className="p-3 font-mono font-black text-emerald-400 text-sm">
+                            {Number(b.bid_amount).toLocaleString()} SAR
+                          </td>
+                          <td className="p-3 font-mono text-slate-400 text-[11px]">
+                            {b.created_at ? new Date(b.created_at).toLocaleString('ar-YE') : 'الآن'}
+                          </td>
+                          <td className="p-3 text-center">
+                            {phone ? (
+                              <div className="flex items-center justify-center gap-1.5">
+                                <a
+                                  href={`https://wa.me/967${phone.replace(/\D/g, '')}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] flex items-center gap-1"
+                                >
+                                  <MessageCircle size={12} /> واتساب
+                                </a>
+                                <a
+                                  href={`tel:${phone}`}
+                                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-bold text-[11px] flex items-center gap-1"
+                                >
+                                  <Phone size={12} /> اتصال
+                                </a>
+                                {b.bidder_email && b.bidder_email !== 'غير مسجل' && (
+                                  <a
+                                    href={`mailto:${b.bidder_email}?subject=بخصوص مزاد منصة يمن ريتنج: ${b.auction_id}`}
+                                    className="px-2.5 py-1 rounded-lg bg-blue-900/60 hover:bg-blue-800 text-blue-200 font-bold text-[11px] flex items-center gap-1"
+                                    title="إرسال بريد إلكتروني"
+                                  >
+                                    <Mail size={12} /> بريد
+                                  </a>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-slate-500 text-[11px]">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* نافذة إنشاء وتعديل المزاد */}
+      {modalMode && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-[#0A0F1D] border border-slate-800 rounded-2xl w-full max-w-lg p-5 space-y-4 max-h-[92vh] overflow-y-auto text-white shadow-2xl">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+              <h3 className="text-sm sm:text-base font-black text-white flex items-center gap-2">
+                <Gavel size={16} className="text-[#F5C400]" />
+                <span>{modalMode === 'create' ? 'إضافة معروض جديد في المنصة' : 'تعديل بيانات المعروض'}</span>
+              </h3>
+              <button onClick={() => setModalMode(null)} className="p-1.5 rounded-xl bg-[#060A13] border border-slate-800 text-slate-400">
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveModal} className="space-y-3.5 text-xs">
+              <div>
+                <label className="text-slate-300 block mb-1.5 font-bold">طريقة البيع *</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormSaleType('auction')}
+                    className={`py-2 px-3 rounded-xl font-bold border transition-all ${
+                      formSaleType === 'auction' ? 'bg-[#F5C400] text-black border-[#F5C400] font-black' : 'bg-[#060A13] text-slate-300 border-slate-800'
+                    }`}
+                  >
+                    مزاد علني (مزايدة)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormSaleType('fixed_price')}
+                    className={`py-2 px-3 rounded-xl font-bold border transition-all ${
+                      formSaleType === 'fixed_price' ? 'bg-[#F5C400] text-black border-[#F5C400] font-black' : 'bg-[#060A13] text-slate-300 border-slate-800'
+                    }`}
+                  >
+                    بيع مباشر بسعر محدد
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1 font-bold">عنوان المعروض *</label>
+                <input
+                  required
+                  type="text"
+                  value={formTitle}
+                  onChange={(e) => setFormTitle(e.target.value)}
+                  placeholder="مثال: هاتف سامسونج الترا 26"
+                  className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1 font-bold">اسم صاحب المعروض (البائع / المعرض) *</label>
+                <input
+                  required
+                  type="text"
+                  value={formSellerName}
+                  onChange={(e) => setFormSellerName(e.target.value)}
+                  placeholder="اسم الشخص أو المعرض التجاري"
+                  className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-slate-300 mb-1 font-bold">التصنيف *</label>
+                  <select
+                    value={formCategory}
+                    onChange={(e) => setFormCategory(e.target.value)}
+                    className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white outline-none"
+                  >
+                    {CATEGORIES.map((c) => (
+                      <option key={c} value={c} className="bg-[#060A13] text-white">{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-300 mb-1 font-bold">المدينة أو المحافظة *</label>
+                  <YRSelect
+                    value={formCity}
+                    options={YEMEN_CITIES.filter((c) => c.value !== 'all')}
+                    onChange={(v) => setFormCity(v)}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-slate-300 mb-1 font-bold">
+                    {formSaleType === 'auction' ? 'السعر الابتدائي لبدء السوم *' : 'السعر المطلوب للشراء *'}
+                  </label>
+                  <input
+                    required
+                    type="number"
+                    value={formStartingPrice}
+                    onChange={(e) => setFormStartingPrice(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 mb-1 font-bold">العملة *</label>
+                  <select
+                    value={formCurrency}
+                    onChange={(e) => setFormCurrency(e.target.value)}
+                    className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white outline-none"
+                  >
+                    <option value="SAR" className="bg-[#060A13] text-white">ريال سعودي (SAR)</option>
+                    <option value="YER" className="bg-[#060A13] text-white">ريال يمني (YER)</option>
+                    <option value="USD" className="bg-[#060A13] text-white">دولار أمريكي (USD)</option>
+                  </select>
+                </div>
+              </div>
+
+              {formSaleType === 'auction' && (
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-slate-300 mb-1 font-bold">أدنى قفزة للمزايدة (الحد الأدنى) *</label>
+                    <input
+                      required
+                      type="number"
+                      value={formMinIncrement}
+                      onChange={(e) => setFormMinIncrement(e.target.value)}
+                      placeholder="1000"
+                      className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 mb-1 font-bold">أعلى قفزة في السومة (اختياري):</label>
+                    <input
+                      type="number"
+                      value={formMaxIncrement}
+                      onChange={(e) => setFormMaxIncrement(e.target.value)}
+                      placeholder="مثال: 50000"
+                      className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-slate-300 mb-1 font-bold">وقت وتاريخ بداية المزاد:</label>
+                  <input
+                    type="datetime-local"
+                    value={formStartTime}
+                    onChange={(e) => setFormStartTime(e.target.value)}
+                    className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2 text-white font-mono outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-300 mb-1 font-bold">وقت وتاريخ انتهاء المزاد:</label>
+                  <input
+                    type="datetime-local"
+                    value={formEndDate}
+                    onChange={(e) => setFormEndDate(e.target.value)}
+                    className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2 text-white font-mono outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1 font-bold">رقم هاتف البائع (واتساب) * (9 أرقام بالضبط)</label>
+                <input
+                  required
+                  type="tel"
+                  maxLength={9}
+                  value={formPhone}
+                  onChange={(e) => setFormPhone(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                  placeholder="77XXXXXXX"
+                  className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-slate-300">صور المعروض (1 إلى 6 صور):</span>
+                  <span className="text-[#F5C400] font-bold">{formImages.length} من 6</span>
+                </div>
+                <input type="file" accept="image/*" multiple ref={fileInputRef} onChange={handleImagesUpload} className="hidden" />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={formImages.length >= 6 || compressing}
+                  className="w-full py-2.5 border border-dashed border-slate-700 hover:border-[#F5C400] rounded-xl bg-[#060A13] text-slate-300 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <ImagePlus size={15} className="text-[#F5C400]" />
+                  <span>{compressing ? 'جاري ضغط الصور...' : 'اضغط لاختيار الصور من استوديو الجوال'}</span>
+                </button>
+                {formImages.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {formImages.map((img, idx) => (
+                      <div key={idx} className="relative h-16 rounded-lg overflow-hidden border border-slate-800">
+                        <img src={img} alt={`preview-${idx}`} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setFormImages((prev) => prev.filter((_, i) => i !== idx))}
+                          className="absolute top-1 left-1 p-1 rounded-full bg-red-600 text-white"
+                        >
+                          <Trash2 size={10} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1 font-bold">المواصفات والتفاصيل وحالة السلعة *</label>
+                <textarea
+                  required
+                  rows={3}
+                  value={formDescription}
+                  onChange={(e) => setFormDescription(e.target.value)}
+                  placeholder="اكتب مواصفات وحالة السلعة بدقة..."
+                  className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white outline-none"
+                />
+              </div>
+
+              {/* صندوق الإقرار الأخضر الشفاف بنسب المنصة */}
+              <div className="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/40 space-y-2 text-right">
+                <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-xs">
+                  <ShieldCheck size={16} />
+                  <span>إقرار صاحب المعروض وسياسة عمولة المنصة المعتمدة:</span>
+                </div>
+                <p className="text-[11px] text-slate-200 leading-relaxed">
+                  بتقديم هذا المعروض، يقر صاحب العرض بصحة كافة المواصفات والبيانات، ويوافق على شروط الوساطة، ويلتزم بسداد عمولة منصة يمن ريتنج المقررة على البائع بنسبة (<span className="text-[#F5C400] font-black font-mono text-xs">{sellerRate}%</span>) عند إتمام الصفقة ورسو المزاد.
+                </p>
+                <label className="flex items-center gap-2 pt-1 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={formConsent}
+                    onChange={(e) => setFormConsent(e.target.checked)}
+                    className="w-4 h-4 accent-emerald-500 rounded cursor-pointer"
+                  />
+                  <span className="text-[11px] text-white font-bold">
+                    أوافق وألتزم بالإقرار والشروط وعمولة المنصة المحددة ({sellerRate}%)
+                  </span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setModalMode(null)}
+                  className="px-4 py-2 bg-[#060A13] rounded-xl text-slate-300"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={!formConsent || submittingModal || compressing}
+                  className="px-6 py-2 bg-[#F5C400] text-black font-black rounded-xl cursor-pointer"
+                >
+                  {submittingModal ? 'جاري الحفظ...' : (modalMode === 'create' ? 'نشر المعروض الآن' : 'حفظ التعديلات')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* نافذة تأكيد الحذف */}
+      {deleteConfirmItem && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0A0F1D] border border-rose-500/50 rounded-2xl w-full max-w-sm p-5 space-y-4 text-white text-center shadow-2xl">
+            <Trash2 size={40} className="text-rose-500 mx-auto" />
+            <h4 className="text-sm font-black text-white">تأكيد حذف المعروض نهائياً</h4>
+            <p className="text-xs text-slate-300">
+              هل أنت متأكد من حذف ({deleteConfirmItem.title}) نهائياً من قاعدة البيانات؟ لا يمكن التراجع عن هذا الإجراء.
+            </p>
+            <div className="flex justify-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmItem(null)}
+                className="px-4 py-2 bg-[#060A13] border border-slate-800 rounded-xl text-slate-300 text-xs"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteItem}
+                className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-black text-xs rounded-xl cursor-pointer"
+              >
+                تأكيد الحذف
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AuctionsManager;

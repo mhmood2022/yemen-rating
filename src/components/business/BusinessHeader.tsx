@@ -23,6 +23,9 @@ interface BusinessHeaderProps {
 }
 
 export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
+  business,
+  onNavigate,
+}) => {
   const navigate = useNavigate();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   useEffect(() => {
@@ -30,7 +33,6 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
       if (session?.user) setCurrentUserId(session.user.id);
     });
   }, []);
- business, onNavigate }) => {
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
   const bAny = business as any;
   const initialStatus = 
