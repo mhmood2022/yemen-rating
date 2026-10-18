@@ -134,9 +134,35 @@ export const UsersRolesManager: React.FC = () => {
   // التنبيهات
   const [toast, setToast] = useState<{ show: boolean; msg: string; type: 'success' | 'error' }>({ show: false, msg: '', type: 'success' });
 
+  // 🔄 جلب صلاحيات الأدوار من Supabase عند فتح الصفحة
+  useEffect(() => {
+    if (!supabase) return;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('role_permissions')
+          .select('role_id, permissions!inner(key)');
+        if (error) {
+          console.warn('role_permissions fetch:', error.message);
+          return;
+        }
+        const map: Record<string, string[]> = {};
+        (data || []).forEach((row: any) => {
+          const key = row.permissions?.key;
+          if (!key) return;
+          if (!map[row.role_id]) map[row.role_id] = [];
+          map[row.role_id].push(key);
+        });
+        setRolePermissions((prev) => ({ ...prev, ...map }));
+      } catch (e) {
+        console.warn('role_permissions exception:', e);
+      }
+    })();
+  }, []);
+
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ show: true, msg, type });
-    setTimeout(() => setToast({ show: false, msg: '', type: 'success' }), 2500);
+    setTimeout(() => setToast({ show: false, msg: '', type: 'success' }), 10000);
   };
 
   // جلب المستخدمين الحقيقيين من Supabase
@@ -148,6 +174,7 @@ export const UsersRolesManager: React.FC = () => {
         return;
       }
 
+      // 🔵 جلب مباشر من profiles بدون RPC
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -155,29 +182,31 @@ export const UsersRolesManager: React.FC = () => {
 
       if (error) throw error;
 
-      // جلب المنشآت المملوكة للملاك الحقيقيين
+      // جلب المنشآت المملوكة
       const { data: businesses } = await supabase
         .from('businesses')
         .select('id, name, owner_id')
         .not('owner_id', 'is', null);
 
-      const bizMap = (businesses || []).reduce((acc: Record<string, string>, b: any) => {
-        acc[b.owner_id] = b.name;
-        return acc;
-      }, {} as Record<string, string>);
+      const bizMap = (businesses || []).reduce(
+        (acc: Record<string, string>, b: any) => {
+          acc[b.owner_id] = b.name;
+          return acc;
+        },
+        {} as Record<string, string>
+      );
 
-      const { data: authInfo } = await supabase.rpc('admin_users_auth_info');
-      const authMap = new Map<string, any>((authInfo || []).map((a: any) => [a.id, a]));
       const enriched = (data || []).map((u: any) => ({
         ...u,
         status: String(u.status || 'active').toLowerCase(),
-        last_sign_in_at: authMap.get(u.id)?.last_sign_in_at ?? null,
+        last_sign_in_at: null,
         owned_business_name: bizMap[u.id] || null,
       }));
 
+      console.log('🟢 fetchRealUsers loaded', enriched.length, 'users');
       setUsers(enriched);
     } catch (err: any) {
-      console.error('Error fetching real users:', err);
+      console.error('❌ fetchRealUsers error:', err);
     } finally {
       setLoading(false);
     }
@@ -219,16 +248,53 @@ export const UsersRolesManager: React.FC = () => {
         account_type: editingAccountType,
         updated_at: new Date().toISOString(),
       };
-      const { data, error } = await supabase
-        .from('profiles').update(patch).eq('id', selectedUser.id).select('id');
-      if (error) throw error;
-      if (!data || data.length === 0) throw new Error('ليست لديك صلاحية تعديل هذا الحساب');
-      const merged = { ...selectedUser, ...patch };
-      setUsers(prev => prev.map(u => (u.id === selectedUser.id ? { ...u, ...merged } : u)));
-      setSelectedUser(merged as any);
-      showToast('تم الحفظ بنجاح');
+
+      // ✅ 1) UPDATE
+      const { error: upErr } = await supabase
+        .from('profiles')
+        .update(patch)
+        .eq('id', selectedUser.id);
+
+      if (upErr) {
+        showToast('❌ فشل UPDATE: ' + upErr.message, 'error');
+        throw upErr;
+      }
+
+      // ✅ 2) اقرأ القيمة الجديدة من DB
+      const { data: verify, error: verr } = await supabase
+        .from('profiles')
+        .select('id, full_name, phone, role, status, account_type, updated_at')
+        .eq('id', selectedUser.id)
+        .single();
+
+      if (verr) {
+        showToast('❌ فشل التحقق: ' + verr.message, 'error');
+        throw verr;
+      }
+
+      // ✅ 3) اعرض النتيجة في toast (لأنك على هاتف)
+      const dbName = verify?.full_name || '?';
+      const sentName = patch.full_name;
+      
+      if (dbName !== sentName) {
+        showToast(`⚠️ DB: "${dbName}" ≠ مرسل: "${sentName}"`, 'error');
+        // حدّث الواجهة بالقيمة الحقيقية من DB
+        setUsers(prev => prev.map(u => 
+          u.id === selectedUser.id ? { ...u, ...verify } : u
+        ));
+        setSelectedUser({ ...selectedUser, ...verify });
+        return;
+      }
+
+      showToast(`✅ حفظ: "${dbName}"`, 'success');
+      
+      setUsers(prev => prev.map(u => 
+        u.id === selectedUser.id ? { ...u, ...verify } : u
+      ));
+      setSelectedUser({ ...selectedUser, ...verify });
+
     } catch (err: any) {
-      showToast('تعذر الحفظ: ' + (err?.message || ''), 'error');
+      showToast('تعذر الحفظ: ' + (err?.message || 'خطأ'), 'error');
     } finally {
       setIsUpdating(false);
     }
@@ -236,7 +302,78 @@ export const UsersRolesManager: React.FC = () => {
 
   // تبديل صلاحية
   const readOnlyRoles = () => showToast('الأدوار والصلاحيات ثابتة ومطبّقة في قاعدة البيانات، ولا تُعدَّل من هنا', 'error');
-  const togglePermissionForRole = (_id: string) => readOnlyRoles();
+  const togglePermissionForRole = (permId: string) => {
+    setRolePermissions((prev) => {
+      const current = prev[selectedRoleKey] || [];
+      const next = current.includes(permId)
+        ? current.filter((p) => p !== permId)
+        : [...current, permId];
+      return { ...prev, [selectedRoleKey]: next };
+    });
+  };
+
+  const handleGrantAllPermissions = () => {
+    const allIds = SYSTEM_PERMISSIONS.map((p: any) => p.id);
+    setRolePermissions((prev) => ({ ...prev, [selectedRoleKey]: allIds }));
+    showToast("تم تحديد جميع الصلاحيات (لم تُحفظ بعد)", "success");
+  };
+
+  const handleRevokeAllPermissions = () => {
+    setRolePermissions((prev) => ({ ...prev, [selectedRoleKey]: [] }));
+    showToast("تم سحب جميع الصلاحيات (لم تُحفظ بعد)", "success");
+  };
+
+  // 💾 حفظ صلاحيات الدور في Supabase
+  const handleSaveRolePermissions = async () => {
+    if (isSavingRolePerms || !supabase) return;
+    setIsSavingRolePerms(true);
+    try {
+      const permKeys = rolePermissions[selectedRoleKey] || [];
+      const roleLabel = rolesList[selectedRoleKey]?.label || selectedRoleKey;
+      let permRows: { id: string; key: string }[] = [];
+      if (permKeys.length > 0) {
+        const { data, error } = await supabase
+          .from('permissions')
+          .select('id, key')
+          .in('key', permKeys);
+        if (error) throw error;
+        permRows = data || [];
+      }
+      const { error: delErr } = await supabase
+        .from('role_permissions')
+        .delete()
+        .eq('role_id', selectedRoleKey);
+      if (delErr) throw delErr;
+      if (permRows.length > 0) {
+        const { error: insErr } = await supabase
+          .from('role_permissions')
+          .insert(permRows.map((p) => ({
+            role_id: selectedRoleKey,
+            permission_id: p.id,
+          })));
+        if (insErr) throw insErr;
+      }
+      showToast(`✅ تم حفظ ${permKeys.length} صلاحية لـ "${roleLabel}"`, 'success');
+    } catch (e: any) {
+      console.error('═══════════════════════════════════');
+      console.error('❌ SAVE ERROR DETAILS:');
+      console.error('Message:', e?.message);
+      console.error('Code:', e?.code);
+      console.error('Details:', e?.details);
+      console.error('Hint:', e?.hint);
+      console.error('Full:', JSON.stringify(e, null, 2));
+      console.error('═══════════════════════════════════');
+      const parts = [
+        e?.message || 'خطأ',
+        e?.details ? `| تفاصيل: ${e.details}` : '',
+        e?.hint ? `| تلميح: ${e.hint}` : '',
+        e?.code ? `| كود: ${e.code}` : '',
+      ].filter(Boolean).join(' ');
+      showToast(`❌ فشل الحفظ: ${parts}`, 'error');
+    } finally {
+      setIsSavingRolePerms(false);
+    }
+  };
   
   
   

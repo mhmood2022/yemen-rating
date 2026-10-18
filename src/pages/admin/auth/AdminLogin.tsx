@@ -17,37 +17,31 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ access }) => {
   const handlePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     const cleanEmail = email.trim().toLowerCase();
-    const isMasterAdmin = cleanEmail === 'info.yemenrating@gmail.com' && password === 'Yemen123456';
 
-    if (isMasterAdmin) {
-      localStorage.setItem('yr_admin_session', JSON.stringify({
+    // فحص الحسابين المصرح لهما بإدارة المنظومة بكلمة مرور الإدارة
+    const isYemenRating = cleanEmail === "info.yemenrating@gmail.com" && password === "Yemen123456";
+    const isMahmoud = cleanEmail === "mhmood7015@gmail.com" && password === "Yemen123456";
+
+    if (isYemenRating || isMahmoud) {
+      // حفظ جلسة الإدارة المعزولة فقط دون لمس جلسة الموقع العام نهائياً
+      localStorage.setItem("yr_admin_session", JSON.stringify({
         authenticated: true,
-        role: 'super_admin',
-        name: 'محمود - المدير العام',
-        email: 'info.yemenrating@gmail.com',
+        role: isYemenRating ? "super_admin" : "admin",
+        name: isYemenRating ? "يمن ريتنج - الإدارة العليا" : "محمود - إدارة المنصة",
+        email: cleanEmail,
         loginAt: new Date().toISOString()
       }));
 
-      // محاولة تسجيل دخول سوبابيز في الخلفية
-      try {
-        await supabase.auth.signInWithPassword({ email: cleanEmail, password });
-      } catch {}
-
+      setLoading(false);
       window.location.reload();
       return;
     }
 
-    // للمستخدمين الآخرين عبر قاعدة البيانات
-    const { error: sbError } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
-    if (sbError) {
-      setError('بيانات الدخول غير صحيحة أو الحساب غير مصرح له');
-      setLoading(false);
-      return;
-    }
-    window.location.reload();
+    setError("بيانات الدخول غير صحيحة أو الحساب غير مصرح له بالإدارة");
+    setLoading(false);
   };
 
   const isMasterSession = () => {
@@ -55,13 +49,13 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ access }) => {
       const s = localStorage.getItem('yr_admin_session');
       if (s) {
         const parsed = JSON.parse(s);
-        return parsed.authenticated && parsed.email === 'info.yemenrating@gmail.com';
+        return parsed.authenticated && (parsed.email === "info.yemenrating@gmail.com" || parsed.email === "mhmood7015@gmail.com");
       }
     } catch {}
     return false;
   };
 
-  const isCurrentMahmoud = access?.email?.toLowerCase() === 'info.yemenrating@gmail.com';
+  const isCurrentMahmoud = access?.email?.toLowerCase() === "info.yemenrating@gmail.com" || access?.email?.toLowerCase() === "mhmood7015@gmail.com";
   const signedInNoAccess = !isMasterSession() && !isCurrentMahmoud && !!access?.userId && !access.isStaff;
 
   const handleGoogle = async () => {

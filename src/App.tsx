@@ -1,3 +1,5 @@
+import { NotificationsPage } from './pages/NotificationsPage';
+import { CommunityFeedPage } from './pages/CommunityFeedPage';
 import { AdminOwnersHub } from "./components/admin/AdminOwnersHub";
 import React from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
@@ -139,6 +141,10 @@ export function App() {
 
         <Route path="*" element={<HomeRoute />} />
 
+        <Route path="/notifications" element={<AppShell><NotificationsPage /></AppShell>} />
+        <Route path="/feed" element={<AppShell><CommunityFeedPage /></AppShell>} />
+        <Route path="/community" element={<AppShell><CommunityFeedPage /></AppShell>} />
+        <Route path="/tweets" element={<AppShell><CommunityFeedPage /></AppShell>} />
         <Route path="/account" element={<AppShell><AccountPage /></AppShell>} />
         <Route path="/login" element={<AppShell><AccountPage /></AppShell>} />
       </Routes>

@@ -1,191 +1,242 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { 
-  notificationService, 
-  NotificationItem, 
-  NotificationType 
-} from '../services/notificationService';
-import { 
-  Building2, 
-  ShieldAlert, 
-  Megaphone, 
-  Crown, 
-  HelpCircle, 
-  CheckCircle2, 
-  XCircle, 
-  ExternalLink, 
-  Trash2, 
-  Clock, 
-  MessageSquare,
-  FileText
+  Bell, Heart, MessageCircle, Repeat2, UserPlus, CheckCircle2, 
+  Trash2, ArrowRight, Check, Home, MessageSquare, User, Sparkles 
 } from 'lucide-react';
 
-export const NotificationsPage: React.FC = () => {
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [activeTab, setActiveTab] = useState<string>('all');
-  const [selectedItem, setSelectedItem] = useState<NotificationItem | null>(null);
+export interface AppNotification {
+  id: string;
+  targetUserId: string;
+  actorId: string;
+  actorName: string;
+  actorAvatar: string;
+  type: 'like' | 'comment' | 'repost' | 'follow' | 'system';
+  text: string;
+  targetPostId?: string;
+  createdAt: string;
+  isRead: boolean;
+}
 
-  const loadData = async () => {
-    const data = await notificationService.getNotifications(activeTab);
-    setNotifications(data);
+export const NotificationsPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<'all' | 'mentions' | 'verified'>('all');
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3000);
   };
 
   useEffect(() => {
-    loadData();
-  }, [activeTab]);
+    const init = async () => {
+      let uid = '';
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          uid = user.id;
+          setCurrentUserId(user.id);
+        } else {
+          uid = localStorage.getItem('yr_guest_unique_id') || 'guest';
+          setCurrentUserId(uid);
+        }
+      } catch (_) {
+        uid = 'guest';
+        setCurrentUserId(uid);
+      }
 
-  const handleOpenItem = async (item: NotificationItem) => {
-    setSelectedItem(item);
-    if (!item.is_read) {
-      await notificationService.markAsRead(item.id);
-      loadData();
+      // جلب التنبيهات الحقيقية لهذا المستخدم
+      const key = `yr_notifications_${uid}`;
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        try {
+          setNotifications(JSON.parse(saved));
+        } catch {
+          setNotifications([]);
+        }
+      } else {
+        // تنبيه ترحيبي أولي
+        const welcomeNotif: AppNotification = {
+          id: 'welcome-1',
+          targetUserId: uid,
+          actorId: 'system',
+          actorName: 'فريق يمن ريتنج',
+          actorAvatar: '',
+          type: 'system',
+          text: 'مرحباً بك في مجتمع يمن ريتنج! يمكنك الآن النشر والتفاعل ومتابعة المغردين بحرية.',
+          createdAt: 'الآن',
+          isRead: false
+        };
+        setNotifications([welcomeNotif]);
+        localStorage.setItem(key, JSON.stringify([welcomeNotif]));
+      }
+    };
+
+    init();
+  }, []);
+
+  // تحديد الكل كمقروء
+  const handleMarkAllAsRead = () => {
+    const updated = notifications.map(n => ({ ...n, isRead: true }));
+    setNotifications(updated);
+    if (currentUserId) {
+      localStorage.setItem(`yr_notifications_${currentUserId}`, JSON.stringify(updated));
     }
+    showToast('تم تحديد جميع التنبيهات كمقروءة ✅');
   };
 
-  const handleAction = async (status: 'approved' | 'rejected') => {
-    if (!selectedItem) return;
-    let reason = '';
-    if (status === 'rejected') {
-      const input = prompt('أدخل سبب الرفض لتوضيحه لصاحب الطلب:');
-      if (!input) return;
-      reason = input;
-    }
-    await notificationService.updateStatus(selectedItem.id, status, reason);
-    alert(status === 'approved' ? '✅ تم قبول الطلب واعتماده بنجاح!' : '❌ تم رفض الطلب.');
-    setSelectedItem(null);
-    loadData();
-  };
-
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
+  // حذف تنبيه فردي
+  const handleDeleteNotif = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm('هل أنت متأكد من حذف هذا الإشعار؟')) {
-      await notificationService.deleteNotification(id);
-      loadData();
+    const updated = notifications.filter(n => n.id !== id);
+    setNotifications(updated);
+    if (currentUserId) {
+      localStorage.setItem(`yr_notifications_${currentUserId}`, JSON.stringify(updated));
+    }
+    showToast('تم حذف التنبيه');
+  };
+
+  // النقر على التنبيه للانتقال
+  const handleNotifClick = (n: AppNotification) => {
+    // تمييز كمقروء
+    const updated = notifications.map(item => item.id === n.id ? { ...item, isRead: true } : item);
+    setNotifications(updated);
+    if (currentUserId) {
+      localStorage.setItem(`yr_notifications_${currentUserId}`, JSON.stringify(updated));
+    }
+
+    if (n.type === 'follow' && n.actorId !== 'system') {
+      navigate(`/account?id=${n.actorId}`);
+    } else {
+      navigate('/feed');
     }
   };
 
-  const getTypeDetails = (type: NotificationType) => {
-    switch (type) {
-      case 'verification':
-        return { label: 'طلب توثيق ملكية', icon: Building2, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' };
-      case 'report':
-        return { label: 'بلاغ وشكوى', icon: ShieldAlert, color: 'text-red-700 bg-red-50 border-red-200' };
-      case 'subscription':
-        return { label: 'طلب اشتراك / باقة', icon: Crown, color: 'text-amber-700 bg-amber-50 border-amber-200' };
-      case 'ad_request':
-        return { label: 'طلب إعلان YR Ads', icon: Megaphone, color: 'text-purple-700 bg-purple-50 border-purple-200' };
-      case 'inquiry':
-        return { label: 'استفسار عام', icon: HelpCircle, color: 'text-blue-700 bg-blue-50 border-blue-200' };
-      default:
-        return { label: 'إشعار عام', icon: FileText, color: 'text-gray-700 bg-gray-50 border-gray-200' };
-    }
-  };
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto min-h-screen bg-gray-50/50" dir="rtl">
+    <div className="min-h-screen bg-black text-[#E7E9EA] font-['Cairo',sans-serif] selection:bg-[#1D9BF0] selection:text-white pb-32" dir="rtl">
       
-      {/* رأس الصفحة */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-black text-gray-900">مركز الإشعارات والعمليات</h1>
-        <p className="text-sm text-gray-500 mt-1">متابعة كافة طلبات التوثيق، البلاغات، الاشتراكات، والإعلانات الواردة للمنصة.</p>
-      </div>
+      {toastMsg && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#1D9BF0] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-2xl animate-fade-in flex items-center gap-2">
+          <CheckCircle2 size={16} />
+          <span>{toastMsg}</span>
+        </div>
+      )}
 
-      {/* تبويبات الفرز المباشرة */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {[
-          { key: 'all', label: 'كل الإشعارات' },
-          { key: 'verification', label: 'طلبات التوثيق' },
-          { key: 'report', label: 'البلاغات والشكاوى' },
-          { key: 'subscription', label: 'طلبات الاشتراكات' },
-          { key: 'ad_request', label: 'طلبات الإعلانات' },
-          { key: 'inquiry', label: 'الاستفسارات' },
-        ].map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === tab.key 
-                ? 'bg-blue-600 text-white shadow-sm' 
-                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-            }`}
+      {/* الهيدر العلوي */}
+      <header className="sticky top-0 z-40 bg-black/85 backdrop-blur-md border-b border-[#2F3336]">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <button onClick={() => navigate(-1)} className="p-1.5 rounded-full hover:bg-zinc-800 text-white transition">
+              <ArrowRight size={20} />
+            </button>
+            <h1 className="text-lg font-black text-white flex items-center gap-2">
+              <span>التنبيهات</span>
+              {unreadCount > 0 && (
+                <span className="bg-[#1D9BF0] text-white text-[11px] font-black px-2 py-0.5 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+            </h1>
+          </div>
+
+          {unreadCount > 0 && (
+            <button 
+              onClick={handleMarkAllAsRead}
+              className="text-xs text-[#1D9BF0] hover:underline font-bold flex items-center gap-1"
+            >
+              <Check size={14} />
+              <span>تحديد الكل كمقروء</span>
+            </button>
+          )}
+        </div>
+
+        {/* شريط التبويبات */}
+        <div className="flex border-t border-[#2F3336] text-sm font-bold">
+          <button 
+            onClick={() => setActiveTab('all')}
+            className={`flex-1 py-3 text-center relative transition ${activeTab === 'all' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'}`}
           >
-            {tab.label}
+            <span>الكل ({notifications.length})</span>
+            {activeTab === 'all' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#1D9BF0] rounded-full" />}
           </button>
-        ))}
-      </div>
+          <button 
+            onClick={() => setActiveTab('verified')}
+            className={`flex-1 py-3 text-center relative transition ${activeTab === 'verified' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'}`}
+          >
+            <span>التفاعلات</span>
+            {activeTab === 'verified' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#1D9BF0] rounded-full" />}
+          </button>
+        </div>
+      </header>
 
-      {/* قائمة الإشعارات */}
-      <div className="space-y-3">
+      {/* قائمة التنبيهات الحقيقية */}
+      <div className="divide-y divide-[#2F3336]">
         {notifications.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center text-gray-400">
-            <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p className="font-semibold text-gray-700">لا توجد إشعارات أو طلبات جديدة في هذا القسم</p>
-            <p className="text-xs text-gray-400 mt-1">الطلبات الحقيقية المرسلة من الموقع العام ستظهر هنا مباشرة دون بيانات وهمية.</p>
+          <div className="text-center py-24 text-zinc-500 text-xs px-4">
+            <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto mb-3 text-zinc-400">
+              <Bell size={28} />
+            </div>
+            <h3 className="text-sm font-bold text-white mb-1">صندوق التنبيهات فارغ</h3>
+            <p className="text-xs text-[#71767B]">عندما يتفاعل أي شخص مع منشوراتك أو يتابعك، ستصلك التنبيهات هنا فوراً.</p>
           </div>
         ) : (
-          notifications.map(item => {
-            const typeInfo = getTypeDetails(item.type);
-            const Icon = typeInfo.icon;
+          notifications.map(n => {
+            const getIcon = () => {
+              if (n.type === 'like') return <Heart size={18} className="fill-rose-500 text-rose-500" />;
+              if (n.type === 'comment') return <MessageCircle size={18} className="text-[#1D9BF0]" />;
+              if (n.type === 'repost') return <Repeat2 size={18} className="text-emerald-400" />;
+              if (n.type === 'follow') return <UserPlus size={18} className="text-yellow-400" />;
+              return <Sparkles size={18} className="text-[#1D9BF0]" />;
+            };
 
             return (
-              <div
-                key={item.id}
-                onClick={() => handleOpenItem(item)}
-                className={`bg-white rounded-2xl p-5 border transition-all cursor-pointer hover:shadow-md hover:border-blue-400 flex items-start gap-4 ${
-                  !item.is_read ? 'border-r-4 border-r-blue-600 bg-blue-50/20 shadow-sm' : 'border-gray-200'
+              <div 
+                key={n.id}
+                onClick={() => handleNotifClick(n)}
+                className={`p-4 flex gap-3 transition cursor-pointer hover:bg-white/[0.02] ${
+                  !n.isRead ? 'bg-[#1D9BF0]/[0.06]' : ''
                 }`}
               >
-                <div className={`p-3 rounded-xl border shrink-0 ${typeInfo.color}`}>
-                  <Icon className="w-6 h-6" />
+                {/* الأيقونة */}
+                <div className="shrink-0 mt-1">
+                  {getIcon()}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-md border ${typeInfo.color}`}>
-                        {typeInfo.label}
-                      </span>
-                      {item.sector && (
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-gray-100 text-gray-700">
-                          {item.sector}
-                        </span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {n.actorAvatar ? (
+                        <img src={n.actorAvatar} alt="" className="w-7 h-7 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-white">
+                          {n.actorName ? n.actorName[0] : '؟'}
+                        </div>
                       )}
-                      {item.status && item.status !== 'pending' && (
-                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${
-                          item.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {item.status === 'approved' ? 'معتمد' : 'مرفوض'}
-                        </span>
-                      )}
-                      <h3 className="font-bold text-gray-900 text-sm">{item.title}</h3>
+                      <span className="font-bold text-xs sm:text-sm text-white">{n.actorName}</span>
                     </div>
 
-                    <span className="text-xs text-gray-400 font-mono flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      {new Date(item.created_at).toLocaleDateString('ar-YE')}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-[#71767B]">{n.createdAt}</span>
+                      <button 
+                        onClick={(e) => handleDeleteNotif(n.id, e)}
+                        className="text-zinc-600 hover:text-rose-400 p-1 rounded-full transition"
+                        title="حذف التنبيه"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </div>
 
-                  <p className="text-xs text-gray-600 line-clamp-1">{item.message}</p>
-
-                  {(item.sender_name || item.facility_name) && (
-                    <div className="mt-2 text-xs text-gray-500 flex items-center gap-4 flex-wrap">
-                      {item.facility_name && <span>المنشأة: <strong className="text-gray-800">{item.facility_name}</strong></span>}
-                      {item.sender_name && <span>المرسل: <strong className="text-gray-800">{item.sender_name}</strong></span>}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2 self-center shrink-0">
-                  <button
-                    onClick={(e) => handleDelete(item.id, e)}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
-                    title="حذف"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  <span className="text-xs font-bold text-blue-600 hover:underline">
-                    فحص الطلب ←
-                  </span>
+                  <p className="mt-1.5 text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                    {n.text}
+                  </p>
                 </div>
               </div>
             );
@@ -193,118 +244,36 @@ export const NotificationsPage: React.FC = () => {
         )}
       </div>
 
-      {/* النافذة البرمجية الكاملة لفحص الإشعار واتخاذ الإجراء (Modal) */}
-      {selectedItem && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
-            
-            {/* الترويسة */}
-            <div className="flex justify-between items-start border-b pb-4">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={`text-xs font-bold px-3 py-1 rounded-md border ${getTypeDetails(selectedItem.type).color}`}>
-                    {getTypeDetails(selectedItem.type).label}
-                  </span>
-                  {selectedItem.sector && (
-                    <span className="text-xs font-bold px-3 py-1 rounded-md bg-gray-100 text-gray-800">
-                      قطاع: {selectedItem.sector}
-                    </span>
-                  )}
-                </div>
-                <h2 className="text-xl font-black text-gray-900">{selectedItem.title}</h2>
-              </div>
-              <button 
-                onClick={() => setSelectedItem(null)} 
-                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center font-bold"
-              >
-                ✕
-              </button>
-            </div>
+      {/* شريط التنقل السفلي مع جرس التنبيهات النشط */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-[#2F3336] py-2 px-6 flex items-center justify-around text-xs font-bold">
+        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-white transition">
+          <Home size={22} />
+          <span>الرئيسية</span>
+        </button>
 
-            {/* تفاصيل الرسالة ومقدم الطلب */}
-            <div className="bg-gray-50 rounded-2xl p-5 space-y-4 border border-gray-100 text-sm">
-              <p className="text-gray-800 leading-relaxed font-medium">{selectedItem.message}</p>
+        <button onClick={() => navigate('/feed')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#1D9BF0] transition">
+          <MessageSquare size={22} />
+          <span>المنشورات</span>
+        </button>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-gray-200/60 text-xs">
-                {selectedItem.facility_name && (
-                  <div><span className="text-gray-500">اسم المنشأة:</span> <strong className="text-gray-900">{selectedItem.facility_name}</strong></div>
-                )}
-                {selectedItem.sender_name && (
-                  <div><span className="text-gray-500">مقدم الطلب:</span> <strong className="text-gray-900">{selectedItem.sender_name}</strong></div>
-                )}
-                {selectedItem.sender_phone && (
-                  <div><span className="text-gray-500">رقم الهاتف:</span> <strong className="text-gray-900 font-mono" dir="ltr">{selectedItem.sender_phone}</strong></div>
-                )}
-                {selectedItem.admin_module && (
-                  <div><span className="text-gray-500">القسم الإداري:</span> <strong className="text-gray-900">{selectedItem.admin_module}</strong></div>
-                )}
-              </div>
-
-              {/* زر واتساب السريع للتواصل مع مقدم الطلب فوراً */}
-              {selectedItem.sender_phone && (
-                <div className="pt-2">
-                  <a 
-                    href={`https://wa.me/${selectedItem.sender_phone.replace(/[^0-9]/g, '')}`} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2 rounded-xl font-bold transition-all shadow-sm"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    مراسلة فورية عبر واتساب
-                  </a>
-                </div>
-              )}
-            </div>
-
-            {/* المستندات والمرفقات (سجل تجاري، هوية، صورة إعلان، سند تحويل) */}
-            {selectedItem.attachments && selectedItem.attachments.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-xs font-bold text-gray-500">المرفقات والوثائق وصور الإثبات:</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  {selectedItem.attachments.map((att, idx) => (
-                    <a
-                      key={idx}
-                      href={att.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group border rounded-xl overflow-hidden hover:border-blue-500 transition-all bg-gray-50 flex items-center p-3 gap-3"
-                    >
-                      <ExternalLink className="w-5 h-5 text-blue-600 shrink-0" />
-                      <div className="min-w-0">
-                        <div className="text-xs font-bold text-gray-800 truncate">{att.name || `مستند #${idx + 1}`}</div>
-                        <span className="text-[10px] text-gray-400">انقر لمعاينة الملف بالكامل</span>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </div>
+        <button onClick={() => navigate('/notifications')} className="flex flex-col items-center gap-1 text-[#1D9BF0] font-black transition relative">
+          <div className="relative">
+            <Bell size={22} className="stroke-[2.5]" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1.5 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-black">
+                {unreadCount}
+              </span>
             )}
-
-            {/* أزرار القرار المباشر للإدارة */}
-            <div className="flex gap-3 pt-4 border-t">
-              <button
-                onClick={() => handleAction('approved')}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-2xl transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 text-sm"
-              >
-                <CheckCircle2 className="w-5 h-5" />
-                الموافقة واعتماد الطلب
-              </button>
-
-              <button
-                onClick={() => handleAction('rejected')}
-                className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 font-bold py-3 rounded-2xl transition-all flex items-center justify-center gap-2 text-sm"
-              >
-                <XCircle className="w-5 h-5" />
-                رفض الطلب
-              </button>
-            </div>
-
           </div>
-        </div>
-      )}
+          <span>التنبيهات</span>
+        </button>
+
+        <button onClick={() => navigate('/account')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#1D9BF0] transition">
+          <User size={22} />
+          <span>الملف الشخصي</span>
+        </button>
+      </nav>
 
     </div>
   );
 };
-
-export default NotificationsPage;

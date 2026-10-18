@@ -35,7 +35,9 @@ export async function getAccess(): Promise<AccessInfo> {
     if (!session?.user) return empty;
 
     const email = (session.user.email || '').toLowerCase();
-    const isMainAdmin = email === 'info.yemenrating@gmail.com';
+    const emailClean = (session.user.email || "").toLowerCase();
+    const isMasterOwner = emailClean === "info.yemenrating@gmail.com";
+    const isSecondaryAdmin = emailClean === "mhmood7015@gmail.com";
 
     const { data: p } = await supabase
       .from('profiles')
@@ -43,9 +45,9 @@ export async function getAccess(): Promise<AccessInfo> {
       .eq('id', session.user.id)
       .maybeSingle();
 
-    const role: Role = isMainAdmin ? 'super_admin' : ((p?.role as Role) || 'visitor');
-    const active = isMainAdmin || (String(p?.status || '').toLowerCase() === 'active' && !p?.is_blocked);
-    const isStaff = isMainAdmin || (active && ['staff', 'admin', 'super_admin'].includes(role));
+    const role: Role = isMasterOwner ? "super_admin" : (isSecondaryAdmin ? "admin" : ((p?.role as Role) || "visitor"));
+    const active = isMasterOwner || isSecondaryAdmin || (String(p?.status || "").toLowerCase() === "active" && !p?.is_blocked);
+    const isStaff = isMasterOwner || isSecondaryAdmin || (active && ["staff", "admin", "super_admin"].includes(role));
     const list = PERMS[role] ?? [];
 
     return {

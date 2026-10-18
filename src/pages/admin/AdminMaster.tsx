@@ -43,7 +43,7 @@ export const AdminMaster: React.FC = () => {
       if (s) {
         try {
           const parsed = JSON.parse(s);
-          if (parsed.authenticated && parsed.email === 'info.yemenrating@gmail.com') {
+          if (parsed.authenticated && (parsed.email === "info.yemenrating@gmail.com" || parsed.email === "mhmood7015@gmail.com")) {
             if (!alive) return;
             setIsAuthenticated(true);
             setChecking(false);
@@ -149,8 +149,7 @@ export const AdminMaster: React.FC = () => {
   }, [isAuthenticated]);
 
   const handleLogout = async () => {
-    localStorage.removeItem('yr_admin_session');
-    await supabase.auth.signOut();
+    localStorage.removeItem("yr_admin_session");
     setIsAuthenticated(false);
     window.location.reload();
   };

@@ -295,6 +295,13 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
         banksList = rows.map(b => {
           const r = reviewsMap[b.id];
           const hasReviews = r && r.count > 0;
+          const adminR = Number(b.rating) || 0;
+          const adminC = Number(b.review_count) || 0;
+
+          // اعتماد تقييم الإدارة أولاً، ثم تقييمات الزوار
+          const finalRating = adminR > 0 ? adminR.toFixed(1) : (hasReviews ? (r.totalStars / r.count).toFixed(1) : null);
+          const finalCount = adminC > 0 ? adminC : (hasReviews ? r.count : 0);
+
           return {
             id: b.id,
             name: b.name,
@@ -302,12 +309,12 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
             city: b.city || b.address || "اليمن",
             address: b.address || b.city || "",
             description: b.description || b.short_description || "",
-            verified: b.verified === true || b.is_verified === true,
+            verified: b.verified === true || b.is_verified === true || b.is_claimed === true,
             badge_type: b.badge_type || "gold",
             logo_url: b.logo_url || b.logo || "",
             cover_url: b.cover_url || b.cover || b.banner_url || "",
-            ratingAvg: hasReviews ? (r.totalStars / r.count).toFixed(1) : null,
-            ratingCount: hasReviews ? r.count : 0
+            ratingAvg: finalRating,
+            ratingCount: finalCount
           };
         });
 
