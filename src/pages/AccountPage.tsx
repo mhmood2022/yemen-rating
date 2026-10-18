@@ -24,7 +24,7 @@ import {
   ArrowRight, RotateCw, MoreHorizontal, MapPin, Calendar, 
   Cake, CheckCircle2, Heart, MessageCircle, Repeat2, Share, Plus, 
   Camera, X, Image as ImageIcon, Pin, Trash2, Edit3, Loader2,
-  Home, MessageSquare, User, Phone, Mail, LogOut, UserPlus, UserCheck, Lock
+  Home, MessageSquare, User, Phone, Mail, LogOut, UserPlus, UserCheck, Lock, BarChart
 , Bell , AlertTriangle } from 'lucide-react';
 import { AuthModal } from '../components/auth/AuthModal';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
@@ -38,6 +38,7 @@ interface Post {
   text: string;
   image?: string;
   createdAt: string;
+  createdAtDisplay?: string;
   isPinned?: boolean;
   likes: number;
   likedBy?: string[];
@@ -167,6 +168,11 @@ export const AccountPage: React.FC = () => {
   // المنشورات
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'reposts' | 'media' | 'likes'>('posts');
   const [userPosts, setUserPosts] = useState<Post[]>([]);
+  const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
+  const [activeCommentPost, setActiveCommentPost] = useState<Post | null>(null);
+  const [postComments, setPostComments] = useState<any[]>([]);
+  const [newCommentText, setNewCommentText] = useState('');
+  const [loadingComments, setLoadingComments] = useState(false);
 
   // المودالات
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -293,7 +299,8 @@ export const AccountPage: React.FC = () => {
             authorBadge: p.profile?.verification_type || (p.profile?.is_verified ? "blue" : "none"),
             text: p.content,
             image: p.image_url || undefined,
-            createdAt: new Date(p.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
+            createdAt: p.created_at,
+            createdAtDisplay: new Date(p.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
             likes: p.likes_count || 0,
             likedBy: [],
             isLiked: p.isLiked,
@@ -372,7 +379,8 @@ export const AccountPage: React.FC = () => {
               authorBadge: p.profile?.verification_type || (p.profile?.is_verified ? 'blue' : 'none'),
               text: p.content,
               image: p.image_url || undefined,
-              createdAt: new Date(p.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
+              createdAt: p.created_at,
+              createdAtDisplay: new Date(p.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
               likes: p.likes_count || 0,
               likedBy: [],
               isLiked: p.isLiked,
@@ -518,7 +526,7 @@ export const AccountPage: React.FC = () => {
           }).eq("id", profileId);
         }
       }
-      showToast('تم حفظ التعديلات بنجاح! ✅');
+      showToast('تم حفظ التعديلات بنجاح');
       setIsEditModalOpen(false);
     } catch (_) {
       showToast('تم الحفظ محلياً بنجاح!');
@@ -602,7 +610,7 @@ export const AccountPage: React.FC = () => {
       setNewPostText("");
       setNewPostImage("");
       setIsPostModalOpen(false);
-      showToast("تم نشر التغريدة وحفظها في السحابة بنجاح! 🚀");
+      showToast("تم نشر التغريدة وحفظها في السحابة بنجاح");
     } catch (err: any) {
       console.error("Post error:", err);
       showToast("حدث خطأ أثناء النشر: " + (err.message || ""));
@@ -610,6 +618,119 @@ export const AccountPage: React.FC = () => {
   };
 
   // إعجاب حقيقي
+  const loadComments = async (postId: string) => {
+    setLoadingComments(true);
+    try {
+      const { data: comments, error } = await supabase
+        .from('post_comments')
+        .select('id, post_id, user_id, content, created_at')
+        .eq('post_id', postId)
+        .order('created_at', { ascending: true });
+      
+      if (error) throw error;
+      
+      if (!comments || comments.length === 0) {
+        setPostComments([]);
+        return;
+      }
+      
+      const userIds = [...new Set(comments.map((c: any) => c.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, username, avatar_url')
+        .in('id', userIds);
+      
+      const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+      
+      const mapped = comments.map((c: any) => {
+        const profile = profileMap.get(c.user_id);
+        return {
+          id: c.id,
+          userId: c.user_id,
+          userName: profile?.full_name || 'مستخدم',
+          userUsername: profile?.username || 'user',
+          userAvatar: profile?.avatar_url || '',
+          content: c.content,
+          createdAt: new Date(c.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
+        };
+      });
+      
+      setPostComments(mapped);
+    } catch (e) {
+      console.error('loadComments error:', e);
+      setPostComments([]);
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  const handleSubmitComment = async () => {
+    if (!newCommentText.trim() || !sessionUser?.id || !activeCommentPost) return;
+    
+    try {
+      const { error } = await supabase
+        .from('post_comments')
+        .insert({
+          post_id: activeCommentPost.id,
+          user_id: sessionUser.id,
+          content: newCommentText.trim(),
+        });
+      
+      if (error) throw error;
+      
+      setNewCommentText('');
+      await loadComments(activeCommentPost.id);
+      showToast('تم إضافة الرد');
+    } catch (e: any) {
+      console.error('add comment error:', e);
+      showToast('فشل: ' + (e?.message || 'خطأ'));
+    }
+  };
+
+  const handleRepost = async (postId: string) => {
+    if (!sessionUser?.id) {
+      showToast('يرجى تسجيل الدخول');
+      return;
+    }
+    
+    try {
+      // تحقق من وجود إعادة تغريد
+      const { data: existing } = await supabase
+        .from('post_reposts')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', sessionUser.id)
+        .maybeSingle();
+      
+      if (existing) {
+        // إلغاء
+        await supabase
+          .from('post_reposts')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', sessionUser.id);
+        
+        setUserPosts(prev => prev.map(p => 
+          p.id === postId ? { ...p, reposts: Math.max(0, (p.reposts || 0) - 1) } : p
+        ));
+        showToast('تم إلغاء إعادة النشر');
+      } else {
+        // إعادة جديدة
+        await supabase
+          .from('post_reposts')
+          .insert({ post_id: postId, user_id: sessionUser.id });
+        
+        setUserPosts(prev => prev.map(p => 
+          p.id === postId ? { ...p, reposts: (p.reposts || 0) + 1 } : p
+        ));
+        showToast('تمت إعادة النشر');
+      }
+    } catch (e: any) {
+      console.error('repost error:', e);
+      showToast('فشل: ' + (e?.message || 'خطأ'));
+    }
+  };
+
   const handleToggleLike = (postId: string) => {
     const myId = sessionUser?.id || 'guest';
     const updated = userPosts.map(p => {
@@ -1122,15 +1243,15 @@ export const AccountPage: React.FC = () => {
                 onClick={() => setIsPostModalOpen(true)}
                 className="px-5 py-2.5 rounded-full bg-[#1D9BF0] text-white text-xs font-bold hover:bg-[#1A8CD8] transition shadow-lg"
               >
-                اكتب تغريدة جديدة ✍️
+                اكتب تغريدة جديدة
               </button>
             )}
           </div>
         ) : (
           userPosts.map(post => (
-            <article key={post.id} className="p-4 hover:bg-white/[0.02] transition">
+            <article key={post.id} className="px-4 py-3 border-b border-[#2F3336] hover:bg-white/[0.03] transition cursor-pointer">
               <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold">
+                <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold text-white text-lg">
                   {post.authorAvatar ? (
                     <img src={post.authorAvatar} alt={post.authorName || name} className="w-full h-full object-cover" />
                   ) : (
@@ -1141,23 +1262,33 @@ export const AccountPage: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-white text-sm">{post.authorName || name}</span>
-                      <span className="text-xs text-[#71767B] font-mono">@{post.authorUsername || username}</span>
-                      <span className="text-xs text-[#71767B]">·</span>
-                      <span className="text-xs text-[#71767B]">{post.createdAt}</span>
+                      <span className="font-bold text-white text-[14px] hover:underline cursor-pointer truncate">{post.authorName || name}</span>
+                      {post.authorBadge && post.authorBadge !== "none" && (
+                        <svg className="w-[18px] h-[18px] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"
+                          style={{color: post.authorBadge === "blue" ? "#1D9BF0" : post.authorBadge === "gold" ? "#FFD700" : "#71767B"}}>
+                          <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.918-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.918 1.79-3.918 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.755 2.73 1.882 3.475-.038.2-.058.406-.058.617 0 2.21 1.71 4 3.918 4 .47 0 .92-.085 1.336-.25.52 1.335 1.828 2.25 3.337 2.25s2.816-.917 3.337-2.25c.416.165.866.25 1.336.25 2.21 0 3.918-1.79 3.918-4 0-.21-.02-.417-.058-.617C21.745 15.23 22.5 13.96 22.5 12.5z"/>
+                          <path fill="white" d="M10.825 16.583l-3.66-3.66a.75.75 0 111.06-1.061l2.6 2.6 5.405-5.405a.75.75 0 111.06 1.061l-5.935 5.935a.75.75 0 01-1.06 0z"/>
+                        </svg>
+                      )}
+                      <span className="text-[#71767B] text-[13px] truncate">@{post.authorUsername || username}</span>
+                      <span className="text-[#71767B] text-[13px]">·</span>
+                      <span className="text-[#71767B] text-[12px] hover:underline cursor-pointer" title={post.createdAtDisplay || post.createdAt}>
+                        {formatTimeAgo(post.createdAt).relative}
+                      </span>
                     </div>
-                    {isOwner && (
-                      <button 
-                        onClick={() => handleDeletePost(post.id)}
-                        className="text-[#71767B] hover:text-rose-500 p-1 rounded-full transition"
-                        title="حذف"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenuPost(post);
+                      }}
+                      className="text-[#71767B] hover:text-[#1D9BF0] p-1.5 rounded-full hover:bg-[#1D9BF0]/10 transition shrink-0"
+                      title="المزيد"
+                    >
+                      <MoreHorizontal size={18} />
+                    </button>
                   </div>
 
-                  <p className="mt-2 text-sm leading-relaxed text-[#E7E9EA] whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                  <p className="mt-1 text-[15px] leading-5 text-[#E7E9EA] whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                     {post.text}
                   </p>
 
@@ -1167,15 +1298,62 @@ export const AccountPage: React.FC = () => {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-6 text-xs text-[#71767B] mt-3.5">
-                    <button 
-                      onClick={() => handleToggleLike(post.id)}
-                      className={`flex items-center gap-1.5 transition ${post.isLiked ? 'text-rose-500 font-bold' : 'hover:text-rose-500'}`}
-                    >
-                      <Heart size={16} className={post.isLiked ? 'fill-current' : ''} />
-                      <span>{post.likes}</span>
-                    </button>
-                  </div>
+                                              <div className="flex items-center justify-between mt-3 max-w-md">
+                              {/* 💬 التعليقات */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveCommentPost(post);
+                                  loadComments(post.id);
+                                }}
+                                className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition group"
+                                title="الردود"
+                              >
+                                <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10">
+                                  <MessageCircle size={16} />
+                                </div>
+                                <span>{post.replies || 0}</span>
+                              </button>
+
+                              {/* 🔁 إعادة التغريد */}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRepost(post.id);
+                                }}
+                                className="flex items-center gap-1.5 hover:text-emerald-400 transition group"
+                                title="إعادة التغريد"
+                              >
+                                <div className="p-1.5 rounded-full group-hover:bg-emerald-500/10">
+                                  <Repeat2 size={17} />
+                                </div>
+                                <span>{post.reposts || 0}</span>
+                              </button>
+
+                              {/* ❤️ الإعجاب */}
+                              <button
+                                onClick={() => handleToggleLike(post.id)}
+                                className={`flex items-center gap-1.5 transition group ${post.isLiked ? 'text-rose-500 font-bold' : 'hover:text-rose-500'}`}
+                                title="إعجاب"
+                              >
+                                <div className="p-1.5 rounded-full group-hover:bg-rose-500/10">
+                                  <Heart size={16} className={post.isLiked ? 'fill-current' : ''} />
+                                </div>
+                                <span>{post.likes || 0}</span>
+                              </button>
+
+                              {/* 📊 المشاهدات */}
+                              <button
+                                onClick={(e) => e.stopPropagation()}
+                                className="flex items-center gap-1.5 text-[#71767B] hover:text-[#1D9BF0] transition group"
+                                title="المشاهدات"
+                              >
+                                <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10">
+                                  <BarChart size={17} />
+                                </div>
+                                <span>{post.views || 0}</span>
+                              </button>
+                            </div>
                 </div>
               </div>
             </article>
@@ -1412,7 +1590,194 @@ export const AccountPage: React.FC = () => {
       )}
 
     
+      {activeMenuPost && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center p-2"
+          onClick={() => setActiveMenuPost(null)}
+        >
+          <div 
+            className="w-full max-w-md bg-[#16181C] rounded-2xl overflow-hidden mb-20"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {isOwner && (
+              <button
+                onClick={() => {
+                  handleDeletePost(activeMenuPost.id);
+                  setActiveMenuPost(null);
+                }}
+                className="w-full px-4 py-4 text-right text-[#F4212E] font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2"
+              >
+                <Trash2 size={18} />
+                <span>حذف التغريدة</span>
+              </button>
+            )}
+            <button
+              onClick={() => {
+                showToast('التثبيت قريباً');
+                setActiveMenuPost(null);
+              }}
+              className="w-full px-4 py-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2"
+            >
+              <Pin size={18} />
+              <span>تثبيت التغريدة</span>
+            </button>
+            <button
+              onClick={() => {
+                navigator.clipboard?.writeText(window.location.origin + `/account?id=${activeMenuPost.authorId}`);
+                showToast('تم نسخ الرابط!');
+                setActiveMenuPost(null);
+              }}
+              className="w-full px-4 py-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2"
+            >
+              <Share size={18} />
+              <span>نسخ رابط التغريدة</span>
+            </button>
+            <button
+              onClick={() => setActiveMenuPost(null)}
+              className="w-full px-4 py-4 text-center text-white font-bold hover:bg-white/5 transition"
+            >
+              إلغاء
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* نافذة الردود - نسخة من /feed */}
+      {activeCommentPost && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col justify-between h-[100dvh] w-full max-w-lg mx-auto border border-[#2F3336] p-4 text-white overflow-hidden shadow-2xl" dir="rtl">
+          {/* Header */}
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-3">
+              <button
+                type="button"
+                onClick={() => setActiveCommentPost(null)}
+                className="text-[#71767B] hover:text-white p-1.5 rounded-full hover:bg-zinc-900 transition"
+              >
+                <X size={20} />
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitComment}
+                disabled={!newCommentText.trim() || newCommentText.length > 280}
+                className="px-5 py-1.5 bg-[#1D9BF0] hover:bg-[#1A8CD8] disabled:opacity-40 text-white rounded-full text-xs font-black transition"
+              >
+                الردّ
+              </button>
+            </div>
+            
+            <div className="text-xs text-[#71767B] mb-3 flex items-center gap-1">
+              <span>رداً على</span>
+              <span className="text-[#1D9BF0] font-mono font-bold" dir="ltr">@{activeCommentPost.authorUsername}</span>
+            </div>
+            
+            {/* قالب الكتابة */}
+            <div className="flex gap-3">
+              <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden shrink-0 flex items-center justify-center font-bold">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+                ) : (
+                  <span>{name ? name[0] : '؟'}</span>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <textarea
+                  rows={4}
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  placeholder="انشر ردّك"
+                  maxLength={280}
+                  className="w-full bg-transparent text-white placeholder-[#71767B] text-sm focus:outline-none resize-none"
+                  autoFocus
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* قائمة الردود */}
+          <div className="flex-1 overflow-y-auto mt-4">
+            {loadingComments ? (
+              <div className="text-center py-8 text-[#71767B]">جاري التحميل...</div>
+            ) : postComments.length === 0 ? (
+              <div className="text-center py-8 text-[#71767B]">لا توجد ردود بعد</div>
+            ) : (
+              postComments.map((c) => (
+                <div key={c.id} className="p-3 border-b border-[#2F3336]">
+                  <div className="flex gap-3">
+                    <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                      {c.userAvatar ? (
+                        <img src={c.userAvatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-white font-bold text-sm">{c.userName?.[0]}</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1 text-sm flex-wrap">
+                        <span className="font-bold text-white">{c.userName}</span>
+                        <span className="text-[#71767B]">@{c.userUsername}</span>
+                        <span className="text-[#71767B]">·</span>
+                        <span className="text-[#71767B]">{c.createdAt}</span>
+                      </div>
+                      <p className="text-white text-sm mt-1 whitespace-pre-wrap">{c.content}</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Footer - عداد */}
+          <div className="mt-auto pt-3 border-t border-[#2F3336] bg-black">
+            <div className="flex justify-end text-xs font-mono" dir="ltr">
+              <span className={newCommentText.length > 280 ? 'text-rose-500 font-bold' : 'text-[#71767B]'}>
+                {newCommentText.length}
+              </span>
+              <span className="text-zinc-600 mx-1">/ 280</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* زر + (FAB) — دائم الظهور */}
+      {isOwner && (
+        <button
+          onClick={() => setIsPostModalOpen(true)}
+          className="fixed bottom-24 left-4 z-40 w-14 h-14 rounded-full bg-[#1D9BF0] hover:bg-[#1A8CD8] active:scale-95 text-white flex items-center justify-center shadow-[0_8px_25px_rgba(29,155,240,0.5)] transition"
+          title="تغريدة جديدة"
+        >
+          <Plus size={28} className="stroke-[2.5]" />
+        </button>
+      )}
+
       <MobileBottomNav onNavigate={(path) => navigate(path)} />
 </div>
   );
 };
+
+/** تنسيق الوقت النسبي للمنشورات باللغة العربية */
+function formatTimeAgo(value: unknown): { relative: string } {
+  if (value == null || value === '') return { relative: '' };
+
+  const date = value instanceof Date
+    ? value
+    : new Date(value as string | number);
+
+  if (Number.isNaN(date.getTime())) return { relative: '' };
+
+  const seconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
+  if (seconds < 60) return { relative: 'الآن' };
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return { relative: minutes + ' د' };
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return { relative: hours + ' س' };
+
+  const days = Math.floor(hours / 24);
+  if (days < 30) return { relative: days + ' ي' };
+
+  const months = Math.floor(days / 30);
+  if (months < 12) return { relative: months + ' ش' };
+
+  return { relative: Math.floor(days / 365) + ' سنة' };
+}
+
