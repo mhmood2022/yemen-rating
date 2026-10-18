@@ -168,8 +168,39 @@ export const AccountPage: React.FC = () => {
   // المنشورات
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'reposts' | 'media' | 'likes'>('posts');
   const [userPosts, setUserPosts] = useState<Post[]>([]);
-  const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
+  
+function formatTimeAndDate(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
+    
+    const time = date.toLocaleTimeString('ar-YE', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    
+    const dateFormatted = date.toLocaleDateString('ar-YE', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    
+    return `${time} · ${dateFormatted}`;
+  } catch {
+    return '';
+  }
+}
+
+const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   const [activeCommentPost, setActiveCommentPost] = useState<Post | null>(null);
+  const [viewingDetailPost, setViewingDetailPost] = useState<Post | null>(null);
+
+  // 🔄 تحميل تعليقات viewingDetailPost تلقائياً
+  useEffect(() => {
+    if (viewingDetailPost?.id) {
+      loadComments(viewingDetailPost.id);
+    }
+  }, [viewingDetailPost?.id]);
   const [postComments, setPostComments] = useState<any[]>([]);
   const [newCommentText, setNewCommentText] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
@@ -651,7 +682,8 @@ export const AccountPage: React.FC = () => {
           userUsername: profile?.username || 'user',
           userAvatar: profile?.avatar_url || '',
           content: c.content,
-          createdAt: new Date(c.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
+          createdAt: c.created_at,
+          createdAtDisplay: new Date(c.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
         };
       });
       
@@ -1249,7 +1281,16 @@ export const AccountPage: React.FC = () => {
           </div>
         ) : (
           userPosts.map(post => (
-            <article key={post.id} className="px-4 py-3 border-b border-[#2F3336] hover:bg-white/[0.03] transition cursor-pointer">
+            <article 
+              key={post.id} 
+              className="px-4 py-3 border-b border-[#2F3336] hover:bg-white/[0.03] transition cursor-pointer"
+              onClick={(e) => {
+                const target = e.target as HTMLElement;
+                if (!target.closest('button') && !target.closest('a')) {
+                  setViewingDetailPost(post);
+                }
+              }}
+            >
               <div className="flex gap-3">
                 <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold text-white text-lg">
                   {post.authorAvatar ? (
@@ -1715,7 +1756,10 @@ export const AccountPage: React.FC = () => {
                         <span className="font-bold text-white">{c.userName}</span>
                         <span className="text-[#71767B]">@{c.userUsername}</span>
                         <span className="text-[#71767B]">·</span>
-                        <span className="text-[#71767B]">{c.createdAt}</span>
+                        <span className="text-[#71767B]" title={c.createdAtDisplay || c.createdAt}>
+                          {formatTimeAgo(c.createdAt).relative || c.createdAtDisplay || 'الآن'}
+                          <span className="text-[9px] text-[#536471] mr-1">· {new Date(c.createdAt).toLocaleDateString("ar-YE", { day: "numeric", month: "short", year: "numeric" })}</span>
+                        </span>
                       </div>
                       <p className="text-white text-sm mt-1 whitespace-pre-wrap">{c.content}</p>
                     </div>
@@ -1746,6 +1790,136 @@ export const AccountPage: React.FC = () => {
         >
           <Plus size={28} className="stroke-[2.5]" />
         </button>
+      )}
+
+      {/* Modal تفاصيل التغريدة */}
+      {viewingDetailPost && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm overflow-y-auto"
+          onClick={() => setViewingDetailPost(null)}
+          dir="rtl"
+        >
+          <div 
+            className="max-w-2xl mx-auto min-h-screen bg-black"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="sticky top-0 z-10 bg-black/95 backdrop-blur border-b border-[#2F3336] px-4 py-3 flex items-center gap-4">
+              <button 
+                onClick={() => setViewingDetailPost(null)}
+                className="text-white hover:bg-white/10 p-2 rounded-full transition"
+              >
+                <X size={20} />
+              </button>
+              <h2 className="text-white font-bold text-lg">التغريدة</h2>
+            </div>
+
+            {/* Tweet body */}
+            <div className="p-4">
+              <div className="flex gap-3">
+                <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {viewingDetailPost.authorAvatar ? (
+                    <img src={viewingDetailPost.authorAvatar} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-white font-bold text-lg">{viewingDetailPost.authorName?.[0]}</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-white text-[15px]">{viewingDetailPost.authorName}</span>
+                    <span className="text-[#71767B] text-[15px]">@{viewingDetailPost.authorUsername}</span>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-white text-[17px] mt-3 whitespace-pre-wrap break-words leading-relaxed">
+                {viewingDetailPost.text}
+              </p>
+
+              {viewingDetailPost.image && (
+                <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336]">
+                  <img src={viewingDetailPost.image} alt="" className="w-full h-auto object-cover" />
+                </div>
+              )}
+
+              {/* الوقت والتاريخ */}
+              <div className="text-sm text-[#71767B] py-3 border-y border-[#2F3336] flex items-center gap-2 mt-3">
+                <span>{formatTimeAndDate(viewingDetailPost.createdAt) || viewingDetailPost.createdAtDisplay || ''}</span>
+                <span>·</span>
+                <span>{viewingDetailPost.views || 1} مشاهدة</span>
+              </div>
+
+              {/* الأزرار */}
+              <div className="flex items-center justify-around py-3 border-b border-[#2F3336] text-[#71767B]">
+                <button
+                  onClick={() => {
+                    setActiveCommentPost(viewingDetailPost);
+                    setViewingDetailPost(null);
+                    loadComments(viewingDetailPost.id);
+                  }}
+                  className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition"
+                >
+                  <MessageCircle size={18} />
+                  <span className="text-sm">{viewingDetailPost.replies || 0}</span>
+                </button>
+
+                <button
+                  onClick={() => handleRepost(viewingDetailPost.id)}
+                  className="flex items-center gap-1.5 hover:text-emerald-400 transition"
+                >
+                  <Repeat2 size={18} />
+                  <span className="text-sm">{viewingDetailPost.reposts || 0}</span>
+                </button>
+
+                <button
+                  onClick={() => handleToggleLike(viewingDetailPost.id)}
+                  className={`flex items-center gap-1.5 transition ${viewingDetailPost.isLiked ? 'text-rose-500' : 'hover:text-rose-500'}`}
+                >
+                  <Heart size={18} className={viewingDetailPost.isLiked ? 'fill-current' : ''} />
+                  <span className="text-sm">{viewingDetailPost.likes || 0}</span>
+                </button>
+
+                <button className="hover:text-[#1D9BF0] transition">
+                  <BarChart size={18} />
+                </button>
+              </div>
+
+              {/* قائمة التعليقات */}
+              {postComments.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-white font-bold text-sm mb-3">
+                    الردود ({postComments.length})
+                  </h3>
+                  {postComments.map((c) => (
+                    <div key={c.id} className="p-3 border-b border-[#2F3336]">
+                      <div className="flex gap-3">
+                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {c.userAvatar ? (
+                            <img src={c.userAvatar} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-white font-bold">{c.userName?.[0]}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 text-sm">
+                            <span className="font-bold text-white">{c.userName}</span>
+                            <span className="text-[#71767B]">@{c.userUsername}</span>
+                            <span className="text-[#71767B]">·</span>
+                            <span className="text-[#71767B] text-xs" title={c.createdAtDisplay || c.createdAt}>
+                              {formatTimeAgo(c.createdAt).relative || c.createdAtDisplay || 'الآن'}
+                              <span className="text-[9px] text-[#536471] mr-1">· {new Date(c.createdAt).toLocaleDateString("ar-YE", { day: "numeric", month: "short", year: "numeric" })}</span>
+                            </span>
+                          </div>
+                          <p className="text-white text-sm mt-1 whitespace-pre-wrap">{c.content}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       <MobileBottomNav onNavigate={(path) => navigate(path)} />
