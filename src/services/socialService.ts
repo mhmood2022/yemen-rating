@@ -199,31 +199,51 @@ export async function updateUserProfile(userId: string, updates: Partial<Profile
 
 // 4. جلب تغريدات مستخدم معين فقط
 export async function getUserPosts(targetUserId: string, currentUserId?: string): Promise<PostItem[]> {
+  if (!targetUserId) {
+    console.warn('getUserPosts: targetUserId is null');
+    return [];
+  }
+  
+  // 1) جلب posts (بدون JOIN)
   const { data: posts, error } = await supabase
     .from('posts')
-    .select(`
-      *,
-      profile:profiles(*)
-    `)
+    .select('*')
     .eq('user_id', targetUserId)
     .order('created_at', { ascending: false });
-
-  if (error) return [];
-
-  if (!currentUserId || !posts?.length) return (posts as PostItem[]) || [];
-
-  const postIds = posts.map(p => p.id);
-  const { data: userLikes } = await supabase
-    .from('post_likes')
-    .select('post_id')
-    .eq('user_id', currentUserId)
-    .in('post_id', postIds);
-
-  const likedSet = new Set(userLikes?.map(l => l.post_id) || []);
-
-  return posts.map(p => ({
+  
+  if (error) {
+    console.error('getUserPosts ERROR:', error.message, error.code);
+    return [];
+  }
+  
+  if (!posts || posts.length === 0) return [];
+  
+  // 2) جلب profiles يدوياً
+  const userIds = Array.from(new Set(posts.map((p: any) => p.user_id)));
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, full_name, username, avatar_url')
+    .in('id', userIds);
+  
+  const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+  
+  // 3) جلب likes
+  let likedSet = new Set<string>();
+  if (currentUserId) {
+    const postIds = posts.map((p: any) => p.id);
+    const { data: userLikes } = await supabase
+      .from('post_likes')
+      .select('post_id')
+      .eq('user_id', currentUserId)
+      .in('post_id', postIds);
+    likedSet = new Set((userLikes || []).map((l: any) => l.post_id));
+  }
+  
+  // 4) دمج
+  return posts.map((p: any) => ({
     ...p,
-    isLiked: likedSet.has(p.id)
+    profile: profileMap.get(p.user_id) || null,
+    isLiked: likedSet.has(p.id),
   })) as PostItem[];
 }
 
@@ -374,3 +394,141 @@ export async function checkIsBlocked(userA: string, userB: string): Promise<bool
     return false;
   }
 }
+
+// ═══════════════════════════════════════════════════════
+// دوال جديدة: قوائم المتابعين والمتابَعين
+// ═══════════════════════════════════════════════════════
+
+export interface FollowUser {
+  id: string;
+  full_name: string;
+  username: string;
+  avatar_url: string;
+  is_verified?: boolean;
+  verification_type?: string;
+  is_following?: boolean;
+}
+
+// جلب قائمة المتابعين (من يتابعونني)
+export async function getFollowers(
+  userId: string,
+  currentUserId?: string
+): Promise<FollowUser[]> {
+  try {
+    // 1) جلب IDs
+    const { data: rows, error } = await supabase
+      .from('follows')
+      .select('follower_id')
+      .eq('following_id', userId);
+    
+    if (error) {
+      console.warn('getFollowers follows error:', error);
+      return [];
+    }
+    if (!rows || rows.length === 0) return [];
+    
+    const ids = rows.map((r: any) => r.follower_id);
+    
+    // 2) جلب profiles يدوياً
+    const { data: profiles, error: perr } = await supabase
+      .from('profiles')
+      .select('id, full_name, username, avatar_url, is_verified, verification_type')
+      .in('id', ids);
+    
+    if (perr) {
+      console.warn('getFollowers profiles error:', perr);
+      return [];
+    }
+    
+    // 3) is_following
+    let myFollowing: string[] = [];
+    if (currentUserId) {
+      const { data: myF } = await supabase
+        .from('follows')
+        .select('following_id')
+        .eq('follower_id', currentUserId);
+      myFollowing = (myF || []).map((f: any) => f.following_id);
+    }
+    
+    return (profiles || []).map((p: any) => ({
+      id: p.id,
+      full_name: p.full_name || 'مستخدم',
+      username: p.username || 'user',
+      avatar_url: p.avatar_url || '',
+      is_verified: p.is_verified,
+      verification_type: p.verification_type,
+      is_following: myFollowing.includes(p.id),
+    }));
+  } catch (e) {
+    console.warn('getFollowers exception:', e);
+    return [];
+  }
+}
+
+// جلب قائمة المتابَعين (من أتابعهم)
+export async function getFollowing(
+  userId: string,
+  currentUserId?: string
+): Promise<FollowUser[]> {
+  try {
+    const { data: rows, error } = await supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', userId);
+    
+    if (error) {
+      console.warn('getFollowing follows error:', error);
+      return [];
+    }
+    if (!rows || rows.length === 0) return [];
+    
+    const ids = rows.map((r: any) => r.following_id);
+    
+    const { data: profiles, error: perr } = await supabase
+      .from('profiles')
+      .select('id, full_name, username, avatar_url, is_verified, verification_type')
+      .in('id', ids);
+    
+    if (perr) {
+      console.warn('getFollowing profiles error:', perr);
+      return [];
+    }
+    
+    let myFollowing: string[] = [];
+    if (currentUserId) {
+      const { data: myF } = await supabase
+        .from('follows')
+        .select('following_id')
+        .eq('follower_id', currentUserId);
+      myFollowing = (myF || []).map((f: any) => f.following_id);
+    }
+    
+    return (profiles || []).map((p: any) => ({
+      id: p.id,
+      full_name: p.full_name || 'مستخدم',
+      username: p.username || 'user',
+      avatar_url: p.avatar_url || '',
+      is_verified: p.is_verified,
+      verification_type: p.verification_type,
+      is_following: myFollowing.includes(p.id),
+    }));
+  } catch (e) {
+    console.warn('getFollowing exception:', e);
+    return [];
+  }
+}
+
+// إلغاء متابعة (تبسيط)
+export async function unfollowUser(followerId: string, followingId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('follows')
+      .delete()
+      .eq('follower_id', followerId)
+      .eq('following_id', followingId);
+    return !error;
+  } catch {
+    return false;
+  }
+}
+

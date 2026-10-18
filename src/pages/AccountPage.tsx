@@ -27,6 +27,7 @@ import {
   Home, MessageSquare, User, Phone, Mail, LogOut, UserPlus, UserCheck, Lock
 , Bell , AlertTriangle } from 'lucide-react';
 import { AuthModal } from '../components/auth/AuthModal';
+import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 
 interface Post {
   id: string;
@@ -131,6 +132,7 @@ export const AccountPage: React.FC = () => {
   const targetIdParam = searchParams.get('id');
 
   const [loading, setLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<string>('بدء...');
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [isOwner, setIsOwner] = useState(true);
@@ -199,6 +201,9 @@ export const AccountPage: React.FC = () => {
       setSessionUser(user);
       const myId = user?.id || "";
       const targetId = targetIdParam || myId;
+      
+      console.log('🟢 DEBUG:', { targetId, targetIdParam, myId, profileId });
+      console.log('🟢 targetId:', targetId, '| myId:', myId);
 
       if (!targetId) {
         setLoading(false);
@@ -240,7 +245,7 @@ export const AccountPage: React.FC = () => {
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject("timeout"), 2500));
 
       try {
-        const pData: any = await Promise.race([getUserProfile(targetId), timeoutPromise]);
+        const pData: any = await getUserProfile(targetId);
         if (pData) {
           if (pData.full_name) setName(pData.full_name); else if (navState.name) setName(navState.name);
           if (pData.username) setUsername(pData.username); else if (navState.username) setUsername(navState.username);
@@ -268,14 +273,23 @@ export const AccountPage: React.FC = () => {
 
       // جلب التغريدات
       try {
-        const dbPosts: any = await Promise.race([getUserPosts(targetId, myId), timeoutPromise]);
+        console.log('🟢 Before getUserPosts — targetId:', targetId, '| myId:', myId);
+        const dbPosts: any = await getUserPosts(targetId, myId);
+        
+        const errMsg = (window as any).__lastGetUserPostsError;
+        if (errMsg) {
+          
+        }
+        console.log('🟢 After getUserPosts — got:', dbPosts?.length || 0, 'posts');
+        if (dbPosts && dbPosts[0]) console.log('   first:', dbPosts[0].content);
         if (Array.isArray(dbPosts)) {
-          setUserPosts(dbPosts.map((p: any) => ({
+          console.log('🟢 About to setUserPosts with:', dbPosts.length);
+              setUserPosts(dbPosts.map((p: any) => ({
             id: p.id,
             authorId: p.user_id,
             authorName: p.profile?.full_name || name,
             authorUsername: p.profile?.username || username,
-            authorAvatar: p.profile?.avatar_url || avatarUrl,
+            authorAvatar: p.profile?.avatar_url || '',
             authorBadge: p.profile?.verification_type || (p.profile?.is_verified ? "blue" : "none"),
             text: p.content,
             image: p.image_url || undefined,
@@ -298,18 +312,94 @@ export const AccountPage: React.FC = () => {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      loadProfile(session?.user || null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      loadProfile(session?.user || null);
-    });
-
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 20;
+    
+    const tryLoad = async () => {
+      if (cancelled) return;
+      attempts++;
+      
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          
+          loadProfile(session.user);
+          return;
+        }
+        
+        if (attempts >= maxAttempts) {
+          console.error('🟢 Session not found after', maxAttempts, 'attempts');
+          loadProfile(null);
+          return;
+        }
+        
+        setTimeout(tryLoad, 500);
+      } catch (e) {
+        console.error('🟢 getSession error:', e);
+        if (attempts < maxAttempts) setTimeout(tryLoad, 500);
+      }
+    };
+    
+    tryLoad();
+    
     return () => {
-      subscription.unsubscribe();
+      cancelled = true;
     };
   }, [targetIdParam]);
+
+
+  // 🔄 Realtime للتغريدات في صفحة الحساب
+  useEffect(() => {
+    if (!profileId || profileId === 'guest') return;
+    
+    const channel = supabase
+      .channel(`account-posts-${profileId}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'posts',
+        filter: `user_id=eq.${profileId}`,
+      }, async () => {
+        try {
+          const dbPosts: any = await getUserPosts(profileId, sessionUser?.id);
+          if (Array.isArray(dbPosts)) {
+            setUserPosts(dbPosts.map((p: any) => ({
+              id: p.id,
+              authorId: p.user_id,
+              authorName: p.profile?.full_name || '',
+              authorUsername: p.profile?.username || '',
+              authorAvatar: p.profile?.avatar_url || '',
+              authorBadge: p.profile?.verification_type || (p.profile?.is_verified ? 'blue' : 'none'),
+              text: p.content,
+              image: p.image_url || undefined,
+              createdAt: new Date(p.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
+              likes: p.likes_count || 0,
+              likedBy: [],
+              isLiked: p.isLiked,
+              replies: p.comments_count || 0,
+              reposts: p.reposts_count || 0,
+              views: p.views_count || 1,
+            })));
+          }
+        } catch (_) {}
+      })
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'post_likes',
+      }, async () => {
+        try {
+          const dbPosts: any = await getUserPosts(profileId, sessionUser?.id);
+          if (Array.isArray(dbPosts)) {
+            setUserPosts((prev: any) => prev.map((p: any) => {
+              const fresh = dbPosts.find((dp: any) => dp.id === p.id);
+              return fresh ? { ...p, likes: fresh.likes_count || 0, isLiked: fresh.isLiked } : p;
+            }));
+          }
+        } catch (_) {}
+      })
+      .subscribe();
+    
+    return () => { supabase.removeChannel(channel); };
+  }, [profileId, sessionUser?.id]);
 
   // تغيير وحفظ الصور مع الضغط التلقائي
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'avatar' | 'cover') => {
@@ -438,8 +528,8 @@ export const AccountPage: React.FC = () => {
     }
   };
 
-  // نظام المتابعة الحقيقي 100%
-  const handleToggleFollow = () => {
+  // نظام المتابعة الحقيقي (Supabase)
+  const handleToggleFollow = async () => {
     if (!sessionUser) {
       showToast('يرجى تسجيل الدخول أولاً لتتمكن من المتابعة!');
       setAuthModalOpen(true);
@@ -447,27 +537,23 @@ export const AccountPage: React.FC = () => {
     }
     const myId = sessionUser.id;
     const targetId = profileId;
-    if (myId === targetId) return;
-
-    const allFollows = JSON.parse(localStorage.getItem(FOLLOWS_KEY) || '{}');
-    let myFollowing: string[] = allFollows[myId] || [];
-
-    if (myFollowing.includes(targetId)) {
-      // إلغاء المتابعة
-      myFollowing = myFollowing.filter(id => id !== targetId);
-      allFollows[myId] = myFollowing;
-      setIsFollowing(false);
-      setFollowersCount(prev => Math.max(0, prev - 1));
-      showToast(`ألغيت متابعة ${name}`);
-    } else {
-      // متابعة حقيقية
-      myFollowing.push(targetId);
-      allFollows[myId] = myFollowing;
-      setIsFollowing(true);
-      setFollowersCount(prev => prev + 1);
-      showToast(`تابعت ${name} بنجاح! ⭐`);
+    if (!targetId || myId === targetId) return;
+    
+    try {
+      const nowFollowing = await toggleFollow(myId, targetId);
+      setIsFollowing(nowFollowing);
+      
+      if (nowFollowing) {
+        setFollowersCount(prev => prev + 1);
+        showToast(`تابعت ${name} بنجاح! ⭐`);
+      } else {
+        setFollowersCount(prev => Math.max(0, prev - 1));
+        showToast(`ألغيت متابعة ${name}`);
+      }
+    } catch (e: any) {
+      console.error('Toggle follow error:', e);
+      showToast('فشل تحديث المتابعة');
     }
-    localStorage.setItem(FOLLOWS_KEY, JSON.stringify(allFollows));
   };
 
   // إنشاء منشور حقيقي
@@ -936,11 +1022,21 @@ export const AccountPage: React.FC = () => {
         {/* 6. المتابعون والمتابَعون الفعليون */}
         <div className="flex items-center gap-5 mt-3.5 text-xs">
           <div className="hover:underline cursor-pointer">
-            <span className="font-extrabold text-white ml-1">{followingCount}</span>
+            <button 
+              onClick={() => navigate(`/u/${username}?tab=following`)}
+              className="hover:underline cursor-pointer"
+            >
+              <span className="font-extrabold text-white ml-1">{followingCount}</span>
+            </button>
             <span className="text-[#71767B]">متابَعة</span>
           </div>
           <div className="hover:underline cursor-pointer">
-            <span className="font-extrabold text-white ml-1">{followersCount}</span>
+            <button 
+              onClick={() => navigate(`/u/${username}?tab=followers`)}
+              className="hover:underline cursor-pointer"
+            >
+              <span className="font-extrabold text-white ml-1">{followersCount}</span>
+            </button>
             <span className="text-[#71767B]">متابِعًا</span>
           </div>
         </div>
@@ -996,6 +1092,7 @@ export const AccountPage: React.FC = () => {
           }`}
         >
           <span>المنشورات ({userPosts.length})</span>
+        
           {activeTab === 'posts' && <div className="absolute bottom-0 w-16 h-1 bg-white rounded-full" />}
         </button>
 
@@ -1035,17 +1132,17 @@ export const AccountPage: React.FC = () => {
               <div className="flex gap-3">
                 <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold">
                   {post.authorAvatar ? (
-                    <img src={post.authorAvatar} alt={name} className="w-full h-full object-cover" />
+                    <img src={post.authorAvatar} alt={post.authorName || name} className="w-full h-full object-cover" />
                   ) : (
-                    <span>{name ? name[0] : '؟'}</span>
+                    <span>{post.authorName?.[0] || name?.[0] || '؟'}</span>
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-white text-sm">{name}</span>
-                      <span className="text-xs text-[#71767B] font-mono">@{username}</span>
+                      <span className="font-bold text-white text-sm">{post.authorName || name}</span>
+                      <span className="text-xs text-[#71767B] font-mono">@{post.authorUsername || username}</span>
                       <span className="text-xs text-[#71767B]">·</span>
                       <span className="text-xs text-[#71767B]">{post.createdAt}</span>
                     </div>
@@ -1086,38 +1183,10 @@ export const AccountPage: React.FC = () => {
         )}
       </div>
 
-      {/* زر عائم (+) */}
-      {isOwner && (
-        <button
-          onClick={() => setIsPostModalOpen(true)}
-          className="fixed bottom-20 left-6 z-40 w-14 h-14 rounded-full bg-[#1D9BF0] hover:bg-[#1A8CD8] active:scale-95 text-white flex items-center justify-center shadow-[0_8px_25px_rgba(29,155,240,0.5)] transition"
-          title="تغريدة جديدة"
-        >
-          <Plus size={28} className="stroke-[2.5]" />
-        </button>
-      )}
+      
 
       {/* شريط التنقل السفلي مع جرس التنبيهات */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-[#2F3336] py-2 px-4 flex items-center justify-around text-xs font-bold">
-        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-white transition">
-          <Home size={22} />
-          <span>الرئيسية</span>
-        </button>
-        <button onClick={() => navigate('/feed')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#1D9BF0] transition">
-          <MessageSquare size={22} />
-          <span>المنشورات</span>
-        </button>
-        <button onClick={() => navigate('/notifications')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#1D9BF0] transition relative">
-          <div className="relative">
-            <Bell size={22} />
-          </div>
-          <span>التنبيهات</span>
-        </button>
-        <button onClick={() => navigate('/account')} className={`flex flex-col items-center gap-1 transition ${isOwner ? 'text-[#1D9BF0] font-black' : 'text-[#71767B] hover:text-[#1D9BF0]'}`}>
-          <User size={22} className={isOwner ? 'stroke-[2.5]' : ''} />
-          <span>الملف الشخصي</span>
-        </button>
-      </nav>
+      
 
       {/* مودال تعديل الملف الشخصي */}
       {isEditModalOpen && (
@@ -1342,6 +1411,8 @@ export const AccountPage: React.FC = () => {
         </div>
       )}
 
-    </div>
+    
+      <MobileBottomNav onNavigate={(path) => navigate(path)} />
+</div>
   );
 };

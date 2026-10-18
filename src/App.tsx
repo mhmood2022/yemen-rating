@@ -54,6 +54,7 @@ import { MarketsManager } from './pages/admin/markets/MarketsManager';
 import { PhonesManager } from './pages/admin/phones/PhonesManager';
 import { CleaningManager } from './pages/admin/cleaning/CleaningManager';
 import { AnalyticsFinanceManager } from './pages/admin/analytics/AnalyticsFinanceManager';
+import FollowersPage from './pages/social/FollowersPage';
 
 
 const HomeRoute: React.FC = () => {
@@ -110,7 +111,7 @@ export function App() {
 
         {/* لوحة تحكم مالك المنشأة */}
         <Route path="/owner" element={<AppShell><OwnerDashboardPage /></AppShell>} />
-        <Route path="/profile" element={<AppShell><UserProfilePage /></AppShell>} />
+        <Route path="/profile" element={<Navigate to="/account" replace />} />
 
                                                                     {/* لوحة التحكم الإدارية الموحدة /admin */}
         <Route path="/admin" element={<AdminMaster />}>
@@ -141,11 +142,14 @@ export function App() {
 
         <Route path="*" element={<HomeRoute />} />
 
-        <Route path="/notifications" element={<AppShell><NotificationsPage /></AppShell>} />
-        <Route path="/feed" element={<AppShell><CommunityFeedPage /></AppShell>} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/feed" element={<CommunityFeedPage />} />
         <Route path="/community" element={<AppShell><CommunityFeedPage /></AppShell>} />
         <Route path="/tweets" element={<AppShell><CommunityFeedPage /></AppShell>} />
-        <Route path="/account" element={<AppShell><AccountPage /></AppShell>} />
+        <Route path="/account" element={<AccountPage />} />
+        <Route path="/u/:username/followers" element={<FollowersPage />} />
+        <Route path="/u/:username/following" element={<FollowersPage />} />
+        <Route path="/u/:username" element={<FollowersPage />} />
         <Route path="/login" element={<AppShell><AccountPage /></AppShell>} />
       </Routes>
     </BrowserRouter>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { 
@@ -34,58 +35,106 @@ export const NotificationsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    const init = async () => {
-      let uid = '';
+    const loadFromDB = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          uid = user.id;
-          setCurrentUserId(user.id);
-        } else {
-          uid = localStorage.getItem('yr_guest_unique_id') || 'guest';
-          setCurrentUserId(uid);
-        }
-      } catch (_) {
-        uid = 'guest';
-        setCurrentUserId(uid);
-      }
-
-      // جلب التنبيهات الحقيقية لهذا المستخدم
-      const key = `yr_notifications_${uid}`;
-      const saved = localStorage.getItem(key);
-      if (saved) {
-        try {
-          setNotifications(JSON.parse(saved));
-        } catch {
+        if (!user) {
+          setCurrentUserId(null);
           setNotifications([]);
+          return;
         }
-      } else {
-        // تنبيه ترحيبي أولي
-        const welcomeNotif: AppNotification = {
-          id: 'welcome-1',
-          targetUserId: uid,
-          actorId: 'system',
-          actorName: 'فريق يمن ريتنج',
-          actorAvatar: '',
-          type: 'system',
-          text: 'مرحباً بك في مجتمع يمن ريتنج! يمكنك الآن النشر والتفاعل ومتابعة المغردين بحرية.',
-          createdAt: 'الآن',
-          isRead: false
-        };
-        setNotifications([welcomeNotif]);
-        localStorage.setItem(key, JSON.stringify([welcomeNotif]));
+        
+        setCurrentUserId(user.id);
+        
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(100);
+        
+        if (error) {
+          console.warn('Notifications fetch:', error.message);
+          setNotifications([]);
+          return;
+        }
+        
+        const mapped = (data || []).map((n: any) => ({
+          id: n.id,
+          targetUserId: n.user_id,
+          actorId: n.actor_id || 'system',
+          actorName: n.actor_name || 'فريق يمن ريتنج',
+          actorAvatar: n.actor_avatar || '',
+          type: n.type || 'system',
+          text: n.message || n.title || '',
+          targetPostId: n.post_id || null,
+          createdAt: new Date(n.created_at).toLocaleString('ar-YE', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }),
+          isRead: n.read || false,
+        }));
+        
+        setNotifications(mapped);
+      } catch (e) {
+        console.warn('loadFromDB exception:', e);
+        setNotifications([]);
       }
     };
-
-    init();
-  }, []);
+    
+    loadFromDB();
+    
+    // 🔄 Realtime subscription
+    const channel = supabase
+      .channel('notifications-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+        },
+        (payload) => {
+          const n: any = payload.new;
+          // فقط إذا كان موجهاً لي
+          if (n.user_id !== currentUserId) return;
+          
+          setNotifications(prev => [{
+            id: n.id,
+            targetUserId: n.user_id,
+            actorId: n.actor_id || 'system',
+            actorName: n.actor_name || 'فريق يمن ريتنج',
+            actorAvatar: n.actor_avatar || '',
+            type: n.type || 'system',
+            text: n.message || n.title || '',
+            targetPostId: n.post_id || null,
+            createdAt: 'الآن',
+            isRead: false,
+          }, ...prev]);
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId]);
 
   // تحديد الكل كمقروء
-  const handleMarkAllAsRead = () => {
+  const handleMarkAllAsRead = async () => {
     const updated = notifications.map(n => ({ ...n, isRead: true }));
     setNotifications(updated);
+    
     if (currentUserId) {
-      localStorage.setItem(`yr_notifications_${currentUserId}`, JSON.stringify(updated));
+      try {
+        await supabase
+          .from('notifications')
+          .update({ read: true })
+          .eq('user_id', currentUserId)
+          .eq('read', false);
+      } catch (e) {
+        console.warn('Mark all read failed:', e);
+      }
     }
     showToast('تم تحديد جميع التنبيهات كمقروءة ✅');
   };
@@ -274,6 +323,8 @@ export const NotificationsPage: React.FC = () => {
         </button>
       </nav>
 
-    </div>
+    
+      <MobileBottomNav onNavigate={(path) => navigate(path)} />
+</div>
   );
 };

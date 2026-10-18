@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { 
@@ -155,24 +156,40 @@ export const CommunityFeedPage: React.FC = () => {
     setTimeout(() => setToastMsg(null), 3000);
   };
 
-  // إرسال تنبيه حقيقي للمغرد
-  const sendRealNotification = (targetUid: string, type: 'like' | 'comment' | 'repost' | 'follow', msg: string, postId?: string) => {
+  // إرسال تنبيه حقيقي للمغرد (في Supabase)
+  const sendRealNotification = async (
+    targetUid: string, 
+    type: 'like' | 'comment' | 'repost' | 'follow', 
+    msg: string, 
+    postId?: string
+  ) => {
     if (!targetUid || targetUid === currentUserId) return;
-    const key = `yr_notifications_${targetUid}`;
-    const existing = JSON.parse(localStorage.getItem(key) || '[]');
-    const newNotif = {
-      id: Date.now().toString(),
-      targetUserId: targetUid,
-      actorId: currentUserId,
-      actorName: myName,
-      actorAvatar: myAvatar,
-      type,
-      text: msg,
-      targetPostId: postId,
-      createdAt: 'الآن',
-      isRead: false
-    };
-    localStorage.setItem(key, JSON.stringify([newNotif, ...existing]));
+    
+    try {
+      console.log('🔔 SENDING NOTIFICATION:', { targetUid, type, currentUserId, myName });
+      
+      const { data, error } = await supabase.from('notifications').insert({
+        user_id: targetUid,
+        actor_id: currentUserId,
+        actor_name: myName,
+        actor_avatar: myAvatar,
+        post_id: postId || null,
+        title: msg.slice(0, 100),
+        message: msg,
+        type: type,
+        read: false,
+      }).select();
+      
+      if (error) {
+        console.error('❌ Notification insert FAILED:', error);
+        showToastMsg && showToastMsg('❌ فشل الإشعار: ' + error.message);
+      } else {
+        console.log('✅ Notification created:', data);
+        showToastMsg && showToastMsg('✅ تم إرسال الإشعار');
+      }
+    } catch (e) {
+      console.warn('Notification exception:', e);
+    }
   };
 
   useEffect(() => {
@@ -235,7 +252,8 @@ export const CommunityFeedPage: React.FC = () => {
             reposts: 0,
             repostedBy: [],
             views: 1,
-            comments: []
+            comments: [],
+            replies: p.comments_count || 0
           };
         });
 
@@ -258,6 +276,12 @@ export const CommunityFeedPage: React.FC = () => {
         const pId = payload?.new?.post_id || payload?.old?.post_id;
         if (pId) loadCommentsForPost(pId);
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'post_likes' }, () => {
+        loadData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'post_reposts' }, () => {
+        loadData();
+      })
       .subscribe();
 
     return () => { supabase.removeChannel(postsChannel); };
@@ -265,45 +289,97 @@ export const CommunityFeedPage: React.FC = () => {
 
   // دالة جلب التعليقات السحابية الحقيقية لأي تغريدة
   const loadCommentsForPost = async (postId: string) => {
+    console.log('🔵 loadCommentsForPost:', postId);
     try {
-      const { data, error } = await supabase
-        .from("post_comments")
-        .select(`
-          id,
-          post_id,
-          user_id,
-          content,
-          created_at,
-          profile:profiles(id, full_name, username, avatar_url, is_verified, verification_type)
-        `)
-        .eq("post_id", postId)
-        .order("created_at", { ascending: true });
-
-      if (error || !data) return;
-
-      const mappedComments: Comment[] = data.map((c: any) => ({
-        id: c.id,
-        authorId: c.user_id,
-        authorName: c.profile?.full_name || "مستخدم",
-        authorUsername: c.profile?.username || "user",
-        authorAvatar: c.profile?.avatar_url || "",
-        text: c.content,
-        createdAt: new Date(c.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" })
-      }));
-
-      setViewingDetailTweet(prev => (prev && prev.id === postId ? { ...prev, comments: mappedComments, replies: mappedComments.length } : prev));
-      setTweets(prev => prev.map(t => t.id === postId ? { ...t, comments: mappedComments, replies: mappedComments.length } : t));
-    } catch (err) {
-      console.error("Error fetching comments:", err);
+      // 1) جلب التعليقات فقط (بدون JOIN)
+      const { data: comments, error } = await supabase
+        .from('post_comments')
+        .select('id, post_id, user_id, content, created_at')
+        .eq('post_id', postId)
+        .order('created_at', { ascending: true });
+      
+      if (error) {
+        console.error('❌ comments query error:', error.message, error.code);
+        return;
+      }
+      
+      console.log('✅ comments fetched:', comments?.length || 0);
+      
+      if (!comments || comments.length === 0) {
+        setViewingDetailTweet(prev => (prev && prev.id === postId ? { ...prev, comments: [], replies: 0 } : prev));
+        setActiveCommentTweet(prev => (prev && prev.id === postId ? { ...prev, comments: [], replies: 0 } : prev));
+        return;
+      }
+      
+      // 2) جلب profiles يدوياً
+      const userIds = [...new Set(comments.map((c: any) => c.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, username, avatar_url')
+        .in('id', userIds);
+      
+      const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+      
+      // 3) بناء التعليقات
+      const mappedComments = comments.map((c: any) => {
+        const profile = profileMap.get(c.user_id);
+        return {
+          id: c.id,
+          authorId: c.user_id,
+          authorName: profile?.full_name || 'مستخدم',
+          authorUsername: profile?.username || 'user',
+          authorAvatar: profile?.avatar_url || '',
+          text: c.content,
+          createdAt: new Date(c.created_at).toLocaleTimeString('ar-YE', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }),
+        };
+      });
+      
+      console.log('✅ mapped comments:', mappedComments.length);
+      
+      // 4) تحديث الحالات
+      setViewingDetailTweet(prev => (prev && prev.id === postId ? { 
+        ...prev, 
+        comments: mappedComments, 
+        replies: mappedComments.length 
+      } : prev));
+      
+      setActiveCommentTweet(prev => (prev && prev.id === postId ? { 
+        ...prev, 
+        comments: mappedComments, 
+        replies: mappedComments.length 
+      } : prev));
+      
+      setTweets(prev => prev.map(t => t.id === postId ? { 
+        ...t, 
+        comments: mappedComments, 
+        replies: mappedComments.length 
+      } : t));
+      
+      console.log('✅ loadCommentsForPost DONE:', postId, '| comments:', mappedComments.length);
+      
+    } catch (err: any) {
+      console.error('❌ loadCommentsForPost exception:', err?.message || err);
     }
   };
 
   // مراقبة فتح أي تغريدة لجلب تعليقاتها السحابية فوراً
   useEffect(() => {
     if (viewingDetailTweet?.id) {
+      console.log('🔵 Opening tweet:', viewingDetailTweet.id, '— loading comments...');
       loadCommentsForPost(viewingDetailTweet.id);
     }
   }, [viewingDetailTweet?.id]);
+
+  // 🔄 Realtime: تحميل تعليقات activeCommentTweet (زر 💬)
+  useEffect(() => {
+    if (activeCommentTweet?.id) {
+      console.log('🔵 Opening comment modal:', activeCommentTweet.id, '— loading comments...');
+      loadCommentsForPost(activeCommentTweet.id);
+    }
+  }, [activeCommentTweet?.id]);
 
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1313,6 +1389,8 @@ return;
         </button>
       </nav>
 
-    </div>
+    
+      <MobileBottomNav onNavigate={(path) => navigate(path)} />
+</div>
   );
 };
