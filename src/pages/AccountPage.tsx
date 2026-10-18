@@ -1754,30 +1754,32 @@ export const AccountPage: React.FC = () => {
 };
 
 /** تنسيق الوقت النسبي للمنشورات باللغة العربية */
-function formatTimeAgo(value: unknown): { relative: string } {
-  if (value == null || value === '') return { relative: '' };
-
-  const date = value instanceof Date
-    ? value
-    : new Date(value as string | number);
-
-  if (Number.isNaN(date.getTime())) return { relative: '' };
-
-  const seconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
-  if (seconds < 60) return { relative: 'الآن' };
-
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return { relative: minutes + ' د' };
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return { relative: hours + ' س' };
-
-  const days = Math.floor(hours / 24);
-  if (days < 30) return { relative: days + ' ي' };
-
-  const months = Math.floor(days / 30);
-  if (months < 12) return { relative: months + ' ش' };
-
-  return { relative: Math.floor(days / 365) + ' سنة' };
+function formatTimeAgo(dateStr: string): { relative: string; absolute: string } {
+  try {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+    
+    let relative = '';
+    if (diffSec < 60) relative = 'الآن';
+    else if (diffMin < 60) relative = `${diffMin}د`;
+    else if (diffHour < 24) relative = `${diffHour}س`;
+    else if (diffDay < 7) relative = `${diffDay}ي`;
+    else relative = date.toLocaleDateString('ar-YE', { day: 'numeric', month: 'short' });
+    
+    const absolute = date.toLocaleDateString('ar-YE', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+    
+    return { relative, absolute };
+  } catch {
+    return { relative: '', absolute: '' };
+  }
 }
 

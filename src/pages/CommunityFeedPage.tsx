@@ -23,6 +23,7 @@ interface Comment {
 
 interface Tweet {
   id: string;
+  createdAtDisplay?: string;
   authorId: string;
   authorName: string;
   authorUsername: string;
@@ -63,6 +64,57 @@ const safeSetStorage = (key: string, data: any) => {
 const GLOBAL_FEED_KEY = 'yr_community_global_posts';
 const USERS_DIR_KEY = 'yr_users_directory';
 const REPORTS_KEY = 'yr_community_reports';
+
+function formatTimeAgo(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+    
+    if (diffSec < 60) return 'الآن';
+    if (diffMin < 60) return `${diffMin}د`;
+    if (diffHour < 24) return `${diffHour}س`;
+    if (diffDay < 7) return `${diffDay}ي`;
+    
+    // أكثر من أسبوع — نعرض التاريخ
+    return date.toLocaleDateString('ar-YE', {
+      day: 'numeric',
+      month: 'short',
+    });
+  } catch {
+    return '';
+  }
+}
+
+
+function formatTimeAndDate(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    // التحقق من صحة التاريخ
+    if (isNaN(date.getTime())) return '';
+    
+    // تنسيق الوقت (مثال: 6:07 م)
+    const time = date.toLocaleTimeString('ar-YE', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    
+    // تنسيق التاريخ (مثال: 18 أكتوبر 2026)
+    const dateFormatted = date.toLocaleDateString('ar-YE', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    
+    return `${time} · ${dateFormatted}`;
+  } catch {
+    return '';
+  }
+}
 
 export const CommunityFeedPage: React.FC = () => {
   const navigate = useNavigate();
@@ -246,7 +298,8 @@ export const CommunityFeedPage: React.FC = () => {
             authorAvatar: author?.avatar_url || (localUsers[p.user_id]?.avatarUrl) || (p.user_id === uid ? myAvatar : "") || "",
             text: p.content,
             image: p.image_url || undefined,
-            createdAt: new Date(p.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
+            createdAt: p.created_at,
+            createdAtDisplay: new Date(p.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
             likes: p.likes_count || 0,
             likedBy: [],
             reposts: 0,
@@ -894,7 +947,7 @@ return;
                         </span>
                         <span className="text-xs text-[#71767B] font-mono" dir="ltr">@{tweet.authorUsername}</span>
                         <span className="text-xs text-[#71767B]">·</span>
-                        <span className="text-xs text-[#71767B]">{tweet.createdAt}</span>
+                        <span className="text-xs text-[#71767B]" title={tweet.createdAtDisplay || tweet.createdAt}>{formatTimeAgo(tweet.createdAt)}</span>
                       </div>
 
                       <button 
@@ -1136,7 +1189,7 @@ return;
             )}
 
             <div className="text-xs text-[#71767B] py-2 border-y border-[#2F3336] flex items-center gap-2">
-              <span>{viewingDetailTweet.createdAt}</span>
+              <span>{formatTimeAndDate(viewingDetailTweet.createdAt)}</span>
               <span>·</span>
               <span>{viewingDetailTweet.views || 1} مشاهدة</span>
             </div>
