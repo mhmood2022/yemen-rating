@@ -198,56 +198,194 @@ export async function updateUserProfile(userId: string, updates: Partial<Profile
 }
 
 // 4. جلب تغريدات مستخدم معين فقط
-export async function getUserPosts(targetUserId: string, currentUserId?: string): Promise<PostItem[]> {
-  if (!targetUserId) {
-    console.warn('getUserPosts: targetUserId is null');
-    return [];
-  }
-  
-  // 1) جلب posts (بدون JOIN)
-  const { data: posts, error } = await supabase
+// 5. إنشاء تغريدة جديدة
+// ═══════════════════════════════════════════════════════
+// getFeedPosts — للمجتمع (بدون userId) وللحساب (مع userId)
+// ═══════════════════════════════════════════════════════
+export async function getFeedPosts(userId?: string, currentUserId?: string): Promise<PostItem[]> {
+  // 1) جلب posts
+  let postsQuery = supabase
     .from('posts')
     .select('*')
-    .eq('user_id', targetUserId)
     .order('created_at', { ascending: false });
   
-  if (error) {
-    console.error('getUserPosts ERROR:', error.message, error.code);
-    return [];
+  if (userId) {
+    postsQuery = postsQuery.eq('user_id', userId);
+  } else {
+    postsQuery = postsQuery.limit(100);
   }
   
-  if (!posts || posts.length === 0) return [];
+  const { data: posts, error } = await postsQuery;
   
-  // 2) جلب profiles يدوياً
-  const userIds = Array.from(new Set(posts.map((p: any) => p.user_id)));
+  if (error) {
+    console.error('getFeedPosts ERROR:', error.message, error.code);
+    return [];
+  }
+
+  // 2) جلب reposts
+  let repostsQuery = supabase
+    .from('post_reposts')
+    .select('id, post_id, user_id, quote_text, created_at')
+    .order('created_at', { ascending: false });
+  
+  if (userId) {
+    repostsQuery = repostsQuery.eq('user_id', userId);
+  } else {
+    repostsQuery = repostsQuery.limit(50);
+  }
+  
+  const { data: reposts } = await repostsQuery;
+
+  // 3) جلب التغريدات الأصلية للإعادات
+  let originalPosts: any[] = [];
+  if (reposts && reposts.length > 0) {
+    const postIds = [...new Set(reposts.map((r: any) => r.post_id))];
+    const { data: originals } = await supabase
+      .from('posts')
+      .select('id, user_id, content, image_url, likes_count, comments_count, reposts_count, created_at')
+      .in('id', postIds);
+    originalPosts = originals || [];
+  }
+
+  // 4) جلب profiles
+  const allUserIds = new Set<string>();
+  (posts || []).forEach((p: any) => allUserIds.add(p.user_id));
+  (originalPosts || []).forEach((p: any) => allUserIds.add(p.user_id));
+  (reposts || []).forEach((r: any) => allUserIds.add(r.user_id));
+  if (userId) allUserIds.add(userId);
+  
   const { data: profiles } = await supabase
     .from('profiles')
     .select('id, full_name, username, avatar_url')
-    .in('id', userIds);
+    .in('id', Array.from(allUserIds));
   
   const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
-  
-  // 3) جلب likes
+
+  // 5) جلب likes
   let likedSet = new Set<string>();
   if (currentUserId) {
-    const postIds = posts.map((p: any) => p.id);
-    const { data: userLikes } = await supabase
-      .from('post_likes')
-      .select('post_id')
-      .eq('user_id', currentUserId)
-      .in('post_id', postIds);
-    likedSet = new Set((userLikes || []).map((l: any) => l.post_id));
+    const postIds = (posts || []).map((p: any) => p.id);
+    if (postIds.length > 0) {
+      const { data: userLikes } = await supabase
+        .from('post_likes')
+        .select('post_id')
+        .eq('user_id', currentUserId)
+        .in('post_id', postIds);
+      likedSet = new Set((userLikes || []).map((l: any) => l.post_id));
+    }
   }
+
+  // 6) بناء cloudTweets
+  const cloudTweets = (posts || []).map((p: any) => {
+    const author = profileMap.get(p.user_id);
+    return {
+      id: p.id,
+      user_id: p.user_id,
+      authorId: p.user_id,
+      authorName: author?.full_name || 'مستخدم يمن ريتنج',
+      authorUsername: author?.username || 'user',
+      authorAvatar: author?.avatar_url || '',
+      text: p.content,
+      content: p.content,
+      image: p.image_url || undefined,
+      image_url: p.image_url,
+      createdAt: p.created_at,
+      created_at: p.created_at,
+      createdAtDisplay: new Date(p.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
+      likes: p.likes_count || 0,
+      likes_count: p.likes_count || 0,
+      likedBy: [],
+      reposts: p.reposts_count || 0,
+      reposts_count: p.reposts_count || 0,
+      repostedBy: [],
+      views: 1,
+      comments: [],
+      replies: p.comments_count || 0,
+      comments_count: p.comments_count || 0,
+      profile: author || null,
+      isLiked: likedSet.has(p.id),
+    };
+  });
+
+  // 7) بناء repostTweets
+  const repostTweets = (reposts || []).map((r: any) => {
+    const original = originalPosts.find((p: any) => p.id === r.post_id);
+    const reposter = profileMap.get(r.user_id);
+    const originalAuthor = original ? profileMap.get(original.user_id) : null;
+
+    return {
+      id: `repost-${r.id}`,
+      user_id: r.user_id,
+      content: r.quote_text || (original?.content || ''),
+      image_url: r.quote_text ? null : (original?.image_url || null),
+      likes_count: original?.likes_count || 0,
+      comments_count: original?.comments_count || 0,
+      reposts_count: 0,
+      created_at: r.created_at,
+      profile: reposter || null,
+      isLiked: false,
+      authorId: r.user_id,
+      authorName: reposter?.full_name || 'مستخدم',
+      authorUsername: reposter?.username || 'user',
+      authorAvatar: reposter?.avatar_url || '',
+      text: r.quote_text || (original?.content || ''),
+      image: r.quote_text ? undefined : (original?.image_url || undefined),
+      createdAt: r.created_at,
+      createdAtDisplay: new Date(r.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
+      likes: original?.likes_count || 0,
+      reposts: 0,
+      replies: original?.comments_count || 0,
+      views: 1,
+      comments: [],
+      isRepost: true,
+      quote_text: r.quote_text,
+      original: r.quote_text ? {
+        id: original?.id ?? 'deleted',
+        authorName: originalAuthor?.full_name ?? 'مستخدم',
+        authorUsername: originalAuthor?.username ?? 'user',
+        authorAvatar: originalAuthor?.avatar_url ?? '',
+        text: original?.content ?? 'التغريدة الأصلية غير متاحة',
+        image: original?.image_url ?? null,
+      } : null,
+    };
+  }).filter(Boolean);
+
+  // 8) دمج + ترتيب
+  // ═══════════════════════════════════════════════════════
+// ✅ إزالة التغريدات التي تم اقتباسها من cloudTweets
+// (لأنها ستظهر داخل البطاقة في repostTweets — لا كتغريدة منفصلة)
+// ═══════════════════════════════════════════════════════
+  const quotedPostIds = new Set<string>();
+  (reposts || []).forEach((r: any) => {
+    if (r.quote_text && r.post_id) {
+      quotedPostIds.add(r.post_id);
+    }
+  });
   
-  // 4) دمج
-  return posts.map((p: any) => ({
-    ...p,
-    profile: profileMap.get(p.user_id) || null,
-    isLiked: likedSet.has(p.id),
-  })) as PostItem[];
+  // نُزيل من cloudTweets التغريدات المقتبسة (فقط عند وجود userId — في /account)
+  // في /feed، نبقيها (لأن X يعرض التغريدة الأصلية + الاقتباس)
+  const filteredCloudTweets = userId
+    ? cloudTweets.filter((t: any) => !quotedPostIds.has(t.id))
+    : cloudTweets;
+
+  const all = [...filteredCloudTweets, ...repostTweets].sort((a: any, b: any) => {
+    const da = new Date(a.created_at || a.createdAt || 0).getTime();
+    const db = new Date(b.created_at || b.createdAt || 0).getTime();
+    return db - da;
+  });
+
+  return all as PostItem[];
 }
 
-// 5. إنشاء تغريدة جديدة
+// getUserPosts — نسخة تستدعي getFeedPosts
+export async function getUserPosts(targetUserId: string, currentUserId?: string): Promise<PostItem[]> {
+  if (!targetUserId) {
+    
+    return [];
+  }
+  return getFeedPosts(targetUserId, currentUserId);
+}
+
 export async function createPost(userId: string, content: string, imageUrl?: string): Promise<PostItem | null> {
   const { data, error } = await supabase
     .from('posts')

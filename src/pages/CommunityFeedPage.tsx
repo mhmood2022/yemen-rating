@@ -43,22 +43,8 @@ interface Tweet {
 
 // دالة حفظ آمنة تحمي من QuotaExceededError وتضمن عدم امتلاء الذاكرة
 const safeSetStorage = (key: string, data: any) => {
-  try {
-    let payload = data;
-    // إذا كانت منشورات، نكتفي بأحدث 40 منشوراً لحماية المساحة
-    if (Array.isArray(payload) && payload.length > 40) {
-      payload = payload.slice(0, 40);
-    }
-    localStorage.setItem(key, JSON.stringify(payload));
-  } catch (err) {
-    console.warn('Storage limit reached, auto-pruning...', err);
-    try {
-      // تفريغ المخلفات القديمة وحفظ الأحدث فقط
-      if (Array.isArray(data)) {
-        localStorage.setItem(key, JSON.stringify(data.slice(0, 20)));
-      }
-    } catch (_) {}
-  }
+  // ⏸️ معطل: نعتمد على Supabase فقط لتجنب فقدان البيانات
+  console.log('safeSetStorage disabled');
 };
 
 const GLOBAL_FEED_KEY = 'yr_community_global_posts';
@@ -166,6 +152,10 @@ export const CommunityFeedPage: React.FC = () => {
 
   // نافذة الردود / التعليقات
   const [activeCommentTweet, setActiveCommentTweet] = useState<Tweet | null>(null);
+  const [repostMenu, setRepostMenu] = useState<Tweet | null>(null);
+  const [quoteText, setQuoteText] = useState('');
+  const [isQuoting, setIsQuoting] = useState(false);
+  const [quoteOriginal, setQuoteOriginal] = useState<Tweet | null>(null);
   const [viewingDetailTweet, setViewingDetailTweet] = useState<Tweet | null>(null);
   const [newCommentText, setNewCommentText] = useState('');
 
@@ -199,6 +189,8 @@ export const CommunityFeedPage: React.FC = () => {
 
 
   const [tweets, setTweets] = useState<Tweet[]>([]);
+  const [expandedTweets, setExpandedTweets] = useState<Record<string, boolean>>({});
+  const [debugMessage, setDebugMessage] = useState<string>('...');
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -256,7 +248,7 @@ export const CommunityFeedPage: React.FC = () => {
         // 1. جلب جميع التغريدات من السحابة عبر البروكسي النظيف
         const { data: dbPosts, error: postsErr } = await supabase
           .from('posts')
-          .select('id, user_id, content, image_url, likes_count, comments_count, created_at')
+          .select('id, user_id, content, image_url, likes_count, comments_count, reposts_count, created_at')
           .order('created_at', { ascending: false })
           .limit(100);
         
@@ -264,18 +256,48 @@ export const CommunityFeedPage: React.FC = () => {
           console.error('Posts fetch error:', postsErr);
           return;
         }
+        // جلب إعادة النشر
+        const { data: dbReposts } = await supabase
+          .from('post_reposts')
+          .select('id, post_id, user_id, quote_text, created_at')
+          .order('created_at', { ascending: false })
+          .limit(50);
+
+        // جلب التغريدات الأصلية للإعادات (لضمان ظهورها حتى لو كانت قديمة)
+        const repostedPostIds = (dbReposts || []).map((r: any) => r.post_id);
+        let originalPostsMap = new Map();
+        if (repostedPostIds.length > 0) {
+          const { data: originals } = await supabase
+            .from('posts')
+            .select('id, user_id, content, image_url, likes_count, comments_count, reposts_count, created_at')
+            .in('id', repostedPostIds);
+          (originals || []).forEach((p: any) => originalPostsMap.set(p.id, p));
+        }
+        
+        // دمج dbPosts + originals
+        const allPosts = [...(dbPosts || [])];
+        originalPostsMap.forEach((p: any, id: string) => {
+          if (!allPosts.find((dp: any) => dp.id === id)) {
+            allPosts.push(p);
+          }
+        });
+        
         let localUsers = {};
         try { localUsers = JSON.parse(localStorage.getItem('yr_users_directory') || '{}'); } catch(_) {}
-        if (!Array.isArray(dbPosts) || dbPosts.length === 0) return;
+        if (!Array.isArray(dbPosts)) return;
 
         // 2. جلب جميع البروفايلات المرتبطة
-        const userIds = [...new Set(dbPosts.map((p) => p.user_id))];
+        const allUserIds = [...new Set([
+          ...allPosts.map((p: any) => p.user_id),
+          ...(dbReposts || []).map((r: any) => r.user_id),
+          ...(dbPosts || []).map((p: any) => p.user_id),
+        ])];
         let profileMap = new Map();
         try {
           const { data: dbProfiles, error: profErr } = await supabase
             .from('profiles')
             .select('id, full_name, username, avatar_url')
-            .in('id', userIds);
+            .in('id', allUserIds);
           
           if (profErr) {
             console.error('Profiles fetch error:', profErr);
@@ -299,7 +321,7 @@ export const CommunityFeedPage: React.FC = () => {
             createdAtDisplay: new Date(p.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
             likes: p.likes_count || 0,
             likedBy: [],
-            reposts: 0,
+            reposts: p.reposts_count || 0,
             repostedBy: [],
             views: 1,
             comments: [],
@@ -307,8 +329,72 @@ export const CommunityFeedPage: React.FC = () => {
           };
         });
 
-        setTweets(cloudTweets);
-        safeSetStorage(GLOBAL_FEED_KEY, cloudTweets);
+        // بناء التغريدات المُعاد نشرها
+        const repostTweets: any[] = (dbReposts || []).map((r: any) => {
+          const original = allPosts.find((p: any) => p.id === r.post_id);
+          const reposter = profileMap.get(r.user_id);
+          
+          if (!reposter) return null; // نتخطى فقط إذا كان المُعيد غير موجود
+          
+          const originalAuthor = original ? profileMap.get(original.user_id) : null;
+          
+          return {
+            id: `repost-${r.id}`,
+            repostId: r.id,
+            isRepost: true,
+            quote_text: r.quote_text,
+            
+            reposterName: reposter.full_name || 'مستخدم',
+            reposterUsername: reposter.username || 'user',
+            reposterAvatar: reposter.avatar_url || '',
+            
+            authorId: r.user_id,
+            authorName: reposter.full_name || 'مستخدم',
+            authorUsername: reposter.username || 'user',
+            authorAvatar: reposter.avatar_url || '',
+            
+            text: r.quote_text 
+              ? r.quote_text 
+              : (original?.content ?? 'التغريدة الأصلية غير متاحة'),
+            image: r.quote_text 
+              ? undefined 
+              : (original?.image_url ?? undefined),
+            
+            original: r.quote_text ? {
+              id: original?.id ?? 'deleted',
+              authorName: originalAuthor?.full_name ?? 'مستخدم',
+              authorUsername: originalAuthor?.username ?? 'user',
+              authorAvatar: originalAuthor?.avatar_url ?? '',
+              text: original?.content ?? 'التغريدة الأصلية غير متاحة',
+              image: original?.image_url ?? null,
+            } : null,
+            
+            originalId: original?.id ?? 'deleted',
+            createdAt: r.created_at,
+            createdAtDisplay: new Date(r.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
+            likes: original?.likes_count ?? 0,
+            reposts: 0,
+            replies: original?.comments_count ?? 0,
+            views: 1,
+            comments: [],
+          };
+        }).filter(Boolean);
+
+
+                        
+                const totalReposts = repostTweets.filter((t: any) => t && t.isRepost).length;
+        const totalQuotes = repostTweets.filter((t: any) => t && t.quote_text).length;
+        
+        // عرض تنبيه للتشخيص
+
+        
+        setTweets([...cloudTweets, ...repostTweets]);
+        
+        // 🔴 DEBUG: بعد setTweets
+        setTimeout(() => {
+          
+        }, 1500);
+        safeSetStorage(GLOBAL_FEED_KEY, [...cloudTweets, ...repostTweets]);
       } catch (err) {
         console.error("خطأ في جلب تغريدات المجتمع:", err);
       }
@@ -339,8 +425,7 @@ export const CommunityFeedPage: React.FC = () => {
 
   // دالة جلب التعليقات السحابية الحقيقية لأي تغريدة
   const loadCommentsForPost = async (postId: string) => {
-    console.log('🔵 loadCommentsForPost:', postId);
-    try {
+        try {
       // 1) جلب التعليقات فقط (بدون JOIN)
       const { data: comments, error } = await supabase
         .from('post_comments')
@@ -353,7 +438,7 @@ export const CommunityFeedPage: React.FC = () => {
         return;
       }
       
-      console.log('✅ comments fetched:', comments?.length || 0);
+      
       
       if (!comments || comments.length === 0) {
         setViewingDetailTweet(prev => (prev && prev.id === postId ? { ...prev, comments: [], replies: 0 } : prev));
@@ -416,16 +501,14 @@ export const CommunityFeedPage: React.FC = () => {
   // مراقبة فتح أي تغريدة لجلب تعليقاتها السحابية فوراً
   useEffect(() => {
     if (viewingDetailTweet?.id) {
-      console.log('🔵 Opening tweet:', viewingDetailTweet.id, '— loading comments...');
-      loadCommentsForPost(viewingDetailTweet.id);
+            loadCommentsForPost(viewingDetailTweet.id);
     }
   }, [viewingDetailTweet?.id]);
 
   // 🔄 Realtime: تحميل تعليقات activeCommentTweet (زر 💬)
   useEffect(() => {
     if (activeCommentTweet?.id) {
-      console.log('🔵 Opening comment modal:', activeCommentTweet.id, '— loading comments...');
-      loadCommentsForPost(activeCommentTweet.id);
+            loadCommentsForPost(activeCommentTweet.id);
     }
   }, [activeCommentTweet?.id]);
 
@@ -606,33 +689,85 @@ return;
   };
 
   // إعادة التغريد
-  const handleRepost = (id: string) => {
-    let targetTweet: Tweet | undefined;
-    let nextIsReposted = false;
-
-    const updated = tweets.map(t => {
-      if (t.id === id) {
-        const repostedBy = t.repostedBy || [];
-        const isReposted = repostedBy.includes(currentUserId);
-        nextIsReposted = !isReposted;
-        const nextReposted = isReposted ? repostedBy.filter(uid => uid !== currentUserId) : [...repostedBy, currentUserId];
-        targetTweet = t;
-        return {
-          ...t,
-          reposts: nextReposted.length,
-          repostedBy: nextReposted,
-        };
-      }
-      return t;
-    });
-
-    setTweets(updated);
-    safeSetStorage(GLOBAL_FEED_KEY, updated);
-
-    if (targetTweet && nextIsReposted) {
-      sendRealNotification(targetTweet.authorId, 'repost', `أعاد ${myName} نشر تغريدتك`, targetTweet.id);
+  const handleRepost = async (id: string) => {
+    if (!currentUserId) {
+      showToast('يرجى تسجيل الدخول');
+      return;
     }
-    showToast(nextIsReposted ? 'تمت إعادة النشر! 🔁' : 'تم إلغاء إعادة النشر');
+
+    try {
+      // 1) التحقق من وجود إعادة نشر سابقة
+      const { data: existing, error: checkErr } = await supabase
+        .from('post_reposts')
+        .select('id')
+        .eq('post_id', id)
+        .eq('user_id', currentUserId)
+        .maybeSingle();
+
+      if (checkErr) {
+        console.error('Check repost error:', checkErr);
+      }
+
+      let nextIsReposted = false;
+
+      if (existing) {
+        // إلغاء إعادة النشر
+        const { error: delErr } = await supabase
+          .from('post_reposts')
+          .delete()
+          .eq('id', existing.id);
+        
+        if (delErr) throw delErr;
+        nextIsReposted = false;
+        showToast('تم إلغاء إعادة النشر');
+      } else {
+        // إعادة نشر جديدة
+        const { error: insErr } = await supabase
+          .from('post_reposts')
+          .upsert({
+            post_id: id,
+            user_id: currentUserId,
+            quote_text: null
+          }, {
+            onConflict: 'user_id,post_id',
+            ignoreDuplicates: true
+          });
+        
+        if (insErr) throw insErr;
+        nextIsReposted = true;
+        showToast('تمت إعادة النشر! 🔁');
+        
+        // إشعار لصاحب التغريدة
+        const targetTweet = tweets.find(t => t.id === id);
+        if (targetTweet) {
+          sendRealNotification(targetTweet.authorId, 'repost', `أعاد ${myName} نشر تغريدتك`, targetTweet.id);
+        }
+      }
+
+      // 2) تحديث الواجهة
+      const updated = tweets.map(t => {
+        if (t.id === id) {
+          const repostedBy = t.repostedBy || [];
+          const nextReposted = nextIsReposted 
+            ? [...repostedBy, currentUserId] 
+            : repostedBy.filter(uid => uid !== currentUserId);
+          
+          return {
+            ...t,
+            reposts: nextReposted.length,
+            repostedBy: nextReposted,
+          };
+        }
+        return t;
+      });
+
+      setTweets(updated);
+      safeSetStorage(GLOBAL_FEED_KEY, updated);
+
+    } catch (error: any) {
+      console.error('Repost error:', error);
+      showToast('حدث خطأ: ' + (error?.message || 'خطأ غير معروف'));
+    }
   };
 
   // إضافة رد
@@ -760,10 +895,35 @@ return;
     showToast('تم استلام بلاغك وسيتم مراجعته من قِبل الإدارة فوراً 🛡️');
   };
 
+  const repostsCount = tweets.filter((t: any) => t.isRepost).length;
+        
   const displayedTweets = [...tweets].sort((a, b) => {
+    // الترتيب حسب التبويب
     if (activeTab === 'trending') return b.likes - a.likes;
-    return 0;
+    if (activeTab === 'forYou') {
+      // ترتيب حسب التاريخ (الأحدث أولاً) — يشمل الاقتباسات
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      return dateB - dateA;
+    }
+    // latest — الأحدث أيضاً
+    const dateA = new Date(a.createdAt || 0).getTime();
+    const dateB = new Date(b.createdAt || 0).getTime();
+    return dateB - dateA;
   });
+  
+  
+  // 🔴 DEBUG حاسم: إظهار الأرقام على الشاشة
+  if (typeof window !== 'undefined') {
+    (window as any).__debugFinal = {
+      tweetsTotal: tweets.length,
+      tweetsReposts: tweets.filter((t: any) => t?.isRepost).length,
+      tweetsQuotes: tweets.filter((t: any) => t?.quote_text).length,
+      displayedTotal: displayedTweets.length,
+      displayedReposts: displayedTweets.filter((t: any) => t?.isRepost).length,
+    };
+    
+  }
 
   const openAuthorProfile = (authorId: string, tweetData?: any) => {
     const navState = tweetData ? {
@@ -781,6 +941,9 @@ return;
 
   return (
     <div className="min-h-screen bg-black text-[#E7E9EA] font-['Cairo',sans-serif] selection:bg-[#1D9BF0] selection:text-white pb-32" dir="rtl">
+      {/* DEBUG */}
+      
+
       
       {toastMsg && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#1D9BF0] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-2xl animate-fade-in flex items-center gap-2">
@@ -902,141 +1065,118 @@ return;
           </div>
         ) : (
           displayedTweets.map(tweet => {
+          
             const hasUserReposted = tweet.repostedBy?.includes(currentUserId);
             const hasUserLiked = tweet.likedBy?.includes(currentUserId);
 
             return (
-              <article 
-                key={tweet.id} 
-                onClick={(e) => {
-                  const target = e.target as HTMLElement;
-                  // فتح التفاصيل إذا لم يكن النقر على زر أو رابط أو صورة البروفايل
-                  if (!target.closest('button') && !target.closest('a')) {
-                    setViewingDetailTweet(tweet);
-                  }
-                }}
-                className="p-4 hover:bg-white/[0.02] cursor-pointer transition select-none"
-              >
-                {hasUserReposted && (
-                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 mb-2 mr-10">
-                    <Repeat2 size={13} />
-                    <span>أعدت نشر هذه التغريدة</span>
-                  </div>
-                )}
-
-                <div className="flex gap-3">
-                  <button onClick={() => openAuthorProfile(tweet.authorId, tweet)} className="shrink-0 self-start">
-                    <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold">
-                      {tweet.authorAvatar ? <img src={tweet.authorAvatar} alt={tweet.authorName} className="w-full h-full object-cover" /> : <span>{tweet.authorName ? tweet.authorName[0] : '؟'}</span>}
-                    </div>
-                  </button>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span 
-                          onClick={() => openAuthorProfile(tweet.authorId, tweet)}
-                          className="font-bold text-white text-sm hover:underline cursor-pointer"
-                        >
-                          {tweet.authorName}
-                        </span>
-                        <span className="text-xs text-[#71767B] font-mono" dir="ltr">@{tweet.authorUsername}</span>
-                        <span className="text-xs text-[#71767B]">·</span>
-                        <span className="text-xs text-[#71767B]" title={tweet.createdAtDisplay || tweet.createdAt}>{formatTimeAgo(tweet.createdAt)}</span>
-                      </div>
-
-                      <button 
-                        onClick={() => setReportingItem({
-                          type: 'post',
-                          targetId: tweet.id,
-                          targetName: `تغريدة ${tweet.authorName}`,
-                          targetAuthorId: tweet.authorId
-                        })}
-                        className="text-[#71767B] hover:text-rose-400 p-1 rounded-full transition"
-                        title="إبلاغ عن المنشور"
-                      >
-                        <Flag size={14} />
-                      </button>
-                    </div>
-
-                    <p className="mt-2 text-sm leading-relaxed text-[#E7E9EA] whitespace-pre-wrap">
-                      {tweet.text.split(' ').map((w, i) => 
-                        w.startsWith('#') ? (
-                          <span key={i} className="text-[#1D9BF0] font-semibold hover:underline cursor-pointer">{w} </span>
-                        ) : (
-                          w + ' '
-                        )
-                      )}
-                    </p>
-
-                    {tweet.image && (
-                      <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336] max-h-96 relative group">
-                        <img src={tweet.image} alt="صورة التغريدة" className="w-full h-full object-cover" />
-                        <button
-                          onClick={() => setReportingItem({
-                            type: 'image',
-                            targetId: tweet.id,
-                            targetName: `صورة في تغريدة ${tweet.authorName}`,
-                            targetAuthorId: tweet.authorId
-                          })}
-                          className="absolute bottom-2 left-2 bg-black/70 hover:bg-rose-600 text-white p-1.5 rounded-full text-xs font-bold transition flex items-center gap-1 opacity-0 group-hover:opacity-100 backdrop-blur-sm"
-                          title="إبلاغ عن الصورة"
-                        >
-                          <Flag size={12} />
-                          <span>إبلاغ عن الصورة</span>
-                        </button>
-                      </div>
-                    )}
-
-                    {/* أزرار التفاعل */}
-                    <div className="flex items-center justify-between text-xs text-[#71767B] mt-3.5 max-w-md">
-                      <button 
-                        onClick={() => setActiveCommentTweet(tweet)}
-                        className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition group"
-                        title="الردود"
-                      >
-                        <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10">
-                          <MessageCircle size={16} />
-                        </div>
-                        <span>{tweet.comments?.length || tweet.replies || 0}</span>
-                      </button>
-
-                      <button 
-                        onClick={() => handleRepost(tweet.id)}
-                        className={`flex items-center gap-1.5 transition group ${hasUserReposted ? 'text-emerald-400 font-bold' : 'hover:text-emerald-400'}`}
-                        title="إعادة التغريد"
-                      >
-                        <div className="p-1.5 rounded-full group-hover:bg-emerald-500/10">
-                          <Repeat2 size={17} />
-                        </div>
-                        <span>{tweet.reposts || 0}</span>
-                      </button>
-
-                      <button 
-                        onClick={() => handleLike(tweet.id)}
-                        className={`flex items-center gap-1.5 transition group ${hasUserLiked ? 'text-rose-500 font-bold' : 'hover:text-rose-500'}`}
-                        title="إعجاب"
-                      >
-                        <div className="p-1.5 rounded-full group-hover:bg-rose-500/10">
-                          <Heart size={16} className={hasUserLiked ? 'fill-current' : ''} />
-                        </div>
-                        <span>{tweet.likes || 0}</span>
-                      </button>
-
-                      <button 
-                        onClick={() => {
-                          navigator.clipboard?.writeText(window.location.origin + `/account?id=${tweet.authorId}`);
-                          showToast('تم نسخ رابط التغريدة!');
+                                    <article
+                        key={tweet.id}
+                        onClick={(e) => {
+                          const target = e.target as HTMLElement;
+                          if (!target.closest('button') && !target.closest('a')) {
+                            setViewingDetailTweet(tweet);
+                          }
                         }}
-                        className="hover:text-[#1D9BF0] p-1.5 rounded-full transition hover:bg-[#1D9BF0]/10"
+                        className="p-4 hover:bg-white/[0.02] cursor-pointer transition select-none border-b border-[#2F3336]"
                       >
-                        <Share size={15} />
-                      </button>
-                    </div>
+                        {/* رأس الاقتباس - صاحب الاقتباس */}
+                        <div className="flex gap-3">
+                          <button onClick={() => openAuthorProfile(tweet.authorId, tweet)} className="shrink-0 self-start">
+                            <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold">
+                              {tweet.authorAvatar ? <img src={tweet.authorAvatar} alt={tweet.authorName} className="w-full h-full object-cover" /> : <span>{tweet.authorName ? tweet.authorName[0] : '؟'}</span>}
+                            </div>
+                          </button>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span onClick={() => openAuthorProfile(tweet.authorId, tweet)} className="font-bold text-white text-sm hover:underline cursor-pointer">{tweet.authorName}</span>
+                                <span className="text-xs text-[#71767B] font-mono" dir="ltr">@{tweet.authorUsername}</span>
+                                <span className="text-xs text-[#71767B]">·</span>
+                                <span className="text-xs text-[#71767B]" title={tweet.createdAtDisplay || tweet.createdAt}>{formatTimeAgo(tweet.createdAt)}</span>
+                              </div>
+                            </div>
+                            
+                            {/* النص العادي (للتغريدة العادية) */}
+                            {!tweet.quote_text && tweet.text && (
+                              <p className="mt-2 text-[13px] leading-relaxed text-[#E7E9EA] whitespace-pre-wrap">
+                                {tweet.text.split(' ').map((w, i) =>
+                                  w.startsWith('#') ? (
+                                    <span key={i} className="text-[#1D9BF0] font-semibold hover:underline cursor-pointer">{w} </span>
+                                  ) : (
+                                    w + ' '
+                                  )
+                                )}
+                              </p>
+                            )}
+                            
+                            {/* نص الاقتباس */}
+                            {tweet.quote_text && (
+                              <div className="mt-2">
+                                <p className={`text-[13px] leading-relaxed text-[#E7E9EA] whitespace-pre-wrap ${expandedTweets[tweet.id] ? '' : 'line-clamp-6'}`}>
+                                  {tweet.quote_text.split(' ').map((w, i) =>
+                                    w.startsWith('#') ? (
+                                      <span key={i} className="text-[#1D9BF0] font-semibold hover:underline cursor-pointer">{w} </span>
+                                    ) : (
+                                      w + ' '
+                                    )
+                                  )}
+                                </p>
+                                {tweet.quote_text.length > 280 && (
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setExpandedTweets(prev => ({...prev, [tweet.id]: !prev[tweet.id]}));
+                                    }}
+                                    className="text-[#1D9BF0] text-[10px] font-bold mt-1 hover:underline"
+                                  >
+                                    {expandedTweets[tweet.id] ? 'عرض أقل' : 'عرض المزيد'}
+                                  </button>
+                                )}
+                              </div>
+                            )}
 
-                  </div>
-                </div>
-              </article>
+                            {/* بطاقة التغريدة الأصلية */}
+                            {tweet.original && (
+                              <div className="mt-3 border border-[#1a2331] rounded-xl p-2.5 transition">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <div className="w-6 h-6 rounded-full bg-zinc-800 overflow-hidden flex-shrink-0">
+                                    {tweet.original.authorAvatar ? (
+                                      <img src={tweet.original.authorAvatar} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                      <span className="text-white text-[10px] font-bold flex items-center justify-center w-full h-full">{tweet.original.authorName?.[0]}</span>
+                                    )}
+                                  </div>
+                                  <span className="font-bold text-white text-xs">{tweet.original.authorName}</span>
+                                  <span className="text-[#71767B] text-[11px]">@{tweet.original.authorUsername}</span>
+                                </div>
+                                <p className={`text-white text-sm whitespace-pre-wrap ${expandedTweets['orig-'+tweet.id] ? '' : 'line-clamp-4'}`}>{tweet.original.text}</p>
+                                
+                                {tweet.original.image && (
+                                  <img src={tweet.original.image} alt="" className="w-full rounded-lg mt-2 max-h-48 object-cover" />
+                                )}
+                              </div>
+                            )}
+                            
+                            {/* أزرار التفاعل */}
+                            <div className="flex items-center justify-between mt-3 max-w-md text-[#71767B]">
+                              <button onClick={() => setActiveCommentTweet(tweet)} className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition group">
+                                <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10"><MessageCircle size={16} /></div>
+                                <span>{tweet.replies || 0}</span>
+                              </button>
+                              <button onClick={(e) => { e.stopPropagation(); setRepostMenu(tweet); }} className="flex items-center gap-1.5 hover:text-emerald-400 transition group">
+                                <div className="p-1.5 rounded-full group-hover:bg-emerald-500/10"><Repeat2 size={17} /></div>
+                                <span>{tweet.reposts || 0}</span>
+                              </button>
+                              <button onClick={() => handleLike(tweet.id)} className={`flex items-center gap-1.5 transition group ${tweet.likedBy?.includes(currentUserId) ? 'text-rose-500' : 'hover:text-rose-500'}`}>
+                                <div className="p-1.5 rounded-full group-hover:bg-rose-500/10"><Heart size={16} className={tweet.likedBy?.includes(currentUserId) ? 'fill-current' : ''} /></div>
+                                <span>{tweet.likes || 0}</span>
+                              </button>
+                              <button className="hover:text-[#1D9BF0] p-1.5 rounded-full transition hover:bg-[#1D9BF0]/10"><Share size={15} /></button>
+                            </div>
+                          </div>
+                        </div>
+                      </article>
             );
           })
         )}
@@ -1147,6 +1287,100 @@ return;
       )}
 
       {/* نافذة عرض تفاصيل التغريدة الكاملة مع كل الردود (عند النقر على جسم التغريدة) */}
+      {/* قائمة إعادة النشر / اقتباس */}
+      {repostMenu && (
+        <div className="fixed inset-0 z-[60] bg-black/60 flex items-end justify-center p-2" onClick={() => setRepostMenu(null)}>
+          <div className="w-full max-w-md bg-[#16181C] rounded-2xl overflow-hidden mb-20" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => {
+                handleRepost(repostMenu.id);
+                setRepostMenu(null);
+              }}
+              className="w-full px-4 py-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3"
+            >
+              <Repeat2 size={20} className="text-emerald-400" />
+              <span>إعادة النشر</span>
+            </button>
+            <button
+              onClick={() => {
+                setQuoteOriginal(repostMenu);
+                setQuoteText('');
+                setIsQuoting(true);
+                setRepostMenu(null);
+              }}
+              className="w-full px-4 py-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3"
+            >
+              <MessageCircle size={20} className="text-[#1D9BF0]" />
+              <span>اقتباس</span>
+            </button>
+            <button
+              onClick={() => setRepostMenu(null)}
+              className="w-full px-4 py-3 text-center text-white/60 font-bold hover:bg-white/5 transition"
+            >
+              إلغاء
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* نافذة الاقتباس */}
+      {isQuoting && quoteOriginal && (
+        <div className="fixed inset-0 z-[70] bg-black/95 flex flex-col p-4" dir="rtl">
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={() => { setIsQuoting(false); setQuoteOriginal(null); }} className="text-white p-2">
+              <X size={24} />
+            </button>
+            <button
+              onClick={async () => {
+                if (!currentUserId || !quoteText.trim()) return;
+                try {
+                  const { error } = await supabase.from('post_reposts').upsert({
+                    post_id: quoteOriginal.id,
+                    user_id: currentUserId,
+                    quote_text: quoteText.trim()
+                  }, {
+                    onConflict: 'user_id,post_id'
+                  });
+                  if (error) throw error;
+                  showToast('تم الاقتباس ✅');
+                  setIsQuoting(false);
+                  setQuoteText('');
+                  setQuoteOriginal(null);
+                  
+                  // إعادة جلب التغريدات لتظهر فوراً (بدون إعادة تحميل الصفحة)
+                  setTimeout(() => {
+                    if (typeof loadData === 'function') {
+                      loadData();
+                    }
+                  }, 500);
+                } catch (e: any) {
+                  showToast('فشل: ' + (e?.message || ''));
+                }
+              }}
+              disabled={!quoteText.trim()}
+              className="px-4 py-1.5 bg-[#1D9BF0] text-white rounded-full font-bold text-sm disabled:opacity-50"
+            >
+              اقتباس
+            </button>
+          </div>
+          <textarea
+            value={quoteText}
+            onChange={(e) => setQuoteText(e.target.value)}
+            placeholder="أضف تعليقك..."
+            className="w-full bg-transparent text-white text-lg placeholder-[#71767B] resize-none focus:outline-none mb-4"
+            rows={3}
+          />
+          <div className="border border border-[#2F3336] rounded-xl p-2.5 mb-4">
+            <div className="flex items-center gap-2 mb-1">
+              <img src={quoteOriginal.authorAvatar} alt="" className="w-8 h-8 rounded-full object-cover" />
+              <span className="font-bold text-white text-sm">{quoteOriginal.authorName}</span>
+              <span className="text-[#71767B] text-xs">@{quoteOriginal.authorUsername}</span>
+            </div>
+            <p className="text-white text-sm">{quoteOriginal.text}</p>
+          </div>
+        </div>
+      )}
+
       {viewingDetailTweet && (
         <div className="fixed inset-0 z-50 bg-black flex flex-col h-[100dvh] text-white overflow-hidden" dir="rtl">
           {/* شريط علوي */}

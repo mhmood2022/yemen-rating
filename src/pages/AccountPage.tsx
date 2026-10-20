@@ -192,6 +192,11 @@ function formatTimeAndDate(dateStr: string): string {
 }
 
 const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
+  const [repostMenu, setRepostMenu] = useState<Post | null>(null);
+  const [isRepostDisabled, setIsRepostDisabled] = useState(false);
+  const [quoteOriginal, setQuoteOriginal] = useState<Post | null>(null);
+  const [isQuoting, setIsQuoting] = useState(false);
+  const [quoteText, setQuoteText] = useState('');
   const [activeCommentPost, setActiveCommentPost] = useState<Post | null>(null);
   const [viewingDetailPost, setViewingDetailPost] = useState<Post | null>(null);
 
@@ -322,22 +327,26 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         if (Array.isArray(dbPosts)) {
           console.log('🟢 About to setUserPosts with:', dbPosts.length);
               setUserPosts(dbPosts.map((p: any) => ({
+            ...p,
             id: p.id,
-            authorId: p.user_id,
-            authorName: p.profile?.full_name || name,
-            authorUsername: p.profile?.username || username,
-            authorAvatar: p.profile?.avatar_url || '',
-            authorBadge: p.profile?.verification_type || (p.profile?.is_verified ? "blue" : "none"),
-            text: p.content,
-            image: p.image_url || undefined,
-            createdAt: p.created_at,
-            createdAtDisplay: new Date(p.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
-            likes: p.likes_count || 0,
-            likedBy: [],
+            authorId: p.authorId || p.user_id,
+            authorName: p.authorName || p.profile?.full_name || name,
+            authorUsername: p.authorUsername || p.profile?.username || username,
+            authorAvatar: p.authorAvatar || p.profile?.avatar_url || '',
+            authorBadge: p.authorBadge || p.profile?.verification_type || (p.profile?.is_verified ? "blue" : "none"),
+            text: p.text || p.content,
+            image: p.image || p.image_url || undefined,
+            createdAt: p.createdAt || p.created_at,
+            createdAtDisplay: p.createdAtDisplay || new Date(p.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
+            likes: p.likes || p.likes_count || 0,
+            likedBy: p.likedBy || [],
             isLiked: p.isLiked,
-            replies: p.comments_count || 0,
-            reposts: p.reposts_count || 0,
-            views: p.views_count || 1
+            replies: p.replies || p.comments_count || 0,
+            reposts: p.reposts || p.reposts_count || 0,
+            views: p.views || p.views_count || 1,
+            isRepost: p.isRepost,
+            quote_text: p.quote_text,
+            original: p.original,
           })));
         }
       } catch (_) {}
@@ -1329,11 +1338,49 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                     </button>
                   </div>
 
-                  <p className="mt-1 text-[15px] leading-5 text-[#E7E9EA] whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
-                    {post.text}
-                  </p>
+                  {/* اقتباس — نص + بطاقة */}
+                  {post.isRepost && post.quote_text ? (
+                    <div className="mt-2">
+                      <p className="text-[15px] leading-5 text-[#E7E9EA] whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                        {post.quote_text}
+                      </p>
+                      {(post.original || post.quote_text) && (
+                        <div className="mt-2 border border-[#1a2331] rounded-xl p-2.5">
+                          {!post.original && (
+                            <p className="text-[#71767B] text-xs py-2 text-center">التغريدة الأصلية غير متاحة</p>
+                          )}
+                          {post.original && (
+                            <>
 
-                  {post.image && (
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="w-6 h-6 rounded-full bg-zinc-800 overflow-hidden flex-shrink-0">
+                              {post.original.authorAvatar ? (
+                                <img src={post.original.authorAvatar} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-white text-[10px] font-bold flex items-center justify-center w-full h-full">
+                                  {post.original.authorName?.[0]}
+                                </span>
+                              )}
+                            </div>
+                            <span className="font-bold text-white text-xs">{post.original.authorName}</span>
+                            <span className="text-[#71767B] text-[11px]">@{post.original.authorUsername}</span>
+                          </div>
+                          <p className="text-white text-sm whitespace-pre-wrap">{post.original.text}</p>
+                          {post.original.image && (
+                            <img src={post.original.image} alt="" className="w-full rounded-lg mt-2 max-h-48 object-cover" />
+                          )}
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-[15px] leading-5 text-[#E7E9EA] whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                      {post.text}
+                    </p>
+                  )}
+
+                  {!post.isRepost && post.image && (
                     <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336] max-h-96">
                       <img src={post.image} alt="الصورة" className="w-full h-full object-cover" />
                     </div>
@@ -1360,7 +1407,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleRepost(post.id);
+                                  setRepostMenu(post);
                                 }}
                                 className="flex items-center gap-1.5 hover:text-emerald-400 transition group"
                                 title="إعادة التغريد"
@@ -1637,7 +1684,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           onClick={() => setActiveMenuPost(null)}
         >
           <div 
-            className="w-full max-w-md bg-[#16181C] rounded-2xl overflow-hidden mb-20"
+            className="w-full max-w-xs bg-[#16181C] rounded-2xl overflow-hidden mb-16 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {isOwner && (
@@ -1918,6 +1965,90 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* قائمة إعادة النشر / اقتباس */}
+      {repostMenu && (
+        <div className="fixed inset-0 z-[60] bg-black/70 flex items-end justify-center p-2" onClick={() => setRepostMenu(null)}>
+          <div className="w-full max-w-md bg-[#16181C] rounded-2xl overflow-hidden mb-20" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => { handleRepost(repostMenu.id); setRepostMenu(null); }}
+              className="w-full px-4 py-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm"
+            >
+              <Repeat2 size={20} className="text-emerald-400" />
+              <span>إعادة النشر</span>
+            </button>
+            <button
+              onClick={() => { setQuoteOriginal(repostMenu); setIsQuoting(true); setRepostMenu(null); }}
+              className="w-full px-4 py-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm"
+            >
+              <MessageCircle size={20} className="text-[#1D9BF0]" />
+              <span>اقتباس</span>
+            </button>
+            <button onClick={() => setRepostMenu(null)} className="w-full px-4 py-3 text-center text-white/60 font-bold hover:bg-white/5 transition">
+              إلغاء
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* نافذة الاقتباس */}
+      {isQuoting && quoteOriginal && (
+        <div className="fixed inset-0 z-[70] bg-black/95 flex flex-col p-4" dir="rtl">
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={() => { setIsQuoting(false); setQuoteOriginal(null); }} className="text-white p-2">
+              <X size={24} />
+            </button>
+            <button
+              onClick={async () => {
+                if (!sessionUser?.id || !quoteText.trim()) return;
+                try {
+                  const { error } = await supabase.from('post_reposts').upsert({
+                    post_id: quoteOriginal.id,
+                    user_id: sessionUser.id,
+                    quote_text: quoteText.trim()
+                  }, { onConflict: 'user_id,post_id' });
+                  
+                  if (error) {
+                    if (error.message?.includes('uuid')) {
+                      throw new Error('التغريدة الأصلية غير صالحة للاقتباس');
+                    }
+                    if (error.message?.includes('row-level')) {
+                      throw new Error('ليس لديك صلاحية الاقتباس');
+                    }
+                    throw error;
+                  }
+                  showToast('تم الاقتباس ✅');
+                  setIsQuoting(false); setQuoteText(''); setQuoteOriginal(null);
+                  setTimeout(() => window.location.reload(), 500);
+                } catch (e: any) {
+                  showToast('تعذر الاقتباس: ' + (e?.message || 'خطأ غير متوقع'));
+                }
+              }}
+              disabled={!quoteText.trim()}
+              className="px-4 py-1.5 bg-[#1D9BF0] text-white rounded-full font-bold text-sm disabled:opacity-50"
+            >
+              اقتباس
+            </button>
+          </div>
+          <textarea
+            value={quoteText}
+            onChange={(e) => setQuoteText(e.target.value)}
+            placeholder="أضف تعليقك..."
+            className="w-full bg-transparent text-white text-lg placeholder-[#71767B] resize-none focus:outline-none mb-4"
+            rows={3}
+          />
+          <div className="border border-[#2F3336] rounded-2xl p-3 mb-4">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-6 h-6 rounded-full overflow-hidden">
+                {quoteOriginal.authorAvatar ? <img src={quoteOriginal.authorAvatar} alt="" className="w-full h-full object-cover" /> : <span>{quoteOriginal.authorName?.[0]}</span>}
+              </div>
+              <span className="font-bold text-white text-sm">{quoteOriginal.authorName}</span>
+              <span className="text-[#71767B] text-xs">@{quoteOriginal.authorUsername}</span>
+            </div>
+            <p className="text-white text-sm">{quoteOriginal.text}</p>
           </div>
         </div>
       )}
