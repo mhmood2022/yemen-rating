@@ -67,7 +67,9 @@ const REPORTS_KEY = 'yr_community_reports';
 
 function formatTimeAgo(dateStr: string): string {
   try {
+    if (!dateStr) return '';
     const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffSec = Math.floor(diffMs / 1000);
@@ -79,12 +81,7 @@ function formatTimeAgo(dateStr: string): string {
     if (diffMin < 60) return `${diffMin}د`;
     if (diffHour < 24) return `${diffHour}س`;
     if (diffDay < 7) return `${diffDay}ي`;
-    
-    // أكثر من أسبوع — نعرض التاريخ
-    return date.toLocaleDateString('ar-YE', {
-      day: 'numeric',
-      month: 'short',
-    });
+    return date.toLocaleDateString('ar-YE', { day: 'numeric', month: 'short' });
   } catch {
     return '';
   }
@@ -383,10 +380,8 @@ export const CommunityFeedPage: React.FC = () => {
           authorUsername: profile?.username || 'user',
           authorAvatar: profile?.avatar_url || '',
           text: c.content,
-          createdAt: new Date(c.created_at).toLocaleTimeString('ar-YE', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }),
+          createdAt: c.created_at,
+          createdAtDisplay: new Date(c.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
         };
       });
       
@@ -1245,7 +1240,6 @@ return;
                         <span className="text-xs text-[#71767B]">·</span>
                         <span className="text-[#71767B] text-[9px]" title={c.createdAtDisplay || c.createdAt}>
                           {formatTimeAgo(c.createdAt) || c.createdAtDisplay || 'الآن'}
-                          <span className="text-[#536471] mr-1">· {new Date(c.createdAt).toLocaleDateString("ar-YE", { day: "numeric", month: "short", year: "numeric" })}</span>
                         </span>
                       </div>
 
