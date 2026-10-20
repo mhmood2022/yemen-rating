@@ -1243,7 +1243,10 @@ return;
                           @{c.authorUsername || 'user'}
                         </span>
                         <span className="text-xs text-[#71767B]">·</span>
-                        <span className="text-[11px] text-[#71767B]">{c.createdAt}</span>
+                        <span className="text-[#71767B] text-[9px]" title={c.createdAtDisplay || c.createdAt}>
+                          {formatTimeAgo(c.createdAt) || c.createdAtDisplay || 'الآن'}
+                          <span className="text-[#536471] mr-1">· {new Date(c.createdAt).toLocaleDateString("ar-YE", { day: "numeric", month: "short", year: "numeric" })}</span>
+                        </span>
                       </div>
 
                       {/* نص التعليق */}
