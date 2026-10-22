@@ -7,8 +7,7 @@ import { supabase } from '../lib/supabase';
 import { 
   ArrowRight, Image as ImageIcon, Heart, MessageCircle, Repeat2, 
   Share, Plus, X, Pin, CheckCircle2, TrendingUp, Home, MessageSquare, 
-  User, Flag, AlertTriangle, Send, ShieldAlert, Sparkles, Bell 
-} from 'lucide-react';
+  User, Flag, AlertTriangle, Send, ShieldAlert, Sparkles, Bell, BarChart, MoreHorizontal } from 'lucide-react';
 
 interface Comment {
   id: string;
@@ -102,6 +101,7 @@ function formatTimeAndDate(dateStr: string): string {
 export const CommunityFeedPage: React.FC = () => {
   const navigate = useNavigate();
   const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [activeMenuPost, setActiveMenuPost] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'forYou' | 'latest' | 'trending'>('forYou');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -158,8 +158,6 @@ export const CommunityFeedPage: React.FC = () => {
   const [quoteOriginal, setQuoteOriginal] = useState<Tweet | null>(null);
   const [viewingDetailTweet, setViewingDetailTweet] = useState<Tweet | null>(null);
   const [newCommentText, setNewCommentText] = useState('');
-
-  // نافذة البلاغات
   const [reportingItem, setReportingItem] = useState<{
     type: 'post' | 'image' | 'account';
     targetId: string;
@@ -169,6 +167,9 @@ export const CommunityFeedPage: React.FC = () => {
   const [reportReason, setReportReason] = useState('محتوى غير لائق أو مسيء');
   const [reportDetails, setReportDetails] = useState('');
   const [submittingReport, setSubmittingReport] = useState(false);
+
+
+  // نافذة البلاغات
 
   // متابعة لوحة المفاتيح لرفع الفوتر بدقة فوقها
   const [viewportBottomOffset, setViewportBottomOffset] = useState(0);
@@ -782,8 +783,40 @@ return;
     setCommentImageFile(file);
     setCommentImage(URL.createObjectURL(file));
   };
+  
+  const handleSubmitReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reportingItem) return;
+    setSubmittingReport(true);
+    try {
+      const reportData = {
+        id: crypto.randomUUID(),
+        type: reportingItem.type,
+        targetId: reportingItem.targetId,
+        targetName: reportingItem.targetName,
+        targetAuthorId: reportingItem.targetAuthorId,
+        reason: reportReason,
+        details: reportDetails.trim(),
+        created_at: new Date().toISOString(),
+      };
+      const existing = JSON.parse(localStorage.getItem('yr_community_reports') || '[]');
+      localStorage.setItem('yr_community_reports', JSON.stringify([reportData, ...existing]));
+      if (typeof showToast === 'function') {
+        showToast('تم استلام بلاغك وسيتم مراجعته من قِبل الإدارة فوراً 🛡️');
+      } else {
+        alert('تم استلام بلاغك بنجاح 🛡️');
+      }
+      setReportingItem(null);
+      setReportDetails('');
+      setReportReason('محتوى غير لائق أو مسيء');
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setSubmittingReport(false);
+    }
+  };
 
-  const handleAddComment = (e?: React.FormEvent) => {
+const handleAddComment = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const targetPost = viewingDetailTweet || activeCommentTweet;
     const textToSend = newCommentText.trim();
@@ -856,45 +889,6 @@ return;
   };
 
   // إرسال البلاغ
-  const handleSubmitReport = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!reportingItem) return;
-    setSubmittingReport(true);
-
-    const reportData = {
-      id: Date.now().toString(),
-      type: reportingItem.type,
-      targetId: reportingItem.targetId,
-      targetName: reportingItem.targetName,
-      targetAuthorId: reportingItem.targetAuthorId,
-      reporterId: currentUserId,
-      reporterName: myName,
-      reason: reportReason,
-      details: reportDetails.trim(),
-      createdAt: new Date().toISOString(),
-      status: 'pending'
-    };
-
-    const allReports = JSON.parse(localStorage.getItem(REPORTS_KEY) || '[]');
-    safeSetStorage(REPORTS_KEY, [reportData, ...allReports]);
-
-    try {
-      await supabase.from('reports').insert([{
-        reporter_id: currentUserId,
-        reported_item_id: reportingItem.targetId,
-        reason: reportReason,
-        details: reportDetails.trim(),
-        status: 'pending',
-        created_at: new Date().toISOString(),
-      }]).catch(() => {});
-    } catch (_) {}
-
-    setSubmittingReport(false);
-    setReportingItem(null);
-    setReportDetails('');
-    showToast('تم استلام بلاغك وسيتم مراجعته من قِبل الإدارة فوراً 🛡️');
-  };
-
   const repostsCount = tweets.filter((t: any) => t.isRepost).length;
         
   const displayedTweets = [...tweets].sort((a, b) => {
@@ -1094,6 +1088,19 @@ return;
                                 <span className="text-xs text-[#71767B] font-mono" dir="ltr">@{tweet.authorUsername}</span>
                                 <span className="text-xs text-[#71767B]">·</span>
                                 <span className="text-xs text-[#71767B]" title={tweet.createdAtDisplay || tweet.createdAt}>{formatTimeAgo(tweet.createdAt)}</span>
+                              <div className="flex items-center gap-1 ml-auto">
+                                {/* زر الإبلاغ يظهر لكل التغريدات */}
+                                <button onClick={(e) => { e.stopPropagation(); setReportingItem({ type: "post", targetId: tweet.id, targetName: tweet.authorName || "مستخدم", targetAuthorId: tweet.authorId || "" }); }} className="text-[#71767B] hover:text-rose-500 p-1.5 rounded-full hover:bg-rose-500/10 transition" title="إبلاغ عن التغريدة">
+                                  <Flag size={16} />
+                                </button>
+                                
+                                {/* زر الثلاث نقاط يظهر فقط لتغريداتك */}
+                                {tweet.authorId === currentUserId && (
+                                  <button onClick={(e) => { e.stopPropagation(); setActiveMenuPost(tweet); }} className="text-[#71767B] hover:text-[#1D9BF0] p-1.5 rounded-full hover:bg-[#1D9BF0]/10 transition" title="المزيد">
+                                    <MoreHorizontal size={16} />
+                                  </button>
+                                )}
+                              </div>
                               </div>
                             </div>
                             
@@ -1160,19 +1167,31 @@ return;
                             
                             {/* أزرار التفاعل */}
                             <div className="flex items-center justify-between mt-3 max-w-md text-[#71767B]">
+                              {/* 💬 تعليق */}
                               <button onClick={() => setActiveCommentTweet(tweet)} className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition group">
                                 <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10"><MessageCircle size={16} /></div>
-                                <span>{tweet.replies || 0}</span>
+                                <span className="text-[13px]">{tweet.replies || 0}</span>
                               </button>
+                              
+                              {/* 🔁 إعادة / اقتباس */}
                               <button onClick={(e) => { e.stopPropagation(); setRepostMenu(tweet); }} className="flex items-center gap-1.5 hover:text-emerald-400 transition group">
                                 <div className="p-1.5 rounded-full group-hover:bg-emerald-500/10"><Repeat2 size={17} /></div>
-                                <span>{tweet.reposts || 0}</span>
+                                <span className="text-[13px]">{tweet.reposts || 0}</span>
                               </button>
+                              
+                              {/* ❤️ إعجاب */}
                               <button onClick={() => handleLike(tweet.id)} className={`flex items-center gap-1.5 transition group ${tweet.likedBy?.includes(currentUserId) ? 'text-rose-500' : 'hover:text-rose-500'}`}>
                                 <div className="p-1.5 rounded-full group-hover:bg-rose-500/10"><Heart size={16} className={tweet.likedBy?.includes(currentUserId) ? 'fill-current' : ''} /></div>
-                                <span>{tweet.likes || 0}</span>
+                                <span className="text-[13px]">{tweet.likes || 0}</span>
                               </button>
-                              <button className="hover:text-[#1D9BF0] p-1.5 rounded-full transition hover:bg-[#1D9BF0]/10"><Share size={15} /></button>
+                              
+                              {/* 📊 مشاهدات */}
+                              <button className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition group" title="المشاهدات">
+                                <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10"><BarChart size={17} /></div>
+                                <span className="text-[13px]">{tweet.views || 1}</span>
+                              </button>
+                              
+                              
                             </div>
                           </div>
                         </div>
@@ -1440,6 +1459,21 @@ return;
               <button onClick={() => { if (navigator.clipboard) { navigator.clipboard.writeText(window.location.href); showToast('تم نسخ الرابط! 🔗'); } }} className="hover:text-white transition">
                 <Share size={18} />
               </button>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setReportingItem({
+                    type: 'post',
+                    targetId: tweet.id,
+                    targetName: tweet.authorName || 'مستخدم',
+                    targetAuthorId: tweet.authorId || ''
+                  });
+                }} 
+                className="hover:text-rose-500 transition p-1"
+                title="إبلاغ عن التغريدة"
+              >
+                <Flag size={16} />
+              </button>
             </div>
 
             {/* قائمة التعليقات السابقة كلها */}
@@ -1674,7 +1708,106 @@ return;
       </nav>
 
     
+      {/* قائمة ⋮ — للمجتمع */}
+      {activeMenuPost && (
+        <div className="fixed inset-0 z-[100] bg-black/60 flex items-end justify-center p-2" onClick={() => setActiveMenuPost(null)}>
+          <div className="w-full max-w-xs bg-[#16181C] rounded-2xl overflow-hidden mb-16 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            {/* حذف */}
+            <button onClick={() => { 
+              if (activeMenuPost.id) {
+                // حذف التغريدة
+                supabase.from('posts').delete().eq('id', activeMenuPost.id).then(() => {
+                  setTweets(prev => prev.filter(t => t.id !== activeMenuPost.id));
+                  setActiveMenuPost(null);
+                  showToast('تم حذف التغريدة');
+                });
+              }
+            }} className="w-full px-4 py-3 text-right text-[#F4212E] font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2 text-sm">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <span>حذف التغريدة</span>
+            </button>
+            
+            {/* نسخ الرابط */}
+            <button onClick={() => {
+              navigator.clipboard?.writeText(window.location.origin + `/feed?id=${activeMenuPost.id}`);
+              showToast('تم نسخ الرابط!');
+              setActiveMenuPost(null);
+            }} className="w-full px-4 py-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2 text-sm">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+              <span>نسخ الرابط</span>
+            </button>
+            
+            {/* إلغاء */}
+            <button onClick={() => setActiveMenuPost(null)} className="w-full px-4 py-3 text-center text-white/60 font-bold hover:bg-white/5 transition text-sm">
+              إلغاء
+            </button>
+          </div>
+        </div>
+      )}
+
       <MobileBottomNav onNavigate={(path) => navigate(path)} />
+
+      {/* نافذة الإبلاغ المنبثقة */}
+      {reportingItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setReportingItem(null)}>
+          <div className="bg-[#16181C] border border-[#2F3336] rounded-2xl w-full max-w-md p-5 shadow-2xl relative" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-4">
+              <div className="flex items-center gap-2 text-rose-400">
+                <ShieldAlert size={20} />
+                <h2 className="text-base font-black text-white">إبلاغ عن محتوى</h2>
+              </div>
+              <button onClick={() => setReportingItem(null)} className="text-[#71767B] hover:text-white p-1 rounded-full">
+                <X size={18} />
+              </button>
+            </div>
+            <p className="text-xs text-zinc-400 mb-4 leading-relaxed">
+              تساعدنا البلاغات في الحفاظ على مجتمع يمن ريتنج آمناً ونظيفاً. يرجى اختيار سبب الإبلاغ:
+            </p>
+            <form onSubmit={handleSubmitReport} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-zinc-300 mb-1.5 font-bold">السبب</label>
+                <select 
+                  value={reportReason}
+                  onChange={(e) => setReportReason(e.target.value)}
+                  className="w-full bg-black border border-[#2F3336] rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-rose-500"
+                >
+                  <option value="محتوى غير لائق أو مسيء">محتوى غير لائق أو مسيء</option>
+                  <option value="معلومات مضللة">معلومات مضللة</option>
+                  <option value="انتحال شخصية">انتحال شخصية</option>
+                  <option value="سبام أو إعلانات">سبام أو إعلانات</option>
+                  <option value="خطاب كراهية">خطاب كراهية</option>
+                  <option value="أخرى">أخرى</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-zinc-300 mb-1.5 font-bold">تفاصيل إضافية (اختياري)</label>
+                <textarea
+                  value={reportDetails}
+                  onChange={(e) => setReportDetails(e.target.value)}
+                  placeholder="اكتب أي تفاصيل تساعدنا في المراجعة..."
+                  className="w-full bg-black border border-[#2F3336] rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-rose-500 resize-none h-24"
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button 
+                  type="button"
+                  onClick={() => setReportingItem(null)}
+                  className="flex-1 py-2.5 rounded-xl border border-[#2F3336] text-white font-bold hover:bg-white/5 transition"
+                >
+                  إلغاء
+                </button>
+                <button 
+                  type="submit"
+                  disabled={submittingReport}
+                  className="flex-1 py-2.5 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-500 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {submittingReport ? 'جاري الإرسال...' : 'إرسال البلاغ'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 </div>
   );
 };
