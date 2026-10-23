@@ -934,7 +934,7 @@ const handleAddComment = (e?: React.FormEvent) => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-[#E7E9EA] font-['Cairo',sans-serif] selection:bg-[#1D9BF0] selection:text-white pb-32" dir="rtl">
+    <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#1D9BF0] selection:text-white pb-32" dir="rtl">
       {/* DEBUG */}
       
 
@@ -950,7 +950,7 @@ const handleAddComment = (e?: React.FormEvent) => {
 
       {/* الهيدر العلوي */}
       <header className="sticky top-0 z-40 bg-black/85 backdrop-blur-md border-b border-[#2F3336]">
-        <div className="px-4 py-3 flex items-center justify-between">
+        <div className="p-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate('/account')} title="ملفي الشخصي">
               <div className="w-9 h-9 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold">
@@ -1001,7 +1001,7 @@ const handleAddComment = (e?: React.FormEvent) => {
       </header>
 
       {/* صندوق التغريد السريع */}
-      <div className="p-4 border-b border-[#2F3336]">
+      <div className="p-3 border-b border-[#2F3336]">
         <form onSubmit={handlePostTweet}>
           <div className="flex gap-3">
             <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0 font-bold cursor-pointer" onClick={() => navigate('/account')}>
@@ -1077,18 +1077,33 @@ const handleAddComment = (e?: React.FormEvent) => {
                         {/* رأس الاقتباس - صاحب الاقتباس */}
                         <div className="flex gap-3">
                           <button onClick={() => openAuthorProfile(tweet.authorId, tweet)} className="shrink-0 self-start">
-                            <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold">
+                            <div className="w-9 h-9 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold shrink-0">
                               {tweet.authorAvatar ? <img src={tweet.authorAvatar} alt={tweet.authorName} className="w-full h-full object-cover" /> : <span>{tweet.authorName ? tweet.authorName[0] : '؟'}</span>}
                             </div>
                           </button>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span onClick={() => openAuthorProfile(tweet.authorId, tweet)} className="font-bold text-white text-sm hover:underline cursor-pointer">{tweet.authorName}</span>
-                                <span className="text-xs text-[#71767B] font-mono" dir="ltr">@{tweet.authorUsername}</span>
-                                <span className="text-xs text-[#71767B]">·</span>
-                                <span className="text-xs text-[#71767B]" title={tweet.createdAtDisplay || tweet.createdAt}>{formatTimeAgo(tweet.createdAt)}</span>
-                              <div className="flex items-center gap-1 ml-auto">
+                            <div className="flex items-start justify-between w-full">
+                              <div className="flex items-center gap-1 flex-wrap flex-1 min-w-0">
+                                <span onClick={() => openAuthorProfile(tweet.authorId, tweet)} className="font-bold text-white text-[14px] font-semibold hover:underline cursor-pointer flex items-center gap-1">
+                                  {tweet.authorName}
+                                  {/* شارة التوثيق - تظهر إذا كان المستخدم موثقاً */}
+                                  {tweet.badgeType && (
+                                  <img 
+                                    src={
+                                      tweet.badgeType === 'blue' ? '/badges/blue.png' :
+                                      tweet.badgeType === 'yellow' ? '/badges/yellow.png' :
+                                      tweet.badgeType === 'gray' ? '/badges/gray.png' : '/badges/blue.png'
+                                    } 
+                                    alt="موثق" 
+                                    className="w-[18px] h-[18px] object-contain inline-block shrink-0 mt-[1px]" 
+                                    style={{ marginRight: '2px' }}
+                                  />
+                                )}
+                                </span>
+                                <span className="text-[11px] text-[#71767B] font-normal font-['Tahoma']" dir="ltr">@{tweet.authorUsername}</span>
+                                <span className="text-[11px] text-[#71767B]">·</span>
+                                <span className="text-[11px] text-[#71767B] font-['Tahoma']" title={tweet.createdAtDisplay || tweet.createdAt}>{formatTimeAgo(tweet.createdAt)}</span>
+                              <div className="flex items-center gap-1 shrink-0">
                                 {/* زر الإبلاغ يظهر لكل التغريدات */}
                                 <button onClick={(e) => { e.stopPropagation(); setReportingItem({ type: "post", targetId: tweet.id, targetName: tweet.authorName || "مستخدم", targetAuthorId: tweet.authorId || "" }); }} className="text-[#71767B] hover:text-rose-500 p-1.5 rounded-full hover:bg-rose-500/10 transition" title="إبلاغ عن التغريدة">
                                   <Flag size={16} />
@@ -1106,7 +1121,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                             
                             {/* النص العادي (للتغريدة العادية) */}
                             {!tweet.quote_text && tweet.text && (
-                              <p className="mt-2 text-[13px] leading-relaxed text-[#E7E9EA] whitespace-pre-wrap">
+                              <p className="font-['Tahoma'] mt-2 text-[14px] leading-[1.5] text-[#E7E9EA] font-['Tahoma'] whitespace-pre-wrap">
                                 {tweet.text.split(' ').map((w, i) =>
                                   w.startsWith('#') ? (
                                     <span key={i} className="text-[#1D9BF0] font-semibold hover:underline cursor-pointer">{w} </span>
@@ -1120,7 +1135,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                             {/* نص الاقتباس */}
                             {tweet.quote_text && (
                               <div className="mt-2">
-                                <p className={`text-[13px] leading-relaxed text-[#E7E9EA] whitespace-pre-wrap ${expandedTweets[tweet.id] ? '' : 'line-clamp-6'}`}>
+                                <p className={`text-[15px] leading-[1.5] text-[#E7E9EA] whitespace-pre-wrap ${expandedTweets[tweet.id] ? '' : 'line-clamp-6'}`}>
                                   {tweet.quote_text.split(' ').map((w, i) =>
                                     w.startsWith('#') ? (
                                       <span key={i} className="text-[#1D9BF0] font-semibold hover:underline cursor-pointer">{w} </span>
@@ -1154,7 +1169,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                                       <span className="text-white text-[10px] font-bold flex items-center justify-center w-full h-full">{tweet.original.authorName?.[0]}</span>
                                     )}
                                   </div>
-                                  <span className="font-bold text-white text-xs">{tweet.original.authorName}</span>
+                                  <span className="font-semibold text-white text-[12px]">{tweet.original.authorName}</span>
                                   <span className="text-[#71767B] text-[11px]">@{tweet.original.authorUsername}</span>
                                 </div>
                                 <p className={`text-white text-sm whitespace-pre-wrap ${expandedTweets['orig-'+tweet.id] ? '' : 'line-clamp-4'}`}>{tweet.original.text}</p>
@@ -1175,7 +1190,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                               
                               {/* 🔁 إعادة / اقتباس */}
                               <button onClick={(e) => { e.stopPropagation(); setRepostMenu(tweet); }} className="flex items-center gap-1.5 hover:text-emerald-400 transition group">
-                                <div className="p-1.5 rounded-full group-hover:bg-emerald-500/10"><Repeat2 size={17} /></div>
+                                <div className="p-1.5 rounded-full group-hover:bg-emerald-500/10"><Repeat2 size={16} /></div>
                                 <span className="text-[13px]">{tweet.reposts || 0}</span>
                               </button>
                               
@@ -1227,7 +1242,7 @@ const handleAddComment = (e?: React.FormEvent) => {
               </button>
             </div>
 
-            <div className="text-xs text-[#71767B] mb-3 flex items-center gap-1">
+            <div className="text-[11px] text-[#71767B] mb-3 flex items-center gap-1">
               <span>رداً على</span>
               <span className="text-[#1D9BF0] font-mono font-bold" dir="ltr">@{activeCommentTweet.authorUsername}</span>
             </div>
@@ -1334,7 +1349,7 @@ const handleAddComment = (e?: React.FormEvent) => {
             </button>
             <button
               onClick={() => setRepostMenu(null)}
-              className="w-full px-4 py-3 text-center text-white/60 font-bold hover:bg-white/5 transition"
+              className="w-full p-3 text-center text-white/60 font-bold hover:bg-white/5 transition"
             >
               إلغاء
             </button>
@@ -1395,7 +1410,7 @@ const handleAddComment = (e?: React.FormEvent) => {
               <span className="font-bold text-white text-sm">{quoteOriginal.authorName}</span>
               <span className="text-[#71767B] text-xs">@{quoteOriginal.authorUsername}</span>
             </div>
-            <p className="text-white text-sm">{quoteOriginal.text}</p>
+            <p className="font-['Tahoma'] text-white text-sm">{quoteOriginal.text}</p>
           </div>
         </div>
       )}
@@ -1421,12 +1436,12 @@ const handleAddComment = (e?: React.FormEvent) => {
                 className="w-12 h-12 rounded-full object-cover border border-[#2F3336]" 
               />
               <div>
-                <p className="font-bold text-sm text-white">{viewingDetailTweet.authorName}</p>
-                <p className="text-xs text-[#71767B] font-mono" dir="ltr">@{viewingDetailTweet.authorUsername}</p>
+                <p className="font-['Tahoma'] font-bold text-sm text-white">{viewingDetailTweet.authorName}</p>
+                <p className="font-['Tahoma'] text-[11px] text-[#71767B] font-normal font-['Tahoma']" dir="ltr">@{viewingDetailTweet.authorUsername}</p>
               </div>
             </div>
 
-            <p className="text-base text-[#E7E9EA] leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap">
+            <p className="font-['Tahoma'] text-[14px] leading-[1.5] text-[#E7E9EA] font-['Tahoma'] break-words [overflow-wrap:anywhere] whitespace-pre-wrap">
               {viewingDetailTweet.text}
             </p>
 
@@ -1436,7 +1451,7 @@ const handleAddComment = (e?: React.FormEvent) => {
               </div>
             )}
 
-            <div className="text-xs text-[#71767B] py-2 border-y border-[#2F3336] flex items-center gap-2">
+            <div className="text-[11px] text-[#71767B] py-2 border-y border-[#2F3336] flex items-center gap-2">
               <span>{formatTimeAndDate(viewingDetailTweet.createdAt)}</span>
               <span>·</span>
               <span>{viewingDetailTweet.views || 1} مشاهدة</span>
@@ -1486,7 +1501,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                   <div key={c.id} className="py-3 px-1 border-b border-[#2F3336]/60 flex gap-3 hover:bg-white/[0.01] transition">
                     
                     {/* صورة المستخدم على اليمين */}
-                    <div className="w-9 h-9 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
+                    <div className="w-[30px] h-[30px] rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
                       {c.authorAvatar ? (
                         <img src={c.authorAvatar} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -1505,14 +1520,14 @@ const handleAddComment = (e?: React.FormEvent) => {
                         <span className="text-[11px] text-[#71767B] font-mono" dir="ltr">
                           @{c.authorUsername || 'user'}
                         </span>
-                        <span className="text-xs text-[#71767B]">·</span>
+                        <span className="text-[11px] text-[#71767B]">·</span>
                         <span className="text-[#71767B] text-[9px]" title={c.createdAtDisplay || c.createdAt}>
                           {formatTimeAgo(c.createdAt) || c.createdAtDisplay || 'الآن'}
                         </span>
                       </div>
 
                       {/* نص التعليق */}
-                      <p className="text-xs text-[#E7E9EA] mt-1.5 leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap select-text">
+                      <p className="font-['Tahoma'] text-xs text-[#E7E9EA] mt-1.5 leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap select-text">
                         {c.text}
                       </p>
 
@@ -1527,22 +1542,22 @@ const handleAddComment = (e?: React.FormEvent) => {
                       <div className="flex items-center justify-between text-[#71767B] text-[11px] mt-2.5 max-w-xs">
                         <button type="button" className="flex items-center gap-1 hover:text-[#1D9BF0] transition group">
                           <div className="p-1 rounded-full group-hover:bg-[#1D9BF0]/10">
-                            <MessageCircle size={14} />
+                            <MessageCircle size={16} />
                           </div>
                         </button>
                         <button type="button" className="flex items-center gap-1 hover:text-emerald-400 transition group">
                           <div className="p-1 rounded-full group-hover:bg-emerald-500/10">
-                            <Repeat2 size={14} />
+                            <Repeat2 size={16} />
                           </div>
                         </button>
                         <button type="button" className="flex items-center gap-1 hover:text-rose-500 transition group">
                           <div className="p-1 rounded-full group-hover:bg-rose-500/10">
-                            <Heart size={14} />
+                            <Heart size={16} />
                           </div>
                         </button>
                         <button type="button" className="flex items-center gap-1 hover:text-white transition group">
                           <div className="p-1 rounded-full group-hover:bg-white/10">
-                            <Share size={13} />
+                            <Share size={16} />
                           </div>
                         </button>
                       </div>
@@ -1614,7 +1629,7 @@ const handleAddComment = (e?: React.FormEvent) => {
               </button>
             </div>
 
-            <p className="text-xs text-zinc-400 mb-4 leading-relaxed">
+            <p className="font-['Tahoma'] text-xs text-zinc-400 mb-4 leading-relaxed">
               تساعدنا البلاغات في الحفاظ على مجتمع يمن ريتنج آمناً ونظيفاً. يرجى اختيار سبب الإبلاغ:
             </p>
 
@@ -1722,7 +1737,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                   showToast('تم حذف التغريدة');
                 });
               }
-            }} className="w-full px-4 py-3 text-right text-[#F4212E] font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2 text-sm">
+            }} className="w-full p-3 text-right text-[#F4212E] font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2 text-sm">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
               <span>حذف التغريدة</span>
             </button>
@@ -1732,13 +1747,13 @@ const handleAddComment = (e?: React.FormEvent) => {
               navigator.clipboard?.writeText(window.location.origin + `/feed?id=${activeMenuPost.id}`);
               showToast('تم نسخ الرابط!');
               setActiveMenuPost(null);
-            }} className="w-full px-4 py-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2 text-sm">
+            }} className="w-full p-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2 text-sm">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
               <span>نسخ الرابط</span>
             </button>
             
             {/* إلغاء */}
-            <button onClick={() => setActiveMenuPost(null)} className="w-full px-4 py-3 text-center text-white/60 font-bold hover:bg-white/5 transition text-sm">
+            <button onClick={() => setActiveMenuPost(null)} className="w-full p-3 text-center text-white/60 font-bold hover:bg-white/5 transition text-sm">
               إلغاء
             </button>
           </div>
@@ -1760,7 +1775,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                 <X size={18} />
               </button>
             </div>
-            <p className="text-xs text-zinc-400 mb-4 leading-relaxed">
+            <p className="font-['Tahoma'] text-xs text-zinc-400 mb-4 leading-relaxed">
               تساعدنا البلاغات في الحفاظ على مجتمع يمن ريتنج آمناً ونظيفاً. يرجى اختيار سبب الإبلاغ:
             </p>
             <form onSubmit={handleSubmitReport} className="space-y-4 text-xs">

@@ -25,7 +25,7 @@ import {
   Cake, CheckCircle2, Heart, MessageCircle, Repeat2, Share, Plus, 
   Camera, X, Image as ImageIcon, Pin, Trash2, Edit3, Loader2,
   Home, MessageSquare, User, Phone, Mail, LogOut, UserPlus, UserCheck, Lock, BarChart
-, Bell , AlertTriangle } from 'lucide-react';
+, Bell , AlertTriangle, Flag } from 'lucide-react';
 import { AuthModal } from '../components/auth/AuthModal';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 
@@ -192,6 +192,15 @@ function formatTimeAndDate(dateStr: string): string {
 }
 
 const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
+  const [reportingItem, setReportingItem] = useState<{
+    type: 'post' | 'image' | 'account';
+    targetId: string;
+    targetName: string;
+    targetAuthorId: string;
+  } | null>(null);
+  const [reportReason, setReportReason] = useState('محتوى غير لائق أو مسيء');
+  const [reportDetails, setReportDetails] = useState('');
+  const [submittingReport, setSubmittingReport] = useState(false);
   const [repostMenu, setRepostMenu] = useState<Post | null>(null);
   const [isRepostDisabled, setIsRepostDisabled] = useState(false);
   const [quoteOriginal, setQuoteOriginal] = useState<Post | null>(null);
@@ -881,7 +890,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center text-white font-['Cairo',sans-serif]">
+      <div className="min-h-screen bg-black flex items-center justify-center text-white font-['Tahoma',sans-serif]">
         <Loader2 className="w-8 h-8 animate-spin text-[#1D9BF0]" />
       </div>
     );
@@ -890,7 +899,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   // إذا لم يكن مسجل دخول وليس هناك بروفايل لشخص آخر يتصفحه: عرض شاشة تسجيل الدخول
   if (!sessionUser && !targetIdParam) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 text-center font-['Cairo',sans-serif]" dir="rtl">
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 text-center font-['Tahoma',sans-serif]" dir="rtl">
         <div className="w-20 h-20 rounded-3xl bg-[#141E30] border border-[#2F3336] flex items-center justify-center mb-5 text-[#1D9BF0] shadow-2xl">
           <Lock size={36} />
         </div>
@@ -910,7 +919,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   }
 
   return (
-    <div className="min-h-screen bg-black text-[#E7E9EA] font-['Cairo',sans-serif] selection:bg-[#1D9BF0] selection:text-white pb-32" dir="rtl">
+    <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#1D9BF0] selection:text-white pb-32" dir="rtl">
       
       {toastMessage && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[150] bg-[#16181C]/95 backdrop-blur-2xl border border-[#2F3336] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-[0_12px_40px_rgba(0,0,0,0.9)] animate-fade-in flex items-center gap-2">
@@ -1138,7 +1147,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
         {/* 4. النبذة */}
         {bio ? (
-          <p className="mt-3 text-sm text-[#E7E9EA] leading-relaxed whitespace-pre-wrap">
+          <p className="mt-3 text-[14px] leading-[1.5] text-[#E7E9EA] font-['Tahoma'] whitespace-pre-wrap">
             {bio}
           </p>
         ) : isOwner ? (
@@ -1148,7 +1157,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         ) : null}
 
         {/* 5. البيانات الحقيقية */}
-        <div className="flex flex-wrap items-center gap-y-2 gap-x-4 mt-3 text-xs text-[#71767B]">
+        <div className="flex flex-wrap items-center gap-y-2 gap-x-4 mt-3 text-[11px] text-[#71767B]">
           {isOwner && email && (
             <div className="flex items-center gap-1.5 text-zinc-300">
               <Mail size={14} className="text-[#1D9BF0]" />
@@ -1276,7 +1285,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             <h3 className="text-sm font-bold text-white mb-1">
               {isOwner ? 'لم تقم بنشر أي منشور بعد' : `لا توجد منشورات لـ ${name}`}
             </h3>
-            <p className="text-xs text-[#71767B] mb-4">
+            <p className="text-[11px] text-[#71767B] mb-4">
               {isOwner ? 'انقر على زر (+) بالأسفل لتنشر أول تغريدة وتشاركها مع الجميع!' : 'عندما ينشر هذا المستخدم تغريدات، ستظهر هنا فوراً.'}
             </p>
             {isOwner && (
@@ -1292,7 +1301,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           userPosts.map(post => (
             <article 
               key={post.id} 
-              className="px-4 py-3 border-b border-[#2F3336] hover:bg-white/[0.03] transition cursor-pointer"
+              className="p-3 border-b border-[#2F3336] hover:bg-white/[0.03] transition cursor-pointer"
               onClick={(e) => {
                 const target = e.target as HTMLElement;
                 if (!target.closest('button') && !target.closest('a')) {
@@ -1312,7 +1321,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-white text-[14px] hover:underline cursor-pointer truncate">{post.authorName || name}</span>
+                      <span className="font-bold text-white text-[13px] hover:underline cursor-pointer cursor-pointer cursor-pointer truncate">{post.authorName || name}</span>
                       {post.authorBadge && post.authorBadge !== "none" && (
                         <svg className="w-[18px] h-[18px] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"
                           style={{color: post.authorBadge === "blue" ? "#1D9BF0" : post.authorBadge === "gold" ? "#FFD700" : "#71767B"}}>
@@ -1326,6 +1335,21 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                         {formatTimeAgo(post.createdAt).relative}
                       </span>
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setReportingItem({
+                          type: 'post',
+                          targetId: post.id,
+                          targetName: (post.text || post.content || '').slice(0, 30),
+                          targetAuthorId: post.authorId || post.user_id,
+                        });
+                      }}
+                      className="text-[#71767B] hover:text-rose-500 p-1.5 rounded-full hover:bg-rose-500/10 transition shrink-0"
+                      title="الإبلاغ"
+                    >
+                      <Flag size={16} />
+                    </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1362,7 +1386,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                                 </span>
                               )}
                             </div>
-                            <span className="font-bold text-white text-xs">{post.original.authorName}</span>
+                            <span className="font-bold text-white text-[12px] font-['Tahoma']">{post.original.authorName}</span>
                             <span className="text-[#71767B] text-[11px]">@{post.original.authorUsername}</span>
                           </div>
                           <p className="text-white text-sm whitespace-pre-wrap">{post.original.text}</p>
@@ -1753,7 +1777,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               </button>
             </div>
             
-            <div className="text-xs text-[#71767B] mb-3 flex items-center gap-1">
+            <div className="text-[11px] text-[#71767B] mb-3 flex items-center gap-1">
               <span>رداً على</span>
               <span className="text-[#1D9BF0] font-mono font-bold" dir="ltr">@{activeCommentPost.authorUsername}</span>
             </div>
@@ -1851,7 +1875,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-black/95 backdrop-blur border-b border-[#2F3336] px-4 py-3 flex items-center gap-4">
+            <div className="sticky top-0 z-10 bg-black/95 backdrop-blur border-b border-[#2F3336] p-3 flex items-center gap-4">
               <button 
                 onClick={() => setViewingDetailPost(null)}
                 className="text-white hover:bg-white/10 p-2 rounded-full transition"
@@ -1975,19 +1999,19 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           <div className="w-full max-w-md bg-[#16181C] rounded-2xl overflow-hidden mb-20" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => { handleRepost(repostMenu.id); setRepostMenu(null); }}
-              className="w-full px-4 py-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm"
+              className="w-full p-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm"
             >
               <Repeat2 size={20} className="text-emerald-400" />
               <span>إعادة النشر</span>
             </button>
             <button
               onClick={() => { setQuoteOriginal(repostMenu); setIsQuoting(true); setRepostMenu(null); }}
-              className="w-full px-4 py-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm"
+              className="w-full p-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm"
             >
               <MessageCircle size={20} className="text-[#1D9BF0]" />
               <span>اقتباس</span>
             </button>
-            <button onClick={() => setRepostMenu(null)} className="w-full px-4 py-3 text-center text-white/60 font-bold hover:bg-white/5 transition">
+            <button onClick={() => setRepostMenu(null)} className="w-full p-3 text-center text-white/60 font-bold hover:bg-white/5 transition">
               إلغاء
             </button>
           </div>
@@ -2049,6 +2073,60 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               <span className="text-[#71767B] text-xs">@{quoteOriginal.authorUsername}</span>
             </div>
             <p className="text-white text-sm">{quoteOriginal.text}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Modal الإبلاغ */}
+      {reportingItem && (
+        <div className="fixed inset-0 z-[200] bg-black/70 flex items-center justify-center p-4" onClick={() => setReportingItem(null)}>
+          <div className="w-full max-w-sm bg-[#16181C] rounded-2xl p-4 shadow-2xl" onClick={(e) => e.stopPropagation()} dir="rtl">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-black text-white text-sm">الإبلاغ عن التغريدة</h3>
+              <button onClick={() => setReportingItem(null)} className="text-[#71767B] hover:text-white p-1 rounded-full">
+                <X size={18} />
+              </button>
+            </div>
+            <p className="text-[#71767B] text-xs mb-3">"{reportingItem.targetName}..."</p>
+            
+            <label className="block text-[#71767B] text-xs mb-1 font-bold">سبب الإبلاغ</label>
+            <select value={reportReason} onChange={(e) => setReportReason(e.target.value)} className="w-full bg-black border border-[#2F3336] rounded-lg p-2 text-white text-xs mb-3">
+              <option value="محتوى غير لائق أو مسيء">محتوى غير لائق أو مسيء</option>
+              <option value="معلومات مضللة">معلومات مضللة</option>
+              <option value="انتحال شخصية">انتحال شخصية</option>
+              <option value="سبام أو إعلانات">سبام أو إعلانات</option>
+              <option value="أخرى">أخرى</option>
+            </select>
+            
+            <label className="block text-[#71767B] text-xs mb-1 font-bold">تفاصيل إضافية (اختياري)</label>
+            <textarea value={reportDetails} onChange={(e) => setReportDetails(e.target.value)} placeholder="أضف تفاصيل..." rows={3} className="w-full bg-black border border-[#2F3336] rounded-lg p-2 text-white text-xs mb-3 resize-none" />
+            
+            <button onClick={async () => {
+              if (!reportingItem) return;
+              setSubmittingReport(true);
+              try {
+                const { data: { user } } = await supabase.auth.getUser();
+                await supabase.from('reports').insert([{
+                  reporter_id: user?.id,
+                  reported_item_id: reportingItem.targetId,
+                  reason: reportReason,
+                  details: reportDetails.trim() || null,
+                  status: 'pending',
+                  created_at: new Date().toISOString(),
+                }]);
+                setReportingItem(null);
+                setReportReason('محتوى غير لائق أو مسيء');
+                setReportDetails('');
+                showToast('تم استلام بلاغك ✅');
+              } catch (e) {
+                console.error('Report error:', e);
+                showToast('فشل الإبلاغ');
+              } finally {
+                setSubmittingReport(false);
+              }
+            }} disabled={submittingReport} className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-sm transition disabled:opacity-50">
+              {submittingReport ? 'جاري الإرسال...' : 'إرسال البلاغ'}
+            </button>
           </div>
         </div>
       )}

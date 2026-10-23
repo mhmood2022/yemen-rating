@@ -4,7 +4,7 @@ body {
 }
 
 
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Tahoma:wght@400;600;700;800;900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -32,7 +32,7 @@ body {
 
 /* ضبط الخط العام والاتجاه */
 * {
-  font-family: "Cairo", sans-serif;
+  font-family: "Tahoma", "Noto Sans Arabic", sans-serif !important;
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;
 }
