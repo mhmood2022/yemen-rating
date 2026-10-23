@@ -73,12 +73,12 @@ export const MarketsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           >
             <div className="relative h-48 w-full bg-zinc-800 overflow-hidden">
               <img src={market.image} alt={market.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-              <div className="absolute top-3 right-3 bg-zinc-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-bold text-yellow-400 flex items-center gap-1">
+              <div className="absolute top-3 right-3 bg-zinc-950/85  px-2.5 py-1 rounded-lg border border-zinc-800 text-xs font-bold text-yellow-400 flex items-center gap-1">
                 <ShoppingBag className="w-3.5 h-3.5" />
                 <span>{market.shopsCount} محل تجاري</span>
               </div>
               {market.isVerified && (
-                <div className="absolute top-3 left-3 bg-zinc-950/80 backdrop-blur-md border border-zinc-700 p-1.5 rounded-lg">
+                <div className="absolute top-3 left-3 bg-zinc-950/80  border border-zinc-700 p-1.5 rounded-lg">
                   <VerifiedBadge type="gold" size="sm" />
                 </div>
               )}

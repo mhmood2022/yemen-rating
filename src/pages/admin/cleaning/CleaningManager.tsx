@@ -20,9 +20,9 @@ export const CleaningManager: React.FC = () => {
         </p>
       </div>
 
-      <div className="bg-[#0B0F17] rounded-xl border border-[#1F2937] overflow-hidden">
+      <div className="bg-[#0B0F17] rounded-xl border border-[#2F3336] overflow-hidden">
         <table className="w-full text-right text-xs">
-          <thead className="bg-[#111827] text-[#9CA3AF] border-b border-[#1F2937]">
+          <thead className="bg-[#111111] text-[#9CA3AF] border-b border-[#2F3336]">
             <tr>
               <th className="py-3.5 px-4">اسم الشركة / المؤسسة</th>
               <th className="py-3.5 px-4">المدينة</th>
@@ -31,7 +31,7 @@ export const CleaningManager: React.FC = () => {
               <th className="py-3.5 px-4 text-center">حالة الاعتماد</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#1F2937] text-white">
+          <tbody className="divide-y divide-[#2F3336] text-white">
             {providers.map((pr) => (
               <tr key={pr.id} className="hover:bg-[#161D2B]/50">
                 <td className="py-3.5 px-4 font-bold text-white">{pr.name}</td>

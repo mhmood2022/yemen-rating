@@ -36,7 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Mobile Drawer Overlay Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-200"
+          className="fixed inset-0 bg-black  z-40 lg:hidden transition-opacity duration-200"
           onClick={onClose}
           aria-hidden="true"
         />

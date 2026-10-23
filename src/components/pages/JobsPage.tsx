@@ -212,7 +212,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const jobCommText = `${jobCommissionAmount.toLocaleString()} ${jobCommissionCurr}`;
 
   return (
-    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Cairo'] text-white">
+    <div dir="rtl" className="bg-black min-h-screen max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Tahoma'] text-white">
       <AdBanner placementId="4" className="mb-1" />
 
       {toastMessage && (
@@ -223,13 +223,13 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       )}
 
       {/* الرأس مع زر أضف وظيفة */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2F3336] pb-3">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => { window.location.href = '/'; }}
             title="رجوع للرئيسية"
-            className="p-2 rounded-xl bg-[#0B0F19] border border-slate-800 text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all cursor-pointer shadow-sm"
+            className="p-2 rounded-xl bg-black border border-[#2F3336] text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all cursor-pointer shadow-sm"
           >
             <ArrowRight size={16} />
           </button>
@@ -251,7 +251,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           <button
             onClick={fetchJobs}
             disabled={loading}
-            className="p-2 bg-[#0D1527] border border-slate-800 text-slate-300 hover:text-white rounded-xl transition-colors"
+            className="p-2 bg-[#111111] border border-[#2F3336] text-slate-300 hover:text-white rounded-xl transition-colors"
             title="تحديث"
           >
             <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
@@ -260,7 +260,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       </div>
 
       {/* شريط الفلترة الموحد الأنيق */}
-      <div className="bg-[#0D1527] p-3 rounded-2xl border border-slate-800 space-y-2.5">
+      <div className="bg-[#111111] p-3 rounded-2xl border border-[#2F3336] space-y-2.5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <YRSelect
             value={cityFilter}
@@ -285,7 +285,7 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           <span className="text-xs font-bold text-white">جاري تحميل الوظائف الحقيقية...</span>
         </div>
       ) : filteredJobs.length === 0 ? (
-        <div className="py-16 text-center bg-[#0D1527] rounded-2xl border border-slate-800 p-6 space-y-3">
+        <div className="py-16 text-center bg-[#111111] rounded-2xl border border-[#2F3336] p-6 space-y-3">
           <AlertCircle className="w-12 h-12 text-[#F5C400] mx-auto opacity-70" />
           <h3 className="text-base font-bold text-white">لا توجد وظائف شاغرة معلنة حالياً</h3>
           <p className="text-xs text-slate-300">كن أول من ينشر شاغراً بالضغط على زر "أضف وظيفة" أعلاه.</p>

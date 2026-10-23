@@ -265,8 +265,8 @@ export const RatingsManager: React.FC = () => {
       {notification && (
         <div className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl text-xs font-bold shadow-2xl flex items-center gap-2 border ${
           notification.type === 'success'
-            ? 'bg-emerald-950/90 text-emerald-200 border-emerald-500/40 backdrop-blur-md'
-            : 'bg-rose-950/90 text-rose-200 border-rose-500/40 backdrop-blur-md'
+            ? 'bg-emerald-950/90 text-emerald-200 border-emerald-500/40 '
+            : 'bg-rose-950/90 text-rose-200 border-rose-500/40 '
         }`}>
           {notification.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <AlertCircle className="w-4 h-4 text-rose-400" />}
           <span>{notification.message}</span>
@@ -438,7 +438,7 @@ export const RatingsManager: React.FC = () => {
                         <button
                           onClick={() => handleQuickDelta(biz, -0.5, 0)}
                           disabled={isItemLoading || rating <= 0}
-                          className="w-9 h-full hover:bg-slate-800 text-slate-300 flex items-center justify-center transition disabled:opacity-30 cursor-pointer"
+                          className="w-9 h-full hover:bg-[#111111] text-slate-300 flex items-center justify-center transition disabled:opacity-30 cursor-pointer"
                           title="إنقاص نصف نجمة"
                         >
                           <Minus className="w-3.5 h-3.5" />
@@ -451,7 +451,7 @@ export const RatingsManager: React.FC = () => {
                         <button
                           onClick={() => handleQuickDelta(biz, 0.5, count === 0 ? 1 : 0)}
                           disabled={isItemLoading || rating >= 5}
-                          className="w-9 h-full hover:bg-slate-800 text-slate-300 flex items-center justify-center transition disabled:opacity-30 cursor-pointer"
+                          className="w-9 h-full hover:bg-[#111111] text-slate-300 flex items-center justify-center transition disabled:opacity-30 cursor-pointer"
                           title="زيادة نصف نجمة"
                         >
                           <Plus className="w-3.5 h-3.5" />
@@ -536,7 +536,7 @@ export const RatingsManager: React.FC = () => {
       {/* نافذة ضبط التقييم والمراجعة (Modal) - نفس نمط الهوية تماماً */}
       {editingBiz && (
         <div
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+          className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
           onClick={() => setEditingBiz(null)}
         >
           <div

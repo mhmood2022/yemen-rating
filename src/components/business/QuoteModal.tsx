@@ -45,7 +45,7 @@ export const QuoteModal: React.FC<QuoteModalProps> = ({ business, isOpen, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black p-4">
       <div className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-900 p-6 text-white shadow-2xl dir-rtl">
         <div className="flex items-center justify-between border-b border-gray-800 pb-4">
           <h3 className="text-xl font-bold text-yellow-400">طلب عرض سعر - {business.name}</h3>

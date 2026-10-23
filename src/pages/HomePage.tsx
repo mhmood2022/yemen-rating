@@ -66,7 +66,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectBusiness }) => {
   ];
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#0B1224] text-white p-4 md:p-6 font-['Cairo',sans-serif]">
+    <div dir="rtl" className="min-h-screen bg-black text-white p-4 md:p-6 font-['Cairo',sans-serif]">
 
       {/* الرأس والبحث */}
       <div className="max-w-4xl mx-auto mb-6 space-y-4">
@@ -80,7 +80,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectBusiness }) => {
         </div>
 
         {/* لوحة التحكم: البحث والفلترة */}
-        <div className="bg-[#0A0E1A] border border-[#18233C] p-3.5 rounded-2xl shadow-lg space-y-3">
+        <div className="bg-black border border-[#2F3336] p-3.5 rounded-2xl shadow-lg space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
             {/* حقل البحث */}
             <div className="md:col-span-2 relative">
@@ -90,7 +90,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectBusiness }) => {
                 placeholder="ابحث باسم المنشأة أو الخدمة..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-11 pr-10 pl-3 rounded-xl bg-[#101726] border border-[#1C2844] text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-[#FFC500] transition"
+                className="w-full h-11 pr-10 pl-3 rounded-xl bg-[#111111] border border-[#2F3336] text-white text-xs placeholder-zinc-500 focus:outline-none focus:border-[#FFC500] transition"
               />
             </div>
 
@@ -99,7 +99,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectBusiness }) => {
               <button
                 type="button"
                 onClick={() => setIsCityDropdownOpen(!isCityDropdownOpen)}
-                className="w-full h-11 px-3 rounded-xl bg-[#101726] border border-[#1C2844] text-xs font-bold flex items-center justify-between text-zinc-200"
+                className="w-full h-11 px-3 rounded-xl bg-[#111111] border border-[#2F3336] text-xs font-bold flex items-center justify-between text-zinc-200"
               >
                 <span className="flex items-center gap-1.5 truncate">
                   <MapPin size={14} className="text-[#FFC500]" />
@@ -109,7 +109,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectBusiness }) => {
               </button>
 
               {isCityDropdownOpen && (
-                <div className="absolute top-full right-0 left-0 mt-1.5 z-50 max-h-52 overflow-y-auto rounded-xl bg-[#0A0E1A] border border-[#18233C] shadow-2xl p-1 space-y-0.5">
+                <div className="absolute top-full right-0 left-0 mt-1.5 z-50 max-h-52 overflow-y-auto rounded-xl bg-black border border-[#2F3336] shadow-2xl p-1 space-y-0.5">
                   {cities.map((city) => (
                     <button
                       key={city}
@@ -141,7 +141,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectBusiness }) => {
                 className={`h-8 px-3 rounded-lg text-xs font-bold whitespace-nowrap transition-all border ${
                   selectedCategory === cat.id
                     ? 'bg-[#FFC500] text-black border-[#FFC500]'
-                    : 'bg-[#101726] text-zinc-300 border-[#1C2844] hover:border-[#FFC500]/50'
+                    : 'bg-[#111111] text-zinc-300 border-[#2F3336] hover:border-[#FFC500]/50'
                 }`}
               >
                 {cat.name}
@@ -161,21 +161,21 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectBusiness }) => {
               <div
                 key={b.id}
                 onClick={() => onSelectBusiness && onSelectBusiness(b)}
-                className="rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/60 transition-all overflow-hidden flex flex-col justify-between shadow-lg cursor-pointer group"
+                className="rounded-2xl bg-black border border-[#2F3336] hover:border-[#FFC500]/60 transition-all overflow-hidden flex flex-col justify-between shadow-lg cursor-pointer group"
               >
                 {b.cover_url || b.logo_url ? (
-                  <div className="relative h-32 w-full overflow-hidden bg-[#101726]">
+                  <div className="relative h-32 w-full overflow-hidden bg-[#111111]">
                     <img
                       src={b.cover_url || b.logo_url}
                       alt={b.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <span className="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-black/70 backdrop-blur-sm text-[9px] font-bold text-[#FFC500] border border-[#FFC500]/30">
+                    <span className="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-black  text-[9px] font-bold text-[#FFC500] border border-[#FFC500]/30">
                       {b.category_name || 'منشأة معتمدة'}
                     </span>
                   </div>
                 ) : (
-                  <div className="h-32 w-full bg-[#101726] flex items-center justify-center text-[#FFC500] border-b border-white/5">
+                  <div className="h-32 w-full bg-[#111111] flex items-center justify-center text-[#FFC500] border-b border-white/5">
                     <Building2 size={36} />
                   </div>
                 )}
@@ -211,7 +211,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectBusiness }) => {
             ))}
           </div>
         ) : (
-          <div className="p-8 rounded-2xl bg-[#0A0E1A] border border-[#18233C] text-center text-xs text-zinc-400">
+          <div className="p-8 rounded-2xl bg-black border border-[#2F3336] text-center text-xs text-zinc-400">
             لا توجد منشآت مطابقة لبحثك حالياً.
           </div>
         )}

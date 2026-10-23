@@ -234,9 +234,9 @@ export const DynamicSectorFeatures: React.FC<DynamicSectorFeaturesProps> = ({
   };
 
   return (
-    <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-4">
+    <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#2F3336] space-y-4">
       {/* الرأس: مسمى القسم وصندوق إضافة ميزة جديدة */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-[#1F2937]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-[#2F3336]">
         <div>
           <label className="text-white font-bold flex items-center gap-2 text-sm">
             <SlidersHorizontal size={16} className="text-[#FFC500]" />
@@ -260,7 +260,7 @@ export const DynamicSectorFeatures: React.FC<DynamicSectorFeaturesProps> = ({
               }
             }}
             placeholder="إضافة خدمة أو ميزة إضافية..."
-            className="px-3 py-1.5 bg-[#0B0F17] border border-[#1F2937] text-white text-xs rounded-xl outline-none focus:border-[#FFC500]/50 w-full sm:w-56"
+            className="px-3 py-1.5 bg-[#0B0F17] border border-[#2F3336] text-white text-xs rounded-xl outline-none focus:border-[#FFC500]/50 w-full sm:w-56"
           />
           <button
             type="button"
@@ -284,7 +284,7 @@ export const DynamicSectorFeatures: React.FC<DynamicSectorFeaturesProps> = ({
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
                 item.enabled
                   ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-sm shadow-emerald-500/10'
-                  : 'bg-[#0B0F17] text-gray-400 border-[#1F2937] hover:border-gray-700'
+                  : 'bg-[#0B0F17] text-gray-400 border-[#2F3336] hover:border-gray-700'
               }`}
             >
               <Check size={13} className={item.enabled ? 'opacity-100 text-emerald-400' : 'opacity-0'} />
@@ -295,13 +295,13 @@ export const DynamicSectorFeatures: React.FC<DynamicSectorFeaturesProps> = ({
 
         {/* تفاصيل الميزات المفعلة فقط */}
         {items.some(it => it.enabled) && (
-          <div className="mt-3 pt-3 border-t border-[#1F2937]/60 space-y-2">
+          <div className="mt-3 pt-3 border-t border-[#2F3336]/60 space-y-2">
             <label className="text-gray-300 text-[11px] font-bold block">
               تفاصيل إضافية للخدمات المفعلة (أرقام الفروع، السعة، أوقات العمل، العيارات):
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {items.filter(it => it.enabled).map((act) => (
-                <div key={act.id} className="flex items-center gap-2 p-2 bg-[#0B0F17] border border-[#1F2937] rounded-xl">
+                <div key={act.id} className="flex items-center gap-2 p-2 bg-[#0B0F17] border border-[#2F3336] rounded-xl">
                   <span className="text-xs text-white font-medium shrink-0 max-w-[140px] truncate">
                     {act.label}:
                   </span>

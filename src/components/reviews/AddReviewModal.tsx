@@ -57,7 +57,7 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4 text-right">
         {/* Star Rating Selector */}
         <div className="space-y-1.5 text-center">
-          <label className="block text-xs font-bold text-[#0B1F3A] dark:text-white">
+          <label className="block text-xs font-bold text-[#000000] dark:text-white">
             اختر تقييمك بالنجوم (1 إلى 5):
           </label>
           <div className="flex items-center justify-center gap-1.5 pt-1">
@@ -97,7 +97,7 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
         />
 
         <div className="space-y-1.5">
-          <label className="block text-xs font-bold text-[#0B1F3A] dark:text-white">
+          <label className="block text-xs font-bold text-[#000000] dark:text-white">
             اكتب رأيك وتجربتك بالتفصيل
           </label>
           <textarea
@@ -106,7 +106,7 @@ export const AddReviewModal: React.FC<AddReviewModalProps> = ({
             placeholder="اذكر جودة الخدمة، سرعة التعامل، والأسعار..."
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className="w-full p-3 text-xs bg-white dark:bg-[#0A0A0A] text-[#0B1F3A] dark:text-white border border-[#CBD5E1] dark:border-[#222222] rounded-[10px] outline-none focus:border-[#F5C400]"
+            className="w-full p-3 text-xs bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-white border border-[#CBD5E1] dark:border-[#222222] rounded-[10px] outline-none focus:border-[#F5C400]"
           />
         </div>
 

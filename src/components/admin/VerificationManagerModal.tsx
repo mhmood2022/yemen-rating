@@ -44,7 +44,7 @@ export const VerificationManagerModal: React.FC<VerificationModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-right">
         <div className="space-y-2">
-          <label className="block text-xs font-bold text-[#0B1F3A] dark:text-white">
+          <label className="block text-xs font-bold text-[#000000] dark:text-white">
             اختر نوع الشارة المعتمدة:
           </label>
 

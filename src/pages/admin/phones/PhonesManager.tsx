@@ -363,8 +363,8 @@ export const PhonesManager: React.FC = () => {
   return (
     <div dir="rtl" className="space-y-6 text-zinc-100 font-sans">
       {/* 1. رأس الصفحة والتبويبات الرئيسية */}
-      <div className="bg-zinc-900/80 border border-zinc-800 p-5 rounded-2xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-zinc-800">
+      <div className="bg-[#111111]/80 border border-[#2F3336] p-5 rounded-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#2F3336]">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
               <Smartphone className="w-6 h-6" />
@@ -405,13 +405,13 @@ export const PhonesManager: React.FC = () => {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
                   isActive
                     ? 'bg-yellow-500 text-zinc-950 shadow-md shadow-yellow-500/10'
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                    : 'text-zinc-400 hover:text-white hover:bg-[#1A1A1A]'
                 }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
                 {tab.count !== undefined && (
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${isActive ? 'bg-zinc-950/20 text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${isActive ? 'bg-black/20 text-zinc-950' : 'bg-[#1A1A1A] text-zinc-300'}`}>
                     {tab.count}
                   </span>
                 )}
@@ -423,27 +423,27 @@ export const PhonesManager: React.FC = () => {
 
       {/* 2. مؤشرات الأداء السريعة (Dashboard KPIs) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-        <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800/90">
+        <div className="p-4 rounded-xl bg-black border border-[#2F3336]/90">
           <span className="text-[11px] text-zinc-400 font-semibold block">إجمالي المنتجات</span>
           <span className="text-xl font-black text-white mt-1 block">{stats.total}</span>
         </div>
-        <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800/90">
+        <div className="p-4 rounded-xl bg-black border border-[#2F3336]/90">
           <span className="text-[11px] text-emerald-400 font-semibold block">المنشورة للزوار</span>
           <span className="text-xl font-black text-emerald-400 mt-1 block">{stats.published}</span>
         </div>
-        <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800/90">
+        <div className="p-4 rounded-xl bg-black border border-[#2F3336]/90">
           <span className="text-[11px] text-amber-400 font-semibold block">قيد المراجعة</span>
           <span className="text-xl font-black text-amber-400 mt-1 block">{stats.pending}</span>
         </div>
-        <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800/90">
+        <div className="p-4 rounded-xl bg-black border border-[#2F3336]/90">
           <span className="text-[11px] text-blue-400 font-semibold block">المحلات التجارية</span>
           <span className="text-xl font-black text-blue-400 mt-1 block">{stats.storesCount} متجر</span>
         </div>
-        <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800/90">
+        <div className="p-4 rounded-xl bg-black border border-[#2F3336]/90">
           <span className="text-[11px] text-purple-400 font-semibold block">البائعون الأفراد</span>
           <span className="text-xl font-black text-purple-400 mt-1 block">{stats.individualsCount} فرد</span>
         </div>
-        <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-800/90">
+        <div className="p-4 rounded-xl bg-black border border-[#2F3336]/90">
           <span className="text-[11px] text-yellow-400 font-semibold block">عروض مميزة YR</span>
           <span className="text-xl font-black text-yellow-400 mt-1 block">{stats.featuredCount}</span>
         </div>
@@ -455,7 +455,7 @@ export const PhonesManager: React.FC = () => {
       {activeTab === 'products' && (
         <div className="space-y-4">
           {/* شريط الفلاتر والبحث */}
-          <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="p-4 rounded-2xl bg-black border border-[#2F3336] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             {/* البحث */}
             <div className="relative lg:col-span-2">
               <Search className="w-4 h-4 text-zinc-400 absolute right-3.5 top-3" />
@@ -464,7 +464,7 @@ export const PhonesManager: React.FC = () => {
                 placeholder="بحث باسم الهاتف، الموديل، المتجر، أو الرقم..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
+                className="w-full bg-[#111111] border border-[#2F3336] rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
               />
             </div>
 
@@ -472,7 +472,7 @@ export const PhonesManager: React.FC = () => {
             <select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
+              className="bg-[#111111] border border-[#2F3336] text-xs text-zinc-200 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
             >
               <option value="all">جميع الحالات</option>
               <option value="pending">قيد المراجعة (Pending)</option>
@@ -486,7 +486,7 @@ export const PhonesManager: React.FC = () => {
             <select
               value={sellerTypeFilter}
               onChange={e => setSellerTypeFilter(e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
+              className="bg-[#111111] border border-[#2F3336] text-xs text-zinc-200 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
             >
               <option value="all">نوع البائع (الكل)</option>
               <option value="store">محلات تجارية فقط (Stores)</option>
@@ -497,7 +497,7 @@ export const PhonesManager: React.FC = () => {
             <select
               value={brandFilter}
               onChange={e => setBrandFilter(e.target.value)}
-              className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
+              className="bg-[#111111] border border-[#2F3336] text-xs text-zinc-200 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
             >
               <option value="all">كل الماركات</option>
               {brands.map(b => (
@@ -509,17 +509,17 @@ export const PhonesManager: React.FC = () => {
           {/* قائمة وجدول المنتجات */}
           <div className="space-y-3">
             {filteredPhones.length === 0 ? (
-              <div className="text-center py-12 bg-zinc-950 border border-zinc-800 rounded-2xl text-zinc-400 text-sm">
+              <div className="text-center py-12 bg-black border border-[#2F3336] rounded-2xl text-zinc-400 text-sm">
                 لا توجد هواتف مطابقة لمعايير البحث الحالية.
               </div>
             ) : (
               filteredPhones.map(phone => (
                 <div
                   key={phone.id}
-                  className={`p-4 sm:p-5 rounded-2xl bg-zinc-950 border transition-all ${
+                  className={`p-4 sm:p-5 rounded-2xl bg-black border transition-all ${
                     phone.status === 'pending'
                       ? 'border-amber-500/40 bg-amber-950/5'
-                      : 'border-zinc-800/90 hover:border-zinc-700'
+                      : 'border-[#2F3336]/90 hover:border-[#2F3336]'
                   }`}
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -528,17 +528,17 @@ export const PhonesManager: React.FC = () => {
                       <img
                         src={phone.images[0]}
                         alt={phone.title}
-                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-zinc-800 shrink-0 bg-zinc-900"
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border border-[#2F3336] shrink-0 bg-[#111111]"
                       />
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-zinc-800 text-yellow-400 border border-zinc-700">
+                          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#1A1A1A] text-yellow-400 border border-[#2F3336]">
                             {phone.id}
                           </span>
-                          <span className="text-xs px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 border border-zinc-800">
+                          <span className="text-xs px-2 py-0.5 rounded bg-[#111111] text-zinc-300 border border-[#2F3336]">
                             {phone.brand} • {phone.model}
                           </span>
-                          <span className="text-xs px-2 py-0.5 rounded bg-zinc-900 text-zinc-400">
+                          <span className="text-xs px-2 py-0.5 rounded bg-[#111111] text-zinc-400">
                             {phone.condition}
                           </span>
                           {phone.isFeatured && (
@@ -556,7 +556,7 @@ export const PhonesManager: React.FC = () => {
                                 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                                 : phone.status === 'sold'
                                 ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                                : 'bg-zinc-800 text-zinc-400'
+                                : 'bg-[#1A1A1A] text-zinc-400'
                             }`}
                           >
                             {phone.status === 'published' && '● منشور للزوار'}
@@ -601,7 +601,7 @@ export const PhonesManager: React.FC = () => {
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={() => setReviewProduct(phone)}
-                          className="flex items-center gap-1 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl text-xs font-bold transition"
+                          className="flex items-center gap-1 px-3 py-2 bg-[#1A1A1A] hover:bg-zinc-700 text-zinc-200 rounded-xl text-xs font-bold transition"
                         >
                           <Eye className="w-3.5 h-3.5 text-yellow-400" /> مراجعة
                         </button>
@@ -611,7 +611,7 @@ export const PhonesManager: React.FC = () => {
                           className={`p-2 rounded-xl text-xs transition ${
                             phone.isFeatured
                               ? 'bg-yellow-500 text-zinc-950'
-                              : 'bg-zinc-900 text-zinc-400 hover:text-yellow-400 border border-zinc-800'
+                              : 'bg-[#111111] text-zinc-400 hover:text-yellow-400 border border-[#2F3336]'
                           }`}
                           title="تمييز الإعلان"
                         >
@@ -620,7 +620,7 @@ export const PhonesManager: React.FC = () => {
 
                         <button
                           onClick={() => handleDeleteProduct(phone.id)}
-                          className="p-2 bg-zinc-900 hover:bg-rose-500/20 text-zinc-500 hover:text-rose-400 rounded-xl border border-zinc-800 transition"
+                          className="p-2 bg-[#111111] hover:bg-rose-500/20 text-zinc-500 hover:text-rose-400 rounded-xl border border-[#2F3336] transition"
                           title="حذف"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -641,8 +641,8 @@ export const PhonesManager: React.FC = () => {
       {activeTab === 'sellers' && (
         <div className="space-y-6">
           {/* قسم المحلات التجارية */}
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+          <div className="bg-black border border-[#2F3336] rounded-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
               <div className="flex items-center gap-2 text-blue-400">
                 <Store className="w-5 h-5" />
                 <h2 className="text-base font-bold text-white">المحلات والمتاجر التجارية المشاركة</h2>
@@ -655,7 +655,7 @@ export const PhonesManager: React.FC = () => {
                 const storePhones = phones.filter(p => p.sellerName === storeName);
                 const first = storePhones[0];
                 return (
-                  <div key={idx} className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 flex items-center justify-between">
+                  <div key={idx} className="p-4 rounded-xl bg-[#111111]/60 border border-[#2F3336] flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-sm text-white">{storeName}</span>
@@ -679,8 +679,8 @@ export const PhonesManager: React.FC = () => {
           </div>
 
           {/* قسم البائعين الأفراد */}
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+          <div className="bg-black border border-[#2F3336] rounded-2xl p-5 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
               <div className="flex items-center gap-2 text-purple-400">
                 <User className="w-5 h-5" />
                 <h2 className="text-base font-bold text-white">البائعون الأفراد (مستخدمين عاديين)</h2>
@@ -693,7 +693,7 @@ export const PhonesManager: React.FC = () => {
                 const indPhones = phones.filter(p => p.sellerName === sellerName);
                 const first = indPhones[0];
                 return (
-                  <div key={idx} className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 flex items-center justify-between">
+                  <div key={idx} className="p-4 rounded-xl bg-[#111111]/60 border border-[#2F3336] flex items-center justify-between">
                     <div className="space-y-1">
                       <span className="font-bold text-sm text-white block">{sellerName}</span>
                       <span className="text-xs text-zinc-400 block">{first?.city} • {first?.sellerPhone}</span>
@@ -718,7 +718,7 @@ export const PhonesManager: React.FC = () => {
           {/* نماذج إضافة ماركة وموديل */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* إضافة ماركة جديدة */}
-            <form onSubmit={handleAddBrand} className="bg-zinc-950 border border-zinc-800 p-5 rounded-2xl space-y-3">
+            <form onSubmit={handleAddBrand} className="bg-black border border-[#2F3336] p-5 rounded-2xl space-y-3">
               <div className="flex items-center gap-2 text-yellow-400">
                 <Plus className="w-4 h-4" />
                 <h3 className="text-sm font-bold text-white">إضافة ماركة جديدة للكتالوج</h3>
@@ -728,7 +728,7 @@ export const PhonesManager: React.FC = () => {
                 placeholder="اسم الماركة (مثال: Google Pixel, Infinix)..."
                 value={newBrandName}
                 onChange={e => setNewBrandName(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-yellow-500"
+                className="w-full bg-[#111111] border border-[#2F3336] rounded-xl px-4 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-yellow-500"
               />
               <button
                 type="submit"
@@ -739,7 +739,7 @@ export const PhonesManager: React.FC = () => {
             </form>
 
             {/* إضافة موديل تابع لماركة */}
-            <form onSubmit={handleAddModel} className="bg-zinc-950 border border-zinc-800 p-5 rounded-2xl space-y-3">
+            <form onSubmit={handleAddModel} className="bg-black border border-[#2F3336] p-5 rounded-2xl space-y-3">
               <div className="flex items-center gap-2 text-yellow-400">
                 <Plus className="w-4 h-4" />
                 <h3 className="text-sm font-bold text-white">إضافة موديل هاتف تحت ماركة</h3>
@@ -748,7 +748,7 @@ export const PhonesManager: React.FC = () => {
                 <select
                   value={selectedBrandForModel}
                   onChange={e => setSelectedBrandForModel(e.target.value)}
-                  className="bg-zinc-900 border border-zinc-700 text-xs text-white rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
+                  className="bg-[#111111] border border-[#2F3336] text-xs text-white rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
                 >
                   <option value="">اختر الماركة</option>
                   {brands.map(b => (
@@ -760,12 +760,12 @@ export const PhonesManager: React.FC = () => {
                   placeholder="اسم الموديل..."
                   value={newModelName}
                   onChange={e => setNewModelName(e.target.value)}
-                  className="bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500"
+                  className="bg-[#111111] border border-[#2F3336] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-bold rounded-xl text-xs transition border border-zinc-700"
+                className="w-full py-2 bg-[#1A1A1A] hover:bg-zinc-700 text-white font-bold rounded-xl text-xs transition border border-[#2F3336]"
               >
                 إضافة الموديل للكتالوج
               </button>
@@ -773,15 +773,15 @@ export const PhonesManager: React.FC = () => {
           </div>
 
           {/* شجرة الماركات والموديلات */}
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4">
-            <h2 className="text-base font-bold text-white pb-3 border-b border-zinc-800">
+          <div className="bg-black border border-[#2F3336] rounded-2xl p-5 space-y-4">
+            <h2 className="text-base font-bold text-white pb-3 border-b border-[#2F3336]">
               قائمة الماركات والموديلات المعتمدة في النظام ({brands.length} ماركة)
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {brands.map(brand => (
-                <div key={brand.id} className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
+                <div key={brand.id} className="p-4 rounded-xl bg-[#111111]/60 border border-[#2F3336] space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-[#2F3336]">
                     <span className="font-black text-sm text-yellow-400">{brand.name}</span>
                     <span className="text-[11px] text-zinc-400 font-mono">{brand.models.length} موديل</span>
                   </div>
@@ -789,7 +789,7 @@ export const PhonesManager: React.FC = () => {
                     {brand.models.map((model, mIdx) => (
                       <span
                         key={mIdx}
-                        className="text-[11px] bg-zinc-800 text-zinc-300 px-2.5 py-1 rounded-lg border border-zinc-700/60"
+                        className="text-[11px] bg-[#1A1A1A] text-zinc-300 px-2.5 py-1 rounded-lg border border-[#2F3336]/60"
                       >
                         {model}
                       </span>
@@ -807,7 +807,7 @@ export const PhonesManager: React.FC = () => {
       {/* ========================================================= */}
       {activeTab === 'commission' && (
         <div className="space-y-6">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 sm:p-6 space-y-6 shadow-xl">
+          <div className="bg-black border border-[#2F3336] rounded-2xl p-5 sm:p-6 space-y-6 shadow-xl">
             {/* التنبيه الحاسم لقواعد العمولة */}
             <div className="p-4 rounded-xl bg-blue-950/20 border border-blue-800/40 text-blue-300 text-xs sm:text-sm space-y-1.5 leading-relaxed">
               <div className="flex items-center gap-2 font-bold text-blue-200">
@@ -824,7 +824,7 @@ export const PhonesManager: React.FC = () => {
 
             <form onSubmit={handleSaveCommissionSettings} className="space-y-5">
               {/* المفتاح الرئيسي Toggle */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-[#111111] border border-[#2F3336]">
                 <div>
                   <h3 className="font-bold text-sm text-white">تفعيل نظام العمولة لسوق الهواتف</h3>
                   <p className="text-xs text-zinc-400 mt-0.5">التحكم في احتساب عمولة المنصة على مبيعات المحلات التجارية</p>
@@ -834,11 +834,11 @@ export const PhonesManager: React.FC = () => {
                   type="button"
                   onClick={() => setIsCommissionEnabled(prev => !prev)}
                   className={`w-14 h-7 rounded-full transition-colors relative p-1 ${
-                    isCommissionEnabled ? 'bg-yellow-500' : 'bg-zinc-800'
+                    isCommissionEnabled ? 'bg-yellow-500' : 'bg-[#1A1A1A]'
                   }`}
                 >
                   <div
-                    className={`w-5 h-5 rounded-full bg-zinc-950 transition-transform ${
+                    className={`w-5 h-5 rounded-full bg-black transition-transform ${
                       isCommissionEnabled ? 'translate-x-0' : '-translate-x-7'
                     }`}
                   />
@@ -849,7 +849,7 @@ export const PhonesManager: React.FC = () => {
               <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 transition-opacity ${!isCommissionEnabled ? 'opacity-50' : 'opacity-100'}`}>
                 <div>
                   <label className="block text-xs font-bold text-zinc-300 mb-2">نوع احتساب العمولة:</label>
-                  <div className="grid grid-cols-2 gap-2 bg-zinc-900 p-1 rounded-xl border border-zinc-800">
+                  <div className="grid grid-cols-2 gap-2 bg-[#111111] p-1 rounded-xl border border-[#2F3336]">
                     <button
                       type="button"
                       disabled={!isCommissionEnabled}
@@ -892,7 +892,7 @@ export const PhonesManager: React.FC = () => {
                       if (commissionType === 'percentage') setCommissionRate(val);
                       else setFixedCommissionAmount(val);
                     }}
-                    className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-yellow-500 font-mono disabled:cursor-not-allowed"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-yellow-500 font-mono disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -913,8 +913,8 @@ export const PhonesManager: React.FC = () => {
           </div>
 
           {/* هيكل سجل العمليات المالية المستقبلية */}
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-3">
-            <h3 className="font-bold text-sm text-white pb-2 border-b border-zinc-800">
+          <div className="bg-black border border-[#2F3336] rounded-2xl p-5 space-y-3">
+            <h3 className="font-bold text-sm text-white pb-2 border-b border-[#2F3336]">
               سجل العمليات المالية والعمولات المحصلة (Commission Transactions)
             </h3>
             <p className="text-xs text-zinc-500 italic py-4 text-center">
@@ -928,8 +928,8 @@ export const PhonesManager: React.FC = () => {
       {/* التبويب 5: سجل التدقيق الإداري (Audit Log)                  */}
       {/* ========================================================= */}
       {activeTab === 'audit' && (
-        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+        <div className="bg-black border border-[#2F3336] rounded-2xl p-5 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
             <div className="flex items-center gap-2 text-yellow-400">
               <Clock className="w-5 h-5" />
               <h2 className="text-base font-bold text-white">سجل إجراءات وتدقيق سوق الهواتف</h2>
@@ -941,12 +941,12 @@ export const PhonesManager: React.FC = () => {
             {auditLogs.map(log => (
               <div
                 key={log.id}
-                className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 flex items-center justify-between text-xs"
+                className="p-3.5 rounded-xl bg-[#111111]/60 border border-[#2F3336] flex items-center justify-between text-xs"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-zinc-200">{log.action}</span>
-                    <span className="font-mono text-yellow-400 bg-zinc-800 px-2 py-0.5 rounded text-[10px]">
+                    <span className="font-mono text-yellow-400 bg-[#1A1A1A] px-2 py-0.5 rounded text-[10px]">
                       {log.target}
                     </span>
                   </div>
@@ -967,10 +967,10 @@ export const PhonesManager: React.FC = () => {
       {/* نافذة مراجعة المنتج قبل النشر (Review Modal)               */}
       {/* ========================================================= */}
       {reviewProduct && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4">
+          <div className="bg-black border border-[#2F3336] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl">
             {/* الرأس */}
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
+            <div className="flex items-center justify-between pb-4 border-b border-[#2F3336]">
               <div className="flex items-center gap-2 text-yellow-400">
                 <Smartphone className="w-5 h-5" />
                 <h3 className="font-bold text-base text-white">مراجعة بيانات الهاتف: {reviewProduct.id}</h3>
@@ -992,14 +992,14 @@ export const PhonesManager: React.FC = () => {
                     key={i}
                     src={img}
                     alt=""
-                    className="w-32 h-32 rounded-xl object-cover border border-zinc-800 bg-zinc-900 shrink-0"
+                    className="w-32 h-32 rounded-xl object-cover border border-[#2F3336] bg-[#111111] shrink-0"
                   />
                 ))}
               </div>
             </div>
 
             {/* المواصفات والبيانات */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-zinc-900/60 p-4 rounded-xl border border-zinc-800 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-[#111111]/60 p-4 rounded-xl border border-[#2F3336] text-xs">
               <div>
                 <span className="text-zinc-500 block">الماركة والموديل:</span>
                 <span className="font-bold text-zinc-200">{reviewProduct.brand} - {reviewProduct.model}</span>
@@ -1029,13 +1029,13 @@ export const PhonesManager: React.FC = () => {
             {/* الوصف */}
             <div>
               <span className="text-xs font-bold text-zinc-400 block mb-1">وصف البائع:</span>
-              <p className="text-xs text-zinc-300 bg-zinc-900 p-3 rounded-xl border border-zinc-800 leading-relaxed">
+              <p className="text-xs text-zinc-300 bg-[#111111] p-3 rounded-xl border border-[#2F3336] leading-relaxed">
                 {reviewProduct.description}
               </p>
             </div>
 
             {/* بيانات البائع */}
-            <div className="p-3.5 rounded-xl bg-zinc-900/40 border border-zinc-800 flex items-center justify-between text-xs">
+            <div className="p-3.5 rounded-xl bg-[#111111]/40 border border-[#2F3336] flex items-center justify-between text-xs">
               <div>
                 <span className="text-zinc-500 block text-[10px]">نوع وهوية البائع:</span>
                 <span className="font-bold text-zinc-200 flex items-center gap-1.5 mt-0.5">
@@ -1051,7 +1051,7 @@ export const PhonesManager: React.FC = () => {
             </div>
 
             {/* أزرار الإجراءات في المراجعة */}
-            <div className="pt-4 border-t border-zinc-800 flex items-center justify-between gap-2 flex-wrap">
+            <div className="pt-4 border-t border-[#2F3336] flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleUpdateStatus(reviewProduct.id, 'published')}
@@ -1070,7 +1070,7 @@ export const PhonesManager: React.FC = () => {
                 {reviewProduct.status === 'published' && (
                   <button
                     onClick={() => handleUpdateStatus(reviewProduct.id, 'suspended')}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl text-xs transition"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-[#1A1A1A] hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl text-xs transition"
                   >
                     إيقاف مؤقت
                   </button>
@@ -1079,7 +1079,7 @@ export const PhonesManager: React.FC = () => {
 
               <button
                 onClick={() => setReviewProduct(null)}
-                className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white rounded-xl text-xs transition"
+                className="px-4 py-2 bg-[#111111] hover:bg-[#1A1A1A] text-zinc-400 hover:text-white rounded-xl text-xs transition"
               >
                 إغلاق
               </button>
@@ -1090,8 +1090,8 @@ export const PhonesManager: React.FC = () => {
 
       {/* نافذة تحديد سبب الرفض */}
       {rejectionModalOpen && reviewProduct && (
-        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center p-4">
+          <div className="bg-black border border-[#2F3336] rounded-2xl w-full max-w-md p-5 space-y-4 shadow-2xl">
             <h3 className="font-bold text-sm text-white flex items-center gap-2 text-rose-400">
               <AlertTriangle className="w-4 h-4" /> سبب رفض إعلان الهاتف
             </h3>
@@ -1099,12 +1099,12 @@ export const PhonesManager: React.FC = () => {
               placeholder="اكتب سبب الرفض ليتم إرساله للبائع في الإشعارات (مثال: الصور غير واضحة، السعر غير منطقي، نقص في المواصفات)..."
               value={rejectionReasonText}
               onChange={e => setRejectionReasonText(e.target.value)}
-              className="w-full h-28 bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500"
+              className="w-full h-28 bg-[#111111] border border-[#2F3336] rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500"
             />
             <div className="flex items-center justify-end gap-2">
               <button
                 onClick={() => setRejectionModalOpen(false)}
-                className="px-3 py-1.5 bg-zinc-800 text-zinc-300 rounded-lg text-xs"
+                className="px-3 py-1.5 bg-[#1A1A1A] text-zinc-300 rounded-lg text-xs"
               >
                 إلغاء
               </button>

@@ -57,7 +57,7 @@ export const ReportsManager: React.FC = () => {
 
   return (
     <div className="space-y-6 text-right font-['Cairo',sans-serif]" dir="rtl">
-      <div className="flex items-center gap-3 pb-4 border-b border-[#1F2937]">
+      <div className="flex items-center gap-3 pb-4 border-b border-[#2F3336]">
         <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
           <ShieldAlert className="w-6 h-6" />
         </div>
@@ -85,7 +85,7 @@ export const ReportsManager: React.FC = () => {
                 </div>
                 <span className="text-[10px] text-gray-400">{new Date(rep.created_at).toLocaleDateString('ar-YE')}</span>
               </div>
-              {rep.details && <p className="text-xs text-gray-300 bg-[#141a2c] p-3 rounded-2xl border border-[#1F2937]">{rep.details}</p>}
+              {rep.details && <p className="text-xs text-gray-300 bg-[#141a2c] p-3 rounded-2xl border border-[#2F3336]">{rep.details}</p>}
               <div className="flex gap-2 pt-2">
                 <button onClick={() => handleAction(rep.id, 'RESOLVED')} className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-black font-black text-xs rounded-xl">اتخاذ إجراء</button>
                 <button onClick={() => handleAction(rep.id, 'DISMISSED')} className="px-4 py-2 bg-[#161D2B] text-gray-300 text-xs font-bold rounded-xl">تجاهل البلاغ</button>

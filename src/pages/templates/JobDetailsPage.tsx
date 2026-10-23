@@ -402,7 +402,7 @@ export const JobDetailsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div dir="rtl" className="min-h-[60vh] flex flex-col items-center justify-center font-['Cairo',sans-serif] text-slate-300 gap-3">
+      <div dir="rtl" className="bg-black min-h-screen min-h-[60vh] flex flex-col items-center justify-center font-['Cairo',sans-serif] text-slate-300 gap-3">
         <Loader2 className="w-8 h-8 text-[#FFC500] animate-spin" />
         <span className="text-xs font-bold">جارٍ تحميل بيانات الشاغر والوساطة...</span>
       </div>
@@ -411,7 +411,7 @@ export const JobDetailsPage: React.FC = () => {
 
   if (error || !job) {
     return (
-      <div dir="rtl" className="max-w-4xl mx-auto px-4 py-16 text-center font-['Cairo',sans-serif] text-white space-y-4">
+      <div dir="rtl" className="bg-black min-h-screen max-w-4xl mx-auto px-4 py-16 text-center font-['Cairo',sans-serif] text-white space-y-4">
         <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-[#FFC500] flex items-center justify-center mx-auto">
           <AlertCircle size={32} />
         </div>
@@ -429,7 +429,7 @@ export const JobDetailsPage: React.FC = () => {
   }
 
   return (
-    <div dir="rtl" className="max-w-4xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo',sans-serif] text-white">
+    <div dir="rtl" className="bg-black min-h-screen max-w-4xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo',sans-serif] text-white">
       <AdBanner placementId="4" className="mb-2" />
 
       {/* التنبيه المنبثق الأخضر عند النجاح */}
@@ -441,11 +441,11 @@ export const JobDetailsPage: React.FC = () => {
       )}
 
       {/* شريط الرجوع والحالة */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div className="flex items-center justify-between border-b border-[#2F3336] pb-3">
         <button
           type="button"
           onClick={() => navigate('/jobs')}
-          className="px-3.5 py-1.5 rounded-xl bg-[#111625] border border-slate-800 text-xs font-bold text-slate-300 hover:text-[#FFC500] hover:border-[#FFC500]/40 transition-all flex items-center gap-1.5 cursor-pointer"
+          className="px-3.5 py-1.5 rounded-xl bg-[#111111] border border-[#2F3336] text-xs font-bold text-slate-300 hover:text-[#FFC500] hover:border-[#FFC500]/40 transition-all flex items-center gap-1.5 cursor-pointer"
         >
           <ArrowRight size={14} />
           <span>الرجوع للوظائف</span>
@@ -457,10 +457,10 @@ export const JobDetailsPage: React.FC = () => {
       </div>
 
       {/* بطاقة تفاصيل الوظيفة الرئيسية */}
-      <div className="bg-[#0B0F19] rounded-2xl border border-slate-800 p-5 sm:p-7 space-y-6 shadow-2xl">
+      <div className="bg-black rounded-2xl border border-[#2F3336] p-5 sm:p-7 space-y-6 shadow-2xl">
         
         {/* عنوان الوظيفة وحفظ سرية المنشأة */}
-        <div className="border-b border-slate-800/80 pb-5 space-y-2.5">
+        <div className="border-b border-[#2F3336]/80 pb-5 space-y-2.5">
           <div className="flex items-center gap-1.5 text-xs font-black text-[#FFC500]">
             <Briefcase size={15} />
             <span>تفاصيل الوظيفة</span>
@@ -477,7 +477,7 @@ export const JobDetailsPage: React.FC = () => {
           {/* البادجات */}
           <div className="flex flex-wrap items-center gap-2 pt-2 text-xs">
             {job.city && (
-              <span className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#111111] border border-[#2F3336] text-slate-300">
                 <MapPin size={13} className="text-[#FFC500]" />
                 <span>{job.city}</span>
               </span>
@@ -488,7 +488,7 @@ export const JobDetailsPage: React.FC = () => {
               </span>
             )}
             {job.experience && (
-              <span className="px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+              <span className="px-3 py-1 rounded-lg bg-[#111111] border border-[#2F3336] text-slate-300">
                 خبرة: {job.experience}
               </span>
             )} 
@@ -508,7 +508,7 @@ export const JobDetailsPage: React.FC = () => {
                 <Briefcase size={15} />
                 <span>الوصف العام للوظيفة والمهام:</span>
               </h2>
-              <p className="text-slate-300 leading-relaxed bg-[#070A12] p-4 rounded-xl border border-slate-800/80 whitespace-pre-line text-xs sm:text-sm">
+              <p className="text-slate-300 leading-relaxed bg-[#111111] p-4 rounded-xl border border-[#2F3336]/80 whitespace-pre-line text-xs sm:text-sm">
                 {getPublicJobDescription(job.description)}
               </p>
 
@@ -557,7 +557,7 @@ export const JobDetailsPage: React.FC = () => {
               <h2 className="text-xs font-bold text-[#FFC500]">المهارات والمسؤوليات الأساسية:</h2>
               <div className="flex flex-wrap gap-1.5">
                 {job.skills.map((skill: string, idx: number) => (
-                  <span key={idx} className="px-2.5 py-1 rounded-lg bg-[#111625] border border-slate-800 text-slate-300 text-xs">
+                  <span key={idx} className="px-2.5 py-1 rounded-lg bg-[#111111] border border-[#2F3336] text-slate-300 text-xs">
                     • {skill}
                   </span>
                 ))}
@@ -566,7 +566,7 @@ export const JobDetailsPage: React.FC = () => {
           )}
 
           {/* صندوق الراتب */}
-          <div className="bg-[#111625] p-4 rounded-xl border border-slate-800 flex items-center justify-between text-xs sm:text-sm">
+          <div className="bg-[#111111] p-4 rounded-xl border border-[#2F3336] flex items-center justify-between text-xs sm:text-sm">
             <span className="text-slate-400 font-bold text-xs sm:text-sm">الراتب:</span>
             <span className="text-xs sm:text-sm font-black text-[#FFC500]">
               {formatJobSalary(job.salary)}
@@ -575,7 +575,7 @@ export const JobDetailsPage: React.FC = () => {
         </div>
 
         {/* الشريط السفلي وزر التقديم */}
-        <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="pt-4 border-t border-[#2F3336] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-slate-400">
             <ShieldCheck size={18} className="text-emerald-400 shrink-0" />
             <span>يتم التقديم وحفظ البيانات والوساطة وفق سياسة يمن ريتنغ المعتمدة.</span>
@@ -598,13 +598,13 @@ export const JobDetailsPage: React.FC = () => {
 
       {/* نافذة التقديم بتصميم لوحة التحكم الفاخر ودعم المرفقات */}
       {isApplyModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black  overflow-y-auto">
           <div
             dir="rtl"
-            className="bg-[#0B0F19] border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden font-['Cairo',sans-serif] text-slate-200 my-auto text-right"
+            className="bg-black border border-[#2F3336] rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden font-['Cairo',sans-serif] text-slate-200 my-auto text-right"
           >
             {/* رأس النموذج الفاخر */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#070A12] shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#2F3336] bg-[#111111] shrink-0">
               <div>
                 <h2 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
                   <span className="p-1.5 rounded-lg bg-[#FFC500]/10 text-[#FFC500]">
@@ -619,7 +619,7 @@ export const JobDetailsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsApplyModalOpen(false)}
-                className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800/60 transition-colors cursor-pointer"
+                className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-[#111111]/60 transition-colors cursor-pointer"
               >
                 <X size={20} />
               </button>
@@ -659,7 +659,7 @@ export const JobDetailsPage: React.FC = () => {
                     placeholder="مثال: محمد أحمد علي الحكيمي"
                     value={applicantName}
                     onChange={(e) => setApplicantName(e.target.value)}
-                    className="w-full bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl p-2.5 text-white outline-none transition"
+                    className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl p-2.5 text-white outline-none transition"
                   />
                 </div>
 
@@ -675,7 +675,7 @@ export const JobDetailsPage: React.FC = () => {
                       value={applicantPhone}
                       onChange={handlePhoneChange}
                       placeholder="77XXXXXXX"
-                      className="w-full bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl p-2.5 text-white font-mono text-left outline-none transition"
+                      className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl p-2.5 text-white font-mono text-left outline-none transition"
                     />
                     <span className="text-[10px] text-slate-400 block mt-1">
                       تم إدخال: {applicantPhone.length} من 9 أرقام
@@ -690,7 +690,7 @@ export const JobDetailsPage: React.FC = () => {
                       placeholder="مثال: صنعاء - حدة"
                       value={applicantCity}
                       onChange={(e) => setApplicantCity(e.target.value)}
-                      className="w-full bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl p-2.5 text-white outline-none transition"
+                      className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl p-2.5 text-white outline-none transition"
                     />
                   </div>
                 </div>
@@ -703,7 +703,7 @@ export const JobDetailsPage: React.FC = () => {
                     placeholder="اكتب نبذة مختصرة عن مؤهلك العلمي، وعدد سنوات خبرتك في هذا المجال..."
                     value={qualifications}
                     onChange={(e) => setQualifications(e.target.value)}
-                    className="w-full bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl p-2.5 text-white outline-none transition"
+                    className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl p-2.5 text-white outline-none transition"
                   />
                 </div>
               </div>
@@ -716,7 +716,7 @@ export const JobDetailsPage: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* رفع ملف السيرة الذاتية PDF */}
-                  <div className="p-3 bg-[#111625] border border-slate-700/80 rounded-xl space-y-2">
+                  <div className="p-3 bg-[#111111] border border-[#2F3336] rounded-xl space-y-2">
                     <span className="text-white font-bold block text-[11px] flex items-center gap-1">
                       <FileText size={13} className="text-red-400" /> ملف السيرة الذاتية (CV - PDF)
                     </span>
@@ -733,7 +733,7 @@ export const JobDetailsPage: React.FC = () => {
                         />
                       </label>
                     ) : (
-                      <div className="flex items-center justify-between p-2 bg-[#070A12] border border-red-500/30 rounded-lg text-xs">
+                      <div className="flex items-center justify-between p-2 bg-[#111111] border border-red-500/30 rounded-lg text-xs">
                         <div className="flex items-center gap-2 truncate">
                           <FileText size={16} className="text-red-400 shrink-0" />
                           <div className="truncate">
@@ -754,7 +754,7 @@ export const JobDetailsPage: React.FC = () => {
                   </div>
 
                   {/* رفع وثائق وشهادات المتقدم من 1 إلى 4 صور */}
-                  <div className="p-3 bg-[#111625] border border-slate-700/80 rounded-xl space-y-2">
+                  <div className="p-3 bg-[#111111] border border-[#2F3336] rounded-xl space-y-2">
                     <div className="flex justify-between items-center text-[11px]">
                       <span className="text-white font-bold flex items-center gap-1">
                         <Image size={13} className="text-blue-400" /> شهادات الخبرة والوثائق
@@ -779,12 +779,12 @@ export const JobDetailsPage: React.FC = () => {
                     {selectedImages.length > 0 && (
                       <div className="grid grid-cols-4 gap-1.5 pt-1">
                         {selectedImages.map((img, idx) => (
-                          <div key={idx} className="relative group rounded-lg overflow-hidden border border-slate-700 aspect-square bg-[#070A12]">
+                          <div key={idx} className="relative group rounded-lg overflow-hidden border border-slate-700 aspect-square bg-[#111111]">
                             <img src={img.preview} alt="معاينة" className="w-full h-full object-cover" />
                             <button
                               type="button"
                               onClick={() => handleRemoveImage(idx)}
-                              className="absolute top-1 right-1 p-1 bg-black/80 hover:bg-red-600 text-white rounded-full transition cursor-pointer"
+                              className="absolute top-1 right-1 p-1 bg-black hover:bg-red-600 text-white rounded-full transition cursor-pointer"
                               title="حذف الصورة"
                             >
                               <X size={10} />
@@ -841,11 +841,11 @@ export const JobDetailsPage: React.FC = () => {
               )}
 
               {/* ④ أزرار الإجراءات */}
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-[#2F3336]">
                 <button
                   type="button"
                   onClick={() => setIsApplyModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#111625] hover:bg-slate-800 border border-slate-700 text-white text-xs font-bold transition cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#111111] hover:bg-[#111111] border border-slate-700 text-white text-xs font-bold transition cursor-pointer"
                 >
                   إلغاء
                 </button>

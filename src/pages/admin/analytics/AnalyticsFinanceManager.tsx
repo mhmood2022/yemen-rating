@@ -97,8 +97,8 @@ export const AnalyticsFinanceManager: React.FC = () => {
   return (
     <div dir="rtl" className="space-y-6 text-zinc-100 font-sans">
       {/* 1. رأس الصفحة والفلاتر الزمنية */}
-      <div className="bg-zinc-900/80 border border-zinc-800 p-5 rounded-2xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-zinc-800">
+      <div className="bg-[#111111]/80 border border-[#2F3336] p-5 rounded-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#2F3336]">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
               <BarChart3 className="w-6 h-6" />
@@ -113,7 +113,7 @@ export const AnalyticsFinanceManager: React.FC = () => {
 
           <div className="flex items-center gap-2">
             {/* فلتر النطاق الزمني */}
-            <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+            <div className="flex items-center gap-1 bg-black p-1 rounded-xl border border-[#2F3336]">
               {[
                 { id: 'today', label: 'اليوم' },
                 { id: 'week', label: '7 أيام' },
@@ -137,7 +137,7 @@ export const AnalyticsFinanceManager: React.FC = () => {
 
             <button
               onClick={() => alert('تم تنزيل ملخص التقرير المالي كملف CSV')}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-xl text-xs font-bold border border-zinc-700 transition"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#1A1A1A] hover:bg-zinc-700 text-zinc-200 rounded-xl text-xs font-bold border border-[#2F3336] transition"
             >
               <Download className="w-3.5 h-3.5 text-yellow-400" /> تصدير التقرير
             </button>
@@ -161,13 +161,13 @@ export const AnalyticsFinanceManager: React.FC = () => {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
                   isActive
                     ? 'bg-yellow-500 text-zinc-950 shadow-md shadow-yellow-500/10'
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                    : 'text-zinc-400 hover:text-white hover:bg-[#1A1A1A]'
                 }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
                 {tab.count !== undefined && (
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${isActive ? 'bg-zinc-950/20 text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${isActive ? 'bg-black/20 text-zinc-950' : 'bg-[#1A1A1A] text-zinc-300'}`}>
                     {tab.count}
                   </span>
                 )}
@@ -182,7 +182,7 @@ export const AnalyticsFinanceManager: React.FC = () => {
         {financialCards.map((c, i) => {
           const Icon = c.icon;
           return (
-            <div key={i} className="p-5 rounded-2xl bg-zinc-950 border border-zinc-800/90 hover:border-zinc-700 transition flex flex-col justify-between">
+            <div key={i} className="p-5 rounded-2xl bg-black border border-[#2F3336]/90 hover:border-[#2F3336] transition flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-zinc-400 font-bold">{c.title}</span>
                 <div
@@ -215,8 +215,8 @@ export const AnalyticsFinanceManager: React.FC = () => {
       {(activeTab === 'overview' || activeTab === 'sources') && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* توزيع مصادر الإيرادات */}
-          <div className="lg:col-span-2 bg-zinc-950 border border-zinc-800 rounded-2xl p-5 sm:p-6 space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+          <div className="lg:col-span-2 bg-black border border-[#2F3336] rounded-2xl p-5 sm:p-6 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
               <div className="flex items-center gap-2 text-yellow-400">
                 <PieChart className="w-5 h-5" />
                 <h3 className="font-bold text-base text-white">توزيع مصادر الدخل والعمولات المحصلة</h3>
@@ -233,7 +233,7 @@ export const AnalyticsFinanceManager: React.FC = () => {
                       {src.value} ({src.percent}%)
                     </span>
                   </div>
-                  <div className="w-full bg-zinc-900 h-2.5 rounded-full overflow-hidden border border-zinc-800">
+                  <div className="w-full bg-[#111111] h-2.5 rounded-full overflow-hidden border border-[#2F3336]">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${src.percent}%`, backgroundColor: src.color }}
@@ -244,15 +244,15 @@ export const AnalyticsFinanceManager: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-3 gap-3 pt-4 border-t border-zinc-900 text-center text-xs">
-              <div className="p-3 bg-zinc-900/60 rounded-xl border border-zinc-800">
+              <div className="p-3 bg-[#111111]/60 rounded-xl border border-[#2F3336]">
                 <span className="text-zinc-500 block text-[10px]">التحصيل بالدولار</span>
                 <span className="font-bold text-white font-mono mt-0.5 block">$24,850</span>
               </div>
-              <div className="p-3 bg-zinc-900/60 rounded-xl border border-zinc-800">
+              <div className="p-3 bg-[#111111]/60 rounded-xl border border-[#2F3336]">
                 <span className="text-zinc-500 block text-[10px]">التحصيل بالريال اليمني</span>
                 <span className="font-bold text-yellow-400 font-mono mt-0.5 block">14,250,000 YER</span>
               </div>
-              <div className="p-3 bg-zinc-900/60 rounded-xl border border-zinc-800">
+              <div className="p-3 bg-[#111111]/60 rounded-xl border border-[#2F3336]">
                 <span className="text-zinc-500 block text-[10px]">التحصيل بالريال السعودي</span>
                 <span className="font-bold text-emerald-400 font-mono mt-0.5 block">18,500 SAR</span>
               </div>
@@ -260,9 +260,9 @@ export const AnalyticsFinanceManager: React.FC = () => {
           </div>
 
           {/* مؤشرات الأمان والنمو */}
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
+          <div className="bg-black border border-[#2F3336] rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
             <div>
-              <div className="flex items-center gap-2 text-emerald-400 pb-3 border-b border-zinc-800">
+              <div className="flex items-center gap-2 text-emerald-400 pb-3 border-b border-[#2F3336]">
                 <ShieldCheck className="w-5 h-5" />
                 <h3 className="font-bold text-base text-white">السياسات المالية وسرية العمولات</h3>
               </div>
@@ -272,11 +272,11 @@ export const AnalyticsFinanceManager: React.FC = () => {
             </div>
 
             <div className="space-y-2.5 pt-4 border-t border-zinc-900 text-xs">
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-zinc-900 border border-zinc-800">
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#111111] border border-[#2F3336]">
                 <span className="text-zinc-400">معدل نمو الإيرادات:</span>
                 <span className="font-bold text-emerald-400">+18.4% شهرياً</span>
               </div>
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-zinc-900 border border-zinc-800">
+              <div className="flex items-center justify-between p-2.5 rounded-lg bg-[#111111] border border-[#2F3336]">
                 <span className="text-zinc-400">الأنشطة التجارية المشتركة:</span>
                 <span className="font-bold text-yellow-400">1,420 منشأة</span>
               </div>
@@ -289,8 +289,8 @@ export const AnalyticsFinanceManager: React.FC = () => {
       {/* التبويب 2: أداء القطاعات الـ 34 الأكثر نمواً                */}
       {/* ========================================================= */}
       {activeTab === 'categories' && (
-        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-xl">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+        <div className="bg-black border border-[#2F3336] rounded-2xl p-5 sm:p-6 space-y-4 shadow-xl">
+          <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
             <div className="flex items-center gap-2 text-yellow-400">
               <Layers className="w-5 h-5" />
               <h2 className="text-base font-bold text-white">أداء وتفاعل القطاعات الـ 34 الرسمية</h2>
@@ -300,8 +300,8 @@ export const AnalyticsFinanceManager: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {topCategories.map((cat, idx) => (
-              <div key={idx} className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
-                <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
+              <div key={idx} className="p-4 rounded-xl bg-[#111111]/60 border border-[#2F3336] space-y-2">
+                <div className="flex items-center justify-between pb-2 border-b border-[#2F3336]">
                   <span className="font-bold text-sm text-white truncate">{cat.name}</span>
                   <span className="text-xs font-mono font-bold text-yellow-400">{cat.share}</span>
                 </div>
@@ -321,7 +321,7 @@ export const AnalyticsFinanceManager: React.FC = () => {
       {activeTab === 'transactions' && (
         <div className="space-y-4">
           {/* شريط الفلاتر والبحث في المعاملات */}
-          <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="p-4 rounded-2xl bg-black border border-[#2F3336] flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="relative w-full sm:w-80">
               <Search className="w-4 h-4 text-zinc-400 absolute right-3.5 top-3" />
               <input
@@ -329,7 +329,7 @@ export const AnalyticsFinanceManager: React.FC = () => {
                 placeholder="بحث برقم المعاملة، العميل، أو المرجع..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
+                className="w-full bg-[#111111] border border-[#2F3336] rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
               />
             </div>
 
@@ -337,7 +337,7 @@ export const AnalyticsFinanceManager: React.FC = () => {
               <select
                 value={currencyFilter}
                 onChange={e => setCurrencyFilter(e.target.value)}
-                className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
+                className="bg-[#111111] border border-[#2F3336] text-xs text-zinc-200 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
               >
                 <option value="all">كل العملات</option>
                 <option value="USD">دولار (USD)</option>
@@ -348,7 +348,7 @@ export const AnalyticsFinanceManager: React.FC = () => {
               <select
                 value={statusFilter}
                 onChange={e => setStatusFilter(e.target.value)}
-                className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
+                className="bg-[#111111] border border-[#2F3336] text-xs text-zinc-200 rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
               >
                 <option value="all">جميع الحالات</option>
                 <option value="settled">مسوى (Settled)</option>
@@ -358,10 +358,10 @@ export const AnalyticsFinanceManager: React.FC = () => {
           </div>
 
           {/* جدول المعاملات */}
-          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden shadow-xl">
+          <div className="bg-black rounded-2xl border border-[#2F3336] overflow-hidden shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-zinc-900 text-zinc-400 border-b border-zinc-800">
+                <thead className="bg-[#111111] text-zinc-400 border-b border-[#2F3336]">
                   <tr>
                     <th className="py-3.5 px-4">رقم العملية</th>
                     <th className="py-3.5 px-4">مصدر المعاملة</th>
@@ -374,7 +374,7 @@ export const AnalyticsFinanceManager: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-zinc-800 text-zinc-200">
                   {filteredTransactions.map(tx => (
-                    <tr key={tx.id} className="hover:bg-zinc-900/50 transition">
+                    <tr key={tx.id} className="hover:bg-[#111111]/50 transition">
                       <td className="py-3.5 px-4 font-mono font-bold text-zinc-500">{tx.id}</td>
                       <td className="py-3.5 px-4 font-bold text-white">{tx.source}</td>
                       <td className="py-3.5 px-4 text-zinc-300">{tx.clientName}</td>

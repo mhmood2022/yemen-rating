@@ -248,7 +248,7 @@ export const AdminAdsView: React.FC = () => {
             <Card key={media.id} className="p-3 bg-[#111111] border border-[#222222] rounded-[12px] space-y-2">
               <div className="h-32 rounded-[8px] overflow-hidden bg-black relative">
                 <img src={media.thumbnailUrl || media.mediaUrl} alt={media.fileName} className="w-full h-full object-cover" />
-                <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-white text-[9px] font-bold">{media.fileType} · {media.fileSize}</span>
+                <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black text-white text-[9px] font-bold">{media.fileType} · {media.fileSize}</span>
               </div>
               <div>
                 <h4 className="font-bold text-xs text-white truncate">{media.fileName}</h4>

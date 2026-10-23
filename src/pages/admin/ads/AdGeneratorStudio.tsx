@@ -555,8 +555,8 @@ export const AdGeneratorStudio: React.FC = () => {
       `}</style>
 
       {/* 1. منطقة المعاينة العلوية المثبتة للموبايل بتنسيق محكم وجميل */}
-      <div className="sticky top-16 z-30 bg-[#070A10]/95 backdrop-blur-md p-4 rounded-2xl border border-[#1F2937] shadow-2xl">
-        <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#1F2937]">
+      <div className="sticky top-16 z-30 bg-[#000000]/95  p-4 rounded-2xl border border-[#2F3336] shadow-2xl">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#2F3336]">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[#16A34A] animate-ping" />
             <span className="text-xs font-black text-white">المعاينة الحية الفورية (Live Studio Render)</span>
@@ -668,7 +668,7 @@ export const AdGeneratorStudio: React.FC = () => {
                     {showBadge && (
                       <span 
                         style={{ backgroundColor: badgeBgColor, color: badgeTextColor, borderColor: badgeTextColor }} 
-                        className="inline-flex items-center px-3 py-0.5 rounded-full text-[10px] font-black border tracking-wide whitespace-nowrap shadow-sm backdrop-blur-sm"
+                        className="inline-flex items-center px-3 py-0.5 rounded-full text-[10px] font-black border tracking-wide whitespace-nowrap shadow-sm "
                       >
                         {badgeText}
                       </span>
@@ -773,7 +773,7 @@ export const AdGeneratorStudio: React.FC = () => {
                       <QrCode size={24} className="text-black" />
                     </div>
                   ) : (
-                    <span className="text-[10px] text-white/80 font-mono bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm">
+                    <span className="text-[10px] text-white/80 font-mono bg-black/40 px-2 py-0.5 rounded ">
                       {selectedPlacement.name.split(' ')[0]}
                     </span>
                   )}
@@ -795,10 +795,10 @@ export const AdGeneratorStudio: React.FC = () => {
       )}
 
       {/* 2. شريط المواضع الـ 10 ومستويات الإعلان */}
-      <div className="bg-[#0B0F17] p-3 rounded-xl border border-[#1F2937] space-y-2.5">
+      <div className="bg-[#0B0F17] p-3 rounded-xl border border-[#2F3336] space-y-2.5">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <label className="text-[11px] font-bold text-gray-300">موضع العرض:</label>
-          <div className="flex items-center gap-1 bg-[#161D2B] p-0.5 rounded-lg border border-[#1F2937]">
+          <div className="flex items-center gap-1 bg-[#161D2B] p-0.5 rounded-lg border border-[#2F3336]">
             {(["basic", "professional", "premium"] as const).map(tier => (
               <button
                 key={tier}
@@ -823,7 +823,7 @@ export const AdGeneratorStudio: React.FC = () => {
                 className={`shrink-0 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
                   selectedPlacement.id === p.id 
                     ? "bg-[#FFC500] text-black border-[#FFC500] font-bold shadow-sm" 
-                    : "bg-[#161D2B] text-[#9CA3AF] border-[#1F2937] hover:text-white"
+                    : "bg-[#161D2B] text-[#9CA3AF] border-[#2F3336] hover:text-white"
                 }`}
               >
                 #{p.id} {cleanName}
@@ -834,10 +834,10 @@ export const AdGeneratorStudio: React.FC = () => {
       </div>
 
       {/* 3. شريط أدوات الاستوديو الشامل */}
-      <div className="bg-[#0B0F17] p-3.5 sm:p-4 rounded-xl border border-[#1F2937] space-y-4">
+      <div className="bg-[#0B0F17] p-3.5 sm:p-4 rounded-xl border border-[#2F3336] space-y-4">
 
         {/* التبويبات المكتملة */}
-        <div className="flex gap-1 overflow-x-auto pb-1 p-1 bg-[#161D2B] rounded-lg border border-[#1F2937] text-[11px] font-medium custom-scrollbar">
+        <div className="flex gap-1 overflow-x-auto pb-1 p-1 bg-[#161D2B] rounded-lg border border-[#2F3336] text-[11px] font-medium custom-scrollbar">
           {[
             { id: "layout", label: "التخطيط" },
             { id: "media", label: "الوسائط والشعار" },
@@ -887,7 +887,7 @@ export const AdGeneratorStudio: React.FC = () => {
                     className={`py-1.5 px-2 rounded-lg border text-[11px] font-medium transition-all ${
                       adCategoryType === type.id 
                         ? "bg-[#FFC500] text-black border-[#FFC500] font-bold shadow-sm" 
-                        : "bg-[#161D2B] text-gray-300 border-[#1F2937] hover:border-gray-600"
+                        : "bg-[#161D2B] text-gray-300 border-[#2F3336] hover:border-gray-600"
                     }`}
                   >
                     {type.label}
@@ -912,7 +912,7 @@ export const AdGeneratorStudio: React.FC = () => {
                     className={`py-1.5 px-2 rounded-lg border text-[11px] font-medium transition-all ${
                       layoutStyle === l.id 
                         ? "bg-[#FFC500] text-black border-[#FFC500] font-bold shadow-sm" 
-                        : "bg-[#161D2B] text-gray-300 border-[#1F2937] hover:border-gray-600"
+                        : "bg-[#161D2B] text-gray-300 border-[#2F3336] hover:border-gray-600"
                     }`}
                   >
                     {l.label}
@@ -940,7 +940,7 @@ export const AdGeneratorStudio: React.FC = () => {
                     className={`py-1.5 px-1 rounded-md border text-[10.5px] font-medium transition-all ${
                       designTheme === th.id 
                         ? "bg-[#FFC500] text-black border-[#FFC500] font-bold shadow-sm" 
-                        : "bg-[#161D2B] text-[#9CA3AF] border-[#1F2937] hover:border-gray-600"
+                        : "bg-[#161D2B] text-[#9CA3AF] border-[#2F3336] hover:border-gray-600"
                     }`}
                   >
                     {th.label}
@@ -971,7 +971,7 @@ export const AdGeneratorStudio: React.FC = () => {
             </div>
 
             {/* الشعار Logo */}
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] space-y-3">
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white">إظهار شعار المنشأة (Logo)</span>
                 <button onClick={() => setShowLogo(!showLogo)} className={`px-3 py-1 rounded-lg text-xs font-bold ${showLogo ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
@@ -979,12 +979,12 @@ export const AdGeneratorStudio: React.FC = () => {
                 </button>
               </div>
               {showLogo && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-[#1F2937]">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-[#2F3336]">
                   <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                  <button onClick={() => logoInputRef.current?.click()} className="py-2 px-3 rounded-lg bg-[#0B0F17] border border-[#1F2937] text-xs text-[#FFC500] font-bold">
+                  <button onClick={() => logoInputRef.current?.click()} className="py-2 px-3 rounded-lg bg-[#0B0F17] border border-[#2F3336] text-xs text-[#FFC500] font-bold">
                     رفع الشعار
                   </button>
-                  <select value={logoPosition} onChange={(e) => setLogoPosition(e.target.value as any)} className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white">
+                  <select value={logoPosition} onChange={(e) => setLogoPosition(e.target.value as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
                     <option value="top_left">أعلى اليسار</option>
                     <option value="top_right">أعلى اليمين</option>
                     <option value="bottom_left">أسفل اليسار</option>
@@ -999,12 +999,12 @@ export const AdGeneratorStudio: React.FC = () => {
             </div>
 
             {/* قص وتموضع وفلاتر */}
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] space-y-3">
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-3">
               <div className="grid grid-cols-2 gap-2">
-                <button onClick={() => { setImageFit('contain'); setImgScale(100); }} className={`p-2.5 rounded-xl border text-xs font-bold ${imageFit === 'contain' ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#0B0F17] text-white border-[#1F2937]'}`}>
+                <button onClick={() => { setImageFit('contain'); setImgScale(100); }} className={`p-2.5 rounded-xl border text-xs font-bold ${imageFit === 'contain' ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#0B0F17] text-white border-[#2F3336]'}`}>
                   عرض كامل الصورة
                 </button>
-                <button onClick={() => setImageFit('cover')} className={`p-2.5 rounded-xl border text-xs font-bold ${imageFit === 'cover' ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#0B0F17] text-white border-[#1F2937]'}`}>
+                <button onClick={() => setImageFit('cover')} className={`p-2.5 rounded-xl border text-xs font-bold ${imageFit === 'cover' ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#0B0F17] text-white border-[#2F3336]'}`}>
                   ملء واقتصاص مخصص
                 </button>
               </div>
@@ -1030,7 +1030,7 @@ export const AdGeneratorStudio: React.FC = () => {
         {/* تبويب 3: النصوص والخطوط والمحاذاة */}
         {activeTab === 'typography' && (
           <div className="space-y-4">
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] space-y-2">
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-white">العنوان الرئيسي</span>
                 <button onClick={() => setShowHeadline(!showHeadline)} className={`px-2.5 py-0.5 rounded text-xs font-bold ${showHeadline ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
@@ -1040,25 +1040,25 @@ export const AdGeneratorStudio: React.FC = () => {
               {showHeadline && (
                 <div className="space-y-2">
                   <div className="flex gap-2">
-                    <input type="text" value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="اكتب العنوان..." className="flex-1 bg-[#0B0F17] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white font-bold" />
-                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#1F2937] px-2 rounded-xl">
+                    <input type="text" value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="اكتب العنوان..." className="flex-1 bg-[#0B0F17] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white font-bold" />
+                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#2F3336] px-2 rounded-xl">
                       <input type="color" value={headlineColor} onChange={(e) => setHeadlineColor(e.target.value)} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer" />
                       <span className="text-[10px] text-[#9CA3AF]">لون</span>
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    <select value={headlineSize} onChange={(e) => setHeadlineSize(e.target.value as any)} className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white">
+                    <select value={headlineSize} onChange={(e) => setHeadlineSize(e.target.value as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
                       <option value="sm">حجم صغير</option>
                       <option value="md">حجم متوسط</option>
                       <option value="lg">حجم كبير</option>
                       <option value="xl">حجم ضخم</option>
                     </select>
-                    <select value={headlineWeight} onChange={(e) => setHeadlineWeight(e.target.value as any)} className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white">
+                    <select value={headlineWeight} onChange={(e) => setHeadlineWeight(e.target.value as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
                       <option value="normal">خط عادي</option>
                       <option value="medium">خط متوسط</option>
                       <option value="bold">خط عريض</option>
                     </select>
-                    <button onClick={() => setHasTextShadow(!hasTextShadow)} className={`p-2 rounded-xl text-xs font-bold border ${hasTextShadow ? 'border-[#FFC500] text-[#FFC500]' : 'border-[#1F2937] text-[#9CA3AF]'}`}>
+                    <button onClick={() => setHasTextShadow(!hasTextShadow)} className={`p-2 rounded-xl text-xs font-bold border ${hasTextShadow ? 'border-[#FFC500] text-[#FFC500]' : 'border-[#2F3336] text-[#9CA3AF]'}`}>
                       {hasTextShadow ? 'الظل مفعل' : 'بدون ظل'}
                     </button>
                   </div>
@@ -1066,7 +1066,7 @@ export const AdGeneratorStudio: React.FC = () => {
               )}
             </div>
 
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] space-y-2">
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-white">نص الوصف</span>
                 <button onClick={() => setShowDescription(!showDescription)} className={`px-2.5 py-0.5 rounded text-xs font-bold ${showDescription ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
@@ -1075,19 +1075,19 @@ export const AdGeneratorStudio: React.FC = () => {
               </div>
               {showDescription && (
                 <div className="space-y-2">
-                  <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full bg-[#0B0F17] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white" />
+                  <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full bg-[#0B0F17] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white" />
                   <div className="grid grid-cols-3 gap-2">
-                    <select value={descLines} onChange={(e) => setDescLines(Number(e.target.value) as any)} className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white">
+                    <select value={descLines} onChange={(e) => setDescLines(Number(e.target.value) as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
                       <option value={1}>سطر واحد</option>
                       <option value={2}>سطران</option>
                       <option value={3}>3 أسطر</option>
                     </select>
-                    <select value={textAlign} onChange={(e) => setTextAlign(e.target.value as any)} className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white">
+                    <select value={textAlign} onChange={(e) => setTextAlign(e.target.value as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
                       <option value="right">محاذاة يمين</option>
                       <option value="center">محاذاة وسط</option>
                       <option value="left">محاذاة يسار</option>
                     </select>
-                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#1F2937] px-2 rounded-lg">
+                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#2F3336] px-2 rounded-lg">
                       <input type="color" value={descColor} onChange={(e) => setDescColor(e.target.value)} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer" />
                       <span className="text-[10px] text-[#9CA3AF]">لون الوصف</span>
                     </div>
@@ -1101,7 +1101,7 @@ export const AdGeneratorStudio: React.FC = () => {
         {/* تبويب 4: الأسعار والتقييم والعناصر الإضافية */}
         {activeTab === 'pricing' && (
           <div className="space-y-4">
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] space-y-3">
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-white">عرض الأسعار ونسبة الخصم</span>
                 <button onClick={() => setShowPricing(!showPricing)} className={`px-2.5 py-0.5 rounded text-xs font-bold ${showPricing ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
@@ -1110,10 +1110,10 @@ export const AdGeneratorStudio: React.FC = () => {
               </div>
               {showPricing && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <input type="text" value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} placeholder="السعر الحالي..." className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white" />
-                  <input type="text" value={oldPrice} onChange={(e) => setOldPrice(e.target.value)} placeholder="السعر القديم..." className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white" />
-                  <input type="text" value={discountPercentage} onChange={(e) => setDiscountPercentage(e.target.value)} placeholder="نسبة الخصم %..." className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white" />
-                  <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white">
+                  <input type="text" value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} placeholder="السعر الحالي..." className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white" />
+                  <input type="text" value={oldPrice} onChange={(e) => setOldPrice(e.target.value)} placeholder="السعر القديم..." className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white" />
+                  <input type="text" value={discountPercentage} onChange={(e) => setDiscountPercentage(e.target.value)} placeholder="نسبة الخصم %..." className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white" />
+                  <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
                     <option value="YER">ريال يمني (YER)</option>
                     <option value="SAR">ريال سعودي (SAR)</option>
                     <option value="USD">دولار (USD)</option>
@@ -1123,21 +1123,21 @@ export const AdGeneratorStudio: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] flex items-center justify-between">
+              <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] flex items-center justify-between">
                 <span className="text-xs text-white font-bold">تقييم النجوم ⭐</span>
                 <button onClick={() => setShowRating(!showRating)} className={`px-2 py-0.5 rounded text-xs font-bold ${showRating ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
                   {showRating ? 'مفعل' : 'معطل'}
                 </button>
               </div>
 
-              <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] flex items-center justify-between">
+              <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] flex items-center justify-between">
                 <span className="text-xs text-white font-bold">شارة موثّق YR</span>
                 <button onClick={() => setShowVerifiedBadge(!showVerifiedBadge)} className={`px-2 py-0.5 rounded text-xs font-bold ${showVerifiedBadge ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
                   {showVerifiedBadge ? 'مفعل' : 'معطل'}
                 </button>
               </div>
 
-              <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] flex items-center justify-between">
+              <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] flex items-center justify-between">
                 <span className="text-xs text-white font-bold">رمز QR للطلب</span>
                 <button onClick={() => setShowQrCode(!showQrCode)} className={`px-2 py-0.5 rounded text-xs font-bold ${showQrCode ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
                   {showQrCode ? 'مفعل' : 'معطل'}
@@ -1150,7 +1150,7 @@ export const AdGeneratorStudio: React.FC = () => {
         {/* تبويب 5: زر CTA والتحويل الذكي */}
         {activeTab === 'action' && (
           <div className="space-y-4">
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] space-y-3">
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-bold text-white">إعدادات الزر (CTA Button)</span>
                 <button onClick={() => setShowButton(!showButton)} className={`px-2.5 py-0.5 rounded text-xs font-bold ${showButton ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
@@ -1160,21 +1160,21 @@ export const AdGeneratorStudio: React.FC = () => {
               {showButton && (
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    <select value={btnShape} onChange={(e) => setBtnShape(e.target.value as any)} className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white">
+                    <select value={btnShape} onChange={(e) => setBtnShape(e.target.value as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
                       <option value="pill">شكل كبسولة دائرية</option>
                       <option value="rounded">مستطيل بحواف ناعمة</option>
                       <option value="square">مستطيل كلاسيكي</option>
                     </select>
-                    <select value={btnSize} onChange={(e) => setBtnSize(e.target.value as any)} className="bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white">
+                    <select value={btnSize} onChange={(e) => setBtnSize(e.target.value as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
                       <option value="sm">حجم صغير</option>
                       <option value="md">حجم متوسط</option>
                       <option value="lg">حجم كبير</option>
                     </select>
-                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#1F2937] px-2 rounded-lg">
+                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#2F3336] px-2 rounded-lg">
                       <input type="color" value={btnBgColor} onChange={(e) => setBtnBgColor(e.target.value)} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer" />
                       <span className="text-[10px] text-[#9CA3AF]">خلفية الزر</span>
                     </div>
-                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#1F2937] px-2 rounded-lg">
+                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#2F3336] px-2 rounded-lg">
                       <input type="color" value={btnTextColor} onChange={(e) => setBtnTextColor(e.target.value)} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer" />
                       <span className="text-[10px] text-[#9CA3AF]">لون النص</span>
                     </div>
@@ -1191,7 +1191,7 @@ export const AdGeneratorStudio: React.FC = () => {
                             if (text === 'واتساب') setActionType('whatsapp');
                             if (text === 'اتصل الآن') setActionType('call');
                           }}
-                          className="shrink-0 px-2.5 py-1 rounded-lg bg-[#0B0F17] border border-[#1F2937] text-[11px] text-white hover:border-[#FFC500]"
+                          className="shrink-0 px-2.5 py-1 rounded-lg bg-[#0B0F17] border border-[#2F3336] text-[11px] text-white hover:border-[#FFC500]"
                         >
                           {text}
                         </button>
@@ -1207,7 +1207,7 @@ export const AdGeneratorStudio: React.FC = () => {
         {/* تبويب 6: محرك الحركات Animation */}
         {activeTab === 'motion' && (
           <div className="space-y-4">
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] space-y-2">
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-2">
               <div className="flex justify-between items-center">
                 <label className="text-xs font-bold text-[#FFC500] block">أنماط الحركات الجاهزة:</label>
                 <button onClick={replayAnimation} className="text-xs text-[#FFC500] flex items-center gap-1 font-bold">
@@ -1225,7 +1225,7 @@ export const AdGeneratorStudio: React.FC = () => {
                     key={m.id}
                     onClick={() => applyMotionPreset(m.id as any)}
                     className={`p-2.5 rounded-xl border text-xs font-bold transition-all ${
-                      motionPreset === m.id ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#0B0F17] text-[#9CA3AF] border-[#1F2937]'
+                      motionPreset === m.id ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#0B0F17] text-[#9CA3AF] border-[#2F3336]'
                     }`}
                   >
                     {m.label}
@@ -1234,13 +1234,13 @@ export const AdGeneratorStudio: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-[#161D2B] rounded-xl border border-[#1F2937]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-[#161D2B] rounded-xl border border-[#2F3336]">
               <div>
                 <label className="text-xs text-white font-bold block mb-1">حركة العنوان الرئيسي:</label>
                 <select 
                   value={headlineMotion} 
                   onChange={(e) => { setHeadlineMotion(e.target.value as any); replayAnimation(); }} 
-                  className="w-full bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white"
+                  className="w-full bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white"
                 >
                   <option value="none">بدون حركة</option>
                   <option value="fadeIn">Fade In تدريجي</option>
@@ -1257,7 +1257,7 @@ export const AdGeneratorStudio: React.FC = () => {
                 <select 
                   value={btnAnimation} 
                   onChange={(e) => { setBtnAnimation(e.target.value as any); replayAnimation(); }} 
-                  className="w-full bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white"
+                  className="w-full bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white"
                 >
                   <option value="none">ثابت عادي</option>
                   <option value="shimmer">لمعان متحرك (Shine / Shimmer)</option>
@@ -1271,7 +1271,7 @@ export const AdGeneratorStudio: React.FC = () => {
                 <select 
                   value={mediaMotion} 
                   onChange={(e) => { setMediaMotion(e.target.value as any); replayAnimation(); }} 
-                  className="w-full bg-[#0B0F17] border border-[#1F2937] rounded-lg p-2 text-xs text-white"
+                  className="w-full bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white"
                 >
                   <option value="none">ثابتة بدون حركة</option>
                   <option value="kenBurns">Ken Burns (تكبير بطيء وسلس)</option>
@@ -1294,19 +1294,19 @@ export const AdGeneratorStudio: React.FC = () => {
         {/* تبويب 7: الألوان */}
         {activeTab === 'colors' && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#1F2937]">
+            <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#2F3336]">
               <label className="text-[10px] text-[#9CA3AF] block mb-1 font-bold">خلفية الإعلان</label>
               <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
             </div>
-            <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#1F2937]">
+            <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#2F3336]">
               <label className="text-[10px] text-[#9CA3AF] block mb-1 font-bold">لون العنوان</label>
               <input type="color" value={headlineColor} onChange={(e) => setHeadlineColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
             </div>
-            <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#1F2937]">
+            <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#2F3336]">
               <label className="text-[10px] text-[#9CA3AF] block mb-1 font-bold">لون الوصف</label>
               <input type="color" value={descColor} onChange={(e) => setDescColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
             </div>
-            <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#1F2937]">
+            <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#2F3336]">
               <label className="text-[10px] text-[#9CA3AF] block mb-1 font-bold">خلفية الزر</label>
               <input type="color" value={btnBgColor} onChange={(e) => setBtnBgColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
             </div>
@@ -1316,14 +1316,14 @@ export const AdGeneratorStudio: React.FC = () => {
         {/* تبويب 8: الحواف */}
         {activeTab === 'border' && (
           <div className="space-y-3">
-            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#1F2937] flex items-center justify-between">
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] flex items-center justify-between">
               <span className="text-xs font-bold text-white">تفعيل الإطار والحواف</span>
               <button onClick={() => setHasBorder(!hasBorder)} className={`px-3 py-1 rounded-lg text-xs font-bold ${hasBorder ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
                 {hasBorder ? 'مفعل' : 'ملغي (صافي)'}
               </button>
             </div>
             {hasBorder && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 bg-[#161D2B] rounded-xl border border-[#1F2937]">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 bg-[#161D2B] rounded-xl border border-[#2F3336]">
                 <div>
                   <label className="text-[10px] text-[#9CA3AF] block mb-1">السماكة: {borderWidth}px</label>
                   <input type="range" min="1" max="8" value={borderWidth} onChange={(e) => setBorderWidth(Number(e.target.value))} className="w-full accent-[#FFC500]" />
@@ -1346,7 +1346,7 @@ export const AdGeneratorStudio: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">المدينة المستهدفة</label>
-              <select value={targetCity} onChange={(e) => setTargetCity(e.target.value)} className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white">
+              <select value={targetCity} onChange={(e) => setTargetCity(e.target.value)} className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white">
                 <option value="كل المحافظات">كل المحافظات</option>
                 <option value="صنعاء">صنعاء</option>
                 <option value="عدن">عدن</option>
@@ -1356,7 +1356,7 @@ export const AdGeneratorStudio: React.FC = () => {
             </div>
             <div>
               <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">القسم المستهدف</label>
-              <select value={targetCategory} onChange={(e) => setTargetCategory(e.target.value)} className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white">
+              <select value={targetCategory} onChange={(e) => setTargetCategory(e.target.value)} className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white">
                 <option value="الجميع">جميع الأقسام</option>
                 <option value="عقارات">عقارات</option>
                 <option value="مزادات">مزادات</option>
@@ -1365,7 +1365,7 @@ export const AdGeneratorStudio: React.FC = () => {
             </div>
             <div>
               <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">تاريخ الانتهاء</label>
-              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl p-2.5 text-xs text-white font-mono" />
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white font-mono" />
             </div>
           </div>
         )}
@@ -1389,7 +1389,7 @@ export const AdGeneratorStudio: React.FC = () => {
             disabled={isMediaUploading}
             className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md ${
               isMediaUploading
-                ? "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700"
+                ? "bg-[#1A1A1A] text-zinc-500 cursor-not-allowed border border-[#2F3336]"
                 : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20 active:scale-[0.99] cursor-pointer"
             }`}
           >

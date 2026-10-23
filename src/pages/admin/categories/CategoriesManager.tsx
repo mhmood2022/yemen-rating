@@ -98,7 +98,7 @@ export const CategoriesManager: React.FC = () => {
   return (
     <div dir="rtl" className="p-4 sm:p-6 lg:p-8 space-y-6 font-['Cairo',sans-serif] text-white">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#1F2937]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#2F3336]">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
             <FolderTree className="text-[#FFC500]" /> إدارة التصنيفات الرسمية
@@ -108,7 +108,7 @@ export const CategoriesManager: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-2 rounded-xl bg-[#161D2B] border border-[#1F2937] text-xs font-mono font-bold text-[#FFC500]">
+          <span className="px-3 py-2 rounded-xl bg-[#161D2B] border border-[#2F3336] text-xs font-mono font-bold text-[#FFC500]">
             {categories.length} تصنيف
           </span>
           <button
@@ -121,7 +121,7 @@ export const CategoriesManager: React.FC = () => {
       </div>
 
       {/* Search */}
-      <div className="bg-[#0B0F17] p-3.5 rounded-2xl border border-[#1F2937] flex items-center gap-3">
+      <div className="bg-[#0B0F17] p-3.5 rounded-2xl border border-[#2F3336] flex items-center gap-3">
         <Search size={16} className="text-gray-400" />
         <input
           type="text"
@@ -138,7 +138,7 @@ export const CategoriesManager: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.map(cat => (
-            <div key={cat.id} className="bg-[#0B0F17] border border-[#1F2937] hover:border-[#FFC500]/40 rounded-2xl p-3.5 flex items-center justify-between transition-colors shadow-sm">
+            <div key={cat.id} className="bg-[#0B0F17] border border-[#2F3336] hover:border-[#FFC500]/40 rounded-2xl p-3.5 flex items-center justify-between transition-colors shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-[#161D2B] flex items-center justify-center text-[#FFC500]">
                   <Tag size={16} />
@@ -164,9 +164,9 @@ export const CategoriesManager: React.FC = () => {
 
       {/* Add Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-[#0F172A] border border-[#1F2937] rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl text-right">
-            <div className="flex items-center justify-between pb-3 border-b border-[#1F2937]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black ">
+          <div className="w-full max-w-md bg-[#000000] border border-[#2F3336] rounded-3xl p-5 sm:p-6 space-y-4 shadow-2xl text-right">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
               <h3 className="font-black text-sm text-white">إضافة تصنيف رسمي جديد</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white">
                 <X size={18} />
@@ -188,7 +188,7 @@ export const CategoriesManager: React.FC = () => {
                   value={newCatName}
                   onChange={(e) => setNewCatName(e.target.value)}
                   placeholder="مثال: فنادق ومنتجعات، أندية رياضية..."
-                  className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none focus:border-[#FFC500]"
+                  className="w-full p-2.5 bg-[#161D2B] border border-[#2F3336] rounded-xl text-white outline-none focus:border-[#FFC500]"
                 />
               </div>
 
@@ -199,11 +199,11 @@ export const CategoriesManager: React.FC = () => {
                   value={newCatSlug}
                   onChange={(e) => setNewCatSlug(e.target.value)}
                   placeholder="مثال: hotels, gym, resorts"
-                  className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none font-mono text-[11px] focus:border-[#FFC500]"
+                  className="w-full p-2.5 bg-[#161D2B] border border-[#2F3336] rounded-xl text-white outline-none font-mono text-[11px] focus:border-[#FFC500]"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#1F2937]">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#2F3336]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}

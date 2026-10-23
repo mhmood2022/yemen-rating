@@ -40,11 +40,11 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#070A10] text-zinc-100 flex flex-col font-['Cairo',sans-serif]">
+    <div dir="rtl" className="min-h-screen bg-black text-zinc-100 flex flex-col font-['Cairo',sans-serif]">
       
       {/* 1. الهيدر المثبت الدائم: يظهر في الرئيسية وقالب الشركات الجماعي ويختفي تماماً في الصفحات الفردية */}
       {!isIndividualProfile && (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-[#070A10] border-b border-[#1F2937]">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-[#2F3336]">
           <Header
             onToggleSidebar={() => setIsSidebarOpen(true)}
             onNavigateHome={() => navigate('/')}
@@ -61,14 +61,14 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       {isSidebarOpen && (
         <div 
           onClick={() => setIsSidebarOpen(false)}
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 z-50 bg-black  transition-opacity"
         />
       )}
 
-      <aside className={`fixed top-0 right-0 h-full w-[280px] sm:w-[300px] bg-[#0B0F17] border-l border-[#1F2937] z-50 flex flex-col transition-transform duration-300 ease-in-out ${
+      <aside className={`fixed top-0 right-0 h-full w-[280px] sm:w-[300px] bg-black border-l border-[#2F3336] z-50 flex flex-col transition-transform duration-300 ease-in-out ${
         isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
-        <div className="h-14 sm:h-16 flex items-center justify-between px-4 border-b border-[#1F2937] bg-[#111827]">
+        <div className="h-14 sm:h-16 flex items-center justify-between px-4 border-b border-[#2F3336] bg-black">
           <span className="text-xs font-black text-white">القائمة الرئيسية</span>
           <button onClick={() => setIsSidebarOpen(false)} className="text-zinc-400 hover:text-white cursor-pointer bg-transparent border-0 p-1">
             <X size={20} />
@@ -86,8 +86,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                 onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
                   isActive
-                    ? 'bg-[#FFC500] text-black shadow-md shadow-[#FFC500]/15'
-                    : 'text-zinc-300 hover:bg-[#161D2B] hover:text-white'
+                    ? 'bg-black text-black shadow-md shadow-[#FFC500]/15'
+                    : 'text-zinc-300 hover:bg-black hover:text-white'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
@@ -105,13 +105,13 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       {isSearchModalOpen && (
         <div 
           onClick={() => setIsSearchModalOpen(false)}
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-start justify-center p-3 sm:p-6 pt-16 select-none"
+          className="fixed inset-0 z-50 bg-black  flex items-start justify-center p-3 sm:p-6 pt-16 select-none"
         >
           <div 
             onClick={e => e.stopPropagation()}
-            className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-2xl p-4 sm:p-5 space-y-3.5 shadow-2xl max-h-[85vh] flex flex-col"
+            className="bg-black border border-[#2F3336] rounded-2xl w-full max-w-2xl p-4 sm:p-5 space-y-3.5 shadow-2xl max-h-[85vh] flex flex-col"
           >
-            <div className="flex items-center bg-[#18181C] border border-[#27272A] focus-within:border-[#FFC500] rounded-xl px-3 py-2">
+            <div className="flex items-center bg-black border border-[#2F3336] focus-within:border-[#FFC500] rounded-xl px-3 py-2">
               <Search size={18} className="text-[#FFC500] ml-2 shrink-0" />
               <input
                 type="text"
@@ -128,7 +128,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
               )}
             </div>
 
-            <div className="flex items-center justify-between gap-2 flex-wrap border-b border-[#222226] pb-2.5">
+            <div className="flex items-center justify-between gap-2 flex-wrap border-b border-[#2F3336] pb-2.5">
               <div className="flex gap-1 overflow-x-auto no-scrollbar">
                 {[
                   { id: 'all', label: 'الكل' },
@@ -142,7 +142,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                     key={tab.id}
                     onClick={() => setSelectedType(tab.id as any)}
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                      selectedType === tab.id ? 'bg-[#FFC500] text-black' : 'bg-[#18181C] text-zinc-400 border border-[#27272A]'
+                      selectedType === tab.id ? 'bg-black text-black' : 'bg-black text-zinc-400 border border-[#2F3336]'
                     }`}
                   >
                     {tab.label}
@@ -170,13 +170,13 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
                   <div
                     key={res.id}
                     onClick={() => handleSelectResult(res)}
-                    className="p-3 bg-[#141417] hover:bg-[#1C1C22] border border-[#222226] hover:border-[#FFC500]/40 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-all active:scale-98"
+                    className="p-3 bg-black hover:bg-black border border-[#2F3336] hover:border-[#FFC500]/40 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition-all active:scale-98"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {res.imageUrl ? (
-                        <img src={res.imageUrl} alt={res.title} className="w-10 h-10 rounded-lg object-cover border border-[#27272A] shrink-0" />
+                        <img src={res.imageUrl} alt={res.title} className="w-10 h-10 rounded-lg object-cover border border-[#2F3336] shrink-0" />
                       ) : (
-                        <div className="w-10 h-10 rounded-lg bg-[#18181C] text-[#FFC500] flex items-center justify-center font-bold text-xs shrink-0">
+                        <div className="w-10 h-10 rounded-lg bg-black text-[#FFC500] flex items-center justify-center font-bold text-xs shrink-0">
                           {res.typeLabel.charAt(0)}
                         </div>
                       )}
@@ -202,8 +202,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
               )}
             </div>
 
-            <div className="text-left border-t border-[#222226] pt-2">
-              <button onClick={() => setIsSearchModalOpen(false)} className="px-4 py-1.5 bg-[#18181C] text-zinc-400 text-xs font-bold rounded-lg hover:text-white">
+            <div className="text-left border-t border-[#2F3336] pt-2">
+              <button onClick={() => setIsSearchModalOpen(false)} className="px-4 py-1.5 bg-black text-zinc-400 text-xs font-bold rounded-lg hover:text-white">
                 إغلاق
               </button>
             </div>
@@ -212,11 +212,11 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
       )}
 
       {/* 5. جسم الصفحة الرئيسي */}
-      <main className={`flex-1 pb-16 ${!isIndividualProfile ? (!isMainHome ? "pt-14 sm:pt-16" : "") : ""}`}>
+      <main className={`flex-1 pb-16 bg-black min-h-screen bg-black bg-black bg-black ${!isIndividualProfile ? (!isMainHome ? "pt-14 sm:pt-16" : "") : ""}`}>
         {children}
       </main>
       {/* 6. شريط الفوتر الإعلاني الثابت العام (الموضع 10) */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 px-2 sm:px-4 pb-1 pointer-events-none">
+      <div className="fixed bottom-0 left-0 right-0 z-40 px-2 sm:px-4 pb-1 pointer-events-none bg-transparent">
         <div className="max-w-4xl mx-auto pointer-events-auto">
           <AdBanner placementId="10" className="shadow-2xl" />
         </div>

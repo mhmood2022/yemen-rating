@@ -42,12 +42,12 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
           <button
             type="button"
             onClick={() => onNavigate('/')}
-            className="p-1 rounded-lg text-[#64748B] dark:text-[#A1A1AA] hover:text-[#0B1F3A] dark:hover:text-white"
+            className="p-1 rounded-lg text-[#64748B] dark:text-[#A1A1AA] hover:text-[#000000] dark:hover:text-white"
             aria-label="الرجوع للرئيسية"
           >
             <ArrowRight size={18} strokeWidth={2} />
           </button>
-          <h1 className="text-base sm:text-lg font-black text-[#0B1F3A] dark:text-white">
+          <h1 className="text-base sm:text-lg font-black text-[#000000] dark:text-white">
             الترند
           </h1>
         </div>
@@ -64,13 +64,13 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
               className={cn(
                 'py-2 px-3 text-xs sm:text-sm font-bold transition-all relative select-none',
                 isActive
-                  ? 'text-[#0B1F3A] dark:text-[#F5C400]'
-                  : 'text-[#64748B] dark:text-[#71717A] hover:text-[#0B1F3A] dark:hover:text-white'
+                  ? 'text-[#000000] dark:text-[#F5C400]'
+                  : 'text-[#64748B] dark:text-[#71717A] hover:text-[#000000] dark:hover:text-white'
               )}
             >
               <span>{cat}</span>
               {isActive && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0B1F3A] dark:bg-[#F5C400] rounded-full" />
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#000000] dark:bg-[#F5C400] rounded-full" />
               )}
             </button>
           );
@@ -111,7 +111,7 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
                 </div>
 
                 <div className="min-w-0">
-                  <h3 className="font-bold text-xs sm:text-sm text-[#0B1F3A] dark:text-white truncate">
+                  <h3 className="font-bold text-xs sm:text-sm text-[#000000] dark:text-white truncate">
                     {item.name}
                   </h3>
                   <p className="text-[11px] text-[#64748B] dark:text-[#71717A] truncate">
@@ -122,7 +122,7 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
 
               <div className="flex items-center gap-1.5 shrink-0 px-2 py-1 rounded-[6px] bg-[#F7F8FA] dark:bg-[#0A0A0A]">
                 <Flame size={14} strokeWidth={2} className="text-[#F59E0B]" />
-                <span className="text-xs font-black text-[#0B1F3A] dark:text-white">
+                <span className="text-xs font-black text-[#000000] dark:text-white">
                   {item.flameCount}
                 </span>
               </div>
@@ -136,7 +136,7 @@ export const TrendPage: React.FC<{ onNavigate: (path: string) => void }> = ({ on
           variant="outline"
           size="sm"
           onClick={() => onNavigate('/directory')}
-          className="text-xs text-[#0B1F3A] dark:text-[#A1A1AA] hover:text-[#0B1F3A] dark:hover:text-white"
+          className="text-xs text-[#000000] dark:text-[#A1A1AA] hover:text-[#000000] dark:hover:text-white"
         >
           عرض المزيد في الدليل
         </Button>

@@ -158,7 +158,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   return (
     <div
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 font-['Cairo',sans-serif] animate-fade-in"
+      className="fixed inset-0 z-[100] bg-black  flex items-center justify-center p-3 sm:p-4 font-['Tahoma',sans-serif] animate-fade-in"
       dir="rtl"
     >
       {/* البطاقة المطابقة تماماً للصورة */}

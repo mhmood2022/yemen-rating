@@ -251,7 +251,7 @@ export const AdminMaster: React.FC = () => {
 
   if (checking) {
     return (
-      <div className="min-h-screen bg-[#070A10] flex items-center justify-center text-white font-['Cairo']">
+      <div className="min-h-screen bg-[#000000] flex items-center justify-center text-white font-['Cairo']">
         جارٍ التحقق من الصلاحيات...
       </div>
     );
@@ -262,17 +262,17 @@ export const AdminMaster: React.FC = () => {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#070A10] text-white flex font-['Cairo',sans-serif]">
+    <div dir="rtl" className="min-h-screen bg-[#000000] text-white flex font-['Cairo',sans-serif]">
       {/* القائمة الجانبية */}
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col min-w-0 lg:mr-[280px]">
         {/* الشريط العلوي مع مركز الإشعارات الشامل */}
-        <header className="fixed top-0 left-0 right-0 lg:right-[280px] h-16 bg-[#0B0F17] flex items-center justify-between px-4 lg:px-8 z-40 border-b border-[#1F2937]/50">
+        <header className="fixed top-0 left-0 right-0 lg:right-[280px] h-16 bg-[#0B0F17] flex items-center justify-between px-4 lg:px-8 z-40 border-b border-[#2F3336]/50">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg bg-[#161D2B] text-white lg:hidden hover:bg-[#1F2937] transition cursor-pointer"
+              className="p-2 rounded-lg bg-[#161D2B] text-white lg:hidden hover:bg-[#2F3336] transition cursor-pointer"
               aria-label="فتح القائمة"
             >
               <Menu size={20} />
@@ -289,7 +289,7 @@ export const AdminMaster: React.FC = () => {
             <div className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="relative p-2 rounded-lg bg-[#161D2B] text-gray-300 hover:text-white hover:bg-[#1F2937] transition cursor-pointer"
+                className="relative p-2 rounded-lg bg-[#161D2B] text-gray-300 hover:text-white hover:bg-[#2F3336] transition cursor-pointer"
                 title="مركز إشعارات المنصة"
               >
                 <Bell size={18} />
@@ -311,9 +311,9 @@ export const AdminMaster: React.FC = () => {
                   />
 
                   {/* لوحة الإشعارات المتوافقة مع الهاتف والكمبيوتر */}
-                  <div className="fixed sm:absolute top-16 sm:top-full left-2 right-2 sm:left-0 sm:right-auto sm:mt-2 sm:w-[410px] bg-[#0B0F17] border border-[#1F2937] rounded-2xl shadow-2xl p-3 z-50 text-right max-h-[85vh] sm:max-h-[520px] flex flex-col font-['Cairo']">
+                  <div className="fixed sm:absolute top-16 sm:top-full left-2 right-2 sm:left-0 sm:right-auto sm:mt-2 sm:w-[410px] bg-[#0B0F17] border border-[#2F3336] rounded-2xl shadow-2xl p-3 z-50 text-right max-h-[85vh] sm:max-h-[520px] flex flex-col font-['Cairo']">
                     {/* رأس القائمة */}
-                    <div className="flex justify-between items-center pb-2.5 border-b border-[#1F2937]">
+                    <div className="flex justify-between items-center pb-2.5 border-b border-[#2F3336]">
                       <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse"></span>
                         <span className="text-xs font-bold text-white flex items-center gap-1.5">
@@ -332,13 +332,13 @@ export const AdminMaster: React.FC = () => {
                     </div>
 
                     {/* تبويبات الفرز: غير المقروءة vs الكل */}
-                    <div className="flex items-center gap-1.5 p-1 bg-[#121620] rounded-xl my-2 border border-[#1F2937]/60">
+                    <div className="flex items-center gap-1.5 p-1 bg-[#121620] rounded-xl my-2 border border-[#2F3336]/60">
                       <button
                         type="button"
                         onClick={() => setNotifTab('unread')}
                         className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
                           notifTab === 'unread'
-                            ? 'bg-[#1F2937] text-white shadow'
+                            ? 'bg-[#2F3336] text-white shadow'
                             : 'text-gray-400 hover:text-white'
                         }`}
                       >
@@ -354,7 +354,7 @@ export const AdminMaster: React.FC = () => {
                         onClick={() => setNotifTab('all')}
                         className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer ${
                           notifTab === 'all'
-                            ? 'bg-[#1F2937] text-white shadow'
+                            ? 'bg-[#2F3336] text-white shadow'
                             : 'text-gray-400 hover:text-white'
                         }`}
                       >
@@ -397,12 +397,12 @@ export const AdminMaster: React.FC = () => {
                               onClick={() => handleNotificationClick(item)}
                               className={`p-2.5 rounded-xl transition cursor-pointer border text-right group relative ${
                                 item.is_read
-                                  ? 'bg-[#111622]/60 border-[#1F2937]/40 hover:bg-[#161D2B]'
+                                  ? 'bg-[#111622]/60 border-[#2F3336]/40 hover:bg-[#161D2B]'
                                   : 'bg-[#161F30] border-[#2563EB]/40 hover:border-[#FFC500]/60 shadow-md'
                               }`}
                             >
                               <div className="flex items-start gap-2.5">
-                                <div className="mt-0.5 p-1.5 rounded-lg bg-[#0B0F17] border border-[#1F2937]">
+                                <div className="mt-0.5 p-1.5 rounded-lg bg-[#0B0F17] border border-[#2F3336]">
                                   {getNotificationIcon(item.type)}
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -434,7 +434,7 @@ export const AdminMaster: React.FC = () => {
                     })()}
 
                     {/* تذييل القائمة */}
-                    <div className="pt-2.5 border-t border-[#1F2937] mt-2 flex justify-between items-center text-[10px] text-gray-400">
+                    <div className="pt-2.5 border-t border-[#2F3336] mt-2 flex justify-between items-center text-[10px] text-gray-400">
                       <span>تحديث لحظي ومباشر (Realtime) ⚡</span>
                       <button
                         type="button"
@@ -468,15 +468,15 @@ export const AdminMaster: React.FC = () => {
       {/* نافذة تفاصيل الإشعار المنبثقة الشاملة */}
       {selectedNotification && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black "
           onClick={() => setSelectedNotification(null)}
         >
           <div
-            className="bg-[#0B0F17] border border-[#1F2937] rounded-2xl p-5 max-w-md w-full shadow-2xl text-right text-white space-y-4"
+            className="bg-[#0B0F17] border border-[#2F3336] rounded-2xl p-5 max-w-md w-full shadow-2xl text-right text-white space-y-4"
             onClick={(e) => e.stopPropagation()}
             dir="rtl"
           >
-            <div className="flex items-center justify-between pb-3 border-b border-[#1F2937]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
               <div className="flex items-center gap-2 text-sm font-bold text-[#FFC500]">
                 {getNotificationIcon(selectedNotification.type)}
                 <span>{selectedNotification.title}</span>
@@ -484,14 +484,14 @@ export const AdminMaster: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedNotification(null)}
-                className="p-1.5 rounded-lg bg-[#161D2B] text-gray-400 hover:text-white hover:bg-[#1F2937] transition cursor-pointer"
+                className="p-1.5 rounded-lg bg-[#161D2B] text-gray-400 hover:text-white hover:bg-[#2F3336] transition cursor-pointer"
                 aria-label="إغلاق"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <div className="space-y-2 text-xs leading-relaxed text-[#D1D5DB] bg-[#121620] p-3.5 rounded-xl border border-[#1F2937]/50">
+            <div className="space-y-2 text-xs leading-relaxed text-[#D1D5DB] bg-[#121620] p-3.5 rounded-xl border border-[#2F3336]/50">
               <p className="font-semibold text-sm text-white mb-1">تفاصيل التنبيه الكاملة:</p>
               <p className="whitespace-pre-wrap leading-normal text-zinc-300 font-medium">
                 {selectedNotification.message}
@@ -508,7 +508,7 @@ export const AdminMaster: React.FC = () => {
               </span>
             </div>
 
-            <div className="pt-2 border-t border-[#1F2937] flex items-center gap-2">
+            <div className="pt-2 border-t border-[#2F3336] flex items-center gap-2">
               {selectedNotification.link && (
                 <button
                   type="button"
@@ -526,7 +526,7 @@ export const AdminMaster: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedNotification(null)}
-                className="px-4 py-2.5 rounded-xl bg-[#161D2B] hover:bg-[#1F2937] text-gray-300 text-xs font-bold transition cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-[#161D2B] hover:bg-[#2F3336] text-gray-300 text-xs font-bold transition cursor-pointer"
               >
                 إغلاق
               </button>

@@ -186,7 +186,7 @@ export const YRReviewSystem: React.FC<YRReviewSystemProps> = ({ entityType, enti
               onMouseEnter={() => setHoveredStars(star)}
               onMouseLeave={() => setHoveredStars(null)}
               onClick={() => setSelectedStars(star)}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center transition hover:bg-slate-800/60 focus:outline-none"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center transition hover:bg-[#111111]/60 focus:outline-none"
               title={`${star} نجوم`}
             >
               <Star

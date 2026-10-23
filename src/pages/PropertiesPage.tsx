@@ -109,7 +109,7 @@ export const PropertiesPage: React.FC<Props> = ({ onNavigate }) => {
               <span className={`absolute top-3 right-3 text-xs font-black px-3 py-1 rounded-lg ${p.listing_type === 'SALE' ? 'bg-amber-400 text-black' : 'bg-blue-500 text-white'}`}>
                 {p.listing_type === 'SALE' ? 'للبيع' : 'للإيجار'}
               </span>
-              <span className="absolute bottom-3 right-3 bg-black/85 border border-white/10 px-3 py-1 rounded-lg text-sm font-black text-white">
+              <span className="absolute bottom-3 right-3 bg-black border border-white/10 px-3 py-1 rounded-lg text-sm font-black text-white">
                 {p.price}
               </span>
             </div>
@@ -151,7 +151,7 @@ export const PropertiesPage: React.FC<Props> = ({ onNavigate }) => {
 
       {/* نافذة حجز المعاينة */}
       {selectedProp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md" dir="rtl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black " dir="rtl">
           <div className="bg-[#14141C] border border-[#2A2A38] w-full max-w-lg rounded-2xl p-6 text-white">
             <div className="flex justify-between items-center pb-3 mb-4 border-b border-[#22222E]">
               <h3 className="text-sm font-black text-white">حجز موعد معاينة: {selectedProp.title}</h3>

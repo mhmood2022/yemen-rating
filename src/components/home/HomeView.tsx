@@ -225,7 +225,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   }, [allUniversalEntities]);
 
   return (
-    <div dir="rtl" className="space-y-5 pt-16 sm:pt-20 max-w-md mx-auto px-3 sm:px-4 font-['Cairo',sans-serif] text-white bg-[#0B1224] min-h-screen">
+    <div dir="rtl" className="space-y-5 pt-16 sm:pt-20 max-w-md mx-auto px-3 sm:px-4 font-['Cairo',sans-serif] text-white bg-black min-h-screen">
 
       {/* 🔍 شريط البحث الذكي وإعلان الراعي الرسمي */}
       <HomeSearchBar
@@ -254,9 +254,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="grid grid-cols-4 gap-2">
           <button
             onClick={handleNavigateBanks}
-            className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/60 transition-all cursor-pointer group"
+            className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-black border border-[#2F3336] hover:border-[#FFC500]/60 transition-all cursor-pointer group"
           >
-            <div className="w-12 h-12 rounded-xl bg-[#12192B] border border-[#1C2844] flex items-center justify-center text-amber-400 mb-2 group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-xl bg-[#111111] border border-[#2F3336] flex items-center justify-center text-amber-400 mb-2 group-hover:scale-105 transition-transform">
               <Landmark size={22} />
             </div>
             <span className="text-[11px] font-bold text-white line-clamp-1">البنوك والصرافة</span>
@@ -264,9 +264,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
           <button
             onClick={() => onSelectCategory('transport')}
-            className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-sky-400/60 transition-all cursor-pointer group"
+            className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-black border border-[#2F3336] hover:border-sky-400/60 transition-all cursor-pointer group"
           >
-            <div className="w-12 h-12 rounded-xl bg-[#12192B] border border-[#1C2844] flex items-center justify-center text-sky-400 mb-2 group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-xl bg-[#111111] border border-[#2F3336] flex items-center justify-center text-sky-400 mb-2 group-hover:scale-105 transition-transform">
               <Truck size={22} />
             </div>
             <span className="text-[11px] font-bold text-white line-clamp-1">شركات النقل</span>
@@ -274,9 +274,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
           <button
             onClick={() => onSelectCategory('hospitals')}
-            className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-rose-400/60 transition-all cursor-pointer group"
+            className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-black border border-[#2F3336] hover:border-rose-400/60 transition-all cursor-pointer group"
           >
-            <div className="w-12 h-12 rounded-xl bg-[#12192B] border border-[#1C2844] flex items-center justify-center text-rose-400 mb-2 group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-xl bg-[#111111] border border-[#2F3336] flex items-center justify-center text-rose-400 mb-2 group-hover:scale-105 transition-transform">
               <Stethoscope size={22} />
             </div>
             <span className="text-[11px] font-bold text-white line-clamp-1">المستشفيات</span>
@@ -284,9 +284,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
           <button
             onClick={() => onSelectCategory('clinics')}
-            className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-pink-400/60 transition-all cursor-pointer group"
+            className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-black border border-[#2F3336] hover:border-pink-400/60 transition-all cursor-pointer group"
           >
-            <div className="w-12 h-12 rounded-xl bg-[#12192B] border border-[#1C2844] flex items-center justify-center text-pink-400 mb-2 group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-xl bg-[#111111] border border-[#2F3336] flex items-center justify-center text-pink-400 mb-2 group-hover:scale-105 transition-transform">
               <Stethoscope size={22} />
             </div>
             <span className="text-[11px] font-bold text-white line-clamp-1">العيادات</span>
@@ -316,10 +316,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <div
                 key={item.id}
                 onClick={() => handleCardClick(item)}
-                className="rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/50 transition-all overflow-hidden cursor-pointer flex flex-col justify-between shadow-md"
+                className="rounded-2xl bg-black border border-[#2F3336] hover:border-[#FFC500]/50 transition-all overflow-hidden cursor-pointer flex flex-col justify-between shadow-md"
               >
                 {/* الغلاف نظيف 100% بدون أي شارة */}
-                <div className="relative h-28 w-full overflow-hidden bg-[#101524]">
+                <div className="relative h-28 w-full overflow-hidden bg-[#111111]">
                   {item.cover_url || item.logo_url ? (
                     <img
                       src={item.cover_url || item.logo_url}
@@ -381,10 +381,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        <div className="rounded-2xl bg-[#0A0E1A] border border-[#18233C] p-3.5 space-y-3 shadow-md">
+        <div className="rounded-2xl bg-black border border-[#2F3336] p-3.5 space-y-3 shadow-md">
           <div className="flex items-center justify-between pb-2 border-b border-white/5">
             <span className="text-xs font-bold text-[#FFC500]">أسعار الصرف والذهب</span>
-            <div className="flex items-center bg-[#101726] p-0.5 rounded-xl border border-white/10">
+            <div className="flex items-center bg-[#111111] p-0.5 rounded-xl border border-white/10">
               <button
                 onClick={() => setActiveMarket('sanaa')}
                 className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
@@ -481,10 +481,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div
               key={item.id}
               onClick={() => handleCardClick(item)}
-              className="rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/50 transition-all overflow-hidden cursor-pointer flex flex-col justify-between shadow-md"
+              className="rounded-2xl bg-black border border-[#2F3336] hover:border-[#FFC500]/50 transition-all overflow-hidden cursor-pointer flex flex-col justify-between shadow-md"
             >
               {/* الغلاف نظيف تماماً بدون شارة */}
-              <div className="relative h-28 w-full overflow-hidden bg-[#101524]">
+              <div className="relative h-28 w-full overflow-hidden bg-[#111111]">
                 {item.cover_url || item.logo_url ? (
                   <img
                     src={item.cover_url || item.logo_url}
@@ -496,7 +496,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <Award size={36} />
                   </div>
                 )}
-                <span className="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-black/70 backdrop-blur-sm text-[9px] font-bold text-[#FFC500] border border-[#FFC500]/30">
+                <span className="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-black  text-[9px] font-bold text-[#FFC500] border border-[#FFC500]/30">
                   {item.categoryLabel}
                 </span>
               </div>
@@ -559,9 +559,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <div
                   key={item.id}
                   onClick={() => handleCardClick(item)}
-                  className="rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/50 transition-all overflow-hidden cursor-pointer flex flex-col justify-between shadow-md"
+                  className="rounded-2xl bg-black border border-[#2F3336] hover:border-[#FFC500]/50 transition-all overflow-hidden cursor-pointer flex flex-col justify-between shadow-md"
                 >
-                  <div className="relative h-28 w-full overflow-hidden bg-[#101524]">
+                  <div className="relative h-28 w-full overflow-hidden bg-[#111111]">
                     {item.cover_url || item.logo_url ? (
                       <img
                         src={item.cover_url || item.logo_url}
@@ -606,7 +606,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             })}
           </div>
         ) : (
-          <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] text-center text-xs text-zinc-400">
+          <div className="p-4 rounded-2xl bg-black border border-[#2F3336] text-center text-xs text-zinc-400">
             لا توجد بيانات مشاهدات مسجلة حالياً.
           </div>
         )}
@@ -635,9 +635,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <div
                   key={item.id}
                   onClick={() => handleCardClick(item)}
-                  className="rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/50 transition-all overflow-hidden cursor-pointer flex flex-col justify-between shadow-md"
+                  className="rounded-2xl bg-black border border-[#2F3336] hover:border-[#FFC500]/50 transition-all overflow-hidden cursor-pointer flex flex-col justify-between shadow-md"
                 >
-                  <div className="relative h-28 w-full overflow-hidden bg-[#101524]">
+                  <div className="relative h-28 w-full overflow-hidden bg-[#111111]">
                     {item.cover_url || item.logo_url ? (
                       <img
                         src={item.cover_url || item.logo_url}
@@ -682,7 +682,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             })}
           </div>
         ) : (
-          <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] text-center text-xs text-zinc-400">
+          <div className="p-4 rounded-2xl bg-black border border-[#2F3336] text-center text-xs text-zinc-400">
             لا توجد منشآت مميزة حالياً، ستظهر هنا فور تفعيل التمييز.
           </div>
         )}
@@ -709,7 +709,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <div
                 key={item.id}
                 onClick={onNavigateAuctions}
-                className="p-2.5 rounded-2xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/50 transition-all cursor-pointer flex gap-3 shadow-md"
+                className="p-2.5 rounded-2xl bg-black border border-[#2F3336] hover:border-[#FFC500]/50 transition-all cursor-pointer flex gap-3 shadow-md"
               >
                 <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
                   <div>
@@ -743,14 +743,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     </span>
                   </div>
                 ) : (
-                  <div className="w-28 h-28 rounded-xl bg-[#12192B] border border-[#1C2844] flex items-center justify-center text-[#FFC500] shrink-0">
+                  <div className="w-28 h-28 rounded-xl bg-[#111111] border border-[#2F3336] flex items-center justify-center text-[#FFC500] shrink-0">
                     <Gavel size={30} />
                   </div>
                 )}
               </div>
             ))
           ) : (
-            <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] text-center text-xs text-zinc-400">
+            <div className="p-4 rounded-2xl bg-black border border-[#2F3336] text-center text-xs text-zinc-400">
               لا توجد مزادات نشطة حالياً، ستظهر هنا فور إضافتها من الإدارة.
             </div>
           )}
@@ -772,7 +772,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] text-center text-xs text-zinc-400">
+        <div className="p-4 rounded-2xl bg-black border border-[#2F3336] text-center text-xs text-zinc-400">
           بانتظار إضافة عقارات معتمدة في قاعدة البيانات.
         </div>
       </div>
@@ -799,13 +799,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
           ))}
           </div>
         ) : (
-          <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] text-center text-xs text-zinc-400">
+          <div className="p-4 rounded-2xl bg-black border border-[#2F3336] text-center text-xs text-zinc-400">
             لا توجد شواغر وظيفية حالياً، ستظهر هنا فور إضافتها.
           </div>
         )}
       </div>
 
-      <div className="p-4 rounded-2xl bg-[#0A0E1A] border border-[#18233C] shadow-md flex items-center justify-between gap-3">
+      <div className="p-4 rounded-2xl bg-black border border-[#2F3336] shadow-md flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/30 flex items-center justify-center shrink-0">
             <ShieldCheck size={24} />
@@ -824,7 +824,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </div>
 
       {showAllCategoriesModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 bg-black  flex flex-col p-4 animate-in fade-in duration-200">
           <div className="max-w-md w-full mx-auto space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <h3 className="font-black text-base text-white flex items-center gap-2">
@@ -832,7 +832,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </h3>
               <button
                 onClick={() => setShowAllCategoriesModal(false)}
-                className="p-2 rounded-xl bg-[#12192B] text-zinc-300 hover:text-white cursor-pointer"
+                className="p-2 rounded-xl bg-[#111111] text-zinc-300 hover:text-white cursor-pointer"
               >
                 <X size={18} />
               </button>
@@ -849,7 +849,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       if (cat.id === 'banks') handleNavigateBanks();
                       else onSelectCategory(cat.id);
                     }}
-                    className="p-3 rounded-xl bg-[#0A0E1A] border border-[#18233C] hover:border-[#FFC500]/60 transition-all cursor-pointer flex items-center gap-3 group"
+                    className="p-3 rounded-xl bg-black border border-[#2F3336] hover:border-[#FFC500]/60 transition-all cursor-pointer flex items-center gap-3 group"
                   >
                     <div className={`w-10 h-10 rounded-xl ${cat.bg} ${cat.color} flex items-center justify-center group-hover:scale-110 transition-transform shrink-0`}>
                       <Icon size={20} />

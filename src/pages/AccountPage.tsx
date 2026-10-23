@@ -115,8 +115,8 @@ const compressImage = (file: File, maxWidth: number, maxHeight: number, quality 
 export const VerifiedBadge: React.FC<{ type?: string | boolean; size?: number }> = ({ type, size = 19 }) => {
   if (!type || type === "none" || type === false) return null;
   const bType = type === true ? "blue" : type;
-  const colors: Record<string, string> = { blue: "#1D9BF0", gold: "#EAB308", gray: "#829AAB" };
-  const fill = colors[bType] || "#1D9BF0";
+  const colors: Record<string, string> = { blue: "#FFC500", gold: "#EAB308", gray: "#829AAB" };
+  const fill = colors[bType] || "#FFC500";
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="inline-block flex-shrink-0 align-middle mr-1.5 drop-shadow-sm">
       <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6s-2.95.875-3.6 2.148c-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 0 .495.084.965.238 1.4C1.575 9.55.7 10.92.7 12.5s.875 2.95 2.148 3.6c-.154.435-.238.905-.238 1.4 0 2.21 1.79 4 4 4 .495 0 .965-.084 1.4-.238.65 1.273 2.02 2.148 3.6 2.148s2.95-.875 3.6-2.148c.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6z" fill={fill} />
@@ -891,7 +891,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white font-['Tahoma',sans-serif]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1D9BF0]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#FFC500]" />
       </div>
     );
   }
@@ -900,7 +900,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   if (!sessionUser && !targetIdParam) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 text-center font-['Tahoma',sans-serif]" dir="rtl">
-        <div className="w-20 h-20 rounded-3xl bg-[#141E30] border border-[#2F3336] flex items-center justify-center mb-5 text-[#1D9BF0] shadow-2xl">
+        <div className="w-20 h-20 rounded-3xl bg-[#141E30] border border-[#2F3336] flex items-center justify-center mb-5 text-[#FFC500] shadow-2xl">
           <Lock size={36} />
         </div>
         <h2 className="text-xl font-black mb-2">تسجيل الدخول إلى حسابك</h2>
@@ -909,7 +909,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         </p>
         <button
           onClick={() => setAuthModalOpen(true)}
-          className="w-full max-w-xs py-3.5 rounded-full bg-[#1D9BF0] hover:bg-[#1A8CD8] active:scale-95 text-white font-black text-sm transition shadow-[0_8px_25px_rgba(29,155,240,0.4)]"
+          className="w-full max-w-xs py-3.5 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white font-black text-sm transition shadow-[0_8px_25px_rgba(29,155,240,0.4)]"
         >
           تسجيل الدخول / إنشاء حساب
         </button>
@@ -919,11 +919,11 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   }
 
   return (
-    <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#1D9BF0] selection:text-white pb-32" dir="rtl">
+    <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#FFC500] selection:text-white pb-32" dir="rtl">
       
       {toastMessage && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[150] bg-[#16181C]/95 backdrop-blur-2xl border border-[#2F3336] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-[0_12px_40px_rgba(0,0,0,0.9)] animate-fade-in flex items-center gap-2">
-          <CheckCircle2 size={16} className="text-[#1D9BF0] flex-shrink-0" />
+          <CheckCircle2 size={16} className="text-[#FFC500] flex-shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -955,7 +955,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         {isOwner && (
           <button
             onClick={() => coverInputRef.current?.click()}
-            className="absolute bottom-3 left-3 bg-black/70 hover:bg-black/90 active:scale-95 text-white p-2.5 rounded-full backdrop-blur-md border border-white/20 transition flex items-center gap-1.5 text-xs font-bold shadow-lg z-10"
+            className="absolute bottom-3 left-3 bg-black hover:bg-black active:scale-95 text-white p-2.5 rounded-full  border border-white/20 transition flex items-center gap-1.5 text-xs font-bold shadow-lg z-10"
             title="تغيير صورة الغلاف"
           >
             <Camera size={16} />
@@ -967,7 +967,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-20">
           <button 
             onClick={() => navigate(-1)} 
-            className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md transition active:scale-95"
+            className="w-9 h-9 rounded-full bg-black hover:bg-black text-white flex items-center justify-center  transition active:scale-95"
             title="رجوع"
           >
             <ArrowRight size={20} />
@@ -976,21 +976,21 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           <div className="flex items-center gap-2 relative">
             <button 
               onClick={() => window.location.reload()} 
-              className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md transition active:scale-95"
+              className="w-9 h-9 rounded-full bg-black hover:bg-black text-white flex items-center justify-center  transition active:scale-95"
             >
               <RotateCw size={17} />
             </button>
             <button 
               onClick={() => navigate('/feed')} 
               title="تغريدات المجتمع"
-              className="w-9 h-9 rounded-full bg-[#1D9BF0]/30 hover:bg-[#1D9BF0]/50 text-white flex items-center justify-center backdrop-blur-md transition active:scale-95"
+              className="w-9 h-9 rounded-full bg-[#FFC500]/30 hover:bg-[#FFC500]/50 text-white flex items-center justify-center  transition active:scale-95"
             >
               <MessageSquare size={17} />
             </button>
 
             <button onClick={() => setIsMenuOpen(!isMenuOpen)} 
                   title="خيارات الحساب"
-                  className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md transition active:scale-95 relative"
+                  className="w-9 h-9 rounded-full bg-black hover:bg-black text-white flex items-center justify-center  transition active:scale-95 relative"
                 >
                   <MoreHorizontal size={19} />
                 </button>
@@ -1049,7 +1049,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                               onClick={handleToggleBlock}
                               className="w-full px-3.5 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
                             >
-                              <Lock size={16} className={isBlocked ? "text-[#1D9BF0] flex-shrink-0" : "text-rose-500 flex-shrink-0"} />
+                              <Lock size={16} className={isBlocked ? "text-[#FFC500] flex-shrink-0" : "text-rose-500 flex-shrink-0"} />
                               <span className="text-white text-sm">{isBlocked ? "إلغاء الحظر" : "حظر"}</span>
                             </button>
                           </div>
@@ -1080,7 +1080,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             {isOwner && (
               <button
                 onClick={() => avatarInputRef.current?.click()}
-                className="absolute bottom-0 right-0 p-2 rounded-full bg-[#1D9BF0] hover:bg-[#1A8CD8] active:scale-95 text-white border-2 border-black shadow-lg transition"
+                className="absolute bottom-0 right-0 p-2 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white border-2 border-black shadow-lg transition"
                 title="تغيير الصورة الشخصية"
               >
                 <Camera size={16} />
@@ -1092,7 +1092,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           {isOwner ? (
             <button
               onClick={() => showToast("حسابك معتمد ونشط في المنصة ✨")}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1D9BF0]/15 border border-[#1D9BF0]/40 text-[#1D9BF0] text-xs font-bold hover:bg-[#1D9BF0]/25 transition"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFC500]/15 border border-[#FFC500]/40 text-[#FFC500] text-xs font-bold hover:bg-[#FFC500]/25 transition"
             >
               <span>حساب معتمد</span>
               <VerifiedBadge type={verificationType || "blue"} size={16} />
@@ -1104,7 +1104,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 className="p-2 sm:px-3 sm:py-2 rounded-full border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md active:scale-95"
                 title="مراسلة خاصة"
               >
-                <Mail size={16} className="text-[#1D9BF0]" />
+                <Mail size={16} className="text-[#FFC500]" />
                 <span className="hidden sm:inline">رسالة</span>
               </button>
   
@@ -1160,13 +1160,13 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         <div className="flex flex-wrap items-center gap-y-2 gap-x-4 mt-3 text-[11px] text-[#71767B]">
           {isOwner && email && (
             <div className="flex items-center gap-1.5 text-zinc-300">
-              <Mail size={14} className="text-[#1D9BF0]" />
+              <Mail size={14} className="text-[#FFC500]" />
               <span dir="ltr">{email}</span>
             </div>
           )}
           {isOwner && phone && (
             <div className="flex items-center gap-1.5 text-zinc-300">
-              <Phone size={14} className="text-[#1D9BF0]" />
+              <Phone size={14} className="text-[#FFC500]" />
               <span dir="ltr">{phone}</span>
             </div>
           )}
@@ -1291,7 +1291,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             {isOwner && (
               <button 
                 onClick={() => setIsPostModalOpen(true)}
-                className="px-5 py-2.5 rounded-full bg-[#1D9BF0] text-white text-xs font-bold hover:bg-[#1A8CD8] transition shadow-lg"
+                className="px-5 py-2.5 rounded-full bg-[#FFC500] text-white text-xs font-bold hover:bg-[#E5B200] transition shadow-lg"
               >
                 اكتب تغريدة جديدة
               </button>
@@ -1324,7 +1324,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                       <span className="font-bold text-white text-[13px] hover:underline cursor-pointer cursor-pointer cursor-pointer truncate">{post.authorName || name}</span>
                       {post.authorBadge && post.authorBadge !== "none" && (
                         <svg className="w-[18px] h-[18px] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"
-                          style={{color: post.authorBadge === "blue" ? "#1D9BF0" : post.authorBadge === "gold" ? "#FFD700" : "#71767B"}}>
+                          style={{color: post.authorBadge === "blue" ? "#FFC500" : post.authorBadge === "gold" ? "#FFD700" : "#71767B"}}>
                           <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.918-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.918 1.79-3.918 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.755 2.73 1.882 3.475-.038.2-.058.406-.058.617 0 2.21 1.71 4 3.918 4 .47 0 .92-.085 1.336-.25.52 1.335 1.828 2.25 3.337 2.25s2.816-.917 3.337-2.25c.416.165.866.25 1.336.25 2.21 0 3.918-1.79 3.918-4 0-.21-.02-.417-.058-.617C21.745 15.23 22.5 13.96 22.5 12.5z"/>
                           <path fill="white" d="M10.825 16.583l-3.66-3.66a.75.75 0 111.06-1.061l2.6 2.6 5.405-5.405a.75.75 0 111.06 1.061l-5.935 5.935a.75.75 0 01-1.06 0z"/>
                         </svg>
@@ -1355,7 +1355,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                         e.stopPropagation();
                         setActiveMenuPost(post);
                       }}
-                      className="text-[#71767B] hover:text-[#1D9BF0] p-1.5 rounded-full hover:bg-[#1D9BF0]/10 transition shrink-0"
+                      className="text-[#71767B] hover:text-[#FFC500] p-1.5 rounded-full hover:bg-[#FFC500]/10 transition shrink-0"
                       title="المزيد"
                     >
                       <MoreHorizontal size={18} />
@@ -1418,10 +1418,10 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                                   setActiveCommentPost(post);
                                   loadComments(post.id);
                                 }}
-                                className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition group"
+                                className="flex items-center gap-1.5 hover:text-[#FFC500] transition group"
                                 title="الردود"
                               >
-                                <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10">
+                                <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10">
                                   <MessageCircle size={16} />
                                 </div>
                                 <span>{post.replies || 0}</span>
@@ -1457,10 +1457,10 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                               {/* 📊 المشاهدات */}
                               <button
                                 onClick={(e) => e.stopPropagation()}
-                                className="flex items-center gap-1.5 text-[#71767B] hover:text-[#1D9BF0] transition group"
+                                className="flex items-center gap-1.5 text-[#71767B] hover:text-[#FFC500] transition group"
                                 title="المشاهدات"
                               >
-                                <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10">
+                                <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10">
                                   <BarChart size={17} />
                                 </div>
                                 <span>{post.views || 0}</span>
@@ -1480,7 +1480,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
       {/* مودال تعديل الملف الشخصي */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4" dir="rtl">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-3 sm:p-4" dir="rtl">
           <div className="bg-[#000000] border border-[#2F3336] w-full max-w-lg rounded-3xl p-5 sm:p-6 text-white max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-4">
               <h2 className="text-base font-black">تعديل الملفّ الشخصيّ</h2>
@@ -1496,7 +1496,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   type="text" 
                   value={editName} 
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#1D9BF0] focus:outline-none" 
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none" 
                   required
                 />
               </div>
@@ -1507,7 +1507,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   type="tel" 
                   value={editPhone} 
                   onChange={(e) => setEditPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#1D9BF0] focus:outline-none font-mono" 
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none font-mono" 
                   placeholder="+967 77xxxxxxx"
                   dir="ltr"
                 />
@@ -1519,7 +1519,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   type="text" 
                   value={editUsername} 
                   onChange={(e) => setEditUsername(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#1D9BF0] focus:outline-none font-mono" 
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none font-mono" 
                   dir="ltr"
                 />
               </div>
@@ -1530,7 +1530,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   rows={3} 
                   value={editBio} 
                   onChange={(e) => setEditBio(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#1D9BF0] focus:outline-none" 
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none" 
                   placeholder="اكتب نبذتك الشخصية..."
                 />
               </div>
@@ -1541,7 +1541,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   type="text" 
                   value={editLocation} 
                   onChange={(e) => setEditLocation(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#1D9BF0] focus:outline-none" 
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none" 
                   placeholder="صنعاء، اليمن"
                 />
               </div>
@@ -1571,7 +1571,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
       {/* مودال منشور جديد */}
       {isPostModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4" dir="rtl">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-3 sm:p-4" dir="rtl">
           <div className="bg-[#000000] border border-[#2F3336] w-full max-w-lg rounded-3xl p-5 sm:p-6 text-white">
             <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-4">
               <h2 className="text-base font-black">منشور جديد</h2>
@@ -1602,7 +1602,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   <button 
                     type="button" 
                     onClick={() => setNewPostImage('')}
-                    className="absolute top-2 left-2 bg-black/70 text-white p-1.5 rounded-full hover:bg-black transition"
+                    className="absolute top-2 left-2 bg-black text-white p-1.5 rounded-full hover:bg-black transition"
                   >
                     <X size={16} />
                   </button>
@@ -1613,7 +1613,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   <button
                     type="button"
                     onClick={() => postImageInputRef.current?.click()}
-                    className="p-2 text-[#1D9BF0] hover:bg-[#1D9BF0]/10 rounded-full transition"
+                    className="p-2 text-[#FFC500] hover:bg-[#FFC500]/10 rounded-full transition"
                     title="إرفاق صورة"
                   >
                     <ImageIcon size={20} />
@@ -1633,7 +1633,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                     <button
                       type="submit"
                       disabled={(!newPostText.trim() && !newPostImage) || newPostText.length > 280}
-                      className="px-5 py-2 rounded-full bg-[#1D9BF0] hover:bg-[#1A8CD8] disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-white font-extrabold text-sm transition"
+                      className="px-5 py-2 rounded-full bg-[#FFC500] hover:bg-[#E5B200] disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-white font-extrabold text-sm transition"
                     >
                       نشر
                     </button>
@@ -1647,13 +1647,13 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     
       {/* مودال التواصل الخاص */}
       {isDmOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-[#16181C] border border-[#2F3336] rounded-3xl p-5 shadow-2xl animate-scale-up text-right">
             <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-4">
               <button onClick={() => setIsDmOpen(false)} className="text-zinc-400 hover:text-white p-1 rounded-full"><X size={18} /></button>
               <h3 className="font-black text-white text-sm flex items-center gap-2">
                 <span>مراسلة خاصة مع {name}</span>
-                <Mail size={16} className="text-[#1D9BF0]" />
+                <Mail size={16} className="text-[#FFC500]" />
               </h3>
             </div>
             <form onSubmit={handleSendDm} className="space-y-4">
@@ -1662,11 +1662,11 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 onChange={(e) => setDmContent(e.target.value)}
                 placeholder="اكتب رسالتك الخاصة هنا..."
                 rows={4}
-                className="w-full bg-black/60 border border-[#2F3336] rounded-2xl p-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#1D9BF0] resize-none"
+                className="w-full bg-black border border-[#2F3336] rounded-2xl p-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFC500] resize-none"
               />
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => setIsDmOpen(false)} className="px-4 py-2 rounded-full text-xs font-bold text-zinc-400 hover:bg-white/5 transition">إلغاء</button>
-                <button type="submit" className="px-6 py-2 rounded-full text-xs font-black bg-[#1D9BF0] hover:bg-[#1A8CD8] text-white transition shadow-lg active:scale-95">إرسال ✉️</button>
+                <button type="submit" className="px-6 py-2 rounded-full text-xs font-black bg-[#FFC500] hover:bg-[#E5B200] text-white transition shadow-lg active:scale-95">إرسال ✉️</button>
               </div>
             </form>
           </div>
@@ -1676,7 +1676,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     
       {/* نافذة تأكيد الإجراءات الفاخرة بنمط إكس */}
       {confirmModal?.open && (
-        <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[200] bg-black  flex items-center justify-center p-4 animate-fade-in">
           <div className="w-full max-w-xs bg-[#16181C] border border-[#2F3336] rounded-3xl p-5 shadow-2xl text-center animate-scale-up" dir="rtl">
             <h3 className="text-base font-black text-white mb-1.5">{confirmModal.title}</h3>
             <p className="text-xs text-zinc-400 mb-5 leading-relaxed">{confirmModal.desc}</p>
@@ -1692,7 +1692,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   confirmModal.onConfirm();
                   setConfirmModal(null);
                 }}
-                className="flex-1 py-2.5 rounded-full text-xs font-black bg-[#1D9BF0] hover:bg-[#1A8CD8] text-white transition active:scale-95 shadow-md shadow-blue-900/30"
+                className="flex-1 py-2.5 rounded-full text-xs font-black bg-[#FFC500] hover:bg-[#E5B200] text-white transition active:scale-95 shadow-md shadow-blue-900/30"
               >
                 تأكيد
               </button>
@@ -1704,7 +1704,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     
       {activeMenuPost && (
         <div 
-          className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center p-2"
+          className="fixed inset-0 z-50 bg-black flex items-end justify-center p-2"
           onClick={() => setActiveMenuPost(null)}
         >
           <div 
@@ -1756,7 +1756,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
       {/* نافذة الردود - نسخة من /feed */}
       {activeCommentPost && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col justify-between h-[100dvh] w-full max-w-lg mx-auto border border-[#2F3336] p-4 text-white overflow-hidden shadow-2xl" dir="rtl">
+        <div className="fixed inset-0 z-50 bg-black  flex flex-col justify-between h-[100dvh] w-full max-w-lg mx-auto border border-[#2F3336] p-4 text-white overflow-hidden shadow-2xl" dir="rtl">
           {/* Header */}
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-3">
@@ -1771,7 +1771,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 type="button"
                 onClick={handleSubmitComment}
                 disabled={!newCommentText.trim() || newCommentText.length > 280}
-                className="px-5 py-1.5 bg-[#1D9BF0] hover:bg-[#1A8CD8] disabled:opacity-40 text-white rounded-full text-xs font-black transition"
+                className="px-5 py-1.5 bg-[#FFC500] hover:bg-[#E5B200] disabled:opacity-40 text-white rounded-full text-xs font-black transition"
               >
                 الردّ
               </button>
@@ -1779,7 +1779,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             
             <div className="text-[11px] text-[#71767B] mb-3 flex items-center gap-1">
               <span>رداً على</span>
-              <span className="text-[#1D9BF0] font-mono font-bold" dir="ltr">@{activeCommentPost.authorUsername}</span>
+              <span className="text-[#FFC500] font-mono font-bold" dir="ltr">@{activeCommentPost.authorUsername}</span>
             </div>
             
             {/* قالب الكتابة */}
@@ -1856,7 +1856,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       {isOwner && (
         <button
           onClick={() => setIsPostModalOpen(true)}
-          className="fixed bottom-24 left-4 z-40 w-14 h-14 rounded-full bg-[#1D9BF0] hover:bg-[#1A8CD8] active:scale-95 text-white flex items-center justify-center shadow-[0_8px_25px_rgba(29,155,240,0.5)] transition"
+          className="fixed bottom-24 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-[0_8px_25px_rgba(255,197,0,0.3)] transition"
           title="تغريدة جديدة"
         >
           <Plus size={28} className="stroke-[2.5]" />
@@ -1866,7 +1866,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       {/* Modal تفاصيل التغريدة */}
       {viewingDetailPost && (
         <div 
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm overflow-y-auto"
+          className="fixed inset-0 z-50 bg-black  overflow-y-auto"
           onClick={() => setViewingDetailPost(null)}
           dir="rtl"
         >
@@ -1875,7 +1875,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-black/95 backdrop-blur border-b border-[#2F3336] p-3 flex items-center gap-4">
+            <div className="sticky top-0 z-10 bg-black backdrop-blur border-b border-[#2F3336] p-3 flex items-center gap-4">
               <button 
                 onClick={() => setViewingDetailPost(null)}
                 className="text-white hover:bg-white/10 p-2 rounded-full transition"
@@ -1928,7 +1928,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                     setViewingDetailPost(null);
                     loadComments(viewingDetailPost.id);
                   }}
-                  className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition"
+                  className="flex items-center gap-1.5 hover:text-[#FFC500] transition"
                 >
                   <MessageCircle size={18} />
                   <span className="text-sm">{viewingDetailPost.replies || 0}</span>
@@ -1950,7 +1950,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   <span className="text-sm">{viewingDetailPost.likes || 0}</span>
                 </button>
 
-                <button className="hover:text-[#1D9BF0] transition">
+                <button className="hover:text-[#FFC500] transition">
                   <BarChart size={18} />
                 </button>
               </div>
@@ -1995,7 +1995,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
       {/* قائمة إعادة النشر / اقتباس */}
       {repostMenu && (
-        <div className="fixed inset-0 z-[60] bg-black/70 flex items-end justify-center p-2" onClick={() => setRepostMenu(null)}>
+        <div className="fixed inset-0 z-[60] bg-black flex items-end justify-center p-2" onClick={() => setRepostMenu(null)}>
           <div className="w-full max-w-md bg-[#16181C] rounded-2xl overflow-hidden mb-20" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => { handleRepost(repostMenu.id); setRepostMenu(null); }}
@@ -2008,7 +2008,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               onClick={() => { setQuoteOriginal(repostMenu); setIsQuoting(true); setRepostMenu(null); }}
               className="w-full p-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm"
             >
-              <MessageCircle size={20} className="text-[#1D9BF0]" />
+              <MessageCircle size={20} className="text-[#FFC500]" />
               <span>اقتباس</span>
             </button>
             <button onClick={() => setRepostMenu(null)} className="w-full p-3 text-center text-white/60 font-bold hover:bg-white/5 transition">
@@ -2020,7 +2020,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
       {/* نافذة الاقتباس */}
       {isQuoting && quoteOriginal && (
-        <div className="fixed inset-0 z-[70] bg-black/95 flex flex-col p-4" dir="rtl">
+        <div className="fixed inset-0 z-[70] bg-black flex flex-col p-4" dir="rtl">
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => { setIsQuoting(false); setQuoteOriginal(null); }} className="text-white p-2">
               <X size={24} />
@@ -2052,7 +2052,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 }
               }}
               disabled={!quoteText.trim()}
-              className="px-4 py-1.5 bg-[#1D9BF0] text-white rounded-full font-bold text-sm disabled:opacity-50"
+              className="px-4 py-1.5 bg-[#FFC500] text-white rounded-full font-bold text-sm disabled:opacity-50"
             >
               اقتباس
             </button>
@@ -2079,7 +2079,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
       {/* Modal الإبلاغ */}
       {reportingItem && (
-        <div className="fixed inset-0 z-[200] bg-black/70 flex items-center justify-center p-4" onClick={() => setReportingItem(null)}>
+        <div className="fixed inset-0 z-[200] bg-black flex items-center justify-center p-4" onClick={() => setReportingItem(null)}>
           <div className="w-full max-w-sm bg-[#16181C] rounded-2xl p-4 shadow-2xl" onClick={(e) => e.stopPropagation()} dir="rtl">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-black text-white text-sm">الإبلاغ عن التغريدة</h3>

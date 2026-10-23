@@ -417,7 +417,7 @@ export const SponsorManager: React.FC = () => {
       {/* التنبيهات */}
       {toast && (
         <div className="fixed top-14 left-1/2 -translate-x-1/2 z-[9999] w-[90%] max-w-sm">
-          <div className={`p-2.5 rounded-xl shadow-lg flex items-center justify-between border backdrop-blur-md text-xs font-bold ${
+          <div className={`p-2.5 rounded-xl shadow-lg flex items-center justify-between border  text-xs font-bold ${
             toast.type === 'success'
               ? 'bg-[#0D1527]/95 border-emerald-500/50 text-emerald-400'
               : toast.type === 'warning'
@@ -433,11 +433,11 @@ export const SponsorManager: React.FC = () => {
       )}
 
       {/* 🔙 شريط الرأس الرشيق */}
-      <div className="flex items-center justify-between flex-wrap gap-2 bg-[#0B0F17] border border-[#1F2937] p-2.5 sm:p-3 rounded-xl">
+      <div className="flex items-center justify-between flex-wrap gap-2 bg-[#0B0F17] border border-[#2F3336] p-2.5 sm:p-3 rounded-xl">
         <div className="flex items-center gap-2">
           <NavLink
             to="/admin/ads"
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#161D2B] text-yellow-400 hover:bg-[#1F2937] border border-[#1F2937] transition font-bold text-xs shrink-0"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#161D2B] text-yellow-400 hover:bg-[#2F3336] border border-[#2F3336] transition font-bold text-xs shrink-0"
             title="رجوع لمعرض الإعلانات"
           >
             <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -466,8 +466,8 @@ export const SponsorManager: React.FC = () => {
       </div>
 
       {/* 📱 المعاينة الحية المباشرة (مطابقة للموقع العام بالملي) */}
-      <div className="bg-[#0B0F17] border border-[#1F2937] rounded-xl p-2.5 sm:p-3 space-y-2">
-        <div className="flex items-center justify-between text-xs pb-1 border-b border-[#1F2937]">
+      <div className="bg-[#0B0F17] border border-[#2F3336] rounded-xl p-2.5 sm:p-3 space-y-2">
+        <div className="flex items-center justify-between text-xs pb-1 border-b border-[#2F3336]">
           <div className="flex items-center gap-1.5 text-gray-300 font-semibold text-[11px]">
             <Eye size={13} className="text-[#FFC500]" />
             <span>معاينة حية فورية (كما يظهر في الموقع تماماً):</span>
@@ -524,7 +524,7 @@ export const SponsorManager: React.FC = () => {
                       color: accentColor,
                       borderColor: `${accentColor}50`
                     }}
-                    className="px-1.5 py-0.5 border text-[9px] font-black rounded-none flex items-center gap-1 backdrop-blur-sm"
+                    className="px-1.5 py-0.5 border text-[9px] font-black rounded-none flex items-center gap-1 "
                   >
                     <Sparkles size={10} />
                     <span>{sponsorTag}</span>
@@ -543,7 +543,7 @@ export const SponsorManager: React.FC = () => {
                       <span>{ctaText || (linkType === 'whatsapp' ? 'تواصل واتساب' : 'زيارة الموقع')}</span>
                       <ExternalLink size={9} />
                     </span>
-                    <span className="text-[8px] text-zinc-300 bg-black/70 border border-white/15 px-1.5 py-0.5 rounded-none">
+                    <span className="text-[8px] text-zinc-300 bg-black border border-white/15 px-1.5 py-0.5 rounded-none">
                       إعلان راعٍ ⓘ
                     </span>
                     <span className="text-[8px] font-black text-zinc-100 bg-white/15 border border-white/25 px-1 py-0.5 rounded-none font-sans">
@@ -559,7 +559,7 @@ export const SponsorManager: React.FC = () => {
                         src={logoUrl}
                         alt="logo"
                         style={{ borderColor: accentColor }}
-                        className="w-5 h-5 rounded-full object-cover border bg-black/60 shrink-0"
+                        className="w-5 h-5 rounded-full object-cover border bg-black shrink-0"
                       />
                     )}
                     <h4 className="text-white text-[11px] sm:text-xs font-bold truncate drop-shadow-md">
@@ -609,11 +609,11 @@ export const SponsorManager: React.FC = () => {
       </div>
 
       {/* 📝 نموذج التعديل المتكامل والذكي */}
-      <div className="bg-[#0B0F17] border border-[#1F2937] rounded-xl p-3 sm:p-4 space-y-3">
+      <div className="bg-[#0B0F17] border border-[#2F3336] rounded-xl p-3 sm:p-4 space-y-3">
         
         {/* بيانات الإعلان الأساسية */}
         <div className="space-y-2">
-          <div className="text-xs font-bold text-gray-300 pb-1 border-b border-[#1F2937]">بيانات ونصوص الراعي:</div>
+          <div className="text-xs font-bold text-gray-300 pb-1 border-b border-[#2F3336]">بيانات ونصوص الراعي:</div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div>
@@ -623,7 +623,7 @@ export const SponsorManager: React.FC = () => {
                 value={advertiserName}
                 onChange={(e) => setAdvertiserName(e.target.value)}
                 placeholder="مثال: فندق بلقيس مأرب"
-                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#1F2937] text-white focus:outline-none focus:border-[#FFC500] text-xs"
+                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#2F3336] text-white focus:outline-none focus:border-[#FFC500] text-xs"
               />
             </div>
 
@@ -633,7 +633,7 @@ export const SponsorManager: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setOpenTagDropdown(!openTagDropdown)}
-                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#1F2937] text-white text-xs flex items-center justify-between"
+                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#2F3336] text-white text-xs flex items-center justify-between"
               >
                 <span>{sponsorTag}</span>
                 <ChevronDown size={14} className="text-[#FFC500]" />
@@ -668,7 +668,7 @@ export const SponsorManager: React.FC = () => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="مثال: انضم الآن"
-                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#1F2937] text-white focus:outline-none focus:border-[#FFC500] text-xs"
+                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#2F3336] text-white focus:outline-none focus:border-[#FFC500] text-xs"
               />
             </div>
 
@@ -679,7 +679,7 @@ export const SponsorManager: React.FC = () => {
                 value={ctaText}
                 onChange={(e) => setCtaText(e.target.value)}
                 placeholder="مثال: تواصل واتساب أو زيارة الرابط"
-                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#1F2937] text-white focus:outline-none focus:border-[#FFC500] text-xs"
+                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#2F3336] text-white focus:outline-none focus:border-[#FFC500] text-xs"
               />
             </div>
 
@@ -690,17 +690,17 @@ export const SponsorManager: React.FC = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="اكتب وصفاً موجزاً للخدمات أو العرض..."
-                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#1F2937] text-white focus:outline-none focus:border-[#FFC500] text-xs resize-none"
+                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#2F3336] text-white focus:outline-none focus:border-[#FFC500] text-xs resize-none"
               />
             </div>
           </div>
         </div>
 
         {/* 🟢 قسم الرابط المباشر للواتساب أو الموقع بدون أي لصق يدوي */}
-        <div className="space-y-2 pt-2 border-t border-[#1F2937]">
+        <div className="space-y-2 pt-2 border-t border-[#2F3336]">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-300">توجيه الزر:</span>
-            <div className="flex items-center gap-1 bg-[#161D2B] p-0.5 rounded-lg border border-[#1F2937]">
+            <div className="flex items-center gap-1 bg-[#161D2B] p-0.5 rounded-lg border border-[#2F3336]">
               <button
                 type="button"
                 onClick={() => {
@@ -738,7 +738,7 @@ export const SponsorManager: React.FC = () => {
             <div className="p-2.5 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-1">
               <label className="block text-[11px] font-bold text-emerald-400">رقم هاتف الواتساب (9 أرقام فقط):</label>
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1.5 bg-[#161D2B] border border-[#1F2937] rounded-lg text-xs font-mono text-gray-300 dir-ltr">
+                <span className="px-2.5 py-1.5 bg-[#161D2B] border border-[#2F3336] rounded-lg text-xs font-mono text-gray-300 dir-ltr">
                   +967
                 </span>
                 <input
@@ -766,7 +766,7 @@ export const SponsorManager: React.FC = () => {
         </div>
 
         {/* 🎨 وسائط الإعلان (المعرض والاستوديو) */}
-        <div className="pt-2 border-t border-[#1F2937] space-y-2">
+        <div className="pt-2 border-t border-[#2F3336] space-y-2">
           <label className="block text-[11px] text-gray-300 font-bold">وسائط الإعلان (المعرض والاستوديو):</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             
@@ -837,7 +837,7 @@ export const SponsorManager: React.FC = () => {
               </div>
 
               {mediaUrl && (
-                <div className="flex items-center justify-between p-1 rounded-lg bg-[#161D2B] border border-[#1F2937] text-[10px]">
+                <div className="flex items-center justify-between p-1 rounded-lg bg-[#161D2B] border border-[#2F3336] text-[10px]">
                   <span className="text-emerald-400 font-bold truncate max-w-[190px]">✓ تم اختيار {mediaType === 'video' ? 'الفيديو' : 'الصورة'}</span>
                   <button
                     type="button"
@@ -855,11 +855,11 @@ export const SponsorManager: React.FC = () => {
         </div>
 
         {/* 🎨 تخصيص ألوان الزر والنصوص والبطاقة */}
-        <div className="pt-2 border-t border-[#1F2937] space-y-2">
+        <div className="pt-2 border-t border-[#2F3336] space-y-2">
           <label className="block text-[11px] text-gray-300 font-bold">ألوان الزر والنصوص والحركة:</label>
           
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10px]">
-            <div className="p-1.5 bg-[#161D2B] rounded-lg border border-[#1F2937] flex items-center justify-between">
+            <div className="p-1.5 bg-[#161D2B] rounded-lg border border-[#2F3336] flex items-center justify-between">
               <div>
                 <span className="text-white font-bold block">لون خلفية الزر</span>
                 <span className="text-[8.5px] text-gray-400 font-mono">{btnBgColor}</span>
@@ -867,7 +867,7 @@ export const SponsorManager: React.FC = () => {
               <input type="color" value={btnBgColor} onChange={(e) => setBtnBgColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
             </div>
 
-            <div className="p-1.5 bg-[#161D2B] rounded-lg border border-[#1F2937] flex items-center justify-between">
+            <div className="p-1.5 bg-[#161D2B] rounded-lg border border-[#2F3336] flex items-center justify-between">
               <div>
                 <span className="text-white font-bold block">لون نص الزر</span>
                 <span className="text-[8.5px] text-gray-400 font-mono">{btnTextColor}</span>
@@ -875,7 +875,7 @@ export const SponsorManager: React.FC = () => {
               <input type="color" value={btnTextColor} onChange={(e) => setBtnTextColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
             </div>
 
-            <div className="p-1.5 bg-[#161D2B] rounded-lg border border-[#1F2937] flex items-center justify-between">
+            <div className="p-1.5 bg-[#161D2B] rounded-lg border border-[#2F3336] flex items-center justify-between">
               <div>
                 <span className="text-white font-bold block">لون العنوان</span>
                 <span className="text-[8.5px] text-gray-400 font-mono">{textColor}</span>
@@ -883,7 +883,7 @@ export const SponsorManager: React.FC = () => {
               <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="w-6 h-6 rounded cursor-pointer bg-transparent border-0" />
             </div>
 
-            <div className="p-1.5 bg-[#161D2B] rounded-lg border border-[#1F2937] flex items-center justify-between">
+            <div className="p-1.5 bg-[#161D2B] rounded-lg border border-[#2F3336] flex items-center justify-between">
               <div>
                 <span className="text-white font-bold block">لون الإطار</span>
                 <span className="text-[8.5px] text-gray-400 font-mono">{accentColor}</span>
@@ -899,7 +899,7 @@ export const SponsorManager: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setOpenAnimDropdown(!openAnimDropdown)}
-                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#1F2937] text-white text-xs flex items-center justify-between"
+                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161D2B] border border-[#2F3336] text-white text-xs flex items-center justify-between"
               >
                 <span>{ANIMATION_OPTIONS.find(o => o.id === animationEffect)?.label || 'بدون حركة'}</span>
                 <ChevronDown size={13} className="text-[#FFC500]" />

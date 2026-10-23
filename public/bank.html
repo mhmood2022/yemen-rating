@@ -1,22 +1,18 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
       body, h1, h2, h3, h4, h5, h6, p, span, div, button, input {
-        font-family: 'Cairo', sans-serif !important;
+        font-family: Tahoma, sans-serif !important;
       }
     </style>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>بنك التضامن - يمن ريتنغ</title>
 
-  <!-- خط Tajawal الرسمي -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- خط Tahoma الرسمي -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -35,11 +31,11 @@
               goldLight: '#FEF08A',
               dark: '#000000',
               card: '#0D0D0D',
-              cardBorder: '#1F2937'
+              cardBorder: '#2F3336'
             }
           },
           fontFamily: {
-            tajawal: ['Tajawal', 'sans-serif']
+            tajawal: ['Tahoma', 'sans-serif']
           }
         }
       }
@@ -72,7 +68,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     body {
       background-color: #000000;
       color: #FFFFFF;
-      font-family: 'Tajawal', sans-serif;
+      font-family: Tahoma, sans-serif;
       margin: 0;
       padding: 0;
       overflow-x: hidden;
@@ -165,7 +161,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     </div>
 
     <!-- 4. تبويبات التصفح الثلاثة -->
-    <div class="border-b border-zinc-800 flex items-center justify-around text-zinc-400 text-sm font-bold mt-2">
+    <div class="border-b border-[#2F3336] flex items-center justify-around text-zinc-400 text-sm font-bold mt-2">
       <button type="button" onclick="switchTab('posts')" id="tab-posts-btn" class="tab-active py-2.5 px-3 flex items-center gap-1.5 transition cursor-pointer">
         <i class="fa-solid fa-table-cells text-brand-gold text-sm"></i>
         <span>المنشورات</span>
@@ -290,7 +286,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
     <!-- 8. عارض الصور (Lightbox) -->
     <div id="lightbox-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex flex-col justify-between p-4">
-      <div class="flex items-center justify-between text-white border-b border-zinc-800 pb-3">
+      <div class="flex items-center justify-between text-white border-b border-[#2F3336] pb-3">
         <span id="lightbox-title" class="text-xs font-bold text-brand-gold">عرض الصورة</span>
         <button type="button" onclick="closeLightbox()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-300 cursor-pointer">
           <i class="fa-solid fa-xmark text-sm"></i>
@@ -301,16 +297,16 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         <img id="lightbox-img" src="" class="max-w-full max-h-[70vh] rounded-xl object-contain shadow-2xl transition duration-300" alt="عرض مكبر" />
       </div>
 
-      <div class="text-center text-zinc-400 text-xs flex items-center justify-between border-t border-zinc-800 pt-3">
-        <button type="button" onclick="navLightbox(-1)" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs cursor-pointer">السابق</button>
+      <div class="text-center text-zinc-400 text-xs flex items-center justify-between border-t border-[#2F3336] pt-3">
+        <button type="button" onclick="navLightbox(-1)" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-[#2F3336] text-white text-xs cursor-pointer">السابق</button>
         <span id="lightbox-counter" class="font-mono text-brand-gold">1 / 4</span>
-        <button type="button" onclick="navLightbox(1)" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white text-xs cursor-pointer">التالي</button>
+        <button type="button" onclick="navLightbox(1)" class="px-4 py-1.5 rounded-lg bg-zinc-900 border border-[#2F3336] text-white text-xs cursor-pointer">التالي</button>
       </div>
     </div>
 
     <!-- 9. نافذة التقييم -->
     <div id="review-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl relative">
+      <div class="bg-[#0D0D0D] border border-[#2F3336] rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl relative">
         
         <!-- بطاقة الشكر والنجاح الفاخرة المدمجة بنفس الاستايل -->
         <div id="review-success-view" class="hidden text-center py-6 px-3 space-y-3">
@@ -328,7 +324,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
         <!-- نموذج إضافة التقييم بحقول مميزة وأمثلة واقعية -->
         <div id="review-form-view">
-          <div class="flex items-center justify-between border-b border-zinc-800 pb-2 mb-3">
+          <div class="flex items-center justify-between border-b border-[#2F3336] pb-2 mb-3">
             <h4 class="text-sm font-bold text-brand-gold flex items-center gap-1.5">
               <i class="fa-solid fa-star"></i> إضافة تقييمك للمنشأة
             </h4>
@@ -356,15 +352,15 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
             <div>
               <label class="block text-brand-gold font-bold mb-1">اسمك الكريم أو اللقب <span class="text-red-500">*</span></label>
-              <input type="text" id="reviewer-name" required placeholder="الاسم الكريم أو اللقب (مثال: م. أحمد الحميري)" class="w-full bg-zinc-950 border border-zinc-800 focus:border-brand-gold rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none transition" />
+              <input type="text" id="reviewer-name" required placeholder="الاسم الكريم أو اللقب (مثال: م. أحمد الحميري)" class="w-full bg-zinc-950 border border-[#2F3336] focus:border-brand-gold rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none transition" />
             </div>
 
             <div>
               <label class="block text-brand-gold font-bold mb-1">تجربتك وتقييمك لخدمات البنك <span class="text-red-500">*</span></label>
-              <textarea id="reviewer-comment" rows="3" required placeholder="شاركنا رأيك الصادق حول سرعة إنجاز المعاملات، التطبيق، أو فروع البنك..." class="w-full bg-zinc-950 border border-zinc-800 focus:border-brand-gold rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none transition"></textarea>
+              <textarea id="reviewer-comment" rows="3" required placeholder="شاركنا رأيك الصادق حول سرعة إنجاز المعاملات، التطبيق، أو فروع البنك..." class="w-full bg-zinc-950 border border-[#2F3336] focus:border-brand-gold rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none transition"></textarea>
             </div>
 
-            <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
+            <div class="flex justify-end gap-2 pt-2 border-t border-[#2F3336]">
               <button type="button" onclick="closeReviewModal()" class="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold transition cursor-pointer">إلغاء</button>
               <button type="submit" id="review-submit-btn" class="px-5 py-2 rounded-xl bg-brand-gold hover:bg-brand-goldHover text-black font-black transition cursor-pointer shadow-md">إرسال التقييم</button>
             </div>
@@ -375,7 +371,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
     <!-- 10. نافذة إثبات الملكية -->
     <div id="claim-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-      <div class="bg-[#0D0D0D] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl relative">
+      <div class="bg-[#0D0D0D] border border-[#2F3336] rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl relative">
         <div id="claim-success-view" class="hidden text-center py-6 px-3 space-y-3">
           <div class="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
             <i class="fa-solid fa-check text-2xl"></i>
@@ -387,7 +383,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           <button type="button" onclick="closeClaimModal()" class="w-full py-2.5 rounded-xl bg-brand-gold text-black font-black text-xs hover:bg-brand-goldHover transition">حسناً، تم</button>
         </div>
         <div id="claim-form-view">
-        <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+        <div class="flex items-center justify-between border-b border-[#2F3336] pb-2">
           <h4 class="text-sm font-bold text-[#EF4444] flex items-center gap-1.5">
             <i class="fa-solid fa-shield-halved"></i> طلب إثبات ملكية المنشأة
           </h4>
@@ -397,25 +393,25 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         <form id="claim-form" onsubmit="submitClaim(event)" class="space-y-3 text-xs">
           <div>
             <label class="block text-white font-bold mb-1">اسم المفوض / ممثل البنك <span class="text-brand-gold">*</span></label>
-            <input type="text" id="claim-applicant-name" required placeholder="الاسم الرباعي كما في الهوية" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
+            <input type="text" id="claim-applicant-name" required placeholder="الاسم الرباعي كما في الهوية" class="w-full bg-zinc-950 border border-[#2F3336] rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
           </div>
 
           <div>
             <label class="block text-white font-bold mb-1">الصفة أو المسمى الوظيفي <span class="text-brand-gold">*</span></label>
-            <input type="text" id="claim-applicant-role" required placeholder="مثال: مدير الفرع / الممثل القانوني / مسؤول التسويق" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
+            <input type="text" id="claim-applicant-role" required placeholder="مثال: مدير الفرع / الممثل القانوني / مسؤول التسويق" class="w-full bg-zinc-950 border border-[#2F3336] rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
           </div>
 
           <div>
             <label class="block text-white font-bold mb-1">رقم الهاتف أو الواتساب الرسمي <span class="text-brand-gold">*</span></label>
-            <input type="tel" id="claim-phone" required maxlength="9" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 9)" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
+            <input type="tel" id="claim-phone" required maxlength="9" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 9)" class="w-full bg-zinc-950 border border-[#2F3336] rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
           </div>
 
           <div>
             <label class="block text-zinc-300 font-bold mb-1">رقم السجل التجاري أو صفة التفويض (اختياري)</label>
-            <textarea id="claim-notes" rows="2" placeholder="اكتب رقم السجل التجاري أو أي بيانات إضافية للتحقق..." class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition"></textarea>
+            <textarea id="claim-notes" rows="2" placeholder="اكتب رقم السجل التجاري أو أي بيانات إضافية للتحقق..." class="w-full bg-zinc-950 border border-[#2F3336] rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition"></textarea>
           </div>
 
-          <div class="flex justify-end gap-2 pt-1 border-t border-zinc-800">
+          <div class="flex justify-end gap-2 pt-1 border-t border-[#2F3336]">
             <button type="button" onclick="closeClaimModal()" class="px-3.5 py-1.5 rounded-lg bg-zinc-900 text-zinc-300 cursor-pointer">إلغاء</button>
             <button type="submit" id="claim-submit-btn" class="px-4 py-1.5 rounded-lg bg-[#EF4444] hover:bg-red-700 text-white font-bold cursor-pointer transition">إرسال الطلب</button>
           </div>
@@ -898,14 +894,14 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       if (postsContainer) {
         if (!currentPosts || currentPosts.length === 0) {
           postsContainer.className = "col-span-2";
-          postsContainer.innerHTML = `<div class="col-span-2 py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-zinc-800 text-zinc-500 text-xs">
+          postsContainer.innerHTML = `<div class="col-span-2 py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-[#2F3336] text-zinc-500 text-xs">
             <i class="fa-solid fa-images text-zinc-600 text-2xl mb-2 block"></i>
             <span>لا توجد منشورات أو صور مضافة لهذه المنشأة حالياً.</span>
           </div>`;
         } else {
           postsContainer.className = "grid grid-cols-2 gap-2.5";
           postsContainer.innerHTML = currentPosts.map((post, index) => `
-            <article onclick="openLightbox(${index})" class="group relative bg-[#0D0D0D] rounded-2xl overflow-hidden border border-zinc-800/80 aspect-square cursor-pointer active:scale-95 transition-all shadow-md">
+            <article onclick="openLightbox(${index})" class="group relative bg-[#0D0D0D] rounded-2xl overflow-hidden border border-[#2F3336]/80 aspect-square cursor-pointer active:scale-95 transition-all shadow-md">
               <img src="${post.image || post.file_url}" alt="معرض الصور" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
             </article>
           `).join('');
@@ -919,7 +915,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
         const realOffers = (Array.isArray(rawOffers) ? rawOffers : [rawOffers]).filter(Boolean);
 
         if (realOffers.length === 0) {
-          offersContainer.innerHTML = `<div class="py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-zinc-800 text-zinc-500 text-xs">
+          offersContainer.innerHTML = `<div class="py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-[#2F3336] text-zinc-500 text-xs">
             <i class="fa-solid fa-tag text-zinc-600 text-2xl mb-2 block"></i>
             <span>لا توجد عروض ترويجية نشطة حالياً لهذه المنشأة.</span>
           </div>`;
@@ -927,8 +923,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           offersContainer.innerHTML = realOffers.map(offer => {
             if (typeof offer === 'string') {
               return `
-                <div class="bg-[#0D0D0D] border border-zinc-800 p-4 rounded-xl text-right">
-                  <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
+                <div class="bg-[#0D0D0D] border border-[#2F3336] p-4 rounded-xl text-right">
+                  <div class="flex items-center justify-between pb-2 border-b border-[#2F3336]/60 mb-2">
                     <span class="bg-brand-gold text-black font-black text-[10px] px-2.5 py-0.5 rounded">عرض خاص</span>
                   </div>
                   <p class="text-sm font-bold text-white leading-relaxed">${offer}</p>
@@ -939,8 +935,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
             const tag = offer.tag || offer.badge || 'عرض خاص';
             const expiry = offer.expiry || offer.valid_until || '';
             return `
-              <div class="bg-[#0D0D0D] border border-zinc-800 p-4 rounded-xl text-right">
-                <div class="flex items-center justify-between pb-2 border-b border-zinc-800/60 mb-2">
+              <div class="bg-[#0D0D0D] border border-[#2F3336] p-4 rounded-xl text-right">
+                <div class="flex items-center justify-between pb-2 border-b border-[#2F3336]/60 mb-2">
                   <span class="bg-brand-gold text-black font-black text-[10px] px-2.5 py-0.5 rounded">${tag}</span>
                   ${expiry ? `<span class="text-[10px] text-zinc-400 font-medium">${expiry}</span>` : ''}
                 </div>
@@ -971,7 +967,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       }
 
       if (realServices.length === 0) {
-        servicesContainer.innerHTML = `<div class="py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-zinc-800 text-zinc-500 text-xs" style="font-family: 'Cairo', sans-serif !important;">
+        servicesContainer.innerHTML = `<div class="py-10 px-4 text-center rounded-2xl bg-[#0D0D0D] border border-[#2F3336] text-zinc-500 text-xs" style="font-family: Tahoma, sans-serif !important;">
           <i class="fa-solid fa-briefcase text-zinc-600 text-2xl mb-2 block"></i>
           <span>سيتم إضافة قائمة الخدمات المعتمدة قريباً من قبل إدارة المنشأة.</span>
         </div>`;
@@ -982,13 +978,13 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
           const icon = getServiceIconClass(title);
 
           return `
-            <div class="bg-[#0D0D0D] border border-zinc-800/80 hover:border-[#FFC500]/40 p-3 sm:p-3.5 rounded-xl sm:rounded-2xl flex items-start gap-2.5 sm:gap-3 text-right transition duration-200" style="font-family: 'Cairo', sans-serif !important;" dir="rtl">
+            <div class="bg-[#0D0D0D] border border-[#2F3336]/80 hover:border-[#FFC500]/40 p-3 sm:p-3.5 rounded-xl sm:rounded-2xl flex items-start gap-2.5 sm:gap-3 text-right transition duration-200" style="font-family: Tahoma, sans-serif !important;" dir="rtl">
               <div class="text-white text-base sm:text-lg shrink-0 flex items-center justify-center pt-0.5">
                 <i class="${icon}"></i>
               </div>
               <div class="flex-1 text-right space-y-0.5">
-                <h4 class="text-xs sm:text-[13px] font-bold text-[#FFC500] leading-snug" style="font-family: 'Cairo', sans-serif !important;">${title}</h4>
-                ${detail ? `<p class="text-[11px] text-white/90 leading-relaxed font-normal" style="font-family: 'Cairo', sans-serif !important;">${detail}</p>` : ''}
+                <h4 class="text-xs sm:text-[13px] font-bold text-[#FFC500] leading-snug" style="font-family: Tahoma, sans-serif !important;">${title}</h4>
+                ${detail ? `<p class="text-[11px] text-white/90 leading-relaxed font-normal" style="font-family: Tahoma, sans-serif !important;">${detail}</p>` : ''}
               </div>
             </div>
           `;
@@ -1014,13 +1010,13 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
             if (i <= rVal) starsHtml += '<i class="fa-solid fa-star"></i>';
             else starsHtml += '<i class="fa-regular fa-star text-zinc-600"></i>';
           }
-          return '<div class="border border-zinc-800 rounded-full py-1.5 px-3 flex items-center justify-between bg-black"><div class="flex items-center gap-2.5">' +
-            ((rev.user_avatar && !rev.user_avatar.includes("unsplash")) ? '<img src="' + rev.user_avatar + '" class="w-7 h-7 rounded-full object-cover border border-zinc-800" alt="avatar" />' : '<div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 shrink-0"><i class="fa-solid fa-user text-[11px]"></i></div>') +
+          return '<div class="border border-[#2F3336] rounded-full py-1.5 px-3 flex items-center justify-between bg-black"><div class="flex items-center gap-2.5">' +
+            ((rev.user_avatar && !rev.user_avatar.includes("unsplash")) ? '<img src="' + rev.user_avatar + '" class="w-7 h-7 rounded-full object-cover border border-[#2F3336]" alt="avatar" />' : '<div class="w-7 h-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-400 shrink-0"><i class="fa-solid fa-user text-[11px]"></i></div>') +
             '<span class="text-xs text-zinc-200 font-medium">' + (rev.user_name || rev.name) + '</span></div><div class="flex text-brand-gold text-[10px] gap-0.5">' + starsHtml + '</div></div>';
         }).join("");
 
         if (allRevs.length > 2) {
-          rHtml += '<button type="button" onclick="window.showAllReviewsExpanded = !window.showAllReviewsExpanded; renderUI();" class="w-full py-2.5 mt-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-brand-gold text-xs font-bold flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer shadow-sm"><span>' + (window.showAllReviewsExpanded ? "عرض أقل" : "عرض جميع التقييمات (" + allRevs.length + ")") + '</span><i class="fa-solid ' + (window.showAllReviewsExpanded ? "fa-chevron-up" : "fa-chevron-down") + ' text-[10px]"></i></button>';
+          rHtml += '<button type="button" onclick="window.showAllReviewsExpanded = !window.showAllReviewsExpanded; renderUI();" class="w-full py-2.5 mt-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-[#2F3336] text-brand-gold text-xs font-bold flex items-center justify-center gap-2 transition active:scale-98 cursor-pointer shadow-sm"><span>' + (window.showAllReviewsExpanded ? "عرض أقل" : "عرض جميع التقييمات (" + allRevs.length + ")") + '</span><i class="fa-solid ' + (window.showAllReviewsExpanded ? "fa-chevron-up" : "fa-chevron-down") + ' text-[10px]"></i></button>';
         }
         if (reviewsContainer) reviewsContainer.innerHTML = rHtml;
       }

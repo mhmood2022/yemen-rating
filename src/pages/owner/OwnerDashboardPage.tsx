@@ -555,7 +555,7 @@ export const OwnerDashboardPage: React.FC = () => {
                   <div key={rev.id} className="bg-[#0e1320] p-4 sm:p-5 rounded-2xl border border-[#222b42] space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-amber-400 font-bold text-xs">
+                        <div className="w-8 h-8 rounded-full bg-[#111111] border border-slate-700 flex items-center justify-center text-amber-400 font-bold text-xs">
                           {rev.user_name ? rev.user_name.charAt(0) : 'ع'}
                         </div>
                         <div>
@@ -611,7 +611,7 @@ export const OwnerDashboardPage: React.FC = () => {
 
       {/* 4. NOTIFICATION MODAL */}
       {isNotificationOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black  z-50 flex items-center justify-center p-4">
           <div className="bg-[#0e1320] border border-[#222b42] rounded-3xl w-full max-w-sm p-5 relative shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-[#222b42] mb-4">
               <div className="flex items-center gap-2">
@@ -650,7 +650,7 @@ export const OwnerDashboardPage: React.FC = () => {
 
       {/* 5. EDIT OWNER PERSONAL PROFILE MODAL */}
       {isProfileModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black  z-50 flex items-center justify-center p-4">
           <div className="bg-[#0e1320] border border-[#222b42] rounded-3xl w-full max-w-md p-6 relative shadow-2xl">
             <button 
               onClick={() => setIsProfileModalOpen(false)}

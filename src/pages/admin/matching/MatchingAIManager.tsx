@@ -36,8 +36,8 @@ export const MatchingAIManager: React.FC = () => {
         </p>
       </div>
 
-      <div className="bg-[#0B0F17] rounded-xl border border-[#1F2937] p-6 space-y-6">
-        <div className="flex items-center justify-between border-b border-[#1F2937] pb-4">
+      <div className="bg-[#0B0F17] rounded-xl border border-[#2F3336] p-6 space-y-6">
+        <div className="flex items-center justify-between border-b border-[#2F3336] pb-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-[#FFC500]/15 text-[#FFC500] flex items-center justify-center font-bold">
               <Sparkles size={24} />
@@ -55,7 +55,7 @@ export const MatchingAIManager: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 rounded-xl bg-[#161D2B] border border-[#1F2937] space-y-2">
+          <div className="p-4 rounded-xl bg-[#161D2B] border border-[#2F3336] space-y-2">
             <div className="text-xs font-bold text-[#FFC500] flex items-center gap-1.5">
               <User size={14} /> بيانات المرشح:
             </div>
@@ -68,7 +68,7 @@ export const MatchingAIManager: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#161D2B] border border-[#1F2937] space-y-2">
+          <div className="p-4 rounded-xl bg-[#161D2B] border border-[#2F3336] space-y-2">
             <div className="text-xs font-bold text-[#16A34A] flex items-center gap-1.5">
               <Briefcase size={14} /> متطلبات الوظيفة:
             </div>

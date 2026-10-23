@@ -68,10 +68,10 @@ export const AuctionCard: React.FC<{ auction: any }> = ({ auction }) => {
   }, [auction.end_date, auction.created_at, isCompleted]);
 
   return (
-    <div className={`flex flex-col bg-[#0A0F1D] border rounded-2xl overflow-hidden shadow-lg transition-all duration-300 font-['Cairo'] text-white ${
-      isCompleted ? 'border-slate-800 opacity-80' : 'border-slate-800 hover:border-[#F5C400]'
+    <div className={`flex flex-col bg-black border rounded-2xl overflow-hidden shadow-lg transition-all duration-300 font-['Cairo'] text-white ${
+      isCompleted ? 'border-[#2F3336] opacity-80' : 'border-[#2F3336] hover:border-[#F5C400]'
     }`}>
-      <div className="relative w-full h-52 bg-[#060A13] overflow-hidden">
+      <div className="relative w-full h-52 bg-[#111111] overflow-hidden">
         {mainImage ? (
           <img src={mainImage} alt={auction.title} className="w-full h-full object-cover transition-transform duration-500 hover:scale-105" />
         ) : (
@@ -84,13 +84,13 @@ export const AuctionCard: React.FC<{ auction: any }> = ({ auction }) => {
         <button
           type="button"
           onClick={(e) => { e.preventDefault(); setIsFav(!isFav); }}
-          className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md flex items-center justify-center text-white transition-colors z-10"
+          className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black hover:bg-black  flex items-center justify-center text-white transition-colors z-10"
         >
           <Heart size={16} className={isFav ? 'fill-rose-500 text-rose-500' : 'text-white'} />
         </button>
 
         <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
-          <span className="px-2.5 py-1 rounded-lg bg-black/80 text-white border border-slate-700 text-[10px] font-mono font-bold backdrop-blur-md">
+          <span className="px-2.5 py-1 rounded-lg bg-black text-white border border-[#2F3336] text-[10px] font-mono font-bold ">
             رقم المزاد: #{auctionNumber}
           </span>
           <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold ${
@@ -108,7 +108,7 @@ export const AuctionCard: React.FC<{ auction: any }> = ({ auction }) => {
         <div>
           <div className="flex items-center justify-between text-[11px] mb-1.5 font-bold">
             <div className="flex items-center gap-1.5">
-              <span className="px-2 py-0.5 rounded-md bg-[#060A13] text-[#F5C400] border border-[#F5C400]/30">
+              <span className="px-2 py-0.5 rounded-md bg-[#111111] text-[#F5C400] border border-[#F5C400]/30">
                 {auction.category || 'عام'}
               </span>
               {auction.seller_name && (
@@ -150,7 +150,7 @@ export const AuctionCard: React.FC<{ auction: any }> = ({ auction }) => {
           )}
         </div>
 
-        <div className="pt-2 border-t border-slate-800/80 flex items-baseline justify-between">
+        <div className="pt-2 border-t border-[#2F3336]/80 flex items-baseline justify-between">
           <span className="text-[11px] text-slate-400 font-bold">
             {isCompleted 
               ? 'السعر النهائي للرسو:' 
@@ -168,11 +168,11 @@ export const AuctionCard: React.FC<{ auction: any }> = ({ auction }) => {
 
         {!isDirectSale && (
           isCompleted ? (
-            <div className="py-2 px-3 rounded-xl bg-slate-900 border border-slate-800 text-center text-xs font-bold text-slate-400">
+            <div className="py-2 px-3 rounded-xl bg-[#111111] border border-[#2F3336] text-center text-xs font-bold text-slate-400">
               تم إغلاق المزاد وانتهاء فترة المزايدة
             </div>
           ) : (
-            <div className="py-2 px-2 rounded-xl bg-[#060A13] border border-slate-800 text-white grid grid-cols-4 gap-1 text-center font-mono">
+            <div className="py-2 px-2 rounded-xl bg-[#111111] border border-[#2F3336] text-white grid grid-cols-4 gap-1 text-center font-mono">
               <div className="flex flex-col">
                 <span className="font-black text-sm text-emerald-400">{timer.seconds}</span>
                 <span className="text-[9px] font-sans text-slate-700 font-bold">ثانية</span>
@@ -195,7 +195,7 @@ export const AuctionCard: React.FC<{ auction: any }> = ({ auction }) => {
 
         <Link
           to={`/auctions/${auction.id}`}
-          className="w-full py-2.5 bg-[#0F172A] hover:bg-[#1E293B] border border-slate-700 hover:border-[#F5C400] text-white hover:text-[#F5C400] font-black text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+          className="w-full py-2.5 bg-[#111111] hover:bg-[#1E293B] border border-[#2F3336] hover:border-[#F5C400] text-white hover:text-[#F5C400] font-black text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
         >
           <span>{isDirectSale ? 'معاينة وشراء السلعة' : (isCompleted ? 'عرض تفاصيل المزاد المنتهي' : 'المعاينة والمشاركة بالمزاد')}</span>
         </Link>

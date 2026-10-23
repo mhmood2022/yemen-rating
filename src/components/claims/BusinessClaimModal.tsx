@@ -105,7 +105,7 @@ export const BusinessClaimModal: React.FC<BusinessClaimModalProps> = ({
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-xs font-bold text-[#0B1F3A] dark:text-white">
+          <label className="block text-xs font-bold text-[#000000] dark:text-white">
             ملاحظات أو مستندات إضافية
           </label>
           <textarea
@@ -113,7 +113,7 @@ export const BusinessClaimModal: React.FC<BusinessClaimModalProps> = ({
             placeholder="أية معلومات إضافية تثبت صلتك بالنشاط..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full p-2.5 text-xs bg-white dark:bg-[#0A0A0A] text-[#0B1F3A] dark:text-white border border-[#CBD5E1] dark:border-[#222222] rounded-[10px] outline-none focus:border-[#F5C400]"
+            className="w-full p-2.5 text-xs bg-white dark:bg-[#0A0A0A] text-[#000000] dark:text-white border border-[#CBD5E1] dark:border-[#222222] rounded-[10px] outline-none focus:border-[#F5C400]"
           />
         </div>
 

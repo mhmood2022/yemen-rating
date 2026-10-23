@@ -280,7 +280,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
 
   return (
     <div ref={containerRef} dir="rtl" className={`relative z-40 font-['Cairo',sans-serif] w-full ${className}`}>
-      <div className="bg-[#090E1A] border border-slate-800 shadow-2xl rounded-none overflow-visible">
+      <div className="bg-black border border-[#2F3336] shadow-2xl rounded-none overflow-visible">
 
         
       {/* 🔮 حركات الوسائط والزر التفاعلية */}
@@ -316,13 +316,13 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
 
         {/* ⭐ إعلان الراعي الرسمي: الفيديو الحقيقي فقط في الخلفية، والشعار في الدائرة الصغيرة */}
         {realSponsorAd && (
-          <div className="bg-[#050811] border-b border-slate-800 rounded-none overflow-hidden transition-all">
+          <div className="bg-[#111111] border-b border-[#2F3336] rounded-none overflow-hidden transition-all">
             {realSponsorAd.mediaUrl ? (
               <div
                 onClick={() => {
                   if (realSponsorAd.targetUrl) window.open(realSponsorAd.targetUrl, "_blank", "noopener,noreferrer");
                 }}
-                className="relative w-full h-24 sm:h-28 bg-[#0B101D] overflow-hidden cursor-pointer group rounded-none"
+                className="relative w-full h-24 sm:h-28 bg-[#111111] overflow-hidden cursor-pointer group rounded-none"
               >
                 {/* مشغل الفيديو الحقيقي (وليس الشعار!) */}
                 {realSponsorAd.mediaType === "video" ? (
@@ -353,7 +353,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 {/* طبقة التظليل والبيانات المصغرة */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/50 flex flex-col justify-between p-2 sm:p-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="px-1.5 py-0.5 bg-black/60 text-[#F5C400] border border-[#F5C400]/40 text-[9px] font-black rounded-none flex items-center gap-1 backdrop-blur-sm">
+                    <span className="px-1.5 py-0.5 bg-black text-[#F5C400] border border-[#F5C400]/40 text-[9px] font-black rounded-none flex items-center gap-1 ">
                       <Sparkles size={10} />
                       <span>{realSponsorAd.sponsorTag || "الراعي الرسمي"}</span>
                     </span>
@@ -373,7 +373,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                           <ExternalLink size={9} />
                         </span>
                       )}
-                      <span className="text-[8px] text-zinc-300 bg-black/70 border border-white/15 px-1.5 py-0.5 rounded-none">
+                      <span className="text-[8px] text-zinc-300 bg-black border border-white/15 px-1.5 py-0.5 rounded-none">
                         إعلان راعٍ ⓘ
                       </span>
                       <span className="text-[8px] font-black text-zinc-100 bg-white/15 border border-white/25 px-1 py-0.5 rounded-none font-sans">
@@ -390,7 +390,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                           src={realSponsorAd.logoUrl}
                           alt="logo"
                           style={{ borderColor: realSponsorAd.accentColor || "rgba(255,255,255,0.4)" }}
-                          className="w-5 h-5 rounded-full object-cover border bg-black/60 shrink-0 transition-colors"
+                          className="w-5 h-5 rounded-full object-cover border bg-black shrink-0 transition-colors"
                         />
                       )}
                       <h4 className="text-white text-[11px] sm:text-xs font-bold truncate drop-shadow-md">{realSponsorAd.advertiserName}</h4>
@@ -413,7 +413,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                 onClick={() => {
                   if (realSponsorAd.targetUrl) window.open(realSponsorAd.targetUrl, "_blank", "noopener,noreferrer");
                 }}
-                className={`px-3 py-1.5 flex items-center justify-between text-xs group hover:bg-[#0c1322] transition-colors rounded-none ${
+                className={`px-3 py-1.5 flex items-center justify-between text-xs group hover:bg-[#1A1A1A] transition-colors rounded-none ${
                   realSponsorAd.targetUrl ? "cursor-pointer" : ""
                 }`}
               >
@@ -489,7 +489,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
             </button>
           )}
 
-          <div className="w-px h-5 bg-slate-800 shrink-0" />
+          <div className="w-px h-5 bg-[#111111] shrink-0" />
 
           {/* اختيار المحافظة */}
           <div ref={govDropdownRef} className="relative shrink-0">
@@ -511,7 +511,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
             </button>
 
             {isGovMenuOpen && (
-              <div className="absolute top-full left-0 mt-2 w-48 max-h-64 overflow-y-auto bg-[#0A0F1D] border border-slate-700 shadow-2xl p-1.5 z-50 space-y-0.5 rounded-none">
+              <div className="absolute top-full left-0 mt-2 w-48 max-h-64 overflow-y-auto bg-[#111111] border border-[#2F3336] shadow-2xl p-1.5 z-50 space-y-0.5 rounded-none">
                 {YEMEN_GOVERNORATES.map((gov) => {
                   const isSelected = selectedGov === gov.value;
                   return (
@@ -540,7 +540,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
 
       {/* نافذة النتائج المنبثقة للبحث الحي */}
       {isOpen && searchTerm.trim().length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-[#090E1A] border border-slate-800 shadow-2xl p-2.5 z-50 max-h-96 overflow-y-auto space-y-2.5 rounded-none">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-black border border-[#2F3336] shadow-2xl p-2.5 z-50 max-h-96 overflow-y-auto space-y-2.5 rounded-none">
           {totalMatches === 0 && !isSearching ? (
             <div className="py-6 text-center text-xs text-slate-400">
               لا توجد نتائج مطابقة لـ{" "}
@@ -562,7 +562,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                         setIsOpen(false);
                         navigate(`/banks/${bank.slug || bank.id}`);
                       }}
-                      className="flex items-center justify-between p-2.5 hover:bg-[#050811] cursor-pointer transition-colors group rounded-none"
+                      className="flex items-center justify-between p-2.5 hover:bg-[#111111] cursor-pointer transition-colors group rounded-none"
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         {bank.logo_url ? (
@@ -600,7 +600,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                             if (onSelectCategory) onSelectCategory(cat.id);
                             else navigate(`/directory?category=${encodeURIComponent(cat.id)}`);
                           }}
-                          className="flex items-center gap-2 p-2 bg-[#050811] hover:bg-[#F5C400]/10 border border-slate-800 hover:border-[#F5C400]/40 cursor-pointer transition-colors group rounded-none"
+                          className="flex items-center gap-2 p-2 bg-[#111111] hover:bg-[#F5C400]/10 border border-[#2F3336] hover:border-[#F5C400]/40 cursor-pointer transition-colors group rounded-none"
                         >
                           <IconComp size={14} className="text-[#F5C400] shrink-0" />
                           <span className="text-xs font-bold text-white group-hover:text-[#F5C400] truncate">
@@ -626,7 +626,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
                         setIsOpen(false);
                         navigate(`/businesses/${biz.slug || biz.id}`);
                       }}
-                      className="flex items-center justify-between p-2.5 hover:bg-[#050811] cursor-pointer transition-colors group rounded-none"
+                      className="flex items-center justify-between p-2.5 hover:bg-[#111111] cursor-pointer transition-colors group rounded-none"
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="px-2 py-0.5 text-[10px] font-bold bg-[#F5C400]/15 text-[#F5C400] border border-[#F5C400]/30 shrink-0 rounded-none">
@@ -647,7 +647,7 @@ export const HomeSearchBar: React.FC<HomeSearchBarProps> = ({
               {/* عرض كافة النتائج */}
               <div
                 onClick={() => handleFullSearchSubmit()}
-                className="mt-2 pt-2 border-t border-slate-800 p-2.5 bg-[#050811] hover:bg-[#F5C400]/10 text-center cursor-pointer transition-colors flex items-center justify-center gap-2 rounded-none"
+                className="mt-2 pt-2 border-t border-[#2F3336] p-2.5 bg-[#111111] hover:bg-[#F5C400]/10 text-center cursor-pointer transition-colors flex items-center justify-center gap-2 rounded-none"
               >
                 <span className="text-xs font-bold text-[#F5C400]">
                   استعراض كافة نتائج "{searchTerm}" في الدليل العام

@@ -345,7 +345,7 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
 
       {selectedImage && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4"
           onClick={() => setSelectedImage(null)}
         >
           <div className="relative max-w-4xl max-h-[90vh]" onClick={e => e.stopPropagation()}>

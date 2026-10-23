@@ -22,7 +22,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   if (!user || !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-black">
-        <div className="bg-[#111111] p-6 rounded-[14px] border border-[#222222] shadow-2xl max-w-md w-full text-center space-y-4">
+        <div className="bg-[#111111] p-6 rounded-[14px] border border-[#2F3336] shadow-2xl max-w-md w-full text-center space-y-4">
           <div className="p-3 bg-[#EF4444]/15 text-[#EF4444] rounded-full inline-flex">
             <ShieldAlert size={36} strokeWidth={2} />
           </div>
@@ -43,7 +43,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white transition-colors">
       {/* Top Admin Header Bar */}
-      <header className="h-[60px] bg-[#0A0A0A] border-b border-[#222222] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-md">
+      <header className="h-[60px] bg-black border-b border-[#2F3336] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-md">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-[8px] bg-[#111111] border border-[#F5C400]/40 flex items-center justify-center text-[#F5C400] font-black">
             <Star size={16} className="fill-[#F5C400]" />
@@ -59,7 +59,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
           <Button
             variant="outline"
             size="sm"
-            className="text-xs h-8 border-[#222222] text-[#A1A1AA] hover:text-white"
+            className="text-xs h-8 border-[#2F3336] text-[#A1A1AA] hover:text-white"
             onClick={async () => {
               await logout();
               window.location.href = '/';

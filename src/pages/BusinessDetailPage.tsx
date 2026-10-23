@@ -66,7 +66,7 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
     <div className="min-h-screen bg-[#09090D] text-white dir-rtl pb-20 font-sans">
       
       {/* Top Header Bar */}
-      <header className="bg-[#111118]/90 backdrop-blur-md border-b border-white/5 px-4 py-3 sticky top-0 z-50">
+      <header className="bg-[#111118]/90  border-b border-white/5 px-4 py-3 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <button 
             onClick={onBack} 
@@ -99,7 +99,7 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
         {/* Cover Photo */}
         <div className="h-48 md:h-64 w-full rounded-2xl overflow-hidden border border-white/10 relative bg-[#14141D] shadow-xl">
           <img src={business.cover_url} alt={business.name} className="w-full h-full object-cover" />
-          <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-md border border-white/10 px-3 py-1 rounded-xl text-[11px] font-bold text-gray-300 flex items-center gap-1.5">
+          <div className="absolute bottom-3 left-3 bg-black  border border-white/10 px-3 py-1 rounded-xl text-[11px] font-bold text-gray-300 flex items-center gap-1.5">
             <i className="fa-solid fa-camera text-amber-400"></i>
             <span>12 صورة</span>
           </div>
@@ -282,7 +282,7 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
 
       {/* Interactive Rating Modal */}
       {showReviewModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black  z-50 flex items-center justify-center p-4">
           <div className="bg-[#14141D] border border-white/10 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
             <div className="flex items-center justify-between border-b border-white/5 pb-3">
               <h3 className="text-sm font-bold text-amber-400">تقييم النشاط التجاري</h3>

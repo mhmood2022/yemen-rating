@@ -81,21 +81,21 @@ const CustomDarkSelect: React.FC<CustomSelectProps> = ({ label, value, options, 
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] hover:border-[#FFC500]/50 rounded-xl text-white flex items-center justify-between text-xs outline-none transition"
+        className="w-full p-2.5 bg-[#111111] border border-[#2F3336] hover:border-[#FFC500]/50 rounded-xl text-white flex items-center justify-between text-xs outline-none transition"
       >
         <span className="truncate">{selectedLabel}</span>
         <ChevronDown size={14} className={`text-gray-400 transition-transform ${open ? 'rotate-180 text-[#FFC500]' : ''}`} />
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-1 z-50 max-h-60 overflow-y-auto bg-[#161D2B] border border-[#1F2937] rounded-xl shadow-2xl p-1 space-y-0.5 no-scrollbar">
+        <div className="absolute top-full left-0 right-0 mt-1 z-50 max-h-60 overflow-y-auto bg-[#111111] border border-[#2F3336] rounded-xl shadow-2xl p-1 space-y-0.5 no-scrollbar">
           
           {/* خيار افتراضي: اختر الصنف */}
           {allowCustomCategory && (
             <button
               type="button"
               onClick={() => { onChange(''); setOpen(false); }}
-              className="w-full text-right px-3 py-2 rounded-lg text-xs text-gray-400 hover:bg-[#0B0F17] hover:text-white transition-colors"
+              className="w-full text-right px-3 py-2 rounded-lg text-xs text-gray-400 hover:bg-black hover:text-white transition-colors"
             >
               اختر الصنف
             </button>
@@ -114,7 +114,7 @@ const CustomDarkSelect: React.FC<CustomSelectProps> = ({ label, value, options, 
                 className={`w-full text-right px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors ${
                   isSelected
                     ? 'bg-[#FFC500] text-black font-black'
-                    : 'text-gray-200 hover:bg-[#0B0F17] hover:text-[#FFC500]'
+                    : 'text-gray-200 hover:bg-black hover:text-[#FFC500]'
                 }`}
               >
                 <span className="truncate">{opt.label}</span>
@@ -125,7 +125,7 @@ const CustomDarkSelect: React.FC<CustomSelectProps> = ({ label, value, options, 
 
           {/* خيار إضافة صنف جديد */}
           {allowCustomCategory && (
-            <div className="pt-1 mt-1 border-t border-[#1F2937]">
+            <div className="pt-1 mt-1 border-t border-[#2F3336]">
               {!isAddingNew ? (
                 <button
                   type="button"
@@ -136,13 +136,13 @@ const CustomDarkSelect: React.FC<CustomSelectProps> = ({ label, value, options, 
                   <span>+ صنف جديد</span>
                 </button>
               ) : (
-                <div className="p-2 space-y-2 bg-[#0B0F17] rounded-lg border border-amber-500/30">
+                <div className="p-2 space-y-2 bg-black rounded-lg border border-amber-500/30">
                   <input
                     type="text"
                     value={newCatName}
                     onChange={(e) => setNewCatName(e.target.value)}
                     placeholder="اكتب اسم الصنف الجديد..."
-                    className="w-full p-2 bg-[#161D2B] border border-[#1F2937] focus:border-[#FFC500] rounded-lg text-white text-xs outline-none"
+                    className="w-full p-2 bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-lg text-white text-xs outline-none"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -505,7 +505,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
   return (
     <div className="w-full text-right font-['Cairo',sans-serif]" dir="rtl">
       {successToast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl bg-[#161D2B] border-2 border-emerald-500 text-emerald-300 font-bold text-xs sm:text-sm flex items-center gap-3 shadow-2xl backdrop-blur-xl">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl bg-[#111111] border-2 border-emerald-500 text-emerald-300 font-bold text-xs sm:text-sm flex items-center gap-3 shadow-2xl ">
           <div className="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0">
             <Check size={14} className="stroke-[3]" />
           </div>
@@ -513,7 +513,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
         </div>
       )}
 
-      <div className="flex items-center justify-between pb-4 border-b border-[#1F2937] mb-4">
+      <div className="flex items-center justify-between pb-4 border-b border-[#2F3336] mb-4">
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-xl bg-[#FFC500]/10 text-[#FFC500]">
             <Edit3 size={18} />
@@ -525,7 +525,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
         </div>
       </div>
 
-      <div className="flex border-b border-[#1F2937] bg-[#0B0F17] px-2 overflow-x-auto no-scrollbar text-xs font-bold gap-1 py-1 shrink-0 rounded-2xl mb-4">
+      <div className="flex border-b border-[#2F3336] bg-black px-2 overflow-x-auto no-scrollbar text-xs font-bold gap-1 py-1 shrink-0 rounded-2xl mb-4">
         {[
           { id: 'info', label: '1. البيانات والتواصل' },
           { id: 'media', label: '2. الغلاف والشعار (4 صور)' },
@@ -539,7 +539,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
             className={`py-2.5 px-3.5 rounded-xl whitespace-nowrap transition-all ${
               activeTab === tab.id
                 ? 'bg-[#FFC500] text-black font-black shadow-md'
-                : 'text-gray-400 hover:text-white hover:bg-[#161D2B]'
+                : 'text-gray-400 hover:text-white hover:bg-[#111111]'
             }`}
           >
             {tab.label}
@@ -566,7 +566,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   value={formData.name}
                   onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
                   placeholder="أدخل اسم المنشأة (شركة، مصنع، بنك، فندق)..."
-                  className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none focus:border-[#FFC500]"
+                  className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none focus:border-[#FFC500]"
                 />
               </div>
 
@@ -595,7 +595,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   value={formData.address}
                   onChange={(e) => setFormData(p => ({ ...p, address: e.target.value }))}
                   placeholder="الشارع، الحي، أقرب معلم بارز..."
-                  className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none"
+                  className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none"
                 />
               </div>
             </div>
@@ -608,7 +608,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   value={formData.phone}
                   onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
                   placeholder="+967..."
-                  className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none font-mono"
+                  className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none font-mono"
                   dir="ltr"
                 />
               </div>
@@ -620,7 +620,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   value={formData.whatsapp}
                   onChange={(e) => setFormData(p => ({ ...p, whatsapp: e.target.value }))}
                   placeholder="+967..."
-                  className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none font-mono"
+                  className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none font-mono"
                   dir="ltr"
                 />
               </div>
@@ -632,7 +632,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   value={formData.website_url}
                   onChange={(e) => setFormData(p => ({ ...p, website_url: e.target.value }))}
                   placeholder="https://..."
-                  className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none font-mono"
+                  className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none font-mono"
                   dir="ltr"
                 />
               </div>
@@ -645,7 +645,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                 value={formData.description}
                 onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
                 placeholder="اكتب نبذة مميزة تشرح خدمات وتجهيزات منشأتك..."
-                className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none resize-none"
+                className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none resize-none"
               />
             </div>
           </div>
@@ -655,10 +655,10 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
         {activeTab === 'media' && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-3.5 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2.5">
+              <div className="p-3.5 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-2.5">
                 <label className="text-gray-300 font-bold block">شعار المنشأة (Logo)</label>
                 <div className="flex items-center gap-3">
-                  <div className="w-16 h-16 rounded-xl bg-[#0B0F17] border border-[#1F2937] overflow-hidden flex items-center justify-center shrink-0">
+                  <div className="w-16 h-16 rounded-xl bg-black border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0">
                     {formData.logo_url ? (
                       <img src={formData.logo_url} alt="Logo Preview" className="w-full h-full object-cover" />
                     ) : (
@@ -673,17 +673,17 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2.5">
+              <div className="p-3.5 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-2.5">
                 <label className="text-gray-300 font-bold block">الغلاف البانورامي (Cover Banner)</label>
                 <div className="flex items-center gap-3">
-                  <div className="w-24 h-16 rounded-xl bg-[#0B0F17] border border-[#1F2937] overflow-hidden flex items-center justify-center shrink-0">
+                  <div className="w-24 h-16 rounded-xl bg-black border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0">
                     {formData.cover_url ? (
                       <img src={formData.cover_url} alt="Cover Preview" className="w-full h-full object-cover" />
                     ) : (
                       <ImageIcon className="w-7 h-7 text-gray-500" />
                     )}
                   </div>
-                  <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-[#161D2B] hover:bg-[#FFC500] hover:text-black border border-[#1F2937] text-white font-bold text-xs flex items-center gap-2 transition-all">
+                  <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-[#111111] hover:bg-[#FFC500] hover:text-black border border-[#2F3336] text-white font-bold text-xs flex items-center gap-2 transition-all">
                     <Upload size={14} />
                     {uploadingTarget === 'cover' ? 'جاري الرفع...' : 'رفع غلاف من الهاتف'}
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => handleUploadFile('cover', e)} />
@@ -692,7 +692,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
+            <div className="p-4 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-3">
               <label className="text-white font-bold flex items-center gap-2">
                 <ImageIcon size={16} className="text-[#FFC500]" />
                 معرض المنشأة (أربع صور للعرض من استوديو الهاتف)
@@ -703,7 +703,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   const imgUrl = formData.gallery_urls[slotIdx];
                   return (
                     <div key={slotIdx} className="space-y-2 text-center">
-                      <div className="h-28 rounded-2xl bg-[#0B0F17] border border-[#1F2937] relative overflow-hidden flex items-center justify-center group">
+                      <div className="h-28 rounded-2xl bg-black border border-[#2F3336] relative overflow-hidden flex items-center justify-center group">
                         {imgUrl ? (
                           <>
                             <img src={imgUrl} alt={`Slot ${slotIdx + 1}`} className="w-full h-full object-cover" />
@@ -723,7 +723,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                           <span className="text-gray-500 text-xs font-mono">صورة #{slotIdx + 1}</span>
                         )}
                       </div>
-                      <label className="cursor-pointer block py-2 px-2 rounded-xl bg-[#0B0F17] hover:bg-[#FFC500] hover:text-black text-gray-300 text-xs font-bold border border-[#1F2937] transition-all">
+                      <label className="cursor-pointer block py-2 px-2 rounded-xl bg-black hover:bg-[#FFC500] hover:text-black text-gray-300 text-xs font-bold border border-[#2F3336] transition-all">
                         {uploadingTarget === String(slotIdx) ? 'جاري التحميل...' : 'اختر صورة'}
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => handleUploadFile(slotIdx, e)} />
                       </label>
@@ -738,7 +738,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
         {/* STEP 3: FEATURES & PROMOTIONS */}
         {activeTab === 'features' && (
           <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2.5">
+            <div className="p-4 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-2.5">
               <label className="text-white font-bold flex items-center gap-2">
                 <Bed size={15} className="text-[#FFC500]" />
                 سعة وحجم المنشأة / نطاق العمل (اسحب واختر):
@@ -752,7 +752,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                     className={`px-4 py-2 rounded-xl text-xs whitespace-nowrap font-bold transition-all ${
                       formData.rooms_count === chip
                         ? 'bg-[#FFC500] text-black shadow-md'
-                        : 'bg-[#0B0F17] text-gray-300 border border-[#1F2937]'
+                        : 'bg-black text-gray-300 border border-[#2F3336]'
                     }`}
                   >
                     {chip}
@@ -780,7 +780,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
               }}
             />
 
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-4 shadow-xl">
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-4 shadow-xl">
               <div className="flex items-center justify-between">
                 <label className="text-white font-bold flex items-center gap-2 text-sm">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#FFC500]"></span>
@@ -789,19 +789,19 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                 <span className="text-[11px] text-zinc-400">تظهر في تبويب العروض بالقالب الفردي الموحد</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-[#0B0F17] p-3.5 rounded-xl border border-[#1F2937]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-black p-3.5 rounded-xl border border-[#2F3336]">
                 <input
                   type="text"
                   placeholder="عنوان العرض (مثال: خصم خاص، عرض الموسم)..."
                   id="admin-offer-title"
-                  className="bg-[#161D2B] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
+                  className="bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
                 />
                 <div className="flex gap-2">
                   <input
                     type="text"
                     placeholder="تفاصيل الخصم أو العرض (مثال: خصم 15% على الكشف أو التوصيل)..."
                     id="admin-offer-desc"
-                    className="flex-1 bg-[#161D2B] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
+                    className="flex-1 bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
                   />
                   <button
                     type="button"
@@ -833,7 +833,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   return (
                     <div
                       key={index}
-                      className="flex items-center justify-between gap-3 bg-[#0B0F17] border border-amber-500/30 p-3.5 rounded-xl shadow-md"
+                      className="flex items-center justify-between gap-3 bg-black border border-amber-500/30 p-3.5 rounded-xl shadow-md"
                     >
                       <div className="space-y-0.5">
                         <h4 className="text-[#FFC500] font-black text-xs sm:text-sm flex items-center gap-1.5">
@@ -880,7 +880,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2">
+            <div className="p-4 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-2">
               <label className="text-white font-bold flex items-center gap-1.5">
                 <Clock size={15} className="text-[#FFC500]" />
                 مواعيد وساعات الدوام اليومي:
@@ -894,7 +894,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                     className={`px-3.5 py-2 rounded-xl text-xs whitespace-nowrap font-bold transition-all ${
                       formData.working_hours === shift
                         ? 'bg-[#FFC500] text-black'
-                        : 'bg-[#0B0F17] text-gray-400 border border-[#1F2937]'
+                        : 'bg-black text-gray-400 border border-[#2F3336]'
                     }`}
                   >
                     {shift}
@@ -908,8 +908,8 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
         {/* STEP 4: ADS */}
         {activeTab === 'ads' && (
           <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#1F2937]">
+            <div className="p-4 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#2F3336]">
                 <h4 className="font-bold text-white flex items-center gap-2">
                   <Megaphone size={16} className="text-[#FFC500]" />
                   تفعيل الوحدات الإعلانية الثلاث (YR Ads) في هذا القسم
@@ -923,7 +923,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   { key: 'ad_unit_feed', title: '2. الإعلان المضمن (In-Feed Sponsor Ad)', sub: 'يظهر بين بطاقات المنشآت أثناء التصفح' },
                   { key: 'ad_unit_sticky', title: '3. البنر الثابت (Sticky Bottom Ad)', sub: 'مثبت أسفل الشاشة للعروض الخاصة' },
                 ].map(ad => (
-                  <label key={ad.key} className="flex items-center justify-between p-3 rounded-xl bg-[#0B0F17] border border-[#1F2937] cursor-pointer">
+                  <label key={ad.key} className="flex items-center justify-between p-3 rounded-xl bg-black border border-[#2F3336] cursor-pointer">
                     <div>
                       <p className="font-bold text-white">{ad.title}</p>
                       <p className="text-[11px] text-gray-400">{ad.sub}</p>
@@ -977,7 +977,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-3 pt-4 border-t border-[#1F2937]">
+        <div className="flex items-center justify-between gap-3 pt-4 border-t border-[#2F3336]">
           <div className="flex-1 min-w-0">
             {savedSuccessfully && (
               <div className="flex items-center gap-1.5 text-emerald-400 font-black text-xs animate-bounce">

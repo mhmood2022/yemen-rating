@@ -268,7 +268,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
       <AdBanner placementId="9" className="mb-1" />
 
       {/* 2. رأس الصفحة الرسمي بالأيقونات الرسمية */}
-      <div className="flex items-center justify-between border-b border-[#1F2937] pb-2.5">
+      <div className="flex items-center justify-between border-b border-[#2F3336] pb-2.5">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
             <Smartphone size={16} className="stroke-[2.5]" />
@@ -335,18 +335,18 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
                 {selectedPhone.condition}
               </span>
 
-              <span className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-xl bg-black/85 text-[#FFC500] text-xs font-mono font-black border border-[#FFC500]/30 backdrop-blur-md">
+              <span className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-xl bg-black text-[#FFC500] text-xs font-mono font-black border border-[#FFC500]/30 ">
                 {selectedPhone.price.toLocaleString()} {selectedPhone.currency}
               </span>
 
-              <span className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-lg bg-black/85 text-white text-[9px] font-bold border border-white/10 flex items-center gap-1">
+              <span className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-lg bg-black text-white text-[9px] font-bold border border-white/10 flex items-center gap-1">
                 <Camera size={11} /> {activeImageIndex + 1} من {selectedPhone.images.length}
               </span>
             </div>
 
             {/* صور مصغرة للتنقل السريع */}
             {selectedPhone.images.length > 1 && (
-              <div className="flex gap-1.5 p-2 bg-[#121215] border-t border-[#1F2937] overflow-x-auto no-scrollbar">
+              <div className="flex gap-1.5 p-2 bg-[#121215] border-t border-[#2F3336] overflow-x-auto no-scrollbar">
                 {selectedPhone.images.map((img, idx) => (
                   <button
                     key={idx}
@@ -499,7 +499,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
             </div>
 
             {/* الماركات والمحافظات */}
-            <div className="flex items-center justify-between gap-1 pt-1 border-t border-[#1F2937]/50">
+            <div className="flex items-center justify-between gap-1 pt-1 border-t border-[#2F3336]/50">
               <div className="flex gap-1 overflow-x-auto no-scrollbar flex-1">
                 {[
                   { id: 'all', label: 'الماركات' },
@@ -556,11 +556,11 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
                     {phone.condition}
                   </span>
 
-                  <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/85 text-[#FFC500] text-[10px] font-mono font-black border border-white/10">
+                  <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black text-[#FFC500] text-[10px] font-mono font-black border border-white/10">
                     {phone.price.toLocaleString()} {phone.currency}
                   </span>
 
-                  <span className="absolute bottom-2 right-2 px-1.5 py-0.2 rounded bg-black/80 text-gray-300 text-[8.5px] font-mono flex items-center gap-1">
+                  <span className="absolute bottom-2 right-2 px-1.5 py-0.2 rounded bg-black text-gray-300 text-[8.5px] font-mono flex items-center gap-1">
                     <Cpu size={10} /> {phone.storage}
                   </span>
                 </div>
@@ -577,7 +577,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
                     </h3>
                   </div>
 
-                  <div className="pt-1 flex items-center justify-between border-t border-[#1F2937]">
+                  <div className="pt-1 flex items-center justify-between border-t border-[#2F3336]">
                     <span className="text-[10px] text-gray-300 font-bold truncate max-w-[120px]">
                       {phone.sellerName}
                     </span>
@@ -603,7 +603,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
           ============================================================ */}
       {isLightboxOpen && selectedPhone && (
         <div 
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col justify-between p-4 select-none cursor-pointer"
+          className="fixed inset-0 z-50 bg-black  flex flex-col justify-between p-4 select-none cursor-pointer"
           onClick={() => setIsLightboxOpen(false)}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
@@ -646,7 +646,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
           ============================================================ */}
       {isAddModalOpen && (
         <div 
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+          className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4 cursor-pointer"
           onClick={() => setIsAddModalOpen(false)}
         >
           <div 

@@ -179,8 +179,8 @@ export const MarketsManager: React.FC = () => {
   return (
     <div dir="rtl" className="space-y-6 text-zinc-100 font-sans">
       {/* 1. رأس الصفحة والتبويبات */}
-      <div className="bg-zinc-900/80 border border-zinc-800 p-5 rounded-2xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-zinc-800">
+      <div className="bg-[#111111]/80 border border-[#2F3336] p-5 rounded-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#2F3336]">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
               <Store className="w-6 h-6" />
@@ -218,12 +218,12 @@ export const MarketsManager: React.FC = () => {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
                   isActive
                     ? 'bg-yellow-500 text-zinc-950 shadow-md shadow-yellow-500/10'
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                    : 'text-zinc-400 hover:text-white hover:bg-[#1A1A1A]'
                 }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full ${isActive ? 'bg-zinc-950/20 text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${isActive ? 'bg-black/20 text-zinc-950' : 'bg-[#1A1A1A] text-zinc-300'}`}>
                   {tab.count}
                 </span>
               </button>
@@ -233,7 +233,7 @@ export const MarketsManager: React.FC = () => {
       </div>
 
       {/* 2. شريط البحث والفلاتر */}
-      <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="p-4 rounded-2xl bg-black border border-[#2F3336] flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 text-zinc-400 absolute right-3.5 top-3" />
           <input
@@ -241,7 +241,7 @@ export const MarketsManager: React.FC = () => {
             placeholder={activeTab === 'markets' ? 'بحث باسم السوق أو المدينة...' : 'بحث باسم السلعة أو الوحدة...'}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
+            className="w-full bg-[#111111] border border-[#2F3336] rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
           />
         </div>
 
@@ -272,10 +272,10 @@ export const MarketsManager: React.FC = () => {
       {/* التبويب 1: جدول مؤشر السلع والتموين                         */}
       {/* ========================================================= */}
       {activeTab === 'commodities' && (
-        <div className="bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden shadow-xl">
+        <div className="bg-black rounded-2xl border border-[#2F3336] overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-zinc-900 text-zinc-400 border-b border-zinc-800">
+              <thead className="bg-[#111111] text-zinc-400 border-b border-[#2F3336]">
                 <tr>
                   <th className="py-3.5 px-4">اسم السلعة / المادة</th>
                   <th className="py-3.5 px-4">القطاع / التصنيف</th>
@@ -289,9 +289,9 @@ export const MarketsManager: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-zinc-800/80 text-zinc-200">
                 {filteredCommodities.map(item => (
-                  <tr key={item.id} className="hover:bg-zinc-900/50 transition">
+                  <tr key={item.id} className="hover:bg-[#111111]/50 transition">
                     <td className="py-3.5 px-4 font-bold text-white flex items-center gap-2">
-                      <span className="font-mono text-[10px] text-zinc-500 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">
+                      <span className="font-mono text-[10px] text-zinc-500 bg-[#111111] px-1.5 py-0.5 rounded border border-[#2F3336]">
                         {item.id}
                       </span>
                       {item.name}
@@ -311,7 +311,7 @@ export const MarketsManager: React.FC = () => {
                             ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                             : item.trend === 'down'
                             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : 'bg-zinc-800 text-zinc-400'
+                            : 'bg-[#1A1A1A] text-zinc-400'
                         }`}
                       >
                         {item.trend === 'up' && <TrendingUp className="w-3 h-3" />}
@@ -324,7 +324,7 @@ export const MarketsManager: React.FC = () => {
                     <td className="py-3.5 px-4 text-center">
                       <button
                         onClick={() => openEditModal(item)}
-                        className="p-1.5 bg-zinc-800 hover:bg-yellow-500 hover:text-zinc-950 text-zinc-300 rounded-lg transition"
+                        className="p-1.5 bg-[#1A1A1A] hover:bg-yellow-500 hover:text-zinc-950 text-zinc-300 rounded-lg transition"
                         title="تعديل السعر"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -342,10 +342,10 @@ export const MarketsManager: React.FC = () => {
       {/* التبويب 2: جدول الأسواق المركزية بالمحافظات                 */}
       {/* ========================================================= */}
       {activeTab === 'markets' && (
-        <div className="bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden shadow-xl">
+        <div className="bg-black rounded-2xl border border-[#2F3336] overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-zinc-900 text-zinc-400 border-b border-zinc-800">
+              <thead className="bg-[#111111] text-zinc-400 border-b border-[#2F3336]">
                 <tr>
                   <th className="py-3.5 px-4">اسم السوق المركزي</th>
                   <th className="py-3.5 px-4">المدينة / المحافظة</th>
@@ -357,7 +357,7 @@ export const MarketsManager: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-zinc-800 text-white">
                 {filteredMarkets.map(m => (
-                  <tr key={m.id} className="hover:bg-zinc-900/50 transition">
+                  <tr key={m.id} className="hover:bg-[#111111]/50 transition">
                     <td className="py-3.5 px-4 font-bold text-white">{m.name}</td>
                     <td className="py-3.5 px-4 text-zinc-400 flex items-center gap-1">
                       <MapPin size={13} className="text-yellow-400" /> {m.city}
@@ -386,18 +386,18 @@ export const MarketsManager: React.FC = () => {
       {activeTab === 'fuel' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {commodities.filter(c => c.category === 'مشتقات نفطية وغاز').map(fuel => (
-            <div key={fuel.id} className="p-5 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+            <div key={fuel.id} className="p-5 rounded-2xl bg-black border border-[#2F3336] space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
                 <div className="flex items-center gap-2 text-yellow-400">
                   <Fuel className="w-5 h-5" />
                   <h3 className="font-bold text-sm sm:text-base text-white">{fuel.name}</h3>
                 </div>
-                <span className="text-xs text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded border border-zinc-800">
+                <span className="text-xs text-zinc-400 bg-[#111111] px-2 py-0.5 rounded border border-[#2F3336]">
                   {fuel.unit}
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs bg-zinc-900/60 p-3 rounded-xl border border-zinc-800">
+              <div className="grid grid-cols-2 gap-3 text-xs bg-[#111111]/60 p-3 rounded-xl border border-[#2F3336]">
                 <div>
                   <span className="text-zinc-500 block">سعر صنعاء والمناطق المجاورة:</span>
                   <span className="font-black text-sm text-yellow-400 font-mono mt-0.5 block">
@@ -416,7 +416,7 @@ export const MarketsManager: React.FC = () => {
                 <span className="text-[11px] text-zinc-500">{fuel.lastUpdated}</span>
                 <button
                   onClick={() => openEditModal(fuel)}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-zinc-800 hover:bg-yellow-500 hover:text-zinc-950 text-zinc-200 rounded-lg text-xs font-bold transition"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-[#1A1A1A] hover:bg-yellow-500 hover:text-zinc-950 text-zinc-200 rounded-lg text-xs font-bold transition"
                 >
                   <Edit3 className="w-3.5 h-3.5" /> تعديل التسعيرة
                 </button>
@@ -430,8 +430,8 @@ export const MarketsManager: React.FC = () => {
       {/* التبويب 4: تنبيهات وتقلبات الأسعار                         */}
       {/* ========================================================= */}
       {activeTab === 'alerts' && (
-        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+        <div className="bg-black border border-[#2F3336] rounded-2xl p-5 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
             <div className="flex items-center gap-2 text-yellow-400">
               <Bell className="w-5 h-5" />
               <h2 className="text-base font-bold text-white">تنبيهات تقلبات الأسعار اليومية</h2>
@@ -443,7 +443,7 @@ export const MarketsManager: React.FC = () => {
             {commodities.filter(c => c.trend !== 'stable').map(item => (
               <div
                 key={item.id}
-                className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 flex items-center justify-between flex-wrap gap-3"
+                className="p-4 rounded-xl bg-[#111111]/60 border border-[#2F3336] flex items-center justify-between flex-wrap gap-3"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -465,7 +465,7 @@ export const MarketsManager: React.FC = () => {
                   </div>
                   <button
                     onClick={() => openEditModal(item)}
-                    className="p-2 bg-zinc-800 hover:bg-yellow-500 hover:text-zinc-950 text-zinc-300 rounded-xl transition"
+                    className="p-2 bg-[#1A1A1A] hover:bg-yellow-500 hover:text-zinc-950 text-zinc-300 rounded-xl transition"
                     title="تعديل السعر"
                   >
                     <Edit3 className="w-4 h-4" />
@@ -481,9 +481,9 @@ export const MarketsManager: React.FC = () => {
       {/* نافذة تعديل السعر (Edit Modal)                             */}
       {/* ========================================================= */}
       {editingItem && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4">
+          <div className="bg-black border border-[#2F3336] rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
               <div className="flex items-center gap-2 text-yellow-400">
                 <Edit3 className="w-5 h-5" />
                 <h3 className="font-bold text-sm sm:text-base text-white">تعديل تسعيرة: {editingItem.name}</h3>
@@ -505,7 +505,7 @@ export const MarketsManager: React.FC = () => {
                   type="number"
                   value={editPriceSanaa}
                   onChange={e => setEditPriceSanaa(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-yellow-500 font-mono"
+                  className="w-full bg-[#111111] border border-[#2F3336] rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-yellow-500 font-mono"
                 />
               </div>
 
@@ -517,7 +517,7 @@ export const MarketsManager: React.FC = () => {
                   type="number"
                   value={editPriceAden}
                   onChange={e => setEditPriceAden(parseFloat(e.target.value) || 0)}
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-yellow-500 font-mono"
+                  className="w-full bg-[#111111] border border-[#2F3336] rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-yellow-500 font-mono"
                 />
               </div>
 
@@ -527,7 +527,7 @@ export const MarketsManager: React.FC = () => {
                   <select
                     value={editTrend}
                     onChange={e => setEditTrend(e.target.value as any)}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-xs text-white rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
+                    className="w-full bg-[#111111] border border-[#2F3336] text-xs text-white rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
                   >
                     <option value="stable">مستقر ⎯</option>
                     <option value="up">مرتفع ↑</option>
@@ -541,16 +541,16 @@ export const MarketsManager: React.FC = () => {
                     step="0.1"
                     value={editPercent}
                     onChange={e => setEditPercent(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 font-mono"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 font-mono"
                   />
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-zinc-800 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-[#2F3336] flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setEditingItem(null)}
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs"
+                  className="px-4 py-2 bg-[#1A1A1A] hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs"
                 >
                   إلغاء
                 </button>
@@ -570,9 +570,9 @@ export const MarketsManager: React.FC = () => {
       {/* نافذة إضافة سلعة جديدة (Add Modal)                          */}
       {/* ========================================================= */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4">
+          <div className="bg-black border border-[#2F3336] rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
               <div className="flex items-center gap-2 text-yellow-400">
                 <Plus className="w-5 h-5" />
                 <h3 className="font-bold text-sm sm:text-base text-white">إضافة سلعة جديدة للمؤشر</h3>
@@ -593,7 +593,7 @@ export const MarketsManager: React.FC = () => {
                   placeholder="مثال: حليب بودرة ممتاز، زيت ذرة..."
                   value={newItemName}
                   onChange={e => setNewItemName(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-yellow-500"
+                  className="w-full bg-[#111111] border border-[#2F3336] rounded-xl px-4 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-yellow-500"
                 />
               </div>
 
@@ -603,7 +603,7 @@ export const MarketsManager: React.FC = () => {
                   <select
                     value={newItemCat}
                     onChange={e => setNewItemCat(e.target.value as any)}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-xs text-white rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
+                    className="w-full bg-[#111111] border border-[#2F3336] text-xs text-white rounded-xl px-3 py-2 focus:outline-none focus:border-yellow-500"
                   >
                     <option value="تموين وحبوب">تموين وحبوب</option>
                     <option value="مشتقات نفطية وغاز">مشتقات نفطية وغاز</option>
@@ -618,7 +618,7 @@ export const MarketsManager: React.FC = () => {
                     placeholder="كيس 50 كجم، دبة 20 لتر..."
                     value={newItemUnit}
                     onChange={e => setNewItemUnit(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500"
                   />
                 </div>
               </div>
@@ -630,7 +630,7 @@ export const MarketsManager: React.FC = () => {
                     type="number"
                     value={newItemPriceSanaa}
                     onChange={e => setNewItemPriceSanaa(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 font-mono"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 font-mono"
                   />
                 </div>
                 <div>
@@ -639,16 +639,16 @@ export const MarketsManager: React.FC = () => {
                     type="number"
                     value={newItemPriceAden}
                     onChange={e => setNewItemPriceAden(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 font-mono"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-500 font-mono"
                   />
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-zinc-800 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-[#2F3336] flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs"
+                  className="px-4 py-2 bg-[#1A1A1A] hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs"
                 >
                   إلغاء
                 </button>

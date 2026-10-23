@@ -192,7 +192,7 @@ export const AuctionLiveMonitor: React.FC = () => {
 
       {/* مودال تغيير الحالة الإدارية */}
       {statusModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4">
           <div className="bg-[#0A0F1D] border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 text-white shadow-2xl">
             <div className="flex justify-between items-center border-b border-slate-800 pb-3">
               <h3 className="text-sm font-black">تغيير حالة المزاد وتوثيق السبب</h3>

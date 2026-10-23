@@ -24,7 +24,7 @@ export const AdPreviewModal: React.FC<AdPreviewModalProps> = ({ ad, isOpen, onCl
         <div className="flex items-center justify-between p-3 rounded-[10px] bg-[#F7F8FA] dark:bg-[#0E0E0E] border border-[#E2E8F0] dark:border-[#222222] text-xs">
           <div>
             <span className="text-[#64748B] dark:text-[#71717A] block">المعلن:</span>
-            <span className="font-black text-[#0B1F3A] dark:text-white">{ad.advertiserName}</span>
+            <span className="font-black text-[#000000] dark:text-white">{ad.advertiserName}</span>
           </div>
 
           <div className="text-left">
@@ -62,7 +62,7 @@ export const AdPreviewModal: React.FC<AdPreviewModalProps> = ({ ad, isOpen, onCl
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
           <div className="p-2.5 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0E0E0E] border border-[#E2E8F0] dark:border-[#222222]">
             <span className="text-[10px] text-[#71717A] block">مرات الظهور</span>
-            <span className="font-black text-sm text-[#0B1F3A] dark:text-white">{ad.impressions.toLocaleString()}</span>
+            <span className="font-black text-sm text-[#000000] dark:text-white">{ad.impressions.toLocaleString()}</span>
           </div>
           <div className="p-2.5 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0E0E0E] border border-[#E2E8F0] dark:border-[#222222]">
             <span className="text-[10px] text-[#71717A] block">النقرات</span>

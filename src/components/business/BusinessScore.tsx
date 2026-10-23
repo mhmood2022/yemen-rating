@@ -15,7 +15,7 @@ export const BusinessScore: React.FC<BusinessScoreProps> = ({
 }) => {
   const getScoreColor = (val: number) => {
     if (val >= 90) return 'text-[#16A34A] border-[#16A34A]/30 bg-[#16A34A]/10';
-    if (val >= 75) return 'text-[#0B1F3A] border-[#F5C400] bg-[#F5C400]/15';
+    if (val >= 75) return 'text-[#000000] border-[#F5C400] bg-[#F5C400]/15';
     if (val >= 50) return 'text-[#F59E0B] border-[#F59E0B]/30 bg-[#F59E0B]/10';
     return 'text-[#DC2626] border-[#DC2626]/30 bg-[#DC2626]/10';
   };

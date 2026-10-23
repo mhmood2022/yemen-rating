@@ -45,8 +45,8 @@ export const BankWalletFilters: React.FC<BankWalletFiltersProps> = ({ filters, o
               className={cn(
                 'flex-1 py-2 px-3 rounded-[9px] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all select-none',
                 isSelected
-                  ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-[#000000] shadow-sm'
-                  : 'text-[#475569] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414] hover:text-[#0B1F3A] dark:hover:text-white'
+                  ? 'bg-[#000000] text-white dark:bg-[#F5C400] dark:text-[#000000] shadow-sm'
+                  : 'text-[#475569] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414] hover:text-[#000000] dark:hover:text-white'
               )}
             >
               <Icon size={16} strokeWidth={1.75} />

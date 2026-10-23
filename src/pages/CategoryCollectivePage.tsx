@@ -39,7 +39,7 @@ export const CategoryCollectivePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-gray-100 font-sans dir-rtl pb-20">
       {/* Search Header */}
-      <div className="border-b border-gray-800 bg-gray-900/90 sticky top-0 z-30 backdrop-blur-md py-4 px-4 sm:px-8">
+      <div className="border-b border-gray-800 bg-gray-900/90 sticky top-0 z-30  py-4 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3 w-full md:w-auto">
             <h1 className="text-2xl font-black text-yellow-400 tracking-tight">استكشاف الأنشطة المحلية</h1>
@@ -114,7 +114,7 @@ export const CategoryCollectivePage: React.FC = () => {
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-yellow-400 border border-yellow-400/20">
+                      <div className="absolute top-3 right-3 bg-black  px-3 py-1 rounded-full text-xs font-bold text-yellow-400 border border-yellow-400/20">
                         {item.category_name || 'نشاط تجاري'}
                       </div>
                       {item.is_verified && (

@@ -93,8 +93,8 @@ export const SettingsAuditManager: React.FC = () => {
   return (
     <div dir="rtl" className="space-y-6 text-zinc-100 font-sans">
       {/* 1. رأس الصفحة والتبويبات */}
-      <div className="bg-zinc-900/80 border border-zinc-800 p-5 rounded-2xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-zinc-800">
+      <div className="bg-[#111111]/80 border border-[#2F3336] p-5 rounded-2xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#2F3336]">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-xl bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
               <History className="w-6 h-6" />
@@ -131,13 +131,13 @@ export const SettingsAuditManager: React.FC = () => {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
                   isActive
                     ? 'bg-yellow-500 text-zinc-950 shadow-md shadow-yellow-500/10'
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                    : 'text-zinc-400 hover:text-white hover:bg-[#1A1A1A]'
                 }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
                 {tab.count !== undefined && (
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${isActive ? 'bg-zinc-950/20 text-zinc-950' : 'bg-zinc-800 text-zinc-300'}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${isActive ? 'bg-black/20 text-zinc-950' : 'bg-[#1A1A1A] text-zinc-300'}`}>
                     {tab.count}
                   </span>
                 )}
@@ -153,7 +153,7 @@ export const SettingsAuditManager: React.FC = () => {
       {activeTab === 'audit' && (
         <div className="space-y-4">
           {/* شريط البحث والفلترة */}
-          <div className="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="p-4 rounded-2xl bg-black border border-[#2F3336] flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="relative w-full sm:w-80">
               <Search className="w-4 h-4 text-zinc-400 absolute right-3.5 top-3" />
               <input
@@ -161,7 +161,7 @@ export const SettingsAuditManager: React.FC = () => {
                 placeholder="بحث باسم المشرف، الإجراء، الهدف، أو IP..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
+                className="w-full bg-[#111111] border border-[#2F3336] rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-yellow-500"
               />
             </div>
 
@@ -177,7 +177,7 @@ export const SettingsAuditManager: React.FC = () => {
 
               <button
                 onClick={() => alert('تم تصدير سجل التدقيق كملف CSV')}
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded-xl text-xs font-bold border border-zinc-800 shrink-0 transition"
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-[#111111] hover:bg-[#1A1A1A] text-zinc-300 rounded-xl text-xs font-bold border border-[#2F3336] shrink-0 transition"
               >
                 <Download className="w-3.5 h-3.5" /> تصدير
               </button>
@@ -185,10 +185,10 @@ export const SettingsAuditManager: React.FC = () => {
           </div>
 
           {/* جدول السجلات */}
-          <div className="bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden shadow-xl">
+          <div className="bg-black rounded-2xl border border-[#2F3336] overflow-hidden shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full text-right text-xs">
-                <thead className="bg-zinc-900 text-zinc-400 border-b border-zinc-800">
+                <thead className="bg-[#111111] text-zinc-400 border-b border-[#2F3336]">
                   <tr>
                     <th className="py-3.5 px-4">رقم السجل</th>
                     <th className="py-3.5 px-4">المشرف المسؤول</th>
@@ -201,14 +201,14 @@ export const SettingsAuditManager: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-zinc-800 text-zinc-200">
                   {filteredLogs.map(log => (
-                    <tr key={log.id} className="hover:bg-zinc-900/50 transition">
+                    <tr key={log.id} className="hover:bg-[#111111]/50 transition">
                       <td className="py-3.5 px-4 font-mono font-bold text-zinc-500">{log.id}</td>
                       <td className="py-3.5 px-4">
                         <span className="font-bold text-white block">{log.admin}</span>
                         <span className="text-[10px] text-zinc-500 font-mono">{log.role}</span>
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded bg-zinc-900 text-zinc-300 text-[11px] border border-zinc-800">
+                        <span className="px-2 py-0.5 rounded bg-[#111111] text-zinc-300 text-[11px] border border-[#2F3336]">
                           {log.category}
                         </span>
                       </td>
@@ -241,8 +241,8 @@ export const SettingsAuditManager: React.FC = () => {
       {/* التبويب 2: إعدادات المنصة العامة                           */}
       {/* ========================================================= */}
       {activeTab === 'general' && (
-        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-6 shadow-xl">
-          <div className="pb-4 border-b border-zinc-800">
+        <div className="bg-black border border-[#2F3336] rounded-2xl p-6 space-y-6 shadow-xl">
+          <div className="pb-4 border-b border-[#2F3336]">
             <h2 className="text-base font-bold text-white">إعدادات الهوية والتواصل للمنصة</h2>
             <p className="text-xs text-zinc-400 mt-1">التحكم في بيانات الواجهة، قنوات الدعم، ووضع الصيانة</p>
           </div>
@@ -254,7 +254,7 @@ export const SettingsAuditManager: React.FC = () => {
                 type="text"
                 value={siteName}
                 onChange={e => setSiteName(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-yellow-500"
+                className="w-full bg-[#111111] border border-[#2F3336] rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-yellow-500"
               />
             </div>
 
@@ -264,7 +264,7 @@ export const SettingsAuditManager: React.FC = () => {
                 type="text"
                 value={siteTagline}
                 onChange={e => setSiteTagline(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-yellow-500"
+                className="w-full bg-[#111111] border border-[#2F3336] rounded-xl px-4 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-yellow-500"
               />
             </div>
 
@@ -277,7 +277,7 @@ export const SettingsAuditManager: React.FC = () => {
                     type="text"
                     value={supportPhone}
                     onChange={e => setSupportPhone(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-700 rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-yellow-500 font-mono"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-yellow-500 font-mono"
                   />
                 </div>
               </div>
@@ -290,14 +290,14 @@ export const SettingsAuditManager: React.FC = () => {
                     type="email"
                     value={supportEmail}
                     onChange={e => setSupportEmail(e.target.value)}
-                    className="w-full bg-zinc-900 border border-zinc-700 rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-yellow-500 font-mono"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl pr-10 pl-4 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-yellow-500 font-mono"
                   />
                 </div>
               </div>
             </div>
 
             {/* وضع الصيانة */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-900 border border-zinc-800 mt-4">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-[#111111] border border-[#2F3336] mt-4">
               <div>
                 <h4 className="font-bold text-sm text-white">وضع الصيانة المؤقت (Maintenance Mode)</h4>
                 <p className="text-xs text-zinc-400 mt-0.5">إظهار صفحة أعمال الصيانة للزوار مع إبقاء لوحة التحكم للمشرفين</p>
@@ -306,11 +306,11 @@ export const SettingsAuditManager: React.FC = () => {
                 type="button"
                 onClick={() => setIsMaintenanceMode(prev => !prev)}
                 className={`w-14 h-7 rounded-full transition-colors relative p-1 ${
-                  isMaintenanceMode ? 'bg-yellow-500' : 'bg-zinc-800'
+                  isMaintenanceMode ? 'bg-yellow-500' : 'bg-[#1A1A1A]'
                 }`}
               >
                 <div
-                  className={`w-5 h-5 rounded-full bg-zinc-950 transition-transform ${
+                  className={`w-5 h-5 rounded-full bg-black transition-transform ${
                     isMaintenanceMode ? 'translate-x-0' : '-translate-x-7'
                   }`}
                 />
@@ -335,7 +335,7 @@ export const SettingsAuditManager: React.FC = () => {
       {activeTab === 'security' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-5 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-2">
+            <div className="p-5 rounded-2xl bg-black border border-[#2F3336] space-y-2">
               <div className="flex items-center gap-2 text-emerald-400">
                 <ShieldCheck className="w-5 h-5" />
                 <h3 className="font-bold text-sm text-white">حماية الصفوف RLS</h3>
@@ -345,7 +345,7 @@ export const SettingsAuditManager: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-2">
+            <div className="p-5 rounded-2xl bg-black border border-[#2F3336] space-y-2">
               <div className="flex items-center gap-2 text-yellow-400">
                 <Key className="w-5 h-5" />
                 <h3 className="font-bold text-sm text-white">إدارة الجلسات والأمان</h3>
@@ -355,7 +355,7 @@ export const SettingsAuditManager: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-2">
+            <div className="p-5 rounded-2xl bg-black border border-[#2F3336] space-y-2">
               <div className="flex items-center gap-2 text-blue-400">
                 <Lock className="w-5 h-5" />
                 <h3 className="font-bold text-sm text-white">صلاحيات المشرفين</h3>
@@ -372,32 +372,32 @@ export const SettingsAuditManager: React.FC = () => {
       {/* التبويب 4: أدوات النظام والخادم                            */}
       {/* ========================================================= */}
       {activeTab === 'system' && (
-        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 space-y-5 shadow-xl">
-          <div className="pb-3 border-b border-zinc-800">
+        <div className="bg-black border border-[#2F3336] rounded-2xl p-6 space-y-5 shadow-xl">
+          <div className="pb-3 border-b border-[#2F3336]">
             <h2 className="text-base font-bold text-white">أدوات فحص وصيانة الخادم</h2>
             <p className="text-xs text-zinc-400 mt-1">تفريغ الكاش، فحص الاستجابة، وحالة النظام البرمجي</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-between">
+            <div className="p-4 rounded-xl bg-[#111111] border border-[#2F3336] flex items-center justify-between">
               <div>
                 <h4 className="font-bold text-sm text-white">تفريغ الذاكرة المؤقتة (Clear Cache)</h4>
                 <p className="text-xs text-zinc-400 mt-0.5">إعادة تحميل مؤشرات الأسعار والأنشطة المحفوظة</p>
               </div>
               <button
                 onClick={handleClearCache}
-                className="flex items-center gap-1.5 px-3 py-2 bg-zinc-800 hover:bg-yellow-500 hover:text-zinc-950 text-zinc-200 rounded-xl text-xs font-bold transition"
+                className="flex items-center gap-1.5 px-3 py-2 bg-[#1A1A1A] hover:bg-yellow-500 hover:text-zinc-950 text-zinc-200 rounded-xl text-xs font-bold transition"
               >
                 <RefreshCw className="w-3.5 h-3.5" /> تفريغ
               </button>
             </div>
 
-            <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-between">
+            <div className="p-4 rounded-xl bg-[#111111] border border-[#2F3336] flex items-center justify-between">
               <div>
                 <h4 className="font-bold text-sm text-white">حالة الخادم ووقت التشغيل</h4>
                 <p className="text-xs text-emerald-400 mt-0.5">● Uptime: 99.98% (استجابة سريعة)</p>
               </div>
-              <span className="font-mono text-xs font-bold text-zinc-400 bg-zinc-800 px-2.5 py-1 rounded-lg">
+              <span className="font-mono text-xs font-bold text-zinc-400 bg-[#1A1A1A] px-2.5 py-1 rounded-lg">
                 24ms
               </span>
             </div>

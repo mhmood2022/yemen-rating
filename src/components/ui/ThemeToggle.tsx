@@ -15,7 +15,7 @@ export const ThemeToggle: React.FC<{ className?: string }> = ({ className }) => 
         'border-[#E2E8F0] dark:border-[#222222]',
         'bg-white dark:bg-[#111111]',
         'hover:bg-[#F1F5F9] dark:hover:bg-[#1A1A1A]',
-        'focus-visible:ring-2 focus-visible:ring-[#0B1F3A] dark:focus-visible:ring-[#F5C400]',
+        'focus-visible:ring-2 focus-visible:ring-[#000000] dark:focus-visible:ring-[#F5C400]',
         className
       )}
       title={isDark ? 'التبديل إلى الوضع الفاتح' : 'التبديل إلى الوضع الليلي'}

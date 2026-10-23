@@ -55,8 +55,8 @@ const CustomSelect: React.FC<{
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setOpen(!open)}
-        className={`w-full bg-[#111625] border ${
-          open ? "border-[#FFC500] ring-1 ring-[#FFC500]/30" : "border-slate-700/80 hover:border-slate-600"
+        className={`w-full bg-[#111111] border ${
+          open ? "border-[#FFC500] ring-1 ring-[#FFC500]/30" : "border-[#2F3336] hover:border-slate-600"
         } disabled:opacity-50 disabled:cursor-not-allowed rounded-xl px-3.5 py-2.5 text-white flex items-center justify-between text-xs sm:text-sm font-medium transition-all text-right cursor-pointer outline-none shadow-sm`}
       >
         <span className="truncate">{value || "اختر..."}</span>
@@ -67,7 +67,7 @@ const CustomSelect: React.FC<{
       </button>
 
       {open && (
-        <div className="absolute top-full mt-1.5 w-full bg-[#0D121F] border border-slate-700/90 rounded-xl shadow-2xl z-50 py-1 max-h-56 overflow-y-auto divide-y divide-slate-800/50">
+        <div className="absolute top-full mt-1.5 w-full bg-black border border-[#2F3336] rounded-xl shadow-2xl z-50 py-1 max-h-56 overflow-y-auto divide-y divide-slate-800/50">
           {options.map((opt) => {
             const isSelected = opt === value;
             return (
@@ -80,7 +80,7 @@ const CustomSelect: React.FC<{
                 className={`flex items-center justify-between px-3.5 py-2.5 text-xs sm:text-sm cursor-pointer transition-colors ${
                   isSelected
                     ? "bg-[#FFC500]/15 text-[#FFC500] font-bold"
-                    : "text-slate-200 hover:bg-slate-800/80 hover:text-white"
+                    : "text-slate-200 hover:bg-[#111111]/80 hover:text-white"
                 }`}
               >
                 <span className="truncate">{opt}</span>
@@ -231,12 +231,12 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm p-2 sm:p-4 font-['Cairo',sans-serif] text-slate-200" style={{ WebkitOverflowScrolling: "touch" }}>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black  p-2 sm:p-4 font-['Cairo',sans-serif] text-slate-200" style={{ WebkitOverflowScrolling: "touch" }}>
       <div className="min-h-full flex items-center justify-center py-3 sm:py-6">
-        <div dir="rtl" className="bg-[#0B0F19] border border-slate-800 rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col my-auto relative overflow-hidden">
+        <div dir="rtl" className="bg-black border border-[#2F3336] rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col my-auto relative overflow-hidden">
           
           {/* ترويسة النموذج */}
-          <div className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-[#070A12]/95 backdrop-blur-md rounded-t-2xl shrink-0">
+          <div className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 border-b border-[#2F3336] bg-black  rounded-t-2xl shrink-0">
             <div>
               <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
                 <span className="p-1.5 rounded-lg bg-[#FFC500]/10 text-[#FFC500]">
@@ -249,7 +249,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800/60 transition-colors cursor-pointer"
+              className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-[#111111]/60 transition-colors cursor-pointer"
             >
               <X size={20} />
             </button>
@@ -274,7 +274,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder="مثال: محاسب مالي، مطور واجهات، مهندس شبكات..."
-                  className="w-full bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 outline-none text-xs sm:text-sm"
+                  className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 outline-none text-xs sm:text-sm"
                 />
               </div>
 
@@ -305,7 +305,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
                     min={1}
                     value={vacanciesCount}
                     onChange={e => setVacanciesCount(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-full bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl px-3.5 py-2.5 text-white outline-none text-xs sm:text-sm font-mono"
+                    className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl px-3.5 py-2.5 text-white outline-none text-xs sm:text-sm font-mono"
                   />
                 </div>
               </div>
@@ -349,7 +349,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   placeholder="نبذة عامة وتوضيح عن طبيعة الوظيفة..."
-                  className="w-full bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl p-3 text-white placeholder-slate-500 outline-none text-xs sm:text-sm resize-none"
+                  className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl p-3 text-white placeholder-slate-500 outline-none text-xs sm:text-sm resize-none"
                 />
               </div>
 
@@ -363,7 +363,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
                       value={resp}
                       onChange={e => handleResponsibilityChange(e.target.value, idx)}
                       placeholder={`مهمة ${idx + 1}...`}
-                      className="flex-1 bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl px-3 py-2 text-white outline-none text-xs"
+                      className="flex-1 bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl px-3 py-2 text-white outline-none text-xs"
                     />
                     {responsibilities.length > 1 && (
                       <button
@@ -395,7 +395,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
                       value={req}
                       onChange={e => handleRequirementChange(e.target.value, idx)}
                       placeholder={`شرط ${idx + 1}...`}
-                      className="flex-1 bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl px-3 py-2 text-white outline-none text-xs"
+                      className="flex-1 bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl px-3 py-2 text-white outline-none text-xs"
                     />
                     {requirements.length > 1 && (
                       <button
@@ -433,7 +433,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
                     value={salaryMin}
                     onChange={e => setSalaryMin(e.target.value)}
                     placeholder="مثال: 300,000"
-                    className="w-full bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl p-2.5 text-white font-mono text-left outline-none text-xs"
+                    className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl p-2.5 text-white font-mono text-left outline-none text-xs"
                   />
                 </div>
                 <div>
@@ -443,7 +443,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
                     value={salaryMax}
                     onChange={e => setSalaryMax(e.target.value)}
                     placeholder="مثال: 500,000"
-                    className="w-full bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl p-2.5 text-white font-mono text-left outline-none text-xs"
+                    className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl p-2.5 text-white font-mono text-left outline-none text-xs"
                   />
                 </div>
                 <div>
@@ -465,7 +465,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
 
             {/* ⑤ بيانات جهة العمل والتواصل والوساطة السرية */}
             <div className="p-4 bg-[#070A12] border border-amber-500/20 rounded-2xl space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+              <div className="flex items-center justify-between border-b border-[#2F3336]/80 pb-2">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
                   <Building2 size={15} className="text-[#FFC500]" />
                   بيانات المنشأة والتواصل ومسؤول التوظيف
@@ -485,7 +485,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
                     value={companyName}
                     onChange={e => setCompanyName(e.target.value)}
                     placeholder="مثال: مجموعة هائل سعيد، شركة يمن تيك..."
-                    className="w-full bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl p-2.5 text-white outline-none"
+                    className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl p-2.5 text-white outline-none"
                   />
                 </div>
 
@@ -502,7 +502,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
                       value={employerPhone}
                       onChange={e => setEmployerPhone(e.target.value.replace(/\D/g, ''))}
                       placeholder="77XXXXXXX"
-                      className="w-full bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl p-2.5 text-white font-mono text-left outline-none"
+                      className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl p-2.5 text-white font-mono text-left outline-none"
                     />
                     <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
                       <span className="text-[10px] font-mono text-slate-400">+967</span>
@@ -518,7 +518,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
                     value={employerEmail}
                     onChange={e => setEmployerEmail(e.target.value)}
                     placeholder="hr@company.com"
-                    className="w-full bg-[#111625] border border-slate-700/80 focus:border-[#FFC500] rounded-xl p-2.5 text-white font-mono text-left outline-none"
+                    className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl p-2.5 text-white font-mono text-left outline-none"
                   />
                   <span className="text-[10px] text-slate-400 block mt-1">
                     إرشادات: هذه البيانات مخصصة لإدارة منصة يمن ريتنغ لتنسيق طلبات المرشحين والمتابعة، ولا تظهر في صفحة تفاصيل الوظيفة للعامة.
@@ -559,7 +559,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
           )}
 
           {/* أزرار الإجراءات السفلية: فقط إلغاء ونشر الوظيفة (بدون حفظ كمسودة) */}
-          <div className="sticky bottom-0 z-30 p-4 px-6 border-t border-slate-800 bg-[#070A12]/95 backdrop-blur-md rounded-b-2xl flex items-center justify-between gap-3 shrink-0">
+          <div className="sticky bottom-0 z-30 p-4 px-6 border-t border-[#2F3336] bg-black  rounded-b-2xl flex items-center justify-between gap-3 shrink-0">
             <button
               type="button"
               disabled={isSubmitting}
@@ -575,7 +575,7 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
               onClick={handleSubmit}
               className={`px-6 py-2.5 rounded-xl font-black text-xs shadow-lg transition-all flex items-center gap-1.5 ${
                 !agreedToEmployerPolicy || isSubmitting
-                  ? "bg-slate-800 text-slate-500 border border-slate-700/60 opacity-50 cursor-not-allowed"
+                  ? "bg-[#111111] text-slate-500 border border-slate-700/60 opacity-50 cursor-not-allowed"
                   : "bg-[#FFC500] hover:bg-amber-400 text-black cursor-pointer shadow-amber-500/20"
               }`}
             >

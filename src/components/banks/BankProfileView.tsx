@@ -129,7 +129,7 @@ export const BankProfileView: React.FC<{
       <AdBanner placementId="4" className="mb-1" />
 
       {/* شريط الرجوع وزر أعلن هنا */}
-      <div className="flex items-center justify-between border-b border-[#1F2937] pb-2">
+      <div className="flex items-center justify-between border-b border-[#2F3336] pb-2">
         <button
           onClick={onBack}
           className="px-3 py-1 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
@@ -399,7 +399,7 @@ export const BankProfileView: React.FC<{
       {/* عارض الصور باللمس Lightbox */}
       {isLightboxOpen && (
         <div 
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col justify-between p-4 select-none cursor-pointer"
+          className="fixed inset-0 z-50 bg-black  flex flex-col justify-between p-4 select-none cursor-pointer"
           onClick={() => setIsLightboxOpen(false)}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}

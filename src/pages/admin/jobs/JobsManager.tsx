@@ -435,7 +435,7 @@ export const JobsManager: React.FC = () => {
       )}
 
       {/* الرأس */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#1F2937]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#2F3336]">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
             <Briefcase className="w-6 h-6" />
@@ -450,7 +450,7 @@ export const JobsManager: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsCommModalOpen(true)}
-            className="px-4 py-2.5 bg-[#161D2B] hover:bg-[#1F2937] text-[#FFC500] border border-[#FFC500]/30 hover:border-[#FFC500]/60 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shadow"
+            className="px-4 py-2.5 bg-[#161D2B] hover:bg-[#2F3336] text-[#FFC500] border border-[#FFC500]/30 hover:border-[#FFC500]/60 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shadow"
           >
             <DollarSign size={15} /> إعدادات عمولة الوساطة
           </button>
@@ -466,13 +466,13 @@ export const JobsManager: React.FC = () => {
       </div>
 
       {/* شريط التبويبات الفخم */}
-      <div className="flex items-center gap-3 p-1.5 bg-[#0e1320] border border-[#1F2937] rounded-2xl">
+      <div className="flex items-center gap-3 p-1.5 bg-[#0e1320] border border-[#2F3336] rounded-2xl">
         <button
           type="button"
           onClick={() => handleTabChange("jobs")}
           className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-black transition flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === "jobs"
-              ? "bg-[#1F2937] text-white shadow-lg border border-slate-700"
+              ? "bg-[#2F3336] text-white shadow-lg border border-slate-700"
               : "text-gray-400 hover:text-white"
           }`}
         >
@@ -488,7 +488,7 @@ export const JobsManager: React.FC = () => {
           onClick={() => handleTabChange("applications")}
           className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-black transition flex items-center justify-center gap-2 cursor-pointer ${
             activeTab === "applications"
-              ? "bg-[#1F2937] text-white shadow-lg border border-slate-700"
+              ? "bg-[#2F3336] text-white shadow-lg border border-slate-700"
               : "text-gray-400 hover:text-white"
           }`}
         >
@@ -632,7 +632,7 @@ export const JobsManager: React.FC = () => {
                     </div>
 
                     {/* أزرار الإجراءات السريعة (تعديل - إيقاف مؤقت - حذف) */}
-                    <div className="pt-3 border-t border-[#1F2937] flex items-center justify-between gap-2">
+                    <div className="pt-3 border-t border-[#2F3336] flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
                         {/* زر التعديل */}
                         <button
@@ -700,7 +700,7 @@ export const JobsManager: React.FC = () => {
             <div className="space-y-4">
               {applications.map((app) => (
                 <div key={app.id} className="p-5 rounded-3xl bg-[#0e1320] border border-[#222b42] shadow-xl hover:border-slate-700 transition">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-[#1F2937]">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-[#2F3336]">
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-black text-white text-base">{app.name}</span>
@@ -798,7 +798,7 @@ export const JobsManager: React.FC = () => {
                                   download
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition"
+                                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#111111] hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition"
                                 >
                                   <Download size={13} />
                                   <span>تحميل الملف الأصلي</span>
@@ -819,7 +819,7 @@ export const JobsManager: React.FC = () => {
                                       href={imgUrl}
                                       target="_blank"
                                       rel="noreferrer"
-                                      className="group relative block aspect-video rounded-xl overflow-hidden border border-slate-700 bg-slate-900 hover:border-[#FFC500] transition"
+                                      className="group relative block aspect-video rounded-xl overflow-hidden border border-slate-700 bg-black hover:border-[#FFC500] transition"
                                     >
                                       <img
                                         src={imgUrl}
@@ -852,7 +852,7 @@ export const JobsManager: React.FC = () => {
                       <select
                         value={app.status || "PENDING"}
                         onChange={(e) => handleUpdateAppStatus(app.id, e.target.value)}
-                        className="bg-[#161D2B] border border-[#1F2937] text-white text-xs rounded-lg px-2.5 py-1 outline-none cursor-pointer focus:border-[#FFC500]"
+                        className="bg-[#161D2B] border border-[#2F3336] text-white text-xs rounded-lg px-2.5 py-1 outline-none cursor-pointer focus:border-[#FFC500]"
                       >
                         <option value="PENDING">🟡 قيد المراجعة</option>
                         <option value="ACCEPTED">🟢 قبول للمقابلة</option>
@@ -870,7 +870,7 @@ export const JobsManager: React.FC = () => {
       {/* المودال الشامل (إضافة جديدة / تعديل) */}
       {/* مودال إعدادات عمولات التوظيف والوساطة للطرفين */}
       {isCommModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black  overflow-y-auto">
           <div
             dir="rtl"
             className="bg-[#0B0F19] border border-slate-800 rounded-2xl w-full max-w-lg p-5 sm:p-6 space-y-5 font-['Cairo',sans-serif] text-white shadow-2xl my-auto text-right"
@@ -891,7 +891,7 @@ export const JobsManager: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsCommModalOpen(false)}
-                className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+                className="p-1.5 rounded-lg bg-[#111111] text-slate-400 hover:text-white cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -1012,7 +1012,7 @@ export const JobsManager: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsCommModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-[#111625] hover:bg-slate-800 border border-slate-700 text-white text-xs font-bold transition cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#111625] hover:bg-[#111111] border border-slate-700 text-white text-xs font-bold transition cursor-pointer"
               >
                 إلغاء
               </button>

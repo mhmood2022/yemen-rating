@@ -204,7 +204,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
   });
 
   return (
-    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Cairo'] text-white">
+    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Tahoma'] text-white bg-black min-h-screen">
       <AdBanner placementId="5" className="mb-1" />
 
       {toastMessage && (
@@ -215,12 +215,12 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
       )}
 
       {/* الرأس مع زر أضف عقار */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2F3336] pb-3">
         <div className="flex items-center gap-2.5">
           {onBack && (
             <button
               onClick={onBack}
-              className="p-2 rounded-xl bg-[#0D1527] border border-slate-800 text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all"
+              className="p-2 rounded-xl bg-[#000000] border border-[#2F3336] text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all"
             >
               <ArrowRight size={16} className="rtl:rotate-180" />
             </button>
@@ -243,7 +243,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
           <button
             onClick={fetchProperties}
             disabled={loading}
-            className="p-2 bg-[#0D1527] border border-slate-800 text-slate-300 hover:text-white rounded-xl transition-colors"
+            className="p-2 bg-[#000000] border border-[#2F3336] text-slate-300 hover:text-white rounded-xl transition-colors"
             title="تحديث"
           >
             <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
@@ -252,8 +252,8 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
       </div>
 
       {/* شريط الفلترة الموحد الأنيق بدون أي ألوان رمادية */}
-      <div className="bg-[#0D1527] p-3 rounded-2xl border border-slate-800 space-y-2.5">
-        <div className="flex items-center gap-1 bg-[#060A13] p-1 rounded-xl border border-slate-800">
+      <div className="bg-[#000000] p-3 rounded-2xl border border-[#2F3336] space-y-2.5">
+        <div className="flex items-center gap-1 bg-[#111111] p-1 rounded-xl border border-[#2F3336]">
           <button
             onClick={() => setDealTypeFilter('all')}
             className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
@@ -303,7 +303,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
           <span className="text-xs font-bold text-white">جاري تحميل العقارات الحقيقية...</span>
         </div>
       ) : filteredProperties.length === 0 ? (
-        <div className="py-16 text-center bg-[#0D1527] rounded-2xl border border-slate-800 p-6 space-y-3">
+        <div className="py-16 text-center bg-[#000000] rounded-2xl border border-[#2F3336] p-6 space-y-3">
           <AlertCircle className="w-12 h-12 text-[#F5C400] mx-auto opacity-70" />
           <h3 className="text-base font-bold text-white">لا توجد عقارات معروضة حالياً</h3>
           <p className="text-xs text-slate-300">كن أول من يضيف عقاراً بالضغط على زر "أضف عقار" أعلاه.</p>
@@ -318,13 +318,13 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
 
       {/* نافذة أضف عقار */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0D1527] border border-slate-800 rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Cairo'] text-white shadow-2xl">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4">
+          <div className="bg-[#000000] border border-[#2F3336] rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Tahoma'] text-white shadow-2xl">
+            <div className="flex justify-between items-center border-b border-[#2F3336] pb-2">
               <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
                 <Plus size={16} className="text-[#F5C400]" /> إضافة عقار جديد
               </h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="p-1 rounded-lg bg-[#060A13] text-slate-400 hover:text-white">
+              <button onClick={() => setIsAddModalOpen(false)} className="p-1 rounded-lg bg-[#111111] text-slate-400 hover:text-white">
                 <X size={16} />
               </button>
             </div>
@@ -337,7 +337,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
                     type="button"
                     onClick={() => setNewDealType('بيع')}
                     className={`py-2 rounded-xl font-bold border transition-all ${
-                      newDealType === 'بيع' ? 'bg-[#F5C400] text-black border-[#F5C400]' : 'bg-[#060A13] text-slate-300 border-slate-800'
+                      newDealType === 'بيع' ? 'bg-[#F5C400] text-black border-[#F5C400]' : 'bg-[#111111] text-slate-300 border-[#2F3336]'
                     }`}
                   >
                     للبيع
@@ -346,7 +346,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
                     type="button"
                     onClick={() => setNewDealType('إيجار')}
                     className={`py-2 rounded-xl font-bold border transition-all ${
-                      newDealType === 'إيجار' ? 'bg-[#F5C400] text-black border-[#F5C400]' : 'bg-[#060A13] text-slate-300 border-slate-800'
+                      newDealType === 'إيجار' ? 'bg-[#F5C400] text-black border-[#F5C400]' : 'bg-[#111111] text-slate-300 border-[#2F3336]'
                     }`}
                   >
                     للإيجار
@@ -362,7 +362,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="مثال: شقة سوبر ديلوكس في حي حدة"
-                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
+                  className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
                 />
               </div>
 
@@ -391,7 +391,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadedImages.length >= 6}
-                  className="w-full py-2.5 border border-dashed border-slate-800 hover:border-[#F5C400] rounded-xl bg-[#060A13] text-white flex items-center justify-center gap-2 text-xs font-bold transition-all disabled:opacity-50"
+                  className="w-full py-2.5 border border-dashed border-[#2F3336] hover:border-[#F5C400] rounded-xl bg-[#111111] text-white flex items-center justify-center gap-2 text-xs font-bold transition-all disabled:opacity-50"
                 >
                   <ImagePlus size={16} className="text-[#F5C400]" />
                   <span>{uploadedImages.length >= 6 ? 'تم بلوغ الحد الأقصى (6 صور)' : 'اضغط لاختيار الصور من استوديو الجوال'}</span>
@@ -400,7 +400,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
                 {uploadedImages.length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mt-2">
                     {uploadedImages.map((img, idx) => (
-                      <div key={idx} className="relative h-20 rounded-lg overflow-hidden border border-slate-800 bg-[#060A13]">
+                      <div key={idx} className="relative h-20 rounded-lg overflow-hidden border border-[#2F3336] bg-[#111111]">
                         <img src={img} alt={`preview-${idx}`} className="w-full h-full object-cover" />
                         <button
                           type="button"
@@ -442,7 +442,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
                     type="number"
                     value={newPrice}
                     onChange={(e) => setNewPrice(e.target.value)}
-                    className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
                   />
                 </div>
                 <div>
@@ -462,7 +462,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
                     type="number"
                     value={newArea}
                     onChange={(e) => setNewArea(e.target.value)}
-                    className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
                   />
                 </div>
                 <div>
@@ -471,7 +471,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
                     type="number"
                     value={newRooms}
                     onChange={(e) => setNewRooms(e.target.value)}
-                    className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
                   />
                 </div>
               </div>
@@ -487,7 +487,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
                   value={ownerPhone}
                   onChange={handlePhoneChange}
                   placeholder="77XXXXXXX"
-                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white text-left font-mono focus:outline-none focus:border-[#F5C400]"
+                  className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white text-left font-mono focus:outline-none focus:border-[#F5C400]"
                 />
                 <span className="text-[10px] text-slate-300 block mt-0.5">
                   تم إدخال: {ownerPhone.length} من 9 أرقام
@@ -501,7 +501,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
                   value={newLocationDetails}
                   onChange={(e) => setNewLocationDetails(e.target.value)}
                   placeholder="مثال: خلف مجمع حدة السكني"
-                  className="w-full bg-[#060A13] border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
+                  className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
                 />
               </div>
 
@@ -525,11 +525,11 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
                 </label>
               </div>
 
-              <div className="flex justify-end gap-2 pt-1 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-1 border-t border-[#2F3336]">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#060A13] border border-slate-800 text-white text-xs font-bold"
+                  className="px-4 py-2 rounded-xl bg-[#111111] border border-[#2F3336] text-white text-xs font-bold"
                 >
                   إلغاء
                 </button>

@@ -195,7 +195,7 @@ export const NotificationsPage: React.FC = () => {
 
       {/* النافذة البرمجية الكاملة لفحص الإشعار واتخاذ الإجراء (Modal) */}
       {selectedItem && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
             
             {/* الترويسة */}

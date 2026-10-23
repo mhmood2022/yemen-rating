@@ -23,7 +23,7 @@ export const CarDealerSection: React.FC<{ business: BusinessItem }> = ({ busines
             </div>
 
             <div className="p-3.5 space-y-2">
-              <h4 className="font-bold text-xs sm:text-sm text-[#0B1F3A] dark:text-white line-clamp-1">
+              <h4 className="font-bold text-xs sm:text-sm text-[#000000] dark:text-white line-clamp-1">
                 {car.title}
               </h4>
 

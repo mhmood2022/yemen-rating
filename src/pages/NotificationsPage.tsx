@@ -169,17 +169,17 @@ export const NotificationsPage: React.FC = () => {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   return (
-    <div className="min-h-screen bg-black text-[#E7E9EA] font-['Cairo',sans-serif] selection:bg-[#1D9BF0] selection:text-white pb-32" dir="rtl">
+    <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#FFC500] selection:text-white pb-32" dir="rtl">
       
       {toastMsg && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#1D9BF0] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-2xl animate-fade-in flex items-center gap-2">
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#FFC500] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-2xl animate-fade-in flex items-center gap-2">
           <CheckCircle2 size={16} />
           <span>{toastMsg}</span>
         </div>
       )}
 
       {/* الهيدر العلوي */}
-      <header className="sticky top-0 z-40 bg-black/85 backdrop-blur-md border-b border-[#2F3336]">
+      <header className="sticky top-0 z-40 bg-black  border-b border-[#2F3336]">
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <button onClick={() => navigate(-1)} className="p-1.5 rounded-full hover:bg-zinc-800 text-white transition">
@@ -188,7 +188,7 @@ export const NotificationsPage: React.FC = () => {
             <h1 className="text-lg font-black text-white flex items-center gap-2">
               <span>التنبيهات</span>
               {unreadCount > 0 && (
-                <span className="bg-[#1D9BF0] text-white text-[11px] font-black px-2 py-0.5 rounded-full">
+                <span className="bg-[#FFC500] text-white text-[11px] font-black px-2 py-0.5 rounded-full">
                   {unreadCount}
                 </span>
               )}
@@ -198,7 +198,7 @@ export const NotificationsPage: React.FC = () => {
           {unreadCount > 0 && (
             <button 
               onClick={handleMarkAllAsRead}
-              className="text-xs text-[#1D9BF0] hover:underline font-bold flex items-center gap-1"
+              className="text-xs text-[#FFC500] hover:underline font-bold flex items-center gap-1"
             >
               <Check size={14} />
               <span>تحديد الكل كمقروء</span>
@@ -213,14 +213,14 @@ export const NotificationsPage: React.FC = () => {
             className={`flex-1 py-3 text-center relative transition ${activeTab === 'all' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'}`}
           >
             <span>الكل ({notifications.length})</span>
-            {activeTab === 'all' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#1D9BF0] rounded-full" />}
+            {activeTab === 'all' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#FFC500] rounded-full" />}
           </button>
           <button 
             onClick={() => setActiveTab('verified')}
             className={`flex-1 py-3 text-center relative transition ${activeTab === 'verified' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'}`}
           >
             <span>التفاعلات</span>
-            {activeTab === 'verified' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#1D9BF0] rounded-full" />}
+            {activeTab === 'verified' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#FFC500] rounded-full" />}
           </button>
         </div>
       </header>
@@ -239,10 +239,10 @@ export const NotificationsPage: React.FC = () => {
           notifications.map(n => {
             const getIcon = () => {
               if (n.type === 'like') return <Heart size={18} className="fill-rose-500 text-rose-500" />;
-              if (n.type === 'comment') return <MessageCircle size={18} className="text-[#1D9BF0]" />;
+              if (n.type === 'comment') return <MessageCircle size={18} className="text-[#FFC500]" />;
               if (n.type === 'repost') return <Repeat2 size={18} className="text-emerald-400" />;
               if (n.type === 'follow') return <UserPlus size={18} className="text-yellow-400" />;
-              return <Sparkles size={18} className="text-[#1D9BF0]" />;
+              return <Sparkles size={18} className="text-[#FFC500]" />;
             };
 
             return (
@@ -250,7 +250,7 @@ export const NotificationsPage: React.FC = () => {
                 key={n.id}
                 onClick={() => handleNotifClick(n)}
                 className={`p-4 flex gap-3 transition cursor-pointer hover:bg-white/[0.02] ${
-                  !n.isRead ? 'bg-[#1D9BF0]/[0.06]' : ''
+                  !n.isRead ? 'bg-[#FFC500]/[0.06]' : ''
                 }`}
               >
                 {/* الأيقونة */}
@@ -294,18 +294,18 @@ export const NotificationsPage: React.FC = () => {
       </div>
 
       {/* شريط التنقل السفلي مع جرس التنبيهات النشط */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-[#2F3336] py-2 px-6 flex items-center justify-around text-xs font-bold">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black  border-t border-[#2F3336] py-2 px-6 flex items-center justify-around text-xs font-bold">
         <button onClick={() => navigate('/')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-white transition">
           <Home size={22} />
           <span>الرئيسية</span>
         </button>
 
-        <button onClick={() => navigate('/feed')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#1D9BF0] transition">
+        <button onClick={() => navigate('/feed')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#FFC500] transition">
           <MessageSquare size={22} />
           <span>المنشورات</span>
         </button>
 
-        <button onClick={() => navigate('/notifications')} className="flex flex-col items-center gap-1 text-[#1D9BF0] font-black transition relative">
+        <button onClick={() => navigate('/notifications')} className="flex flex-col items-center gap-1 text-[#FFC500] font-black transition relative">
           <div className="relative">
             <Bell size={22} className="stroke-[2.5]" />
             {unreadCount > 0 && (
@@ -317,7 +317,7 @@ export const NotificationsPage: React.FC = () => {
           <span>التنبيهات</span>
         </button>
 
-        <button onClick={() => navigate('/account')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#1D9BF0] transition">
+        <button onClick={() => navigate('/account')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#FFC500] transition">
           <User size={22} />
           <span>الملف الشخصي</span>
         </button>

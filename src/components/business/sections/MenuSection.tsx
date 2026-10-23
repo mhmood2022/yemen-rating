@@ -28,7 +28,7 @@ export const MenuSection: React.FC<{ business: BusinessItem }> = ({ business }) 
             className={cn(
               'px-3 py-1.5 rounded-[8px] text-xs font-bold whitespace-nowrap transition-all',
               selectedCat === 'الكل'
-                ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-black'
+                ? 'bg-[#000000] text-white dark:bg-[#F5C400] dark:text-black'
                 : 'bg-white dark:bg-[#111111] text-[#64748B] dark:text-[#A1A1AA] border border-[#E2E8F0] dark:border-[#222222]'
             )}
           >
@@ -42,7 +42,7 @@ export const MenuSection: React.FC<{ business: BusinessItem }> = ({ business }) 
               className={cn(
                 'px-3 py-1.5 rounded-[8px] text-xs font-bold whitespace-nowrap transition-all',
                 selectedCat === c
-                  ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-black'
+                  ? 'bg-[#000000] text-white dark:bg-[#F5C400] dark:text-black'
                   : 'bg-white dark:bg-[#111111] text-[#64748B] dark:text-[#A1A1AA] border border-[#E2E8F0] dark:border-[#222222]'
               )}
             >
@@ -58,7 +58,7 @@ export const MenuSection: React.FC<{ business: BusinessItem }> = ({ business }) 
           <Card key={item.id} className="p-3 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[12px] flex items-center justify-between gap-3">
             <div className="space-y-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="font-bold text-xs sm:text-sm text-[#0B1F3A] dark:text-white truncate">
+                <span className="font-bold text-xs sm:text-sm text-[#000000] dark:text-white truncate">
                   {item.name}
                 </span>
                 {item.isSpecialty && (

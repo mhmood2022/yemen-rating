@@ -333,7 +333,7 @@ export const AuctionDetailsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div dir="rtl" className="min-h-[60vh] flex flex-col items-center justify-center gap-3 font-['Cairo'] text-white">
+      <div dir="rtl" className="min-h-screen bg-black flex flex-col items-center justify-center gap-3 font-['Cairo'] text-white">
         <div className="w-10 h-10 rounded-full border-2 border-[#F5C400] border-t-transparent animate-spin" />
         <span className="text-xs font-bold text-slate-300">جاري تحميل بيانات المزاد...</span>
       </div>
@@ -342,7 +342,7 @@ export const AuctionDetailsPage: React.FC = () => {
 
   if (!auction) {
     return (
-      <div dir="rtl" className="max-w-md mx-auto my-12 p-6 text-center bg-[#0A0F1D] border border-slate-800 rounded-2xl text-white">
+      <div dir="rtl" className="max-w-md mx-auto my-12 p-6 text-center bg-black border border-[#2F3336] rounded-2xl text-white">
         <AlertCircle size={40} className="text-[#F5C400] mx-auto mb-2" />
         <p className="font-bold">المعروض غير موجود أو تم إغلاقه</p>
         <button onClick={() => navigate('/auctions')} className="mt-3 px-4 py-2 bg-[#F5C400] text-black font-black text-xs rounded-xl cursor-pointer">
@@ -364,18 +364,18 @@ export const AuctionDetailsPage: React.FC = () => {
   const directTotalRequired = directItemPrice + directCommAmount;
 
   return (
-    <div dir="rtl" className="max-w-3xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white">
+    <div dir="rtl" className="max-w-3xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white bg-black min-h-screen">
       <button
         onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0A0F1D] border border-slate-800 text-[#F5C400] text-xs font-bold cursor-pointer"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black border border-[#2F3336] text-[#F5C400] text-xs font-bold cursor-pointer"
       >
         <ArrowRight size={14} />
         <span>الرجوع إلى قائمة المزادات</span>
       </button>
 
       {/* معرض الصور */}
-      <div className="bg-[#0A0F1D] border border-slate-800 rounded-2xl p-3.5 space-y-3">
-        <div onClick={() => setIsZoomOpen(true)} className="relative w-full h-72 sm:h-96 bg-[#060A13] rounded-xl overflow-hidden border border-slate-800 cursor-pointer group shadow-xl">
+      <div className="bg-black border border-[#2F3336] rounded-2xl p-3.5 space-y-3">
+        <div onClick={() => setIsZoomOpen(true)} className="relative w-full h-72 sm:h-96 bg-[#111111] rounded-xl overflow-hidden border border-[#2F3336] cursor-pointer group shadow-xl">
           {images.length > 0 ? (
             <>
               <img src={images[activeImgIdx] || images[0]} alt={auction.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
@@ -402,7 +402,7 @@ export const AuctionDetailsPage: React.FC = () => {
               <button
                 key={idx}
                 onClick={() => setActiveImgIdx(idx)}
-                className={`h-16 rounded-xl overflow-hidden border cursor-pointer ${activeImgIdx === idx ? 'border-[#F5C400] ring-2 ring-[#F5C400]/40' : 'border-slate-800'}`}
+                className={`h-16 rounded-xl overflow-hidden border cursor-pointer ${activeImgIdx === idx ? 'border-[#F5C400] ring-2 ring-[#F5C400]/40' : 'border-[#2F3336]'}`}
               >
                 <img src={img} alt={`t-${idx}`} className="w-full h-full object-cover" />
               </button>
@@ -412,15 +412,15 @@ export const AuctionDetailsPage: React.FC = () => {
       </div>
 
       {/* تفاصيل المزاد */}
-      <div className="bg-[#0A0F1D] border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
+      <div className="bg-black border border-[#2F3336] rounded-2xl p-4 sm:p-5 space-y-3">
         <div className="flex items-center justify-between">
           <h1 className="text-lg sm:text-xl font-black text-white">{auction.title}</h1>
-          <span className="px-2.5 py-1 bg-[#1E293B] text-[#F5C400] border border-[#F5C400]/40 rounded-lg text-xs font-mono font-bold">
+          <span className="px-2.5 py-1 bg-[#1A1A1A] text-[#F5C400] border border-[#F5C400]/40 rounded-lg text-xs font-mono font-bold">
             #{auctionNumber}
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800 text-xs">
+        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-[#2F3336] text-xs">
           <div>
             <span className="text-slate-400 block text-[11px]">المدينة:</span>
             <span className="font-bold text-white">{auction.city || 'صنعاء'}</span>
@@ -436,11 +436,11 @@ export const AuctionDetailsPage: React.FC = () => {
 
       {/* العداد التنازلي للمزاد */}
       {!isDirectSale && (
-        <div className="bg-[#060A13] border border-slate-800 rounded-2xl p-4 space-y-2.5 shadow-lg">
+        <div className="bg-[#111111] border border-[#2F3336] rounded-2xl p-4 space-y-2.5 shadow-lg">
           <span className="text-xs font-bold text-slate-300 block text-center">
             {isCompleted ? 'حالة وقت المزاد: انتهى المزاد' : 'الوقت المتبقي حتى إغلاق المزاد'}
           </span>
-          <div className="py-3 px-4 rounded-xl bg-[#0A0F1D] border border-slate-800/80 grid grid-cols-4 gap-2 text-center font-mono">
+          <div className="py-3 px-4 rounded-xl bg-black border border-[#2F3336] grid grid-cols-4 gap-2 text-center font-mono">
             <div className="flex flex-col items-center">
               <span className={`font-black text-xl sm:text-2xl ${isCompleted ? 'text-rose-500' : 'text-emerald-400'}`}>
                 {timer.seconds}
@@ -471,15 +471,15 @@ export const AuctionDetailsPage: React.FC = () => {
 
       {/* قسم الشراء المباشر أو المزايدة */}
       {isDirectSale ? (
-        <div className="bg-[#060A13] border-2 border-blue-500/80 rounded-2xl p-5 space-y-4 shadow-xl text-right">
-          <div className="border-b border-slate-800 pb-3">
+        <div className="bg-[#111111] border-2 border-blue-500/80 rounded-2xl p-5 space-y-4 shadow-xl text-right">
+          <div className="border-b border-[#2F3336] pb-3">
             <span className="text-xs text-slate-400 block font-bold">معروض متاح للشراء المباشر</span>
             <div className="text-2xl font-black text-[#F5C400] font-mono">
               سعر السلعة: {directItemPrice.toLocaleString()} {currencyCode}
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#0A0F1D] border border-slate-800 space-y-2 text-xs">
+          <div className="p-3.5 rounded-xl bg-black border border-[#2F3336] space-y-2 text-xs">
             <span className="font-bold text-[#F5C400] block">المبلغ الإجمالي مع العمولة:</span>
             <div className="flex justify-between text-slate-300">
               <span>سعر السلعة:</span>
@@ -489,7 +489,7 @@ export const AuctionDetailsPage: React.FC = () => {
               <span>عمولة يمن ريتنج للمشتري ({buyerCommissionRate}%):</span>
               <span className="font-mono text-emerald-400">+{directCommAmount.toLocaleString()} {currencyCode}</span>
             </div>
-            <div className="flex justify-between pt-2 border-t border-slate-800 text-sm font-black text-white">
+            <div className="flex justify-between pt-2 border-t border-[#2F3336] text-sm font-black text-white">
               <span>الإجمالي المطلوب:</span>
               <span className="font-mono text-[#F5C400] text-base">{directTotalRequired.toLocaleString()} {currencyCode}</span>
             </div>
@@ -505,7 +505,7 @@ export const AuctionDetailsPage: React.FC = () => {
                   value={bidderName}
                   onChange={(e) => setBidderName(e.target.value)}
                   placeholder="الاسم الرباعي أو التجاري"
-                  className="w-full bg-[#0A0F1D] border border-slate-700 focus:border-[#F5C400] rounded-xl p-2.5 text-white outline-none"
+                  className="w-full bg-black border border-[#2F3336] focus:border-[#F5C400] rounded-xl p-2.5 text-white outline-none"
                 />
               </div>
 
@@ -518,7 +518,7 @@ export const AuctionDetailsPage: React.FC = () => {
                   value={bidderPhone}
                   onChange={(e) => setBidderPhone(e.target.value.replace(/\D/g, '').slice(0, 9))}
                   placeholder="77XXXXXXX"
-                  className="w-full bg-[#0A0F1D] border border-slate-700 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none"
+                  className="w-full bg-black border border-[#2F3336] focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none"
                 />
               </div>
             </div>
@@ -563,7 +563,7 @@ export const AuctionDetailsPage: React.FC = () => {
           </form>
         </div>
       ) : isCompleted ? (
-        <div className="bg-[#060A13] border border-slate-800 rounded-2xl p-5 space-y-2 shadow-xl text-center">
+        <div className="bg-[#111111] border border-[#2F3336] rounded-2xl p-5 space-y-2 shadow-xl text-center">
           <span className="text-xs text-slate-400 block font-bold">السعر النهائي الذي رسا عليه المزاد</span>
           <div className="text-2xl font-black text-slate-300 font-mono">
             {currentBid.toLocaleString()} {currencyCode}
@@ -572,8 +572,8 @@ export const AuctionDetailsPage: React.FC = () => {
         </div>
       ) : (
         /* قاعة المزايدة الحية مع حقول اسم ورقم المزايد */
-        <div className="bg-[#060A13] border-2 border-[#F5C400] rounded-2xl p-5 space-y-4 shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="bg-[#111111] border-2 border-[#F5C400] rounded-2xl p-5 space-y-4 shadow-xl">
+          <div className="flex items-center justify-between border-b border-[#2F3336] pb-3">
             <div>
               <span className="text-xs text-slate-400 block font-bold">أعلى مزايدة مسجلة حالياً</span>
               <div className="text-xl font-black text-[#F5C400] font-mono">
@@ -590,7 +590,7 @@ export const AuctionDetailsPage: React.FC = () => {
 
           <form onSubmit={(e) => handlePlaceBidOrBuy(e, false)} className="space-y-3.5">
             {bidderName && bidderPhone ? (
-              <div className="p-3 bg-[#060A13] border border-slate-800 rounded-xl flex items-center justify-between text-xs">
+              <div className="p-3 bg-[#111111] border border-[#2F3336] rounded-xl flex items-center justify-between text-xs">
                 <span className="text-slate-400 font-medium">المزايدة بحساب:</span>
                 <div className="font-bold text-white font-sans flex items-center gap-1.5">
                   <span>{bidderName}</span>
@@ -607,7 +607,7 @@ export const AuctionDetailsPage: React.FC = () => {
                     value={bidderName}
                     onChange={(e) => setBidderName(e.target.value)}
                     placeholder="اسمك الكريم..."
-                    className="w-full bg-[#0A0F1D] border border-slate-700 focus:border-[#F5C400] rounded-xl p-2.5 text-white outline-none"
+                    className="w-full bg-black border border-[#2F3336] focus:border-[#F5C400] rounded-xl p-2.5 text-white outline-none"
                   />
                 </div>
                 <div>
@@ -618,7 +618,7 @@ export const AuctionDetailsPage: React.FC = () => {
                     value={bidderPhone}
                     onChange={(e) => setBidderPhone(e.target.value.replace(/\D/g, '').slice(0, 9))}
                     placeholder="770000000"
-                    className="w-full bg-[#0A0F1D] border border-slate-700 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none text-left dir-ltr"
+                    className="w-full bg-black border border-[#2F3336] focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none text-left dir-ltr"
                   />
                 </div>
               </div>
@@ -634,7 +634,7 @@ export const AuctionDetailsPage: React.FC = () => {
                 min={minNextBid}
                 value={bidAmount}
                 onChange={(e) => setBidAmount(e.target.value ? Number(e.target.value) : '')}
-                className="w-full bg-[#0A0F1D] border border-slate-700 focus:border-[#F5C400] rounded-xl py-3 px-4 text-center font-mono text-lg font-black text-white outline-none"
+                className="w-full bg-black border border-[#2F3336] focus:border-[#F5C400] rounded-xl py-3 px-4 text-center font-mono text-lg font-black text-white outline-none"
               />
             </div>
 
@@ -651,7 +651,7 @@ export const AuctionDetailsPage: React.FC = () => {
                   className={`px-3 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
                     buyerConsented
                       ? 'bg-emerald-500 text-black border-emerald-400 font-black'
-                      : 'bg-[#060A13] text-emerald-300 border-emerald-500/40 hover:bg-emerald-900/50'
+                      : 'bg-[#111111] text-emerald-300 border-emerald-500/40 hover:bg-emerald-900/50'
                   }`}
                 >
                   {buyerConsented ? '✓ تمت الموافقة' : 'اضغط للموافقة على الشروط'}
@@ -684,8 +684,8 @@ export const AuctionDetailsPage: React.FC = () => {
 
       {/* سجل المزايدات الحية بالأسماء والتوقيت */}
       {!isDirectSale && (
-        <div className="bg-[#0A0F1D] border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+        <div className="bg-black border border-[#2F3336] rounded-2xl p-4 sm:p-5 space-y-3">
+          <div className="flex items-center justify-between border-b border-[#2F3336] pb-2.5">
             <div className="flex items-center gap-2">
               <Clock size={16} className="text-[#F5C400]" />
               <h3 className="text-sm font-black text-white">سجل المزايدات الحية المعتمد</h3>
@@ -694,7 +694,7 @@ export const AuctionDetailsPage: React.FC = () => {
           </div>
 
           {bids.length === 0 ? (
-            <div className="py-8 text-center text-xs text-slate-400 space-y-1 bg-[#060A13] rounded-xl border border-slate-800/80 p-4">
+            <div className="py-8 text-center text-xs text-slate-400 space-y-1 bg-[#111111] rounded-xl border border-[#2F3336] p-4">
               <span className="font-bold text-slate-300 block">لا توجد مزايدات مسجلة حتى الآن</span>
               <span className="text-[11px] text-slate-500 block">كن أول من يفتتح السوم ويضع مزايدة على هذا المعروض!</span>
             </div>
@@ -707,13 +707,13 @@ export const AuctionDetailsPage: React.FC = () => {
                     key={b.id || idx}
                     className={`p-3 rounded-xl flex items-center justify-between transition-all ${
                       isLeading
-                        ? 'bg-[#060A13] border-2 border-[#F5C400] shadow-md shadow-[#F5C400]/10'
-                        : 'bg-[#060A13] border border-slate-800/80 text-slate-400'
+                        ? 'bg-[#111111] border-2 border-[#F5C400] shadow-md shadow-[#F5C400]/10'
+                        : 'bg-[#111111] border border-[#2F3336] text-slate-400'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
-                        isLeading ? 'bg-[#F5C400] text-black' : 'bg-slate-800 text-slate-400'
+                        isLeading ? 'bg-[#F5C400] text-black' : 'bg-[#111111] text-slate-400'
                       }`}>
                         {idx + 1}
                       </span>
@@ -749,7 +749,7 @@ export const AuctionDetailsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowAllBids(!showAllBids)}
-                    className="px-5 py-2 rounded-xl bg-[#060A13] border border-slate-800 hover:border-[#F5C400] text-slate-200 hover:text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+                    className="px-5 py-2 rounded-xl bg-[#111111] border border-[#2F3336] hover:border-[#F5C400] text-slate-200 hover:text-white text-xs font-bold transition-all shadow-md cursor-pointer"
                   >
                     {showAllBids ? 'عرض أقل' : 'عرض الكل'}
                   </button>
@@ -761,9 +761,9 @@ export const AuctionDetailsPage: React.FC = () => {
       )}
 
       {/* تفاصيل ووصف السلعة */}
-      <div className="bg-[#0A0F1D] border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-2">
-        <h3 className="text-sm font-black text-white border-b border-slate-800 pb-2">تفاصيل ومواصفات السلعة</h3>
-        <p className="text-xs text-slate-300 leading-relaxed bg-[#060A13] p-3 rounded-xl border border-slate-800/80 whitespace-pre-line">
+      <div className="bg-black border border-[#2F3336] rounded-2xl p-4 sm:p-5 space-y-2">
+        <h3 className="text-sm font-black text-white border-b border-[#2F3336] pb-2">تفاصيل ومواصفات السلعة</h3>
+        <p className="text-xs text-slate-300 leading-relaxed bg-[#111111] p-3 rounded-xl border border-[#2F3336] whitespace-pre-line">
           {descriptionText}
         </p>
       </div>
@@ -772,7 +772,7 @@ export const AuctionDetailsPage: React.FC = () => {
       {isZoomOpen && (
         <div 
           onClick={() => setIsZoomOpen(false)} 
-          className="fixed inset-0 z-[9999999] bg-black/50 backdrop-blur-sm w-screen h-screen flex items-center justify-center p-2 sm:p-4 select-none touch-none overscroll-none"
+          className="fixed inset-0 z-[9999999] bg-black/50  w-screen h-screen flex items-center justify-center p-2 sm:p-4 select-none touch-none overscroll-none"
         >
           <div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} className="relative max-w-4xl max-h-[90vh] w-full flex items-center justify-center select-none" onClick={(e) => e.stopPropagation()}>
             <button
@@ -786,7 +786,7 @@ export const AuctionDetailsPage: React.FC = () => {
             <img
               src={images[activeImgIdx] || images[0] || '/placeholder.png'}
               alt={auction?.title || 'معاينة'}
-              className="max-w-full max-h-[85vh] object-contain max-h-[85vh] w-auto max-w-full drop-shadow-2xl rounded-2xl rounded-2xl shadow-2xl border border-slate-800"
+              className="max-w-full max-h-[85vh] object-contain max-h-[85vh] w-auto max-w-full drop-shadow-2xl rounded-2xl rounded-2xl shadow-2xl border border-[#2F3336]"
             />
           </div>
         </div>

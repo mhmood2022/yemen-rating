@@ -192,7 +192,7 @@ export const BanksAndWalletsPage: React.FC<{ onNavigate?: (path: string) => void
       <AdBanner placementId="8" className="mb-1" />
 
       {/* رأس الصفحة الرسمي */}
-      <div className="flex items-center justify-between border-b border-[#1F2937] pb-2">
+      <div className="flex items-center justify-between border-b border-[#2F3336] pb-2">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
             <Landmark size={16} className="stroke-[2.5]" />
@@ -209,7 +209,7 @@ export const BanksAndWalletsPage: React.FC<{ onNavigate?: (path: string) => void
 
         <button
           onClick={() => onNavigate('home')}
-          className="px-3 py-1 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1 cursor-pointer"
+          className="px-3 py-1 rounded-xl bg-[#111111] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1 cursor-pointer"
         >
           <span>الرئيسية</span>
           <ArrowRight size={12} className="rtl:rotate-180" />
@@ -217,8 +217,8 @@ export const BanksAndWalletsPage: React.FC<{ onNavigate?: (path: string) => void
       </div>
 
       {/* شريط البحث والفلترة السريعة للهاتف */}
-      <div className="space-y-2 bg-[#0F0F12] p-2.5 rounded-2xl border border-[#222226]">
-        <div className="flex items-center bg-[#18181C] border border-[#27272A] rounded-xl px-2.5 py-1">
+      <div className="space-y-2 bg-black p-2.5 rounded-2xl border border-[#2F3336]">
+        <div className="flex items-center bg-[#111111] border border-[#2F3336] rounded-xl px-2.5 py-1">
           <Search size={14} className="text-gray-400 ml-2 shrink-0" />
           <input
             type="text"
@@ -243,7 +243,7 @@ export const BanksAndWalletsPage: React.FC<{ onNavigate?: (path: string) => void
                 className={`shrink-0 px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all ${
                   activeTab === tab.id 
                     ? 'bg-[#FFC500] text-black shadow-md' 
-                    : 'bg-[#18181C] text-gray-400 border border-[#27272A]'
+                    : 'bg-[#111111] text-gray-400 border border-[#2F3336]'
                 }`}
               >
                 {tab.label}
@@ -254,7 +254,7 @@ export const BanksAndWalletsPage: React.FC<{ onNavigate?: (path: string) => void
           <select
             value={selectedCity}
             onChange={(e) => setSelectedCity(e.target.value)}
-            className="bg-[#18181C] border border-[#27272A] rounded-lg px-2 py-0.5 text-[10px] font-bold text-[#D1D5DB] outline-none cursor-pointer shrink-0"
+            className="bg-[#111111] border border-[#2F3336] rounded-lg px-2 py-0.5 text-[10px] font-bold text-[#D1D5DB] outline-none cursor-pointer shrink-0"
           >
             <option value="all">كل المحافظات</option>
             <option value="صنعاء">صنعاء</option>
@@ -271,13 +271,13 @@ export const BanksAndWalletsPage: React.FC<{ onNavigate?: (path: string) => void
           <div
             key={item.id}
             onClick={() => handleOpenBank(item)}
-            className="bg-[#0F0F12] rounded-2xl border border-[#222226] hover:border-[#FFC500]/50 p-3 space-y-2.5 shadow-md transition-all flex flex-col justify-between cursor-pointer active:scale-98"
+            className="bg-black rounded-2xl border border-[#2F3336] hover:border-[#FFC500]/50 p-3 space-y-2.5 shadow-md transition-all flex flex-col justify-between cursor-pointer active:scale-98"
           >
             <div className="space-y-2">
               
               {/* رأس البطاقة: الشعار + الاسم ومعه الشارة مباشرة في نفس السطر */}
               <div className="flex items-center gap-2.5">
-                <div className="w-12 h-12 rounded-xl bg-[#18181C] border border-[#27272A] p-1 shrink-0 overflow-hidden flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-[#111111] border border-[#2F3336] p-1 shrink-0 overflow-hidden flex items-center justify-center">
                   <img 
                     src={item.logoImage || 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=100&auto=format&fit=crop&q=80'} 
                     alt={item.name} 
@@ -308,7 +308,7 @@ export const BanksAndWalletsPage: React.FC<{ onNavigate?: (path: string) => void
               </div>
 
               {/* شارات الخدمات والفروع (معلومات مفيدة بديلة عن أسعار الصرف) */}
-              <div className="p-2 bg-[#161619] rounded-xl border border-[#27272A] space-y-1 text-[10px]">
+              <div className="p-2 bg-[#111111] rounded-xl border border-[#2F3336] space-y-1 text-[10px]">
                 <div className="flex items-center justify-between text-gray-300 font-mono">
                   <span className="font-['Cairo'] text-gray-400">الانتشار الميداني:</span>
                   <b className="text-white">{item.branchesCount} فرع معتمد</b>
@@ -322,12 +322,12 @@ export const BanksAndWalletsPage: React.FC<{ onNavigate?: (path: string) => void
             </div>
 
             {/* أزرار الاتصال والواتساب والدخول لصفحة البنك */}
-            <div className="pt-2 border-t border-[#1F2937] flex items-center gap-1.5">
+            <div className="pt-2 border-t border-[#2F3336] flex items-center gap-1.5">
               {item.phone && (
                 <a
                   href={`tel:${item.phone}`}
                   onClick={(e) => e.stopPropagation()}
-                  className="p-2 rounded-xl bg-[#161619] border border-[#27272A] text-gray-300 hover:text-[#FFC500] active:scale-95"
+                  className="p-2 rounded-xl bg-[#111111] border border-[#2F3336] text-gray-300 hover:text-[#FFC500] active:scale-95"
                   title="اتصال مباشر"
                 >
                   <Phone size={13} />

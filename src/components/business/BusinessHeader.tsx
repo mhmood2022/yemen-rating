@@ -93,7 +93,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
           <button
             type="button"
             onClick={() => onNavigate && onNavigate('/directory')}
-            className="w-9 h-9 rounded-full bg-black/65 backdrop-blur-[3px] text-white flex items-center justify-center hover:bg-black/90 transition-colors shadow-md border-0"
+            className="w-9 h-9 rounded-full bg-black/65 backdrop-blur-[3px] text-white flex items-center justify-center hover:bg-black transition-colors shadow-md border-0"
             aria-label="الرجوع"
           >
             <ArrowRight size={18} strokeWidth={2} />
@@ -102,7 +102,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
           <button
             type="button"
             onClick={() => yrToast.info('تم حفظ ومشاركة النشاط')}
-            className="w-9 h-9 rounded-full bg-black/65 backdrop-blur-[3px] text-white flex items-center justify-center hover:bg-black/90 transition-colors shadow-md border-0"
+            className="w-9 h-9 rounded-full bg-black/65 backdrop-blur-[3px] text-white flex items-center justify-center hover:bg-black transition-colors shadow-md border-0"
             aria-label="خيارات إضافية"
           >
             <MoreVertical size={18} strokeWidth={2} />
@@ -122,7 +122,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-[#0B1F3A]/5 dark:bg-[#1A1A1A] text-[#F5C400]">
+              <div className="w-full h-full flex items-center justify-center bg-[#000000]/5 dark:bg-[#1A1A1A] text-[#F5C400]">
                 <Building2 size={40} strokeWidth={1.5} />
               </div>
             )}
@@ -131,7 +131,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
           {/* Business Details & Badges */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-[6px] bg-[#0B1F3A]/10 text-[#0B1F3A] dark:bg-[#181818] dark:text-[#A1A1AA]">
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-[6px] bg-[#000000]/10 text-[#000000] dark:bg-[#181818] dark:text-[#A1A1AA]">
                 {business.category}
               </span>
 
@@ -174,7 +174,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
             </div>
 
             {/* Name + Verified Badge */}
-            <h1 className="text-lg sm:text-2xl font-black text-[#0B1F3A] dark:text-white leading-tight flex items-center justify-center sm:justify-start gap-1.5 flex-wrap">
+            <h1 className="text-lg sm:text-2xl font-black text-[#000000] dark:text-white leading-tight flex items-center justify-center sm:justify-start gap-1.5 flex-wrap">
               <span>{business.name}</span>
               {business.isVerified && (
                 <VerifiedBadge
@@ -190,7 +190,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
                 <span>{business.city}{business.address ? ` · ${business.address}` : ''}</span>
               </span>
 
-              <span className="inline-flex items-center gap-1 font-black text-[#0B1F3A] dark:text-white bg-[#F7F8FA] dark:bg-[#141414] px-2 py-0.5 rounded-[6px]">
+              <span className="inline-flex items-center gap-1 font-black text-[#000000] dark:text-white bg-[#F7F8FA] dark:bg-[#141414] px-2 py-0.5 rounded-[6px]">
                 <Star size={11} className="text-[#F5C400] fill-[#F5C400]" />
                 <span>{business.yrScore} YR Score</span>
               </span>
@@ -204,7 +204,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
             <button
               type="button"
               onClick={handleCall}
-              className="h-[38px] px-4 rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-sm border-0"
+              className="h-[38px] px-4 rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] text-[#000000] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-sm border-0"
             >
               <Phone size={14} className="text-[#16A34A] dark:text-[#22C55E]" />
               <span>اتصال</span>
@@ -215,7 +215,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
             <button
               type="button"
               onClick={handleWhatsapp}
-              className="h-[38px] px-4 rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-sm border-0"
+              className="h-[38px] px-4 rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] text-[#000000] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-sm border-0"
             >
               <MessageCircle size={14} className="text-[#2563EB] dark:text-[#60A5FA]" />
               <span>تواصل</span>
@@ -226,7 +226,7 @@ export const BusinessHeader: React.FC<BusinessHeaderProps> = ({
             <button
               type="button"
               onClick={handleMap}
-              className="h-[38px] px-4 rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-sm border-0"
+              className="h-[38px] px-4 rounded-[10px] bg-[#F7F8FA] dark:bg-[#111111] text-[#000000] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-sm border-0"
             >
               <Navigation size={14} className="text-[#F5C400]" />
               <span>موقع</span>

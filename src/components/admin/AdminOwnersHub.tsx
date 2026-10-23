@@ -358,7 +358,7 @@ export const AdminOwnersHub: React.FC = () => {
       {/* Toast Alert */}
       {toast.show && (
         <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[92%] animate-in fade-in duration-150">
-          <div className={`p-2.5 rounded-xl border shadow-xl flex items-center gap-2 backdrop-blur-md text-xs ${
+          <div className={`p-2.5 rounded-xl border shadow-xl flex items-center gap-2  text-xs ${
             toast.type === 'success' ? 'bg-[#10172a]/95 border-[#10b981]/50 text-white' : 'bg-[#10172a]/95 border-rose-500/50 text-white'
           }`}>
             {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-[#10b981] shrink-0" /> : <X className="w-4 h-4 text-rose-500 shrink-0" />}
@@ -645,7 +645,7 @@ export const AdminOwnersHub: React.FC = () => {
 
       {/* نافذة تأكيد الاعتماد وترقية المستخدم وربط المنشأة */}
       {activeModal.type === 'approve' && activeModal.data && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 animate-in fade-in duration-100">
+        <div className="fixed inset-0 z-50 bg-black/75  flex items-center justify-center p-3 animate-in fade-in duration-100">
           <div className="bg-[#10172a] border border-[#243354] rounded-2xl max-w-sm w-full p-4 space-y-3 shadow-2xl text-center text-xs">
             <div className="w-10 h-10 mx-auto rounded-xl bg-[#10b981]/15 text-[#10b981] flex items-center justify-center border border-[#10b981]/30">
               <ShieldCheck className="w-5 h-5" />
@@ -678,7 +678,7 @@ export const AdminOwnersHub: React.FC = () => {
 
       {/* نافذة طلب معلومات أو وثائق إضافية */}
       {activeModal.type === 'needs_info' && activeModal.data && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 animate-in fade-in duration-100">
+        <div className="fixed inset-0 z-50 bg-black/75  flex items-center justify-center p-3 animate-in fade-in duration-100">
           <div className="bg-[#10172a] border border-[#243354] rounded-2xl max-w-sm w-full p-4 space-y-3 shadow-2xl text-right text-xs">
             <div>
               <h3 className="text-sm font-black text-white">طلب وثائق إضافية للمراجعة</h3>
@@ -715,7 +715,7 @@ export const AdminOwnersHub: React.FC = () => {
 
       {/* نافذة سبب الرفض */}
       {activeModal.type === 'reject' && activeModal.data && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 animate-in fade-in duration-100">
+        <div className="fixed inset-0 z-50 bg-black/75  flex items-center justify-center p-3 animate-in fade-in duration-100">
           <div className="bg-[#10172a] border border-[#243354] rounded-2xl max-w-sm w-full p-4 space-y-3 shadow-2xl text-right text-xs">
             <div>
               <h3 className="text-sm font-black text-white">رفض طلب الملكية</h3>

@@ -74,7 +74,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <div dir="rtl" className="w-full max-w-6xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between font-['Cairo',sans-serif]">
+      <div dir="rtl" className="w-full max-w-6xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between font-['Tahoma',sans-serif]">
         {/* اليمين: القائمة + الشعار */}
         <div className="flex items-center gap-3">
           <button
@@ -92,15 +92,6 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* اليسار: بحث + حسابي + جرس */}
         <div className="flex items-center gap-2">
-          {/* 🆕 زر البحث */}
-          <button
-            type="button"
-            onClick={() => setIsSearchOpen(true)}
-            className="text-zinc-200 hover:text-[#FFC500] transition-colors p-1.5"
-            title="بحث"
-          >
-            <Search size={20} className="stroke-[2.2]" />
-          </button>
 
           {/* زر حسابي */}
           <button
@@ -133,7 +124,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* 🆕 نافذة البحث */}
       {isSearchOpen && (
         <div 
-          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-start justify-center pt-20 p-4"
+          className="fixed inset-0 z-[100] bg-black  flex items-start justify-center pt-20 p-4"
           onClick={() => setIsSearchOpen(false)}
         >
           <div 

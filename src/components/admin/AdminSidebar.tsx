@@ -71,17 +71,17 @@ export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = 
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-black/80 z-40 lg:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black z-40 lg:hidden "
         />
       )}
 
       <aside
-        className={`fixed top-0 right-0 h-full w-[290px] bg-[#0B0F17] border-l border-[#1F2937] z-50 flex flex-col transition-transform duration-300 ease-in-out font-['Cairo',sans-serif] ${
+        className={`fixed top-0 right-0 h-full w-[290px] bg-black border-l border-[#2F3336] z-50 flex flex-col transition-transform duration-300 ease-in-out font-['Cairo',sans-serif] ${
           isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
         }`}
       >
         {/* الترويسة */}
-        <div className="h-16 flex items-center justify-between px-5 border-b border-[#1F2937] bg-[#111827] shrink-0">
+        <div className="h-16 flex items-center justify-between px-5 border-b border-[#2F3336] bg-[#111111] shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#FFC500] flex items-center justify-center font-black text-black text-base shadow-md">
               YR
@@ -111,18 +111,18 @@ export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-150 ${
                     isActive
                       ? 'bg-[#FFC500] text-black shadow-md shadow-yellow-500/10'
-                      : 'text-gray-400 hover:text-white hover:bg-[#161D2B]'
+                      : 'text-gray-300 hover:text-white hover:bg-[#111111]'
                   }`}
                 >
-                  <Icon size={16} className="shrink-0" />
-                  <span>{item.label}</span>
+                  <Icon size={16} className="shrink-0 text-[#FFC500]" />
+                  <span className="text-gray-300">{item.label}</span>
                 </NavLink>
               );
             })}
           </div>
 
           {/* 2. قطاعات وتصنيفات الموقع الرسمي الـ 34 */}
-          <div className="pt-2 border-t border-[#1F2937]/80 space-y-1">
+          <div className="pt-2 border-t border-[#2F3336]/80 space-y-1">
             <button
               type="button"
               onClick={() => setSectorsOpen(!sectorsOpen)}
@@ -147,11 +147,11 @@ export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                       className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                         active
                           ? 'bg-[#FFC500] text-black font-bold shadow-md'
-                          : 'text-gray-300 hover:bg-[#161D2B] hover:text-[#FFC500]'
+                          : 'text-gray-300 hover:bg-[#111111] hover:text-white'
                       }`}
                     >
-                      <Icon size={15} className="shrink-0" />
-                      <span className="truncate flex-1">{cat.name}</span>
+                      <Icon size={15} className="shrink-0 text-[#FFC500]" />
+                      <span className="truncate flex-1 text-gray-300">{cat.name}</span>
                     </NavLink>
                   );
                 })}
@@ -161,8 +161,8 @@ export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = 
         </nav>
 
         {/* تذييل القائمة */}
-        <div className="p-3 border-t border-[#1F2937] bg-[#0E131F] shrink-0">
-          <div className="flex items-center gap-3 p-2 rounded-lg bg-[#161D2B]">
+        <div className="p-3 border-t border-[#2F3336] bg-black shrink-0">
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-[#111111]">
             <div className="w-2.5 h-2.5 rounded-full bg-[#16A34A] animate-pulse" />
             <div className="flex-1 min-w-0">
               <p className="text-white text-xs font-bold truncate">الوضع الآمن (RLS نشط)</p>

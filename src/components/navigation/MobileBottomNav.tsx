@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, MessageSquare, Bell, User } from 'lucide-react';
+import { Home, Globe, Bell, User, Search } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 export const MobileBottomNav: React.FC<{ onNavigate?: (path: string) => void }> = ({ onNavigate }) => {
@@ -46,17 +46,18 @@ export const MobileBottomNav: React.FC<{ onNavigate?: (path: string) => void }> 
 
   const items = [
     { path: '/', label: 'الرئيسية', icon: Home },
-    { path: '/feed', label: 'المنشورات', icon: MessageSquare },
+    { path: '/feed', label: 'المنشورات', icon: Globe },
+    { path: '/search', label: 'البحث', icon: Search },
     { path: '/notifications', label: 'التنبيهات', icon: Bell },
     { path: '/account', label: 'الملف الشخصي', icon: User },
   ];
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-[#2F3336] pb-[env(safe-area-inset-bottom,0px)]"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-[#2F3336] pb-[env(safe-area-inset-bottom,0px)]"
       dir="rtl"
     >
-      <div className="grid grid-cols-4 h-16 max-w-md mx-auto">
+      <div className="grid grid-cols-5 h-16 max-w-md mx-auto">
         {items.map((item) => {
           const Icon = item.icon;
           const isActive = currentPath === item.path || 
@@ -68,7 +69,7 @@ export const MobileBottomNav: React.FC<{ onNavigate?: (path: string) => void }> 
               key={item.path}
               onClick={() => go(item.path)}
               className={`flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
-                isActive ? 'text-[#1D9BF0]' : 'text-[#71767B] hover:text-white'
+                isActive ? 'text-[#FFC500]' : 'text-[#71767B] hover:text-white'
               }`}
             >
               <div className="relative">

@@ -31,7 +31,7 @@ export const CategoryManagement: React.FC = () => {
 
   return (
     <div dir="rtl" className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-900/60 p-4 sm:p-5 rounded-xl border border-zinc-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#111111]/60 p-4 sm:p-5 rounded-xl border border-[#2F3336]">
         <div>
           <h1 className="text-xl font-bold text-white flex items-center gap-2">
             <Layers className="w-5 h-5 text-amber-400" />
@@ -43,10 +43,10 @@ export const CategoryManagement: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="text-xs bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg border border-zinc-700">
+          <div className="text-xs bg-[#1A1A1A] text-zinc-300 px-3 py-1.5 rounded-lg border border-[#2F3336]">
             الإجمالي: <strong className="text-amber-400">{categories.length}</strong>
           </div>
-          <div className="text-xs bg-zinc-800 text-zinc-300 px-3 py-1.5 rounded-lg border border-zinc-700">
+          <div className="text-xs bg-[#1A1A1A] text-zinc-300 px-3 py-1.5 rounded-lg border border-[#2F3336]">
             النشطة: <strong className="text-emerald-400">{categories.filter(c => c.isActive).length}</strong>
           </div>
         </div>
@@ -60,16 +60,16 @@ export const CategoryManagement: React.FC = () => {
             placeholder="ابحث عن تصنيف بالاسم أو الـ Slug..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pr-10 pl-4 py-2 text-xs md:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400"
+            className="w-full bg-[#111111] border border-[#2F3336] rounded-lg pr-10 pl-4 py-2 text-xs md:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400"
           />
         </div>
       </div>
 
-      <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl overflow-hidden shadow-lg">
+      <div className="bg-[#111111]/40 border border-[#2F3336] rounded-xl overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-right border-collapse">
             <thead>
-              <tr className="bg-zinc-900/90 border-b border-zinc-800 text-zinc-400 text-xs font-semibold">
+              <tr className="bg-[#111111]/90 border-b border-[#2F3336] text-zinc-400 text-xs font-semibold">
                 <th className="py-3 px-4">الترتيب</th>
                 <th className="py-3 px-4">الأيقونة</th>
                 <th className="py-3 px-4">اسم التصنيف</th>
@@ -82,7 +82,7 @@ export const CategoryManagement: React.FC = () => {
               {filteredCategories.map((cat, index) => {
                 const Icon = cat.icon;
                 return (
-                  <tr key={cat.id} className="hover:bg-zinc-800/40 transition-colors">
+                  <tr key={cat.id} className="hover:bg-[#1A1A1A]/40 transition-colors">
                     <td className="py-3 px-4 font-mono text-zinc-400">
                       <div className="flex items-center gap-1.5">
                         <span className="w-5">{cat.order}</span>
@@ -105,7 +105,7 @@ export const CategoryManagement: React.FC = () => {
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <div className="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center text-amber-400 border border-zinc-700/60">
+                      <div className="w-7 h-7 rounded bg-[#1A1A1A] flex items-center justify-center text-amber-400 border border-[#2F3336]/60">
                         <Icon className="w-4 h-4" />
                       </div>
                     </td>
@@ -116,7 +116,7 @@ export const CategoryManagement: React.FC = () => {
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${
                           cat.isActive
                             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
+                            : 'bg-[#1A1A1A] text-zinc-400 border border-[#2F3336]'
                         }`}
                       >
                         {cat.isActive ? 'مفعل' : 'معطل'}
@@ -128,7 +128,7 @@ export const CategoryManagement: React.FC = () => {
                           onClick={() => toggleCategoryStatus(cat.id)}
                           className={`p-1.5 rounded-lg border transition-colors ${
                             cat.isActive
-                              ? 'border-zinc-700 text-zinc-300 hover:bg-zinc-800'
+                              ? 'border-[#2F3336] text-zinc-300 hover:bg-[#1A1A1A]'
                               : 'border-amber-400/30 text-amber-400 bg-amber-400/10 hover:bg-amber-400/20'
                           }`}
                           title={cat.isActive ? 'تعطيل التصنيف' : 'تفعيل التصنيف'}
@@ -137,7 +137,7 @@ export const CategoryManagement: React.FC = () => {
                         </button>
                         <button
                           onClick={() => setEditingCategory(cat)}
-                          className="p-1.5 rounded-lg border border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800"
+                          className="p-1.5 rounded-lg border border-[#2F3336] text-zinc-300 hover:text-white hover:bg-[#1A1A1A]"
                           title="تعديل الاسم أو الوصف"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
@@ -153,8 +153,8 @@ export const CategoryManagement: React.FC = () => {
       </div>
 
       {editingCategory && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 w-full max-w-md space-y-4">
+        <div className="fixed inset-0 bg-black/75  z-50 flex items-center justify-center p-4">
+          <div className="bg-[#111111] border border-[#2F3336] rounded-xl p-5 w-full max-w-md space-y-4">
             <h3 className="text-base font-bold text-white">تعديل التصنيف: {editingCategory.name}</h3>
             <div>
               <label className="text-xs text-zinc-400 block mb-1">اسم التصنيف</label>
@@ -162,7 +162,7 @@ export const CategoryManagement: React.FC = () => {
                 type="text"
                 value={editingCategory.name}
                 onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400"
+                className="w-full bg-black border border-[#2F3336] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400"
               />
             </div>
             <div>
@@ -171,13 +171,13 @@ export const CategoryManagement: React.FC = () => {
                 type="text"
                 value={editingCategory.slug}
                 disabled
-                className="w-full bg-zinc-950/50 border border-zinc-800/80 rounded-lg px-3 py-2 text-sm text-zinc-400 font-mono"
+                className="w-full bg-black/50 border border-[#2F3336]/80 rounded-lg px-3 py-2 text-sm text-zinc-400 font-mono"
               />
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setEditingCategory(null)}
-                className="px-4 py-2 rounded-lg text-xs text-zinc-400 hover:text-white hover:bg-zinc-800"
+                className="px-4 py-2 rounded-lg text-xs text-zinc-400 hover:text-white hover:bg-[#1A1A1A]"
               >
                 إلغاء
               </button>

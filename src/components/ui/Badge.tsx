@@ -14,8 +14,8 @@ export const Badge: React.FC<BadgeProps> = ({
   ...props
 }) => {
   const variantClasses = {
-    primary: 'bg-[#0B1F3A]/10 text-[#0B1F3A] dark:bg-[#181818] dark:text-white border border-[#0B1F3A]/20 dark:border-[#262626]',
-    yellow: 'bg-[#F5C400]/20 text-[#0B1F3A] dark:bg-[#F5C400]/15 dark:text-[#F5C400] font-bold border border-[#F5C400]/40 dark:border-[#F5C400]/30',
+    primary: 'bg-[#000000]/10 text-[#000000] dark:bg-[#181818] dark:text-white border border-[#000000]/20 dark:border-[#262626]',
+    yellow: 'bg-[#F5C400]/20 text-[#000000] dark:bg-[#F5C400]/15 dark:text-[#F5C400] font-bold border border-[#F5C400]/40 dark:border-[#F5C400]/30',
     success: 'bg-[#16A34A]/10 text-[#16A34A] dark:bg-[#22C55E]/15 dark:text-[#22C55E] border border-[#16A34A]/20 dark:border-[#22C55E]/30',
     danger: 'bg-[#DC2626]/10 text-[#DC2626] dark:bg-[#EF4444]/15 dark:text-[#EF4444] border border-[#DC2626]/20 dark:border-[#EF4444]/30',
     warning: 'bg-[#F59E0B]/10 text-[#B45309] dark:bg-[#F59E0B]/15 dark:text-[#F59E0B] border border-[#F59E0B]/20 dark:border-[#F59E0B]/30',

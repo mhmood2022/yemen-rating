@@ -26,7 +26,7 @@ export const RealEstateManager: React.FC = () => {
 
   return (
     <div className="space-y-6 text-right font-['Cairo',sans-serif]" dir="rtl">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#1F2937]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#2F3336]">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-[#FFC500]">
             <Home className="w-6 h-6" />

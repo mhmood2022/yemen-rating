@@ -17,7 +17,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({ isOpen, onClos
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 dir-rtl bg-black/85 backdrop-blur-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 dir-rtl bg-black ">
       <div className="w-full max-w-4xl rounded-2xl border p-6 text-white shadow-2xl max-h-[90vh] flex flex-col justify-between" style={{ backgroundColor: '#14141C', borderColor: '#2A2A2A' }}>
         
         {/* Modal Header */}

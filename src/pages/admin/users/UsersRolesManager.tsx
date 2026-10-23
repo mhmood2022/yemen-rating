@@ -58,14 +58,14 @@ const CustomDarkSelect: React.FC<{
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-2.5 py-2 bg-[#162238] border border-[#243354] hover:border-[#FFD000]/60 rounded-xl text-xs text-white outline-none transition-all"
+        className="w-full flex items-center justify-between px-2.5 py-2 bg-[#111111] border border-[#2F3336] hover:border-[#FFD000]/60 rounded-xl text-xs text-white outline-none transition-all"
       >
         <span className="truncate">{selectedOption?.label || placeholder || value}</span>
         <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isOpen ? 'rotate-180 text-[#FFD000]' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 left-0 mt-1 bg-[#10172a] border border-[#243354] rounded-xl shadow-2xl max-h-48 overflow-y-auto z-50 p-1 space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute top-full right-0 left-0 mt-1 bg-black border border-[#2F3336] rounded-xl shadow-2xl max-h-48 overflow-y-auto z-50 p-1 space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
           {options.map((opt) => (
             <button
               key={opt.value}
@@ -77,7 +77,7 @@ const CustomDarkSelect: React.FC<{
               className={`w-full text-right px-2.5 py-1.5 rounded-lg text-xs font-bold transition-colors ${
                 opt.value === value
                   ? 'bg-[#FFD000] text-black font-black'
-                  : 'text-slate-300 hover:bg-[#162238] hover:text-white'
+                  : 'text-slate-300 hover:bg-[#111111] hover:text-white'
               }`}
             >
               {opt.label}
@@ -427,8 +427,8 @@ export const UsersRolesManager: React.FC = () => {
       {/* التنبيهات المنسدلة */}
       {toast.show && (
         <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[100] max-w-sm w-[92%] animate-in fade-in duration-150">
-          <div className={`p-2.5 rounded-xl border shadow-xl flex items-center gap-2 backdrop-blur-md text-xs ${
-            toast.type === 'success' ? 'bg-[#10172a]/95 border-[#10b981]/50 text-white' : 'bg-[#10172a]/95 border-rose-500/50 text-white'
+          <div className={`p-2.5 rounded-xl border shadow-xl flex items-center gap-2  text-xs ${
+            toast.type === 'success' ? 'bg-black/95 border-[#10b981]/50 text-white' : 'bg-black/95 border-rose-500/50 text-white'
           }`}>
             {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-[#10b981] shrink-0" /> : <X className="w-4 h-4 text-rose-500 shrink-0" />}
             <span className="font-bold leading-tight">{toast.msg}</span>
@@ -437,9 +437,9 @@ export const UsersRolesManager: React.FC = () => {
       )}
 
       {/* الترويسة الرئيسية المصغرة المتناسقة مع الهاتف */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#1e293b] pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2F3336] pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#162238] border border-[#243354] flex items-center justify-center text-[#FFD000] shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-[#111111] border border-[#2F3336] flex items-center justify-center text-[#FFD000] shrink-0">
             <Users className="w-4 h-4" />
           </div>
           <div>
@@ -454,7 +454,7 @@ export const UsersRolesManager: React.FC = () => {
 
         {/* أزرار التبديل المصغرة */}
         <div className="flex items-center gap-1.5 self-start sm:self-auto">
-          <div className="bg-[#10172a] border border-[#1e293b] p-1 rounded-xl flex gap-1">
+          <div className="bg-black border border-[#2F3336] p-1 rounded-xl flex gap-1">
             <button
               onClick={() => setActiveTab('users')}
               className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
@@ -478,7 +478,7 @@ export const UsersRolesManager: React.FC = () => {
           <button
             onClick={fetchRealUsers}
             disabled={loading}
-            className="p-2 bg-[#162238] hover:bg-slate-700 text-slate-300 rounded-xl border border-[#243354] transition-all"
+            className="p-2 bg-[#111111] hover:bg-slate-700 text-slate-300 rounded-xl border border-[#2F3336] transition-all"
             title="تحديث"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#FFD000]' : ''}`} />
@@ -493,7 +493,7 @@ export const UsersRolesManager: React.FC = () => {
         <div className="space-y-3">
           
           {/* شريط الفرز والبحث المصغر */}
-          <div className="bg-[#10172a] border border-[#1e293b] p-3 rounded-xl space-y-2 shadow-md">
+          <div className="bg-black border border-[#2F3336] p-3 rounded-xl space-y-2 shadow-md">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2">
               
               <div className="relative lg:col-span-2">
@@ -503,7 +503,7 @@ export const UsersRolesManager: React.FC = () => {
                   placeholder="ابحث بالاسم، البريد، الهاتف..."
                   value={searchTerm}
                   onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                  className="w-full pr-8 pl-3 py-2 bg-[#162238] border border-[#243354] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FFD000]"
+                  className="w-full pr-8 pl-3 py-2 bg-[#111111] border border-[#2F3336] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FFD000]"
                 />
               </div>
 
@@ -549,7 +549,7 @@ export const UsersRolesManager: React.FC = () => {
           </div>
 
           {/* الجدول المصغر المتجاوب مع الهاتف */}
-          <div className="bg-[#10172a] border border-[#1e293b] rounded-xl overflow-hidden shadow-md">
+          <div className="bg-black border border-[#2F3336] rounded-xl overflow-hidden shadow-md">
             {loading ? (
               <div className="p-8 text-center text-slate-400 space-y-2">
                 <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#FFD000]" />
@@ -563,7 +563,7 @@ export const UsersRolesManager: React.FC = () => {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-right text-xs">
-                  <thead className="bg-[#162238] text-slate-400 border-b border-[#243354] text-[11px]">
+                  <thead className="bg-[#111111] text-slate-400 border-b border-[#2F3336] text-[11px]">
                     <tr>
                       <th className="py-2.5 px-3 font-bold">المستخدم</th>
                       <th className="py-2.5 px-2 font-bold text-center">نوع الحساب</th>
@@ -584,13 +584,13 @@ export const UsersRolesManager: React.FC = () => {
                       return (
                         <tr 
                           key={u.id}
-                          className="hover:bg-[#162238]/60 transition-colors cursor-pointer"
+                          className="hover:bg-[#111111]/60 transition-colors cursor-pointer"
                           onClick={() => handleOpenUser(u)}
                         >
                           {/* المستخدم */}
                           <td className="py-2.5 px-3">
                             <div className="flex items-center gap-2">
-                              <div className="w-7 h-7 rounded-lg bg-[#162238] border border-[#243354] flex items-center justify-center text-[#FFD000] font-black text-xs shrink-0">
+                              <div className="w-7 h-7 rounded-lg bg-[#111111] border border-[#2F3336] flex items-center justify-center text-[#FFD000] font-black text-xs shrink-0">
                                 {isMainAdmin ? (
                                   <Crown className="w-4 h-4 text-[#FFD000]" />
                                 ) : (
@@ -618,7 +618,7 @@ export const UsersRolesManager: React.FC = () => {
                             <span className={`whitespace-nowrap px-2 py-0.5 rounded text-[10px] font-bold border ${
                               accountType === 'owner' 
                                 ? 'bg-[#FFD000]/10 text-[#FFD000] border-[#FFD000]/30' 
-                                : 'bg-slate-800 text-slate-300 border-slate-700'
+                                : 'bg-[#111111] text-slate-300 border-slate-700'
                             }`}>
                               {accountType === 'owner' ? 'مالك' : 'زائر'}
                             </span>
@@ -655,7 +655,7 @@ export const UsersRolesManager: React.FC = () => {
                           <td className="py-2.5 px-2 text-center" onClick={e => e.stopPropagation()}>
                             <button
                               onClick={() => handleOpenUser(u)}
-                              className="px-2 py-1 bg-[#162238] hover:bg-[#FFD000] hover:text-black text-slate-200 border border-[#243354] rounded text-[11px] font-bold transition-all whitespace-nowrap"
+                              className="px-2 py-1 bg-[#111111] hover:bg-[#FFD000] hover:text-black text-slate-200 border border-[#2F3336] rounded text-[11px] font-bold transition-all whitespace-nowrap"
                             >
                               إدارة ←
                             </button>
@@ -670,7 +670,7 @@ export const UsersRolesManager: React.FC = () => {
 
             {/* شريط الترقيم المصغر */}
             {totalPages > 1 && (
-              <div className="p-2.5 bg-[#162238] border-t border-[#243354] flex items-center justify-between text-[11px]">
+              <div className="p-2.5 bg-[#111111] border-t border-[#2F3336] flex items-center justify-between text-[11px]">
                 <span className="text-slate-400">
                   صفحة <strong className="text-white">{currentPage}</strong> من {totalPages}
                 </span>
@@ -678,14 +678,14 @@ export const UsersRolesManager: React.FC = () => {
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    className="p-1 bg-[#10172a] disabled:opacity-30 rounded text-white border border-[#243354]"
+                    className="p-1 bg-black disabled:opacity-30 rounded text-white border border-[#2F3336]"
                   >
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    className="p-1 bg-[#10172a] disabled:opacity-30 rounded text-white border border-[#243354]"
+                    className="p-1 bg-black disabled:opacity-30 rounded text-white border border-[#2F3336]"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                   </button>
@@ -701,8 +701,8 @@ export const UsersRolesManager: React.FC = () => {
       {/* ============================================================== */}
       {activeTab === 'roles' && (
         <div className="space-y-3">
-          <div className="bg-[#10172a] border border-[#1e293b] p-3 rounded-xl space-y-3 shadow-md">
-            <div className="flex justify-between items-center border-b border-[#1e293b] pb-2">
+          <div className="bg-black border border-[#2F3336] p-3 rounded-xl space-y-3 shadow-md">
+            <div className="flex justify-between items-center border-b border-[#2F3336] pb-2">
               <h2 className="text-xs sm:text-sm font-black text-white flex items-center gap-1.5">
                 <Shield className="w-4 h-4 text-[#FFD000]" />
                 <span>محرر الصلاحيات المركزي</span>
@@ -731,8 +731,8 @@ export const UsersRolesManager: React.FC = () => {
                     onClick={() => setSelectedRoleKey(rKey)}
                     className={`p-2 rounded-xl border text-right transition-all shrink-0 w-36 space-y-1 ${
                       isSelected
-                        ? 'bg-[#162238] border-[#FFD000]'
-                        : 'bg-[#10172a] border-[#243354] text-slate-400'
+                        ? 'bg-[#111111] border-[#FFD000]'
+                        : 'bg-black border-[#2F3336] text-slate-400'
                     }`}
                   >
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border inline-block ${rMeta.color}`}>
@@ -748,8 +748,8 @@ export const UsersRolesManager: React.FC = () => {
           </div>
 
           {/* محرر الصلاحيات المصغر */}
-          <div className="bg-[#10172a] border border-[#1e293b] p-3 sm:p-4 rounded-xl space-y-3 shadow-md">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[#162238] border border-[#243354] p-2.5 rounded-xl">
+          <div className="bg-black border border-[#2F3336] p-3 sm:p-4 rounded-xl space-y-3 shadow-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[#111111] border border-[#2F3336] p-2.5 rounded-xl">
               <div>
                 <span className="text-[10px] text-slate-400">تعديل صلاحيات:</span>
                 <strong className="text-white text-xs font-black mr-1">{rolesList[selectedRoleKey]?.label}</strong>
@@ -794,8 +794,8 @@ export const UsersRolesManager: React.FC = () => {
                 { domain: 'ads', title: 'الإعلانات والترويج (YR Ads)', icon: Megaphone },
                 { domain: 'settings', title: 'إعدادات النظام والمالية', icon: Settings },
               ].map(sec => (
-                <div key={sec.domain} className="bg-[#162238] border border-[#243354] rounded-xl p-3 space-y-2">
-                  <h3 className="text-xs font-bold text-white flex items-center gap-1.5 border-b border-[#243354] pb-1.5">
+                <div key={sec.domain} className="bg-[#111111] border border-[#2F3336] rounded-xl p-3 space-y-2">
+                  <h3 className="text-xs font-bold text-white flex items-center gap-1.5 border-b border-[#2F3336] pb-1.5">
                     <sec.icon className="w-3.5 h-3.5 text-[#FFD000]" />
                     <span>{sec.title}</span>
                   </h3>
@@ -807,7 +807,7 @@ export const UsersRolesManager: React.FC = () => {
                           key={p.id}
                           onClick={() => togglePermissionForRole(p.id)}
                           className={`p-2 rounded-lg border flex items-center justify-between cursor-pointer text-xs ${
-                            isEnabled ? 'bg-[#10172a] border-[#10b981]/50 text-white' : 'bg-[#10172a]/60 border-[#243354]/60 text-slate-400'
+                            isEnabled ? 'bg-black border-[#10b981]/50 text-white' : 'bg-black/60 border-[#2F3336]/60 text-slate-400'
                           }`}
                         >
                           <div>
@@ -834,9 +834,9 @@ export const UsersRolesManager: React.FC = () => {
 
       {/* نافذة إنشاء دور جديد مصغرة */}
       {isNewRoleModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3">
-          <div className="bg-[#0B0F17] border border-[#243354] rounded-2xl w-full max-w-sm p-4 space-y-3 text-right text-xs">
-            <div className="flex justify-between items-center border-b border-[#1e293b] pb-2">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-3">
+          <div className="bg-[#0B0F17] border border-[#2F3336] rounded-2xl w-full max-w-sm p-4 space-y-3 text-right text-xs">
+            <div className="flex justify-between items-center border-b border-[#2F3336] pb-2">
               <h3 className="font-bold text-white">إنشاء دور إداري جديد</h3>
               <button onClick={() => setIsNewRoleModalOpen(false)} className="text-slate-400 p-1"><X size={16} /></button>
             </div>
@@ -848,7 +848,7 @@ export const UsersRolesManager: React.FC = () => {
                   value={newRoleKey}
                   onChange={e => setNewRoleKey(e.target.value)}
                   placeholder="supervisor"
-                  className="w-full bg-[#162238] border border-[#243354] rounded-lg p-2 text-white font-mono text-left"
+                  className="w-full bg-[#111111] border border-[#2F3336] rounded-lg p-2 text-white font-mono text-left"
                   dir="ltr"
                   required
                 />
@@ -860,13 +860,13 @@ export const UsersRolesManager: React.FC = () => {
                   value={newRoleLabel}
                   onChange={e => setNewRoleLabel(e.target.value)}
                   placeholder="مشرف مناطق"
-                  className="w-full bg-[#162238] border border-[#243354] rounded-lg p-2 text-white"
+                  className="w-full bg-[#111111] border border-[#2F3336] rounded-lg p-2 text-white"
                   required
                 />
               </div>
               <div className="flex gap-2 pt-1">
                 <button type="submit" className="flex-1 bg-[#FFD000] text-black font-black py-2 rounded-lg text-xs">إنشاء الدور</button>
-                <button type="button" onClick={() => setIsNewRoleModalOpen(false)} className="px-3 bg-[#162238] text-slate-300 rounded-lg text-xs">إلغاء</button>
+                <button type="button" onClick={() => setIsNewRoleModalOpen(false)} className="px-3 bg-[#111111] text-slate-300 rounded-lg text-xs">إلغاء</button>
               </div>
             </form>
           </div>
@@ -876,17 +876,17 @@ export const UsersRolesManager: React.FC = () => {
       {/* نافذة ملف المستخدم المصغرة المريحة للهاتف */}
       {selectedUser && (
         <div 
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 animate-in fade-in duration-100"
+          className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-3 animate-in fade-in duration-100"
           onClick={() => setSelectedUser(null)}
         >
           <div 
-            className="bg-[#0B0F17] border border-[#243354] rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl max-h-[92vh] overflow-y-auto"
+            className="bg-[#0B0F17] border border-[#2F3336] rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl max-h-[92vh] overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
             {/* الترويسة */}
-            <div className="flex items-center justify-between border-b border-[#1e293b] pb-2.5">
+            <div className="flex items-center justify-between border-b border-[#2F3336] pb-2.5">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-lg bg-[#162238] border border-[#243354] flex items-center justify-center text-[#FFD000] font-black text-xs shrink-0">
+                <div className="w-9 h-9 rounded-lg bg-[#111111] border border-[#2F3336] flex items-center justify-center text-[#FFD000] font-black text-xs shrink-0">
                   {selectedUser.email === 'info.yemenrating@gmail.com' ? <Crown className="w-5 h-5 text-[#FFD000]" /> : (editName?.charAt(0) || 'م')}
                 </div>
                 <div className="min-w-0">
@@ -915,14 +915,14 @@ export const UsersRolesManager: React.FC = () => {
             )}
 
             {/* الحقول المصغرة */}
-            <div className="space-y-2 bg-[#10172a] border border-[#1e293b] p-3 rounded-xl text-xs">
+            <div className="space-y-2 bg-black border border-[#2F3336] p-3 rounded-xl text-xs">
               <div>
                 <label className="text-slate-400 block mb-0.5 text-[11px]">الاسم الكامل:</label>
                 <input
                   type="text"
                   value={editName}
                   onChange={e => setEditName(e.target.value)}
-                  className="w-full bg-[#162238] border border-[#243354] rounded-lg p-2 text-white text-xs"
+                  className="w-full bg-[#111111] border border-[#2F3336] rounded-lg p-2 text-white text-xs"
                 />
               </div>
 
@@ -932,7 +932,7 @@ export const UsersRolesManager: React.FC = () => {
                   type="text"
                   value={editPhone}
                   onChange={e => setEditPhone(e.target.value)}
-                  className="w-full bg-[#162238] border border-[#243354] rounded-lg p-2 text-white font-mono text-xs"
+                  className="w-full bg-[#111111] border border-[#2F3336] rounded-lg p-2 text-white font-mono text-xs"
                   dir="ltr"
                 />
               </div>
@@ -973,7 +973,7 @@ export const UsersRolesManager: React.FC = () => {
                       type="button"
                       onClick={() => setEditingStatus(st.key as UserStatus)}
                       className={`py-1.5 px-1 rounded-lg font-bold border ${
-                        editingStatus === st.key ? `bg-[#162238] ${st.color} border-2` : 'bg-[#10172a] text-slate-500 border-[#1e293b]'
+                        editingStatus === st.key ? `bg-[#111111] ${st.color} border-2` : 'bg-black text-slate-500 border-[#2F3336]'
                       }`}
                     >
                       {st.label}
@@ -984,14 +984,14 @@ export const UsersRolesManager: React.FC = () => {
             </div>
 
             {/* الصلاحيات الناتجة عن الدور */}
-            <div className="space-y-1.5 bg-[#10172a] border border-[#1e293b] p-3 rounded-xl text-[11px]">
+            <div className="space-y-1.5 bg-black border border-[#2F3336] p-3 rounded-xl text-[11px]">
               <span className="text-slate-400 block">الصلاحيات الناتجة عن الدور:</span>
               <div className="flex flex-wrap gap-1">
                 {(ROLE_PERMISSIONS_MAP[editingRole] || []).map((id: string) => (
-                  <span key={id} className="px-1.5 py-0.5 rounded bg-[#162238] border border-[#243354] text-slate-200 font-mono text-[9px]">{id}</span>
+                  <span key={id} className="px-1.5 py-0.5 rounded bg-[#111111] border border-[#2F3336] text-slate-200 font-mono text-[9px]">{id}</span>
                 ))}
               </div>
-              <div className="text-[10px] text-slate-500 pt-1 border-t border-[#1e293b]">
+              <div className="text-[10px] text-slate-500 pt-1 border-t border-[#2F3336]">
                 تاريخ التسجيل: {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleString('ar-YE') : '—'}
                 <br />آخر دخول: {selectedUser.last_sign_in_at ? new Date(selectedUser.last_sign_in_at).toLocaleString('ar-YE') : '—'}
                 <br />المنشآت المرتبطة • طلبات الملكية • النشاط: (لاحقًا)
@@ -999,7 +999,7 @@ export const UsersRolesManager: React.FC = () => {
             </div>
 
             {/* الأزرار */}
-            <div className="flex gap-1.5 pt-1 border-t border-[#1e293b]">
+            <div className="flex gap-1.5 pt-1 border-t border-[#2F3336]">
               <button
                 type="button"
                 disabled={isUpdating}
@@ -1013,7 +1013,7 @@ export const UsersRolesManager: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedUser(null)}
-                className="px-3 bg-[#162238] text-slate-300 font-bold py-2 rounded-xl text-xs border border-[#243354]"
+                className="px-3 bg-[#111111] text-slate-300 font-bold py-2 rounded-xl text-xs border border-[#2F3336]"
               >
                 إغلاق
               </button>

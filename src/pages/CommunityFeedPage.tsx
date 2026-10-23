@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { 
   ArrowRight, Image as ImageIcon, Heart, MessageCircle, Repeat2, 
@@ -934,13 +934,13 @@ const handleAddComment = (e?: React.FormEvent) => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#1D9BF0] selection:text-white pb-32" dir="rtl">
+    <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#FFC500] selection:text-white pb-32" dir="rtl">
       {/* DEBUG */}
       
 
       
       {toastMsg && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#1D9BF0] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-2xl animate-fade-in flex items-center gap-2">
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#FFC500] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-2xl animate-fade-in flex items-center gap-2">
           <CheckCircle2 size={16} />
           <span>{toastMsg}</span>
         </div>
@@ -949,7 +949,7 @@ const handleAddComment = (e?: React.FormEvent) => {
       <input type="file" ref={imageInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
 
       {/* الهيدر العلوي */}
-      <header className="sticky top-0 z-40 bg-black/85 backdrop-blur-md border-b border-[#2F3336]">
+      <header className="sticky top-0 z-40 bg-black  border-b border-[#2F3336]">
         <div className="p-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate('/account')} title="ملفي الشخصي">
@@ -959,13 +959,13 @@ const handleAddComment = (e?: React.FormEvent) => {
             </button>
             <h1 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
               <span>تغريدات المجتمع</span>
-              <span className="text-[#1D9BF0] text-sm">🌐</span>
+              <span className="text-[#FFC500] text-sm">🌐</span>
             </h1>
           </div>
 
           <button 
             onClick={() => navigate('/account')}
-            className="text-xs font-bold text-[#1D9BF0] bg-[#1D9BF0]/10 hover:bg-[#1D9BF0]/20 border border-[#1D9BF0]/30 px-3.5 py-1.5 rounded-full transition"
+            className="text-xs font-bold text-[#FFC500] bg-[#FFC500]/10 hover:bg-[#FFC500]/20 border border-[#FFC500]/30 px-3.5 py-1.5 rounded-full transition"
           >
             ملفي الشخصي
           </button>
@@ -978,7 +978,7 @@ const handleAddComment = (e?: React.FormEvent) => {
             className={`flex-1 py-3 text-center relative transition ${activeTab === 'forYou' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'}`}
           >
             <span>لك (For You)</span>
-            {activeTab === 'forYou' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#1D9BF0] rounded-full" />}
+            {activeTab === 'forYou' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#FFC500] rounded-full" />}
           </button>
 
           <button 
@@ -986,7 +986,7 @@ const handleAddComment = (e?: React.FormEvent) => {
             className={`flex-1 py-3 text-center relative transition ${activeTab === 'latest' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'}`}
           >
             <span>الأحدث</span>
-            {activeTab === 'latest' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#1D9BF0] rounded-full" />}
+            {activeTab === 'latest' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#FFC500] rounded-full" />}
           </button>
 
           <button 
@@ -995,7 +995,7 @@ const handleAddComment = (e?: React.FormEvent) => {
           >
             <TrendingUp size={15} />
             <span>الرائج</span>
-            {activeTab === 'trending' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#1D9BF0] rounded-full" />}
+            {activeTab === 'trending' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#FFC500] rounded-full" />}
           </button>
         </div>
       </header>
@@ -1022,7 +1022,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                   <button 
                     type="button" 
                     onClick={() => setTweetImage('')}
-                    className="absolute top-2 left-2 bg-black/70 text-white p-1.5 rounded-full hover:bg-black transition"
+                    className="absolute top-2 left-2 bg-black text-white p-1.5 rounded-full hover:bg-black transition"
                   >
                     <X size={16} />
                   </button>
@@ -1033,7 +1033,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                 <button 
                   type="button" 
                   onClick={() => imageInputRef.current?.click()}
-                  className="p-2 text-[#1D9BF0] hover:bg-[#1D9BF0]/10 rounded-full transition"
+                  className="p-2 text-[#FFC500] hover:bg-[#FFC500]/10 rounded-full transition"
                   title="إرفاق صورة"
                 >
                   <ImageIcon size={20} />
@@ -1041,7 +1041,7 @@ const handleAddComment = (e?: React.FormEvent) => {
 
                 <button
                   type="submit"
-                  className="px-5 py-1.5 rounded-full bg-[#1D9BF0] hover:bg-[#1A8CD8] active:scale-95 text-white font-black text-xs sm:text-sm transition shadow-[0_4px_15px_rgba(29,155,240,0.3)]"
+                  className="px-5 py-1.5 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white font-black text-xs sm:text-sm transition shadow-[0_4px_15px_rgba(29,155,240,0.3)]"
                 >
                   تغريد
                 </button>
@@ -1111,7 +1111,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                                 
                                 {/* زر الثلاث نقاط يظهر فقط لتغريداتك */}
                                 {tweet.authorId === currentUserId && (
-                                  <button onClick={(e) => { e.stopPropagation(); setActiveMenuPost(tweet); }} className="text-[#71767B] hover:text-[#1D9BF0] p-1.5 rounded-full hover:bg-[#1D9BF0]/10 transition" title="المزيد">
+                                  <button onClick={(e) => { e.stopPropagation(); setActiveMenuPost(tweet); }} className="text-[#71767B] hover:text-[#FFC500] p-1.5 rounded-full hover:bg-[#FFC500]/10 transition" title="المزيد">
                                     <MoreHorizontal size={16} />
                                   </button>
                                 )}
@@ -1124,7 +1124,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                               <p className="font-['Tahoma'] mt-2 text-[14px] leading-[1.5] text-[#E7E9EA] font-['Tahoma'] whitespace-pre-wrap">
                                 {tweet.text.split(' ').map((w, i) =>
                                   w.startsWith('#') ? (
-                                    <span key={i} className="text-[#1D9BF0] font-semibold hover:underline cursor-pointer">{w} </span>
+                                    <span key={i} className="text-[#FFC500] font-semibold hover:underline cursor-pointer">{w} </span>
                                   ) : (
                                     w + ' '
                                   )
@@ -1138,7 +1138,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                                 <p className={`text-[15px] leading-[1.5] text-[#E7E9EA] whitespace-pre-wrap ${expandedTweets[tweet.id] ? '' : 'line-clamp-6'}`}>
                                   {tweet.quote_text.split(' ').map((w, i) =>
                                     w.startsWith('#') ? (
-                                      <span key={i} className="text-[#1D9BF0] font-semibold hover:underline cursor-pointer">{w} </span>
+                                      <span key={i} className="text-[#FFC500] font-semibold hover:underline cursor-pointer">{w} </span>
                                     ) : (
                                       w + ' '
                                     )
@@ -1150,7 +1150,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                                       e.stopPropagation();
                                       setExpandedTweets(prev => ({...prev, [tweet.id]: !prev[tweet.id]}));
                                     }}
-                                    className="text-[#1D9BF0] text-[10px] font-bold mt-1 hover:underline"
+                                    className="text-[#FFC500] text-[10px] font-bold mt-1 hover:underline"
                                   >
                                     {expandedTweets[tweet.id] ? 'عرض أقل' : 'عرض المزيد'}
                                   </button>
@@ -1183,8 +1183,8 @@ const handleAddComment = (e?: React.FormEvent) => {
                             {/* أزرار التفاعل */}
                             <div className="flex items-center justify-between mt-3 max-w-md text-[#71767B]">
                               {/* 💬 تعليق */}
-                              <button onClick={() => setActiveCommentTweet(tweet)} className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition group">
-                                <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10"><MessageCircle size={16} /></div>
+                              <button onClick={() => setActiveCommentTweet(tweet)} className="flex items-center gap-1.5 hover:text-[#FFC500] transition group">
+                                <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10"><MessageCircle size={16} /></div>
                                 <span className="text-[13px]">{tweet.replies || 0}</span>
                               </button>
                               
@@ -1201,8 +1201,8 @@ const handleAddComment = (e?: React.FormEvent) => {
                               </button>
                               
                               {/* 📊 مشاهدات */}
-                              <button className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition group" title="المشاهدات">
-                                <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10"><BarChart size={17} /></div>
+                              <button className="flex items-center gap-1.5 hover:text-[#FFC500] transition group" title="المشاهدات">
+                                <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10"><BarChart size={17} /></div>
                                 <span className="text-[13px]">{tweet.views || 1}</span>
                               </button>
                               
@@ -1219,7 +1219,7 @@ const handleAddComment = (e?: React.FormEvent) => {
       {/* نافذة الردود */}
       {/* نافذة الرد بنظام منصة X المطابق 100% */}
       {activeCommentTweet && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex flex-col justify-between h-[100dvh] w-full max-w-lg mx-auto sm:h-auto sm:my-auto sm:rounded-3xl border border-[#2F3336] p-4 text-white overflow-hidden shadow-2xl" dir="rtl">
+        <div className="fixed inset-0 z-50 bg-black  flex flex-col justify-between h-[100dvh] w-full max-w-lg mx-auto sm:h-auto sm:my-auto sm:rounded-3xl border border-[#2F3336] p-4 text-white overflow-hidden shadow-2xl" dir="rtl">
           
           {/* القسم العلوي: زر الإغلاق والرد والتوجيه */}
           <div>
@@ -1236,7 +1236,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                 type="button"
                 onClick={handleAddComment}
                 disabled={!newCommentText.trim() || newCommentText.length > 280}
-                className="px-5 py-1.5 bg-[#1D9BF0] hover:bg-[#1A8CD8] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full text-xs font-black transition active:scale-95 shadow-sm"
+                className="px-5 py-1.5 bg-[#FFC500] hover:bg-[#E5B200] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full text-xs font-black transition active:scale-95 shadow-sm"
               >
                 الردّ
               </button>
@@ -1244,7 +1244,7 @@ const handleAddComment = (e?: React.FormEvent) => {
 
             <div className="text-[11px] text-[#71767B] mb-3 flex items-center gap-1">
               <span>رداً على</span>
-              <span className="text-[#1D9BF0] font-mono font-bold" dir="ltr">@{activeCommentTweet.authorUsername}</span>
+              <span className="text-[#FFC500] font-mono font-bold" dir="ltr">@{activeCommentTweet.authorUsername}</span>
             </div>
 
             {/* قالب كتابة الرد */}
@@ -1273,7 +1273,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                     <button
                       type="button"
                       onClick={() => { setCommentImage(''); setCommentImageFile(null); if (commentImageInputRef.current) commentImageInputRef.current.value = ''; }}
-                      className="absolute top-2 left-2 p-1 bg-black/70 hover:bg-black rounded-full text-white transition"
+                      className="absolute top-2 left-2 p-1 bg-black hover:bg-black rounded-full text-white transition"
                     >
                       <X size={14} />
                     </button>
@@ -1286,7 +1286,7 @@ const handleAddComment = (e?: React.FormEvent) => {
           {/* الفوتر الثابت: يرتفع تلقائياً فوق لوحة المفاتيح ومعه العداد */}
           <div className="mt-auto pt-3 border-t border-[#2F3336] bg-black transition-all duration-75" style={{ paddingBottom: Math.max(12, viewportBottomOffset) }}>
             <div className="flex items-center justify-between pb-1">
-              <div className="flex items-center gap-2 text-[#1D9BF0]">
+              <div className="flex items-center gap-2 text-[#FFC500]">
                 <input
                   type="file"
                   ref={commentImageInputRef}
@@ -1297,7 +1297,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                 <button 
                   type="button" 
                   onClick={() => commentImageInputRef.current?.click()}
-                  className="p-2 hover:bg-[#1D9BF0]/10 rounded-full transition" 
+                  className="p-2 hover:bg-[#FFC500]/10 rounded-full transition" 
                   title="إرفاق صورة من الاستوديو"
                 >
                   <ImageIcon size={20} />
@@ -1323,7 +1323,7 @@ const handleAddComment = (e?: React.FormEvent) => {
       {/* نافذة عرض تفاصيل التغريدة الكاملة مع كل الردود (عند النقر على جسم التغريدة) */}
       {/* قائمة إعادة النشر / اقتباس */}
       {repostMenu && (
-        <div className="fixed inset-0 z-[60] bg-black/60 flex items-end justify-center p-2" onClick={() => setRepostMenu(null)}>
+        <div className="fixed inset-0 z-[60] bg-black flex items-end justify-center p-2" onClick={() => setRepostMenu(null)}>
           <div className="w-full max-w-md bg-[#16181C] rounded-2xl overflow-hidden mb-20" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => {
@@ -1344,7 +1344,7 @@ const handleAddComment = (e?: React.FormEvent) => {
               }}
               className="w-full px-4 py-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3"
             >
-              <MessageCircle size={20} className="text-[#1D9BF0]" />
+              <MessageCircle size={20} className="text-[#FFC500]" />
               <span>اقتباس</span>
             </button>
             <button
@@ -1359,7 +1359,7 @@ const handleAddComment = (e?: React.FormEvent) => {
 
       {/* نافذة الاقتباس */}
       {isQuoting && quoteOriginal && (
-        <div className="fixed inset-0 z-[70] bg-black/95 flex flex-col p-4" dir="rtl">
+        <div className="fixed inset-0 z-[70] bg-black flex flex-col p-4" dir="rtl">
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => { setIsQuoting(false); setQuoteOriginal(null); }} className="text-white p-2">
               <X size={24} />
@@ -1392,7 +1392,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                 }
               }}
               disabled={!quoteText.trim()}
-              className="px-4 py-1.5 bg-[#1D9BF0] text-white rounded-full font-bold text-sm disabled:opacity-50"
+              className="px-4 py-1.5 bg-[#FFC500] text-white rounded-full font-bold text-sm disabled:opacity-50"
             >
               اقتباس
             </button>
@@ -1418,7 +1418,7 @@ const handleAddComment = (e?: React.FormEvent) => {
       {viewingDetailTweet && (
         <div className="fixed inset-0 z-50 bg-black flex flex-col h-[100dvh] text-white overflow-hidden" dir="rtl">
           {/* شريط علوي */}
-          <div className="h-14 border-b border-[#2F3336] px-4 flex items-center justify-between shrink-0 bg-black/90 backdrop-blur-md">
+          <div className="h-14 border-b border-[#2F3336] px-4 flex items-center justify-between shrink-0 bg-black ">
             <div className="flex items-center gap-3">
               <button onClick={() => setViewingDetailTweet(null)} className="p-2 hover:bg-zinc-900 rounded-full text-[#71767B] hover:text-white transition">
                 <ArrowRight size={20} />
@@ -1459,7 +1459,7 @@ const handleAddComment = (e?: React.FormEvent) => {
 
             {/* أزرار التفاعل في العرض الكامل */}
             <div className="flex items-center justify-around py-1 border-b border-[#2F3336] text-[#71767B]">
-              <button onClick={() => { setActiveCommentTweet(viewingDetailTweet); setViewingDetailTweet(null); }} className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition">
+              <button onClick={() => { setActiveCommentTweet(viewingDetailTweet); setViewingDetailTweet(null); }} className="flex items-center gap-1.5 hover:text-[#FFC500] transition">
                 <MessageCircle size={18} />
                 <span className="text-xs">{viewingDetailTweet?.comments?.length || 0}</span>
               </button>
@@ -1540,8 +1540,8 @@ const handleAddComment = (e?: React.FormEvent) => {
 
                       {/* أزرار التفاعل المصغرة بنظام X تحت كل تعليق */}
                       <div className="flex items-center justify-between text-[#71767B] text-[11px] mt-2.5 max-w-xs">
-                        <button type="button" className="flex items-center gap-1 hover:text-[#1D9BF0] transition group">
-                          <div className="p-1 rounded-full group-hover:bg-[#1D9BF0]/10">
+                        <button type="button" className="flex items-center gap-1 hover:text-[#FFC500] transition group">
+                          <div className="p-1 rounded-full group-hover:bg-[#FFC500]/10">
                             <MessageCircle size={16} />
                           </div>
                         </button>
@@ -1583,7 +1583,7 @@ const handleAddComment = (e?: React.FormEvent) => {
               </div>
 
               {/* حقل الإدخال الحقيقي الفوري */}
-              <div className="flex-1 bg-[#16181C] border border-[#2F3336] rounded-full px-4 py-2 flex items-center gap-2 focus-within:border-[#1D9BF0]">
+              <div className="flex-1 bg-[#16181C] border border-[#2F3336] rounded-full px-4 py-2 flex items-center gap-2 focus-within:border-[#FFC500]">
                 <input
                   type="text"
                   value={newCommentText}
@@ -1604,7 +1604,7 @@ const handleAddComment = (e?: React.FormEvent) => {
               <button
                 type="submit"
                 disabled={!newCommentText.trim() || newCommentText.length > 280}
-                className="px-4 py-2 bg-[#1D9BF0] hover:bg-[#1A8CD8] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full text-xs font-black transition active:scale-95 shrink-0"
+                className="px-4 py-2 bg-[#FFC500] hover:bg-[#E5B200] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full text-xs font-black transition active:scale-95 shrink-0"
               >
                 الردّ
               </button>
@@ -1617,7 +1617,7 @@ const handleAddComment = (e?: React.FormEvent) => {
 
       {/* نافذة البلاغات */}
       {reportingItem && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4" dir="rtl">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-3 sm:p-4" dir="rtl">
           <div className="bg-[#000000] border border-rose-500/40 w-full max-w-md rounded-3xl p-5 sm:p-6 text-white shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-4">
               <div className="flex items-center gap-2 text-rose-400">
@@ -1651,7 +1651,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                         value={reason} 
                         checked={reportReason === reason} 
                         onChange={(e) => setReportReason(e.target.value)}
-                        className="accent-[#1D9BF0]"
+                        className="accent-[#FFC500]"
                       />
                       <span className="text-zinc-200">{reason}</span>
                     </label>
@@ -1693,18 +1693,18 @@ const handleAddComment = (e?: React.FormEvent) => {
       )}
 
       {/* شريط التنقل السفلي */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur-xl border-t border-[#2F3336] py-2 px-4 flex items-center justify-around text-xs font-bold">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black  border-t border-[#2F3336] py-2 px-4 flex items-center justify-around text-xs font-bold">
         <button onClick={() => navigate('/')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-white transition">
           <Home size={22} />
           <span>الرئيسية</span>
         </button>
 
-        <button onClick={() => navigate('/feed')} className="flex flex-col items-center gap-1 text-[#1D9BF0] font-black transition">
+        <button onClick={() => navigate('/feed')} className="flex flex-col items-center gap-1 text-[#FFC500] font-black transition">
           <MessageSquare size={22} className="stroke-[2.5]" />
           <span>المنشورات</span>
         </button>
 
-        <button onClick={() => navigate('/notifications')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#1D9BF0] transition relative">
+        <button onClick={() => navigate('/notifications')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#FFC500] transition relative">
           <div className="relative">
             <Bell size={22} />
             {unreadNotifs > 0 && (
@@ -1716,7 +1716,7 @@ const handleAddComment = (e?: React.FormEvent) => {
           <span>التنبيهات</span>
         </button>
 
-        <button onClick={() => navigate('/account')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#1D9BF0] transition">
+        <button onClick={() => navigate('/account')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#FFC500] transition">
           <User size={22} />
           <span>الملف الشخصي</span>
         </button>
@@ -1725,7 +1725,7 @@ const handleAddComment = (e?: React.FormEvent) => {
     
       {/* قائمة ⋮ — للمجتمع */}
       {activeMenuPost && (
-        <div className="fixed inset-0 z-[100] bg-black/60 flex items-end justify-center p-2" onClick={() => setActiveMenuPost(null)}>
+        <div className="fixed inset-0 z-[100] bg-black flex items-end justify-center p-2" onClick={() => setActiveMenuPost(null)}>
           <div className="w-full max-w-xs bg-[#16181C] rounded-2xl overflow-hidden mb-16 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             {/* حذف */}
             <button onClick={() => { 
@@ -1764,7 +1764,7 @@ const handleAddComment = (e?: React.FormEvent) => {
 
       {/* نافذة الإبلاغ المنبثقة */}
       {reportingItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setReportingItem(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black  p-4" onClick={() => setReportingItem(null)}>
           <div className="bg-[#16181C] border border-[#2F3336] rounded-2xl w-full max-w-md p-5 shadow-2xl relative" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-4">
               <div className="flex items-center gap-2 text-rose-400">

@@ -60,12 +60,12 @@ export const MoreMenuPage: React.FC<{ onNavigate: (path: string) => void }> = ({
           <button
             type="button"
             onClick={() => onNavigate('/')}
-            className="p-1 rounded-lg text-[#64748B] dark:text-[#A1A1AA] hover:text-[#0B1F3A] dark:hover:text-white"
+            className="p-1 rounded-lg text-[#64748B] dark:text-[#A1A1AA] hover:text-[#000000] dark:hover:text-white"
             aria-label="الرجوع للرئيسية"
           >
             <ArrowRight size={18} strokeWidth={2} />
           </button>
-          <h1 className="text-base sm:text-lg font-black text-[#0B1F3A] dark:text-white">
+          <h1 className="text-base sm:text-lg font-black text-[#000000] dark:text-white">
             المزيد
           </h1>
         </div>
@@ -78,11 +78,11 @@ export const MoreMenuPage: React.FC<{ onNavigate: (path: string) => void }> = ({
         className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] flex items-center justify-between gap-3 cursor-pointer"
       >
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-[#0B1F3A]/5 dark:bg-[#1A1A1A] border border-[#E2E8F0] dark:border-[#222222] flex items-center justify-center text-[#94A3B8] dark:text-[#A1A1AA] shrink-0">
+          <div className="w-12 h-12 rounded-full bg-[#000000]/5 dark:bg-[#1A1A1A] border border-[#E2E8F0] dark:border-[#222222] flex items-center justify-center text-[#94A3B8] dark:text-[#A1A1AA] shrink-0">
             <User size={24} strokeWidth={1.75} />
           </div>
           <div>
-            <h2 className="font-bold text-sm text-[#0B1F3A] dark:text-white">
+            <h2 className="font-bold text-sm text-[#000000] dark:text-white">
               الملف الشخصي
             </h2>
             <p className="text-xs text-[#F5C400] font-semibold">
@@ -107,7 +107,7 @@ export const MoreMenuPage: React.FC<{ onNavigate: (path: string) => void }> = ({
             >
               <div className="flex items-center gap-3">
                 <Icon size={17} strokeWidth={1.75} className="text-[#F5C400] shrink-0" />
-                <span className="text-xs sm:text-sm font-semibold text-[#0B1F3A] dark:text-white">
+                <span className="text-xs sm:text-sm font-semibold text-[#000000] dark:text-white">
                   {item.label}
                 </span>
               </div>
@@ -125,7 +125,7 @@ export const MoreMenuPage: React.FC<{ onNavigate: (path: string) => void }> = ({
             ) : (
               <Moon size={17} strokeWidth={1.75} className="text-[#475569]" />
             )}
-            <span className="text-xs sm:text-sm font-semibold text-[#0B1F3A] dark:text-white">
+            <span className="text-xs sm:text-sm font-semibold text-[#000000] dark:text-white">
               الوضع الليلي
             </span>
           </div>

@@ -56,7 +56,7 @@ export const ClaimOwnershipModal: React.FC<ClaimOwnershipModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-['Cairo',sans-serif] text-white select-none">
+    <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4 font-['Cairo',sans-serif] text-white select-none">
       <div 
         className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-5 space-y-3.5 shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar"
         onClick={e => e.stopPropagation()}

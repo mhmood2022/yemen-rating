@@ -84,12 +84,12 @@ export const PriceCard: React.FC<PriceCardProps> = ({
 
         {/* Title and Icon */}
         <div className="flex items-start gap-3 mb-3.5">
-          <div className="w-10 h-10 rounded-[10px] bg-[#0B1F3A]/5 dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#222222] flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-[10px] bg-[#000000]/5 dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#222222] flex items-center justify-center shrink-0">
             {renderIcon()}
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-sm sm:text-base text-[#0B1F3A] dark:text-white leading-snug line-clamp-1">
+            <h3 className="font-bold text-sm sm:text-base text-[#000000] dark:text-white leading-snug line-clamp-1">
               {title}
             </h3>
             {subtitle && (
@@ -112,7 +112,7 @@ export const PriceCard: React.FC<PriceCardProps> = ({
 
             <div className="pr-2">
               <span className="text-[11px] text-[#64748B] dark:text-[#A1A1AA] block mb-0.5">سعر البيع</span>
-              <span className="text-sm sm:text-base font-black text-[#0B1F3A] dark:text-[#F5C400]">
+              <span className="text-sm sm:text-base font-black text-[#000000] dark:text-[#F5C400]">
                 {sellPrice.toLocaleString()} <small className="text-[10px] font-normal text-[#64748B] dark:text-[#71717A]">ريال</small>
               </span>
             </div>
@@ -120,7 +120,7 @@ export const PriceCard: React.FC<PriceCardProps> = ({
         ) : (
           <div className="p-3 rounded-[9px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] mb-3.5 flex items-center justify-between">
             <span className="text-xs text-[#64748B] dark:text-[#A1A1AA]">السعر الرسمي ({unit || 'للوحدة'}):</span>
-            <span className="text-base font-black text-[#0B1F3A] dark:text-[#F5C400]">
+            <span className="text-base font-black text-[#000000] dark:text-[#F5C400]">
               {unitPrice?.toLocaleString()} <small className="text-[10px] font-normal text-[#64748B] dark:text-[#71717A]">ريال</small>
             </span>
           </div>

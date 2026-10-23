@@ -27,7 +27,7 @@ export const PhoneDeviceCard: React.FC<PhoneDeviceCardProps> = ({ device, onNavi
         />
 
         {/* Condition Tag */}
-        <div className="absolute top-2 right-2 px-2 py-0.5 rounded-[6px] bg-black/70 backdrop-blur-[2px] text-white flex items-center gap-1 text-[10px] font-extrabold border border-white/10">
+        <div className="absolute top-2 right-2 px-2 py-0.5 rounded-[6px] bg-black  text-white flex items-center gap-1 text-[10px] font-extrabold border border-white/10">
           <Tag size={10} className="text-[#F5C400]" />
           <span>{device.condition === 'new' ? 'جديد مختوم' : device.condition === 'used' ? 'مستخدم نظيف' : 'خدمة صيانة'}</span>
         </div>
@@ -48,7 +48,7 @@ export const PhoneDeviceCard: React.FC<PhoneDeviceCardProps> = ({ device, onNavi
             {device.storage && <span>{device.storage}</span>}
           </div>
 
-          <h3 className="font-bold text-xs sm:text-sm text-[#0B1F3A] dark:text-white leading-snug line-clamp-1">
+          <h3 className="font-bold text-xs sm:text-sm text-[#000000] dark:text-white leading-snug line-clamp-1">
             {device.name}
           </h3>
 
@@ -56,13 +56,13 @@ export const PhoneDeviceCard: React.FC<PhoneDeviceCardProps> = ({ device, onNavi
           <div className="grid grid-cols-2 gap-1.5 p-2 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#1E1E1E] my-2 text-center text-[10px]">
             <div>
               <span className="text-[#64748B] dark:text-[#71717A] block">صنعاء</span>
-              <span className="font-black text-[#0B1F3A] dark:text-white block text-xs">
+              <span className="font-black text-[#000000] dark:text-white block text-xs">
                 {device.priceSanaa.toLocaleString()} <small className="text-[9px] font-normal">ريال</small>
               </span>
             </div>
             <div className="border-r border-[#E2E8F0] dark:border-[#1E1E1E] pr-1.5">
               <span className="text-[#64748B] dark:text-[#71717A] block">عدن</span>
-              <span className="font-black text-[#0B1F3A] dark:text-[#F5C400] block text-xs">
+              <span className="font-black text-[#000000] dark:text-[#F5C400] block text-xs">
                 {device.priceAden.toLocaleString()} <small className="text-[9px] font-normal">ريال</small>
               </span>
             </div>

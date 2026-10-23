@@ -78,8 +78,8 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ access }) => {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#070A10] flex items-center justify-center p-4 font-['Cairo',sans-serif]">
-      <div className="w-full max-w-md bg-[#0B0F17] border border-[#1F2937] rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+    <div dir="rtl" className="min-h-screen bg-[#000000] flex items-center justify-center p-4 font-['Cairo',sans-serif]">
+      <div className="w-full max-w-md bg-[#0B0F17] border border-[#2F3336] rounded-2xl p-8 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-[#FFC500] via-yellow-400 to-[#FFC500]" />
         
         <div className="text-center mb-8">
@@ -112,7 +112,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ access }) => {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 dir="ltr"
-                className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-[#FFC500]"
+                className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-[#FFC500]"
               />
               <div className="relative">
                 <input
@@ -122,7 +122,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ access }) => {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   dir="ltr"
-                  className="w-full bg-[#161D2B] border border-[#1F2937] rounded-xl pl-10 pr-4 py-3 text-xs text-white outline-none focus:border-[#FFC500]"
+                  className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl pl-10 pr-4 py-3 text-xs text-white outline-none focus:border-[#FFC500]"
                 />
                 <button
                   type="button"
@@ -145,7 +145,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ access }) => {
             <button
               onClick={handleGoogle}
               disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-[#161D2B] border border-[#1F2937] text-white font-black text-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-3.5 rounded-xl bg-[#161D2B] border border-[#2F3336] text-white font-black text-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <ShieldCheck size={16} className="text-[#FFC500]" />
               <span>{loading ? 'جارٍ التحويل...' : 'الدخول بحساب Google'}</span>

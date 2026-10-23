@@ -94,7 +94,7 @@ export const OwnerRequestModal: React.FC<Props> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 font-['Cairo'] select-none"
+      className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4 font-['Cairo'] select-none"
       dir="rtl"
       onClick={onClose}
     >

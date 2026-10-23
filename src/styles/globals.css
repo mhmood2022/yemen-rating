@@ -49,7 +49,7 @@ html {
 }
 
 html.dark, html.dark body {
-  background-color: #0a0f1d !important;
+  background-color: #000000 !important;
   color-scheme: dark;
 }
 
@@ -164,9 +164,9 @@ html, body {
 /* 1. ضبط موحد لكل وسوم select في كل صفحات الموقع ولوحة التحكم */
 select {
   color-scheme: dark !important;
-  background-color: #111827 !important;
+  background-color: #111111 !important;
   color: #FFFFFF !important;
-  border: 1px solid #1F2937 !important;
+  border: 1px solid #2F3336 !important;
   border-radius: 0.75rem !important;
   font-family: "Cairo", sans-serif !important;
   font-weight: 700 !important;
@@ -200,7 +200,7 @@ select:focus-visible {
 /* 2. خيارات القائمة المنسدلة عند الفتح (option & optgroup) */
 select option,
 option {
-  background-color: #111827 !important;
+  background-color: #111111 !important;
   color: #FFFFFF !important;
   font-family: "Cairo", sans-serif !important;
   font-size: 0.8rem !important;
@@ -210,7 +210,7 @@ option {
 
 select option:checked,
 option:checked {
-  background-color: #1F2937 !important;
+  background-color: #2F3336 !important;
   color: #FFC500 !important;
   font-weight: 800 !important;
 }
@@ -219,7 +219,7 @@ select option:hover,
 select option:focus,
 option:hover,
 option:focus {
-  background-color: #1F2937 !important;
+  background-color: #2F3336 !important;
   color: #FFC500 !important;
 }
 
@@ -252,7 +252,7 @@ textarea:-webkit-autofill:hover,
 textarea:-webkit-autofill:focus,
 select:-webkit-autofill {
   -webkit-text-fill-color: #FFFFFF !important;
-  -webkit-box-shadow: 0 0 0px 1000px #111827 inset !important;
+  -webkit-box-shadow: 0 0 0px 1000px #111111 inset !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
@@ -265,7 +265,7 @@ input[type="range"] {
 
 ::selection {
   background-color: #FFC500 !important;
-  color: #0a0f1d !important;
+  color: #000000 !important;
 }
 
 
@@ -274,7 +274,7 @@ input[type="range"] {
 
 /* ===== YEMEN RATING - CLEAN REFINED THEME ===== */
 html, body, #root, #__next, main {
-  background-color: #0b1224 !important;
+  background-color: #000000 !important;
   color: #ffffff !important;
 }
 

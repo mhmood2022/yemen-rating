@@ -33,7 +33,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
   const salary = job.salary || job.salary_range;
 
   return (
-    <div className="flex flex-col justify-between bg-[#0B0F19] border border-slate-800/90 hover:border-[#FFC500]/50 rounded-2xl p-3.5 sm:p-4 shadow-xl transition-all duration-300 font-['Cairo',sans-serif] group relative overflow-hidden">
+    <div className="flex flex-col justify-between bg-black border border-[#2F3336] hover:border-[#FFC500]/50 rounded-2xl p-3.5 sm:p-4 shadow-xl transition-all duration-300 font-['Cairo',sans-serif] group relative overflow-hidden">
       
       {/* توهج خفيف على الزاوية عند التحويم */}
       <div className="absolute top-0 right-0 w-24 h-24 bg-[#FFC500]/5 rounded-bl-full pointer-events-none group-hover:bg-[#FFC500]/10 transition-colors" />
@@ -67,7 +67,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
         {/* البادجات: المدينة، نوع العمل، الخبرة */}
         <div className="flex flex-wrap items-center gap-2 mb-4 text-xs">
           {job.city && (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#111625] border border-slate-800 text-slate-300 font-medium">
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#111111] border border-[#2F3336] text-slate-300 font-medium">
               <MapPin size={12} className="text-[#FFC500]" />
               <span>{job.city}</span>
             </span>
@@ -81,7 +81,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
             </span>
           )}
           {job.experience && (
-            <span className="px-2.5 py-1 rounded-lg bg-[#111625] border border-slate-800 text-slate-300">
+            <span className="px-2.5 py-1 rounded-lg bg-[#111111] border border-[#2F3336] text-slate-300">
               {job.experience}
             </span>
           )}
@@ -89,7 +89,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
       </div>
 
       {/* أسفل الكرت: الراتب وزر التقديم */}
-      <div className="pt-3.5 border-t border-slate-800/80 flex items-center justify-between text-xs gap-2 mt-auto">
+      <div className="pt-3.5 border-t border-[#2F3336]/80 flex items-center justify-between text-xs gap-2 mt-auto">
         <div className="flex items-center gap-1.5">
           <span className="text-[11px] font-bold text-slate-400 shrink-0">الراتب:</span>
           <span className="text-xs font-black text-[#FFC500] whitespace-nowrap">

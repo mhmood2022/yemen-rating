@@ -62,7 +62,7 @@ export const MobileMoreDrawer: React.FC<{ onNavigate?: (path: string) => void }>
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
       <div
-        className="fixed inset-0 bg-black/75 backdrop-blur-[2px] transition-opacity"
+        className="fixed inset-0 bg-black/75  transition-opacity"
         onClick={closeMoreDrawer}
       />
 

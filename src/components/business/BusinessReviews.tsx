@@ -21,7 +21,7 @@ export const BusinessReviews: React.FC<{ reviews?: BusinessReview[] }> = ({ revi
         <Card key={rev.id} className="p-4 border-[#E2E8F0]">
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-[#0B1F3A]">{rev.authorName}</span>
+              <span className="font-bold text-sm text-[#000000]">{rev.authorName}</span>
               {rev.isVerifiedReviewer && (
                 <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-[#16A34A] bg-[#16A34A]/10 px-1.5 py-0.5 rounded-[4px]">
                   <CheckCircle2 size={11} />

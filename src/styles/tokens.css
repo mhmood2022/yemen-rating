@@ -1,6 +1,6 @@
 :root {
   /* Light Mode (Original Navy & Yellow) */
-  --yr-navy: #0B1F3A;
+  --yr-navy: #000000;
   --yr-navy-light: #162F52;
   --yr-navy-dark: #071527;
   --yr-yellow: #F5C400;
@@ -17,7 +17,7 @@
   --yr-warning: #F59E0B;
   --yr-info: #2563EB;
 
-  --yr-text-primary: #0F172A;
+  --yr-text-primary: #000000;
   --yr-text-secondary: #475569;
   --yr-text-muted: #94A3B8;
 
@@ -56,7 +56,7 @@
 
 /* ===== YEMEN RATING - CLEAN REFINED THEME ===== */
 html, body, #root, #__next, main {
-  background-color: #0b1224 !important;
+  background-color: #000000 !important;
   color: #ffffff !important;
 }
 

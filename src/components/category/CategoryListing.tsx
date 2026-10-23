@@ -118,7 +118,7 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
   }, [allList, selectedSubCategory, selectedGov, selectedCity, searchQuery]);
 
   return (
-    <div dir="rtl" className="space-y-6 max-w-7xl mx-auto px-3 sm:px-6 py-4 font-['Cairo',sans-serif]">
+    <div dir="rtl" className="space-y-6 max-w-7xl mx-auto px-3 sm:px-6 py-4 font-['Tahoma',sans-serif]">
       {/* 🌟 1. إعلان البنر العلوي (YR Ads Top Unit) */}
       <div className="w-full">
         <AdBanner placementId="1" className="rounded-2xl overflow-hidden shadow-lg border border-zinc-800/80" />
@@ -269,7 +269,7 @@ function UnifiedBusinessCard({ item, onSelect }: { item: BusinessItem; onSelect:
                 <ShieldCheck className="w-3 h-3" /> غير مطالب به
               </span>
             )}
-            <span className="bg-black/60 backdrop-blur-md text-amber-400 text-[11px] font-black px-2 py-0.5 rounded-lg flex items-center gap-1 border border-amber-500/20">
+            <span className="bg-black  text-amber-400 text-[11px] font-black px-2 py-0.5 rounded-lg flex items-center gap-1 border border-amber-500/20">
               <Star className="w-3 h-3 fill-amber-400" /> {item.rating}
             </span>
           </div>

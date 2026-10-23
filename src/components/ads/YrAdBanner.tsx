@@ -33,7 +33,7 @@ export const YrAdBanner: React.FC<YrAdBannerProps> = ({ ad, className }) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
           {ad.type === 'video' && (
-            <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 text-[#F5C400] flex items-center justify-center">
+            <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black text-[#F5C400] flex items-center justify-center">
               <Video size={14} />
             </div>
           )}

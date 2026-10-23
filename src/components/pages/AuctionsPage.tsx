@@ -463,7 +463,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   });
 
   return (
-    <div dir="rtl" className="max-w-7xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white">
+    <div dir="rtl" className="max-w-7xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white bg-black min-h-screen">
       <AdBanner placementId="6" className="mb-1" />
 
       {toastMessage && (
@@ -474,10 +474,10 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       )}
 
       {/* الترويسة الرئيسية - بدون وساطة معتمدة */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0A0F1D] border border-slate-800 p-4 rounded-2xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-black border border-[#2F3336] p-4 rounded-2xl">
         <div className="flex items-center gap-3">
           {onBack && (
-            <button onClick={onBack} className="p-2 rounded-xl bg-[#060A13] border border-slate-800 text-[#F5C400]">
+            <button onClick={onBack} className="p-2 rounded-xl bg-[#111111] border border-[#2F3336] text-[#F5C400]">
               <ArrowRight size={16} />
             </button>
           )}
@@ -498,7 +498,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             <Plus size={16} />
             <span>إضافة مزاد جديد</span>
           </button>
-          <button onClick={fetchAuctions} className="p-2.5 bg-[#060A13] border border-slate-800 rounded-xl text-slate-300">
+          <button onClick={fetchAuctions} className="p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-slate-300">
             <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
           </button>
         </div>
@@ -515,7 +515,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
               className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap border flex items-center gap-1.5 transition-all ${
                 selectedCat === cat.id
                   ? 'bg-[#F5C400] text-black border-[#F5C400] font-black shadow-md'
-                  : 'bg-[#0A0F1D] text-slate-300 border-slate-800 hover:text-white'
+                  : 'bg-black text-slate-300 border-[#2F3336] hover:text-white'
               }`}
             >
               {Icon && <Icon size={14} />}
@@ -526,19 +526,19 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       </div>
 
       {/* تبويبات الحالة: المزادات النشطة، البيع المباشر، المزادات المنتهية */}
-      <div className="grid grid-cols-3 gap-1.5 bg-[#0A0F1D] p-1.5 rounded-2xl border border-slate-800 text-center">
+      <div className="grid grid-cols-3 gap-1.5 bg-black p-1.5 rounded-2xl border border-[#2F3336] text-center">
         <button
           type="button"
           onClick={() => setStatusTab('ACTIVE')}
           className={`py-2 px-1.5 rounded-xl transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 ${
             statusTab === 'ACTIVE'
               ? 'bg-[#F5C400] text-black font-black shadow-md shadow-[#F5C400]/15'
-              : 'text-slate-400 hover:text-white hover:bg-slate-900/60 font-bold'
+              : 'text-slate-400 hover:text-white hover:bg-[#1A1A1A] font-bold'
           }`}
         >
           <span className="text-[11px] sm:text-xs leading-none">المزادات النشطة</span>
           <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md leading-none ${
-            statusTab === 'ACTIVE' ? 'bg-black/20 text-black' : 'bg-[#060A13] text-slate-300 border border-slate-800'
+            statusTab === 'ACTIVE' ? 'bg-black text-black' : 'bg-[#111111] text-slate-300 border border-[#2F3336]'
           }`}>
             {activeAuctions.length}
           </span>
@@ -550,12 +550,12 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           className={`py-2 px-1.5 rounded-xl transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 ${
             statusTab === 'DIRECT'
               ? 'bg-[#F5C400] text-black font-black shadow-md shadow-[#F5C400]/15'
-              : 'text-slate-400 hover:text-white hover:bg-slate-900/60 font-bold'
+              : 'text-slate-400 hover:text-white hover:bg-[#1A1A1A] font-bold'
           }`}
         >
           <span className="text-[11px] sm:text-xs leading-none">البيع المباشر</span>
           <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md leading-none ${
-            statusTab === 'DIRECT' ? 'bg-black/20 text-black' : 'bg-[#060A13] text-slate-300 border border-slate-800'
+            statusTab === 'DIRECT' ? 'bg-black text-black' : 'bg-[#111111] text-slate-300 border border-[#2F3336]'
           }`}>
             {directSales.length}
           </span>
@@ -567,12 +567,12 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
           className={`py-2 px-1.5 rounded-xl transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 ${
             statusTab === 'ENDED'
               ? 'bg-[#F5C400] text-black font-black shadow-md shadow-[#F5C400]/15'
-              : 'text-slate-400 hover:text-white hover:bg-slate-900/60 font-bold'
+              : 'text-slate-400 hover:text-white hover:bg-[#1A1A1A] font-bold'
           }`}
         >
           <span className="text-[11px] sm:text-xs leading-none">المزادات المنتهية</span>
           <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md leading-none ${
-            statusTab === 'ENDED' ? 'bg-black/20 text-black' : 'bg-[#060A13] text-slate-300 border border-slate-800'
+            statusTab === 'ENDED' ? 'bg-black text-black' : 'bg-[#111111] text-slate-300 border border-[#2F3336]'
           }`}>
             {endedListings.length}
           </span>
@@ -580,14 +580,14 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
       </div>
 
       {/* شريط البحث والمدينة المخصص بدون رمادي أندرويد */}
-      <div className="bg-[#0A0F1D] p-3 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-stretch gap-2.5">
+      <div className="bg-black p-3 rounded-2xl border border-[#2F3336] flex flex-col sm:flex-row items-stretch gap-2.5">
         <div className="relative flex-1">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="ابحث باسم السلعة أو الموديل..."
-            className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl py-2.5 pr-9 pl-8 text-xs text-white placeholder-slate-500 focus:outline-none"
+            className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#F5C400] rounded-xl py-2.5 pr-9 pl-8 text-xs text-white placeholder-slate-500 focus:outline-none"
           />
           <Search className="absolute right-3 top-3 w-4 h-4 text-[#F5C400]" />
           {searchTerm && (
@@ -609,12 +609,12 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
 
       {/* شبكة عرض كروت المزادات */}
       {loading ? (
-        <div className="py-24 flex flex-col items-center justify-center text-slate-400 gap-3 bg-[#0A0F1D] rounded-2xl border border-slate-800">
+        <div className="py-24 flex flex-col items-center justify-center text-slate-400 gap-3 bg-black rounded-2xl border border-[#2F3336]">
           <div className="w-8 h-8 rounded-full border-2 border-[#F5C400] border-t-transparent animate-spin" />
           <span className="text-xs font-bold text-white">جاري مزامنة بيانات المزادات...</span>
         </div>
       ) : displayedListings.length === 0 ? (
-        <div className="py-20 text-center bg-[#0A0F1D] rounded-2xl border border-slate-800 p-8 space-y-3">
+        <div className="py-20 text-center bg-black rounded-2xl border border-[#2F3336] p-8 space-y-3">
           <AlertCircle size={44} className="text-[#F5C400] mx-auto opacity-70" />
           <h3 className="text-base font-bold text-white">لا توجد معروضات مسجلة في هذا القسم حالياً</h3>
           <p className="text-xs text-slate-400 max-w-2xl mx-auto">

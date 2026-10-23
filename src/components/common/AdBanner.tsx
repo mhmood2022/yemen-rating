@@ -80,7 +80,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
       } ${className}`}
       style={{
         borderRadius: '0px',
-        border: adData.hasBorder ? `${adData.borderWidth || 1}px solid ${adData.borderColor || '#FFC500'}` : '1px solid #1F2937',
+        border: adData.hasBorder ? `${adData.borderWidth || 1}px solid ${adData.borderColor || '#FFC500'}` : '1px solid #2F3336',
         backgroundColor: adData.bgColor || '#0B0F17',
         backgroundImage: adData.bgStyle === 'gradient' ? `linear-gradient(135deg, ${adData.bgColor || '#0B0F17'} 0%, #161D2B 100%)` : 'none',
         boxShadow: adData.hasGlow && adData.hasBorder ? `0 0 20px ${adData.borderColor || '#FFC500'}35` : '0 4px 15px rgba(0,0,0,0.6)',
@@ -196,7 +196,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           </div>
 
           <div className="flex items-center gap-1 pointer-events-auto">
-            <span className="text-[8px] text-zinc-300 font-mono bg-black/70 px-1.5 py-0.2 rounded-none border border-white/10 backdrop-blur-sm flex items-center gap-0.5">
+            <span className="text-[8px] text-zinc-300 font-mono bg-black px-1.5 py-0.2 rounded-none border border-white/10  flex items-center gap-0.5">
               <Info size={8} /> إعلان YR
             </span>
             {isFooterSticky && (
@@ -207,7 +207,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
                   e.preventDefault();
                   setIsDismissed(true);
                 }}
-                className="w-4 h-4 rounded-none bg-black/80 hover:bg-red-600 text-zinc-300 hover:text-white flex items-center justify-center text-[8.5px] font-bold border border-white/15 transition-colors cursor-pointer"
+                className="w-4 h-4 rounded-none bg-black hover:bg-red-600 text-zinc-300 hover:text-white flex items-center justify-center text-[8.5px] font-bold border border-white/15 transition-colors cursor-pointer"
                 title="إغلاق هذا الإعلان"
               >
                 ✕

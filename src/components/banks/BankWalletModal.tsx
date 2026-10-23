@@ -30,7 +30,7 @@ export const BankWalletModal: React.FC<BankWalletModalProps> = ({ item, isOpen, 
         {/* Header Summary */}
         <div className="flex items-start justify-between gap-4 pb-4 border-b border-[#E2E8F0] dark:border-[#222222]">
           <div className="flex items-start gap-3">
-            <div className="w-14 h-14 rounded-[12px] bg-[#0B1F3A]/5 dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#222222] flex items-center justify-center text-[#0B1F3A] dark:text-[#F5C400] shrink-0">
+            <div className="w-14 h-14 rounded-[12px] bg-[#000000]/5 dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#222222] flex items-center justify-center text-[#000000] dark:text-[#F5C400] shrink-0">
               {isBank ? <Landmark size={28} strokeWidth={1.75} /> : <Wallet size={28} strokeWidth={1.75} />}
             </div>
 
@@ -47,7 +47,7 @@ export const BankWalletModal: React.FC<BankWalletModalProps> = ({ item, isOpen, 
                 )}
               </div>
 
-              <h2 className="text-base sm:text-lg font-black text-[#0B1F3A] dark:text-white">
+              <h2 className="text-base sm:text-lg font-black text-[#000000] dark:text-white">
                 {item.name}
               </h2>
 
@@ -74,7 +74,7 @@ export const BankWalletModal: React.FC<BankWalletModalProps> = ({ item, isOpen, 
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-xs font-bold transition-all',
               activeTab === 'fees'
-                ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-[#000000]'
+                ? 'bg-[#000000] text-white dark:bg-[#F5C400] dark:text-[#000000]'
                 : 'text-[#64748B] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414]'
             )}
           >
@@ -88,7 +88,7 @@ export const BankWalletModal: React.FC<BankWalletModalProps> = ({ item, isOpen, 
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-xs font-bold transition-all',
               activeTab === 'services'
-                ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-[#000000]'
+                ? 'bg-[#000000] text-white dark:bg-[#F5C400] dark:text-[#000000]'
                 : 'text-[#64748B] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414]'
             )}
           >
@@ -102,7 +102,7 @@ export const BankWalletModal: React.FC<BankWalletModalProps> = ({ item, isOpen, 
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-xs font-bold transition-all',
               activeTab === 'features'
-                ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-[#000000]'
+                ? 'bg-[#000000] text-white dark:bg-[#F5C400] dark:text-[#000000]'
                 : 'text-[#64748B] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414]'
             )}
           >
@@ -121,7 +121,7 @@ export const BankWalletModal: React.FC<BankWalletModalProps> = ({ item, isOpen, 
                   className="p-3 rounded-[10px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
                 >
                   <div>
-                    <span className="font-bold text-[#0B1F3A] dark:text-white block">{fee.serviceName}</span>
+                    <span className="font-bold text-[#000000] dark:text-white block">{fee.serviceName}</span>
                     {fee.notes && <span className="text-[#64748B] dark:text-[#71717A] text-[11px]">{fee.notes}</span>}
                   </div>
                   <div className="text-left sm:text-right">
@@ -138,9 +138,9 @@ export const BankWalletModal: React.FC<BankWalletModalProps> = ({ item, isOpen, 
               {item.services.map((srv, idx) => (
                 <div
                   key={idx}
-                  className="p-3 rounded-[9px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] text-xs font-semibold text-[#0B1F3A] dark:text-white flex items-center gap-2"
+                  className="p-3 rounded-[9px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] text-xs font-semibold text-[#000000] dark:text-white flex items-center gap-2"
                 >
-                  <div className="w-5 h-5 rounded-full bg-[#F5C400]/20 text-[#0B1F3A] dark:text-[#F5C400] flex items-center justify-center text-[10px] font-bold shrink-0">
+                  <div className="w-5 h-5 rounded-full bg-[#F5C400]/20 text-[#000000] dark:text-[#F5C400] flex items-center justify-center text-[10px] font-bold shrink-0">
                     {idx + 1}
                   </div>
                   <span>{srv}</span>
@@ -154,7 +154,7 @@ export const BankWalletModal: React.FC<BankWalletModalProps> = ({ item, isOpen, 
               {item.features.map((feat, idx) => (
                 <div
                   key={idx}
-                  className="p-3 rounded-[9px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] text-xs font-semibold text-[#0B1F3A] dark:text-white flex items-center gap-2"
+                  className="p-3 rounded-[9px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] text-xs font-semibold text-[#000000] dark:text-white flex items-center gap-2"
                 >
                   <CheckCircle2 size={16} className="text-[#16A34A] dark:text-[#22C55E] shrink-0" />
                   <span>{feat}</span>
@@ -169,7 +169,7 @@ export const BankWalletModal: React.FC<BankWalletModalProps> = ({ item, isOpen, 
           {item.phone && (
             <a
               href={`tel:${item.phone}`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] text-[#0B1F3A] dark:text-white font-semibold"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] text-[#000000] dark:text-white font-semibold"
             >
               <Phone size={13} className="text-[#16A34A] dark:text-[#22C55E]" />
               <span dir="ltr">{item.phone}</span>
@@ -180,7 +180,7 @@ export const BankWalletModal: React.FC<BankWalletModalProps> = ({ item, isOpen, 
               href={item.website}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] text-[#0B1F3A] dark:text-white font-semibold"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] text-[#000000] dark:text-white font-semibold"
             >
               <Globe size={13} className="text-[#F5C400]" />
               <span>الموقع الإلكتروني الرسمي</span>

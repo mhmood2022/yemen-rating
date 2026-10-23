@@ -60,7 +60,7 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
       {/* Overlay - Pure Black */}
       <div
-        className="fixed inset-0 bg-black/85 backdrop-blur-[2px] transition-opacity"
+        className="fixed inset-0 bg-black  transition-opacity"
         onClick={handleAttemptClose}
         aria-hidden="true"
       />
@@ -69,17 +69,17 @@ export const Modal: React.FC<ModalProps> = ({
       <div
         className={cn(
           'relative w-full rounded-[14px] shadow-2xl border overflow-hidden z-10 flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150',
-          'bg-white dark:bg-[#000000] border-[#E2E8F0] dark:border-[#222222] text-[#0F172A] dark:text-white',
+          'bg-white dark:bg-[#000000] border-[#E2E8F0] dark:border-[#222222] text-[#000000] dark:text-white',
           maxWidthClasses[maxWidth]
         )}
       >
         {/* Header - Pure Black */}
         <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b border-[#E2E8F0] dark:border-[#222222] bg-white dark:bg-[#000000] sticky top-0 z-10">
-          <h3 className="text-sm sm:text-base font-bold text-[#0B1F3A] dark:text-white">{title}</h3>
+          <h3 className="text-sm sm:text-base font-bold text-[#000000] dark:text-white">{title}</h3>
           <button
             type="button"
             onClick={handleAttemptClose}
-            className="p-1 rounded-lg text-[#94A3B8] hover:text-[#0B1F3A] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#1A1A1A] transition-colors"
+            className="p-1 rounded-lg text-[#94A3B8] hover:text-[#000000] dark:text-[#A1A1AA] dark:hover:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#1A1A1A] transition-colors"
             aria-label="إغلاق"
           >
             <X size={18} strokeWidth={1.75} />

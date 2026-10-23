@@ -121,7 +121,7 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
   };
 
   return (
-    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Cairo',sans-serif] text-white">
+    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Tahoma',sans-serif] text-white bg-black min-h-screen">
       
       {/* تضمين الحركات */}
       <style>{`
@@ -137,7 +137,7 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
       <AdBanner placementId="8" className="mb-1" />
 
       {/* 2. رأس الصفحة الرسمي المدمج */}
-      <div className="flex items-center justify-between border-b border-[#1F2937] pb-2">
+      <div className="flex items-center justify-between border-b border-[#2F3336] pb-2">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
             <Coins size={16} className="stroke-[2.5]" />
@@ -264,9 +264,9 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
               </div>
 
               {/* سطر الشراء والبيع المدمج */}
-              <div className="grid grid-cols-2 gap-1.5 pt-1 border-t border-[#1F2937] font-mono">
+              <div className="grid grid-cols-2 gap-1.5 pt-1 border-t border-[#2F3336] font-mono">
                 <div className="px-2.5 py-1 rounded-lg bg-[#161619] border border-[#27272A] flex items-center justify-between">
-                  <span className="text-[9px] text-gray-400 font-['Cairo']">شراء</span>
+                  <span className="text-[9px] text-gray-400 font-['Tahoma']">شراء</span>
                   <div className="flex items-baseline gap-0.5">
                     <span className="text-xs sm:text-sm font-black text-[#16A34A] digit-ticker">
                       {currentRates.usd.buy.toFixed(2)}
@@ -276,7 +276,7 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
                 </div>
 
                 <div className="px-2.5 py-1 rounded-lg bg-[#161619] border border-[#27272A] flex items-center justify-between">
-                  <span className="text-[9px] text-gray-400 font-['Cairo']">بيع</span>
+                  <span className="text-[9px] text-gray-400 font-['Tahoma']">بيع</span>
                   <div className="flex items-baseline gap-0.5">
                     <span className="text-xs sm:text-sm font-black text-[#DC2626] digit-ticker">
                       {currentRates.usd.sell.toFixed(2)}
@@ -309,9 +309,9 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
               </div>
 
               {/* سطر الشراء والبيع المدمج */}
-              <div className="grid grid-cols-2 gap-1.5 pt-1 border-t border-[#1F2937] font-mono">
+              <div className="grid grid-cols-2 gap-1.5 pt-1 border-t border-[#2F3336] font-mono">
                 <div className="px-2.5 py-1 rounded-lg bg-[#161619] border border-[#27272A] flex items-center justify-between">
-                  <span className="text-[9px] text-gray-400 font-['Cairo']">شراء</span>
+                  <span className="text-[9px] text-gray-400 font-['Tahoma']">شراء</span>
                   <div className="flex items-baseline gap-0.5">
                     <span className="text-xs sm:text-sm font-black text-[#16A34A] digit-ticker">
                       {currentRates.sar.buy.toFixed(2)}
@@ -321,7 +321,7 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
                 </div>
 
                 <div className="px-2.5 py-1 rounded-lg bg-[#161619] border border-[#27272A] flex items-center justify-between">
-                  <span className="text-[9px] text-gray-400 font-['Cairo']">بيع</span>
+                  <span className="text-[9px] text-gray-400 font-['Tahoma']">بيع</span>
                   <div className="flex items-baseline gap-0.5">
                     <span className="text-xs sm:text-sm font-black text-[#DC2626] digit-ticker">
                       {currentRates.sar.sell.toFixed(2)}
@@ -349,7 +349,7 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
               ].map((g, idx) => (
                 <div key={idx} className="p-2 rounded-xl bg-[#0F0F12] border border-[#222226] space-y-0.5 shadow-sm">
                   <div className="flex justify-between items-center text-[9.5px]">
-                    <span className="font-bold text-white font-['Cairo']">{g.title}</span>
+                    <span className="font-bold text-white font-['Tahoma']">{g.title}</span>
                     <span className={`text-[8.5px] font-bold flex items-center gap-0.5 ${
                       g.data.trend === 'up' ? 'text-[#16A34A]' : g.data.trend === 'down' ? 'text-[#DC2626]' : 'text-[#FFC500]'
                     }`}>
@@ -360,8 +360,8 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-baseline text-[9px] pt-1 border-t border-[#1F2937]">
-                    <span className="text-gray-400 font-['Cairo']">شراء:</span>
+                  <div className="flex justify-between items-baseline text-[9px] pt-1 border-t border-[#2F3336]">
+                    <span className="text-gray-400 font-['Tahoma']">شراء:</span>
                     <div className="flex items-baseline gap-0.5">
                       <span className="font-black text-[#16A34A] digit-ticker">{g.data.buy.toLocaleString()}</span>
                       <span className="text-[#FFC500] font-black text-[9px]">﷼</span>
@@ -369,7 +369,7 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
                   </div>
 
                   <div className="flex justify-between items-baseline text-[9px]">
-                    <span className="text-gray-400 font-['Cairo']">بيع:</span>
+                    <span className="text-gray-400 font-['Tahoma']">بيع:</span>
                     <div className="flex items-baseline gap-0.5">
                       <span className="font-black text-[#DC2626] digit-ticker">{g.data.sell.toLocaleString()}</span>
                       <span className="text-[#FFC500] font-black text-[9px]">﷼</span>
@@ -415,23 +415,23 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
             </div>
 
             <div className="p-2 bg-[#18181C] rounded-lg border border-[#FFC500]/30 space-y-0.5 font-mono text-center">
-              <span className="text-[9px] text-gray-400 font-['Cairo'] block">فارق الصرف بين عدن وصنعاء:</span>
+              <span className="text-[9px] text-gray-400 font-['Tahoma'] block">فارق الصرف بين عدن وصنعاء:</span>
               <div className="text-sm font-black text-[#FFC500]">
                 +{converterResults.diff.toLocaleString()} <span className="text-[10px]">﷼</span>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1.5 border-t border-[#1F2937] font-mono">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1.5 border-t border-[#2F3336] font-mono">
             <div className="p-2.5 rounded-lg bg-[#161619] border border-[#27272A] flex items-center justify-between">
-              <span className="text-[9.5px] text-gray-400 font-['Cairo']">صنعاء:</span>
+              <span className="text-[9.5px] text-gray-400 font-['Tahoma']">صنعاء:</span>
               <div className="flex items-baseline gap-1">
                 <span className="text-sm font-black text-white digit-ticker">{converterResults.sanaaTotal.toLocaleString()}</span>
                 <span className="text-[#FFC500] font-black text-[10px]">﷼ يمني</span>
               </div>
             </div>
             <div className="p-2.5 rounded-lg bg-[#161619] border border-[#27272A] flex items-center justify-between">
-              <span className="text-[9.5px] text-gray-400 font-['Cairo']">عدن:</span>
+              <span className="text-[9.5px] text-gray-400 font-['Tahoma']">عدن:</span>
               <div className="flex items-baseline gap-1">
                 <span className="text-sm font-black text-[#16A34A] digit-ticker">{converterResults.adenTotal.toLocaleString()}</span>
                 <span className="text-[#FFC500] font-black text-[10px]">﷼ يمني</span>
@@ -462,9 +462,9 @@ export const ExchangeRatesPage: React.FC<ExchangeRatesPageProps> = ({ onBack }) 
                   <th className="py-2 px-2.5 text-center">الرسوم</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1F2937] text-white font-mono">
+              <tbody className="divide-y divide-[#2F3336] text-white font-mono">
                 {banksData.map((b, idx) => (
-                  <tr key={idx} className="hover:bg-[#18181C]/50 font-['Cairo']">
+                  <tr key={idx} className="hover:bg-[#18181C]/50 font-['Tahoma']">
                     <td className="py-2 px-2.5 font-bold flex items-center gap-1">
                       {b.type === 'بنك' ? <Landmark size={12} className="text-[#FFC500]" /> : <Wallet size={12} className="text-[#2EA5FF]" />}
                       <span>{b.name}</span>

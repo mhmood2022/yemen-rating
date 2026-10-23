@@ -70,19 +70,19 @@ const CustomSelect: React.FC<{
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between p-2.5 bg-[#161D2B] text-white border border-[#1F2937] hover:border-[#FFC500]/50 rounded-xl text-xs outline-none transition-colors"
+        className="w-full flex items-center justify-between p-2.5 bg-[#111111] text-white border border-[#2F3336] hover:border-[#FFC500]/50 rounded-xl text-xs outline-none transition-colors"
       >
         <span className="truncate">{selectedLabel}</span>
         <ChevronDown size={14} className={`text-gray-400 transition-transform ${open ? 'rotate-180 text-[#FFC500]' : ''}`} />
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 left-0 mt-1.5 bg-[#161D2B] border-2 border-[#1F2937] rounded-xl shadow-2xl max-h-52 overflow-y-auto z-[90] p-1 space-y-0.5 scrollbar-thin scrollbar-thumb-zinc-700">
+        <div className="absolute top-full right-0 left-0 mt-1.5 bg-[#111111] border-2 border-[#2F3336] rounded-xl shadow-2xl max-h-52 overflow-y-auto z-[90] p-1 space-y-0.5 scrollbar-thin scrollbar-thumb-zinc-700">
           {label?.includes('التصنيف') && (
             <button
               type="button"
               onClick={() => { onChange(''); setOpen(false); }}
-              className="w-full text-right px-3 py-2 rounded-lg text-xs text-gray-400 hover:bg-[#0B0F17] hover:text-white transition-colors"
+              className="w-full text-right px-3 py-2 rounded-lg text-xs text-gray-400 hover:bg-black hover:text-white transition-colors"
             >
               اختر الصنف
             </button>
@@ -100,7 +100,7 @@ const CustomSelect: React.FC<{
                 className={`w-full text-right px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-colors ${
                   isSelected
                     ? 'bg-[#FFC500] text-black font-black'
-                    : 'text-gray-200 hover:bg-[#0B0F17] hover:text-[#FFC500]'
+                    : 'text-gray-200 hover:bg-black hover:text-[#FFC500]'
                 }`}
               >
                 <span className="truncate">{opt.label}</span>
@@ -109,7 +109,7 @@ const CustomSelect: React.FC<{
             );
           })}
           {label?.includes('التصنيف') && (
-            <div className="pt-1 mt-1 border-t border-[#1F2937]">
+            <div className="pt-1 mt-1 border-t border-[#2F3336]">
               {!isAddingNew ? (
                 <button
                   type="button"
@@ -120,13 +120,13 @@ const CustomSelect: React.FC<{
                   <span>+ صنف جديد</span>
                 </button>
               ) : (
-                <div className="p-2 space-y-2 bg-[#0B0F17] rounded-xl border border-amber-500/40 m-1">
+                <div className="p-2 space-y-2 bg-black rounded-xl border border-amber-500/40 m-1">
                   <input
                     type="text"
                     value={newCatName}
                     onChange={(e) => setNewCatName(e.target.value)}
                     placeholder="اكتب اسم الصنف الجديد..."
-                    className="w-full p-2 bg-[#161D2B] border border-[#1F2937] focus:border-[#FFC500] rounded-lg text-white text-xs outline-none"
+                    className="w-full p-2 bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-lg text-white text-xs outline-none"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -782,7 +782,7 @@ export const CompaniesManager: React.FC = () => {
     <div dir="rtl" className="p-4 sm:p-6 lg:p-8 space-y-6 font-['Cairo',sans-serif] text-white relative">
       {/* إشعار النجاح العائم المريح للهاتف (أسفل الشاشة مكان الإبهام) */}
       {successToast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3.5 rounded-2xl bg-[#161D2B] border-2 border-emerald-500 text-emerald-300 font-bold text-xs sm:text-sm flex items-center gap-3 shadow-2xl backdrop-blur-xl">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3.5 rounded-2xl bg-[#111111] border-2 border-emerald-500 text-emerald-300 font-bold text-xs sm:text-sm flex items-center gap-3 shadow-2xl ">
           <div className="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0">
             <Check size={14} className="stroke-[3]" />
           </div>
@@ -791,14 +791,14 @@ export const CompaniesManager: React.FC = () => {
       )}
 
       {/* الترويسة الرئيسية */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#1F2937]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#2F3336]">
         <div className="flex items-center gap-3">
           {activeOfficialCategory ? (
             <div className="w-12 h-12 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-400">
               <activeOfficialCategory.icon className="w-6 h-6" />
             </div>
           ) : (
-            <div className="w-12 h-12 rounded-2xl bg-[#161D2B] border border-[#1F2937] flex items-center justify-center text-[#FFC500]">
+            <div className="w-12 h-12 rounded-2xl bg-[#111111] border border-[#2F3336] flex items-center justify-center text-[#FFC500]">
               <Building2 className="w-6 h-6" />
             </div>
           )}
@@ -816,7 +816,7 @@ export const CompaniesManager: React.FC = () => {
           {currentCategorySlug && (
             <button
               onClick={() => setSearchParams({})}
-              className="px-3 py-2 rounded-xl bg-[#161D2B] border border-[#1F2937] text-xs text-gray-300 hover:text-white"
+              className="px-3 py-2 rounded-xl bg-[#111111] border border-[#2F3336] text-xs text-gray-300 hover:text-white"
             >
               عرض الكل
             </button>
@@ -832,7 +832,7 @@ export const CompaniesManager: React.FC = () => {
       </div>
 
       {/* شريط الفلاتر بالقوائم المنسدلة المخصصة الداركة 100% */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-[#0B0F17] p-3 rounded-2xl border border-[#1F2937]">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-black p-3 rounded-2xl border border-[#2F3336]">
         <div className="relative">
           <Search size={16} className="absolute right-3.5 top-3.5 text-gray-400" />
           <input
@@ -840,7 +840,7 @@ export const CompaniesManager: React.FC = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="ابحث بالاسم، المدينة، الهاتف..."
-            className="w-full pr-10 pl-3 py-2 bg-[#161D2B] border border-[#1F2937] rounded-xl text-xs text-white placeholder-gray-500 outline-none focus:border-[#FFC500]/50"
+            className="w-full pr-10 pl-3 py-2 bg-[#111111] border border-[#2F3336] rounded-xl text-xs text-white placeholder-gray-500 outline-none focus:border-[#FFC500]/50"
           />
         </div>
 
@@ -870,7 +870,7 @@ export const CompaniesManager: React.FC = () => {
           جاري استدعاء المنشآت الحقيقية من قاعدة بيانات Supabase...
         </div>
       ) : filteredBusinesses.length === 0 ? (
-        <div className="py-16 text-center bg-[#0B0F17] rounded-3xl border border-dashed border-[#1F2937] space-y-3.5 p-6">
+        <div className="py-16 text-center bg-black rounded-3xl border border-dashed border-[#2F3336] space-y-3.5 p-6">
           <Building2 className="w-12 h-12 text-gray-600 mx-auto" />
           <p className="text-base font-bold text-gray-200">
             {activeOfficialCategory
@@ -892,13 +892,13 @@ export const CompaniesManager: React.FC = () => {
           {filteredBusinesses.map((b) => (
             <div
               key={b.id}
-              className={`bg-[#0B0F17] border rounded-2xl overflow-hidden transition-all shadow-lg flex flex-col ${
+              className={`bg-black border rounded-2xl overflow-hidden transition-all shadow-lg flex flex-col ${
                 b.status === 'hidden'
                   ? 'border-red-900/40 opacity-75 bg-red-950/5'
-                  : 'border-[#1F2937] hover:border-[#FFC500]/50'
+                  : 'border-[#2F3336] hover:border-[#FFC500]/50'
               }`}
             >
-              <div className="relative h-28 bg-[#161D2B] overflow-hidden">
+              <div className="relative h-28 bg-[#111111] overflow-hidden">
                 {b.cover_url ? (
                   <img
                     src={b.cover_url}
@@ -925,7 +925,7 @@ export const CompaniesManager: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="absolute -bottom-2 right-3 w-14 h-14 rounded-xl bg-[#0B0F17] border-2 border-[#1F2937] overflow-hidden shadow-lg flex items-center justify-center">
+                <div className="absolute -bottom-2 right-3 w-14 h-14 rounded-xl bg-black border-2 border-[#2F3336] overflow-hidden shadow-lg flex items-center justify-center">
                   {b.logo_url ? (
                     <img
                       src={b.logo_url}
@@ -960,7 +960,7 @@ export const CompaniesManager: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between text-xs mt-3 pt-2 border-t border-[#1F2937]">
+                  <div className="flex items-center justify-between text-xs mt-3 pt-2 border-t border-[#2F3336]">
                     <div className="flex items-center gap-1 text-amber-400 font-bold">
                       <Star size={13} className="fill-amber-400" />
                       <span>{b.rating || 4.5}</span>
@@ -973,7 +973,7 @@ export const CompaniesManager: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="mt-2.5 p-2.5 rounded-xl bg-[#161D2B]/70 border border-[#1F2937] space-y-1 text-xs text-gray-300">
+                  <div className="mt-2.5 p-2.5 rounded-xl bg-[#111111]/70 border border-[#2F3336] space-y-1 text-xs text-gray-300">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-500 text-[11px] flex items-center gap-1"><MapPin size={11} /> المدينة:</span>
                       <span className="font-bold text-white text-[11px]">{b.city}</span>
@@ -992,7 +992,7 @@ export const CompaniesManager: React.FC = () => {
                         </a>
                       </div>
                     )}
-                    <div className="flex items-center justify-between pt-1 border-t border-[#1F2937]/50">
+                    <div className="flex items-center justify-between pt-1 border-t border-[#2F3336]/50">
                       <span className="text-gray-500 text-[11px]">إثبات الملكية:</span>
                       <span className={`text-[10px] font-bold ${
                         b.claim_status === 'CLAIMED' ? 'text-emerald-400' : 'text-amber-400'
@@ -1003,10 +1003,10 @@ export const CompaniesManager: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-2 border-t border-[#1F2937] mt-3">
+                <div className="flex items-center gap-2 pt-2 border-t border-[#2F3336] mt-3">
                   <button
                     onClick={() => handleOpenEditModal(b)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#161D2B] hover:bg-[#FFC500] hover:text-black text-gray-200 text-xs font-bold transition-all"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-[#111111] hover:bg-[#FFC500] hover:text-black text-gray-200 text-xs font-bold transition-all"
                   >
                     <Edit3 size={13} />
                     تعديل شامل
@@ -1035,10 +1035,10 @@ export const CompaniesManager: React.FC = () => {
           style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
         >
           <div
-            className="bg-[#0e1320] border-2 border-[#222b42] rounded-3xl w-full max-w-3xl max-h-[88vh] overflow-y-auto shadow-2xl flex flex-col font-['Cairo',sans-serif] pointer-events-auto shadow-black/90"
+            className="bg-black border-2 border-[#2F3336] rounded-3xl w-full max-w-3xl max-h-[88vh] overflow-y-auto shadow-2xl flex flex-col font-['Cairo',sans-serif] pointer-events-auto shadow-black/90"
             style={{ overscrollBehavior: 'contain' }}
           >
-            <div className="p-4 sm:p-5 border-b border-[#1F2937] flex items-center justify-between bg-[#0e1320]/95 backdrop-blur-md sticky top-0 z-30">
+            <div className="p-4 sm:p-5 border-b border-[#2F3336] flex items-center justify-between bg-black  sticky top-0 z-30">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-xl bg-[#FFC500]/10 text-[#FFC500]">
                   <Edit3 size={18} />
@@ -1052,13 +1052,13 @@ export const CompaniesManager: React.FC = () => {
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 text-gray-400 hover:text-white rounded-xl bg-[#161D2B]"
+                className="p-2 text-gray-400 hover:text-white rounded-xl bg-[#111111]"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <div className="flex border-b border-[#1F2937] bg-[#070b13] px-3 overflow-x-auto no-scrollbar text-xs font-bold gap-1.5 py-2 shrink-0">
+            <div className="flex border-b border-[#2F3336] bg-[#111111] px-3 overflow-x-auto no-scrollbar text-xs font-bold gap-1.5 py-2 shrink-0">
               {[
                 { id: 'info', label: '1. البيانات والتواصل' },
                 { id: 'media', label: '2. الغلاف والشعار (4 صور)' },
@@ -1072,7 +1072,7 @@ export const CompaniesManager: React.FC = () => {
                   className={`py-2.5 px-3.5 rounded-xl whitespace-nowrap transition-all ${
                     activeTab === tab.id
                       ? 'bg-[#FFC500] text-black font-black shadow-md'
-                      : 'text-gray-400 hover:text-white hover:bg-[#161D2B]'
+                      : 'text-gray-400 hover:text-white hover:bg-[#111111]'
                   }`}
                 >
                   {tab.label}
@@ -1098,7 +1098,7 @@ export const CompaniesManager: React.FC = () => {
                         value={formData.name}
                         onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
                         placeholder="مثال: فندق سبأ، مطاعم الشيباني، مستشفى النخبة..."
-                        className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none focus:border-[#FFC500]"
+                        className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none focus:border-[#FFC500]"
                       />
                     </div>
 
@@ -1125,7 +1125,7 @@ export const CompaniesManager: React.FC = () => {
                         value={formData.address}
                         onChange={(e) => setFormData(p => ({ ...p, address: e.target.value }))}
                         placeholder="الشارع، الحي، أقرب معلم..."
-                        className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none"
+                        className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none"
                       />
                     </div>
                   </div>
@@ -1138,7 +1138,7 @@ export const CompaniesManager: React.FC = () => {
                         value={formData.phone}
                         onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
                         placeholder="+967..."
-                        className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none font-mono"
+                        className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none font-mono"
                       />
                     </div>
 
@@ -1149,7 +1149,7 @@ export const CompaniesManager: React.FC = () => {
                         value={formData.whatsapp}
                         onChange={(e) => setFormData(p => ({ ...p, whatsapp: e.target.value }))}
                         placeholder="+967..."
-                        className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none font-mono"
+                        className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none font-mono"
                       />
                     </div>
 
@@ -1160,7 +1160,7 @@ export const CompaniesManager: React.FC = () => {
                         value={formData.website_url}
                         onChange={(e) => setFormData(p => ({ ...p, website_url: e.target.value }))}
                         placeholder="https://..."
-                        className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none font-mono"
+                        className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none font-mono"
                       />
                     </div>
                   </div>
@@ -1172,7 +1172,7 @@ export const CompaniesManager: React.FC = () => {
                       value={formData.description}
                       onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
                       placeholder="وصف الخدمات، المميزات، التأسيس..."
-                      className="w-full p-2.5 bg-[#161D2B] border border-[#1F2937] rounded-xl text-white outline-none resize-none"
+                      className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none resize-none"
                     />
                   </div>
                 </div>
@@ -1181,10 +1181,10 @@ export const CompaniesManager: React.FC = () => {
               {activeTab === 'media' && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="p-3.5 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2.5">
+                    <div className="p-3.5 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-2.5">
                       <label className="text-gray-300 font-bold block">شعار المنشأة (Logo)</label>
                       <div className="flex items-center gap-3">
-                        <div className="w-16 h-16 rounded-xl bg-[#0B0F17] border border-[#1F2937] overflow-hidden flex items-center justify-center shrink-0">
+                        <div className="w-16 h-16 rounded-xl bg-black border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0">
                           {formData.logo_url ? (
                             <img
                               src={formData.logo_url}
@@ -1209,10 +1209,10 @@ export const CompaniesManager: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="p-3.5 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2.5">
+                    <div className="p-3.5 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-2.5">
                       <label className="text-gray-300 font-bold block">الغلاف البانورامي (Cover Banner)</label>
                       <div className="flex items-center gap-3">
-                        <div className="w-24 h-16 rounded-xl bg-[#0B0F17] border border-[#1F2937] overflow-hidden flex items-center justify-center shrink-0">
+                        <div className="w-24 h-16 rounded-xl bg-black border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0">
                           {formData.cover_url ? (
                             <img
                               src={formData.cover_url}
@@ -1224,7 +1224,7 @@ export const CompaniesManager: React.FC = () => {
                             <ImageIcon className="w-7 h-7 text-gray-500" />
                           )}
                         </div>
-                        <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-[#161D2B] hover:bg-[#FFC500] hover:text-black border border-[#1F2937] text-white font-bold text-xs flex items-center gap-2 transition-all">
+                        <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-[#111111] hover:bg-[#FFC500] hover:text-black border border-[#2F3336] text-white font-bold text-xs flex items-center gap-2 transition-all">
                           <Upload size={14} />
                           {uploadingTarget === 'cover' ? 'جاري الرفع...' : 'رفع غلاف من الهاتف'}
                           <input
@@ -1238,7 +1238,7 @@ export const CompaniesManager: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
+                  <div className="p-4 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-3">
                     <div className="flex items-center justify-between">
                       <label className="text-white font-bold flex items-center gap-2">
                         <ImageIcon size={16} className="text-[#FFC500]" />
@@ -1251,7 +1251,7 @@ export const CompaniesManager: React.FC = () => {
                         const imgUrl = formData.gallery_urls[slotIdx];
                         return (
                           <div key={slotIdx} className="space-y-2 text-center">
-                            <div className="h-28 rounded-2xl bg-[#0B0F17] border border-[#1F2937] relative overflow-hidden flex items-center justify-center group">
+                            <div className="h-28 rounded-2xl bg-black border border-[#2F3336] relative overflow-hidden flex items-center justify-center group">
                               {imgUrl ? (
                                 <>
                                   <img
@@ -1277,7 +1277,7 @@ export const CompaniesManager: React.FC = () => {
                               )}
                             </div>
 
-                            <label className="cursor-pointer block py-2 px-2 rounded-xl bg-[#0B0F17] hover:bg-[#FFC500] hover:text-black text-gray-300 text-xs font-bold border border-[#1F2937] transition-all">
+                            <label className="cursor-pointer block py-2 px-2 rounded-xl bg-black hover:bg-[#FFC500] hover:text-black text-gray-300 text-xs font-bold border border-[#2F3336] transition-all">
                               {uploadingTarget === String(slotIdx) ? 'جاري التحميل...' : 'اختر صورة'}
                               <input
                                 type="file"
@@ -1296,7 +1296,7 @@ export const CompaniesManager: React.FC = () => {
 
               {activeTab === 'features' && (
                 <div className="space-y-4">
-                  <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2.5">
+                  <div className="p-4 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-2.5">
                     <label className="text-white font-bold flex items-center gap-2">
                       <Bed size={15} className="text-[#FFC500]" />
                       سعة وحجم المنشأة / عدد الغرف (اسحب واختر):
@@ -1310,7 +1310,7 @@ export const CompaniesManager: React.FC = () => {
                           className={`px-4 py-2 rounded-xl text-xs whitespace-nowrap font-bold transition-all ${
                             formData.rooms_count === chip
                               ? 'bg-[#FFC500] text-black shadow-md shadow-yellow-500/10'
-                              : 'bg-[#0B0F17] text-gray-300 border border-[#1F2937]'
+                              : 'bg-black text-gray-300 border border-[#2F3336]'
                           }`}
                         >
                           {chip}
@@ -1341,7 +1341,7 @@ export const CompaniesManager: React.FC = () => {
 
                   
                   {/* قسم إدخال العروض والخصومات في قالب الإدخال الموحد (متوافق مع اللمس والهاتف) */}
-                  <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3" data-id="biz_promotions-admin-ui">
+                  <div className="p-4 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-3" data-id="biz_promotions-admin-ui">
                     <div className="flex items-center justify-between">
                       <label className="text-white font-bold flex items-center gap-2 text-sm">
                         <span className="w-2.5 h-2.5 rounded-full bg-[#FFC500]"></span>
@@ -1355,7 +1355,7 @@ export const CompaniesManager: React.FC = () => {
                         type="text"
                         placeholder="أدخل عنوان العرض أو الخصم (مثال: خصم 20% لفترة محدودة)..."
                         id="admin-offer-input"
-                        className="flex-1 bg-[#0B0F17] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
+                        className="flex-1 bg-black border border-[#2F3336] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
@@ -1394,7 +1394,7 @@ export const CompaniesManager: React.FC = () => {
                       {((formData as any).biz_promotions || []).map((offer: any, index: number) => (
                         <span
                           key={index}
-                          className="inline-flex items-center gap-1.5 bg-[#0B0F17] border border-amber-500/30 text-amber-400 text-xs font-bold px-3.5 py-2 rounded-xl shadow"
+                          className="inline-flex items-center gap-1.5 bg-black border border-amber-500/30 text-amber-400 text-xs font-bold px-3.5 py-2 rounded-xl shadow"
                         >
                           <span>🎁 {typeof offer === 'string' ? offer : (offer?.title || 'عرض خاص')}</span>
                           <button
@@ -1416,7 +1416,7 @@ export const CompaniesManager: React.FC = () => {
                     </div>
 
                     {/* شرائح سريعة جاهزة للاختيار باللمس */}
-                    <div className="pt-2 border-t border-zinc-800/80 space-y-1.5">
+                    <div className="pt-2 border-t border-[#2F3336]/80 space-y-1.5">
                       <span className="text-[11px] text-zinc-400 block">عروض سريعة جاهزة (اضغط للإضافة الفورية):</span>
                       <div className="flex flex-wrap gap-1.5">
                         {['خصم 20% لفترة محدودة', 'توصيل مجاني للطلبات الكبيرة', 'عرض خاص بمناسبة الافتتاح', 'هدية مجانية مع كل خدمة'].map((preset, idx) => (
@@ -1429,7 +1429,7 @@ export const CompaniesManager: React.FC = () => {
                                 setFormData(prev => ({ ...prev, biz_promotions: [...currentOffers, preset] }));
                               }
                             }}
-                            className="bg-black border border-zinc-800 hover:border-amber-500/40 text-zinc-300 hover:text-amber-400 text-[11px] font-bold px-3 py-1.5 rounded-lg transition active:scale-95 cursor-pointer"
+                            className="bg-black border border-[#2F3336] hover:border-amber-500/40 text-zinc-300 hover:text-amber-400 text-[11px] font-bold px-3 py-1.5 rounded-lg transition active:scale-95 cursor-pointer"
                           >
                             + {preset}
                           </button>
@@ -1440,7 +1440,7 @@ export const CompaniesManager: React.FC = () => {
 
                   
                   {/* قسم إدخال العروض والخصومات المرن لكافة التصنيفات الـ 28 */}
-                  <div className="p-4 sm:p-5 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-4 shadow-xl">
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-4 shadow-xl">
                     <div className="flex items-center justify-between">
                       <label className="text-white font-bold flex items-center gap-2 text-sm">
                         <span className="w-2.5 h-2.5 rounded-full bg-[#FFC500]"></span>
@@ -1450,12 +1450,12 @@ export const CompaniesManager: React.FC = () => {
                     </div>
 
                     {/* حقول إدخال مرنة: عنوان العرض + تفاصيل الخصم */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-[#0B0F17] p-3.5 rounded-xl border border-[#1F2937]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-black p-3.5 rounded-xl border border-[#2F3336]">
                       <input
                         type="text"
                         placeholder="عنوان العرض (مثال: خصم خاص، عرض الموسم)..."
                         id="admin-offer-title"
-                        className="bg-[#161D2B] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
+                        className="bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
                         style={{ fontFamily: 'Cairo, sans-serif' }}
                       />
                       <div className="flex gap-2">
@@ -1463,7 +1463,7 @@ export const CompaniesManager: React.FC = () => {
                           type="text"
                           placeholder="تفاصيل الخصم أو العرض (مثال: خصم 15% على الكشف أو التوصيل)..."
                           id="admin-offer-desc"
-                          className="flex-1 bg-[#161D2B] border border-[#1F2937] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
+                          className="flex-1 bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
                           style={{ fontFamily: 'Cairo, sans-serif' }}
                         />
                         <button
@@ -1498,7 +1498,7 @@ export const CompaniesManager: React.FC = () => {
                         return (
                           <div
                             key={index}
-                            className="flex items-center justify-between gap-3 bg-[#0B0F17] border border-amber-500/30 p-3.5 rounded-xl shadow-md"
+                            className="flex items-center justify-between gap-3 bg-black border border-amber-500/30 p-3.5 rounded-xl shadow-md"
                           >
                             <div className="space-y-0.5">
                               <h4 className="text-[#FFC500] font-black text-xs sm:text-sm flex items-center gap-1.5" style={{ fontFamily: 'Cairo, sans-serif' }}>
@@ -1526,7 +1526,7 @@ export const CompaniesManager: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-2">
+                  <div className="p-4 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-2">
                     <label className="text-white font-bold flex items-center gap-1.5">
                       <Clock size={15} className="text-[#FFC500]" />
                       مواعيد وساعات الدوام اليومي:
@@ -1540,7 +1540,7 @@ export const CompaniesManager: React.FC = () => {
                           className={`px-3.5 py-2 rounded-xl text-xs whitespace-nowrap font-bold transition-all ${
                             formData.working_hours === shift
                               ? 'bg-[#FFC500] text-black'
-                              : 'bg-[#0B0F17] text-gray-400 border border-[#1F2937]'
+                              : 'bg-black text-gray-400 border border-[#2F3336]'
                           }`}
                         >
                           {shift}
@@ -1553,8 +1553,8 @@ export const CompaniesManager: React.FC = () => {
 
               {activeTab === 'ads' && (
                 <div className="space-y-4">
-                  <div className="p-4 rounded-2xl bg-[#161D2B] border border-[#1F2937] space-y-3">
-                    <div className="flex items-center justify-between pb-2 border-b border-[#1F2937]">
+                  <div className="p-4 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-3">
+                    <div className="flex items-center justify-between pb-2 border-b border-[#2F3336]">
                       <h4 className="font-bold text-white flex items-center gap-2">
                         <Megaphone size={16} className="text-[#FFC500]" />
                         تفعيل الوحدات الإعلانية الثلاث (YR Ads) في هذا القسم
@@ -1568,7 +1568,7 @@ export const CompaniesManager: React.FC = () => {
                         { key: 'ad_unit_feed', title: '2. الإعلان المضمن (In-Feed Sponsor Ad)', sub: 'يظهر بين بطاقات المنشآت أثناء التصفح' },
                         { key: 'ad_unit_sticky', title: '3. البنر الثابت (Sticky Bottom Ad)', sub: 'مثبت أسفل الشاشة للعروض الخاصة' },
                       ].map(ad => (
-                        <label key={ad.key} className="flex items-center justify-between p-3 rounded-xl bg-[#0B0F17] border border-[#1F2937] cursor-pointer">
+                        <label key={ad.key} className="flex items-center justify-between p-3 rounded-xl bg-black border border-[#2F3336] cursor-pointer">
                           <div>
                             <p className="font-bold text-white">{ad.title}</p>
                             <p className="text-[11px] text-gray-400">{ad.sub}</p>
@@ -1610,7 +1610,7 @@ export const CompaniesManager: React.FC = () => {
               )}
 
               {/* شريط الإجراءات السفلي مع رسالة النجاح المرئية بجانب زر الحفظ مباشرة */}
-              <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#1F2937] sticky bottom-0 bg-[#0F141F] py-2.5">
+              <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#2F3336] sticky bottom-0 bg-black py-2.5">
                 <div className="flex-1 min-w-0">
                   {savedSuccessfully && (
                     <div className="flex items-center gap-1.5 text-emerald-400 font-black text-xs animate-bounce">
@@ -1624,7 +1624,7 @@ export const CompaniesManager: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 rounded-xl bg-[#161D2B] text-gray-300 hover:text-white font-bold text-xs"
+                    className="px-4 py-2 rounded-xl bg-[#111111] text-gray-300 hover:text-white font-bold text-xs"
                   >
                     إلغاء
                   </button>
@@ -1660,7 +1660,7 @@ export const CompaniesManager: React.FC = () => {
     
       {/* إشعار نجاح الحذف العائم */}
       {businessDeleteToast && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-[#0B0F17]/95 border border-emerald-500/40 text-emerald-300 text-xs font-bold shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-4">
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-black/95 border border-emerald-500/40 text-emerald-300 text-xs font-bold shadow-2xl  animate-in fade-in slide-in-from-top-4">
           <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
           <span>{businessDeleteToast}</span>
         </div>
@@ -1668,8 +1668,8 @@ export const CompaniesManager: React.FC = () => {
 
       {/* نافذة تأكيد حذف المنشأة المصممة بدون نوافذ المتصفح */}
       {businessToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#0B0F17] border border-red-500/30 w-full max-w-sm rounded-3xl p-5 shadow-2xl text-center space-y-4 font-['Cairo',sans-serif] text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black  animate-in fade-in">
+          <div className="bg-black border border-red-500/30 w-full max-w-sm rounded-3xl p-5 shadow-2xl text-center space-y-4 font-['Cairo',sans-serif] text-white">
             <div className="w-13 h-13 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 mx-auto flex items-center justify-center shadow-inner">
               <Trash2 size={24} />
             </div>
@@ -1685,7 +1685,7 @@ export const CompaniesManager: React.FC = () => {
                 type="button"
                 disabled={isDeletingBusiness}
                 onClick={() => setBusinessToDelete(null)}
-                className="flex-1 py-3 bg-[#161D2B] hover:bg-[#1F2937] text-gray-300 rounded-xl text-xs font-bold border border-[#1F2937] transition active:scale-95 cursor-pointer"
+                className="flex-1 py-3 bg-[#111111] hover:bg-[#2F3336] text-gray-300 rounded-xl text-xs font-bold border border-[#2F3336] transition active:scale-95 cursor-pointer"
               >
                 إلغاء
               </button>

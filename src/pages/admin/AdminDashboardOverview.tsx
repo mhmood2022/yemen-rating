@@ -118,7 +118,7 @@ export const AdminDashboardOverview: React.FC = () => {
   return (
     <div dir="rtl" className="p-4 sm:p-6 lg:p-8 space-y-8 font-['Cairo',sans-serif] text-white">
       {/* الترويسة */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#1F2937]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#2F3336]">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5">
             <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
@@ -138,7 +138,7 @@ export const AdminDashboardOverview: React.FC = () => {
             <Link
               key={idx}
               to={stat.path}
-              className="bg-[#0B0F17] border border-[#1F2937] hover:border-[#FFC500]/50 rounded-2xl p-4 sm:p-5 transition-all shadow-md group space-y-3"
+              className="bg-[#0B0F17] border border-[#2F3336] hover:border-[#FFC500]/50 rounded-2xl p-4 sm:p-5 transition-all shadow-md group space-y-3"
             >
               <div className="flex items-center justify-between">
                 <div className="w-10 h-10 rounded-xl bg-[#161D2B] flex items-center justify-center text-white group-hover:text-[#FFC500] transition-colors">
@@ -155,7 +155,7 @@ export const AdminDashboardOverview: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-[#1F2937]/50 text-[11px] text-gray-500">
+              <div className="pt-2 border-t border-[#2F3336]/50 text-[11px] text-gray-500">
                 {stat.change}
               </div>
             </Link>
@@ -164,8 +164,8 @@ export const AdminDashboardOverview: React.FC = () => {
       </div>
 
       {/* قطاعات الموقع المباشرة */}
-      <div className="bg-[#0B0F17] border border-[#1F2937] rounded-2xl p-5 space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-[#1F2937]">
+      <div className="bg-[#0B0F17] border border-[#2F3336] rounded-2xl p-5 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
           <div>
             <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
               <Building2 className="text-[#FFC500]" size={18} />
@@ -190,7 +190,7 @@ export const AdminDashboardOverview: React.FC = () => {
               <Link
                 key={sIdx}
                 to={`/admin/companies?category=${sector.slug}`}
-                className="p-3 rounded-xl bg-[#161D2B]/70 border border-[#1F2937] hover:border-[#FFC500]/40 transition-all flex items-center justify-between group"
+                className="p-3 rounded-xl bg-[#161D2B]/70 border border-[#2F3336] hover:border-[#FFC500]/40 transition-all flex items-center justify-between group"
               >
                 <div className="flex items-center gap-2.5">
                   <Icon size={16} className="text-[#FFC500]" />

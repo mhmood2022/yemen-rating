@@ -19,7 +19,7 @@ export const YRLogo: React.FC<{ className?: string; size?: 'sm' | 'md' | 'lg' }>
         {/* الدرع الخارجي الأبيض */}
         <path 
           d="M60 10L98 26V58C98 82 60 106 60 106C60 106 22 82 22 58V26L60 10Z" 
-          fill="#070A10" 
+          fill="#000000" 
           stroke="#FFFFFF" 
           strokeWidth="4" 
           strokeLinejoin="round" 

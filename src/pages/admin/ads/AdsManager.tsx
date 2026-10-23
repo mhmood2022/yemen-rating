@@ -84,12 +84,12 @@ export const AdsManager: React.FC = () => {
       )}
 
       {/* الهيدر المنسق الرشيق */}
-      <div className="bg-[#0B0F17] p-3.5 sm:p-4 rounded-xl border border-[#1F2937] space-y-3">
+      <div className="bg-[#0B0F17] p-3.5 sm:p-4 rounded-xl border border-[#2F3336] space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2.5">
           <div className="flex items-center gap-2">
             <NavLink
               to="/admin"
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#161D2B] text-yellow-400 hover:bg-[#1F2937] border border-[#1F2937] transition font-bold text-xs shrink-0"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#161D2B] text-yellow-400 hover:bg-[#2F3336] border border-[#2F3336] transition font-bold text-xs shrink-0"
               title="رجوع للوحة التحكم"
             >
               <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -103,7 +103,7 @@ export const AdsManager: React.FC = () => {
 
           <div className="flex items-center gap-1.5 flex-wrap">
             {/* أزرار التبديل شبكة / جدول */}
-            <div className="flex items-center gap-0.5 bg-[#161D2B] p-0.5 rounded-lg border border-[#1F2937]">
+            <div className="flex items-center gap-0.5 bg-[#161D2B] p-0.5 rounded-lg border border-[#2F3336]">
               <button 
                 onClick={() => setViewFormat('grid')} 
                 className={`p-1.5 rounded-md text-xs transition-all ${viewFormat === 'grid' ? 'bg-[#FFC500] text-black shadow-sm' : 'text-gray-400 hover:text-white'}`}
@@ -123,7 +123,7 @@ export const AdsManager: React.FC = () => {
             {/* أزرار الإجراءات */}
             <NavLink
               to="/admin/sponsor"
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#161D2B] hover:bg-[#1F2937] text-amber-400 border border-[#1F2937] font-bold text-[11px] transition-all"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#161D2B] hover:bg-[#2F3336] text-amber-400 border border-[#2F3336] font-bold text-[11px] transition-all"
             >
               <Sparkles size={13} />
               <span>إعلان راعٍ</span>
@@ -143,7 +143,7 @@ export const AdsManager: React.FC = () => {
       {viewFormat === 'grid' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           {ads.length === 0 ? (
-            <div className="col-span-full text-center py-10 text-gray-400 bg-[#0B0F17] rounded-xl border border-[#1F2937] text-xs">
+            <div className="col-span-full text-center py-10 text-gray-400 bg-[#0B0F17] rounded-xl border border-[#2F3336] text-xs">
               لا توجد إعلانات منشورة حالياً. اضغط على "إنشاء إعلان" لتصميم أول إعلان.
             </div>
           ) : (
@@ -155,9 +155,9 @@ export const AdsManager: React.FC = () => {
                 .trim() || ad.placementName || 'موضع غير محدد';
 
               return (
-                <div key={ad.id} className="bg-[#0B0F17] rounded-xl border border-[#1F2937] p-3 space-y-2.5 shadow-sm">
+                <div key={ad.id} className="bg-[#0B0F17] rounded-xl border border-[#2F3336] p-3 space-y-2.5 shadow-sm">
                   {/* شريط رأس البطاقة */}
-                  <div className="flex items-center justify-between border-b border-[#1F2937] pb-2">
+                  <div className="flex items-center justify-between border-b border-[#2F3336] pb-2">
                     <div className="min-w-0 pr-1">
                       <div className="text-xs font-bold text-white truncate max-w-[170px] sm:max-w-xs">{cleanPlacement}</div>
                       <div className="text-[9.5px] text-gray-400 font-mono">{ad.id.slice(0, 10)} • {ad.createdAt?.split('T')[0] || ad.createdAt}</div>
@@ -172,7 +172,7 @@ export const AdsManager: React.FC = () => {
 
                       <button 
                         onClick={() => toggleAdStatus(ad.id)} 
-                        className="p-1.5 rounded-md bg-[#161D2B] text-gray-300 hover:text-[#FFC500] border border-[#1F2937]"
+                        className="p-1.5 rounded-md bg-[#161D2B] text-gray-300 hover:text-[#FFC500] border border-[#2F3336]"
                         title={ad.status === 'active' ? 'إيقاف مؤقت' : 'تفعيل'}
                       >
                         {ad.status === 'active' ? <Pause size={12} /> : <Play size={12} />}
@@ -272,13 +272,13 @@ export const AdsManager: React.FC = () => {
                   </div>
 
                   {/* شريط الإحصائيات الرشيق */}
-                  <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#161D2B]/80 border border-[#1F2937] text-[11px]">
+                  <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#161D2B]/80 border border-[#2F3336] text-[11px]">
                     <div className="flex items-center gap-1.5 text-gray-400">
                       <Eye size={12} className="text-gray-400" />
                       <span>المشاهدات:</span>
                       <span className="font-mono font-bold text-white">{(ad.views || 0).toLocaleString()}</span>
                     </div>
-                    <div className="w-[1px] h-3 bg-[#1F2937]" />
+                    <div className="w-[1px] h-3 bg-[#2F3336]" />
                     <div className="flex items-center gap-1.5 text-gray-400">
                       <MousePointer size={12} className="text-[#FFC500]" />
                       <span>النقرات:</span>
@@ -294,9 +294,9 @@ export const AdsManager: React.FC = () => {
 
       {/* عرض الجدول */}
       {viewFormat === 'table' && (
-        <div className="bg-[#0B0F17] rounded-xl border border-[#1F2937] overflow-x-auto custom-scrollbar">
+        <div className="bg-[#0B0F17] rounded-xl border border-[#2F3336] overflow-x-auto custom-scrollbar">
           <table className="w-full text-right text-xs min-w-[550px]">
-            <thead className="bg-[#111827] text-gray-400 border-b border-[#1F2937]">
+            <thead className="bg-[#111111] text-gray-400 border-b border-[#2F3336]">
               <tr>
                 <th className="py-2.5 px-3">الإعلان والموضع</th>
                 <th className="py-2.5 px-3">نمط العرض</th>
@@ -306,7 +306,7 @@ export const AdsManager: React.FC = () => {
                 <th className="py-2.5 px-3 text-center">إجراءات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F2937] text-white text-[11px]">
+            <tbody className="divide-y divide-[#2F3336] text-white text-[11px]">
               {ads.map(ad => (
                 <tr key={ad.id} className="hover:bg-[#161D2B]/50">
                   <td className="py-2.5 px-3">

@@ -271,7 +271,7 @@ export const UserProfilePage: React.FC = () => {
 
             {/* User Claims List */}
             <div className="bg-[#0e1320] border border-[#222b42] rounded-3xl p-5 shadow-xl space-y-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2 pb-3 border-b border-[#1F2937]">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2 pb-3 border-b border-[#2F3336]">
                 <Clock className="w-4 h-4 text-[#FFC500]" />
                 <span>سجل طلبات التوثيق والمطالبة بالملكية</span>
               </h3>
@@ -289,7 +289,7 @@ export const UserProfilePage: React.FC = () => {
               ) : (
                 <div className="space-y-3">
                   {claims.map((claim) => (
-                    <div key={claim.id} className="p-4 rounded-2xl bg-[#141a2c] border border-[#1F2937] flex items-center justify-between gap-3">
+                    <div key={claim.id} className="p-4 rounded-2xl bg-[#141a2c] border border-[#2F3336] flex items-center justify-between gap-3">
                       <div>
                         <h4 className="text-sm font-bold text-white">{claim.business_name || 'منشأة تجارية'}</h4>
                         <span className="text-[11px] text-slate-400">تاريخ الطلب: {new Date(claim.created_at).toLocaleDateString('ar-YE')}</span>
@@ -413,7 +413,7 @@ export const UserProfilePage: React.FC = () => {
 
       {/* 4. NOTIFICATION MODAL */}
       {isNotificationOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black  z-50 flex items-center justify-center p-4">
           <div className="bg-[#0e1320] border border-[#222b42] rounded-3xl w-full max-w-sm p-5 relative shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-[#222b42] mb-4">
               <div className="flex items-center gap-2">
@@ -449,7 +449,7 @@ export const UserProfilePage: React.FC = () => {
 
       {/* 5. EDIT PROFILE MODAL */}
       {isProfileModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black  z-50 flex items-center justify-center p-4">
           <div className="bg-[#0e1320] border border-[#222b42] rounded-3xl w-full max-w-md p-6 relative shadow-2xl">
             <button 
               onClick={() => setIsProfileModalOpen(false)}

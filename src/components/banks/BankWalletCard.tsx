@@ -41,7 +41,7 @@ export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onNavigate
         </div>
 
         <div className="flex items-start gap-3 mb-3">
-          <div className="w-11 h-11 rounded-[10px] bg-[#0B1F3A]/5 dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#222222] flex items-center justify-center text-[#0B1F3A] dark:text-[#F5C400] font-bold shrink-0 group-hover:border-[#0B1F3A]/30 dark:group-hover:border-[#F5C400]/40 transition-colors">
+          <div className="w-11 h-11 rounded-[10px] bg-[#000000]/5 dark:bg-[#141414] border border-[#E2E8F0] dark:border-[#222222] flex items-center justify-center text-[#000000] dark:text-[#F5C400] font-bold shrink-0 group-hover:border-[#000000]/30 dark:group-hover:border-[#F5C400]/40 transition-colors">
             {isBank ? (
               <Landmark size={22} strokeWidth={1.75} />
             ) : (
@@ -50,7 +50,7 @@ export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onNavigate
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-sm sm:text-base text-[#0B1F3A] dark:text-white leading-snug line-clamp-1 group-hover:text-[#162F52] dark:group-hover:text-[#F5C400] transition-colors flex items-center gap-1.5">
+            <h3 className="font-bold text-sm sm:text-base text-[#000000] dark:text-white leading-snug line-clamp-1 group-hover:text-[#162F52] dark:group-hover:text-[#F5C400] transition-colors flex items-center gap-1.5">
               <span className="truncate">{item.name}</span>
               {item.isVerified && (
                 <CheckCircle2
@@ -75,13 +75,13 @@ export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onNavigate
 
         <div className="grid grid-cols-2 gap-2 mb-3 text-xs bg-[#F7F8FA] dark:bg-[#0A0A0A] p-2.5 rounded-[8px] border border-[#E2E8F0] dark:border-[#222222]">
           {item.branchCount !== undefined && (
-            <div className="flex items-center gap-1.5 text-[#0B1F3A] dark:text-white font-semibold">
+            <div className="flex items-center gap-1.5 text-[#000000] dark:text-white font-semibold">
               <Layers size={13} strokeWidth={1.75} className="text-[#F5C400]" />
               <span>{item.branchCount} فرع معتمد</span>
             </div>
           )}
           {item.agentCount !== undefined && (
-            <div className="flex items-center gap-1.5 text-[#0B1F3A] dark:text-white font-semibold">
+            <div className="flex items-center gap-1.5 text-[#000000] dark:text-white font-semibold">
               <Users size={13} strokeWidth={1.75} className="text-[#F59E0B]" />
               <span>+{item.agentCount.toLocaleString()} نقطة خدمة</span>
             </div>
@@ -91,7 +91,7 @@ export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onNavigate
 
       <div className="pt-3 border-t border-[#F1F5F9] dark:border-[#222222] flex items-center justify-between gap-2 mt-auto">
         <div className="flex items-center gap-1.5">
-          <div className="flex items-center gap-1 text-xs font-bold text-[#0B1F3A] dark:text-white">
+          <div className="flex items-center gap-1 text-xs font-bold text-[#000000] dark:text-white">
             <Star size={14} strokeWidth={1.75} className="text-[#F5C400] fill-[#F5C400]" />
             <span>{item.rating.toFixed(1)}</span>
           </div>
@@ -101,7 +101,7 @@ export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onNavigate
         <Button
           variant="ghost"
           size="sm"
-          className="text-xs text-[#0B1F3A] dark:text-white group-hover:bg-[#0B1F3A] group-hover:text-white dark:group-hover:bg-[#F5C400] dark:group-hover:text-[#000000] transition-all h-[32px] px-2.5"
+          className="text-xs text-[#000000] dark:text-white group-hover:bg-[#000000] group-hover:text-white dark:group-hover:bg-[#F5C400] dark:group-hover:text-[#000000] transition-all h-[32px] px-2.5"
           onClick={(e) => {
             e.stopPropagation();
             onNavigate(targetUrl);

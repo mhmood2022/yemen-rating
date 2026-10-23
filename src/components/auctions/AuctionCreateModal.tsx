@@ -249,10 +249,10 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="bg-[#0A0F1D] border border-slate-800 rounded-2xl w-full max-w-lg p-5 space-y-4 max-h-[92vh] overflow-y-auto text-white shadow-2xl">
+    <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="bg-black border border-[#2F3336] rounded-2xl w-full max-w-lg p-5 space-y-4 max-h-[92vh] overflow-y-auto text-white shadow-2xl">
         {/* الترويسة */}
-        <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div className="flex justify-between items-center border-b border-[#2F3336] pb-3">
           <h3 className="text-sm sm:text-base font-black text-white flex items-center gap-2">
             <Gavel size={16} className="text-[#F5C400]" />
             <span>إضافة معروض جديد في المنصة</span>
@@ -260,7 +260,7 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl bg-[#060A13] border border-slate-800 text-slate-400 hover:text-white cursor-pointer"
+            className="p-1.5 rounded-xl bg-[#111111] border border-[#2F3336] text-slate-400 hover:text-white cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -278,7 +278,7 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
                 className={`py-2.5 px-3 rounded-xl font-bold border flex items-center justify-center gap-2 transition-all cursor-pointer ${
                   saleType === 'auction'
                     ? 'bg-[#F5C400] text-black border-[#F5C400] font-black'
-                    : 'bg-[#060A13] text-slate-300 border-slate-800'
+                    : 'bg-[#111111] text-slate-300 border-[#2F3336]'
                 }`}
               >
                 <Gavel size={14} />
@@ -291,7 +291,7 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
                 className={`py-2.5 px-3 rounded-xl font-bold border flex items-center justify-center gap-2 transition-all cursor-pointer ${
                   saleType === 'direct'
                     ? 'bg-[#F5C400] text-black border-[#F5C400] font-black'
-                    : 'bg-[#060A13] text-slate-300 border-slate-800'
+                    : 'bg-[#111111] text-slate-300 border-[#2F3336]'
                 }`}
               >
                 <Tag size={14} />
@@ -319,7 +319,7 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
               value={auctionTitle}
               onChange={(e) => setAuctionTitle(e.target.value)}
               placeholder="مثال: هاتف سامسونج الترا 26 أو سيارة هيونداي..."
-              className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white outline-none"
+              className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#F5C400] rounded-xl p-2.5 text-white outline-none"
             />
           </div>
 
@@ -354,15 +354,15 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
               value={startingPrice}
               onChange={(e) => setStartingPrice(e.target.value)}
               placeholder="مثال : 5000"
-              className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none"
+              className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none"
             />
           </div>
 
           {/* بيانات صاحب المعروض الموثقة بالحساب - مقفلة بالكامل */}
-          <div className="p-3 rounded-xl bg-[#070c17] border border-slate-800 space-y-2.5">
-            <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
+          <div className="p-3 rounded-xl bg-[#111111] border border-[#2F3336] space-y-2.5">
+            <div className="flex items-center justify-between pb-1.5 border-b border-[#2F3336]/80">
               <span className="text-[11px] font-bold text-slate-300">بيانات صاحب المعروض (موثقة بالحساب):</span>
-              <span className="flex items-center justify-center p-1 rounded-md bg-slate-800/60 text-slate-400 border border-slate-700/60" title="موثق ومقفل بالحساب"><Lock size={12} className="text-slate-400" /></span>
+              <span className="flex items-center justify-center p-1 rounded-md bg-[#1A1A1A] text-slate-400 border border-[#2F3336]" title="موثق ومقفل بالحساب"><Lock size={12} className="text-slate-400" /></span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -373,7 +373,7 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
                   type="text"
                   value={sellerName}
                   placeholder="جاري الجلب من الحساب..."
-                  className="w-full bg-[#0a1120] border border-slate-800 rounded-xl p-2.5 text-white/90 text-xs outline-none cursor-not-allowed select-none"
+                  className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white/90 text-xs outline-none cursor-not-allowed select-none"
                 />
               </div>
               <div>
@@ -383,7 +383,7 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
                   type="text"
                   value={sellerPhone}
                   placeholder="جاري الجلب من الحساب..."
-                  className="w-full bg-[#0a1120] border border-slate-800 rounded-xl p-2.5 text-white/90 font-mono text-xs outline-none cursor-not-allowed select-none text-left dir-ltr"
+                  className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white/90 font-mono text-xs outline-none cursor-not-allowed select-none text-left dir-ltr"
                 />
               </div>
             </div>
@@ -395,7 +395,7 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
                 type="email"
                 value={sellerEmail}
                 placeholder="جاري الجلب من الحساب..."
-                className="w-full bg-[#0a1120] border border-slate-800 rounded-xl p-2.5 text-white/90 font-mono text-xs outline-none cursor-not-allowed select-none text-left dir-ltr"
+                className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white/90 font-mono text-xs outline-none cursor-not-allowed select-none text-left dir-ltr"
               />
             </div>
           </div>
@@ -409,7 +409,7 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
                 type="datetime-local"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono text-xs outline-none"
+                className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono text-xs outline-none"
               />
             </div>
             <div>
@@ -419,7 +419,7 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
                 type="datetime-local"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono text-xs outline-none"
+                className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono text-xs outline-none"
               />
             </div>
           </div>
@@ -435,7 +435,7 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
                   value={minIncrement}
                   onChange={(e) => setMinIncrement(e.target.value)}
                   placeholder="1000"
-                  className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none"
+                  className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none"
                 />
               </div>
               <div>
@@ -445,7 +445,7 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
                   value={maxIncrement}
                   onChange={(e) => setMaxIncrement(e.target.value)}
                   placeholder="بدون سقف أعلى"
-                  className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none"
+                  className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#F5C400] rounded-xl p-2.5 text-white font-mono outline-none"
                 />
               </div>
             </div>
@@ -459,7 +459,7 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
               value={itemDescription}
               onChange={(e) => setItemDescription(e.target.value)}
               placeholder="اكتب مواصفات السلعة وحالتها بدقة..."
-              className="w-full bg-[#060A13] border border-slate-800 focus:border-[#F5C400] rounded-xl p-2.5 text-white outline-none resize-none"
+              className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#F5C400] rounded-xl p-2.5 text-white outline-none resize-none"
             />
           </div>
 
@@ -468,7 +468,7 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
             <label className="block text-slate-300 mb-1.5 font-bold">صور المعروض الحقيقية (حتى 6 صور):</label>
             <div className="flex flex-wrap gap-2 items-center">
               {auctionImages.map((img, i) => (
-                <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-800">
+                <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden border border-[#2F3336]">
                   <img src={img} alt="" className="w-full h-full object-cover" />
                   <button
                     type="button"
@@ -543,11 +543,11 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
           )}
 
           {/* أزرار الإجراء */}
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#2F3336]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-[#060A13] border border-slate-800 rounded-xl text-slate-300 text-xs font-bold cursor-pointer"
+              className="px-4 py-2 bg-[#111111] border border-[#2F3336] rounded-xl text-slate-300 text-xs font-bold cursor-pointer"
             >
               إلغاء
             </button>

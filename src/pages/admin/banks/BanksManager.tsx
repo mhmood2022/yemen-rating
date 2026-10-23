@@ -282,7 +282,7 @@ export const BanksManager: React.FC = () => {
   return (
     <div dir="rtl" className="p-4 sm:p-6 lg:p-8 space-y-6 font-['Cairo',sans-serif] text-white">
       {/* رأس الصفحة */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#1F2937]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-[#2F3336]">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
             <Landmark className="text-[#FFC500]" /> إدارة البنوك والمصارف المعتمدة
@@ -292,7 +292,7 @@ export const BanksManager: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1.5 rounded-xl bg-[#161D2B] border border-[#1F2937] text-xs font-mono font-bold text-[#FFC500]">
+          <span className="px-3 py-1.5 rounded-xl bg-[#111111] border border-[#2F3336] text-xs font-mono font-bold text-[#FFC500]">
             {banks.length} بنك مسجل
           </span>
             <button
@@ -307,7 +307,7 @@ export const BanksManager: React.FC = () => {
       </div>
 
       {/* البحث والفلترة */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-[#0B0F17] p-3.5 rounded-2xl border border-[#1F2937]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 bg-black p-3.5 rounded-2xl border border-[#2F3336]">
         <div className="relative">
           <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
@@ -315,14 +315,14 @@ export const BanksManager: React.FC = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="ابحث باسم البنك أو المدينة..."
-            className="w-full bg-[#161D2B] border border-[#273244] rounded-xl pr-9 pl-3 py-2 text-xs text-white placeholder-gray-500 outline-none focus:border-[#FFC500]"
+            className="w-full bg-[#111111] border border-[#2F3336] rounded-xl pr-9 pl-3 py-2 text-xs text-white placeholder-gray-500 outline-none focus:border-[#FFC500]"
           />
         </div>
 
         <select
           value={filterCity}
           onChange={(e) => setFilterCity(e.target.value)}
-          className="bg-[#161D2B] border border-[#273244] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#FFC500]"
+          className="bg-[#111111] border border-[#2F3336] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#FFC500]"
         >
           <option value="all">جميع المدن</option>
           <option value="صنعاء">صنعاء</option>
@@ -334,7 +334,7 @@ export const BanksManager: React.FC = () => {
         <select
           value={filterVerified}
           onChange={(e) => setFilterVerified(e.target.value)}
-          className="bg-[#161D2B] border border-[#273244] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#FFC500]"
+          className="bg-[#111111] border border-[#2F3336] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#FFC500]"
         >
           <option value="all">كل حالات التوثيق</option>
           <option value="verified">موثق فقط (Verified)</option>
@@ -344,7 +344,7 @@ export const BanksManager: React.FC = () => {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="bg-[#161D2B] border border-[#273244] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#FFC500]"
+          className="bg-[#111111] border border-[#2F3336] rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-[#FFC500]"
         >
           <option value="all">كل الحالات (Status)</option>
           <option value="active">نشط (Active)</option>
@@ -356,14 +356,14 @@ export const BanksManager: React.FC = () => {
       {loading ? (
         <div className="py-12 text-center text-xs text-gray-400">جاري تحميل البنوك من Supabase...</div>
       ) : filteredBanks.length === 0 ? (
-        <div className="py-12 text-center text-xs text-gray-500 bg-[#0B0F17] rounded-2xl border border-[#1F2937]">
+        <div className="py-12 text-center text-xs text-gray-500 bg-black rounded-2xl border border-[#2F3336]">
           لا توجد بنوك مطابقة للبحث.
         </div>
       ) : (
-        <div className="bg-[#0B0F17] rounded-2xl border border-[#1F2937] overflow-hidden shadow-xl">
+        <div className="bg-black rounded-2xl border border-[#2F3336] overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-right text-xs">
-              <thead className="bg-[#111827] text-gray-300 font-bold border-b border-[#1F2937]">
+              <thead className="bg-[#111111] text-gray-300 font-bold border-b border-[#2F3336]">
                 <tr>
                   <th className="p-3.5">البنك</th>
                   <th className="p-3.5">المدينة</th>
@@ -373,15 +373,15 @@ export const BanksManager: React.FC = () => {
                   <th className="p-3.5 text-center">إجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1F2937]/50">
+              <tbody className="divide-y divide-[#2F3336]/50">
                 {filteredBanks.map((bank) => (
-                  <tr key={bank.id} className="hover:bg-[#161D2B]/50 transition-colors">
+                  <tr key={bank.id} className="hover:bg-[#111111]/50 transition-colors">
                     <td className="p-3.5">
                       <div className="flex items-center gap-3">
                         {bank.logo_url ? (
                           <img src={bank.logo_url} alt={bank.name} className="w-9 h-9 rounded-xl object-contain bg-white p-1 border border-gray-700" />
                         ) : (
-                          <div className="w-9 h-9 rounded-xl bg-[#1F2937] flex items-center justify-center text-[#FFC500]">
+                          <div className="w-9 h-9 rounded-xl bg-[#2F3336] flex items-center justify-center text-[#FFC500]">
                             <Landmark size={18} />
                           </div>
                         )}
@@ -417,7 +417,7 @@ export const BanksManager: React.FC = () => {
                     <td className="p-3.5 text-center">
                       <button
                         onClick={() => handleOpenEdit(bank)}
-                        className="px-3 py-1.5 rounded-xl bg-[#161D2B] hover:bg-[#FFC500] hover:text-black border border-[#273244] text-[#FFC500] text-xs font-bold transition flex items-center gap-1.5 mx-auto cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-[#111111] hover:bg-[#FFC500] hover:text-black border border-[#2F3336] text-[#FFC500] text-xs font-bold transition flex items-center gap-1.5 mx-auto cursor-pointer"
                       >
                         <Edit3 size={13} />
                         <span>تعديل السجل</span>
@@ -433,11 +433,11 @@ export const BanksManager: React.FC = () => {
 
       {/* نافذة تعديل بيانات البنك الشاملة */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-[#0B0F17] border border-[#1F2937] rounded-3xl w-full max-w-2xl p-5 sm:p-6 space-y-5 shadow-2xl my-auto text-right max-h-[90vh] overflow-y-auto no-scrollbar">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-black border border-[#2F3336] rounded-3xl w-full max-w-2xl p-5 sm:p-6 space-y-5 shadow-2xl my-auto text-right max-h-[90vh] overflow-y-auto no-scrollbar">
             
             {/* رأس النافذة */}
-            <div className="flex items-center justify-between pb-3 border-b border-[#1F2937]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]">
               <div>
                 <h3 className="text-base font-black text-white flex items-center gap-2">
                   <Landmark className="text-[#FFC500]" size={18} />
@@ -452,7 +452,7 @@ export const BanksManager: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="w-8 h-8 rounded-full bg-[#161D2B] text-gray-400 hover:text-white flex items-center justify-center transition"
+                className="w-8 h-8 rounded-full bg-[#111111] text-gray-400 hover:text-white flex items-center justify-center transition"
               >
                 <X size={16} />
               </button>
@@ -467,7 +467,7 @@ export const BanksManager: React.FC = () => {
             <form onSubmit={handleSaveChanges} className="space-y-4 text-xs">
               
               {/* 1. إدارة الشعار والغلاف */}
-              <div className="p-3.5 rounded-2xl bg-[#111827] border border-[#1F2937] space-y-3">
+              <div className="p-3.5 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-3">
                 <h4 className="font-bold text-[#FFC500] text-xs flex items-center gap-1.5">
                   <Image size={14} /> الشعار والغلاف الرسمي (مستودع bank-images)
                 </h4>
@@ -489,11 +489,11 @@ export const BanksManager: React.FC = () => {
                           </button>
                         </div>
                       ) : (
-                        <div className="w-16 h-16 rounded-xl bg-[#161D2B] border border-dashed border-gray-600 flex items-center justify-center text-gray-500 shrink-0">
+                        <div className="w-16 h-16 rounded-xl bg-[#111111] border border-dashed border-gray-600 flex items-center justify-center text-gray-500 shrink-0">
                           <Landmark size={24} />
                         </div>
                       )}
-                      <label className="px-3 py-1.5 rounded-xl bg-[#1F2937] hover:bg-[#374151] text-white text-[11px] font-bold cursor-pointer transition flex items-center gap-1.5">
+                      <label className="px-3 py-1.5 rounded-xl bg-[#2F3336] hover:bg-[#374151] text-white text-[11px] font-bold cursor-pointer transition flex items-center gap-1.5">
                         {uploadingTarget === 'logo' ? <Loader2 size={13} className="animate-spin text-[#FFC500]" /> : <Upload size={13} />}
                         <span>{formData.logo_url ? 'استبدال الشعار' : 'رفع شعار'}</span>
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFileChange('logo', e)} />
@@ -522,7 +522,7 @@ export const BanksManager: React.FC = () => {
                           غلاف افتراضي
                         </div>
                       )}
-                      <label className="px-3 py-1.5 rounded-xl bg-[#1F2937] hover:bg-[#374151] text-white text-[11px] font-bold cursor-pointer transition flex items-center gap-1.5">
+                      <label className="px-3 py-1.5 rounded-xl bg-[#2F3336] hover:bg-[#374151] text-white text-[11px] font-bold cursor-pointer transition flex items-center gap-1.5">
                         {uploadingTarget === 'cover' ? <Loader2 size={13} className="animate-spin text-[#FFC500]" /> : <Upload size={13} />}
                         <span>{formData.cover_url ? 'استبدال الغلاف' : 'رفع غلاف'}</span>
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFileChange('cover', e)} />
@@ -533,7 +533,7 @@ export const BanksManager: React.FC = () => {
               </div>
 
               {/* 2. معرض الصور الأربع المعتمد (الحد الأقصى 4 صور) */}
-              <div className="p-3.5 rounded-2xl bg-[#111827] border border-[#1F2937] space-y-3">
+              <div className="p-3.5 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-3">
                 <div className="flex justify-between items-center">
                   <h4 className="font-bold text-[#FFC500] text-xs flex items-center gap-1.5">
                     <Image size={14} /> صور المعرض الأربع المعتمدة (الحد الأقصى 4 صور)
@@ -545,7 +545,7 @@ export const BanksManager: React.FC = () => {
                     const img = galleryImages[slotIdx];
                     const isUp = uploadingTarget === `gallery-${slotIdx}`;
                     return (
-                      <div key={slotIdx} className="bg-[#161D2B] border border-[#273244] rounded-xl p-2 text-center space-y-1.5 relative">
+                      <div key={slotIdx} className="bg-[#111111] border border-[#2F3336] rounded-xl p-2 text-center space-y-1.5 relative">
                         <span className="text-[10px] font-bold text-gray-400 block">صورة {slotIdx + 1}</span>
                         {img ? (
                           <div className="relative w-full aspect-square rounded-lg overflow-hidden border border-gray-700">
@@ -565,7 +565,7 @@ export const BanksManager: React.FC = () => {
                             <span className="text-[9px]">{isUp ? 'جاري الرفع...' : 'فارغة'}</span>
                           </div>
                         )}
-                        <label className="w-full py-1 rounded-lg bg-[#1F2937] hover:bg-[#FFC500] hover:text-black text-gray-300 text-[10px] font-bold cursor-pointer transition flex items-center justify-center gap-1">
+                        <label className="w-full py-1 rounded-lg bg-[#2F3336] hover:bg-[#FFC500] hover:text-black text-gray-300 text-[10px] font-bold cursor-pointer transition flex items-center justify-center gap-1">
                           <Upload size={11} />
                           <span>{img ? 'استبدال' : 'رفع'}</span>
                           <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFileChange(slotIdx, e)} />
@@ -585,7 +585,7 @@ export const BanksManager: React.FC = () => {
                     required
                     value={formData.name || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full bg-[#161D2B] border border-[#273244] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
                   />
                 </div>
 
@@ -596,7 +596,7 @@ export const BanksManager: React.FC = () => {
                     value={formData.slug || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
                     placeholder="مثال: tadhamon أو kuraimi"
-                    className="w-full bg-[#161D2B] border border-[#273244] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
                   />
                 </div>
 
@@ -606,7 +606,7 @@ export const BanksManager: React.FC = () => {
                     type="text"
                     value={formData.city || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                    className="w-full bg-[#161D2B] border border-[#273244] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
                   />
                 </div>
 
@@ -616,7 +616,7 @@ export const BanksManager: React.FC = () => {
                     type="text"
                     value={formData.address || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                    className="w-full bg-[#161D2B] border border-[#273244] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
                   />
                 </div>
               </div>
@@ -628,7 +628,7 @@ export const BanksManager: React.FC = () => {
                   rows={2}
                   value={formData.description || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full bg-[#161D2B] border border-[#273244] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
+                  className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
                 ></textarea>
               </div>
 
@@ -640,7 +640,7 @@ export const BanksManager: React.FC = () => {
                     type="text"
                     value={formData.phone || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full bg-[#161D2B] border border-[#273244] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
                   />
                 </div>
 
@@ -650,7 +650,7 @@ export const BanksManager: React.FC = () => {
                     type="text"
                     value={formData.whatsapp || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
-                    className="w-full bg-[#161D2B] border border-[#273244] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
                   />
                 </div>
 
@@ -660,7 +660,7 @@ export const BanksManager: React.FC = () => {
                     type="email"
                     value={formData.email || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full bg-[#161D2B] border border-[#273244] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
                   />
                 </div>
 
@@ -670,19 +670,19 @@ export const BanksManager: React.FC = () => {
                     type="url"
                     value={formData.website || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
-                    className="w-full bg-[#161D2B] border border-[#273244] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#FFC500]"
                   />
                 </div>
               </div>
 
               {/* 6. التوثيق والحالات والشارة */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-[#1F2937]">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-[#2F3336]">
                 <div>
                   <label className="block text-gray-300 font-bold mb-1">نوع الشارة</label>
                   <select
                     value={formData.badge_type || 'gold'}
                     onChange={(e) => setFormData(prev => ({ ...prev, badge_type: e.target.value }))}
-                    className="w-full bg-[#161D2B] border border-[#273244] rounded-xl p-2 text-xs text-white outline-none"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2 text-xs text-white outline-none"
                   >
                     <option value="gold">ذهبية (Gold)</option>
                     <option value="blue">زرقاء (Blue)</option>
@@ -694,7 +694,7 @@ export const BanksManager: React.FC = () => {
                   <select
                     value={formData.verified ? 'true' : 'false'}
                     onChange={(e) => setFormData(prev => ({ ...prev, verified: e.target.value === 'true' }))}
-                    className="w-full bg-[#161D2B] border border-[#273244] rounded-xl p-2 text-xs text-white outline-none"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2 text-xs text-white outline-none"
                   >
                     <option value="true">موثق (Verified)</option>
                     <option value="false">غير موثق</option>
@@ -706,7 +706,7 @@ export const BanksManager: React.FC = () => {
                   <select
                     value={formData.status || 'active'}
                     onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
-                    className="w-full bg-[#161D2B] border border-[#273244] rounded-xl p-2 text-xs text-white outline-none"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2 text-xs text-white outline-none"
                   >
                     <option value="active">نشط (Active)</option>
                     <option value="inactive">غير نشط</option>
@@ -718,7 +718,7 @@ export const BanksManager: React.FC = () => {
                   <select
                     value={formData.is_published !== false ? 'true' : 'false'}
                     onChange={(e) => setFormData(prev => ({ ...prev, is_published: e.target.value === 'true' }))}
-                    className="w-full bg-[#161D2B] border border-[#273244] rounded-xl p-2 text-xs text-white outline-none"
+                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2 text-xs text-white outline-none"
                   >
                     <option value="true">منشور للعامة</option>
                     <option value="false">مسودة مخفية</option>
@@ -727,11 +727,11 @@ export const BanksManager: React.FC = () => {
               </div>
 
               {/* أزرار الحفظ والإغلاق */}
-              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[#1F2937]">
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[#2F3336]">
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 rounded-xl bg-[#161D2B] text-gray-300 font-bold hover:bg-[#1F2937] transition"
+                  className="px-4 py-2 rounded-xl bg-[#111111] text-gray-300 font-bold hover:bg-[#2F3336] transition"
                 >
                   إلغاء
                 </button>

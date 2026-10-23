@@ -22,7 +22,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <div className="p-4 bg-[#F7F8FA] dark:bg-[#0F2138] rounded-full text-[#94A3B8] dark:text-[#64748B] mb-3">
         {icon || <FolderSearch size={36} strokeWidth={1.75} />}
       </div>
-      <h3 className="text-base font-bold text-[#0B1F3A] dark:text-[#F8FAFC] mb-1">{title}</h3>
+      <h3 className="text-base font-bold text-[#000000] dark:text-[#F8FAFC] mb-1">{title}</h3>
       {description && <p className="text-xs text-[#64748B] dark:text-[#94A3B8] max-w-sm mb-4 leading-relaxed">{description}</p>}
       {actionLabel && onAction && (
         <Button variant="primary" size="sm" onClick={onAction}>

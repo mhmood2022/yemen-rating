@@ -121,7 +121,7 @@ export const ClaimsManager: React.FC = () => {
   return (
     <div dir="rtl" className="space-y-4 font-['Cairo',sans-serif]">
       {/* الترويسة */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0B0F17] p-4 rounded-xl border border-[#1F2937]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0B0F17] p-4 rounded-xl border border-[#2F3336]">
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
             <ShieldCheck className="text-[#FFC500]" />
@@ -134,7 +134,7 @@ export const ClaimsManager: React.FC = () => {
         <button
           onClick={fetchClaims}
           disabled={loading}
-          className="self-start sm:self-auto px-4 py-2 rounded-xl bg-[#161D2B] border border-[#1F2937] text-xs font-bold text-gray-200 hover:text-white hover:bg-[#1F2937] transition cursor-pointer flex items-center gap-1.5"
+          className="self-start sm:self-auto px-4 py-2 rounded-xl bg-[#161D2B] border border-[#2F3336] text-xs font-bold text-gray-200 hover:text-white hover:bg-[#2F3336] transition cursor-pointer flex items-center gap-1.5"
         >
           {loading && <Loader2 className="animate-spin w-3.5 h-3.5 text-[#FFC500]" />}
           <span>تحديث الطلبات</span>
@@ -142,12 +142,12 @@ export const ClaimsManager: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="bg-[#0B0F17] rounded-xl border border-[#1F2937] py-16 flex flex-col items-center justify-center gap-2 text-gray-400">
+        <div className="bg-[#0B0F17] rounded-xl border border-[#2F3336] py-16 flex flex-col items-center justify-center gap-2 text-gray-400">
           <Loader2 className="animate-spin text-[#FFC500]" size={28} />
           <span className="text-xs font-bold">جاري تحميل طلبات التوثيق...</span>
         </div>
       ) : claims.length === 0 ? (
-        <div className="bg-[#0B0F17] rounded-xl border border-[#1F2937] py-16 text-center text-gray-400 text-xs">
+        <div className="bg-[#0B0F17] rounded-xl border border-[#2F3336] py-16 text-center text-gray-400 text-xs">
           لا توجد طلبات إثبات ملكية جديدة حالياً.
         </div>
       ) : (
@@ -157,9 +157,9 @@ export const ClaimsManager: React.FC = () => {
             {claims.map((claim) => (
               <div
                 key={claim.id}
-                className="bg-[#0B0F17] border border-[#1F2937] rounded-2xl p-4 text-right space-y-3 shadow-xl"
+                className="bg-[#0B0F17] border border-[#2F3336] rounded-2xl p-4 text-right space-y-3 shadow-xl"
               >
-                <div className="flex items-start justify-between gap-2 border-b border-[#1F2937] pb-3">
+                <div className="flex items-start justify-between gap-2 border-b border-[#2F3336] pb-3">
                   <div>
                     <span className="text-[10px] font-bold text-[#FFC500] block mb-0.5">
                       {claim.entityType === 'bank' ? '🏦 بنك ومصرف' : '🏢 منشأة / شركة'}
@@ -186,12 +186,12 @@ export const ClaimsManager: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-[#121620] p-2.5 rounded-xl border border-[#1F2937]/50">
+                  <div className="bg-[#121620] p-2.5 rounded-xl border border-[#2F3336]/50">
                     <span className="text-[10px] text-gray-400 block mb-0.5">مقدم الطلب:</span>
                     <p className="font-bold text-white truncate">{claim.applicantName}</p>
                     <p className="text-[10px] text-zinc-400 truncate">{claim.applicantRole}</p>
                   </div>
-                  <div className="bg-[#121620] p-2.5 rounded-xl border border-[#1F2937]/50">
+                  <div className="bg-[#121620] p-2.5 rounded-xl border border-[#2F3336]/50">
                     <span className="text-[10px] text-gray-400 block mb-0.5">رقم الهاتف:</span>
                     <a
                       href={`tel:${claim.phone}`}
@@ -203,7 +203,7 @@ export const ClaimsManager: React.FC = () => {
                 </div>
 
                 {claim.notes && (
-                  <div className="bg-[#121620] p-2.5 rounded-xl border border-[#1F2937]/50 text-xs">
+                  <div className="bg-[#121620] p-2.5 rounded-xl border border-[#2F3336]/50 text-xs">
                     <span className="text-[10px] text-gray-400 block mb-0.5">الملاحظات والبيانات:</span>
                     <p className="text-zinc-300 whitespace-pre-wrap leading-relaxed">{claim.notes}</p>
                   </div>
@@ -215,7 +215,7 @@ export const ClaimsManager: React.FC = () => {
                 </div>
 
                 {claim.status === 'pending' ? (
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#1F2937]">
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#2F3336]">
                     <button
                       onClick={() => handleDecision(claim.id, 'approved', claim.entityId)}
                       disabled={actionLoading === claim.id}
@@ -234,7 +234,7 @@ export const ClaimsManager: React.FC = () => {
                     </button>
                   </div>
                 ) : (
-                  <div className="text-center py-2 text-xs font-bold text-gray-400 border-t border-[#1F2937]">
+                  <div className="text-center py-2 text-xs font-bold text-gray-400 border-t border-[#2F3336]">
                     {claim.status === 'approved' ? '✅ تم اعتماد هذا التوثيق بنجاح' : '❌ تم رفض هذا الطلب'}
                   </div>
                 )}
@@ -243,9 +243,9 @@ export const ClaimsManager: React.FC = () => {
           </div>
 
           {/* عرض الجدول للشاشات الكبيرة (Desktop Table) */}
-          <div className="hidden lg:block bg-[#0B0F17] rounded-xl border border-[#1F2937] overflow-hidden">
+          <div className="hidden lg:block bg-[#0B0F17] rounded-xl border border-[#2F3336] overflow-hidden">
             <table className="w-full text-right text-xs">
-              <thead className="bg-[#111827] text-[#9CA3AF] border-b border-[#1F2937]">
+              <thead className="bg-[#111111] text-[#9CA3AF] border-b border-[#2F3336]">
                 <tr>
                   <th className="py-3.5 px-4">اسم المنشأة / البنك</th>
                   <th className="py-3.5 px-4">مقدم الطلب وصفته</th>
@@ -254,7 +254,7 @@ export const ClaimsManager: React.FC = () => {
                   <th className="py-3.5 px-4 text-center">القرار والإجراء</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1F2937] text-white">
+              <tbody className="divide-y divide-[#2F3336] text-white">
                 {claims.map((claim) => (
                   <tr key={claim.id} className="hover:bg-[#161D2B]/50 transition">
                     <td className="py-3.5 px-4 font-bold text-white">

@@ -47,8 +47,8 @@ export const DirectoryFilters: React.FC<DirectoryFiltersProps> = ({
     >
       {!isInsideModal && (
         <div className="flex items-center justify-between pb-2.5 border-b border-[#E2E8F0] dark:border-[#222222]">
-          <div className="flex items-center gap-1.5 font-bold text-xs sm:text-sm text-[#0B1F3A] dark:text-white">
-            <SlidersHorizontal size={15} strokeWidth={1.75} className="text-[#0B1F3A] dark:text-[#F5C400]" />
+          <div className="flex items-center gap-1.5 font-bold text-xs sm:text-sm text-[#000000] dark:text-white">
+            <SlidersHorizontal size={15} strokeWidth={1.75} className="text-[#000000] dark:text-[#F5C400]" />
             <span>تصفية النتائج</span>
           </div>
           <Button variant="ghost" size="sm" onClick={onReset} className="h-[28px] px-2 text-xs text-[#DC2626] dark:text-[#F87171]">
@@ -84,12 +84,12 @@ export const DirectoryFilters: React.FC<DirectoryFiltersProps> = ({
 
       {/* Verified Checkbox */}
       <div className="pt-2 border-t border-[#F1F5F9] dark:border-[#222222]">
-        <label className="flex items-center gap-2 text-xs font-semibold text-[#0B1F3A] dark:text-white cursor-pointer select-none">
+        <label className="flex items-center gap-2 text-xs font-semibold text-[#000000] dark:text-white cursor-pointer select-none">
           <input
             type="checkbox"
             checked={filters.verifiedOnly}
             onChange={(e) => onChange({ ...filters, verifiedOnly: e.target.checked })}
-            className="w-4 h-4 rounded text-[#0B1F3A] dark:text-[#F5C400] focus:ring-[#0B1F3A] dark:focus:ring-[#F5C400] bg-white dark:bg-[#0E0E0E] border-[#CBD5E1] dark:border-[#222222]"
+            className="w-4 h-4 rounded text-[#000000] dark:text-[#F5C400] focus:ring-[#000000] dark:focus:ring-[#F5C400] bg-white dark:bg-[#0E0E0E] border-[#CBD5E1] dark:border-[#222222]"
           />
           <span>الأنشطة الموثقة فقط</span>
         </label>

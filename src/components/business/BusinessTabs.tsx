@@ -57,8 +57,8 @@ export const BusinessTabs: React.FC<BusinessTabsProps> = ({ business, onNavigate
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-[9px] text-xs font-extrabold transition-all whitespace-nowrap select-none',
                 isActive
-                  ? 'bg-[#0B1F3A] text-white dark:bg-[#F5C400] dark:text-black shadow-sm'
-                  : 'text-[#64748B] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414] hover:text-[#0B1F3A] dark:hover:text-white'
+                  ? 'bg-[#000000] text-white dark:bg-[#F5C400] dark:text-black shadow-sm'
+                  : 'text-[#64748B] dark:text-[#A1A1AA] hover:bg-[#F1F5F9] dark:hover:bg-[#141414] hover:text-[#000000] dark:hover:text-white'
               )}
             >
               <Icon size={14} strokeWidth={2} />
@@ -75,7 +75,7 @@ export const BusinessTabs: React.FC<BusinessTabsProps> = ({ business, onNavigate
           <div className="space-y-4">
             {/* عن النشاط / البنك */}
             <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-2">
-              <div className="flex items-center gap-2 text-[#0B1F3A] dark:text-[#F5C400] font-black text-xs sm:text-sm">
+              <div className="flex items-center gap-2 text-[#000000] dark:text-[#F5C400] font-black text-xs sm:text-sm">
                 <Building2 size={16} strokeWidth={2} />
                 <span>عن {business.name}</span>
               </div>
@@ -88,7 +88,7 @@ export const BusinessTabs: React.FC<BusinessTabsProps> = ({ business, onNavigate
             {isFinancial && business.exchangeRates && (
               <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
-                  <div className="flex items-center gap-2 text-[#0B1F3A] dark:text-[#F5C400] font-black text-xs sm:text-sm">
+                  <div className="flex items-center gap-2 text-[#000000] dark:text-[#F5C400] font-black text-xs sm:text-sm">
                     <Coins size={16} strokeWidth={2} />
                     <span>أسعار الصرف المعتمدة</span>
                   </div>
@@ -107,13 +107,13 @@ export const BusinessTabs: React.FC<BusinessTabsProps> = ({ business, onNavigate
                       key={idx}
                       className="grid grid-cols-3 items-center text-center p-2 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#1E1E1E] text-xs"
                     >
-                      <span className="text-right font-bold text-[#0B1F3A] dark:text-white">
+                      <span className="text-right font-bold text-[#000000] dark:text-white">
                         {r.code}
                       </span>
                       <span className="font-black text-[#16A34A] dark:text-[#22C55E]">
                         {r.buy.toLocaleString()}
                       </span>
-                      <span className="font-black text-[#0B1F3A] dark:text-white">
+                      <span className="font-black text-[#000000] dark:text-white">
                         {r.sell.toLocaleString()}
                       </span>
                     </div>
@@ -123,7 +123,7 @@ export const BusinessTabs: React.FC<BusinessTabsProps> = ({ business, onNavigate
                 <button
                   type="button"
                   onClick={() => onNavigate && onNavigate('/prices')}
-                  className="w-full py-2 rounded-[9px] border border-[#E2E8F0] dark:border-[#222222] bg-[#F7F8FA] dark:bg-[#141414] text-[#0B1F3A] dark:text-[#F5C400] text-xs font-bold flex items-center justify-center gap-1.5 hover:border-[#F5C400]/50 transition-colors"
+                  className="w-full py-2 rounded-[9px] border border-[#E2E8F0] dark:border-[#222222] bg-[#F7F8FA] dark:bg-[#141414] text-[#000000] dark:text-[#F5C400] text-xs font-bold flex items-center justify-center gap-1.5 hover:border-[#F5C400]/50 transition-colors"
                 >
                   <ArrowLeftRight size={13} strokeWidth={2} />
                   <span>مقارنة الأسعار بين صنعاء وعدن</span>
@@ -136,7 +136,7 @@ export const BusinessTabs: React.FC<BusinessTabsProps> = ({ business, onNavigate
         {/* 2. الخدمات (Services) */}
         {(activeTab === 'services' || activeTab === 'overview') && business.services && (
           <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-3">
-            <div className="flex items-center gap-2 text-[#0B1F3A] dark:text-[#F5C400] font-black text-xs sm:text-sm pb-1 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
+            <div className="flex items-center gap-2 text-[#000000] dark:text-[#F5C400] font-black text-xs sm:text-sm pb-1 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
               <Wrench size={16} strokeWidth={2} />
               <span>الخدمات والمنتجات المقدمة</span>
             </div>
@@ -145,7 +145,7 @@ export const BusinessTabs: React.FC<BusinessTabsProps> = ({ business, onNavigate
               {business.services.map((srv, idx) => (
                 <span
                   key={idx}
-                  className="px-3 py-1.5 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] text-xs font-bold text-[#0B1F3A] dark:text-white flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-[8px] bg-[#F7F8FA] dark:bg-[#0A0A0A] border border-[#E2E8F0] dark:border-[#222222] text-xs font-bold text-[#000000] dark:text-white flex items-center gap-1.5"
                 >
                   <CheckCircle2 size={13} className="text-[#16A34A] dark:text-[#22C55E]" />
                   <span>{srv}</span>
@@ -159,7 +159,7 @@ export const BusinessTabs: React.FC<BusinessTabsProps> = ({ business, onNavigate
         {(activeTab === 'branches' || activeTab === 'overview') && business.branches && (
           <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-3">
             <div className="flex items-center justify-between pb-1 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
-              <div className="flex items-center gap-2 text-[#0B1F3A] dark:text-[#F5C400] font-black text-xs sm:text-sm">
+              <div className="flex items-center gap-2 text-[#000000] dark:text-[#F5C400] font-black text-xs sm:text-sm">
                 <MapPin size={16} strokeWidth={2} />
                 <span>الفروع والانتشار</span>
               </div>
@@ -180,7 +180,7 @@ export const BusinessTabs: React.FC<BusinessTabsProps> = ({ business, onNavigate
             <button
               type="button"
               onClick={() => yrToast.info('شبكة الفروع معتمدة في كافة المحافظات')}
-              className="w-full py-2 rounded-[9px] border border-[#E2E8F0] dark:border-[#222222] bg-[#F7F8FA] dark:bg-[#141414] text-[#0B1F3A] dark:text-white text-xs font-bold flex items-center justify-center gap-1 hover:border-[#F5C400]/50 transition-colors"
+              className="w-full py-2 rounded-[9px] border border-[#E2E8F0] dark:border-[#222222] bg-[#F7F8FA] dark:bg-[#141414] text-[#000000] dark:text-white text-xs font-bold flex items-center justify-center gap-1 hover:border-[#F5C400]/50 transition-colors"
             >
               <span>عرض جميع الفروع ونقاط الخدمة</span>
             </button>
@@ -191,13 +191,13 @@ export const BusinessTabs: React.FC<BusinessTabsProps> = ({ business, onNavigate
         {(activeTab === 'reviews' || activeTab === 'overview') && (
           <Card className="p-4 bg-white dark:bg-[#111111] border border-[#E2E8F0] dark:border-[#222222] rounded-[14px] space-y-3.5">
             <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F9] dark:border-[#1E1E1E]">
-              <div className="flex items-center gap-2 text-[#0B1F3A] dark:text-[#F5C400] font-black text-xs sm:text-sm">
+              <div className="flex items-center gap-2 text-[#000000] dark:text-[#F5C400] font-black text-xs sm:text-sm">
                 <Star size={16} strokeWidth={2} className="fill-[#F5C400]" />
                 <span>تقييمات العملاء</span>
               </div>
 
               {/* Stars Score summary */}
-              <div className="flex items-center gap-1 text-xs font-extrabold text-[#0B1F3A] dark:text-white">
+              <div className="flex items-center gap-1 text-xs font-extrabold text-[#000000] dark:text-white">
                 <div className="flex items-center gap-0.5">
                   {[1, 2, 3, 4, 5].map((s) => (
                     <Star key={s} size={11} className="text-[#F5C400] fill-[#F5C400]" />
@@ -217,10 +217,10 @@ export const BusinessTabs: React.FC<BusinessTabsProps> = ({ business, onNavigate
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 rounded-full bg-[#0B1F3A]/5 dark:bg-[#1A1A1A] flex items-center justify-center text-[#71717A]">
+                        <div className="w-5 h-5 rounded-full bg-[#000000]/5 dark:bg-[#1A1A1A] flex items-center justify-center text-[#71717A]">
                           <User size={12} />
                         </div>
-                        <span className="font-bold text-xs text-[#0B1F3A] dark:text-white">
+                        <span className="font-bold text-xs text-[#000000] dark:text-white">
                           {rev.authorName}
                         </span>
                       </div>

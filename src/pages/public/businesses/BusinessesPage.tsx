@@ -173,9 +173,9 @@ export const BusinessesPage: React.FC = () => {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#070A10] text-white font-['Cairo'] pb-16 px-3 sm:px-4 max-w-7xl mx-auto pt-1">
+    <div dir="rtl" className="min-h-screen bg-black text-white font-['Cairo'] pb-16 px-3 sm:px-4 max-w-7xl mx-auto pt-1">
       {/* رأس الصفحة */}
-      <div className="mb-2.5 flex items-center justify-between border-b border-[#1F2937]/70 pb-2">
+      <div className="mb-2.5 flex items-center justify-between border-b border-[#2F3336]/70 pb-2">
         <div className="flex items-center gap-2 text-right">
           <CategoryIcon className="w-5 h-5 text-[#EAB308] shrink-0" />
           <h1 className="text-base sm:text-lg font-bold text-white leading-none">
@@ -202,7 +202,7 @@ export const BusinessesPage: React.FC = () => {
             className={`px-3 py-1 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer border ${
               currentCategorySlug === tab.id
                 ? 'bg-[#EAB308] text-black border-[#EAB308]'
-                : 'bg-[#0B0F17] text-zinc-300 border-[#1F2937] hover:border-[#EAB308]/50'
+                : 'bg-black text-zinc-300 border-[#2F3336] hover:border-[#EAB308]/50'
             }`}
           >
             {tab.name}
@@ -211,7 +211,7 @@ export const BusinessesPage: React.FC = () => {
       </div>
 
       {/* شريط البحث والمدينة */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4 bg-[#0B0F17] p-2.5 rounded-2xl border border-[#1F2937]">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4 bg-black p-2.5 rounded-2xl border border-[#2F3336]">
         <div className="sm:col-span-2 relative">
           <Search className="w-4 h-4 text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -219,7 +219,7 @@ export const BusinessesPage: React.FC = () => {
             placeholder={`ابحث في المنشآت والخدمات...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#121620] border border-[#1F2937] focus:border-[#EAB308] text-zinc-200 pr-10 pl-3 py-2.5 rounded-xl text-xs outline-none transition"
+            className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#EAB308] text-zinc-200 pr-10 pl-3 py-2.5 rounded-xl text-xs outline-none transition"
           />
         </div>
 
@@ -227,14 +227,14 @@ export const BusinessesPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
-            className="w-full bg-[#121620] hover:bg-[#161D2B] border border-[#1F2937] focus:border-[#EAB308] text-zinc-200 px-3.5 py-2.5 rounded-xl text-xs outline-none transition cursor-pointer flex items-center justify-between font-bold"
+            className="w-full bg-[#111111] hover:bg-[#1A1A1A] border border-[#2F3336] focus:border-[#EAB308] text-zinc-200 px-3.5 py-2.5 rounded-xl text-xs outline-none transition cursor-pointer flex items-center justify-between font-bold"
           >
             <span className="truncate">{selectedCityName}</span>
             <ChevronDown className={`w-4 h-4 text-[#EAB308] transition-transform duration-200 ${cityDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {cityDropdownOpen && (
-            <div className="absolute top-full left-0 right-0 mt-1.5 z-40 bg-[#0B0F17] border border-[#1F2937] rounded-xl shadow-2xl p-1.5 max-h-60 overflow-y-auto space-y-0.5 text-right">
+            <div className="absolute top-full left-0 right-0 mt-1.5 z-40 bg-black border border-[#2F3336] rounded-xl shadow-2xl p-1.5 max-h-60 overflow-y-auto space-y-0.5 text-right">
               {CITIES_LIST.map((city) => {
                 const isSelected = selectedCity === city.id;
                 return (
@@ -247,7 +247,7 @@ export const BusinessesPage: React.FC = () => {
                     className={`px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-between cursor-pointer ${
                       isSelected
                         ? 'bg-[#EAB308]/15 text-[#EAB308]'
-                        : 'text-zinc-300 hover:bg-[#121620] hover:text-white'
+                        : 'text-zinc-300 hover:bg-[#111111] hover:text-white'
                     }`}
                   >
                     <span>{city.name}</span>
@@ -266,7 +266,7 @@ export const BusinessesPage: React.FC = () => {
           <p className="text-xs text-zinc-400 font-bold">جاري تحميل المنشآت الحقيقية...</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="py-16 text-center text-zinc-500 bg-[#0B0F17] rounded-2xl border border-[#1F2937] space-y-3">
+        <div className="py-16 text-center text-zinc-500 bg-black rounded-2xl border border-[#2F3336] space-y-3">
           <Frown className="w-10 h-10 mx-auto text-zinc-600 stroke-[1.5]" />
           <p className="text-xs font-bold">لا توجد منشآت مطابقة في هذا التصنيف حالياً</p>
           <button
@@ -293,11 +293,11 @@ export const BusinessesPage: React.FC = () => {
               <article
                 key={item.id}
                 onClick={() => navigate(`/businesses/${item.slug || item.id}`)}
-                className="bg-[#0B0F17] font-['Cairo'] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer group"
+                className="bg-black font-['Cairo'] border border-[#2F3336] rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer group"
               >
                 <div>
                   {/* الغلاف الواسع المفتوح بدون أي قص أو شارات فوقه */}
-                  <div className="relative w-full h-48 bg-[#0B0F17] flex items-center justify-center overflow-hidden border-b border-zinc-800/40">
+                  <div className="relative w-full h-48 bg-black flex items-center justify-center overflow-hidden border-b border-[#2F3336]">
                     {item.cover_url || item.logo_url ? (
                       <img
                         src={item.cover_url || item.logo_url}
@@ -305,7 +305,7 @@ export const BusinessesPage: React.FC = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     ) : (
-                      <div className="h-full w-full bg-[#121620] flex items-center justify-center text-[#EAB308]">
+                      <div className="h-full w-full bg-[#111111] flex items-center justify-center text-[#EAB308]">
                         <Building size={48} />
                       </div>
                     )}
@@ -314,7 +314,7 @@ export const BusinessesPage: React.FC = () => {
                   {/* الشعار المربع وزر إثبات الملكية المتداخل بنفس هندسة كرت البنك */}
                   <div className="px-4 relative flex items-start justify-between -mt-5 mb-2">
                     <div className="relative z-10">
-                      <div className="w-16 h-16 rounded-2xl bg-[#0B0F17] shadow-2xl border-2 border-[#1F2937] flex items-center justify-center overflow-hidden shrink-0">
+                      <div className="w-16 h-16 rounded-2xl bg-black shadow-2xl border-2 border-[#2F3336] flex items-center justify-center overflow-hidden shrink-0">
                         {item.logo_url ? (
                           <img src={item.logo_url} alt={item.name} className="w-full h-full object-cover rounded-2xl" />
                         ) : (

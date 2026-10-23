@@ -790,7 +790,7 @@ export const AuctionsManager: React.FC = () => {
       case 'sold':
         return <span className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-purple-950 text-purple-300 border border-purple-500/40">تم البيع</span>;
       case 'unsold':
-        return <span className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-900 text-slate-400 border border-slate-700">لم يُبع</span>;
+        return <span className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-black text-slate-400 border border-slate-700">لم يُبع</span>;
       case 'paused':
         return <span className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-orange-950 text-orange-400 border border-orange-500/40">متوقف مؤقتاً</span>;
       case 'cancelled':
@@ -799,7 +799,7 @@ export const AuctionsManager: React.FC = () => {
       case 'upcoming':
         return <span className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-blue-950 text-blue-400 border border-blue-500/40">قادم قريباً</span>;
       default:
-        return <span className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-900 text-slate-400">مكتمل</span>;
+        return <span className="px-2.5 py-1 rounded-lg text-[10px] font-black bg-black text-slate-400">مكتمل</span>;
     }
   };
 
@@ -860,7 +860,7 @@ export const AuctionsManager: React.FC = () => {
         >
           <BarChart3 size={15} className={showStatsPanel ? 'text-black' : 'text-[#F5C400]'} />
           <span>الإحصائيات والمؤشرات (13)</span>
-          <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${showStatsPanel ? 'bg-black/15 text-black' : 'bg-slate-800 text-slate-300 font-mono'}`}>
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${showStatsPanel ? 'bg-black/15 text-black' : 'bg-[#111111] text-slate-300 font-mono'}`}>
             {kpiStats.total}
           </span>
           {showStatsPanel ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -1056,7 +1056,7 @@ export const AuctionsManager: React.FC = () => {
           }`}
         >
           <span>المعروضات والمزادات</span>
-          <span className="px-1.5 py-0.5 rounded-md bg-black/20 text-[11px]">({listings.length})</span>
+          <span className="px-1.5 py-0.5 rounded-md bg-black text-[11px]">({listings.length})</span>
         </button>
 
         <button
@@ -1066,7 +1066,7 @@ export const AuctionsManager: React.FC = () => {
           }`}
         >
           <span>عمليات المزايدة والشراء</span>
-          <span className="px-1.5 py-0.5 rounded-md bg-black/20 text-[11px]">({bidsLog.length})</span>
+          <span className="px-1.5 py-0.5 rounded-md bg-black text-[11px]">({bidsLog.length})</span>
         </button>
 
         <button
@@ -1197,7 +1197,7 @@ export const AuctionsManager: React.FC = () => {
                       const commVal = Number(item.platform_commission) || (finalVal ? Math.round(finalVal * (sellerRate / 100)) : 0);
 
                       return (
-                        <tr key={item.id} className="hover:bg-slate-900/40 transition-colors">
+                        <tr key={item.id} className="hover:bg-black/40 transition-colors">
                           <td className="p-3">
                             <div className="flex items-center gap-2.5">
                               {item.images && item.images.length > 0 ? (
@@ -1207,7 +1207,7 @@ export const AuctionsManager: React.FC = () => {
                                   className="w-10 h-10 rounded-lg object-cover border border-slate-800"
                                 />
                               ) : (
-                                <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-slate-500">
+                                <div className="w-10 h-10 rounded-lg bg-[#111111] flex items-center justify-center text-slate-500">
                                   <Gavel size={16} />
                                 </div>
                               )}
@@ -1441,7 +1441,7 @@ export const AuctionsManager: React.FC = () => {
                     const isDirect = b.bid_type === 'direct_buy';
                     const phone = b.bidder_phone || '';
                     return (
-                      <tr key={b.id || idx} className="hover:bg-slate-900/40 transition-colors">
+                      <tr key={b.id || idx} className="hover:bg-black/40 transition-colors">
                         <td className="p-3 font-mono text-slate-500">{idx + 1}</td>
                         <td className="p-3 font-mono font-bold text-white">
                           <button
@@ -1489,7 +1489,7 @@ export const AuctionsManager: React.FC = () => {
                                 </a>
                                 <a
                                   href={`tel:${phone}`}
-                                  className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] flex items-center gap-1"
+                                  className="px-2 py-1 rounded-lg bg-[#111111] hover:bg-slate-700 text-slate-300 text-[11px] flex items-center gap-1"
                                 >
                                   <Phone size={12} />
                                 </a>
@@ -1604,7 +1604,7 @@ export const AuctionsManager: React.FC = () => {
 
                       <button
                         onClick={() => navigate(`/admin/auctions/${item.id}`)}
-                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 cursor-pointer"
+                        className="px-4 py-2 bg-[#111111] hover:bg-slate-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 cursor-pointer"
                       >
                         <Activity size={14} />
                         <span>فتح المراقبة الحية</span>
@@ -1620,7 +1620,7 @@ export const AuctionsManager: React.FC = () => {
 
       {/* نافذة تأكيد الإجراءات الحساسة */}
       {actionConfirmModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center p-4">
           <div className="bg-[#0A0F1D] border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
             <div className="flex items-center gap-2.5 text-amber-400">
               <AlertTriangle size={20} />
@@ -1662,7 +1662,7 @@ export const AuctionsManager: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActionConfirmModal(null)}
-                className="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold cursor-pointer"
+                className="px-4 py-2 bg-[#111111] text-slate-300 rounded-xl text-xs font-bold cursor-pointer"
               >
                 تراجع
               </button>
@@ -1681,7 +1681,7 @@ export const AuctionsManager: React.FC = () => {
 
       {/* نافذة إنشاء / تعديل معروض */}
       {modalMode && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           <div className="bg-[#0A0F1D] border border-slate-800 rounded-2xl w-full max-w-lg p-5 space-y-4 max-h-[92vh] overflow-y-auto text-white shadow-2xl">
             <div className="flex justify-between items-center border-b border-slate-800 pb-3">
               <h3 className="text-sm sm:text-base font-black text-white flex items-center gap-2">
@@ -1959,7 +1959,7 @@ export const AuctionsManager: React.FC = () => {
 
       {/* نافذة تأكيد حذف المزاد */}
       {deleteConfirmItem && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center p-4">
           <div className="bg-[#0A0F1D] border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-center">
             <Trash2 size={36} className="text-red-500 mx-auto" />
             <h3 className="font-black text-white text-base">هل أنت متأكد من حذف هذا المعروض؟</h3>
@@ -1969,7 +1969,7 @@ export const AuctionsManager: React.FC = () => {
             <div className="flex items-center justify-center gap-2 pt-2">
               <button
                 onClick={() => setDeleteConfirmItem(null)}
-                className="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs font-bold cursor-pointer"
+                className="px-4 py-2 bg-[#111111] text-slate-300 rounded-xl text-xs font-bold cursor-pointer"
               >
                 إلغاء
               </button>

@@ -121,7 +121,7 @@ const CustomSelect: React.FC<{
                 className={`flex items-center justify-between px-3.5 py-2.5 text-xs sm:text-sm cursor-pointer transition-colors ${
                   isSelected
                     ? "bg-[#FFC500]/15 text-[#FFC500] font-bold"
-                    : "text-slate-200 hover:bg-slate-800/80 hover:text-white"
+                    : "text-slate-200 hover:bg-[#111111]/80 hover:text-white"
                 }`}
               >
                 <span className="truncate">{opt}</span>
@@ -150,7 +150,7 @@ const CustomCheckbox: React.FC<{
         className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 transition-all ${
           checked
             ? "bg-[#FFC500] border-[#FFC500] text-black shadow-sm shadow-[#FFC500]/30"
-            : "border-slate-700 bg-slate-900/90 group-hover:border-slate-500"
+            : "border-slate-700 bg-black/90 group-hover:border-slate-500"
         }`}
       >
         {checked && <Check size={12} strokeWidth={3.5} />}
@@ -352,7 +352,7 @@ export const AddJobModal: React.FC<AddJobModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm p-2 sm:p-4 font-['Cairo',sans-serif] text-slate-200" style={{ WebkitOverflowScrolling: "touch" }}>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black  p-2 sm:p-4 font-['Cairo',sans-serif] text-slate-200" style={{ WebkitOverflowScrolling: "touch" }}>
       <div 
         dir="rtl" 
         className="bg-[#0B0F19] border border-slate-800 rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col my-4 sm:my-8 mx-auto relative overflow-hidden"
@@ -371,7 +371,7 @@ export const AddJobModal: React.FC<AddJobModalProps> = ({
           <button 
             type="button"
             onClick={onClose} 
-            className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800/60 transition-colors"
+            className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-[#111111]/60 transition-colors"
           >
             <X size={20} />
           </button>
@@ -482,7 +482,7 @@ export const AddJobModal: React.FC<AddJobModalProps> = ({
                           setCompanyResults([]);
                           setCompanySearch("");
                         }}
-                        className="flex items-center justify-between p-3 hover:bg-slate-800/80 cursor-pointer transition-colors"
+                        className="flex items-center justify-between p-3 hover:bg-[#111111]/80 cursor-pointer transition-colors"
                       >
                         <div className="flex items-center gap-2.5">
                           <Building2 size={16} className="text-[#FFC500]" />
@@ -503,7 +503,7 @@ export const AddJobModal: React.FC<AddJobModalProps> = ({
             ) : (
               <div className="bg-[#111625] border border-slate-700 p-3.5 rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-[#111111] border border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
                     {selectedCompany.logo ? (
                       <img src={selectedCompany.logo} alt={selectedCompany.name} className="w-full h-full object-contain" />
                     ) : (
@@ -525,7 +525,7 @@ export const AddJobModal: React.FC<AddJobModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setSelectedCompany(null)}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 rounded-lg transition-colors cursor-pointer"
+                  className="px-3 py-1.5 bg-[#111111] hover:bg-slate-700 text-xs font-bold text-slate-300 rounded-lg transition-colors cursor-pointer"
                 >
                   تغيير المنشأة
                 </button>
@@ -912,7 +912,7 @@ export const AddJobModal: React.FC<AddJobModalProps> = ({
             type="button"
             disabled={isSubmitting}
             onClick={() => handleSubmit("draft")}
-            className="px-5 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800 disabled:opacity-50 text-slate-300 font-bold text-xs transition-colors cursor-pointer"
+            className="px-5 py-2.5 rounded-xl border border-slate-700 hover:bg-[#111111] disabled:opacity-50 text-slate-300 font-bold text-xs transition-colors cursor-pointer"
           >
             حفظ كمسودة
           </button>
@@ -932,7 +932,7 @@ export const AddJobModal: React.FC<AddJobModalProps> = ({
               onClick={() => handleSubmit("published")}
               className={`px-6 py-2.5 rounded-xl font-black text-xs shadow-lg transition-all flex items-center gap-1.5 ${
                 !agreedToEmployerPolicy || isSubmitting
-                  ? "bg-slate-800 text-slate-500 border border-slate-700/60 opacity-50 cursor-not-allowed"
+                  ? "bg-[#111111] text-slate-500 border border-slate-700/60 opacity-50 cursor-not-allowed"
                   : "bg-[#FFC500] hover:bg-amber-400 text-black cursor-pointer shadow-amber-500/20"
               }`}
             >

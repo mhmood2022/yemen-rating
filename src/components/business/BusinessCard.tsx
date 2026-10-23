@@ -51,7 +51,7 @@ export const BusinessCard: React.FC<Props> = ({
           className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
         />
         {rank && (
-          <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/85 border border-amber-400 text-amber-400 font-black text-xs flex items-center justify-center shadow">
+          <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black border border-amber-400 text-amber-400 font-black text-xs flex items-center justify-center shadow">
             #{rank}
           </div>
         )}

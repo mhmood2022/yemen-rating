@@ -13,7 +13,7 @@ interface AppLayoutProps {
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children, onNavigate }) => {
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F8FA] dark:bg-[#000000] text-[#0F172A] dark:text-white transition-colors">
+    <div className="min-h-screen flex flex-col bg-[#F7F8FA] dark:bg-[#000000] text-[#000000] dark:text-white transition-colors">
       <Header onNavigate={onNavigate} />
       
       <div className="flex-1 flex w-full max-w-7xl mx-auto bg-[#F7F8FA] dark:bg-[#000000]">
