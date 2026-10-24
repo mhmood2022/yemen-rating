@@ -28,6 +28,7 @@ import {
 , Bell , AlertTriangle, Flag } from 'lucide-react';
 import { AuthModal } from '../components/auth/AuthModal';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
+import { ReportPage } from '../components/community/ReportPage';
 
 interface Post {
   id: string;
@@ -192,6 +193,7 @@ function formatTimeAndDate(dateStr: string): string {
 }
 
 const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [reportingItem, setReportingItem] = useState<{
     type: 'post' | 'image' | 'account';
     targetId: string;
@@ -922,7 +924,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#FFC500] selection:text-white pb-32" dir="rtl">
       
       {toastMessage && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[150] bg-[#16181C]/95 backdrop-blur-2xl border border-[#2F3336] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-[0_12px_40px_rgba(0,0,0,0.9)] animate-fade-in flex items-center gap-2">
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[150] bg-black/95 backdrop-blur-2xl border border-[#2F3336] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-[0_12px_40px_rgba(0,0,0,0.9)] animate-fade-in flex items-center gap-2">
           <CheckCircle2 size={16} className="text-[#FFC500] flex-shrink-0" />
           <span>{toastMessage}</span>
         </div>
@@ -1000,7 +1002,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 {isMenuOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
-                    <div className="absolute left-0 top-12 w-44 bg-[#16181C]/95 backdrop-blur-2xl border border-[#2F3336] rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.95)] p-1.5 z-50 text-xs animate-fade-in divide-y divide-[#2F3336]/60">
+                    <div className="absolute left-0 top-12 w-44 bg-black/95 backdrop-blur-2xl border border-[#2F3336] rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.95)] p-1.5 z-50 text-xs animate-fade-in divide-y divide-[#2F3336]/60">
                       {isOwner ? (
                         <div className="space-y-1">
                           <button
@@ -1031,26 +1033,31 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                             }}
                             className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
                           >
-                            <Share size={16} className="text-zinc-400 flex-shrink-0" />
+                            <Share size={16} className="text-[#FFC500] flex-shrink-0" />
                             <span className="text-white text-sm">مشاركة</span>
                           </button>
                           <button
                             onClick={() => {
+                              setReportingItem({
+                                type: 'account',
+                                targetId: profileId || '',
+                                targetName: name || 'مستخدم',
+                                targetAuthorId: profileId || ''
+                              });
                               setIsMenuOpen(false);
-                              showToast("تم إرسال البلاغ");
                             }}
                             className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
                           >
-                            <AlertTriangle size={16} className="text-zinc-400 flex-shrink-0" />
-                            <span className="text-white text-sm">إبلاغ</span>
+                            <AlertTriangle size={16} className="text-[#FFC500] flex-shrink-0" />
+                            <span className="text-white text-sm">إبلاغ عن @{username}</span>
                           </button>
                           <div className="pt-1">
                             <button
                               onClick={handleToggleBlock}
                               className="w-full px-3.5 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
                             >
-                              <Lock size={16} className={isBlocked ? "text-[#FFC500] flex-shrink-0" : "text-rose-500 flex-shrink-0"} />
-                              <span className="text-white text-sm">{isBlocked ? "إلغاء الحظر" : "حظر"}</span>
+                              <Lock size={16} className="text-[#FFC500] flex-shrink-0" />
+                              <span className="text-white text-sm">{isBlocked ? `إلغاء حظر @${username}` : `حظر @${username}`}</span>
                             </button>
                           </div>
                         </div>
@@ -1335,21 +1342,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                         {formatTimeAgo(post.createdAt).relative}
                       </span>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setReportingItem({
-                          type: 'post',
-                          targetId: post.id,
-                          targetName: (post.text || post.content || '').slice(0, 30),
-                          targetAuthorId: post.authorId || post.user_id,
-                        });
-                      }}
-                      className="text-[#71767B] hover:text-rose-500 p-1.5 rounded-full hover:bg-rose-500/10 transition shrink-0"
-                      title="الإبلاغ"
-                    >
-                      <Flag size={16} />
-                    </button>
+                    
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1496,7 +1489,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   type="text" 
                   value={editName} 
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none" 
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none" 
                   required
                 />
               </div>
@@ -1507,7 +1500,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   type="tel" 
                   value={editPhone} 
                   onChange={(e) => setEditPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none font-mono" 
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none font-mono" 
                   placeholder="+967 77xxxxxxx"
                   dir="ltr"
                 />
@@ -1519,7 +1512,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   type="text" 
                   value={editUsername} 
                   onChange={(e) => setEditUsername(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none font-mono" 
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none font-mono" 
                   dir="ltr"
                 />
               </div>
@@ -1530,7 +1523,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   rows={3} 
                   value={editBio} 
                   onChange={(e) => setEditBio(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none" 
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none" 
                   placeholder="اكتب نبذتك الشخصية..."
                 />
               </div>
@@ -1541,7 +1534,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   type="text" 
                   value={editLocation} 
                   onChange={(e) => setEditLocation(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none" 
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none" 
                   placeholder="صنعاء، اليمن"
                 />
               </div>
@@ -1648,7 +1641,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       {/* مودال التواصل الخاص */}
       {isDmOpen && (
         <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-[#16181C] border border-[#2F3336] rounded-3xl p-5 shadow-2xl animate-scale-up text-right">
+          <div className="w-full max-w-md bg-black border border-[#2F3336] rounded-3xl p-5 shadow-2xl animate-scale-up text-right">
             <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-4">
               <button onClick={() => setIsDmOpen(false)} className="text-zinc-400 hover:text-white p-1 rounded-full"><X size={18} /></button>
               <h3 className="font-black text-white text-sm flex items-center gap-2">
@@ -1677,7 +1670,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       {/* نافذة تأكيد الإجراءات الفاخرة بنمط إكس */}
       {confirmModal?.open && (
         <div className="fixed inset-0 z-[200] bg-black  flex items-center justify-center p-4 animate-fade-in">
-          <div className="w-full max-w-xs bg-[#16181C] border border-[#2F3336] rounded-3xl p-5 shadow-2xl text-center animate-scale-up" dir="rtl">
+          <div className="w-full max-w-xs bg-black border border-[#2F3336] rounded-3xl p-5 shadow-2xl text-center animate-scale-up" dir="rtl">
             <h3 className="text-base font-black text-white mb-1.5">{confirmModal.title}</h3>
             <p className="text-xs text-zinc-400 mb-5 leading-relaxed">{confirmModal.desc}</p>
             <div className="flex gap-2">
@@ -1703,51 +1696,62 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
     
       {activeMenuPost && (
-        <div 
-          className="fixed inset-0 z-50 bg-black flex items-end justify-center p-2"
-          onClick={() => setActiveMenuPost(null)}
-        >
-          <div 
-            className="w-full max-w-xs bg-[#16181C] rounded-2xl overflow-hidden mb-16 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-end justify-center p-2" onClick={() => setActiveMenuPost(null)}>
+          <div className="w-full max-w-xs bg-black rounded-2xl overflow-hidden mb-16 shadow-2xl border border-[#2F3336]" onClick={(e) => e.stopPropagation()}>
+            
+            {/* تعديل (يظهر فقط إذا كان المالك) */}
             {isOwner && (
-              <button
-                onClick={() => {
-                  handleDeletePost(activeMenuPost.id);
-                  setActiveMenuPost(null);
-                }}
-                className="w-full px-4 py-4 text-right text-[#F4212E] font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2"
-              >
-                <Trash2 size={18} />
-                <span>حذف التغريدة</span>
+              <button onClick={() => {
+                setEditingPost(activeMenuPost);
+                setIsEditModalOpen(true);
+                setActiveMenuPost(null);
+              }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                <span>تعديل</span>
               </button>
             )}
-            <button
-              onClick={() => {
-                showToast('التثبيت قريباً');
+
+            {/* حذف (يظهر فقط إذا كان المالك) */}
+            {isOwner && (
+              <button onClick={() => {
+                handleDeletePost(activeMenuPost.id);
                 setActiveMenuPost(null);
-              }}
-              className="w-full px-4 py-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2"
-            >
-              <Pin size={18} />
-              <span>تثبيت التغريدة</span>
+              }} className="w-full p-4 text-right text-[#F4212E] font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <span>حذف</span>
+              </button>
+            )}
+
+            
+
+            {/* إبلاغ */}
+            <button onClick={() => {
+              if (activeMenuPost) {
+                setReportingItem({
+                  type: 'post',
+                  targetId: activeMenuPost.id,
+                  targetName: activeMenuPost.authorName || 'مستخدم',
+                  targetAuthorId: activeMenuPost.authorId || ''
+                });
+              }
+              setActiveMenuPost(null);
+            }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+              <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+              <span>إبلاغ</span>
             </button>
-            <button
-              onClick={() => {
-                navigator.clipboard?.writeText(window.location.origin + `/account?id=${activeMenuPost.authorId}`);
-                showToast('تم نسخ الرابط!');
-                setActiveMenuPost(null);
-              }}
-              className="w-full px-4 py-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2"
-            >
-              <Share size={18} />
-              <span>نسخ رابط التغريدة</span>
+
+            {/* نسخ الرابط */}
+            <button onClick={() => {
+              navigator.clipboard?.writeText(window.location.origin + `/account?id=${activeMenuPost.authorId}`);
+              showToast('تم نسخ الرابط!');
+              setActiveMenuPost(null);
+            }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+              <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+              <span>نسخ الرابط</span>
             </button>
-            <button
-              onClick={() => setActiveMenuPost(null)}
-              className="w-full px-4 py-4 text-center text-white font-bold hover:bg-white/5 transition"
-            >
+
+            {/* إلغاء */}
+            <button onClick={() => setActiveMenuPost(null)} className="w-full p-4 text-center text-white/60 font-bold hover:bg-white/5 transition text-sm">
               إلغاء
             </button>
           </div>
@@ -1996,7 +2000,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       {/* قائمة إعادة النشر / اقتباس */}
       {repostMenu && (
         <div className="fixed inset-0 z-[60] bg-black flex items-end justify-center p-2" onClick={() => setRepostMenu(null)}>
-          <div className="w-full max-w-md bg-[#16181C] rounded-2xl overflow-hidden mb-20" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-md bg-black rounded-2xl overflow-hidden mb-20" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => { handleRepost(repostMenu.id); setRepostMenu(null); }}
               className="w-full p-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm"
@@ -2079,56 +2083,31 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
       {/* Modal الإبلاغ */}
       {reportingItem && (
-        <div className="fixed inset-0 z-[200] bg-black flex items-center justify-center p-4" onClick={() => setReportingItem(null)}>
-          <div className="w-full max-w-sm bg-[#16181C] rounded-2xl p-4 shadow-2xl" onClick={(e) => e.stopPropagation()} dir="rtl">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-black text-white text-sm">الإبلاغ عن التغريدة</h3>
-              <button onClick={() => setReportingItem(null)} className="text-[#71767B] hover:text-white p-1 rounded-full">
-                <X size={18} />
-              </button>
-            </div>
-            <p className="text-[#71767B] text-xs mb-3">"{reportingItem.targetName}..."</p>
-            
-            <label className="block text-[#71767B] text-xs mb-1 font-bold">سبب الإبلاغ</label>
-            <select value={reportReason} onChange={(e) => setReportReason(e.target.value)} className="w-full bg-black border border-[#2F3336] rounded-lg p-2 text-white text-xs mb-3">
-              <option value="محتوى غير لائق أو مسيء">محتوى غير لائق أو مسيء</option>
-              <option value="معلومات مضللة">معلومات مضللة</option>
-              <option value="انتحال شخصية">انتحال شخصية</option>
-              <option value="سبام أو إعلانات">سبام أو إعلانات</option>
-              <option value="أخرى">أخرى</option>
-            </select>
-            
-            <label className="block text-[#71767B] text-xs mb-1 font-bold">تفاصيل إضافية (اختياري)</label>
-            <textarea value={reportDetails} onChange={(e) => setReportDetails(e.target.value)} placeholder="أضف تفاصيل..." rows={3} className="w-full bg-black border border-[#2F3336] rounded-lg p-2 text-white text-xs mb-3 resize-none" />
-            
-            <button onClick={async () => {
-              if (!reportingItem) return;
-              setSubmittingReport(true);
-              try {
-                const { data: { user } } = await supabase.auth.getUser();
-                await supabase.from('reports').insert([{
-                  reporter_id: user?.id,
+        <ReportPage
+          onClose={() => setReportingItem(null)}
+          onSubmit={async (reason) => {
+            if (!reportingItem) return;
+            try {
+              const { error } = await supabase
+                .from('reports')
+                .insert({
+                  reported_item_type: reportingItem.type,
                   reported_item_id: reportingItem.targetId,
-                  reason: reportReason,
-                  details: reportDetails.trim() || null,
-                  status: 'pending',
+                  reported_user_id: reportingItem.targetAuthorId,
+                  reporter_id: currentUserId,
+                  reason: reason,
                   created_at: new Date().toISOString(),
-                }]);
-                setReportingItem(null);
-                setReportReason('محتوى غير لائق أو مسيء');
-                setReportDetails('');
-                showToast('تم استلام بلاغك ✅');
-              } catch (e) {
-                console.error('Report error:', e);
-                showToast('فشل الإبلاغ');
-              } finally {
-                setSubmittingReport(false);
-              }
-            }} disabled={submittingReport} className="w-full py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-sm transition disabled:opacity-50">
-              {submittingReport ? 'جاري الإرسال...' : 'إرسال البلاغ'}
-            </button>
-          </div>
-        </div>
+                });
+              if (error) throw error;
+              showToast('تم إرسال بلاغك بنجاح');
+            } catch (err) {
+              console.error('Report error:', err);
+              showToast('حدث خطأ أثناء إرسال البلاغ');
+            }
+          }}
+          authorName={reportingItem.targetName}
+          authorUsername={''}
+        />
       )}
 
       <MobileBottomNav onNavigate={(path) => navigate(path)} />

@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { ActiveUsersBar } from '../components/community/ActiveUsersBar';
+import { ReportPage } from '../components/community/ReportPage';
 import { 
   ArrowRight, Image as ImageIcon, Heart, MessageCircle, Repeat2, 
   Share, Plus, X, Pin, CheckCircle2, TrendingUp, Home, MessageSquare, 
@@ -102,6 +104,10 @@ export const CommunityFeedPage: React.FC = () => {
   const navigate = useNavigate();
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [activeMenuPost, setActiveMenuPost] = useState<any>(null);
+  const [hiddenTweetIds, setHiddenTweetIds] = useState<string[]>([]);
+  const [editingTweet, setEditingTweet] = useState<any>(null);
+  const [editText, setEditText] = useState('');
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [activeTab, setActiveTab] = useState<'forYou' | 'latest' | 'trending'>('forYou');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -167,6 +173,7 @@ export const CommunityFeedPage: React.FC = () => {
   const [reportReason, setReportReason] = useState('محتوى غير لائق أو مسيء');
   const [reportDetails, setReportDetails] = useState('');
   const [submittingReport, setSubmittingReport] = useState(false);
+  const [reportStep, setReportStep] = useState(1);
 
 
   // نافذة البلاغات
@@ -891,7 +898,47 @@ const handleAddComment = (e?: React.FormEvent) => {
   // إرسال البلاغ
   const repostsCount = tweets.filter((t: any) => t.isRepost).length;
         
-  const displayedTweets = [...tweets].sort((a, b) => {
+  const handleNotInterested = (tweetId: string) => {
+    setHiddenTweetIds(prev => [...prev, tweetId]);
+    setActiveMenuPost(null);
+    showToast('لن نعرض لك هذه التغريدة مرة أخرى');
+  };
+
+
+  const handleUnfollow = async (authorId: string) => {
+    if (!currentUserId) {
+      navigate('/login');
+      return;
+    }
+    try {
+      await supabase
+        .from('follows')
+        .delete()
+        .eq('follower_id', currentUserId)
+        .eq('following_id', authorId);
+      
+      setActiveMenuPost(null);
+      showToast('تم إلغاء المتابعة');
+    } catch (err) {
+      console.error('Unfollow error:', err);
+      showToast('حدث خطأ أثناء إلغاء المتابعة');
+    }
+  };
+
+
+  const handleBlock = (authorId: string) => {
+    setHiddenTweetIds(prev => [...prev, authorId]);
+    setActiveMenuPost(null);
+    showToast('تم حظر المستخدم (مؤقتاً)');
+  };
+
+  const handleMute = (authorId: string) => {
+    setHiddenTweetIds(prev => [...prev, authorId]);
+    setActiveMenuPost(null);
+    showToast('تم كتم المستخدم (مؤقتاً)');
+  };
+
+  const displayedTweets = [...tweets].filter(t => !hiddenTweetIds.includes(t.id)).sort((a, b) => {
     // الترتيب حسب التبويب
     if (activeTab === 'trending') return b.likes - a.likes;
     if (activeTab === 'forYou') {
@@ -1053,6 +1100,15 @@ const handleAddComment = (e?: React.FormEvent) => {
 
       {/* حائط التغريدات */}
       <div className="divide-y divide-[#2F3336]">
+      {/* المستخدمون أصحاب أحدث التغريدات */}
+      <ActiveUsersBar
+        users={[...tweets].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .filter((t, i, arr) => t.authorId && t.authorAvatar && arr.findIndex(x => x.authorId === t.authorId) === i)
+          .slice(0, 10)
+          .map(t => ({ id: t.authorId, name: t.authorName || '', avatar: t.authorAvatar, tweetData: t }))}
+        onTweetClick={setViewingDetailTweet}
+      />
+
         {displayedTweets.length === 0 ? (
           <div className="text-center py-20 text-zinc-500 text-xs px-4">
             لا توجد منشورات حتى الآن في المجتمع. كن أول من يغرد!
@@ -1103,20 +1159,18 @@ const handleAddComment = (e?: React.FormEvent) => {
                                 <span className="text-[11px] text-[#71767B] font-normal font-['Tahoma']" dir="ltr">@{tweet.authorUsername}</span>
                                 <span className="text-[11px] text-[#71767B]">·</span>
                                 <span className="text-[11px] text-[#71767B] font-['Tahoma']" title={tweet.createdAtDisplay || tweet.createdAt}>{formatTimeAgo(tweet.createdAt)}</span>
-                              <div className="flex items-center gap-1 shrink-0">
-                                {/* زر الإبلاغ يظهر لكل التغريدات */}
-                                <button onClick={(e) => { e.stopPropagation(); setReportingItem({ type: "post", targetId: tweet.id, targetName: tweet.authorName || "مستخدم", targetAuthorId: tweet.authorId || "" }); }} className="text-[#71767B] hover:text-rose-500 p-1.5 rounded-full hover:bg-rose-500/10 transition" title="إبلاغ عن التغريدة">
-                                  <Flag size={16} />
-                                </button>
-                                
-                                {/* زر الثلاث نقاط يظهر فقط لتغريداتك */}
-                                {tweet.authorId === currentUserId && (
-                                  <button onClick={(e) => { e.stopPropagation(); setActiveMenuPost(tweet); }} className="text-[#71767B] hover:text-[#FFC500] p-1.5 rounded-full hover:bg-[#FFC500]/10 transition" title="المزيد">
-                                    <MoreHorizontal size={16} />
-                                  </button>
-                                )}
+
                               </div>
-                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveMenuPost(tweet);
+                                }}
+                                className="text-[#71767B] hover:text-[#FFC500] p-1.5 rounded-full hover:bg-[#FFC500]/10 transition shrink-0"
+                                title="المزيد"
+                              >
+                                <MoreHorizontal size={18} />
+                              </button>
                             </div>
                             
                             {/* النص العادي (للتغريدة العادية) */}
@@ -1207,6 +1261,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                               </button>
                               
                               
+
                             </div>
                           </div>
                         </div>
@@ -1314,10 +1369,11 @@ const handleAddComment = (e?: React.FormEvent) => {
                     (متبقي {280 - newCommentText.length})
                   </span>
                 )}
-              </div>
-            </div>
-          </div>
-        </div>
+
+                            </div>
+                          </div>
+                        </div>
+                      </div>
       )}
 
       {/* نافذة عرض تفاصيل التغريدة الكاملة مع كل الردود (عند النقر على جسم التغريدة) */}
@@ -1617,79 +1673,24 @@ const handleAddComment = (e?: React.FormEvent) => {
 
       {/* نافذة البلاغات */}
       {reportingItem && (
-        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-3 sm:p-4" dir="rtl">
-          <div className="bg-[#000000] border border-rose-500/40 w-full max-w-md rounded-3xl p-5 sm:p-6 text-white shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-4">
-              <div className="flex items-center gap-2 text-rose-400">
-                <ShieldAlert size={20} />
-                <h2 className="text-base font-black text-white">إبلاغ عن محتوى</h2>
-              </div>
-              <button onClick={() => setReportingItem(null)} className="text-[#71767B] hover:text-white p-1 rounded-full">
-                <X size={18} />
-              </button>
-            </div>
-
-            <p className="font-['Tahoma'] text-xs text-zinc-400 mb-4 leading-relaxed">
-              تساعدنا البلاغات في الحفاظ على مجتمع يمن ريتنج آمناً ونظيفاً. يرجى اختيار سبب الإبلاغ:
-            </p>
-
-            <form onSubmit={handleSubmitReport} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-zinc-300 font-bold mb-2">سبب البلاغ:</label>
-                <div className="space-y-2">
-                  {[
-                    'محتوى غير لائق أو مسيء',
-                    'احتيال أو انتحال شخصية أو سبام',
-                    'معلومات كاذبة أو مضللة',
-                    'مضايقة أو انتهاك للخصوصية',
-                    'سبب آخر'
-                  ].map((reason) => (
-                    <label key={reason} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#16181C] border border-[#2F3336] cursor-pointer hover:border-zinc-500 transition">
-                      <input 
-                        type="radio" 
-                        name="reportReason" 
-                        value={reason} 
-                        checked={reportReason === reason} 
-                        onChange={(e) => setReportReason(e.target.value)}
-                        className="accent-[#FFC500]"
-                      />
-                      <span className="text-zinc-200">{reason}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-zinc-300 font-bold mb-1">تفاصيل إضافية (اختياري):</label>
-                <textarea 
-                  rows={3} 
-                  value={reportDetails} 
-                  onChange={(e) => setReportDetails(e.target.value)} 
-                  placeholder="وضّح للإدارة سبب الإبلاغ باختصار..." 
-                  className="w-full bg-[#16181C] border border-[#2F3336] rounded-xl p-3 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-rose-500"
-                />
-              </div>
-
-              <div className="pt-2 flex gap-2">
-                <button
-                  type="submit"
-                  disabled={submittingReport}
-                  className="flex-1 py-3 rounded-full bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-extrabold text-xs transition flex items-center justify-center gap-2 shadow-lg"
-                >
-                  <AlertTriangle size={15} />
-                  <span>{submittingReport ? 'جاري الإرسال...' : 'تأكيد إرسال البلاغ'}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setReportingItem(null)}
-                  className="py-3 px-5 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs transition"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <ReportPage
+          onClose={() => setReportingItem(null)}
+          onSubmit={(reason) => {
+            const reportData = {
+              id: crypto.randomUUID(),
+              type: reportingItem.type,
+              targetId: reportingItem.targetId,
+              targetName: reportingItem.targetName,
+              targetAuthorId: reportingItem.targetAuthorId,
+              reason: reason,
+              details: '',
+              created_at: new Date().toISOString(),
+            };
+            const existing = JSON.parse(localStorage.getItem('yr_community_reports') || '[]');
+            localStorage.setItem('yr_community_reports', JSON.stringify([reportData, ...existing]));
+            showToast('تم إرسال بلاغك بنجاح');
+          }}
+        />
       )}
 
       {/* شريط التنقل السفلي */}
@@ -1725,104 +1726,113 @@ const handleAddComment = (e?: React.FormEvent) => {
     
       {/* قائمة ⋮ — للمجتمع */}
       {activeMenuPost && (
-        <div className="fixed inset-0 z-[100] bg-black flex items-end justify-center p-2" onClick={() => setActiveMenuPost(null)}>
-          <div className="w-full max-w-xs bg-[#16181C] rounded-2xl overflow-hidden mb-16 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            {/* حذف */}
-            <button onClick={() => { 
-              if (activeMenuPost.id) {
-                // حذف التغريدة
-                supabase.from('posts').delete().eq('id', activeMenuPost.id).then(() => {
-                  setTweets(prev => prev.filter(t => t.id !== activeMenuPost.id));
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-end justify-center p-2" onClick={() => setActiveMenuPost(null)}>
+          <div className="w-full max-w-xs bg-black rounded-2xl overflow-hidden mb-16 shadow-2xl border border-[#2F3336]" onClick={(e) => e.stopPropagation()}>
+            
+            {/* الخيارات التي تظهر فقط لصاحب التغريدة */}
+            {activeMenuPost.authorId === currentUserId ? (
+              <>
+                <button onClick={() => { showToast('التثبيت قريباً'); setActiveMenuPost(null); }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                  <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+                  <span>تثبيت على الملف الشخصي</span>
+                </button>
+                <button onClick={() => { showToast('الإفصاح قريباً'); setActiveMenuPost(null); }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                  <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                  <span>الإفصاح عن المحتوى</span>
+                </button>
+                <button onClick={() => {
+                  if (activeMenuPost.id) {
+                    supabase.from('posts').delete().eq('id', activeMenuPost.id).then(() => {
+                      setTweets(prev => prev.filter(t => t.id !== activeMenuPost.id));
+                      setActiveMenuPost(null);
+                      showToast('تم حذف المنشور');
+                    });
+                  }
+                }} className="w-full p-4 text-right text-[#F4212E] font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  <span>حذف المنشور</span>
+                </button>
+                <button onClick={() => { showToast('تغيير الردود قريباً'); setActiveMenuPost(null); }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                  <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                  <span>تغيير من يمكنه الرد</span>
+                </button>
+                {/* الإبلاغ لصاحب التغريدة */}
+                <button onClick={() => {
+                  setReportingItem({ type: 'post', targetId: activeMenuPost.id, targetName: activeMenuPost.authorName || 'مستخدم', targetAuthorId: activeMenuPost.authorId || '' });
                   setActiveMenuPost(null);
-                  showToast('تم حذف التغريدة');
-                });
-              }
-            }} className="w-full p-3 text-right text-[#F4212E] font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2 text-sm">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-              <span>حذف التغريدة</span>
-            </button>
+                }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                  <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                  <span>إبلاغ</span>
+                </button>
+              </>
+            ) : (
+              /* الخيارات التي تظهر للمستخدمين الآخرين (الزوار) */
+              <>
+                <button onClick={() => handleNotInterested(activeMenuPost.id)} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                  <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span>لست مهتماً بهذا المنشور</span>
+                </button>
+                <button onClick={() => handleUnfollow(activeMenuPost.authorId)} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                  <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"/></svg>
+                  <span>إلغاء متابعة @{activeMenuPost.authorUsername}</span>
+                </button>
+                <button onClick={() => handleMute(activeMenuPost.authorId)} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                  <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+                  <span>كتم @{activeMenuPost.authorUsername}</span>
+                </button>
+                <button onClick={() => handleBlock(activeMenuPost.authorId)} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                  <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                  <span>حظر @{activeMenuPost.authorUsername}</span>
+                </button>
+                {/* الإبلاغ للزوار */}
+                <button onClick={() => {
+                  setReportingItem({ type: 'post', targetId: activeMenuPost.id, targetName: activeMenuPost.authorName || 'مستخدم', targetAuthorId: activeMenuPost.authorId || '' });
+                  setActiveMenuPost(null);
+                }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                  <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                  <span>الإبلاغ عن المنشور</span>
+                </button>
+              </>
+            )}
             
-            {/* نسخ الرابط */}
-            <button onClick={() => {
-              navigator.clipboard?.writeText(window.location.origin + `/feed?id=${activeMenuPost.id}`);
-              showToast('تم نسخ الرابط!');
-              setActiveMenuPost(null);
-            }} className="w-full p-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-2 text-sm">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
-              <span>نسخ الرابط</span>
-            </button>
-            
-            {/* إلغاء */}
-            <button onClick={() => setActiveMenuPost(null)} className="w-full p-3 text-center text-white/60 font-bold hover:bg-white/5 transition text-sm">
+            <button onClick={() => setActiveMenuPost(null)} className="w-full p-4 text-center text-white/60 font-bold hover:bg-white/5 transition text-sm">
               إلغاء
             </button>
           </div>
         </div>
       )}
 
-      <MobileBottomNav onNavigate={(path) => navigate(path)} />
+      {!reportingItem && <MobileBottomNav onNavigate={(path) => navigate(path)} />}
 
-      {/* نافذة الإبلاغ المنبثقة */}
-      {reportingItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black  p-4" onClick={() => setReportingItem(null)}>
+      
+      {/* نافذة تعديل التغريدة */}
+      {editingTweet && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4" onClick={() => setEditingTweet(null)}>
           <div className="bg-[#16181C] border border-[#2F3336] rounded-2xl w-full max-w-md p-5 shadow-2xl relative" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-4">
-              <div className="flex items-center gap-2 text-rose-400">
-                <ShieldAlert size={20} />
-                <h2 className="text-base font-black text-white">إبلاغ عن محتوى</h2>
-              </div>
-              <button onClick={() => setReportingItem(null)} className="text-[#71767B] hover:text-white p-1 rounded-full">
-                <X size={18} />
+              <h2 className="text-base font-black text-white">تعديل التغريدة</h2>
+              <button onClick={() => setEditingTweet(null)} className="text-[#71767B] hover:text-white p-1 rounded-full">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
-            <p className="font-['Tahoma'] text-xs text-zinc-400 mb-4 leading-relaxed">
-              تساعدنا البلاغات في الحفاظ على مجتمع يمن ريتنج آمناً ونظيفاً. يرجى اختيار سبب الإبلاغ:
-            </p>
-            <form onSubmit={handleSubmitReport} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-zinc-300 mb-1.5 font-bold">السبب</label>
-                <select 
-                  value={reportReason}
-                  onChange={(e) => setReportReason(e.target.value)}
-                  className="w-full bg-black border border-[#2F3336] rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-rose-500"
-                >
-                  <option value="محتوى غير لائق أو مسيء">محتوى غير لائق أو مسيء</option>
-                  <option value="معلومات مضللة">معلومات مضللة</option>
-                  <option value="انتحال شخصية">انتحال شخصية</option>
-                  <option value="سبام أو إعلانات">سبام أو إعلانات</option>
-                  <option value="خطاب كراهية">خطاب كراهية</option>
-                  <option value="أخرى">أخرى</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-zinc-300 mb-1.5 font-bold">تفاصيل إضافية (اختياري)</label>
-                <textarea
-                  value={reportDetails}
-                  onChange={(e) => setReportDetails(e.target.value)}
-                  placeholder="اكتب أي تفاصيل تساعدنا في المراجعة..."
-                  className="w-full bg-black border border-[#2F3336] rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-rose-500 resize-none h-24"
-                />
-              </div>
-              <div className="flex gap-2 pt-2">
-                <button 
-                  type="button"
-                  onClick={() => setReportingItem(null)}
-                  className="flex-1 py-2.5 rounded-xl border border-[#2F3336] text-white font-bold hover:bg-white/5 transition"
-                >
-                  إلغاء
-                </button>
-                <button 
-                  type="submit"
-                  disabled={submittingReport}
-                  className="flex-1 py-2.5 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-500 transition disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {submittingReport ? 'جاري الإرسال...' : 'إرسال البلاغ'}
-                </button>
-              </div>
-            </form>
+            <textarea
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-3 text-white text-sm focus:outline-none focus:border-[#FFC500] resize-none h-32"
+              placeholder="عدل تغريدتك..."
+            />
+            <div className="flex gap-2 mt-4">
+              <button onClick={() => setEditingTweet(null)} className="flex-1 py-2.5 rounded-xl border border-[#2F3336] text-white font-bold text-sm hover:bg-white/5 transition">إلغاء</button>
+              <button onClick={handleSaveEdit} disabled={isSavingEdit || !editText.trim()} className="flex-1 py-2.5 rounded-xl bg-[#FFC500] text-black font-bold text-sm hover:bg-[#E5B200] transition disabled:opacity-50">
+                {isSavingEdit ? 'جاري الحفظ...' : 'حفظ'}
+              </button>
+            </div>
           </div>
         </div>
       )}
+
+      {/* نافذة الإبلاغ المنبثقة */}
+      
 </div>
   );
 };
