@@ -1,3 +1,4 @@
+import { XVideoPlayer } from '../components/feed/XVideoPlayer';
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -5,11 +6,34 @@ import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { ActiveUsersBar } from '../components/community/ActiveUsersBar';
+import { ReplyBar } from '../components/community/ReplyBar';
 import { ReportPage } from '../components/community/ReportPage';
-import { 
-  ArrowRight, Image as ImageIcon, Heart, MessageCircle, Repeat2, 
-  Share, Plus, X, Pin, CheckCircle2, TrendingUp, Home, MessageSquare, 
-  User, Flag, AlertTriangle, Send, ShieldAlert, Sparkles, Bell, BarChart, MoreHorizontal } from 'lucide-react';
+import {
+  ArrowRight,
+  Image as ImageIcon,
+  Heart,
+  MessageCircle,
+  Repeat2,
+  Share,
+  Plus,
+  X,
+  Pin,
+  CheckCircle2,
+  TrendingUp,
+  Home,
+  MessageSquare,
+  User,
+  Flag,
+  AlertTriangle,
+  Send,
+  ShieldAlert,
+  Sparkles,
+  Bell,
+  BarChart,
+  MoreHorizontal,
+  Video,
+  Globe
+} from "lucide-react";
 
 interface Comment {
   id: string;
@@ -149,6 +173,30 @@ export const CommunityFeedPage: React.FC = () => {
 
   // صندوق التغريد
   const [tweetText, setTweetText] = useState('');
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  // 📱 ضبط ارتفاع النافذة بدقة متناهية مع لوحة مفاتيح الجوال
+  const [modalHeight, setModalHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!isPostModalOpen) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const updateHeight = () => {
+      setModalHeight(vv.height);
+    };
+
+    updateHeight();
+    vv.addEventListener('resize', updateHeight);
+    vv.addEventListener('scroll', updateHeight);
+
+    return () => {
+      vv.removeEventListener('resize', updateHeight);
+      vv.removeEventListener('scroll', updateHeight);
+    };
+  }, [isPostModalOpen]);
+
+  const [isPosting, setIsPosting] = useState(false);
   const [tweetImage, setTweetImage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -256,7 +304,7 @@ export const CommunityFeedPage: React.FC = () => {
         // 1. جلب جميع التغريدات من السحابة عبر البروكسي النظيف
         const { data: dbPosts, error: postsErr } = await supabase
           .from('posts')
-          .select('id, user_id, content, image_url, likes_count, comments_count, reposts_count, created_at')
+          .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at')
           .order('created_at', { ascending: false })
           .limit(100);
         
@@ -277,7 +325,7 @@ export const CommunityFeedPage: React.FC = () => {
         if (repostedPostIds.length > 0) {
           const { data: originals } = await supabase
             .from('posts')
-            .select('id, user_id, content, image_url, likes_count, comments_count, reposts_count, created_at')
+            .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at')
             .in('id', repostedPostIds);
           (originals || []).forEach((p: any) => originalPostsMap.set(p.id, p));
         }
@@ -325,6 +373,8 @@ export const CommunityFeedPage: React.FC = () => {
             authorAvatar: author?.avatar_url || (localUsers[p.user_id]?.avatarUrl) || (p.user_id === uid ? myAvatar : "") || "",
             text: p.content,
             image: p.image_url || undefined,
+            video_url: p.video_url || undefined,
+            video: p.video_url || undefined,
             createdAt: p.created_at,
             createdAtDisplay: new Date(p.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
             likes: p.likes_count || 0,
@@ -439,7 +489,7 @@ export const CommunityFeedPage: React.FC = () => {
         .from('post_comments')
         .select('id, post_id, user_id, content, created_at')
         .eq('post_id', postId)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('❌ comments query error:', error.message, error.code);
@@ -522,21 +572,22 @@ export const CommunityFeedPage: React.FC = () => {
 
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    
+    // تثبيت الملف فوراً في الذاكرة
     setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onload = () => {
-      setTweetImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    setTweetImage(URL.createObjectURL(file));
   };
 
-  const handlePostTweet = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePostTweet = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (isPosting) return;
+
     const textToSend = tweetText.trim();
     if (!textToSend && !selectedFile && !tweetImage) {
-      showToast('يرجى كتابة نص أو إرفاق صورة أولاً');
+      showToast('يرجى كتابة نص أو إرفاق وسائط أولاً ⚠️');
       return;
     }
 
@@ -545,30 +596,54 @@ export const CommunityFeedPage: React.FC = () => {
       return;
     }
 
-    // فحص جلسة المستخدم الحقيقية
     const { data: { session } } = await supabase.auth.getSession();
     const activeUser = session?.user;
 
     if (!activeUser) {
-      showToast('يجب تسجيل الدخول أولاً لتتمكن من النشر الدائم سحابياً ⚠️');
+      showToast('يجب تسجيل الدخول أولاً لتتمكن من النشر سحابياً ⚠️');
       return;
     }
 
+    setIsPosting(true);
     let finalImageUrl: string | null = null;
+    let finalVideoUrl: string | null = null;
 
-    // رفع الصورة مضغوطة اقتصادياً إن وجدت
     if (selectedFile) {
       try {
-        showToast('جاري ضغط ورفع الصورة سحابياً... ⏳');
-        finalImageUrl = await uploadSocialImage(selectedFile, 'tweets');
+        if (selectedFile.type.startsWith('video/')) {
+          showToast('جاري رفع الفيديو سحابياً... ⏳');
+          const ext = selectedFile.name.split('.').pop() || 'mp4';
+          const filePath = `posts/video_${activeUser.id}_${Date.now()}.${ext}`;
+          const { error: uploadError } = await supabase.storage
+            .from('social-media')
+            .upload(filePath, selectedFile, {
+              upsert: true,
+              contentType: selectedFile.type || 'video/mp4'
+            });
+          if (uploadError) throw uploadError;
+          const { data: pubData } = supabase.storage.from('social-media').getPublicUrl(filePath);
+          finalVideoUrl = pubData.publicUrl;
+        } else {
+          showToast('جاري رفع الصورة سحابياً... ⏳');
+          const ext = selectedFile.name.split('.').pop() || 'jpg';
+          const filePath = `posts/image_${activeUser.id}_${Date.now()}.${ext}`;
+          const { error: uploadError } = await supabase.storage
+            .from('social-media')
+            .upload(filePath, selectedFile, {
+              upsert: true,
+              contentType: selectedFile.type || 'image/jpeg'
+            });
+          if (uploadError) throw uploadError;
+          const { data: pubData } = supabase.storage.from('social-media').getPublicUrl(filePath);
+          finalImageUrl = pubData.publicUrl;
+        }
       } catch (err: any) {
-        showToast('تنبيه بالرفع: ' + (err.message || 'تعذر رفع الصورة'));
+        setIsPosting(false);
+        showToast('فشل رفع الوسائط: ' + (err.message || 'خطأ في التخزين'));
+        return;
       }
     }
 
-    // 1. الحفظ السحابي الدائم في جدول posts في Supabase
-    showToast('جاري حفظ التغريدة سحابياً... ⏳');
-    // 1. الحفظ السحابي الدائم عبر البروكسي الداخلي
     showToast("جاري نشر التغريدة سحابياً... ⏳");
     try {
       const resp = await fetch("/supabase-api/rest/v1/posts", {
@@ -583,19 +658,20 @@ export const CommunityFeedPage: React.FC = () => {
         body: JSON.stringify({
           user_id: activeUser.id,
           content: textToSend,
-          image_url: finalImageUrl || null
+          image_url: finalImageUrl || null,
+          video_url: finalVideoUrl || null
         })
       });
 
       if (!resp.ok) {
-        showToast("تعذر النشر، حاول مجدداً (" + resp.status + ")");
+        setIsPosting(false);
+        showToast("تعذر النشر، كود الخطأ: " + resp.status);
         return;
       }
 
       const postData = await resp.json();
       const insertedPost = Array.isArray(postData) ? postData[0] : postData;
 
-      // بناء وعرض التغريدة فوراً على الحائط
       const newTweet: Tweet = {
         id: insertedPost?.id || Date.now().toString(),
         authorId: activeUser.id,
@@ -604,6 +680,8 @@ export const CommunityFeedPage: React.FC = () => {
         authorAvatar: myAvatar,
         text: textToSend,
         image: finalImageUrl || undefined,
+        video_url: finalVideoUrl || undefined,
+        video: finalVideoUrl || undefined,
         createdAt: "الآن",
         likes: 0,
         likedBy: [],
@@ -614,56 +692,16 @@ export const CommunityFeedPage: React.FC = () => {
       };
 
       setTweets([newTweet, ...tweets]);
-      setTweetText("");
-      setSelectedFile(null);
-      setTweetImage(null);
-      showToast("تم نشر التغريدة بنجاح! 🚀");
+      setTweetText('');
+      setTweetImage('');
+      setSelectedFile(null); if (imageInputRef.current) imageInputRef.current.value = '';
+      setIsPostModalOpen(false);
+      setIsPosting(false);
+      showToast("تم نشر تغريدتك بنجاح! 🚀✨");
     } catch (err: any) {
-      showToast("خطأ في الاتصال: " + err.message);
+      setIsPosting(false);
+      showToast("خطأ أثناء النشر: " + err.message);
     }
-    return;
-    const insertedPost = Array.isArray(insertedData) ? insertedData[0] : insertedData;
-
-    if (insertError) {
-      console.error('Supabase post insert error:', insertError);
-      alert(
-        "رمز الخطأ: " + (insertError?.code || "لا يوجد") + "\n" +
-        "الرسالة: " + (insertError?.message || "فارغة") + "\n" +
-        "التفاصيل: " + (insertError?.details || "لا توجد") + "\n" +
-        "تلميح: " + (insertError?.hint || "لا يوجد")
-      );
-      showToast("تعذر النشر، يرجى المحاولة ثانية");
-      return;
-return;
-    }
-
-    // بناء كائن التغريدة بنجاح من قاعدة البيانات
-    const newTweet: Tweet = {
-      id: insertedPost.id,
-      authorId: activeUser.id,
-      authorName: myName,
-      authorUsername: myUsername,
-      authorAvatar: myAvatar,
-      text: insertedPost.content,
-      image: insertedPost.image_url || undefined,
-      createdAt: 'الآن',
-      likes: 0,
-      likedBy: [],
-      reposts: 0,
-      repostedBy: [],
-      views: 1,
-      comments: []
-    };
-
-    // إضافة التغريدة للخلاصة المحلية وتحديث الصفحة فوراً
-    const updated = [newTweet, ...tweets];
-    setTweets(updated);
-    safeSetStorage(GLOBAL_FEED_KEY, updated);
-
-    setTweetText('');
-    setTweetImage('');
-    setSelectedFile(null);
-    showToast('تم نشر تغريدتك وحفظها في قاعدة البيانات سحابياً بنجاح! 🚀✅');
   };
 
   // إعجاب سليم ومنضبط
@@ -876,10 +914,12 @@ const handleAddComment = (e?: React.FormEvent) => {
     setCommentImageFile(null);
     showToast('تم نشر ردك بنجاح! 💬');
 
-    // إغلاق نافذة الرد تلقائياً والرجوع للخلاصة
-    if (activeCommentTweet) {
-      setActiveCommentTweet(null);
-    }
+    // تحديث الردود داخل نافذة المنشور المفتوحة دون إغلاقها
+    setActiveCommentTweet(prev =>
+      prev && prev.id === targetPost.id
+        ? { ...prev, comments: [...(prev.comments || []), newComment] }
+        : prev
+    );
 
     // 2. حفظ سحابي في الخلفية دون تعطيل الواجهة
     if (currentUserId && currentUserId !== 'guest') {
@@ -987,13 +1027,13 @@ const handleAddComment = (e?: React.FormEvent) => {
 
       
       {toastMsg && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#FFC500] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-2xl animate-fade-in flex items-center gap-2">
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[999] bg-[#FFC500] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-2xl animate-fade-in flex items-center gap-2">
           <CheckCircle2 size={16} />
           <span>{toastMsg}</span>
         </div>
       )}
 
-      <input type="file" ref={imageInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
+      <input type="file" ref={imageInputRef} className="hidden" accept="image/*,video/*" onChange={handleImageUpload} />
 
       {/* الهيدر العلوي */}
       <header className="sticky top-0 z-40 bg-black  border-b border-[#2F3336]">
@@ -1047,56 +1087,7 @@ const handleAddComment = (e?: React.FormEvent) => {
         </div>
       </header>
 
-      {/* صندوق التغريد السريع */}
-      <div className="p-3 border-b border-[#2F3336]">
-        <form onSubmit={handlePostTweet}>
-          <div className="flex gap-3">
-            <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0 font-bold cursor-pointer" onClick={() => navigate('/account')}>
-              {myAvatar ? <img src={myAvatar} alt={myName} className="w-full h-full object-cover" /> : <span>{myName ? myName[0] : '؟'}</span>}
-            </div>
-            <div className="flex-1 min-w-0">
-              <textarea 
-                rows={3}
-                value={tweetText}
-                onChange={(e) => setTweetText(e.target.value)}
-                placeholder="ماذا يحدث في مجتمعك؟ شارك تغريدتك للجميع..."
-                className="w-full bg-transparent text-sm sm:text-base text-white placeholder-zinc-500 focus:outline-none resize-none leading-relaxed"
-              />
-
-              {tweetImage && (
-                <div className="relative rounded-2xl overflow-hidden border border-[#2F3336] max-h-64 my-2">
-                  <img src={tweetImage} alt="المعاينة" className="w-full h-full object-cover" />
-                  <button 
-                    type="button" 
-                    onClick={() => setTweetImage('')}
-                    className="absolute top-2 left-2 bg-black text-white p-1.5 rounded-full hover:bg-black transition"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between pt-2 border-t border-[#2F3336]/60 mt-1">
-                <button 
-                  type="button" 
-                  onClick={() => imageInputRef.current?.click()}
-                  className="p-2 text-[#FFC500] hover:bg-[#FFC500]/10 rounded-full transition"
-                  title="إرفاق صورة"
-                >
-                  <ImageIcon size={20} />
-                </button>
-
-                <button
-                  type="submit"
-                  className="px-5 py-1.5 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white font-black text-xs sm:text-sm transition shadow-[0_4px_15px_rgba(29,155,240,0.3)]"
-                >
-                  تغريد
-                </button>
-              </div>
-            </div>
-          </div>
-        </form>
-      </div>
+      
 
       {/* حائط التغريدات */}
       <div className="divide-y divide-[#2F3336]">
@@ -1234,30 +1225,44 @@ const handleAddComment = (e?: React.FormEvent) => {
                               </div>
                             )}
                             
+                            {/* فيديو التغريدة العادية */}
+                            {(tweet.video_url || tweet.video) && (
+                              <div className="mt-3">
+                                <XVideoPlayer src={tweet.video_url || tweet.video} />
+                              </div>
+                            )}
+
+                            {/* صورة التغريدة العادية */}
+                            {tweet.image && !(tweet.video_url || tweet.video) && (
+                              <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336] max-h-96">
+                                <img src={tweet.image} alt="صورة" className="w-full h-full object-cover" />
+                              </div>
+                            )}
+
                             {/* أزرار التفاعل */}
                             <div className="flex items-center justify-between mt-3 max-w-md text-[#71767B]">
                               {/* 💬 تعليق */}
-                              <button onClick={() => setActiveCommentTweet(tweet)} className="flex items-center gap-1.5 hover:text-[#FFC500] transition group">
+                              <button onClick={() => setViewingDetailTweet(tweet)} className="flex items-center gap-1.5 hover:text-[#FFC500] transition group">
                                 <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10"><MessageCircle size={16} /></div>
-                                <span className="text-[13px]">{tweet.replies || 0}</span>
+                                <span className="text-[11px]">{tweet.replies || 0}</span>
                               </button>
                               
                               {/* 🔁 إعادة / اقتباس */}
                               <button onClick={(e) => { e.stopPropagation(); setRepostMenu(tweet); }} className="flex items-center gap-1.5 hover:text-emerald-400 transition group">
                                 <div className="p-1.5 rounded-full group-hover:bg-emerald-500/10"><Repeat2 size={16} /></div>
-                                <span className="text-[13px]">{tweet.reposts || 0}</span>
+                                <span className="text-[11px]">{tweet.reposts || 0}</span>
                               </button>
                               
                               {/* ❤️ إعجاب */}
                               <button onClick={() => handleLike(tweet.id)} className={`flex items-center gap-1.5 transition group ${tweet.likedBy?.includes(currentUserId) ? 'text-rose-500' : 'hover:text-rose-500'}`}>
                                 <div className="p-1.5 rounded-full group-hover:bg-rose-500/10"><Heart size={16} className={tweet.likedBy?.includes(currentUserId) ? 'fill-current' : ''} /></div>
-                                <span className="text-[13px]">{tweet.likes || 0}</span>
+                                <span className="text-[11px]">{tweet.likes || 0}</span>
                               </button>
                               
                               {/* 📊 مشاهدات */}
                               <button className="flex items-center gap-1.5 hover:text-[#FFC500] transition group" title="المشاهدات">
-                                <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10"><BarChart size={17} /></div>
-                                <span className="text-[13px]">{tweet.views || 1}</span>
+                                <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10"><BarChart size={16} /></div>
+                                <span className="text-[11px]">{tweet.views || 1}</span>
                               </button>
                               
                               
@@ -1271,109 +1276,231 @@ const handleAddComment = (e?: React.FormEvent) => {
         )}
       </div>
 
-      {/* نافذة الردود */}
-      {/* نافذة الرد بنظام منصة X المطابق 100% */}
+      {/* نافذة المنشور والردود - تصميم كامل */}
       {activeCommentTweet && (
-        <div className="fixed inset-0 z-50 bg-black  flex flex-col justify-between h-[100dvh] w-full max-w-lg mx-auto sm:h-auto sm:my-auto sm:rounded-3xl border border-[#2F3336] p-4 text-white overflow-hidden shadow-2xl" dir="rtl">
-          
-          {/* القسم العلوي: زر الإغلاق والرد والتوجيه */}
-          <div>
-            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-3">
-              <button 
-                type="button"
-                onClick={() => setActiveCommentTweet(null)} 
-                className="text-[#71767B] hover:text-white p-1.5 rounded-full hover:bg-zinc-900 transition"
-              >
-                <X size={20} />
-              </button>
-
-              <button
-                type="button"
-                onClick={handleAddComment}
-                disabled={!newCommentText.trim() || newCommentText.length > 280}
-                className="px-5 py-1.5 bg-[#FFC500] hover:bg-[#E5B200] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full text-xs font-black transition active:scale-95 shadow-sm"
-              >
-                الردّ
-              </button>
-            </div>
-
-            <div className="text-[11px] text-[#71767B] mb-3 flex items-center gap-1">
-              <span>رداً على</span>
-              <span className="text-[#FFC500] font-mono font-bold" dir="ltr">@{activeCommentTweet.authorUsername}</span>
-            </div>
-
-            {/* قالب كتابة الرد */}
-            <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden shrink-0 flex items-center justify-center font-bold">
-                {myAvatar ? (
-                  <img src={myAvatar} alt={myName} className="w-full h-full object-cover" />
-                ) : (
-                  <span>{myName ? myName[0] : '؟'}</span>
-                )}
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <textarea
-                  rows={4}
-                  value={newCommentText}
-                  onChange={(e) => setNewCommentText(e.target.value)}
-                  placeholder="انشر ردّك"
-                  maxLength={280}
-                  className="w-full bg-transparent text-white placeholder-[#71767B] text-sm focus:outline-none resize-none leading-relaxed break-words [overflow-wrap:anywhere]"
-                  autoFocus
-                />
-                {commentImage && (
-                  <div className="relative mt-2 mb-2 rounded-xl overflow-hidden border border-[#2F3336] max-h-48 bg-black">
-                    <img src={commentImage} alt="معاينة" className="w-full h-auto object-cover max-h-48" />
-                    <button
-                      type="button"
-                      onClick={() => { setCommentImage(''); setCommentImageFile(null); if (commentImageInputRef.current) commentImageInputRef.current.value = ''; }}
-                      className="absolute top-2 left-2 p-1 bg-black hover:bg-black rounded-full text-white transition"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+        <div
+          className="fixed inset-0 z-[80] bg-black flex flex-col h-[100dvh] w-full text-white overflow-hidden"
+          dir="rtl"
+        >
+          {/* الشريط العلوي */}
+          <div className="h-14 border-b border-[#2F3336] px-4 flex items-center shrink-0 bg-black">
+            <button
+              type="button"
+              onClick={() => setActiveCommentTweet(null)}
+              className="p-2 -mr-2 rounded-full hover:bg-white/10"
+              aria-label="إغلاق"
+            >
+              <ArrowRight size={20} />
+            </button>
+            <h2 className="font-bold text-base mr-3">منشور</h2>
           </div>
 
-          {/* الفوتر الثابت: يرتفع تلقائياً فوق لوحة المفاتيح ومعه العداد */}
-          <div className="mt-auto pt-3 border-t border-[#2F3336] bg-black transition-all duration-75" style={{ paddingBottom: Math.max(12, viewportBottomOffset) }}>
-            <div className="flex items-center justify-between pb-1">
-              <div className="flex items-center gap-2 text-[#FFC500]">
-                <input
-                  type="file"
-                  ref={commentImageInputRef}
-                  onChange={handleCommentImageSelect}
-                  accept="image/*"
-                  className="hidden"
+          {/* محتوى المنشور والردود قابل للتمرير */}
+          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
+            <article className="border-b border-[#2F3336] pb-3">
+              <div className="flex items-start gap-3">
+                <div className="w-11 h-11 rounded-full bg-zinc-800 overflow-hidden shrink-0 flex items-center justify-center">
+                  {activeCommentTweet.authorAvatar ? (
+                    <img
+                      src={activeCommentTweet.authorAvatar}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="font-bold">
+                      {activeCommentTweet.authorName?.[0] || "؟"}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-x-2">
+                    <span className="font-bold text-[15px] break-words">
+                      {activeCommentTweet.authorName}
+                    </span>
+                    <span className="text-[#71767B] text-sm" dir="ltr">
+                      @{activeCommentTweet.authorUsername}
+                    </span>
+                  </div>
+
+                  <p className="mt-2 text-[15px] leading-6 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                    {activeCommentTweet.text}
+                  </p>
+
+                  {activeCommentTweet.image && (
+                    <img
+                      src={activeCommentTweet.image}
+                      alt="صورة المنشور"
+                      className="mt-3 w-full max-h-[420px] object-contain rounded-2xl border border-[#2F3336] bg-black"
+                    />
+                  )}
+
+                  <div className="mt-3 text-xs text-[#71767B]">
+                    {formatTimeAndDate(activeCommentTweet.createdAt)}
+                    {" · "}
+                    {activeCommentTweet.views || 1} مشاهدة
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#2F3336] text-sm text-[#71767B]">
+                    <MessageCircle size={17} />
+                    <span>{activeCommentTweet.comments?.length || 0} رد</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            {/* قائمة الردود */}
+            <section className="pt-3 pb-4">
+              <h3 className="font-bold text-sm mb-3">
+                الردود ({activeCommentTweet.comments?.length || 0})
+              </h3>
+
+              {!activeCommentTweet.comments?.length ? (
+                <p className="text-sm text-[#71767B] py-6 text-center">
+                  لا توجد ردود بعد. كن أول من يرد على هذا المنشور.
+                </p>
+              ) : (
+                <div>
+                  {activeCommentTweet.comments.map((comment) => (
+                    <article
+                      key={comment.id}
+                      className="flex gap-3 py-3 border-b border-[#2F3336]"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-zinc-800 overflow-hidden shrink-0 flex items-center justify-center">
+                        {comment.authorAvatar ? (
+                          <img
+                            src={comment.authorAvatar}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-xs font-bold">
+                            {comment.authorName?.[0] || "؟"}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-x-2">
+                          <span className="font-bold text-sm break-words">
+                            {comment.authorName}
+                          </span>
+                          <span className="text-[#71767B] text-xs" dir="ltr">
+                            @{comment.authorUsername || "user"}
+                          </span>
+                          <span className="text-[#71767B] text-xs">
+                            {comment.createdAtDisplay || formatTimeAndDate(comment.createdAt)}
+                          </span>
+                        </div>
+
+                        <p className="mt-1 text-sm leading-6 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                          {comment.text}
+                        </p>
+
+                        {comment.image && (
+                          <img
+                            src={comment.image}
+                            alt="صورة الرد"
+                            className="mt-2 max-h-64 max-w-full rounded-xl border border-[#2F3336] object-contain"
+                          />
+                        )}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+
+          {/* شريط كتابة الرد الثابت أسفل الشاشة */}
+          <div
+            className="shrink-0 border-t border-[#2F3336] bg-black px-3 pt-3"
+            style={{ paddingBottom: Math.max(12, viewportBottomOffset) }}
+          >
+            {commentImage && (
+              <div className="relative mb-2 max-h-36 overflow-hidden rounded-xl border border-[#2F3336]">
+                <img
+                  src={commentImage}
+                  alt="معاينة صورة الرد"
+                  className="max-h-36 w-auto object-contain"
                 />
-                <button 
-                  type="button" 
-                  onClick={() => commentImageInputRef.current?.click()}
-                  className="p-2 hover:bg-[#FFC500]/10 rounded-full transition" 
-                  title="إرفاق صورة من الاستوديو"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCommentImage("");
+                    setCommentImageFile(null);
+                    if (commentImageInputRef.current) {
+                      commentImageInputRef.current.value = "";
+                    }
+                  }}
+                  className="absolute top-2 left-2 rounded-full bg-black p-1.5 text-white"
+                  aria-label="إزالة الصورة"
                 >
-                  <ImageIcon size={20} />
+                  <X size={15} />
                 </button>
               </div>
+            )}
 
-              <div className="flex items-center gap-1.5 text-xs font-mono select-none" dir="ltr">
-                <span className={newCommentText.length > 280 ? 'text-rose-500 font-bold' : newCommentText.length >= 260 ? 'text-amber-400 font-bold' : 'text-[#71767B]'}>
-                  {newCommentText.length}
-                </span>
-                <span className="text-zinc-600">/ 280</span>
-                {newCommentText.length >= 260 && (
-                  <span className="text-[10px] text-amber-400 mr-1 font-sans">
-                    (متبقي {280 - newCommentText.length})
-                  </span>
+            <form
+              onSubmit={(e) => handleAddComment(e)}
+              className="flex items-end gap-2"
+            >
+              <div className="w-9 h-9 rounded-full bg-zinc-800 overflow-hidden shrink-0 flex items-center justify-center">
+                {myAvatar ? (
+                  <img src={myAvatar} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="font-bold">{myName?.[0] || "؟"}</span>
                 )}
+              </div>
 
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+              <div className="flex-1 min-w-0 rounded-2xl border border-[#2F3336] bg-[#16181C] px-3 py-2">
+                <textarea
+                  rows={1}
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  placeholder="انشر ردّك..."
+                  maxLength={280}
+                  className="w-full max-h-24 resize-none bg-transparent text-sm leading-6 text-white placeholder-[#71767B] focus:outline-none"
+                />
+
+                <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center gap-2 text-[#FFC500]">
+                    <input
+                      type="file"
+                      ref={commentImageInputRef}
+                      onChange={handleCommentImageSelect}
+                      accept="image/*,video/*"
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => commentImageInputRef.current?.click()}
+                      className="rounded-full p-1.5 hover:bg-[#FFC500]/10"
+                      title="إرفاق صورة"
+                    >
+                      <ImageIcon size={19} />
+                    </button>
+                  </div>
+
+                  <span
+                    className={`text-[10px] ${newCommentText.length >= 260 ? "text-amber-400" : "text-[#71767B]"}`}
+                    dir="ltr"
+                  >
+                    {newCommentText.length}/280
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={!newCommentText.trim() || newCommentText.length > 280}
+                className="shrink-0 rounded-full bg-[#FFC500] px-4 py-2 text-sm font-bold text-black disabled:opacity-40"
+              >
+                رد
+              </button>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* نافذة عرض تفاصيل التغريدة الكاملة مع كل الردود (عند النقر على جسم التغريدة) */}
@@ -1472,7 +1599,7 @@ const handleAddComment = (e?: React.FormEvent) => {
       )}
 
       {viewingDetailTweet && (
-        <div className="fixed inset-0 z-50 bg-black flex flex-col h-[100dvh] text-white overflow-hidden" dir="rtl">
+        <div className="fixed inset-0 z-[300] bg-black flex flex-col h-[100dvh] text-white overflow-hidden" dir="rtl">
           {/* شريط علوي */}
           <div className="h-14 border-b border-[#2F3336] px-4 flex items-center justify-between shrink-0 bg-black ">
             <div className="flex items-center gap-3">
@@ -1516,19 +1643,19 @@ const handleAddComment = (e?: React.FormEvent) => {
             {/* أزرار التفاعل في العرض الكامل */}
             <div className="flex items-center justify-around py-1 border-b border-[#2F3336] text-[#71767B]">
               <button onClick={() => { setActiveCommentTweet(viewingDetailTweet); setViewingDetailTweet(null); }} className="flex items-center gap-1.5 hover:text-[#FFC500] transition">
-                <MessageCircle size={18} />
+                <MessageCircle size={16} />
                 <span className="text-xs">{viewingDetailTweet?.comments?.length || 0}</span>
               </button>
               <button onClick={() => handleRepost(viewingDetailTweet.id)} className="flex items-center gap-1.5 hover:text-emerald-400 transition">
-                <Repeat2 size={18} />
+                <Repeat2 size={16} />
                 <span className="text-xs">{viewingDetailTweet.reposts || 0}</span>
               </button>
               <button onClick={() => handleLike(viewingDetailTweet.id)} className="flex items-center gap-1.5 hover:text-rose-500 transition">
-                <Heart size={18} />
+                <Heart size={16} />
                 <span className="text-xs">{viewingDetailTweet.likes || 0}</span>
               </button>
               <button onClick={() => { if (navigator.clipboard) { navigator.clipboard.writeText(window.location.href); showToast('تم نسخ الرابط! 🔗'); } }} className="hover:text-white transition">
-                <Share size={18} />
+                <Share size={16} />
               </button>
               <button 
                 onClick={(e) => {
@@ -1578,7 +1705,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                         </span>
                         <span className="text-[11px] text-[#71767B]">·</span>
                         <span className="text-[#71767B] text-[9px]" title={c.createdAtDisplay || c.createdAt}>
-                          {formatTimeAgo(c.createdAt) || c.createdAtDisplay || 'الآن'}
+                          {formatTimeAgo(c.createdAt).relative || c.createdAtDisplay || 'الآن'}
                         </span>
                       </div>
 
@@ -1625,49 +1752,21 @@ const handleAddComment = (e?: React.FormEvent) => {
             </div>
           </div>
 
-          {/* شريط انشر ردك السفلي بنظام X كما في الصورة */}
-          <div className="p-2.5 sm:p-3 border-t border-[#2F3336] bg-black shrink-0 transition-all duration-75" style={{ paddingBottom: Math.max(12, viewportBottomOffset) }}>
-            <form onSubmit={handleAddComment} className="flex items-center gap-2.5">
-              
-              {/* صورة المستخدم على اليمين أولاً */}
-              <div className="w-9 h-9 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden shrink-0 flex items-center justify-center font-bold">
-                {myAvatar ? (
-                  <img src={myAvatar} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span>{myName ? myName[0] : '؟'}</span>
-                )}
-              </div>
-
-              {/* حقل الإدخال الحقيقي الفوري */}
-              <div className="flex-1 bg-[#16181C] border border-[#2F3336] rounded-full px-4 py-2 flex items-center gap-2 focus-within:border-[#FFC500]">
-                <input
-                  type="text"
-                  value={newCommentText}
-                  onChange={(e) => setNewCommentText(e.target.value)}
-                  placeholder="انشر ردّك..."
-                  maxLength={280}
-                  className="flex-1 bg-transparent text-white text-xs placeholder-[#71767B] focus:outline-none"
-                />
-
-                {newCommentText.length > 0 && (
-                  <span className={`text-[10px] font-mono select-none ${newCommentText.length > 280 ? 'text-rose-500 font-bold' : newCommentText.length >= 260 ? 'text-amber-400' : 'text-[#71767B]'}`}>
-                    {280 - newCommentText.length}
-                  </span>
-                )}
-              </div>
-
-              {/* زر الرد الأزرق على اليسار */}
-              <button
-                type="submit"
-                disabled={!newCommentText.trim() || newCommentText.length > 280}
-                className="px-4 py-2 bg-[#FFC500] hover:bg-[#E5B200] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-full text-xs font-black transition active:scale-95 shrink-0"
-              >
-                الردّ
-              </button>
-
-            </form>
-          </div>
-
+          {/* شريط الكتابة الموحد مع صفحة الحساب */}
+          <ReplyBar
+            value={newCommentText}
+            onChange={setNewCommentText}
+            onSubmit={handleAddComment}
+            myAvatar={myAvatar}
+            myName={myName}
+            onImageSelect={(file) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                setCommentImage(reader.result as string);
+              };
+              reader.readAsDataURL(file);
+            }}
+          />
         </div>
       )}
 
@@ -1802,7 +1901,7 @@ const handleAddComment = (e?: React.FormEvent) => {
         </div>
       )}
 
-      {!reportingItem && <MobileBottomNav onNavigate={(path) => navigate(path)} />}
+      {!reportingItem && !viewingDetailTweet && <MobileBottomNav onNavigate={(path) => navigate(path)} />}
 
       
       {/* نافذة تعديل التغريدة */}
@@ -1833,6 +1932,164 @@ const handleAddComment = (e?: React.FormEvent) => {
 
       {/* نافذة الإبلاغ المنبثقة */}
       
+
+      {/* زر + (FAB) — يفتح نافذة التغريد المنبثقة */}
+      <button
+        onClick={() => setIsPostModalOpen(true)}
+        className="fixed bottom-24 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-[0_8px_25px_rgba(255,197,0,0.35)] transition"
+        title="تغريدة جديدة"
+      >
+        <Plus size={28} className="stroke-[3]" />
+      </button>
+
+
+      {/* نافذة التغريد المنبثقة بكامل الشاشة (تصميم منصة X) */}
+      {isPostModalOpen && (
+        <div 
+          className="fixed inset-0 z-[150] bg-black text-white flex flex-col justify-between overflow-hidden" 
+          dir="rtl"
+          style={{ 
+            height: modalHeight ? `${modalHeight}px` : '100dvh',
+            maxHeight: modalHeight ? `${modalHeight}px` : '100dvh'
+          }}
+        >
+          
+          {/* كود صارم لإلغاء أي مستطيل أو إطار تركيز من المتصفح */}
+          <style>{`
+            .clean-tweet-textarea,
+            .clean-tweet-textarea:focus,
+            .clean-tweet-textarea:active,
+            .clean-tweet-textarea:focus-visible {
+              outline: none !important;
+              border: none !important;
+              box-shadow: none !important;
+              -webkit-box-shadow: none !important;
+              -webkit-tap-highlight-color: transparent !important;
+            }
+          `}</style>
+
+          {/* الشريط العلوي: إلغاء / مسودات / نشر */}
+          <div className="flex items-center justify-between px-4 py-3 shrink-0 bg-black">
+            <button
+              type="button"
+              onClick={() => setIsPostModalOpen(false)}
+              className="text-white hover:text-zinc-300 p-1 rounded-full transition active:scale-95"
+            >
+              <X size={22} />
+            </button>
+
+            <div className="flex items-center gap-4">
+              <span className="text-[#FFC500] text-sm font-bold cursor-pointer hover:underline hidden sm:inline">
+                المسوّدات
+              </span>
+
+              <button
+                onClick={handlePostTweet}
+                disabled={isPosting || (!tweetText.trim() && !selectedFile) || tweetText.length > 280}
+                className="px-5 py-1.5 rounded-full bg-[#FFC500] hover:bg-[#E5B200] disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-black font-black text-sm transition shadow-md flex items-center gap-1.5"
+              >
+                {isPosting ? 'جاري النشر...' : 'نشر'}
+              </button>
+            </div>
+          </div>
+
+          {/* محتوى الكتابة: الأفاتار وبجانبه المؤشر الصغير المتحرك مباشرة وباقي الصفحة سوداء */}
+          <div className="flex-1 min-h-0 px-4 pt-2 overflow-y-auto flex flex-col bg-black">
+            <div className="flex items-start gap-3 flex-1">
+              {/* صورة الأفاتار فقط أعلى اليمين */}
+              <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 overflow-hidden flex items-center justify-center font-bold shrink-0 mt-1">
+                {myAvatar ? (
+                  <img src={myAvatar} alt={myName} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-white text-sm">{myName ? myName[0] : '؟'}</span>
+                )}
+              </div>
+
+              {/* حقل الكتابة مدمج تماماً في السواد مع مؤشر عمودي متحرك بلون المنصة */}
+              <div className="flex-1 min-w-0 flex flex-col">
+                <textarea
+                  autoFocus
+                  value={tweetText}
+                  onChange={(e) => setTweetText(e.target.value)}
+                  placeholder="ماذا يحدث؟"
+                  className="clean-tweet-textarea w-full bg-transparent text-white text-[17px] placeholder-[#71767B] focus:outline-none focus:ring-0 focus:border-none border-0 p-0 resize-none leading-relaxed min-h-[120px] caret-[#FFC500]"
+                  style={{ outline: 'none', border: 'none', boxShadow: 'none', WebkitTapHighlightColor: 'transparent' }}
+                />
+
+                {/* معاينة الوسائط عند اختيارها */}
+                {tweetImage && (
+                  <div className="relative rounded-[16px] overflow-hidden border border-zinc-800 max-h-56 sm:max-h-64 my-3 bg-zinc-950 shrink-0">
+                    {selectedFile?.type.startsWith('video/') ? (
+                      <video src={tweetImage} controls className="w-full max-h-56 sm:max-h-64 object-contain mx-auto" />
+                    ) : (
+                      <img src={tweetImage} alt="المعاينة" className="w-full max-h-56 sm:max-h-64 object-contain mx-auto" />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => { setTweetImage(''); setSelectedFile(null); if (imageInputRef.current) imageInputRef.current.value = ''; }}
+                      className="absolute top-2 left-2 bg-black/80 hover:bg-black text-white p-1.5 rounded-full transition backdrop-blur-md"
+                      title="إزالة"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* الشريط السفلي: خط نحيل باهت والأيقونات الصفراء ترتفع وتنخفض مع الكيبورد */}
+          <div className="shrink-0 bg-black border-t border-zinc-800/60 pb-2">
+            <div className="flex items-center gap-1.5 text-[13px] font-bold text-[#FFC500] px-4 py-2">
+              <Globe size={15} />
+              <span>يمكن للجميع الرد</span>
+            </div>
+
+            {/* الأيقونات باللون الأصفر متناسقة ومتباعدة طبق الأصل */}
+            <div className="flex items-center justify-between px-3 pt-1">
+              <div className="flex items-center gap-3 sm:gap-4 text-[#FFC500]">
+                {/* معرض الصور */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (imageInputRef.current) {
+                      imageInputRef.current.accept = "image/*";
+                      imageInputRef.current.click();
+                    }
+                  }}
+                  className="p-1.5 hover:bg-[#FFC500]/10 rounded-full transition active:scale-90"
+                  title="صور"
+                >
+                  <ImageIcon size={21} />
+                </button>
+
+                {/* الفيديو */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (imageInputRef.current) {
+                      imageInputRef.current.accept = "video/*";
+                      imageInputRef.current.click();
+                    }
+                  }}
+                  className="p-1.5 hover:bg-[#FFC500]/10 rounded-full transition active:scale-90"
+                  title="فيديو"
+                >
+                  <Video size={21} />
+                </button>
+              </div>
+
+              {/* عداد الحروف (280) */}
+              <div className="flex items-center gap-1.5 text-xs font-mono select-none px-2 text-[#71767B]" dir="ltr">
+                <span className={tweetText.length > 280 ? "text-rose-500 font-bold" : tweetText.length >= 260 ? "text-[#FFC500] font-bold" : "text-zinc-500"}>
+                  {tweetText.length}
+                </span>
+                <span>/ 280</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 </div>
   );
 };

@@ -1,3 +1,4 @@
+import { XVideoPlayer } from './XVideoPlayer';
 import React from 'react';
 import { MessageCircle, Repeat2, Heart, Share, MoreHorizontal, BarChart } from 'lucide-react';
 
@@ -98,6 +99,13 @@ export const TweetCard: React.FC<TweetCardProps> = ({
             </div>
           ) : (
             <p className="mt-1 text-[15px] leading-5 text-[#E7E9EA] whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{tweet.text}</p>
+          )}
+
+          {/* فيديو التغريدة العادية */}
+          {!tweet.isRepost && (tweet.video_url || tweet.video) && (
+            <div className="mt-3">
+              <XVideoPlayer src={tweet.video_url || tweet.video} />
+            </div>
           )}
 
           {/* صورة التغريدة العادية */}

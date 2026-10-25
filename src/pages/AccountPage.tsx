@@ -1,3 +1,4 @@
+import { XVideoPlayer } from '../components/feed/XVideoPlayer';
 
 // تنظيف أمان لمنع امتلاء localStorage وضمان وجود مساحة لرمز جلسة Supabase
 try {
@@ -20,12 +21,42 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { supabase } from "../lib/supabase";
 import { getUserProfile, updateUserProfile, getUserPosts, createPost, deletePost, togglePostLike, toggleFollow, checkIsFollowing, toggleBlockUser, checkIsBlocked, uploadSocialImage, Profile, PostItem } from "../services/socialService";
-import { 
-  ArrowRight, RotateCw, MoreHorizontal, MapPin, Calendar, 
-  Cake, CheckCircle2, Heart, MessageCircle, Repeat2, Share, Plus, 
-  Camera, X, Image as ImageIcon, Pin, Trash2, Edit3, Loader2,
-  Home, MessageSquare, User, Phone, Mail, LogOut, UserPlus, UserCheck, Lock, BarChart
-, Bell , AlertTriangle, Flag } from 'lucide-react';
+import {
+  ArrowRight,
+  RotateCw,
+  MoreHorizontal,
+  MapPin,
+  Calendar,
+  Cake,
+  CheckCircle2,
+  Heart,
+  MessageCircle,
+  Repeat2,
+  Share,
+  Plus,
+  Camera,
+  X,
+  Image as ImageIcon,
+  Pin,
+  Trash2,
+  Edit3,
+  Loader2,
+  Home,
+  MessageSquare,
+  User,
+  Phone,
+  Mail,
+  LogOut,
+  UserPlus,
+  UserCheck,
+  Lock,
+  BarChart,
+  Bell,
+  AlertTriangle,
+  Flag,
+  Globe,
+  Video
+} from "lucide-react";
 import { AuthModal } from '../components/auth/AuthModal';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { ReportPage } from '../components/community/ReportPage';
@@ -237,6 +268,30 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   // منشور جديد
   const [newPostText, setNewPostText] = useState('');
   const [newPostImage, setNewPostImage] = useState('');
+  const [newPostFile, setNewPostFile] = useState<File | null>(null);
+  const [isPostingModal, setIsPostingModal] = useState(false);
+  const [modalHeight, setModalHeight] = useState<number | null>(null);
+
+  // 📱 ضبط ارتفاع النافذة بدقة متناهية مع لوحة مفاتيح الجوال
+  useEffect(() => {
+    if (!isPostModalOpen) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const updateHeight = () => {
+      setModalHeight(vv.height);
+    };
+
+    updateHeight();
+    vv.addEventListener('resize', updateHeight);
+    vv.addEventListener('scroll', updateHeight);
+
+    return () => {
+      vv.removeEventListener('resize', updateHeight);
+      vv.removeEventListener('scroll', updateHeight);
+    };
+  }, [isPostModalOpen]);
+
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -347,6 +402,8 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             authorBadge: p.authorBadge || p.profile?.verification_type || (p.profile?.is_verified ? "blue" : "none"),
             text: p.text || p.content,
             image: p.image || p.image_url || undefined,
+            video_url: p.video_url || p.video || undefined,
+            video: p.video_url || p.video || undefined,
             createdAt: p.createdAt || p.created_at,
             createdAtDisplay: p.createdAtDisplay || new Date(p.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
             likes: p.likes || p.likes_count || 0,
@@ -430,6 +487,8 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               authorBadge: p.profile?.verification_type || (p.profile?.is_verified ? 'blue' : 'none'),
               text: p.content,
               image: p.image_url || undefined,
+              video_url: p.video_url || p.video || undefined,
+              video: p.video_url || p.video || undefined,
               createdAt: p.created_at,
               createdAtDisplay: new Date(p.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
               likes: p.likes_count || 0,
@@ -616,10 +675,12 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   };
 
   // إنشاء منشور حقيقي
-  const handleCreatePost = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPostText.trim() && !newPostImage) {
-      showToast("يرجى كتابة نص أو إرفاق صورة");
+  const handleCreatePost = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (isPostingModal) return;
+
+    if (!newPostText.trim() && !newPostFile && !newPostImage) {
+      showToast("يرجى كتابة نص أو إرفاق وسائط أولاً ⚠️");
       return;
     }
 
@@ -629,13 +690,53 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       return;
     }
 
-    showToast("جاري نشر التغريدة سحابياً... ⏳");
+    setIsPostingModal(true);
+    let finalImageUrl: string | null = null;
+    let finalVideoUrl: string | null = null;
 
+    if (newPostFile) {
+      try {
+        if (newPostFile.type.startsWith('video/')) {
+          showToast("جاري رفع الفيديو سحابياً... ⏳");
+          const ext = newPostFile.name.split('.').pop() || 'mp4';
+          const filePath = `posts/video_${profileId}_${Date.now()}.${ext}`;
+          const { error: upErr } = await supabase.storage
+            .from('social-media')
+            .upload(filePath, newPostFile, {
+              upsert: true,
+              contentType: newPostFile.type || 'video/mp4'
+            });
+          if (upErr) throw upErr;
+          const { data: pubData } = supabase.storage.from('social-media').getPublicUrl(filePath);
+          finalVideoUrl = pubData.publicUrl;
+        } else {
+          showToast("جاري رفع الصورة سحابياً... ⏳");
+          const ext = newPostFile.name.split('.').pop() || 'jpg';
+          const filePath = `posts/image_${profileId}_${Date.now()}.${ext}`;
+          const { error: upErr } = await supabase.storage
+            .from('social-media')
+            .upload(filePath, newPostFile, {
+              upsert: true,
+              contentType: newPostFile.type || 'image/jpeg'
+            });
+          if (upErr) throw upErr;
+          const { data: pubData } = supabase.storage.from('social-media').getPublicUrl(filePath);
+          finalImageUrl = pubData.publicUrl;
+        }
+      } catch (err: any) {
+        setIsPostingModal(false);
+        showToast("فشل رفع الملف: " + (err.message || 'خطأ في التخزين'));
+        return;
+      }
+    }
+
+    showToast("جاري نشر التغريدة سحابياً... ⏳");
     try {
       const { data: inserted, error: pErr } = await supabase.from("posts").insert({
         user_id: profileId,
         content: newPostText.trim(),
-        image_url: newPostImage || null
+        image_url: finalImageUrl || null,
+        video_url: finalVideoUrl || null,
       }).select().single();
 
       if (pErr) throw pErr;
@@ -648,7 +749,9 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         authorAvatar: avatarUrl,
         authorBadge: verificationType,
         text: newPostText.trim(),
-        image: newPostImage || undefined,
+        image: finalImageUrl || undefined,
+        video: finalVideoUrl || undefined,
+        video_url: finalVideoUrl || undefined,
         createdAt: "الآن",
         likes: 0,
         likedBy: [],
@@ -660,15 +763,17 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       setUserPosts(prev => [realPost, ...prev]);
       setNewPostText("");
       setNewPostImage("");
+      setNewPostFile(null);
       setIsPostModalOpen(false);
-      showToast("تم نشر التغريدة وحفظها في السحابة بنجاح");
+      setIsPostingModal(false);
+      showToast("تم نشر تغريدتك بنجاح! 🚀✨");
     } catch (err: any) {
+      setIsPostingModal(false);
       console.error("Post error:", err);
       showToast("حدث خطأ أثناء النشر: " + (err.message || ""));
     }
   };
 
-  // إعجاب حقيقي
   const loadComments = async (postId: string) => {
     setLoadingComments(true);
     try {
@@ -676,7 +781,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         .from('post_comments')
         .select('id, post_id, user_id, content, created_at')
         .eq('post_id', postId)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
       
@@ -717,13 +822,19 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   };
 
   const handleSubmitComment = async () => {
-    if (!newCommentText.trim() || !sessionUser?.id || !activeCommentPost) return;
+    if (!newCommentText.trim() || !sessionUser?.id || !activeCommentPost) {
+      return;
+    }
     
     try {
+      const postIdToUse = activeCommentPost.id.startsWith('repost-') && activeCommentPost.original?.id 
+        ? activeCommentPost.original.id 
+        : activeCommentPost.id;
+      
       const { error } = await supabase
         .from('post_comments')
         .insert({
-          post_id: activeCommentPost.id,
+          post_id: postIdToUse,
           user_id: sessionUser.id,
           content: newCommentText.trim(),
         });
@@ -731,7 +842,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       if (error) throw error;
       
       setNewCommentText('');
-      await loadComments(activeCommentPost.id);
+      await loadComments(postIdToUse);
       showToast('تم إضافة الرد');
     } catch (e: any) {
       console.error('add comment error:', e);
@@ -1255,7 +1366,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             }}
             className="w-full py-2 px-4 rounded-full border border-[#536471] hover:bg-[#181818] active:scale-[0.98] text-white text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5"
           >
-            <Share size={15} />
+            <Share size={16} />
             <span>مشاركة</span>
           </button>
         </div>
@@ -1280,7 +1391,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             activeTab === 'likes' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'
           }`}
         >
-          <Heart size={18} />
+          <Heart size={16} />
           {activeTab === 'likes' && <div className="absolute bottom-0 w-8 h-1 bg-white rounded-full" />}
         </button>
       </div>
@@ -1397,7 +1508,14 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                     </p>
                   )}
 
-                  {!post.isRepost && post.image && (
+                  {/* فيديو المنشور */}
+                  {!post.isRepost && (post.video_url || post.video) && (
+                    <div className="mt-3">
+                      <XVideoPlayer src={post.video_url || post.video} />
+                    </div>
+                  )}
+
+                  {!post.isRepost && post.image && !post.video_url && !post.video && (
                     <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336] max-h-96">
                       <img src={post.image} alt="الصورة" className="w-full h-full object-cover" />
                     </div>
@@ -1408,16 +1526,17 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  alert("زر التعليقات يعمل!");
                                   setActiveCommentPost(post);
-                                  loadComments(post.id);
+                                  loadComments(post.id.startsWith('repost-') && post.original?.id ? post.original.id : post.id);
                                 }}
-                                className="flex items-center gap-1.5 hover:text-[#FFC500] transition group"
+                                className="flex items-center gap-1.5 text-[#71767B] hover:text-[#FFC500] transition group"
                                 title="الردود"
                               >
                                 <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10">
                                   <MessageCircle size={16} />
                                 </div>
-                                <span>{post.replies || 0}</span>
+                                <span className="text-[11px]">{post.replies || 0}</span>
                               </button>
 
                               {/* 🔁 إعادة التغريد */}
@@ -1426,25 +1545,25 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                                   e.stopPropagation();
                                   setRepostMenu(post);
                                 }}
-                                className="flex items-center gap-1.5 hover:text-emerald-400 transition group"
+                                className="flex items-center gap-1.5 text-[#71767B] hover:text-emerald-400 transition group"
                                 title="إعادة التغريد"
                               >
                                 <div className="p-1.5 rounded-full group-hover:bg-emerald-500/10">
-                                  <Repeat2 size={17} />
+                                  <Repeat2 size={16} />
                                 </div>
-                                <span>{post.reposts || 0}</span>
+                                <span className="text-[11px]">{post.reposts || 0}</span>
                               </button>
 
                               {/* ❤️ الإعجاب */}
                               <button
                                 onClick={() => handleToggleLike(post.id)}
-                                className={`flex items-center gap-1.5 transition group ${post.isLiked ? 'text-rose-500 font-bold' : 'hover:text-rose-500'}`}
+                                className={`flex items-center gap-1.5 text-[#71767B] transition group ${post.isLiked ? 'text-rose-500 font-bold' : 'hover:text-rose-500'}`}
                                 title="إعجاب"
                               >
                                 <div className="p-1.5 rounded-full group-hover:bg-rose-500/10">
                                   <Heart size={16} className={post.isLiked ? 'fill-current' : ''} />
                                 </div>
-                                <span>{post.likes || 0}</span>
+                                <span className="text-[11px]">{post.likes || 0}</span>
                               </button>
 
                               {/* 📊 المشاهدات */}
@@ -1454,9 +1573,9 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                                 title="المشاهدات"
                               >
                                 <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10">
-                                  <BarChart size={17} />
+                                  <BarChart size={16} />
                                 </div>
-                                <span>{post.views || 0}</span>
+                                <span className="text-[11px]">{post.views || 0}</span>
                               </button>
                             </div>
                 </div>
@@ -1562,82 +1681,151 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         </div>
       )}
 
-      {/* مودال منشور جديد */}
+      {/* مودال منشور جديد (تصميم منصة X المتوافق مع الكيبورد) */}
       {isPostModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-3 sm:p-4" dir="rtl">
-          <div className="bg-[#000000] border border-[#2F3336] w-full max-w-lg rounded-3xl p-5 sm:p-6 text-white">
-            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-4">
-              <h2 className="text-base font-black">منشور جديد</h2>
-              <button onClick={() => setIsPostModalOpen(false)} className="text-[#71767B] hover:text-white p-1 rounded-full">
-                <X size={20} />
+        <div 
+          className="fixed inset-0 z-[150] bg-black text-white flex flex-col justify-between overflow-hidden" 
+          dir="rtl"
+          style={{ 
+            height: modalHeight ? `${modalHeight}px` : '100dvh',
+            maxHeight: modalHeight ? `${modalHeight}px` : '100dvh'
+          }}
+        >
+          {/* كود صارم لإلغاء أي مستطيل أو إطار تركيز من المتصفح */}
+          <style>{`
+            .clean-tweet-textarea,
+            .clean-tweet-textarea:focus,
+            .clean-tweet-textarea:active,
+            .clean-tweet-textarea:focus-visible {
+              outline: none !important;
+              border: none !important;
+              box-shadow: none !important;
+              -webkit-box-shadow: none !important;
+              -webkit-tap-highlight-color: transparent !important;
+            }
+          `}</style>
+
+          {/* الشريط العلوي */}
+          <div className="flex items-center justify-between px-4 py-3 shrink-0 bg-black">
+            <button
+              type="button"
+              onClick={() => setIsPostModalOpen(false)}
+              className="text-white hover:text-zinc-300 p-1 rounded-full transition active:scale-95"
+            >
+              <X size={22} />
+            </button>
+
+            <div className="flex items-center gap-4">
+              <span className="text-[#FFC500] text-sm font-bold cursor-pointer hover:underline hidden sm:inline">
+                المسوّدات
+              </span>
+
+              <button
+                onClick={handleCreatePost}
+                disabled={isPostingModal || (!newPostText.trim() && !newPostFile && !newPostImage) || newPostText.length > 280}
+                className="px-5 py-1.5 rounded-full bg-[#FFC500] hover:bg-[#E5B200] disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-black font-black text-sm transition shadow-md flex items-center gap-1.5"
+              >
+                {isPostingModal ? 'جاري النشر...' : 'نشر'}
               </button>
             </div>
+          </div>
 
-            <form onSubmit={handleCreatePost} className="space-y-4">
-              <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold">
-                  {avatarUrl ? <img src={avatarUrl} alt={name} className="w-full h-full object-cover" /> : <span>{name ? name[0] : '؟'}</span>}
-                </div>
-                <textarea 
-                  rows={4}
-                  value={newPostText}
-                  onChange={(e) => setNewPostText(e.target.value)}
-                  placeholder="ماذا يحدث؟ اكتب منشورك..."
-                  maxLength={280}
-                  className="w-full bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none resize-none"
-                  autoFocus
-                />
+          {/* محتوى الكتابة: الأفاتار وبجانبه المؤشر الصغير المتحرك وباقي الصفحة سوداء بالكامل */}
+          <div className="flex-1 min-h-0 px-4 pt-2 overflow-y-auto flex flex-col bg-black">
+            <div className="flex items-start gap-3 flex-1">
+              <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 overflow-hidden flex items-center justify-center font-bold shrink-0 mt-1">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-white text-sm">{name ? name[0] : '؟'}</span>
+                )}
               </div>
 
-              {newPostImage && (
-                <div className="relative rounded-2xl overflow-hidden border border-[#2F3336] max-h-60">
-                  <img src={newPostImage} alt="معاينة" className="w-full h-full object-cover" />
-                  <button 
-                    type="button" 
-                    onClick={() => setNewPostImage('')}
-                    className="absolute top-2 left-2 bg-black text-white p-1.5 rounded-full hover:bg-black transition"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              )}
+              <div className="flex-1 min-w-0 flex flex-col">
+                <textarea
+                  autoFocus
+                  value={newPostText}
+                  onChange={(e) => setNewPostText(e.target.value)}
+                  placeholder="ماذا يحدث؟"
+                  className="clean-tweet-textarea w-full bg-transparent text-white text-[17px] placeholder-[#71767B] focus:outline-none focus:ring-0 focus:border-none border-0 p-0 resize-none leading-relaxed min-h-[120px] caret-[#FFC500]"
+                  style={{ outline: 'none', border: 'none', boxShadow: 'none', WebkitTapHighlightColor: 'transparent' }}
+                />
 
-                <div className="flex items-center justify-between pt-3 border-t border-[#2F3336]">
-                  <button
-                    type="button"
-                    onClick={() => postImageInputRef.current?.click()}
-                    className="p-2 text-[#FFC500] hover:bg-[#FFC500]/10 rounded-full transition"
-                    title="إرفاق صورة"
-                  >
-                    <ImageIcon size={20} />
-                  </button>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-xs font-mono select-none" dir="ltr">
-                      <span className={newPostText.length > 280 ? "text-rose-500 font-bold" : newPostText.length >= 260 ? "text-amber-400 font-bold" : "text-zinc-500"}>
-                        {newPostText.length}
-                      </span>
-                      <span className="text-zinc-600">/ 280</span>
-                      {newPostText.length >= 260 && (
-                        <span className="text-[10px] text-amber-400 mr-1">
-                          (متبقي {280 - newPostText.length})
-                        </span>
-                      )}
-                    </div>
+                {/* معاينة الوسائط عند اختيارها */}
+                {newPostImage && (
+                  <div className="relative rounded-[16px] overflow-hidden border border-zinc-800 max-h-56 sm:max-h-64 my-3 bg-zinc-950 shrink-0">
+                    {newPostFile?.type.startsWith('video/') ? (
+                      <video src={newPostImage} controls className="w-full max-h-56 sm:max-h-64 object-contain mx-auto" />
+                    ) : (
+                      <img src={newPostImage} alt="المعاينة" className="w-full max-h-56 sm:max-h-64 object-contain mx-auto" />
+                    )}
                     <button
-                      type="submit"
-                      disabled={(!newPostText.trim() && !newPostImage) || newPostText.length > 280}
-                      className="px-5 py-2 rounded-full bg-[#FFC500] hover:bg-[#E5B200] disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 text-white font-extrabold text-sm transition"
+                      type="button"
+                      onClick={() => { setNewPostImage(''); setNewPostFile(null); }}
+                      className="absolute top-2 left-2 bg-black/80 hover:bg-black text-white p-1.5 rounded-full transition backdrop-blur-md"
+                      title="إزالة"
                     >
-                      نشر
+                      <X size={16} />
                     </button>
                   </div>
-                </div>
-            </form>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* الشريط السفلي: خط نحيل باهت والأيقونات الصفراء ترتفع فوق لوحة المفاتيح مباشرة */}
+          <div className="shrink-0 bg-black border-t border-zinc-800/60 pb-2">
+            <div className="flex items-center gap-1.5 text-[13px] font-bold text-[#FFC500] px-4 py-2">
+              <Globe size={15} />
+              <span>يمكن للجميع الرد</span>
+            </div>
+
+            <div className="flex items-center justify-between px-3 pt-1">
+              <div className="flex items-center gap-3 sm:gap-4 text-[#FFC500]">
+                {/* معرض الصور */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (postImageInputRef.current) {
+                      postImageInputRef.current.accept = "image/*";
+                      postImageInputRef.current.click();
+                    }
+                  }}
+                  className="p-1.5 hover:bg-[#FFC500]/10 rounded-full transition active:scale-90"
+                  title="صور"
+                >
+                  <ImageIcon size={21} />
+                </button>
+
+                {/* الفيديو */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (postImageInputRef.current) {
+                      postImageInputRef.current.accept = "video/*";
+                      postImageInputRef.current.click();
+                    }
+                  }}
+                  className="p-1.5 hover:bg-[#FFC500]/10 rounded-full transition active:scale-90"
+                  title="فيديو"
+                >
+                  <Video size={21} />
+                </button>
+              </div>
+
+              {/* عداد الحروف (280) */}
+              <div className="flex items-center gap-1.5 text-xs font-mono select-none px-2 text-[#71767B]" dir="ltr">
+                <span className={newPostText.length > 280 ? "text-rose-500 font-bold" : newPostText.length >= 260 ? "text-[#FFC500] font-bold" : "text-zinc-500"}>
+                  {newPostText.length}
+                </span>
+                <span>/ 280</span>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-    
+
       {/* مودال التواصل الخاص */}
       {isDmOpen && (
         <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4">
@@ -1760,98 +1948,123 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
       {/* نافذة الردود - نسخة من /feed */}
       {activeCommentPost && (
-        <div className="fixed inset-0 z-50 bg-black  flex flex-col justify-between h-[100dvh] w-full max-w-lg mx-auto border border-[#2F3336] p-4 text-white overflow-hidden shadow-2xl" dir="rtl">
-          {/* Header */}
-          <div>
-            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-3">
-              <button
-                type="button"
-                onClick={() => setActiveCommentPost(null)}
-                className="text-[#71767B] hover:text-white p-1.5 rounded-full hover:bg-zinc-900 transition"
-              >
-                <X size={20} />
+        <div className="fixed inset-0 z-[300] bg-black flex flex-col h-[100dvh] text-white overflow-hidden" dir="rtl">
+          {/* شريط علوي */}
+          <div className="h-14 border-b border-[#2F3336] px-4 flex items-center justify-between shrink-0 bg-black">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setActiveCommentPost(null)} className="p-2 hover:bg-zinc-900 rounded-full text-[#71767B] hover:text-white transition">
+                <ArrowRight size={20} />
               </button>
-              <button
-                type="button"
-                onClick={handleSubmitComment}
-                disabled={!newCommentText.trim() || newCommentText.length > 280}
-                className="px-5 py-1.5 bg-[#FFC500] hover:bg-[#E5B200] disabled:opacity-40 text-white rounded-full text-xs font-black transition"
-              >
-                الردّ
-              </button>
-            </div>
-            
-            <div className="text-[11px] text-[#71767B] mb-3 flex items-center gap-1">
-              <span>رداً على</span>
-              <span className="text-[#FFC500] font-mono font-bold" dir="ltr">@{activeCommentPost.authorUsername}</span>
-            </div>
-            
-            {/* قالب الكتابة */}
-            <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden shrink-0 flex items-center justify-center font-bold">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
-                ) : (
-                  <span>{name ? name[0] : '؟'}</span>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <textarea
-                  rows={4}
-                  value={newCommentText}
-                  onChange={(e) => setNewCommentText(e.target.value)}
-                  placeholder="انشر ردّك"
-                  maxLength={280}
-                  className="w-full bg-transparent text-white placeholder-[#71767B] text-sm focus:outline-none resize-none"
-                  autoFocus
-                />
-              </div>
+              <h2 className="font-bold text-base">منشور</h2>
             </div>
           </div>
 
-          {/* قائمة الردود */}
-          <div className="flex-1 overflow-y-auto mt-4">
-            {loadingComments ? (
-              <div className="text-center py-8 text-[#71767B]">جاري التحميل...</div>
-            ) : postComments.length === 0 ? (
-              <div className="text-center py-8 text-[#71767B]">لا توجد ردود بعد</div>
-            ) : (
-              postComments.map((c) => (
-                <div key={c.id} className="p-3 border-b border-[#2F3336]">
-                  <div className="flex gap-3">
-                    <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+          {/* محتوى التغريدة والردود */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <img
+                src={activeCommentPost.authorAvatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + activeCommentPost.authorId}
+                alt=""
+                className="w-12 h-12 rounded-full object-cover border border-[#2F3336]"
+              />
+              <div>
+                <p className="font-['Tahoma'] font-bold text-sm text-white">{activeCommentPost.authorName}</p>
+                <p className="font-['Tahoma'] text-[11px] text-[#71767B] font-normal" dir="ltr">@{activeCommentPost.authorUsername}</p>
+              </div>
+            </div>
+
+            <p className="font-['Tahoma'] text-[14px] leading-[1.5] text-[#E7E9EA] break-words [overflow-wrap:anywhere] whitespace-pre-wrap">
+              {activeCommentPost.text}
+            </p>
+
+            {activeCommentPost.image && (
+              <div className="rounded-2xl overflow-hidden border border-[#2F3336] max-h-[450px]">
+                <img src={activeCommentPost.image} alt="" className="w-full h-auto object-cover" />
+              </div>
+            )}
+
+            <div className="text-[11px] text-[#71767B] py-2 border-y border-[#2F3336] flex items-center gap-2">
+              <span>{formatTimeAndDate(activeCommentPost.createdAt)}</span>
+              <span>·</span>
+              <span>{activeCommentPost.views || 1} مشاهدة</span>
+            </div>
+
+            {/* أزرار التفاعل في العرض الكامل */}
+            <div className="flex items-center justify-around py-1 border-b border-[#2F3336] text-[#71767B]">
+              <button className="flex items-center gap-1.5 hover:text-[#FFC500] transition">
+                <MessageCircle size={16} />
+                <span className="text-xs">{postComments.length}</span>
+              </button>
+              <button onClick={() => handleRepost(activeCommentPost.id)} className="flex items-center gap-1.5 hover:text-emerald-400 transition">
+                <Repeat2 size={16} />
+                <span className="text-xs">{activeCommentPost.reposts || 0}</span>
+              </button>
+              <button onClick={() => handleToggleLike(activeCommentPost.id)} className="flex items-center gap-1.5 hover:text-rose-500 transition">
+                <Heart size={16} />
+                <span className="text-xs">{activeCommentPost.likes || 0}</span>
+              </button>
+              <button onClick={() => { if (navigator.clipboard) { navigator.clipboard.writeText(window.location.href); showToast('تم نسخ الرابط!'); } }} className="hover:text-white transition">
+                <Share size={16} />
+              </button>
+            </div>
+
+            {/* قائمة التعليقات */}
+            <div className="space-y-3 pt-2">
+              <h3 className="text-xs font-bold text-[#71767B]">الردود ({postComments.length})</h3>
+              {loadingComments ? (
+                <div className="text-center py-8 text-zinc-500 text-xs">جاري التحميل...</div>
+              ) : postComments.length === 0 ? (
+                <div className="text-center py-8 text-zinc-500 text-xs">لا توجد ردود بعد. كن أول من يرد!</div>
+              ) : (
+                postComments.map(c => (
+                  <div key={c.id} className="py-3 px-1 border-b border-[#2F3336]/60 flex gap-3 hover:bg-white/[0.01] transition">
+                    <div className="w-[30px] h-[30px] rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
                       {c.userAvatar ? (
                         <img src={c.userAvatar} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-white font-bold text-sm">{c.userName?.[0]}</span>
+                        <span>{c.userName ? c.userName[0] : '؟'}</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1 text-sm flex-wrap">
-                        <span className="font-bold text-white">{c.userName}</span>
-                        <span className="text-[#71767B]">@{c.userUsername}</span>
-                        <span className="text-[#71767B]">·</span>
-                        <span className="text-[#71767B]" title={c.createdAtDisplay || c.createdAt}>
-                          {formatTimeAgo(c.createdAt).relative || c.createdAtDisplay || 'الآن'}
-                          <span className="text-[9px] text-[#536471] mr-1">· {new Date(c.createdAt).toLocaleDateString("ar-YE", { day: "numeric", month: "short", year: "numeric" })}</span>
-                        </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-xs text-white hover:underline cursor-pointer">{c.userName}</span>
+                        <span className="text-[11px] text-[#71767B] font-mono" dir="ltr">@{c.userUsername || 'user'}</span>
+                        <span className="text-[11px] text-[#71767B]">·</span>
+                        <span className="text-[#71767B] text-[9px]" title={c.createdAtDisplay || c.createdAt}>{formatTimeAgo(c.createdAt).relative || c.createdAtDisplay || 'الآن'}</span>
                       </div>
-                      <p className="text-white text-sm mt-1 whitespace-pre-wrap">{c.content}</p>
+                      <p className="font-['Tahoma'] text-xs text-[#E7E9EA] mt-1.5 leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap select-text">{c.content}</p>
                     </div>
                   </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
 
-          {/* Footer - عداد */}
-          <div className="mt-auto pt-3 border-t border-[#2F3336] bg-black">
-            <div className="flex justify-end text-xs font-mono" dir="ltr">
-              <span className={newCommentText.length > 280 ? 'text-rose-500 font-bold' : 'text-[#71767B]'}>
-                {newCommentText.length}
-              </span>
-              <span className="text-zinc-600 mx-1">/ 280</span>
-            </div>
+          {/* شريط الكتابة السفلي */}
+          <div className="p-3 border-t border-[#2F3336] bg-black shrink-0">
+            <form onSubmit={(e) => { e.preventDefault(); handleSubmitComment(); }} className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden shrink-0">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xs font-bold">{name ? name[0] : '؟'}</span>
+                )}
+              </div>
+              <input
+                type="text"
+                value={newCommentText}
+                onChange={(e) => setNewCommentText(e.target.value)}
+                placeholder="انشر ردّك..."
+                className="flex-1 bg-[#111111] border border-[#2F3336] rounded-full px-4 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFC500]"
+              />
+              <button
+                type="submit"
+                disabled={!newCommentText.trim() || newCommentText.length > 280}
+                className="px-4 py-2 bg-[#FFC500] text-black font-bold text-xs rounded-full hover:bg-[#E5B200] transition disabled:opacity-40"
+              >
+                ردّ
+              </button>
+            </form>
           </div>
         </div>
       )}
@@ -1934,7 +2147,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   }}
                   className="flex items-center gap-1.5 hover:text-[#FFC500] transition"
                 >
-                  <MessageCircle size={18} />
+                  <MessageCircle size={16} />
                   <span className="text-sm">{viewingDetailPost.replies || 0}</span>
                 </button>
 
@@ -1942,7 +2155,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   onClick={() => handleRepost(viewingDetailPost.id)}
                   className="flex items-center gap-1.5 hover:text-emerald-400 transition"
                 >
-                  <Repeat2 size={18} />
+                  <Repeat2 size={16} />
                   <span className="text-sm">{viewingDetailPost.reposts || 0}</span>
                 </button>
 

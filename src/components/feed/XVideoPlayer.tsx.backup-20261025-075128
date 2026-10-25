@@ -1,0 +1,97 @@
+import React, { useRef, useState } from 'react';
+import { Volume2, VolumeX, Play } from 'lucide-react';
+
+interface XVideoPlayerProps {
+  src?: string | null;
+  className?: string;
+}
+
+export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({ src, className = '' }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+
+  if (!src) return null;
+
+  const togglePlay = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+
+    if (isPlaying) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      videoRef.current.play().then(() => {
+        setIsPlaying(true);
+      }).catch((err) => {
+        console.error("Video play error:", err);
+      });
+    }
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!videoRef.current) return;
+    videoRef.current.muted = !isMuted;
+    setIsMuted(!isMuted);
+  };
+
+  const handleTimeUpdate = () => {
+    if (!videoRef.current) return;
+    const current = videoRef.current.currentTime;
+    const total = videoRef.current.duration || 1;
+    setProgress((current / total) * 100);
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    setProgress(0);
+  };
+
+  return (
+    <div 
+      onClick={togglePlay}
+      className={`relative w-full max-h-[520px] bg-black rounded-[16px] overflow-hidden cursor-pointer select-none border border-[#2F3336] group shadow-sm ${className}`}
+    >
+      <video
+        ref={videoRef}
+        src={src}
+        muted={isMuted}
+        playsInline
+        preload="metadata"
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={handleEnded}
+        className="w-full max-h-[520px] object-contain mx-auto block rounded-[16px]"
+      />
+
+      {/* زر التشغيل الكبير في المنتصف تماماً مثل منصة X */}
+      {!isPlaying && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-9 h-9 bg-black/20 hover:bg-black/35 backdrop-blur-[2px] rounded-full flex items-center justify-center text-white shadow-sm transition-all duration-200 transform group-hover:scale-105 active:scale-90 border border-white/10">
+            <Play className="w-4 h-4 fill-white text-white translate-x-0.5" />
+          </div>
+        </div>
+      )}
+
+      {/* عناصر التحكم أثناء التشغيل */}
+      {isPlaying && (
+        <button
+          onClick={toggleMute}
+          className="absolute bottom-3 right-3 p-2 bg-black/70 hover:bg-black/90 text-white rounded-full transition backdrop-blur-md z-10"
+          title={isMuted ? 'تشغيل الصوت' : 'كتم الصوت'}
+        >
+          {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+      )}
+
+      {/* شريط التقدم السفلي */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+        <div 
+          className="h-full bg-[#1D9BF0] transition-all duration-100 ease-linear"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
+  );
+};
