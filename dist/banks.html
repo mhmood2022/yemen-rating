@@ -48,17 +48,17 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
   <style>
     * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
     *::-webkit-scrollbar { display: none !important; }
-    body { background-color: #070A10; color: #FFFFFF; font-family: "Cairo", sans-serif; }
+    body { background-color: #000000; color: #FFFFFF; font-family: "Tahoma", sans-serif; }
   </style>
 </head>
-<body class="min-h-screen bg-[#070A10] text-white selection:bg-[#EAB308] selection:text-black">
+<body class="min-h-screen bg-[#000000] text-white selection:bg-[#EAB308] selection:text-black">
 
   <!-- 1. الهيدر الرسمي الموحد للمنصة -->
     <!-- 1. الهيدر المثبت الدائم (مطابق لقالب المنصة الرسمي) -->
     <!-- الهيدر المثبت الدائم الثابت في القمة 100% -->
     <!-- الهيدر المثبت الدائم الثابت في القمة 100% -->
-  <header class="fixed top-0 left-0 right-0 z-50 bg-[#070A10]/95 backdrop-blur-xl border-b border-[#1F2937] shadow-2xl">
-    <div dir="rtl" class="w-full max-w-6xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between font-['Cairo',sans-serif]">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-[#000000]/95 backdrop-blur-xl border-b border-[#2F3336] shadow-2xl">
+    <div dir="rtl" class="w-full max-w-6xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between font-['Tahoma',sans-serif]">
       <!-- اليمين: زر القائمة الجانبية (☰) + الشعار الرسمي -->
       <div class="flex items-center gap-3">
         <button type="button" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = '/'; }" class="text-white hover:text-[#EAB308] transition p-1 bg-transparent border-0 cursor-pointer active:scale-95" title="القائمة">
@@ -66,7 +66,7 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
         </button>
         <a href="/" class="flex items-center gap-2 select-none cursor-pointer">
           <svg viewBox="0 0 120 120" class="h-8 sm:h-9 w-auto shrink-0 drop-shadow-md" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M60 10L98 26V58C98 82 60 106 60 106C60 106 22 82 22 58V26L60 10Z" fill="#070A10" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/>
+            <path d="M60 10L98 26V58C98 82 60 106 60 106C60 106 22 82 22 58V26L60 10Z" fill="#000000" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/>
             <path d="M60 18L92 31V57C92 76 60 96 60 96C60 96 28 76 28 57V31L60 18Z" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"/>
             <path d="M60 32L65.5 46H81L68.5 55.5L73.5 70L60 61L46.5 70L51.5 55.5L39 46H54.5L60 32Z" fill="#FFC500" stroke="#FFC500" stroke-width="1.5" stroke-linejoin="round"/>
             <path d="M10 65C10 88 36 108 60 110C84 108 110 88 110 64C104 80 82 98 60 100C38 98 16 80 10 65Z" fill="#FFC500"/>
@@ -91,7 +91,7 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
   <main class="min-h-screen max-w-7xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-16 pt-16 sm:pt-20">
 
     <!-- 2. عنوان القسم الموحد وزر الرجوع -->
-    <div class="mb-4 flex items-center justify-between border-b border-[#1F2937]/70 pb-3">
+    <div class="mb-4 flex items-center justify-between border-b border-[#2F3336]/70 pb-3">
       <div class="flex items-center gap-2 text-right">
         <i class="fa-solid fa-building-columns text-xl text-[#EAB308] shrink-0"></i>
         <h1 class="text-xl sm:text-2xl font-black text-white leading-none">دليل البنوك والمصارف</h1>
@@ -102,18 +102,18 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
     </div>
 
     <!-- 3. شريط البحث والقائمة المنسدلة للمحافظات -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4 bg-[#0B0F17] p-2.5 rounded-2xl border border-[#1F2937]">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4 bg-black p-2.5 rounded-2xl border border-[#2F3336]">
       <div class="sm:col-span-2 relative">
         <i class="fa-solid fa-magnifying-glass text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2 text-xs"></i>
-        <input type="text" id="search-input" oninput="handleSearch()" placeholder="ابحث في البنوك والمصارف..." class="w-full bg-[#121620] border border-[#1F2937] focus:border-[#EAB308] text-zinc-200 pr-10 pl-3 py-2.5 rounded-xl text-xs outline-none transition text-right" />
+        <input type="text" id="search-input" oninput="handleSearch()" placeholder="ابحث في البنوك والمصارف..." class="w-full bg-[#111111] border border-[#2F3336] focus:border-[#EAB308] text-zinc-200 pr-10 pl-3 py-2.5 rounded-xl text-xs outline-none transition text-right" />
       </div>
 
       <div class="relative" id="dropdown-container">
-        <button type="button" id="city-dropdown-btn" onclick="toggleCityDropdown()" class="w-full bg-[#121620] hover:bg-[#161D2B] border border-[#1F2937] focus:border-[#EAB308] text-zinc-200 px-3.5 py-2.5 rounded-xl text-xs outline-none transition cursor-pointer flex items-center justify-between font-bold">
+        <button type="button" id="city-dropdown-btn" onclick="toggleCityDropdown()" class="w-full bg-[#111111] hover:bg-[#1A1A1A] border border-[#2F3336] focus:border-[#EAB308] text-zinc-200 px-3.5 py-2.5 rounded-xl text-xs outline-none transition cursor-pointer flex items-center justify-between font-bold">
           <span id="selected-city-label" class="truncate">كل المدن والمحافظات</span>
           <i id="dropdown-arrow" class="fa-solid fa-chevron-down text-xs text-[#EAB308] transition-transform duration-200"></i>
         </button>
-        <div id="city-dropdown-menu" class="hidden absolute top-full left-0 right-0 mt-1.5 z-40 bg-[#0B0F17] border border-[#1F2937] rounded-xl shadow-2xl p-1.5 max-h-60 overflow-y-auto space-y-0.5 text-right">
+        <div id="city-dropdown-menu" class="hidden absolute top-full left-0 right-0 mt-1.5 z-40 bg-black border border-[#2F3336] rounded-xl shadow-2xl p-1.5 max-h-60 overflow-y-auto space-y-0.5 text-right">
         </div>
       </div>
     </div>
@@ -130,8 +130,8 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
 
   <!-- 5. نافذة طلب إثبات الملكية -->
   <div id="claim-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4" onclick="closeClaimModal()">
-    <div class="bg-[#0B0F17] border border-zinc-800 rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl" onclick="event.stopPropagation()">
-      <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+    <div class="bg-black border border-[#2F3336] rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-[#2F3336] pb-2">
         <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
           <i class="fa-solid fa-shield-halved text-[#EF4444]"></i> طلب إثبات ملكية الصفحة
         </h4>
@@ -139,22 +139,22 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
           <i class="fa-solid fa-xmark text-xs"></i>
         </button>
       </div>
-      <p id="claim-bank-title" class="text-xs font-bold text-[#EAB308] bg-black/60 p-2 rounded-lg border border-zinc-800/80"></p>
+      <p id="claim-bank-title" class="text-xs font-bold text-[#EAB308] bg-black/60 p-2 rounded-lg border border-[#2F3336]/80"></p>
       <form id="claim-form" onsubmit="submitClaimRequest(event)" class="space-y-2.5 text-xs">
         <input type="hidden" id="claim-bank-id" value="" />
         <div>
           <label class="block text-zinc-400 mb-1 text-[11px]">اسم المفوض / ممثل البنك*</label>
-          <input type="text" id="claim-name" required placeholder="مثال: صالح المقطري" class="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EAB308] text-xs text-right" />
+          <input type="text" id="claim-name" required placeholder="مثال: صالح المقطري" class="w-full bg-black border border-[#2F3336] rounded-lg p-2 text-white outline-none focus:border-[#EAB308] text-xs text-right" />
         </div>
         <div>
           <label class="block text-zinc-400 mb-1 text-[11px]">الصفة أو المسمى الوظيفي*</label>
-          <input type="text" id="claim-role" required placeholder="مثال: مدير العلاقات العامة / الممثل القانوني" class="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EAB308] text-xs text-right" />
+          <input type="text" id="claim-role" required placeholder="مثال: مدير العلاقات العامة / الممثل القانوني" class="w-full bg-black border border-[#2F3336] rounded-lg p-2 text-white outline-none focus:border-[#EAB308] text-xs text-right" />
         </div>
         <div>
           <label class="block text-zinc-400 mb-1 text-[11px]">رقم الهاتف / الواتساب الرسمي*</label>
-          <input type="tel" id="claim-phone" required placeholder="مثال: 771234567" class="w-full bg-black border border-zinc-800 rounded-lg p-2 text-white outline-none focus:border-[#EAB308] text-xs text-right" />
+          <input type="tel" id="claim-phone" required placeholder="مثال: 771234567" class="w-full bg-black border border-[#2F3336] rounded-lg p-2 text-white outline-none focus:border-[#EAB308] text-xs text-right" />
         </div>
-        <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800">
+        <div class="flex justify-end gap-2 pt-2 border-t border-[#2F3336]">
           <button type="button" onclick="closeClaimModal()" class="px-3.5 py-1.5 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white text-xs cursor-pointer">إلغاء</button>
           <button type="submit" id="claim-submit-btn" class="px-4 py-1.5 rounded-lg bg-[#EF4444] hover:bg-red-700 text-white font-bold text-xs cursor-pointer transition">إرسال الطلب</button>
         </div>
@@ -212,7 +212,7 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
       if (!menu) return;
       menu.innerHTML = CITIES.map(c => {
         const isSel = selectedCity === c.id;
-        return `<div onclick="selectCity('${c.id}')" class="px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-between cursor-pointer ${isSel ? 'bg-[#EAB308]/15 text-[#EAB308]' : 'text-zinc-300 hover:bg-[#121620] hover:text-white'}">
+        return `<div onclick="selectCity('${c.id}')" class="px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-between cursor-pointer ${isSel ? 'bg-[#EAB308]/15 text-[#EAB308]' : 'text-zinc-300 hover:bg-[#111111] hover:text-white'}">
           <span>${c.name}</span>
           ${isSel ? '<i class="fa-solid fa-check text-xs text-[#EAB308]"></i>' : ''}
         </div>`;
@@ -341,7 +341,7 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
 
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div class="col-span-full py-16 text-center text-zinc-500 bg-[#0B0F17] rounded-2xl border border-[#1F2937]">
+          <div class="col-span-full py-16 text-center text-zinc-500 bg-black rounded-2xl border border-[#2F3336]">
             <i class="fa-solid fa-magnifying-glass text-3xl mb-2 text-zinc-600"></i>
             <p class="text-xs font-bold">لا توجد بنوك مطابقة للبحث حالياً</p>
           </div>
@@ -356,7 +356,7 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
         // غلاف كامل بنسبة عرض وارتفاع متناسقة تمنع قص الصورة
         const coverHtml = bank.cover_url
           ? `<img src="${bank.cover_url}" alt="${bank.name}" class="w-full h-full object-cover object-center group-hover:scale-102 transition duration-300" />`
-          : `<div class="w-full h-full bg-[#0F172A] flex items-center justify-center text-center px-4"><h2 class="text-[#EAB308] text-base font-black tracking-wide leading-tight">${bank.name}</h2></div>`;
+          : `<div class="w-full h-full bg-black flex items-center justify-center text-center px-4"><h2 class="text-[#EAB308] text-base font-black tracking-wide leading-tight">${bank.name}</h2></div>`;
 
         // الشعار
         const logoHtml = bank.logo_url
@@ -371,17 +371,17 @@ function renderVerificationBadge(badgeType, isVerified, size = 20) {
         const badgeHtml = renderVerificationBadge(bank.badge_type, bank.verified, 20);
 
         return `
-          <article onclick="try{localStorage.setItem('yr_instant_entity_${bank.slug || bank.id}', JSON.stringify(banksList.find(x => x.id === '${bank.id}')))}catch(e){} window.location.href='${targetUrl}'" class="bg-[#0B0F17] border border-zinc-800/90 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer group">
+          <article onclick="try{localStorage.setItem('yr_instant_entity_${bank.slug || bank.id}', JSON.stringify(banksList.find(x => x.id === '${bank.id}')))}catch(e){} window.location.href='${targetUrl}'" class="bg-black border border-[#2F3336] rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer group">
             <div>
               <!-- الغلاف الواسع المفتوح بدون أي قص أو طمس -->
-              <div class="relative w-full h-48 bg-[#0B0F17] flex items-center justify-center overflow-hidden border-b border-zinc-800/40">
+              <div class="relative w-full h-48 bg-black flex items-center justify-center overflow-hidden border-b border-[#2F3336]">
                 ${coverHtml}
               </div>
 
               <!-- الشعار وزر إثبات الملكية مع تقليل التداخل لعدم طمس الغلاف -->
               <div class="px-4 relative flex items-start justify-between -mt-5 mb-2">
                 <div class="relative z-10">
-                  <div class="w-16 h-16 rounded-2xl bg-[#0B0F17] shadow-2xl border-2 border-[#1F2937] flex items-center justify-center overflow-hidden shrink-0">
+                  <div class="w-16 h-16 rounded-2xl bg-black shadow-2xl border-2 border-[#2F3336] flex items-center justify-center overflow-hidden shrink-0">
                     ${logoHtml}
                   </div>
                 </div>

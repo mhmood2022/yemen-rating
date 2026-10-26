@@ -575,6 +575,11 @@ export const CommunityFeedPage: React.FC = () => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     const file = files[0];
+    if (file.type.startsWith('video/') && file.size > 20971520) {
+      showToast('حجم الفيديو كبير جداً! الحد الأقصى 20 ميجابايت للحفاظ على المساحة ⚠️');
+      if (imageInputRef.current) imageInputRef.current.value = '';
+      return;
+    }
     
     // تثبيت الملف فوراً في الذاكرة
     setSelectedFile(file);
@@ -646,31 +651,23 @@ export const CommunityFeedPage: React.FC = () => {
 
     showToast("جاري نشر التغريدة سحابياً... ⏳");
     try {
-      const resp = await fetch("/supabase-api/rest/v1/posts", {
-        method: "POST",
-        credentials: "omit",
-        headers: {
-          "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubXVuY3hrZnlva25tcWVqZ2hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjAyNDgsImV4cCI6MjEwNjM5NjI0OH0.brz_j92R3j1FmDUyryxpaoIfn4vK_rcZjelYaCd5T0w",
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubXVuY3hrZnlva25tcWVqZ2hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjAyNDgsImV4cCI6MjEwNjM5NjI0OH0.brz_j92R3j1FmDUyryxpaoIfn4vK_rcZjelYaCd5T0w",
-          "Content-Type": "application/json",
-          "Prefer": "return=representation"
-        },
-        body: JSON.stringify({
+      const { data: insertedPost, error: pErr } = await supabase
+        .from('posts')
+        .insert({
           user_id: activeUser.id,
           content: textToSend,
           image_url: finalImageUrl || null,
           video_url: finalVideoUrl || null
         })
-      });
+        .select()
+        .single();
 
-      if (!resp.ok) {
+      if (pErr) {
         setIsPosting(false);
-        showToast("تعذر النشر، كود الخطأ: " + resp.status);
+        console.error("Supabase insert error:", pErr);
+        showToast("تعذر النشر سحابياً: " + (pErr.message || "خطأ غير معروف"));
         return;
       }
-
-      const postData = await resp.json();
-      const insertedPost = Array.isArray(postData) ? postData[0] : postData;
 
       const newTweet: Tweet = {
         id: insertedPost?.id || Date.now().toString(),
@@ -2007,14 +2004,38 @@ const handleAddComment = (e?: React.FormEvent) => {
 
               {/* حقل الكتابة مدمج تماماً في السواد مع مؤشر عمودي متحرك بلون المنصة */}
               <div className="flex-1 min-w-0 flex flex-col">
-                <textarea
-                  autoFocus
-                  value={tweetText}
-                  onChange={(e) => setTweetText(e.target.value)}
-                  placeholder="ماذا يحدث؟"
-                  className="clean-tweet-textarea w-full bg-transparent text-white text-[17px] placeholder-[#71767B] focus:outline-none focus:ring-0 focus:border-none border-0 p-0 resize-none leading-relaxed min-h-[120px] caret-[#FFC500]"
-                  style={{ outline: 'none', border: 'none', boxShadow: 'none', WebkitTapHighlightColor: 'transparent' }}
-                />
+                <div className="relative w-full">
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 pointer-events-none whitespace-pre-wrap break-words overflow-hidden text-transparent text-[17px] leading-[26px] p-0 font-normal select-none"
+                    style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                  >
+                    <span>{tweetText.slice(0, 250)}</span>
+                    {tweetText.length > 250 && (
+                      <mark className="bg-[#782229] text-transparent rounded-sm py-0.5">
+                        {tweetText.slice(250)}
+                      </mark>
+                    )}
+                  </div>
+                  <textarea
+                    autoFocus
+                    value={tweetText}
+                    onInput={(e) => {
+                      const t = e.currentTarget;
+                      t.style.height = 'auto';
+                      t.style.height = Math.max(120, t.scrollHeight) + 'px';
+                    }}
+                    onChange={(e) => {
+                      setTweetText(e.target.value);
+                      const t = e.currentTarget;
+                      t.style.height = 'auto';
+                      t.style.height = Math.max(120, t.scrollHeight) + 'px';
+                    }}
+                    placeholder="ماذا يحدث؟"
+                    className="clean-tweet-textarea relative z-10 w-full bg-transparent text-white text-[17px] leading-[26px] placeholder-[#71767B] focus:outline-none focus:ring-0 focus:border-none border-0 p-0 resize-none overflow-hidden caret-[#FFC500]"
+                    style={{ outline: 'none', border: 'none', boxShadow: 'none', WebkitTapHighlightColor: 'transparent', wordBreak: 'break-word', overflowWrap: 'break-word', minHeight: '120px' }}
+                  />
+                </div>
 
                 {/* معاينة الوسائط عند اختيارها */}
                 {tweetImage && (

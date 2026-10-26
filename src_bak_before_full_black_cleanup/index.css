@@ -1,0 +1,190 @@
+
+body { 
+  -webkit-font-smoothing: antialiased;
+}
+
+
+@import url("https://fonts.googleapis.com/css2?family=Tahoma:wght@400;600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================
+   النظام المركزي الموحد للهوية البصرية (Central Theme Tokens)
+   ========================================================= */
+:root {
+  color-scheme: dark;
+  accent-color: #FFC500;
+
+  /* لوحة الألوان المعتمدة */
+  --yr-bg-black: #000000;
+  --yr-surface-card: #000000;
+  --yr-surface-elevated: #111111;
+  --yr-surface-input: #111111;
+  --yr-border-dark: #1F2937;
+  --yr-border-subtle: #27303F;
+  --yr-text-primary: #FFFFFF;
+  --yr-text-secondary: #9CA3AF;
+  --yr-accent-gold: #FFC500;
+  --yr-accent-hover: #E6B200;
+}
+
+/* ضبط الخط العام والاتجاه */
+* {
+  font-family: "Tahoma", "Noto Sans Arabic", sans-serif !important;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+
+
+/* =========================================================
+   تطهير عناصر المتصفح الافتراضية مركزياً (Global Element Theming)
+   ========================================================= */
+@layer base {
+  /* 1. تحديد النصوص باللون الذهبي والأسود */
+  ::selection {
+    background-color: var(--yr-accent-gold);
+    color: #0a0f1d;
+  }
+
+  /* 2. شريط التمرير المركزي لكامل الموقع ولوحة التحكم */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--yr-border-dark) var(--yr-bg-black);
+  }
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: #000000;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--yr-border-dark);
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--yr-accent-gold);
+  }
+
+  /* 3. توحيد القوائم المنسدلة الافتراضية (select & option) */
+  select {
+    background-color: var(--yr-surface-elevated);
+    color: var(--yr-text-primary);
+    border-color: var(--yr-border-dark);
+    accent-color: var(--yr-accent-gold);
+  }
+  
+  select option {
+    padding: 8px 12px;
+  }
+
+  select option:checked,
+  select option:hover,
+  select option:focus {
+  }
+
+  /* 4. حقول الإدخال والملاحظات (input & textarea) */
+  input,
+  textarea {
+    caret-color: var(--yr-accent-gold);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--yr-text-secondary);
+    opacity: 0.7;
+  }
+
+  /* 5. إزالة الإطار الأزرق الافتراضي واستبداله بالذهبي المعتمد */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  button:focus-visible {
+  }
+
+  /* 6. معالجة الإكمال التلقائي للمتصفح (Autofill) بالخلفية الداكنة */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill {
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  /* 7. مربعات الاختيار والأزرار الشعاعية الافتراضية */
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="range"] {
+  }
+}
+
+/* === خلفية يمن ريتنغ الداكنة === */
+body {
+    min-height: 100vh;
+}
+
+
+
+
+
+
+/* ===== YEMEN RATING - CLEAN REFINED THEME ===== */
+html, body, #root, #__next, main {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* شريط البحث الخارجي فقط بدون لمس الحقول التي بداخله */
+[class*="search-bar"], [class*="search-container"] {
+  background-color: #000000 !important;
+  border: 1px solid #1a2538 !important;
+  border-radius: 14px;
+}
+
+/* منع تكرار البراويز على حقل الإدخال والقائمة المنسدلة داخل البحث */
+[class*="search"] input,
+[class*="search"] select,
+[class*="search"] [role="button"] {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+}
+
+/* بطاقات الخدمات (العيادات، المستشفيات...) فقط باللون المطلوب */
+.category-card, [class*="service-card"] {
+  background-color: #000000 !important;
+  border: 1px solid #18233c !important;
+}
+
+
+/* إخفاء الهيدر بالكامل عند تكبير أي صورة معروض */
+body.image-modal-active header,
+body.image-modal-active nav,
+body.image-modal-active [class*="Header"] {
+  display: none !important;
+}
+
+
+/* تجميد التمرير وإخفاء الهيدر تماماً عند فتح الصورة */
+body.modal-freeze-lock, html.modal-freeze-lock {
+  overflow: hidden !important;
+  touch-action: none !important;
+  overscroll-behavior: none !important;
+}
+body.modal-freeze-lock header, body.modal-freeze-lock nav {
+  display: none !important;
+}
+
+
+/* android-dark-select-force: إجبار أندرويد على الوضع الداكن في كافة القوائم */
+select, select option {
+  background-color: #000000 !important;
+  color: #f8fafc !important;
+  color-scheme: dark !important;
+}

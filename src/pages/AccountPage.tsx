@@ -694,30 +694,38 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     let finalImageUrl: string | null = null;
     let finalVideoUrl: string | null = null;
 
-    if (newPostFile) {
+    let fileToUpload = newPostFile;
+    if (!fileToUpload && newPostImage && newPostImage.startsWith('data:')) {
       try {
-        if (newPostFile.type.startsWith('video/')) {
+        const res = await fetch(newPostImage);
+        const blob = await res.blob();
+        fileToUpload = new File([blob], `image_${profileId}_${Date.now()}.jpg`, { type: 'image/jpeg' });
+      } catch (_) {}
+    }
+    if (fileToUpload) {
+      try {
+        if (fileToUpload.type.startsWith('video/')) {
           showToast("جاري رفع الفيديو سحابياً... ⏳");
-          const ext = newPostFile.name.split('.').pop() || 'mp4';
+          const ext = fileToUpload.name.split('.').pop() || 'mp4';
           const filePath = `posts/video_${profileId}_${Date.now()}.${ext}`;
           const { error: upErr } = await supabase.storage
             .from('social-media')
-            .upload(filePath, newPostFile, {
+            .upload(filePath, fileToUpload, {
               upsert: true,
-              contentType: newPostFile.type || 'video/mp4'
+              contentType: fileToUpload.type || 'video/mp4'
             });
           if (upErr) throw upErr;
           const { data: pubData } = supabase.storage.from('social-media').getPublicUrl(filePath);
           finalVideoUrl = pubData.publicUrl;
         } else {
           showToast("جاري رفع الصورة سحابياً... ⏳");
-          const ext = newPostFile.name.split('.').pop() || 'jpg';
+          const ext = fileToUpload.name.split('.').pop() || 'jpg';
           const filePath = `posts/image_${profileId}_${Date.now()}.${ext}`;
           const { error: upErr } = await supabase.storage
             .from('social-media')
-            .upload(filePath, newPostFile, {
+            .upload(filePath, fileToUpload, {
               upsert: true,
-              contentType: newPostFile.type || 'image/jpeg'
+              contentType: fileToUpload.type || 'image/jpeg'
             });
           if (upErr) throw upErr;
           const { data: pubData } = supabase.storage.from('social-media').getPublicUrl(filePath);
@@ -1045,11 +1053,25 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         <>
           <input type="file" ref={avatarInputRef} className="hidden" accept="image/*" onChange={(e) => handlePhotoUpload(e, 'avatar')} />
           <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={(e) => handlePhotoUpload(e, 'cover')} />
-          <input type="file" ref={postImageInputRef} className="hidden" accept="image/*" onChange={async (e) => {
+          <input type="file" ref={postImageInputRef} className="hidden" accept="image/*,video/*" onChange={async (e) => {
             const f = e.target.files?.[0];
             if (f) {
-              const compressed = await compressImage(f, 1000, 1000, 0.85);
-              setNewPostImage(compressed);
+              if (f.type.startsWith('video/')) {
+                setNewPostFile(f);
+                setNewPostImage(URL.createObjectURL(f));
+              } else {
+                try {
+                  const compressed = await compressImage(f, 1200, 1200, 0.85);
+                  setNewPostImage(compressed);
+                  const res = await fetch(compressed);
+                  const blob = await res.blob();
+                  const compressedFile = new File([blob], f.name.replace(/\.[^.]+$/, '.jpg') || 'image.jpg', { type: 'image/jpeg' });
+                  setNewPostFile(compressedFile);
+                } catch (_) {
+                  setNewPostFile(f);
+                  setNewPostImage(URL.createObjectURL(f));
+                }
+              }
             }
           }} />
         </>
@@ -1742,14 +1764,38 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               </div>
 
               <div className="flex-1 min-w-0 flex flex-col">
-                <textarea
-                  autoFocus
-                  value={newPostText}
-                  onChange={(e) => setNewPostText(e.target.value)}
-                  placeholder="ماذا يحدث؟"
-                  className="clean-tweet-textarea w-full bg-transparent text-white text-[17px] placeholder-[#71767B] focus:outline-none focus:ring-0 focus:border-none border-0 p-0 resize-none leading-relaxed min-h-[120px] caret-[#FFC500]"
-                  style={{ outline: 'none', border: 'none', boxShadow: 'none', WebkitTapHighlightColor: 'transparent' }}
-                />
+                <div className="relative w-full">
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 pointer-events-none whitespace-pre-wrap break-words overflow-hidden text-transparent text-[17px] leading-[26px] p-0 font-normal select-none"
+                    style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
+                  >
+                    <span>{newPostText.slice(0, 250)}</span>
+                    {newPostText.length > 250 && (
+                      <mark className="bg-[#782229] text-transparent rounded-sm py-0.5">
+                        {newPostText.slice(250)}
+                      </mark>
+                    )}
+                  </div>
+                  <textarea
+                    autoFocus
+                    value={newPostText}
+                    onInput={(e) => {
+                      const t = e.currentTarget;
+                      t.style.height = 'auto';
+                      t.style.height = Math.max(120, t.scrollHeight) + 'px';
+                    }}
+                    onChange={(e) => {
+                      setNewPostText(e.target.value);
+                      const t = e.currentTarget;
+                      t.style.height = 'auto';
+                      t.style.height = Math.max(120, t.scrollHeight) + 'px';
+                    }}
+                    placeholder="ماذا يحدث؟"
+                    className="clean-tweet-textarea relative z-10 w-full bg-transparent text-white text-[17px] leading-[26px] placeholder-[#71767B] focus:outline-none focus:ring-0 focus:border-none border-0 p-0 resize-none overflow-hidden caret-[#FFC500]"
+                    style={{ outline: 'none', border: 'none', boxShadow: 'none', WebkitTapHighlightColor: 'transparent', wordBreak: 'break-word', overflowWrap: 'break-word', minHeight: '120px' }}
+                  />
+                </div>
 
                 {/* معاينة الوسائط عند اختيارها */}
                 {newPostImage && (
