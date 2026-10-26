@@ -1077,8 +1077,8 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         </>
       )}
 
-      {/* 1. الغلاف */}
-      <div className="relative w-full h-44 sm:h-52 bg-gradient-to-r from-zinc-950 via-[#0A1224] to-zinc-950">
+      {/* 1. الغلاف بنمط أبو شرواني */}
+      <div className="relative w-full h-36 sm:h-40 bg-gradient-to-r from-zinc-950 via-[#0A1224] to-zinc-950">
         {coverUrl ? (
           <img src={coverUrl} alt="الغلاف" className="w-full h-full object-cover" />
         ) : (
@@ -1090,128 +1090,125 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         {isOwner && (
           <button
             onClick={() => coverInputRef.current?.click()}
-            className="absolute bottom-3 left-3 bg-black hover:bg-black active:scale-95 text-white p-2.5 rounded-full  border border-white/20 transition flex items-center gap-1.5 text-xs font-bold shadow-lg z-10"
+            className="absolute bottom-2.5 left-2.5 bg-black/60 hover:bg-black/90 active:scale-95 text-white/90 p-2 rounded-full border border-white/10 transition backdrop-blur-md z-10"
             title="تغيير صورة الغلاف"
           >
-            <Camera size={16} />
-            <span className="hidden sm:inline">تغيير الغلاف</span>
+            <Camera size={15} />
           </button>
         )}
 
-        {/* أزرار الهيدر */}
+        {/* أزرار الهيدر العلوية */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-20">
-          <button 
-            onClick={() => navigate(-1)} 
-            className="w-9 h-9 rounded-full bg-black hover:bg-black text-white flex items-center justify-center  transition active:scale-95"
+          <button
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10"
             title="رجوع"
           >
-            <ArrowRight size={20} />
+            <ArrowRight size={18} />
           </button>
 
           <div className="flex items-center gap-2 relative">
-            <button 
-              onClick={() => window.location.reload()} 
-              className="w-9 h-9 rounded-full bg-black hover:bg-black text-white flex items-center justify-center  transition active:scale-95"
+            <button
+              onClick={() => window.location.reload()}
+              className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10"
             >
-              <RotateCw size={17} />
+              <RotateCw size={16} />
             </button>
-            <button 
-              onClick={() => navigate('/feed')} 
+            <button
+              onClick={() => navigate('/feed')}
               title="تغريدات المجتمع"
-              className="w-9 h-9 rounded-full bg-[#FFC500]/30 hover:bg-[#FFC500]/50 text-white flex items-center justify-center  transition active:scale-95"
+              className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10"
             >
-              <MessageSquare size={17} />
+              <MessageSquare size={16} />
+            </button>
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              title="خيارات الحساب"
+              className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10"
+            >
+              <MoreHorizontal size={18} />
             </button>
 
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} 
-                  title="خيارات الحساب"
-                  className="w-9 h-9 rounded-full bg-black hover:bg-black text-white flex items-center justify-center  transition active:scale-95 relative"
-                >
-                  <MoreHorizontal size={19} />
-                </button>
-
-                
-                
-                {isMenuOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
-                    <div className="absolute left-0 top-12 w-44 bg-black/95 backdrop-blur-2xl border border-[#2F3336] rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.95)] p-1.5 z-50 text-xs animate-fade-in divide-y divide-[#2F3336]/60">
-                      {isOwner ? (
-                        <div className="space-y-1">
-                          <button
-                            onClick={() => {
-                              setEditName(name); setEditPhone(phone); setEditUsername(username); setEditBio(bio); setEditLocation(location); setEditBirthDate(birthDate);
-                              setIsEditModalOpen(true); setIsMenuOpen(false);
-                            }}
-                            className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
-                          >
-                            <Edit3 size={16} className="text-zinc-400 flex-shrink-0" />
-                            <span className="text-white text-sm">تعديل</span>
-                          </button>
-                          <button
-                            onClick={handleLogout}
-                            className="w-full px-3 py-2.5 text-right hover:bg-rose-500/15 active:bg-rose-500/20 flex items-center gap-3 text-white font-bold transition rounded-xl"
-                          >
-                            <LogOut size={16} className="text-rose-500 flex-shrink-0" />
-                            <span className="text-white text-sm">خروج</span>
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="space-y-1">
-                          <button
-                            onClick={() => {
-                              navigator.clipboard?.writeText(window.location.href);
-                              setIsMenuOpen(false);
-                              showToast("تم نسخ الرابط");
-                            }}
-                            className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
-                          >
-                            <Share size={16} className="text-[#FFC500] flex-shrink-0" />
-                            <span className="text-white text-sm">مشاركة</span>
-                          </button>
-                          <button
-                            onClick={() => {
-                              setReportingItem({
-                                type: 'account',
-                                targetId: profileId || '',
-                                targetName: name || 'مستخدم',
-                                targetAuthorId: profileId || ''
-                              });
-                              setIsMenuOpen(false);
-                            }}
-                            className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
-                          >
-                            <AlertTriangle size={16} className="text-[#FFC500] flex-shrink-0" />
-                            <span className="text-white text-sm">إبلاغ عن @{username}</span>
-                          </button>
-                          <div className="pt-1">
-                            <button
-                              onClick={handleToggleBlock}
-                              className="w-full px-3.5 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
-                            >
-                              <Lock size={16} className="text-[#FFC500] flex-shrink-0" />
-                              <span className="text-white text-sm">{isBlocked ? `إلغاء حظر @${username}` : `حظر @${username}`}</span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
+            {isMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
+                <div className="absolute left-0 top-12 w-44 bg-black/95 backdrop-blur-2xl border border-[#2F3336] rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.95)] p-1.5 z-50 text-xs animate-fade-in divide-y divide-[#2F3336]/60">
+                  {isOwner ? (
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => {
+                          setEditName(name); setEditPhone(phone); setEditUsername(username); setEditBio(bio); setEditLocation(location); setEditBirthDate(birthDate);
+                          setIsEditModalOpen(true); setIsMenuOpen(false);
+                        }}
+                        className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
+                      >
+                        <Edit3 size={16} className="text-zinc-400 flex-shrink-0" />
+                        <span className="text-white text-sm">تعديل</span>
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full px-3 py-2.5 text-right hover:bg-rose-500/15 active:bg-rose-500/20 flex items-center gap-3 text-white font-bold transition rounded-xl"
+                      >
+                        <LogOut size={16} className="text-rose-500 flex-shrink-0" />
+                        <span className="text-white text-sm">خروج</span>
+                      </button>
                     </div>
-                  </>
-                )}
+                  ) : (
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => {
+                          navigator.clipboard?.writeText(window.location.href);
+                          setIsMenuOpen(false);
+                          showToast("تم نسخ الرابط");
+                        }}
+                        className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
+                      >
+                        <Share size={16} className="text-[#FFC500] flex-shrink-0" />
+                        <span className="text-white text-sm">مشاركة</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setReportingItem({
+                            type: 'account',
+                            targetId: profileId || '',
+                            targetName: name || 'مستخدم',
+                            targetAuthorId: profileId || ''
+                          });
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
+                      >
+                        <AlertTriangle size={16} className="text-[#FFC500] flex-shrink-0" />
+                        <span className="text-white text-sm">إبلاغ عن @{username}</span>
+                      </button>
+                      <div className="pt-1">
+                        <button
+                          onClick={handleToggleBlock}
+                          className="w-full px-3.5 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
+                        >
+                          <Lock size={16} className="text-[#FFC500] flex-shrink-0" />
+                          <span className="text-white text-sm">{isBlocked ? `إلغاء حظر @${username}` : `حظر @${username}`}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      {/* 2. الصورة الشخصية والشارة */}
+      {/* 2. الصورة الشخصية والشارة العلوية */}
       <div className="px-4 relative">
-        <div className="flex justify-between items-end -mt-14 sm:-mt-16 mb-3">
-          
+        <div className="flex justify-between items-end -mt-10 sm:-mt-12 mb-3">
+          {/* الصورة الشخصية */}
           <div className="relative group">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-black bg-zinc-950 overflow-hidden shadow-2xl flex items-center justify-center">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-black bg-zinc-950 overflow-hidden shadow-xl flex items-center justify-center">
               {avatarUrl ? (
                 <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full bg-[#182338] text-white flex items-center justify-center text-3xl font-black">
+                <div className="w-full h-full bg-[#182338] text-white flex items-center justify-center text-2xl font-black">
                   {name ? name[0] : '؟'}
                 </div>
               )}
@@ -1220,74 +1217,70 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             {isOwner && (
               <button
                 onClick={() => avatarInputRef.current?.click()}
-                className="absolute bottom-0 right-0 p-2 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white border-2 border-black shadow-lg transition"
+                className="absolute bottom-0 right-0 p-1.5 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-90 text-black border-2 border-black shadow-md transition"
                 title="تغيير الصورة الشخصية"
               >
-                <Camera size={16} />
+                <Camera size={13} />
               </button>
             )}
           </div>
 
-          {/* زر المتابعة أو شارة التوثيق */}
-          {isOwner ? (
-            <button
-              onClick={() => showToast("حسابك معتمد ونشط في المنصة ✨")}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FFC500]/15 border border-[#FFC500]/40 text-[#FFC500] text-xs font-bold hover:bg-[#FFC500]/25 transition"
-            >
-              <span>حساب معتمد</span>
-              <VerifiedBadge type={verificationType || "blue"} size={16} />
-            </button>
-          ) : (
-            <div className="flex items-center gap-2">
+          {/* الجهة المقابلة للصورة: وثّق حسابك مثل أبو شرواني أو أزرار المتابعة */}
+          <div>
+            {isOwner ? (
               <button
-                onClick={() => setIsDmOpen(true)}
-                className="p-2 sm:px-3 sm:py-2 rounded-full border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md active:scale-95"
-                title="مراسلة خاصة"
+                onClick={() => showToast("حسابك نشط وموثق في المنصة ✨")}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-zinc-700 bg-black/60 hover:bg-white/10 active:scale-95 text-white text-xs font-bold transition"
               >
-                <Mail size={16} className="text-[#FFC500]" />
-                <span className="hidden sm:inline">رسالة</span>
+                <VerifiedBadge type="blue" size={15} />
+                <span>وثّق حسابك</span>
               </button>
-  
-            <button 
-              onClick={handleToggleFollow}
-              className={`flex items-center gap-1.5 px-5 py-2 rounded-full text-xs font-black transition active:scale-95 shadow-md ${
-                isFollowing 
-                  ? 'bg-zinc-800 text-white border border-zinc-700 hover:bg-rose-500/20 hover:text-rose-400'
-                  : 'bg-white text-black hover:bg-zinc-200'
-              }`}
-            >
-              {isFollowing ? (
-                <>
-                  <UserCheck size={15} />
-                  <span>تتابعه</span>
-                </>
-              ) : (
-                <>
-                  <UserPlus size={15} />
-                  <span>متابعة</span>
-                </>
-              )}
-            </button>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsDmOpen(true)}
+                  className="w-9 h-9 rounded-full border border-[#536471] hover:bg-white/10 active:scale-95 text-white flex items-center justify-center transition"
+                  title="مراسلة خاصة"
+                >
+                  <Mail size={16} />
+                </button>
+                <button
+                  onClick={handleToggleFollow}
+                  className={`px-5 py-1.5 rounded-full text-sm font-bold transition active:scale-95 ${
+                    isFollowing
+                      ? 'bg-transparent text-white border border-[#536471] hover:border-red-600 hover:text-red-500'
+                      : 'bg-white text-black hover:bg-zinc-200'
+                  }`}
+                >
+                  {isFollowing ? 'تتابعه' : 'تابع'}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 3. الاسم والمعرف */}
         <div className="mt-1">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 flex-wrap">
-    <h1 className="text-xl sm:text-2xl font-black text-white leading-tight">
-      {name || "مستخدم يمن ريتنج"}
-    </h1>
-    <VerifiedBadge type={verificationType} size={22} />
-  </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <h1
+              className="text-white select-text"
+              style={{ fontSize: '20px', fontWeight: 700, lineHeight: '1.3' }}
+            >
+              {name || "مستخدم يمن ريتنج"}
+            </h1>
+            <VerifiedBadge type={verificationType} size={20} />
           </div>
-          <p className="text-sm text-[#71767B] font-mono mt-0.5" dir="ltr">@{username || 'user'}</p>
+          <p className="text-[15px] text-[#71767B] font-normal mt-0.5 text-right select-text">
+            @{username || 'user'}
+          </p>
         </div>
 
-        {/* 4. النبذة */}
+        {/* 4. النبذة التعريفية */}
         {bio ? (
-          <p className="mt-3 text-[14px] leading-[1.5] text-[#E7E9EA] font-['Tahoma'] whitespace-pre-wrap">
+          <p
+            className="mt-3 text-[#E7E9EA] whitespace-pre-wrap"
+            style={{ fontSize: '15px', fontWeight: 400, lineHeight: '1.4' }}
+          >
             {bio}
           </p>
         ) : isOwner ? (
@@ -1296,113 +1289,104 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           </p>
         ) : null}
 
-        {/* 5. البيانات الحقيقية */}
-        <div className="flex flex-wrap items-center gap-y-2 gap-x-4 mt-3 text-[11px] text-[#71767B]">
+        {/* 5. البيانات (أيقونات رمادية هادئة) */}
+        <div className="flex flex-wrap items-center gap-y-1.5 gap-x-4 mt-3 text-sm text-[#71767B]">
+          {location && (
+            <div className="flex items-center gap-1">
+              <MapPin size={15} />
+              <span>{location}</span>
+            </div>
+          )}
+          {joinDate && (
+            <div className="flex items-center gap-1">
+              <Calendar size={15} />
+              <span>{joinDate}</span>
+            </div>
+          )}
           {isOwner && email && (
-            <div className="flex items-center gap-1.5 text-zinc-300">
-              <Mail size={14} className="text-[#FFC500]" />
+            <div className="flex items-center gap-1">
+              <Mail size={15} />
               <span dir="ltr">{email}</span>
             </div>
           )}
           {isOwner && phone && (
-            <div className="flex items-center gap-1.5 text-zinc-300">
-              <Phone size={14} className="text-[#FFC500]" />
+            <div className="flex items-center gap-1">
+              <Phone size={15} />
               <span dir="ltr">{phone}</span>
             </div>
           )}
-          {location && (
-            <div className="flex items-center gap-1.5">
-              <MapPin size={14} />
-              <span>{location}</span>
-            </div>
-          )}
-          {isOwner && birthDate && (
-            <div className="flex items-center gap-1.5">
-              <Cake size={14} />
-              <span>{birthDate}</span>
-            </div>
-          )}
-          {joinDate && (
-            <div className="flex items-center gap-1.5">
-              <Calendar size={14} />
-              <span>{joinDate}</span>
-            </div>
-          )}
         </div>
 
-        {/* 6. المتابعون والمتابَعون الفعليون */}
-        <div className="flex items-center gap-5 mt-3.5 text-xs">
-          <div className="hover:underline cursor-pointer">
-            <button 
-              onClick={() => navigate(`/u/${username}?tab=following`)}
-              className="hover:underline cursor-pointer"
-            >
-              <span className="font-extrabold text-white ml-1">{followingCount}</span>
-            </button>
-            <span className="text-[#71767B]">متابَعة</span>
+        {/* 6. عداد المتابعين (أرقام بيضاء عريضة وكلمات رمادية) */}
+        <div className="flex items-center gap-4 mt-3.5 text-sm">
+          <div 
+            onClick={() => navigate(`/u/${username}?tab=following`)}
+            className="hover:underline cursor-pointer flex items-center gap-1"
+          >
+            <span className="font-bold text-white">{followingCount}</span>
+            <span className="text-[#71767B]">متابَعاً</span>
           </div>
-          <div className="hover:underline cursor-pointer">
-            <button 
-              onClick={() => navigate(`/u/${username}?tab=followers`)}
-              className="hover:underline cursor-pointer"
-            >
-              <span className="font-extrabold text-white ml-1">{followersCount}</span>
-            </button>
-            <span className="text-[#71767B]">متابِعًا</span>
+          <div 
+            onClick={() => navigate(`/u/${username}?tab=followers`)}
+            className="hover:underline cursor-pointer flex items-center gap-1"
+          >
+            <span className="font-bold text-white">{followersCount}</span>
+            <span className="text-[#71767B]">متابِعاً</span>
           </div>
         </div>
 
-        {/* 7. أزرار الإجراء */}
+        {/* 7. أزرار الإجراء في الأسفل (مطابقة لصورة أبو شرواني) */}
         <div className="grid grid-cols-2 gap-3 mt-4">
           {isOwner ? (
-            <button 
+            <button
               onClick={() => {
-                setEditName(name);
-                setEditPhone(phone);
-                setEditUsername(username);
-                setEditBio(bio);
-                setEditLocation(location);
-                setEditBirthDate(birthDate);
+                setEditName(name); setEditPhone(phone); setEditUsername(username); setEditBio(bio); setEditLocation(location); setEditBirthDate(birthDate);
                 setIsEditModalOpen(true);
               }}
-              className="w-full py-2 px-4 rounded-full border border-[#536471] hover:bg-[#181818] active:scale-[0.98] text-white text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5"
+              className="w-full py-2 px-4 rounded-full border border-[#536471] hover:bg-white/10 active:scale-[0.98] text-white text-sm font-bold transition flex items-center justify-center gap-1.5"
             >
-              <Edit3 size={15} />
               <span>تعديل الملفّ الشخصيّ</span>
             </button>
           ) : (
-            <button 
+            <button
               onClick={handleToggleFollow}
-              className={`w-full py-2 px-4 rounded-full font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 ${
-                isFollowing ? 'border border-zinc-700 bg-zinc-900 text-white' : 'bg-white text-black'
+              className={`w-full py-2 px-4 rounded-full font-bold text-sm transition flex items-center justify-center gap-1.5 ${
+                isFollowing ? 'border border-[#536471] bg-transparent text-white' : 'bg-white text-black'
               }`}
             >
-              {isFollowing ? 'إلغاء المتابعة' : 'متابعة الحساب'}
+              <span>{isFollowing ? 'تتابعه' : 'تابع'}</span>
             </button>
           )}
 
-          <button 
+          <button
             onClick={() => {
               navigator.clipboard?.writeText(window.location.href);
               showToast('تم نسخ رابط الملف الشخصي!');
             }}
-            className="w-full py-2 px-4 rounded-full border border-[#536471] hover:bg-[#181818] active:scale-[0.98] text-white text-xs sm:text-sm font-bold transition flex items-center justify-center gap-1.5"
+            className="w-full py-2 px-4 rounded-full border border-[#536471] hover:bg-white/10 active:scale-[0.98] text-white text-sm font-bold transition flex items-center justify-center gap-1.5"
           >
-            <Share size={16} />
             <span>مشاركة</span>
           </button>
         </div>
       </div>
 
       {/* 8. التبويبات */}
-      <div className="mt-4 border-b border-[#2F3336] flex items-center justify-around text-sm font-bold">
+      <div className="mt-4 border-b border-[#2F3336]/40 flex items-center justify-around text-sm font-bold">
         <button 
           onClick={() => setActiveTab('posts')}
           className={`py-3 flex-1 flex items-center justify-center gap-1.5 relative transition ${
             activeTab === 'posts' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'
           }`}
         >
-          <span>المنشورات ({userPosts.length})</span>
+          <span className="flex items-center gap-1.5">
+                        <svg className="w-4 h-4 text-white shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="3" width="18" height="18" rx="2" />
+                          <line x1="7" y1="8" x2="17" y2="8" />
+                          <line x1="7" y1="12" x2="17" y2="12" />
+                          <line x1="7" y1="16" x2="12" y2="16" />
+                        </svg>
+                        <span>المنشورات ({userPosts.length})</span>
+                      </span>
         
           {activeTab === 'posts' && <div className="absolute bottom-0 w-16 h-1 bg-white rounded-full" />}
         </button>
@@ -1419,7 +1403,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       </div>
 
       {/* 9. المنشورات الفعلية الحقيقية فقط */}
-      <div className="divide-y divide-[#2F3336]">
+      <div className="divide-y divide-[#2F3336]/40">
         {userPosts.length === 0 ? (
           <div className="text-center py-16 px-4">
             <h3 className="text-sm font-bold text-white mb-1">
@@ -1441,7 +1425,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           userPosts.map(post => (
             <article 
               key={post.id} 
-              className="p-3 border-b border-[#2F3336] hover:bg-white/[0.03] transition cursor-pointer"
+              className="p-3 border-b border-[#2F3336]/40 hover:bg-white/[0.03] transition cursor-pointer"
               onClick={(e) => {
                 const target = e.target as HTMLElement;
                 if (!target.closest('button') && !target.closest('a')) {
@@ -1538,7 +1522,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   )}
 
                   {!post.isRepost && post.image && !post.video_url && !post.video && (
-                    <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336] max-h-96">
+                    <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-96">
                       <img src={post.image} alt="الصورة" className="w-full h-full object-cover" />
                     </div>
                   )}
@@ -1616,7 +1600,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       {isEditModalOpen && (
         <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-3 sm:p-4" dir="rtl">
           <div className="bg-[#000000] border border-[#2F3336] w-full max-w-lg rounded-3xl p-5 sm:p-6 text-white max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]/40 mb-4">
               <h2 className="text-base font-black">تعديل الملفّ الشخصيّ</h2>
               <button onClick={() => setIsEditModalOpen(false)} className="text-[#71767B] hover:text-white p-1 rounded-full">
                 <X size={20} />
@@ -1876,7 +1860,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       {isDmOpen && (
         <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4">
           <div className="w-full max-w-md bg-black border border-[#2F3336] rounded-3xl p-5 shadow-2xl animate-scale-up text-right">
-            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]/40 mb-4">
               <button onClick={() => setIsDmOpen(false)} className="text-zinc-400 hover:text-white p-1 rounded-full"><X size={18} /></button>
               <h3 className="font-black text-white text-sm flex items-center gap-2">
                 <span>مراسلة خاصة مع {name}</span>
@@ -1939,7 +1923,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 setEditingPost(activeMenuPost);
                 setIsEditModalOpen(true);
                 setActiveMenuPost(null);
-              }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+              }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
                 <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 <span>تعديل</span>
               </button>
@@ -1950,7 +1934,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               <button onClick={() => {
                 handleDeletePost(activeMenuPost.id);
                 setActiveMenuPost(null);
-              }} className="w-full p-4 text-right text-[#F4212E] font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+              }} className="w-full p-4 text-right text-[#F4212E] font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                 <span>حذف</span>
               </button>
@@ -1969,7 +1953,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 });
               }
               setActiveMenuPost(null);
-            }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+            }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
               <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
               <span>إبلاغ</span>
             </button>
@@ -1979,7 +1963,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               navigator.clipboard?.writeText(window.location.origin + `/account?id=${activeMenuPost.authorId}`);
               showToast('تم نسخ الرابط!');
               setActiveMenuPost(null);
-            }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+            }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
               <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
               <span>نسخ الرابط</span>
             </button>
@@ -1996,7 +1980,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       {activeCommentPost && (
         <div className="fixed inset-0 z-[300] bg-black flex flex-col h-[100dvh] text-white overflow-hidden" dir="rtl">
           {/* شريط علوي */}
-          <div className="h-14 border-b border-[#2F3336] px-4 flex items-center justify-between shrink-0 bg-black">
+          <div className="h-14 border-b border-[#2F3336]/40 px-4 flex items-center justify-between shrink-0 bg-black">
             <div className="flex items-center gap-3">
               <button onClick={() => setActiveCommentPost(null)} className="p-2 hover:bg-zinc-900 rounded-full text-[#71767B] hover:text-white transition">
                 <ArrowRight size={20} />
@@ -2024,7 +2008,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             </p>
 
             {activeCommentPost.image && (
-              <div className="rounded-2xl overflow-hidden border border-[#2F3336] max-h-[450px]">
+              <div className="rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-[450px]">
                 <img src={activeCommentPost.image} alt="" className="w-full h-auto object-cover" />
               </div>
             )}
@@ -2036,7 +2020,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             </div>
 
             {/* أزرار التفاعل في العرض الكامل */}
-            <div className="flex items-center justify-around py-1 border-b border-[#2F3336] text-[#71767B]">
+            <div className="flex items-center justify-around py-1 border-b border-[#2F3336]/40 text-[#71767B]">
               <button className="flex items-center gap-1.5 hover:text-[#FFC500] transition">
                 <MessageCircle size={16} />
                 <span className="text-xs">{postComments.length}</span>
@@ -2063,7 +2047,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 <div className="text-center py-8 text-zinc-500 text-xs">لا توجد ردود بعد. كن أول من يرد!</div>
               ) : (
                 postComments.map(c => (
-                  <div key={c.id} className="py-3 px-1 border-b border-[#2F3336]/60 flex gap-3 hover:bg-white/[0.01] transition">
+                  <div key={c.id} className="py-3 px-1 border-b border-[#2F3336]/40/60 flex gap-3 hover:bg-white/[0.01] transition">
                     <div className="w-[30px] h-[30px] rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
                       {c.userAvatar ? (
                         <img src={c.userAvatar} alt="" className="w-full h-full object-cover" />
@@ -2138,7 +2122,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-black backdrop-blur border-b border-[#2F3336] p-3 flex items-center gap-4">
+            <div className="sticky top-0 z-10 bg-black backdrop-blur border-b border-[#2F3336]/40 p-3 flex items-center gap-4">
               <button 
                 onClick={() => setViewingDetailPost(null)}
                 className="text-white hover:bg-white/10 p-2 rounded-full transition"
@@ -2171,7 +2155,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               </p>
 
               {viewingDetailPost.image && (
-                <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336]">
+                <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336]/30">
                   <img src={viewingDetailPost.image} alt="" className="w-full h-auto object-cover" />
                 </div>
               )}
@@ -2184,7 +2168,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               </div>
 
               {/* الأزرار */}
-              <div className="flex items-center justify-around py-3 border-b border-[#2F3336] text-[#71767B]">
+              <div className="flex items-center justify-around py-3 border-b border-[#2F3336]/40 text-[#71767B]">
                 <button
                   onClick={() => {
                     setActiveCommentPost(viewingDetailPost);
@@ -2225,7 +2209,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                     الردود ({postComments.length})
                   </h3>
                   {postComments.map((c) => (
-                    <div key={c.id} className="p-3 border-b border-[#2F3336]">
+                    <div key={c.id} className="p-3 border-b border-[#2F3336]/40">
                       <div className="flex gap-3">
                         <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden flex-shrink-0">
                           {c.userAvatar ? (
@@ -2262,14 +2246,14 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           <div className="w-full max-w-md bg-black rounded-2xl overflow-hidden mb-20" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => { handleRepost(repostMenu.id); setRepostMenu(null); }}
-              className="w-full p-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm"
+              className="w-full p-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm"
             >
               <Repeat2 size={20} className="text-emerald-400" />
               <span>إعادة النشر</span>
             </button>
             <button
               onClick={() => { setQuoteOriginal(repostMenu); setIsQuoting(true); setRepostMenu(null); }}
-              className="w-full p-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm"
+              className="w-full p-3 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm"
             >
               <MessageCircle size={20} className="text-[#FFC500]" />
               <span>اقتباس</span>

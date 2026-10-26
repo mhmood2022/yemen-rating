@@ -132,6 +132,7 @@ export const CommunityFeedPage: React.FC = () => {
   const [editingTweet, setEditingTweet] = useState<any>(null);
   const [editText, setEditText] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [hasActiveSpace, setHasActiveSpace] = useState(false);
   const [activeTab, setActiveTab] = useState<'forYou' | 'latest' | 'trending'>('forYou');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -1032,71 +1033,63 @@ const handleAddComment = (e?: React.FormEvent) => {
 
       <input type="file" ref={imageInputRef} className="hidden" accept="image/*,video/*" onChange={handleImageUpload} />
 
-      {/* الهيدر العلوي */}
-      <header className="sticky top-0 z-40 bg-black  border-b border-[#2F3336]">
-        <div className="p-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/account')} title="ملفي الشخصي">
-              <div className="w-9 h-9 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold">
-                {myAvatar ? <img src={myAvatar} alt={myName} className="w-full h-full object-cover" /> : <span>{myName ? myName[0] : '؟'}</span>}
-              </div>
-            </button>
-            <h1 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
-              <span>تغريدات المجتمع</span>
-              <span className="text-[#FFC500] text-sm">🌐</span>
-            </h1>
+      {/* الهيدر العلوي بنمط منصة X الأصلي */}
+      <header className="sticky top-0 z-40 bg-black/95 backdrop-blur-md">
+        {/* الشريط العلوي بدون خط فاصل سفلي */}
+        <div className="px-4 py-2.5 flex items-center justify-between">
+          {/* اليمين: صورة البروفايل */}
+          <button onClick={() => navigate('/account')} title="ملفي الشخصي" className="relative group flex-shrink-0">
+            <div className="w-9 h-9 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold">
+              {myAvatar ? <img src={myAvatar} alt={myName} className="w-full h-full object-cover" /> : <span className="text-white text-xs">{myName ? myName[0] : '؟'}</span>}
+            </div>
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-black" />
+          </button>
+
+          {/* المنتصف: شعار منصة X الأيقوني */}
+          <div className="flex items-center justify-center cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <svg className="w-6 h-6 text-white fill-current hover:opacity-85 transition" viewBox="0 0 24 24">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
           </div>
 
-          <button 
+          {/* اليسار: زر الترقية بالشارة الزرقاء */}
+          <button
             onClick={() => navigate('/account')}
-            className="text-xs font-bold text-[#FFC500] bg-[#FFC500]/10 hover:bg-[#FFC500]/20 border border-[#FFC500]/30 px-3.5 py-1.5 rounded-full transition"
+            className="px-3.5 py-1.5 rounded-full bg-[#FFC500]/15 hover:bg-[#FFC500]/25 border border-[#FFC500]/40 text-white text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm"
           >
-            ملفي الشخصي
+            <span>ترقية</span>
+            <svg className="w-4 h-4 text-[#1D9BF0] fill-current flex-shrink-0" viewBox="0 0 24 24">
+              <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6c-1.58 0-2.95.875-3.6 2.148-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 0 .495.084.965.238 1.4C1.575 9.55.7 10.92.7 12.5c0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.79 4 4 4 .495 0 .965-.084 1.4-.238 1.05 1.273 2.42 2.148 4 2.148 1.58 0 2.95-.875 3.6-2.148.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-1.05 2.148-2.42 2.148-4zm-12.7 3.7l-3.3-3.3 1.4-1.4 1.9 1.9 5.3-5.3 1.4 1.4-6.7 6.7z" />
+            </svg>
           </button>
         </div>
 
-        {/* التبويبات */}
-        <div className="flex border-t border-[#2F3336] text-sm font-bold">
-          <button 
+        {/* التبويبات بنمط X مع خط سفلي واحد فقط ومحدد بيضاوي ناعم */}
+        <div className="flex text-sm font-bold">
+          <button
             onClick={() => setActiveTab('forYou')}
-            className={`flex-1 py-3 text-center relative transition ${activeTab === 'forYou' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'}`}
+            className={`flex-1 text-center transition flex items-center justify-center ${activeTab === 'forYou' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'}`}
           >
-            <span>لك (For You)</span>
-            {activeTab === 'forYou' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#FFC500] rounded-full" />}
+            <span className="relative py-3.5 inline-block">
+              لك
+              {activeTab === 'forYou' && <span className="absolute bottom-0 left-0 right-0 h-[3.5px] bg-white rounded-full" />}
+            </span>
           </button>
 
-          <button 
+          <button
             onClick={() => setActiveTab('latest')}
-            className={`flex-1 py-3 text-center relative transition ${activeTab === 'latest' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'}`}
+            className={`flex-1 text-center transition flex items-center justify-center ${activeTab === 'latest' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'}`}
           >
-            <span>الأحدث</span>
-            {activeTab === 'latest' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#FFC500] rounded-full" />}
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('trending')}
-            className={`flex-1 py-3 text-center relative transition flex items-center justify-center gap-1.5 ${activeTab === 'trending' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'}`}
-          >
-            <TrendingUp size={15} />
-            <span>الرائج</span>
-            {activeTab === 'trending' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#FFC500] rounded-full" />}
+            <span className="relative py-3.5 inline-block">
+              متابعة
+              {activeTab === 'latest' && <span className="absolute bottom-0 left-0 right-0 h-[3.5px] bg-white rounded-full" />}
+            </span>
           </button>
         </div>
       </header>
 
-      
-
       {/* حائط التغريدات */}
-      <div className="divide-y divide-[#2F3336]">
-      {/* المستخدمون أصحاب أحدث التغريدات */}
-      <ActiveUsersBar
-        users={[...tweets].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .filter((t, i, arr) => t.authorId && t.authorAvatar && arr.findIndex(x => x.authorId === t.authorId) === i)
-          .slice(0, 10)
-          .map(t => ({ id: t.authorId, name: t.authorName || '', avatar: t.authorAvatar, tweetData: t }))}
-        onTweetClick={setViewingDetailTweet}
-      />
-
+      <div>
         {displayedTweets.length === 0 ? (
           <div className="text-center py-20 text-zinc-500 text-xs px-4">
             لا توجد منشورات حتى الآن في المجتمع. كن أول من يغرد!
@@ -1116,12 +1109,12 @@ const handleAddComment = (e?: React.FormEvent) => {
                             setViewingDetailTweet(tweet);
                           }
                         }}
-                        className="p-4 hover:bg-white/[0.02] cursor-pointer transition select-none border-b border-[#2F3336]"
+                        className="px-4 pt-3 pb-2.5 hover:bg-white/[0.02] cursor-pointer transition select-none border-b border-[#2F3336]/40"
                       >
                         {/* رأس الاقتباس - صاحب الاقتباس */}
                         <div className="flex gap-3">
                           <button onClick={() => openAuthorProfile(tweet.authorId, tweet)} className="shrink-0 self-start">
-                            <div className="w-9 h-9 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold shrink-0">
+                            <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold shrink-0 text-white text-lg">
                               {tweet.authorAvatar ? <img src={tweet.authorAvatar} alt={tweet.authorName} className="w-full h-full object-cover" /> : <span>{tweet.authorName ? tweet.authorName[0] : '؟'}</span>}
                             </div>
                           </button>
@@ -1231,13 +1224,13 @@ const handleAddComment = (e?: React.FormEvent) => {
 
                             {/* صورة التغريدة العادية */}
                             {tweet.image && !(tweet.video_url || tweet.video) && (
-                              <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336] max-h-96">
+                              <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-96">
                                 <img src={tweet.image} alt="صورة" className="w-full h-full object-cover" />
                               </div>
                             )}
 
                             {/* أزرار التفاعل */}
-                            <div className="flex items-center justify-between mt-3 max-w-md text-[#71767B]">
+                            <div className="flex items-center justify-between mt-2.5 max-w-md text-[#71767B]">
                               {/* 💬 تعليق */}
                               <button onClick={() => setViewingDetailTweet(tweet)} className="flex items-center gap-1.5 hover:text-[#FFC500] transition group">
                                 <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10"><MessageCircle size={16} /></div>
@@ -1280,7 +1273,7 @@ const handleAddComment = (e?: React.FormEvent) => {
           dir="rtl"
         >
           {/* الشريط العلوي */}
-          <div className="h-14 border-b border-[#2F3336] px-4 flex items-center shrink-0 bg-black">
+          <div className="h-14 border-b border-[#2F3336]/40 px-4 flex items-center shrink-0 bg-black">
             <button
               type="button"
               onClick={() => setActiveCommentTweet(null)}
@@ -1294,7 +1287,7 @@ const handleAddComment = (e?: React.FormEvent) => {
 
           {/* محتوى المنشور والردود قابل للتمرير */}
           <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
-            <article className="border-b border-[#2F3336] pb-3">
+            <article className="border-b border-[#2F3336]/40 pb-3">
               <div className="flex items-start gap-3">
                 <div className="w-11 h-11 rounded-full bg-zinc-800 overflow-hidden shrink-0 flex items-center justify-center">
                   {activeCommentTweet.authorAvatar ? (
@@ -1361,7 +1354,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                   {activeCommentTweet.comments.map((comment) => (
                     <article
                       key={comment.id}
-                      className="flex gap-3 py-3 border-b border-[#2F3336]"
+                      className="flex gap-3 py-3 border-b border-[#2F3336]/40"
                     >
                       <div className="w-9 h-9 rounded-full bg-zinc-800 overflow-hidden shrink-0 flex items-center justify-center">
                         {comment.authorAvatar ? (
@@ -1510,7 +1503,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                 handleRepost(repostMenu.id);
                 setRepostMenu(null);
               }}
-              className="w-full px-4 py-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3"
+              className="w-full px-4 py-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3"
             >
               <Repeat2 size={20} className="text-emerald-400" />
               <span>إعادة النشر</span>
@@ -1522,7 +1515,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                 setIsQuoting(true);
                 setRepostMenu(null);
               }}
-              className="w-full px-4 py-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3"
+              className="w-full px-4 py-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3"
             >
               <MessageCircle size={20} className="text-[#FFC500]" />
               <span>اقتباس</span>
@@ -1598,7 +1591,7 @@ const handleAddComment = (e?: React.FormEvent) => {
       {viewingDetailTweet && (
         <div className="fixed inset-0 z-[300] bg-black flex flex-col h-[100dvh] text-white overflow-hidden" dir="rtl">
           {/* شريط علوي */}
-          <div className="h-14 border-b border-[#2F3336] px-4 flex items-center justify-between shrink-0 bg-black ">
+          <div className="h-14 border-b border-[#2F3336]/40 px-4 flex items-center justify-between shrink-0 bg-black ">
             <div className="flex items-center gap-3">
               <button onClick={() => setViewingDetailTweet(null)} className="p-2 hover:bg-zinc-900 rounded-full text-[#71767B] hover:text-white transition">
                 <ArrowRight size={20} />
@@ -1626,7 +1619,7 @@ const handleAddComment = (e?: React.FormEvent) => {
             </p>
 
             {viewingDetailTweet.image && (
-              <div className="rounded-2xl overflow-hidden border border-[#2F3336] max-h-[450px]">
+              <div className="rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-[450px]">
                 <img src={viewingDetailTweet.image} alt="" className="w-full h-auto object-cover" />
               </div>
             )}
@@ -1638,7 +1631,7 @@ const handleAddComment = (e?: React.FormEvent) => {
             </div>
 
             {/* أزرار التفاعل في العرض الكامل */}
-            <div className="flex items-center justify-around py-1 border-b border-[#2F3336] text-[#71767B]">
+            <div className="flex items-center justify-around py-1 border-b border-[#2F3336]/40 text-[#71767B]">
               <button onClick={() => { setActiveCommentTweet(viewingDetailTweet); setViewingDetailTweet(null); }} className="flex items-center gap-1.5 hover:text-[#FFC500] transition">
                 <MessageCircle size={16} />
                 <span className="text-xs">{viewingDetailTweet?.comments?.length || 0}</span>
@@ -1678,7 +1671,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                 <div className="text-center py-8 text-zinc-500 text-xs">لا توجد ردود بعد. كن أول من يرد!</div>
               ) : (
                 viewingDetailTweet?.comments.map(c => (
-                  <div key={c.id} className="py-3 px-1 border-b border-[#2F3336]/60 flex gap-3 hover:bg-white/[0.01] transition">
+                  <div key={c.id} className="py-3 px-1 border-b border-[#2F3336]/40/60 flex gap-3 hover:bg-white/[0.01] transition">
                     
                     {/* صورة المستخدم على اليمين */}
                     <div className="w-[30px] h-[30px] rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
@@ -1713,7 +1706,7 @@ const handleAddComment = (e?: React.FormEvent) => {
 
                       {/* صورة التعليق إن وجدت */}
                       {c.image && (
-                        <div className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336] max-h-72 bg-black">
+                        <div className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-72 bg-black">
                           <img src={c.image} alt="مرفق الرد" className="w-full h-auto object-cover max-h-72" loading="lazy" />
                         </div>
                       )}
@@ -1828,11 +1821,11 @@ const handleAddComment = (e?: React.FormEvent) => {
             {/* الخيارات التي تظهر فقط لصاحب التغريدة */}
             {activeMenuPost.authorId === currentUserId ? (
               <>
-                <button onClick={() => { showToast('التثبيت قريباً'); setActiveMenuPost(null); }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                <button onClick={() => { showToast('التثبيت قريباً'); setActiveMenuPost(null); }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
                   <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
                   <span>تثبيت على الملف الشخصي</span>
                 </button>
-                <button onClick={() => { showToast('الإفصاح قريباً'); setActiveMenuPost(null); }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                <button onClick={() => { showToast('الإفصاح قريباً'); setActiveMenuPost(null); }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
                   <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
                   <span>الإفصاح عن المحتوى</span>
                 </button>
@@ -1844,11 +1837,11 @@ const handleAddComment = (e?: React.FormEvent) => {
                       showToast('تم حذف المنشور');
                     });
                   }
-                }} className="w-full p-4 text-right text-[#F4212E] font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                }} className="w-full p-4 text-right text-[#F4212E] font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                   <span>حذف المنشور</span>
                 </button>
-                <button onClick={() => { showToast('تغيير الردود قريباً'); setActiveMenuPost(null); }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                <button onClick={() => { showToast('تغيير الردود قريباً'); setActiveMenuPost(null); }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
                   <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                   <span>تغيير من يمكنه الرد</span>
                 </button>
@@ -1856,7 +1849,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                 <button onClick={() => {
                   setReportingItem({ type: 'post', targetId: activeMenuPost.id, targetName: activeMenuPost.authorName || 'مستخدم', targetAuthorId: activeMenuPost.authorId || '' });
                   setActiveMenuPost(null);
-                }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
                   <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
                   <span>إبلاغ</span>
                 </button>
@@ -1864,19 +1857,19 @@ const handleAddComment = (e?: React.FormEvent) => {
             ) : (
               /* الخيارات التي تظهر للمستخدمين الآخرين (الزوار) */
               <>
-                <button onClick={() => handleNotInterested(activeMenuPost.id)} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                <button onClick={() => handleNotInterested(activeMenuPost.id)} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
                   <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                   <span>لست مهتماً بهذا المنشور</span>
                 </button>
-                <button onClick={() => handleUnfollow(activeMenuPost.authorId)} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                <button onClick={() => handleUnfollow(activeMenuPost.authorId)} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
                   <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"/></svg>
                   <span>إلغاء متابعة @{activeMenuPost.authorUsername}</span>
                 </button>
-                <button onClick={() => handleMute(activeMenuPost.authorId)} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                <button onClick={() => handleMute(activeMenuPost.authorId)} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
                   <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
                   <span>كتم @{activeMenuPost.authorUsername}</span>
                 </button>
-                <button onClick={() => handleBlock(activeMenuPost.authorId)} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                <button onClick={() => handleBlock(activeMenuPost.authorId)} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
                   <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
                   <span>حظر @{activeMenuPost.authorUsername}</span>
                 </button>
@@ -1884,7 +1877,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                 <button onClick={() => {
                   setReportingItem({ type: 'post', targetId: activeMenuPost.id, targetName: activeMenuPost.authorName || 'مستخدم', targetAuthorId: activeMenuPost.authorId || '' });
                   setActiveMenuPost(null);
-                }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336] flex items-center gap-3 text-sm">
+                }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
                   <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
                   <span>الإبلاغ عن المنشور</span>
                 </button>
@@ -1905,7 +1898,7 @@ const handleAddComment = (e?: React.FormEvent) => {
       {editingTweet && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 p-4" onClick={() => setEditingTweet(null)}>
           <div className="bg-[#16181C] border border-[#2F3336] rounded-2xl w-full max-w-md p-5 shadow-2xl relative" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336] mb-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]/40 mb-4">
               <h2 className="text-base font-black text-white">تعديل التغريدة</h2>
               <button onClick={() => setEditingTweet(null)} className="text-[#71767B] hover:text-white p-1 rounded-full">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
@@ -1933,10 +1926,10 @@ const handleAddComment = (e?: React.FormEvent) => {
       {/* زر + (FAB) — يفتح نافذة التغريد المنبثقة */}
       <button
         onClick={() => setIsPostModalOpen(true)}
-        className="fixed bottom-24 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-[0_8px_25px_rgba(255,197,0,0.35)] transition"
+        className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-[0_8px_25px_rgba(255,197,0,0.35)] transition"
         title="تغريدة جديدة"
       >
-        <Plus size={28} className="stroke-[3]" />
+        <Plus size={28} className="stroke-[3] text-white" />
       </button>
 
 

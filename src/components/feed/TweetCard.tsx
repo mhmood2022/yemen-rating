@@ -110,7 +110,7 @@ export const TweetCard: React.FC<TweetCardProps> = ({
 
           {/* صورة التغريدة العادية */}
           {!tweet.isRepost && tweet.image && (
-            <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336] max-h-96">
+            <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-96">
               <img src={tweet.image} alt="الصورة" className="w-full h-full object-cover" />
             </div>
           )}

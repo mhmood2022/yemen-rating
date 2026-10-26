@@ -163,7 +163,7 @@ export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({ src, className = '' 
       {/* حاوية الفيديو داخل التغريدة */}
       <div
         onClick={openModal}
-        className={`relative w-full max-h-[520px] bg-black rounded-[12px] overflow-hidden cursor-pointer select-none border border-[#2F3336] group shadow-sm ${className}`}
+        className={`relative w-full max-h-[520px] bg-black rounded-[12px] overflow-hidden cursor-pointer select-none border border-[#2F3336]/30 group shadow-sm ${className}`}
       >
         <video
           ref={videoRef}
