@@ -1,3 +1,4 @@
+import { CommunityManager } from './pages/admin/community/CommunityManager';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { CommunityFeedPage } from './pages/CommunityFeedPage';
 import { SearchPage } from './pages/SearchPage';
@@ -120,6 +121,7 @@ export function App() {
           <Route index element={<AdminDashboardOverview />} />
           <Route path="companies" element={<CompaniesManager />} />
           <Route path="reports" element={<ReportsManager />} />
+          <Route path="community" element={<CommunityManager />} />
           <Route path="ratings" element={<RatingsManager />} />
           <Route path="banks" element={<Navigate to="/admin/companies?category=banks" replace />} />
           <Route path="categories" element={<CategoriesManager />} />

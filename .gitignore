@@ -1,83 +1,44 @@
-# Node
+# Dependencies
 node_modules/
-dist/
-.vite/
-*.tsbuildinfo
+.pnp
+.pnp.js
 
-# Env
+# Production build
+dist/
+build/
+
+# Environment
 .env
 .env.local
 .env.*.local
+*.env
 
 # Logs
 *.log
-dev.log
-dev.lo
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Backups
-*.bak
-*.bak.*
-*.bak_*
-*.backup
-*.backup_*
-*.before_*
-*.broken_*
-*.old_*
-*.clean_backup
-*~
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Scripts مؤقتة
-fix_*.py
-fix_*.cjs
-fix_*.js
-apply_*.py
-apply_*.cjs
-apply_*.js
-update_*.py
-update_*.js
-restore_*.py
-restore_*.js
-install_*.py
-setup_*.py
-improve_*.py
-upgrade_*.py
-convert_*.py
-finalize_*.py
-implement_*.py
-clean_*.js
-purge_*.js
-ultimate_*.js
-audit_*.txt
-audit_*.sh
-test_*.sh
-test_*.mjs
-check_*.mjs
-check_*.py
-schema_*.mjs
-CompaniesManager.bak*
-
-# ملفات غريبة
-'90 deg" && '
-'earch)*'
-'t fs = require'
-إلغاء
-vite
-MAX_WIDTH
-FETCH_HEAD
-
-# Python
-__pycache__/
-*.pyc
-
-# System
+# OS
 .DS_Store
 Thumbs.db
-*.swp
+
+# Backup files (النسخ الاحتياطية)
+*.backup-*
+*.backup_*
+*.bak
+*.bak_*
+*.clean_backup
+*.backup-quote-*
+
+# Vite
+node_modules/.vite
 
 # Termux
-.termux/
-
-# Vercel
-.vercel
-_archive/
+.termux*

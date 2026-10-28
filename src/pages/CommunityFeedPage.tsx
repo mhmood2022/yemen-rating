@@ -832,6 +832,23 @@ export const CommunityFeedPage: React.FC = () => {
     if (!reportingItem) return;
     setSubmittingReport(true);
     try {
+      // إرسال إلى Supabase (المصدر الرئيسي للوحة الإدارة)
+      const { error: sbError } = await supabase.from('reports').insert({
+        reporter_id: currentUserId || null,
+        reporter_name: myName || 'مستخدم',
+        reported_item_type: reportingItem.type === 'account' ? 'user' : 'post',
+        reported_item_id: reportingItem.targetId,
+        reported_user_id: reportingItem.targetAuthorId || null,
+        reason: reportReason,
+        details: reportDetails.trim() || null,
+        status: 'PENDING',
+      });
+      
+      if (sbError) {
+        console.error('Supabase report error:', sbError);
+      }
+      
+      // نسخة احتياطية في localStorage
       const reportData = {
         id: crypto.randomUUID(),
         type: reportingItem.type,
@@ -844,6 +861,7 @@ export const CommunityFeedPage: React.FC = () => {
       };
       const existing = JSON.parse(localStorage.getItem('yr_community_reports') || '[]');
       localStorage.setItem('yr_community_reports', JSON.stringify([reportData, ...existing]));
+      
       if (typeof showToast === 'function') {
         showToast('تم استلام بلاغك وسيتم مراجعته من قِبل الإدارة فوراً 🛡️');
       } else {
@@ -854,11 +872,11 @@ export const CommunityFeedPage: React.FC = () => {
       setReportReason('محتوى غير لائق أو مسيء');
     } catch (error) {
       console.error(error);
+      showToast && showToast('تعذر إرسال البلاغ، حاول مرة أخرى');
     } finally {
       setSubmittingReport(false);
     }
   };
-
 const handleAddComment = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const targetPost = viewingDetailTweet || activeCommentTweet;
@@ -1764,20 +1782,37 @@ const handleAddComment = (e?: React.FormEvent) => {
       {reportingItem && (
         <ReportPage
           onClose={() => setReportingItem(null)}
-          onSubmit={(reason) => {
-            const reportData = {
-              id: crypto.randomUUID(),
-              type: reportingItem.type,
-              targetId: reportingItem.targetId,
-              targetName: reportingItem.targetName,
-              targetAuthorId: reportingItem.targetAuthorId,
-              reason: reason,
-              details: '',
-              created_at: new Date().toISOString(),
-            };
-            const existing = JSON.parse(localStorage.getItem('yr_community_reports') || '[]');
-            localStorage.setItem('yr_community_reports', JSON.stringify([reportData, ...existing]));
-            showToast('تم إرسال بلاغك بنجاح');
+          onSubmit={async (reason) => {
+            try {
+              const { error: sbError } = await supabase.from('reports').insert({
+                reporter_id: currentUserId || null,
+                reporter_name: myName || 'مستخدم',
+                reported_item_type: reportingItem.type === 'account' ? 'user' : 'post',
+                reported_item_id: reportingItem.targetId,
+                reported_user_id: reportingItem.targetAuthorId || null,
+                reason: reason,
+                details: null,
+                status: 'PENDING',
+              });
+              if (sbError) console.error('Supabase report error:', sbError);
+              
+              const reportData = {
+                id: crypto.randomUUID(),
+                type: reportingItem.type,
+                targetId: reportingItem.targetId,
+                targetName: reportingItem.targetName,
+                targetAuthorId: reportingItem.targetAuthorId,
+                reason: reason,
+                details: '',
+                created_at: new Date().toISOString(),
+              };
+              const existing = JSON.parse(localStorage.getItem('yr_community_reports') || '[]');
+              localStorage.setItem('yr_community_reports', JSON.stringify([reportData, ...existing]));
+              showToast('تم إرسال بلاغك بنجاح');
+            } catch (e) {
+              console.error(e);
+              showToast('تعذر إرسال البلاغ');
+            }
           }}
         />
       )}

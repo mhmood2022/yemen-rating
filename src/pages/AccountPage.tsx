@@ -176,6 +176,8 @@ export const AccountPage: React.FC = () => {
 
   // بيانات الحساب المعروض الحقيقي
   const [profileId, setProfileId] = useState<string>('');
+  const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [myName, setMyName] = useState<string>('مستخدم');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -244,6 +246,21 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
   // 🔄 تحميل تعليقات viewingDetailPost تلقائياً
   useEffect(() => {
+    // جلب اسم المستخدم الحالي
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name, username')
+            .eq('id', user.id)
+            .single();
+          if (profile) setMyName(profile.full_name || profile.username || 'مستخدم');
+        }
+      } catch {}
+    })();
+
     if (viewingDetailPost?.id) {
       loadComments(viewingDetailPost.id);
     }
@@ -307,6 +324,21 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     try {
       const user = currentUserParam !== undefined ? currentUserParam : (await supabase.auth.getUser()).data.user;
       setSessionUser(user);
+      
+      // تحديث currentUserId و myName
+      if (user) {
+        setCurrentUserId(user.id);
+        const { data: myProfile } = await supabase
+          .from('profiles')
+          .select('full_name, username')
+          .eq('id', user.id)
+          .single();
+        if (myProfile) {
+          setMyName(myProfile.full_name || myProfile.username || 'مستخدم');
+        } else {
+          setMyName(user.email?.split('@')[0] || 'مستخدم');
+        }
+      }
       const myId = user?.id || "";
       const targetId = targetIdParam || myId;
       
@@ -2327,18 +2359,31 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       {/* Modal الإبلاغ */}
       {reportingItem && (
         <ReportPage
+          type="account"
           onClose={() => setReportingItem(null)}
           onSubmit={async (reason) => {
             if (!reportingItem) return;
             try {
+              console.log('📤 SENDING REPORT:', {
+                  reporter_id: currentUserId || null,
+                  reporter_name: myName || 'مستخدم',
+                  reported_item_type: reportingItem.type === 'account' ? 'user' : 'post',
+                  reported_item_id: reportingItem.targetId,
+                  reported_user_id: reportingItem.targetAuthorId,
+                  reason: reason,
+                  status: 'PENDING',
+                });
               const { error } = await supabase
                 .from('reports')
                 .insert({
-                  reported_item_type: reportingItem.type,
+                  reported_item_type: reportingItem.type === 'account' ? 'user' : 'post',
                   reported_item_id: reportingItem.targetId,
                   reported_user_id: reportingItem.targetAuthorId,
-                  reporter_id: currentUserId,
+                  reporter_id: currentUserId || null,
+                  reporter_name: myName || 'مستخدم',
                   reason: reason,
+                  details: null,
+                  status: 'PENDING',
                   created_at: new Date().toISOString(),
                 });
               if (error) throw error;
