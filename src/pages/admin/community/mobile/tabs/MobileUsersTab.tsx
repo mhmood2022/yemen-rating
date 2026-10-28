@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Users } from 'lucide-react';
+import { Users, ShieldOff } from 'lucide-react';
 import { useUsers } from '../hooks/useUsers';
 import { UserCard } from '../components/UserCard';
 import { FilterChips } from '../../shared/FilterChips';
@@ -12,7 +12,7 @@ interface Props {
   searchQuery?: string;
 }
 
-type F = 'all' | 'verified' | 'unverified' | 'blocked';
+type F = 'all' | 'verified' | 'unverified' | 'blocked' | 'banned';
 
 export const MobileUsersTab: React.FC<Props> = ({ searchQuery = '' }) => {
   const { users, loading, error, reload, toggleBlock, updateBadge } = useUsers();
@@ -21,13 +21,9 @@ export const MobileUsersTab: React.FC<Props> = ({ searchQuery = '' }) => {
 
   const filtered = useMemo(() => {
     let list = users;
-    if (filter === 'verified') {
-      list = list.filter(u => u.verification_type || u.is_verified);
-    } else if (filter === 'unverified') {
-      list = list.filter(u => !u.verification_type && !u.is_verified);
-    } else if (filter === 'blocked') {
-      list = list.filter(u => u.is_blocked);
-    }
+    if (filter === 'verified') list = list.filter(u => u.verification_type || u.is_verified);
+    else if (filter === 'unverified') list = list.filter(u => !u.verification_type && !u.is_verified);
+    else if (filter === 'blocked' || filter === 'banned') list = list.filter(u => u.is_blocked);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -38,6 +34,12 @@ export const MobileUsersTab: React.FC<Props> = ({ searchQuery = '' }) => {
     }
     return list;
   }, [users, filter, searchQuery]);
+
+  const counts = useMemo(() => ({
+    all: users.length,
+    verified: users.filter(u => u.verification_type || u.is_verified).length,
+    blocked: users.filter(u => u.is_blocked).length,
+  }), [users]);
 
   const handleToggleBlock = async (u: ProfileItem) => {
     try {
@@ -61,10 +63,10 @@ export const MobileUsersTab: React.FC<Props> = ({ searchQuery = '' }) => {
     <div className="space-y-3">
       <FilterChips
         chips={[
-          { id: 'all', label: 'الكل', count: users.length },
-          { id: 'verified', label: 'موثق' },
+          { id: 'all', label: 'الكل', count: counts.all },
+          { id: 'verified', label: 'موثق', count: counts.verified },
           { id: 'unverified', label: 'غير موثق' },
-          { id: 'blocked', label: 'محظور' },
+          { id: 'blocked', label: 'محظور', count: counts.blocked },
         ]}
         active={filter}
         onChange={(id) => setFilter(id as F)}
@@ -81,7 +83,11 @@ export const MobileUsersTab: React.FC<Props> = ({ searchQuery = '' }) => {
           onAction={reload}
         />
       ) : filtered.length === 0 ? (
-        <EmptyState icon={Users} title="لا يوجد مستخدمون" />
+        <EmptyState
+          icon={filter === 'blocked' ? ShieldOff : Users}
+          title={filter === 'blocked' ? 'لا يوجد مستخدمون محظورون' : 'لا يوجد مستخدمون'}
+          description={filter === 'blocked' ? 'كل المستخدمين نشطون' : 'جرّب تغيير الفلتر'}
+        />
       ) : (
         filtered.map((u) => (
           <UserCard key={u.id} user={u} onToggleBlock={handleToggleBlock} onChangeBadge={handleBadge} />

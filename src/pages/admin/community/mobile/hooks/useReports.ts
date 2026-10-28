@@ -6,6 +6,7 @@ export interface ReporterInfo {
   name: string;
   avatar: string;
   username: string;
+  verification_type?: string | null;
 }
 
 export const useReports = () => {
@@ -62,6 +63,7 @@ export const useReports = () => {
           name: prof?.full_name || r.reporter_name || 'مستخدم',
           avatar: prof?.avatar_url || '',
           username: prof?.username || '',
+          verification_type: prof?.verification_type || (prof?.is_verified ? 'blue' : null),
         });
       });
       setReportersMap(reporters);
