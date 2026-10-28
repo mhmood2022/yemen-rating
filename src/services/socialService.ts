@@ -210,7 +210,7 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
     .order('created_at', { ascending: false });
   
   if (userId) {
-    postsQuery = postsQuery.eq('user_id', userId);
+    postsQuery = postsQuery.eq('user_id', userId).limit(30);
   } else {
     postsQuery = postsQuery.limit(100);
   }
@@ -229,7 +229,7 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
     .order('created_at', { ascending: false });
   
   if (userId) {
-    repostsQuery = repostsQuery.eq('user_id', userId);
+    repostsQuery = repostsQuery.eq('user_id', userId).limit(30);
   } else {
     repostsQuery = repostsQuery.limit(50);
   }
@@ -256,7 +256,7 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
   
   const { data: profiles } = await supabase
     .from('profiles')
-    .select('id, full_name, username, avatar_url')
+    .select('id, full_name, username, avatar_url, verification_type, is_verified')
     .in('id', Array.from(allUserIds));
   
   const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
@@ -305,6 +305,7 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
       replies: p.comments_count || 0,
       comments_count: p.comments_count || 0,
       profile: author || null,
+      badgeType: author?.verification_type || (author?.is_verified ? 'blue' : null),
       isLiked: likedSet.has(p.id),
     };
   });

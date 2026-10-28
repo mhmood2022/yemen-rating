@@ -27,5 +27,13 @@
   <body class="bg-black text-white" style="background-color: #000000 !important;">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script><script>eruda.init();</script></body>
+<script>
+(function(){
+  if (!/eruda=true/.test(window.location)) return;
+  var s = document.createElement("script");
+  s.src = "https://cdn.jsdelivr.net/npm/eruda";
+  s.onload = function(){ eruda.init(); };
+  document.head.appendChild(s);
+})();
+</script>
 </html>

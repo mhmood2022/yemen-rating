@@ -147,7 +147,7 @@ const compressImage = (file: File, maxWidth: number, maxHeight: number, quality 
 export const VerifiedBadge: React.FC<{ type?: string | boolean; size?: number }> = ({ type, size = 19 }) => {
   if (!type || type === "none" || type === false) return null;
   const bType = type === true ? "blue" : type;
-  const colors: Record<string, string> = { blue: "#FFC500", gold: "#EAB308", gray: "#829AAB" };
+  const colors: Record<string, string> = { blue: "#1D9BF0", gold: "#EAB308", gray: "#9CA3AF", silver: "#9CA3AF" };
   const fill = colors[bType] || "#FFC500";
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="inline-block flex-shrink-0 align-middle mr-1.5 drop-shadow-sm">

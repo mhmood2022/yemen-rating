@@ -1,3 +1,4 @@
+import { BadgeIcon } from '../components/common/BadgeIcon';
 import { XVideoPlayer } from '../components/feed/XVideoPlayer';
 'use client';
 
@@ -1142,18 +1143,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                                 <span onClick={() => openAuthorProfile(tweet.authorId, tweet)} className="font-bold text-white text-[14px] font-semibold hover:underline cursor-pointer flex items-center gap-1">
                                   {tweet.authorName}
                                   {/* شارة التوثيق - تظهر إذا كان المستخدم موثقاً */}
-                                  {tweet.badgeType && (
-                                  <img 
-                                    src={
-                                      tweet.badgeType === 'blue' ? '/badges/blue.png' :
-                                      tweet.badgeType === 'yellow' ? '/badges/yellow.png' :
-                                      tweet.badgeType === 'gray' ? '/badges/gray.png' : '/badges/blue.png'
-                                    } 
-                                    alt="موثق" 
-                                    className="w-[18px] h-[18px] object-contain inline-block shrink-0 mt-[1px]" 
-                                    style={{ marginRight: '2px' }}
-                                  />
-                                )}
+                                  {tweet.badgeType && <BadgeIcon type={tweet.badgeType as any} size={16} />}
                                 </span>
                                 <span className="text-[11px] text-[#71767B] font-normal font-['Tahoma']" dir="ltr">@{tweet.authorUsername}</span>
                                 <span className="text-[11px] text-[#71767B]">·</span>

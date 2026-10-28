@@ -1,3 +1,4 @@
+import { BadgeIcon } from '../../../../../components/common/BadgeIcon';
 import React from 'react';
 import { Eye, EyeOff, Trash2, Heart, MessageCircle, Repeat } from 'lucide-react';
 import type { PostItem } from '../../shared/types';
@@ -34,17 +35,7 @@ export const PostCard: React.FC<Props> = ({ post, onToggleHide, onDelete }) => {
             <span className="text-sm font-semibold truncate" style={{ color: '#FFFFFF' }}>
               {post.authorName}
             </span>
-            {post.authorBadge && post.authorBadge !== 'none' && (
-              <span
-                className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px] font-bold"
-                style={{
-                  backgroundColor: post.authorBadge === 'gold' ? '#FFC500' : '#1D9BF0',
-                  color: '#000',
-                }}
-              >
-                ✓
-              </span>
-            )}
+            {post.authorBadge && post.authorBadge !== 'none' && <BadgeIcon type={post.authorBadge as any} size={16} />}
             <span className="text-xs" style={{ color: '#9CA3AF' }} dir="ltr">
               @{post.authorUsername}
             </span>

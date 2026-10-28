@@ -1,6 +1,6 @@
 export type CommunityTab = 'reports' | 'posts' | 'users' | 'storage' | 'logs';
 
-export type BadgeType = 'blue' | 'gold' | null;
+export type BadgeType = 'blue' | 'gold' | 'gray' | null;
 
 export interface PostItem {
   id: string;
