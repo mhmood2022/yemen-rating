@@ -5,6 +5,7 @@ import { ToastProvider } from '../shared/Toast';
 import { MobileReportsTab } from './tabs/MobileReportsTab';
 import { MobilePostsTab } from './tabs/MobilePostsTab';
 import { MobileCommentsTab } from './tabs/MobileCommentsTab';
+import { MobileSupportTab } from './tabs/MobileSupportTab';
 import { MobileUsersTab } from './tabs/MobileUsersTab';
 import { MobileStorageTab } from './tabs/MobileStorageTab';
 import { MobileLogsTab } from './tabs/MobileLogsTab';
@@ -19,6 +20,7 @@ const TAB_TITLES: Record<CommunityTab, { title: string; subtitle: string }> = {
   reports: { title: 'إدارة البلاغات', subtitle: 'مراجعة البلاغات ومعالجتها' },
   posts: { title: 'إدارة التغريدات', subtitle: 'استعراض وإدارة المحتوى' },
   comments: { title: 'إدارة التعليقات', subtitle: 'الردود على التغريدات' },
+  support: { title: 'رسائل الدعم', subtitle: 'رسائل المستخدمين' },
   users: { title: 'إدارة المستخدمين', subtitle: 'المغردون والتوثيق' },
   storage: { title: 'مراقبة التخزين', subtitle: 'استهلاك Supabase' },
   logs: { title: 'سجل الإجراءات', subtitle: 'كل إجراء إداري' },
@@ -135,6 +137,7 @@ export const MobileCommunityView: React.FC<Props> = ({ reportsCount: initialRepo
           {activeTab === 'reports' && <MobileReportsTab searchQuery={search} />}
           {activeTab === 'posts' && <MobilePostsTab searchQuery={search} />}
           {activeTab === 'comments' && <MobileCommentsTab searchQuery={search} />}
+          {activeTab === 'support' && <MobileSupportTab key="support-tab" />}
           {activeTab === 'users' && <MobileUsersTab searchQuery={search} />}
           {activeTab === 'storage' && <MobileStorageTab />}
           {activeTab === 'logs' && <MobileLogsTab />}

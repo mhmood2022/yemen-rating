@@ -22,7 +22,7 @@ export const MobileBottomNav: React.FC<Props> = ({ active, onChange, reportsCoun
     { id: 'comments', label: 'التعليقات', icon: MessageCircle }, // تمت الإضافة
     { id: 'users', label: 'المستخدمون', icon: Users },
     { id: 'storage', label: 'التخزين', icon: HardDrive },
-    { id: 'logs', label: 'السجل', icon: ScrollText },
+    { id: 'support', label: 'رسائل الدعم', icon: MessageCircle },
   ];
 
   return (

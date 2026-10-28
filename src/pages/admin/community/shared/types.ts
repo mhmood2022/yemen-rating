@@ -1,4 +1,4 @@
-export type CommunityTab = 'reports' | 'posts' | 'users' | 'storage' | 'logs';
+export type CommunityTab = 'reports' | 'posts' | 'users' | 'storage' | 'logs' | 'support';
 
 export type BadgeType = 'blue' | 'gold' | 'gray' | null;
 

@@ -1,4 +1,5 @@
 import { XVideoPlayer } from '../components/feed/XVideoPlayer';
+import { SupportModal } from '../components/support/SupportModal';
 
 // تنظيف أمان لمنع امتلاء localStorage وضمان وجود مساحة لرمز جلسة Supabase
 try {
@@ -186,6 +187,7 @@ export const AccountPage: React.FC = () => {
 
   // قائمة خيارات (...)
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
 
   // بيانات الحساب المعروض الحقيقي
   const [profileId, setProfileId] = useState<string>('');
@@ -1191,6 +1193,13 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                         <span className="text-white text-sm">تعديل</span>
                       </button>
                       <button
+                        onClick={() => { setIsSupportOpen(true); setIsMenuOpen(false); }}
+                        className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
+                      >
+                        <MessageCircle size={16} className="text-[#FFC500] flex-shrink-0" />
+                        <span className="text-white text-sm">الدعم الفني</span>
+                      </button>
+                      <button
                         onClick={handleLogout}
                         className="w-full px-3 py-2.5 text-right hover:bg-rose-500/15 active:bg-rose-500/20 flex items-center gap-3 text-white font-bold transition rounded-xl"
                       >
@@ -1225,6 +1234,13 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                       >
                         <AlertTriangle size={16} className="text-[#FFC500] flex-shrink-0" />
                         <span className="text-white text-sm">إبلاغ عن @{username}</span>
+                      </button>
+                      <button
+                        onClick={() => { setIsSupportOpen(true); setIsMenuOpen(false); }}
+                        className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
+                      >
+                        <MessageCircle size={16} className="text-[#FFC500] flex-shrink-0" />
+                        <span className="text-white text-sm">الدعم الفني</span>
                       </button>
                       <div className="pt-1">
                         <button
@@ -2412,6 +2428,12 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       )}
 
       <MobileBottomNav onNavigate={(path) => navigate(path)} />
+
+      <SupportModal
+        isOpen={isSupportOpen}
+        onClose={() => setIsSupportOpen(false)}
+        currentUser={currentUserId ? { id: currentUserId, name: myName } : null}
+      />
 </div>
   );
 };
