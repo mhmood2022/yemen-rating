@@ -304,7 +304,7 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
       comments: [],
       replies: p.comments_count || 0,
       comments_count: p.comments_count || 0,
-      profile: author || null,
+      profile: author ? { ...author, verification_type: author.verification_type, is_verified: author.is_verified } : null,
       badgeType: author?.verification_type || (author?.is_verified ? 'blue' : null),
       isLiked: likedSet.has(p.id),
     };

@@ -15,6 +15,7 @@ const BADGE_COLORS: Record<string, { fill: string; check: string }> = {
 
 export const BadgeIcon: React.FC<BadgeIconProps> = ({ type, size = 16, className = '' }) => {
   if (!type) return null;
+  console.log('🎖️ BadgeIcon rendering:', { type });
   const colors = BADGE_COLORS[type] || BADGE_COLORS.blue;
   return (
     <svg

@@ -145,10 +145,23 @@ const compressImage = (file: File, maxWidth: number, maxHeight: number, quality 
 
 
 export const VerifiedBadge: React.FC<{ type?: string | boolean; size?: number }> = ({ type, size = 19 }) => {
+  // 1. معالجة القيم الفارغة أو "none"
   if (!type || type === "none" || type === false) return null;
   const bType = type === true ? "blue" : type;
-  const colors: Record<string, string> = { blue: "#1D9BF0", gold: "#EAB308", gray: "#9CA3AF", silver: "#9CA3AF" };
-  const fill = colors[bType] || "#FFC500";
+  if (bType === "none") return null;
+
+  // 2. خريطة الألوان الصحيحة
+  const colors: Record<string, string> = { 
+    blue: "#1D9BF0", 
+    gold: "#EAB308", 
+    gray: "#9CA3AF", 
+    silver: "#9CA3AF" 
+  };
+  
+  // 3. إذا كان اللون غير معروف، لا تعرض شيئاً
+  const fill = colors[bType];
+  if (!fill) return null;
+
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="inline-block flex-shrink-0 align-middle mr-1.5 drop-shadow-sm">
       <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6s-2.95.875-3.6 2.148c-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 0 .495.084.965.238 1.4C1.575 9.55.7 10.92.7 12.5s.875 2.95 2.148 3.6c-.154.435-.238.905-.238 1.4 0 2.21 1.79 4 4 4 .495 0 .965-.084 1.4-.238.65 1.273 2.02 2.148 3.6 2.148s2.95-.875 3.6-2.148c.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6z" fill={fill} />
@@ -431,7 +444,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             authorName: p.authorName || p.profile?.full_name || name,
             authorUsername: p.authorUsername || p.profile?.username || username,
             authorAvatar: p.authorAvatar || p.profile?.avatar_url || '',
-            authorBadge: p.authorBadge || p.profile?.verification_type || (p.profile?.is_verified ? "blue" : "none"),
+            authorBadge: p.badgeType || p.authorBadge || p.profile?.verification_type || (p.profile?.is_verified ? "blue" : "none"),
             text: p.text || p.content,
             image: p.image || p.image_url || undefined,
             video_url: p.video_url || p.video || undefined,
@@ -516,7 +529,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               authorName: p.profile?.full_name || '',
               authorUsername: p.profile?.username || '',
               authorAvatar: p.profile?.avatar_url || '',
-              authorBadge: p.profile?.verification_type || (p.profile?.is_verified ? 'blue' : 'none'),
+              authorBadge: p.badgeType || p.profile?.verification_type || (p.profile?.is_verified ? 'blue' : 'none'),
               text: p.content,
               image: p.image_url || undefined,
               video_url: p.video_url || p.video || undefined,
@@ -1264,7 +1277,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 onClick={() => showToast("حسابك نشط وموثق في المنصة ✨")}
                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-zinc-700 bg-black/60 hover:bg-white/10 active:scale-95 text-white text-xs font-bold transition"
               >
-                <VerifiedBadge type="blue" size={15} />
+                <VerifiedBadge type="blue" size={16} />
                 <span>وثّق حسابك</span>
               </button>
             ) : (
@@ -1300,7 +1313,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             >
               {name || "مستخدم يمن ريتنج"}
             </h1>
-            <VerifiedBadge type={verificationType} size={20} />
+            <VerifiedBadge type={verificationType} size={16} />
           </div>
           <p className="text-[15px] text-[#71767B] font-normal mt-0.5 text-right select-text">
             @{username || 'user'}
@@ -1479,8 +1492,8 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-bold text-white text-[13px] hover:underline cursor-pointer cursor-pointer cursor-pointer truncate">{post.authorName || name}</span>
                       {post.authorBadge && post.authorBadge !== "none" && (
-                        <svg className="w-[18px] h-[18px] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"
-                          style={{color: post.authorBadge === "blue" ? "#FFC500" : post.authorBadge === "gold" ? "#FFD700" : "#71767B"}}>
+                        <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"
+                          style={{color: post.authorBadge === "blue" ? "#1D9BF0" : post.authorBadge === "gold" ? "#FFD700" : "#71767B"}}>
                           <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.918-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.918 1.79-3.918 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.755 2.73 1.882 3.475-.038.2-.058.406-.058.617 0 2.21 1.71 4 3.918 4 .47 0 .92-.085 1.336-.25.52 1.335 1.828 2.25 3.337 2.25s2.816-.917 3.337-2.25c.416.165.866.25 1.336.25 2.21 0 3.918-1.79 3.918-4 0-.21-.02-.417-.058-.617C21.745 15.23 22.5 13.96 22.5 12.5z"/>
                           <path fill="white" d="M10.825 16.583l-3.66-3.66a.75.75 0 111.06-1.061l2.6 2.6 5.405-5.405a.75.75 0 111.06 1.061l-5.935 5.935a.75.75 0 01-1.06 0z"/>
                         </svg>

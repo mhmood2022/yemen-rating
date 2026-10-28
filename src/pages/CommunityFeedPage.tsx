@@ -1,5 +1,6 @@
-import { BadgeIcon } from '../components/common/BadgeIcon';
+
 import { XVideoPlayer } from '../components/feed/XVideoPlayer';
+import { VerifiedBadge } from '../components/common/VerifiedBadge';
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -354,7 +355,7 @@ export const CommunityFeedPage: React.FC = () => {
         try {
           const { data: dbProfiles, error: profErr } = await supabase
             .from('profiles')
-            .select('id, full_name, username, avatar_url')
+            .select('id, full_name, username, avatar_url, verification_type, is_verified')
             .in('id', allUserIds);
           
           if (profErr) {
@@ -367,12 +368,14 @@ export const CommunityFeedPage: React.FC = () => {
         // 3. بناء قائمة المجتمع وعرض كل التغريدات (لكل المغردين)
         const cloudTweets = dbPosts.map((p) => {
           const author = profileMap.get(p.user_id);
+          const badgeType = author?.verification_type || (author?.is_verified ? 'blue' : null);
           return {
             id: p.id,
             authorId: p.user_id,
             authorName: author?.full_name || "مستخدم يمن ريتنج",
             authorUsername: author?.username || "user",
             authorAvatar: author?.avatar_url || (localUsers[p.user_id]?.avatarUrl) || (p.user_id === uid ? myAvatar : "") || "",
+            badgeType: badgeType,
             text: p.content,
             image: p.image_url || undefined,
             video_url: p.video_url || undefined,
@@ -1143,7 +1146,8 @@ const handleAddComment = (e?: React.FormEvent) => {
                                 <span onClick={() => openAuthorProfile(tweet.authorId, tweet)} className="font-bold text-white text-[14px] font-semibold hover:underline cursor-pointer flex items-center gap-1">
                                   {tweet.authorName}
                                   {/* شارة التوثيق - تظهر إذا كان المستخدم موثقاً */}
-                                  {tweet.badgeType && <BadgeIcon type={tweet.badgeType as any} size={16} />}
+                                  {tweet.authorName?.includes('احمد') && console.log('🎖️ CommunityFeed tweet:', { name: tweet.authorName, badgeType: tweet.badgeType })}
+                                  {tweet.badgeType && <VerifiedBadge type={tweet.badgeType as any} size={16} />}
                                 </span>
                                 <span className="text-[11px] text-[#71767B] font-normal font-['Tahoma']" dir="ltr">@{tweet.authorUsername}</span>
                                 <span className="text-[11px] text-[#71767B]">·</span>

@@ -1,75 +1,61 @@
 import React from 'react';
 
-export type BadgeType = 'gold' | 'blue' | 'gray' | 'none' | null;
+export type BadgeType = 'blue' | 'gold' | 'gray' | 'silver' | 'yellow' | 'none' | null;
 
 interface VerifiedBadgeProps {
   type?: BadgeType;
-  size?: 'sm' | 'md' | 'lg';
+  variant?: BadgeType; // لدعم المكونات التي تستخدم variant
+  size?: number | 'sm' | 'md' | 'lg';
   className?: string;
-  tooltipText?: string;
 }
 
-const BADGE_COLORS: Record<string, string> = {
-  gold: '#FFC500',
-  blue: '#1D9BF0',
-  gray: '#9CA3AF',
-};
-
-export const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
-  type = null,
-  size = 'sm',
-  className = '',
-  tooltipText
+export const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({ 
+  type, 
+  variant,
+  size = 16, 
+  className = '' 
 }) => {
-  // ✅ إذا لا شارة → لا تعرض شيئاً
-  if (!type || type === 'none') return null;
-
-  // ✅ إذا type غير معروف → لا تعرض شيئاً
-  const fill = BADGE_COLORS[type];
+  // دعم type أو variant
+  const badgeType = type || variant;
+  
+  if (!badgeType || badgeType === 'none') return null;
+  
+  // خريطة الألوان (تدعم كل المسميات)
+  const colors: Record<string, string> = { 
+    blue: '#1D9BF0', 
+    gold: '#FFC500', 
+    yellow: '#FFC500',
+    gray: '#9CA3AF',
+    silver: '#9CA3AF'
+  };
+  
+  const fill = colors[badgeType];
   if (!fill) return null;
 
-  // ✅ console.log للتشخيص
-  console.log('🎖️ VerifiedBadge rendering:', { type, fill });
-
-  const sizeDimensions = {
-    sm: { w: 14, h: 14 },
-    md: { w: 18, h: 18 },
-    lg: { w: 22, h: 22 }
-  };
-
-  const dim = sizeDimensions[size] || sizeDimensions.sm;
-
-  const defaultLabel = 
-    type === 'gold' ? 'موثق رسمياً (ذهبي)' : 
-    type === 'blue' ? 'موثق (أزرق)' : 
-    type === 'gray' ? 'موثق (فضي)' : 
-    'حساب معتمد';
+  // تحديد الحجم
+  let px = 16;
+  if (size === 'sm') px = 16;
+  else if (size === 'md') px = 18;
+  else if (size === 'lg') px = 22;
+  else if (typeof size === 'number') px = size;
 
   return (
-    <span
-      className={`inline-flex items-center justify-center shrink-0 align-middle ${className}`}
-      title={tooltipText || defaultLabel}
-      aria-label={tooltipText || defaultLabel}
+    <svg 
+      width={px} 
+      height={px} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      className={`inline-block flex-shrink-0 align-middle ${className}`}
+      style={{ marginRight: '4px' }}
     >
-      <svg
-        width={dim.w}
-        height={dim.h}
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M10.29 2.308a2.5 2.5 0 013.42 0l.66.626a2.5 2.5 0 002.327.624l.89-.228a2.5 2.5 0 013.064 1.768l.243.886a2.5 2.5 0 001.768 1.768l.886.243a2.5 2.5 0 011.768 3.064l-.228.89a2.5 2.5 0 00.624 2.327l.626.66a2.5 2.5 0 010 3.42l-.626.66a2.5 2.5 0 00-.624 2.327l.228.89a2.5 2.5 0 01-1.768 3.064l-.886.243a2.5 2.5 0 00-1.768 1.768l-.243.886a2.5 2.5 0 01-3.064 1.768l-.89-.228a2.5 2.5 0 00-2.327.624l-.66.626a2.5 2.5 0 01-3.42 0l-.66-.626a2.5 2.5 0 00-2.327-.624l-.89.228a2.5 2.5 0 01-3.064-1.768l-.243-.886a2.5 2.5 0 00-1.768-1.768l-.886-.243a2.5 2.5 0 01-1.768-3.064l.228-.89a2.5 2.5 0 00-.624-2.327l-.626-.66a2.5 2.5 0 010-3.42l.626-.66a2.5 2.5 0 00.624-2.327l-.228-.89a2.5 2.5 0 011.768-3.064l.886-.243a2.5 2.5 0 001.768-1.768l.243-.886a2.5 2.5 0 013.064-1.768l.89.228a2.5 2.5 0 002.327-.624l.66-.626z"
-          fill={fill}
-        />
-        <path
-          d="M8.5 12.2l2.3 2.3 4.8-4.8"
-          stroke="#FFFFFF"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </span>
+      <path 
+        d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6s-2.95.875-3.6 2.148c-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 0 .495.084.965.238 1.4C1.575 9.55.7 10.92.7 12.5s.875 2.95 2.148 3.6c-.154.435-.238.905-.238 1.4 0 2.21 1.79 4 4 4 .495 0 .965-.084 1.4-.238.65 1.273 2.02 2.148 3.6 2.148s2.95-.875 3.6-2.148c.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6z" 
+        fill={fill} 
+      />
+      <path 
+        d="M9.8 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.6-5.6 1.4 1.4-7 7z" 
+        fill="#FFFFFF" 
+      />
+    </svg>
   );
 };

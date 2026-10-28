@@ -29,6 +29,12 @@
     <script type="module" src="/src/main.tsx"></script>
 <script>
 (function(){
+  var s = document.createElement("script");
+  document.head.appendChild(s);
+})();
+</script>
+<script>
+(function(){
   if (!/eruda=true/.test(window.location)) return;
   var s = document.createElement("script");
   s.src = "https://cdn.jsdelivr.net/npm/eruda";
