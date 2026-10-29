@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { VerifiedBadge } from '../../components/common/VerifiedBadge';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -108,6 +109,7 @@ export default function FollowersPage() {
           avatar_url: p.avatar_url || '',
           bio: p.bio || '',
           is_verified: p.is_verified,
+          verification_type: p.verification_type,
           is_following: myFollowingIds.includes(p.id),
           follows_me: allFollows.some(f => f.follower_id === p.id && f.following_id === currentUserId),
         }));
@@ -224,10 +226,11 @@ export default function FollowersPage() {
                   <span className="font-bold text-[15px] text-white truncate">
                     {u.full_name}
                   </span>
-                  {u.is_verified && (
-                    <svg className="w-4 h-4 text-[#FFC500]" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.918-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.918 1.79-3.918 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.755 2.73 1.882 3.475-.038.2-.058.406-.058.617 0 2.21 1.71 4 3.918 4 .47 0 .92-.085 1.336-.25.52 1.335 1.828 2.25 3.337 2.25s2.816-.917 3.337-2.25c.416.165.866.25 1.336.25 2.21 0 3.918-1.79 3.918-4 0-.21-.02-.417-.058-.617C21.745 15.23 22.5 13.96 22.5 12.5z"/>
-                    </svg>
+                  {(u.verification_type || u.is_verified) && (
+                    <VerifiedBadge 
+                      type={(u.verification_type || (u.is_verified ? 'blue' : null)) as any} 
+                      size={16} 
+                    />
                   )}
                 </div>
                 <div className="text-[15px] text-[#71767B] truncate">@{u.username}</div>
