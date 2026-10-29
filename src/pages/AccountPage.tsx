@@ -1290,11 +1290,14 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           <div>
             {isOwner ? (
               <button
-                onClick={() => showToast("حسابك نشط وموثق في المنصة ✨")}
+                onClick={() => navigate('/premium')}
                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-zinc-700 bg-black/60 hover:bg-white/10 active:scale-95 text-white text-xs font-bold transition"
               >
-                <VerifiedBadge type="blue" size={16} />
-                <span>وثّق حسابك</span>
+                <VerifiedBadge 
+                  type={(verificationType && verificationType !== 'none') ? verificationType as any : 'blue'} 
+                  size={16} 
+                />
+                <span>{(verificationType && verificationType !== 'none') ? 'ترقية الاشتراك' : 'وثّق حسابك'}</span>
               </button>
             ) : (
               <div className="flex items-center gap-2">

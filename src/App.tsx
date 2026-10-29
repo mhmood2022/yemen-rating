@@ -30,6 +30,9 @@ import { AuctionDetailsPage } from './pages/templates/AuctionDetailsPage';
 // لوحة تحكم مالك المنشأة المعتمد
 import { OwnerDashboardPage } from './pages/owner/OwnerDashboardPage';
 import { UserProfilePage } from './pages/user/UserProfilePage';
+import { PremiumPage } from './pages/premium/PremiumPage';
+import { PremiumCheckout } from './pages/premium/PremiumCheckout';
+import { SubscriptionsManager } from './pages/admin/subscriptions/SubscriptionsManager';
 import { AccountPage } from "./pages/AccountPage";
 
 // لوحة التحكم الإدارية
@@ -126,6 +129,7 @@ export function App() {
           <Route path="banks" element={<Navigate to="/admin/companies?category=banks" replace />} />
           <Route path="categories" element={<CategoriesManager />} />
           <Route path="claims" element={<ClaimsManager />} />
+          <Route path="subscriptions" element={<SubscriptionsManager />} />
           <Route path="markets" element={<MarketsManager />} />
           <Route path="auctions" element={<AuctionsManager />} />
           <Route path="auctions/:id" element={<AuctionLiveMonitor />} />
@@ -154,6 +158,8 @@ export function App() {
         <Route path="/u/:username/followers" element={<FollowersPage />} />
         <Route path="/u/:username/following" element={<FollowersPage />} />
         <Route path="/u/:username" element={<FollowersPage />} />
+        <Route path="/premium" element={<PremiumPage />} />
+        <Route path="/premium/checkout/:planId" element={<PremiumCheckout />} />
         <Route path="/login" element={<AppShell><AccountPage /></AppShell>} />
       </Routes>
     </BrowserRouter>

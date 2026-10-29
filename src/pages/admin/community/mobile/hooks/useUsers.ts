@@ -44,6 +44,16 @@ export const useUsers = () => {
       .update({ verification_type: badge, is_verified: isVerified })
       .eq('id', userId);
     if (error) throw error;
+
+    // 🔄 مزامنة: إذا تمت إزالة الشارة، نلغي الاشتراك في جدول subscriptions
+    if (!badge) {
+      await supabase
+        .from('subscriptions')
+        .update({ status: 'EXPIRED', end_date: new Date().toISOString() })
+        .eq('user_id', userId)
+        .eq('status', 'ACTIVE');
+    }
+
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, verification_type: badge, is_verified: isVerified } : u));
   };
 

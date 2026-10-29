@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { VerifiedBadge } from '../../components/common/VerifiedBadge';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { MobileBottomNav } from '../../components/navigation/MobileBottomNav';
+import { VerifiedBadge } from '../../components/common/VerifiedBadge';
 
 interface FollowUser {
   id: string;

@@ -14,13 +14,15 @@ import { Sparkles,
   Building2, Briefcase, Home, ShieldAlert, MessageSquare,
   ChevronDown,
   ChevronUp,
-  Star
+  Star,
+  CreditCard
 } from 'lucide-react';
 
 const ADMIN_OPERATIONS = [
   { id: 'dashboard', label: 'لوحة التحكم الرئيسية', icon: LayoutDashboard, path: '/admin' },
   { id: 'all_companies', label: 'كافة المنشآت والأنشطة', icon: Building2, path: '/admin/companies' },
   { id: 'claims', label: 'إثبات الملكية والمطالبات', icon: ShieldCheck, path: '/admin/claims' },
+  { id: 'subscriptions', label: 'إدارة التوثيق والاشتراكات', icon: CreditCard, path: '/admin/subscriptions' },
   { id: 'reports', label: 'البلاغات والشكاوى', icon: ShieldAlert, path: '/admin/reports' },
   { id: 'community', label: 'المجتمع والتغريدات (X)', icon: MessageSquare, path: '/admin/community' },
   { id: 'real-estate', label: 'العقارات والاستثمار', icon: Home, path: '/admin/real-estate' },

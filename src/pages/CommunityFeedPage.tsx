@@ -1076,7 +1076,7 @@ const handleAddComment = (e?: React.FormEvent) => {
 
           {/* اليسار: زر الترقية بالشارة الزرقاء */}
           <button
-            onClick={() => navigate('/account')}
+            onClick={() => navigate('/premium')}
             className="px-3.5 py-1.5 rounded-full bg-[#FFC500]/15 hover:bg-[#FFC500]/25 border border-[#FFC500]/40 text-white text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm"
           >
             <span>ترقية</span>
