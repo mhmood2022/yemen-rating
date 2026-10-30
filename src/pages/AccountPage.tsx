@@ -56,7 +56,8 @@ import {
   AlertTriangle,
   Flag,
   Globe,
-  Video
+  Video,
+  CreditCard,
 } from "lucide-react";
 import { AuthModal } from '../components/auth/AuthModal';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
