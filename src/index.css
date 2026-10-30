@@ -196,3 +196,268 @@ select, select option {
 .animate-slide-down {
   animation: slide-down 0.3s ease-out forwards;
 }
+
+/* ============================================================
+   توحيد تنسيق القوائم المنسدلة (Select) في كل الموقع
+   ============================================================ */
+select {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #2A2B30 !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23FFC500' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 8px center;
+  padding-left: 28px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+select:focus {
+  outline: none !important;
+}
+
+select option {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  padding: 10px !important;
+  font-family: inherit;
+}
+
+select option:checked,
+select option:hover {
+  background-color: #FFC500 !important;
+  color: #000000 !important;
+}
+
+/* للهواتف - تنسيق خاص */
+@media (max-width: 768px) {
+  select {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+}
+
+/* ============================================================
+   توحيد رسائل النجاح والخطأ (Toast) في كل الموقع
+   ============================================================ */
+.yr-toast-success {
+  background-color: #22C55E !important;
+  color: #FFFFFF !important;
+}
+
+.yr-toast-error {
+  background-color: #EF4444 !important;
+  color: #FFFFFF !important;
+}
+
+.yr-toast-info {
+  background-color: #FFC500 !important;
+  color: #000000 !important;
+}
+
+/* ============================================================
+   توحيد تنسيق الحقول والقوائم المنسدلة في كل الموقع (يمن ريتنج)
+   ============================================================ */
+
+/* جميع حقول الإدخال والنصوص */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #71767B !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #6B7280 !important;
+  opacity: 1;
+}
+
+/* القوائم المنسدلة (Select) */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23FFC500' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 8px center;
+  padding-left: 28px !important;
+  cursor: pointer;
+}
+
+select option {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  padding: 10px !important;
+}
+
+select option:checked,
+select option:hover {
+  background-color: #FFC500 !important;
+  color: #000000 !important;
+}
+
+/* أزرار الحفظ (الذهبية) */
+.btn-primary {
+  background-color: #FFC500 !important;
+  color: #000000 !important;
+  border: none !important;
+  font-weight: bold !important;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #E6B200 !important;
+}
+
+/* أزرار الإلغاء (الرمادية) */
+.btn-secondary {
+  background-color: #1F2024 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #71767B !important;
+}
+
+.btn-secondary:hover {
+  background-color: #2A2B30 !important;
+}
+
+/* أزرار الخطر (الحمراء) */
+.btn-danger {
+  background-color: #EF4444 !important;
+  color: #FFFFFF !important;
+  border: none !important;
+}
+
+.btn-danger:hover {
+  background-color: #DC2626 !important;
+}
+
+/* رسائل النجاح والخطأ (Toast) - إذا كانت تستخدم .toast */
+.toast-success {
+  background-color: #22C55E !important;
+  color: #FFFFFF !important;
+}
+
+.toast-error {
+  background-color: #EF4444 !important;
+  color: #FFFFFF !important;
+}
+
+.toast-info {
+  background-color: #FFC500 !important;
+  color: #000000 !important;
+}
+
+/* تحسين مظهر الـ Checkbox */
+input[type="checkbox"] {
+  accent-color: #FFC500 !important;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* تحسين مظهر الـ Radio */
+input[type="radio"] {
+  accent-color: #FFC500 !important;
+  cursor: pointer;
+}
+
+/* ============================================================
+   إجبار الحقول على الخلفية السوداء (أولوية عالية)
+   ============================================================ */
+html body input,
+html body textarea,
+html body select {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border-color: #71767B !important;
+}
+
+html body input:focus,
+html body textarea:focus,
+html body select:focus {
+  background-color: #000000 !important;
+}
+
+html body input::placeholder,
+html body textarea::placeholder {
+  color: #6B7280 !important;
+}
+
+/* إجبار القوائم المنسدلة */
+html body select option {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+
+html body select option:checked {
+  background-color: #FFC500 !important;
+  color: #000000 !important;
+}
+
+/* ============================================================
+   توحيد الحقول: حدود فضية، وأصفر فقط عند التركيز
+   ============================================================ */
+html body input,
+html body textarea,
+html body select {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  border: 1px solid #71767B !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+html body input:focus,
+html body textarea:focus,
+html body select:focus {
+  outline: none !important;
+  border-color: #FFC500 !important;
+  box-shadow: 0 0 0 1px #FFC500 !important;
+}
+
+html body input::placeholder,
+html body textarea::placeholder {
+  color: #6B7280 !important;
+  opacity: 1;
+}
+
+html body select option {
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  padding: 10px !important;
+}
+
+html body select option:checked {
+  background-color: #FFC500 !important;
+  color: #000000 !important;
+}
+
+/* إزالة أي حدود صفراء من الحاويات */
+html body .input-wrapper,
+html body .form-group {
+  border-color: #71767B !important;
+}

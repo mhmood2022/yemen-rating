@@ -59,7 +59,7 @@ export const AdminLoginModal: React.FC = () => {
           type="email"
           required
           autoComplete="email"
-          placeholder="admin@yemenrating.com"
+          placeholder=""
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           rightIcon={<Mail size={18} strokeWidth={1.75} />}

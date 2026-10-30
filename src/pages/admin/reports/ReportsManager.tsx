@@ -70,14 +70,14 @@ export const ReportsManager: React.FC = () => {
       {loading ? (
         <div className="text-center py-12 text-xs text-gray-400">جاري فحص البلاغات...</div>
       ) : reports.length === 0 ? (
-        <div className="text-center py-12 bg-[#0e1320] rounded-3xl border border-[#222b42] p-6">
+        <div className="text-center py-12 bg-[#000000] rounded-3xl border border-[#222b42] p-6">
           <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
           <p className="text-sm font-bold text-white">سجل البلاغات نظيف بالكامل</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {reports.map((rep) => (
-            <div key={rep.id} className="p-5 rounded-3xl bg-[#0e1320] border border-[#222b42] space-y-3 shadow-xl">
+            <div key={rep.id} className="p-5 rounded-3xl bg-[#000000] border border-[#222b42] space-y-3 shadow-xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-red-400" />
@@ -85,10 +85,10 @@ export const ReportsManager: React.FC = () => {
                 </div>
                 <span className="text-[10px] text-gray-400">{new Date(rep.created_at).toLocaleDateString('ar-YE')}</span>
               </div>
-              {rep.details && <p className="text-xs text-gray-300 bg-[#141a2c] p-3 rounded-2xl border border-[#2F3336]">{rep.details}</p>}
+              {rep.details && <p className="text-xs text-gray-300 bg-[#000000] p-3 rounded-2xl border border-[#2F3336]">{rep.details}</p>}
               <div className="flex gap-2 pt-2">
                 <button onClick={() => handleAction(rep.id, 'RESOLVED')} className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-black font-black text-xs rounded-xl">اتخاذ إجراء</button>
-                <button onClick={() => handleAction(rep.id, 'DISMISSED')} className="px-4 py-2 bg-[#161D2B] text-gray-300 text-xs font-bold rounded-xl">تجاهل البلاغ</button>
+                <button onClick={() => handleAction(rep.id, 'DISMISSED')} className="px-4 py-2 bg-[#000000] text-gray-300 text-xs font-bold rounded-xl">تجاهل البلاغ</button>
               </div>
             </div>
           ))}

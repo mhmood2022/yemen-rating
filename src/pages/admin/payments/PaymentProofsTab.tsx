@@ -36,6 +36,32 @@ export const PaymentProofsTab: React.FC = () => {
     setTimeout(() => setToast(null), 3500);
   };
 
+  const logAction = async (action: string, tableName: string, recordId: string, notes: string, oldValue?: any, newValue?: any) => {
+    try {
+      // الحصول على معرف المدير من localStorage (إذا لم يكن هناك Supabase Auth)
+      let adminId = null;
+      try {
+        const stored = localStorage.getItem('yr_admin_user') || localStorage.getItem('admin_session');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          adminId = parsed.id || null;
+        }
+      } catch {}
+      
+      await supabase.rpc('log_financial_action', {
+        p_user_id: adminId,
+        p_action: action,
+        p_table_name: tableName,
+        p_record_id: recordId,
+        p_old_value: oldValue ? JSON.stringify(oldValue) : null,
+        p_new_value: newValue ? JSON.stringify(newValue) : null,
+        p_notes: notes
+      });
+    } catch (e) {
+      console.error('Failed to log action:', e);
+    }
+  };
+
   const fetchProofs = async () => {
     setLoading(true);
     try {
@@ -147,6 +173,17 @@ export const PaymentProofsTab: React.FC = () => {
         status: 'APPROVED', 
         reviewed_at: new Date().toISOString() 
       }).eq('id', proof.id);
+      
+      // تسجيل الإجراء
+      await logAction(
+        'approve_payment',
+        'payment_proofs',
+        proof.id,
+        `تم قبول دفعة ${proof.amount} ${proof.currency} من ${proof.user_name}`,
+        { status: 'PENDING' },
+        { status: 'APPROVED' }
+      );
+      
       showToast('تم قبول السند وتفعيل الخدمة', 'success');
       fetchProofs();
     } catch (err: any) {
@@ -162,6 +199,16 @@ export const PaymentProofsTab: React.FC = () => {
         admin_notes: rejectReason,
         reviewed_at: new Date().toISOString(),
       }).eq('id', rejectModal.id);
+      
+      // تسجيل الإجراء
+      await logAction(
+        'reject_payment',
+        'payment_proofs',
+        rejectModal.id,
+        `تم رفض دفعة ${rejectModal.amount} ${rejectModal.currency} من ${rejectModal.user_name}. السبب: ${rejectReason}`,
+        { status: 'PENDING' },
+        { status: 'REJECTED', reason: rejectReason }
+      );
       
       showToast('تم رفض السند', 'success');
       setRejectModal(null);

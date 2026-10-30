@@ -23,6 +23,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [authMode, setAuthMode] = useState<'register' | 'login' | 'forgot'>(defaultMode);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -328,11 +329,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 required
                 placeholder="example@domain.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3.5 py-2.5 pr-10 rounded-lg bg-[#101928] border border-[#263750] text-xs text-white placeholder-zinc-500 focus:border-[#F5B800] focus:outline-none transition"
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setEmail(val);
+                  if (val) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+                    if (!emailRegex.test(val.trim())) {
+                      setEmailError('البريد الإلكتروني غير صحيح (مثال: name@example.com)');
+                    } else {
+                      setEmailError(null);
+                    }
+                  } else {
+                    setEmailError(null);
+                  }
+                }}
+                className={`w-full px-3.5 py-2.5 pr-10 rounded-lg bg-[#101928] border text-xs text-white placeholder-zinc-500 focus:outline-none transition ${
+                  emailError 
+                    ? 'border-red-500 focus:border-red-500' 
+                    : 'border-[#263750] focus:border-[#F5B800]'
+                }`}
               />
               <Mail size={16} className="text-zinc-500 absolute right-3.5 top-3" />
             </div>
+            {emailError && (
+              <p className="text-[10px] text-red-400 mt-1 pr-1">{emailError}</p>
+            )}
           </div>
 
           {authMode !== 'forgot' && (

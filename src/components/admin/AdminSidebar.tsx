@@ -120,7 +120,7 @@ export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                   }`}
                 >
                   <Icon size={16} className="shrink-0 text-[#FFC500]" />
-                  <span className="text-gray-300">{item.label}</span>
+                  <span className={isActive ? "text-black font-bold" : "text-gray-300"}>{item.label}</span>
                 </NavLink>
               );
             })}
@@ -156,7 +156,7 @@ export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = 
                       }`}
                     >
                       <Icon size={15} className="shrink-0 text-[#FFC500]" />
-                      <span className="truncate flex-1 text-gray-300">{cat.name}</span>
+                      <span className={`truncate flex-1 ${location.pathname.includes(cat.slug) ? "text-black font-bold" : "text-gray-300"}`}>{cat.name}</span>
                     </NavLink>
                   );
                 })}

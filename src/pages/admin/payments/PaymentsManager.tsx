@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Wallet, Receipt, Percent } from 'lucide-react';
+import { Wallet, Receipt, Percent, FileText } from 'lucide-react';
 import { PaymentMethodsTab } from '../subscriptions/tabs/PaymentMethodsTab';
 import { PaymentProofsTab } from './PaymentProofsTab';
 import { CommissionRulesTab } from './CommissionRulesTab';
+import { AuditLogsTab } from './AuditLogsTab';
 
-type TabType = 'methods' | 'proofs' | 'commissions';
+type TabType = 'methods' | 'proofs' | 'commissions' | 'audit';
 
 export const PaymentsManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('methods');
@@ -13,6 +14,7 @@ export const PaymentsManager: React.FC = () => {
     { id: 'methods', label: 'طرق الدفع', icon: Wallet },
     { id: 'proofs', label: 'سندات الدفع', icon: Receipt },
     { id: 'commissions', label: 'قواعد العمولات', icon: Percent },
+    { id: 'audit', label: 'سجل التدقيق', icon: FileText },
   ];
 
   return (
@@ -54,6 +56,7 @@ export const PaymentsManager: React.FC = () => {
           {activeTab === 'methods' && <PaymentMethodsTab />}
           {activeTab === 'proofs' && <PaymentProofsTab />}
           {activeTab === 'commissions' && <CommissionRulesTab />}
+          {activeTab === 'audit' && <AuditLogsTab />}
         </div>
       </div>
     </div>
