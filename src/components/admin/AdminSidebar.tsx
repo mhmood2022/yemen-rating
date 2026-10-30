@@ -16,7 +16,8 @@ import { Sparkles,
   ChevronUp,
   Star,
   CreditCard,
-  Wallet
+  Wallet,
+  FileText,
 } from 'lucide-react';
 
 const ADMIN_OPERATIONS = [
