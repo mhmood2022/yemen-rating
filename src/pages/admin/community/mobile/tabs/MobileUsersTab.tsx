@@ -12,7 +12,7 @@ interface Props {
   searchQuery?: string;
 }
 
-type F = 'all' | 'verified' | 'unverified' | 'blocked' | 'banned';
+type F = 'all' | 'verified' | 'unverified' | 'blocked' | 'online';
 
 export const MobileUsersTab: React.FC<Props> = ({ searchQuery = '' }) => {
   const { users, loading, error, reload, toggleBlock, updateBadge } = useUsers();
@@ -24,6 +24,7 @@ export const MobileUsersTab: React.FC<Props> = ({ searchQuery = '' }) => {
     if (filter === 'verified') list = list.filter(u => u.verification_type || u.is_verified);
     else if (filter === 'unverified') list = list.filter(u => !u.verification_type && !u.is_verified);
     else if (filter === 'blocked' || filter === 'banned') list = list.filter(u => u.is_blocked);
+    else if (filter === 'online') list = list.filter(u => u.last_seen && (new Date().getTime() - new Date(u.last_seen).getTime()) < 5 * 60 * 1000);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -39,6 +40,7 @@ export const MobileUsersTab: React.FC<Props> = ({ searchQuery = '' }) => {
     all: users.length,
     verified: users.filter(u => u.verification_type || u.is_verified).length,
     blocked: users.filter(u => u.is_blocked).length,
+    online: users.filter(u => u.last_seen && (new Date().getTime() - new Date(u.last_seen).getTime()) < 5 * 60 * 1000).length,
   }), [users]);
 
   const handleToggleBlock = async (u: ProfileItem) => {
@@ -65,6 +67,7 @@ export const MobileUsersTab: React.FC<Props> = ({ searchQuery = '' }) => {
         chips={[
           { id: 'all', label: 'الكل', count: counts.all },
           { id: 'verified', label: 'موثق', count: counts.verified },
+          { id: 'online', label: 'متصل الآن', count: counts.online },
           { id: 'unverified', label: 'غير موثق' },
           { id: 'blocked', label: 'محظور', count: counts.blocked },
         ]}

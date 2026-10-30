@@ -48,6 +48,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const init = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+      
+      // تحديث last_seen
+      if (session?.user) {
+        await supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', session.user.id);
+      }
         if (session?.user) {
           setUser(session.user);
           await fetchProfile(session.user.id);
@@ -71,6 +76,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
+    }, []);
+
+  // تحديث last_seen دورياً (كل 60 ثانية)
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('profiles').update({ last_seen: new Date().toISOString() }).eq('id', user.id);
+      }
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
   }, [supabase, fetchProfile]);
 
   const signInWithGoogle = async () => {

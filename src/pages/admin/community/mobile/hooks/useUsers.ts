@@ -9,16 +9,14 @@ export const useUsers = () => {
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const { data, error: err } = await supabase
         .from('profiles')
-        .select('id, full_name, username, avatar_url, verification_type, is_verified, is_blocked, created_at')
+        .select('id, full_name, username, avatar_url, verification_type, is_verified, is_blocked, created_at, last_seen')
         .limit(300);
       if (err) throw err;
       setUsers((data || []) as ProfileItem[]);
     } catch (err: any) {
-      console.error(err);
       setError(err?.message || 'تعذر تحميل المستخدمين');
     } finally {
       setLoading(false);
@@ -45,8 +43,9 @@ export const useUsers = () => {
       .eq('id', userId);
     if (error) throw error;
 
-    // 🔄 مزامنة: إذا تمت إزالة الشارة، نلغي الاشتراك في جدول subscriptions
+    // 🔄 مزامنة: إذا تمت إزالة الشارة، نلغي الاشتراك
     if (!badge) {
+      console.log('🔄 Synchronizing: Cancelling subscription for user:', userId);
       await supabase
         .from('subscriptions')
         .update({ status: 'EXPIRED', end_date: new Date().toISOString() })
