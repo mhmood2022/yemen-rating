@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Wallet, Plus, Edit2, Trash2, X, Upload, Eye, EyeOff, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Wallet, Plus, Edit2, Trash2, X, Upload, Eye, EyeOff, CheckCircle2, AlertTriangle, Filter } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 
 interface PaymentMethod {
@@ -38,12 +38,15 @@ const EMPTY_METHOD: PaymentMethod = {
   display_order: 0,
 };
 
+type FilterType = 'all' | 'active' | 'hidden';
+
 export const PaymentMethodsTab: React.FC = () => {
   const [methods, setMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<PaymentMethod | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [filter, setFilter] = useState<FilterType>('all');
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -54,10 +57,7 @@ export const PaymentMethodsTab: React.FC = () => {
   const fetchMethods = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('payment_methods')
-        .select('*')
-        .order('display_order', { ascending: true });
+      const { data, error } = await supabase.rpc('get_all_payment_methods');
       if (error) throw error;
       setMethods(data || []);
     } catch (err: any) {
@@ -137,7 +137,7 @@ export const PaymentMethodsTab: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذه الطريقة؟')) return;
+    if (!confirm('هل أنت متأكد من حذف هذه الطريقة نهائياً؟')) return;
     try {
       const { error } = await supabase.rpc('delete_payment_method', { p_id: id });
       if (error) throw error;
@@ -150,15 +150,32 @@ export const PaymentMethodsTab: React.FC = () => {
 
   const handleToggleActive = async (method: PaymentMethod) => {
     try {
-      const { error } = await supabase.rpc('toggle_payment_method', { 
-        p_id: method.id, 
-        p_is_active: !method.is_active 
+      const { error } = await supabase.rpc('toggle_payment_method', {
+        p_id: method.id,
+        p_is_active: !method.is_active,
       });
       if (error) throw error;
+      showToast(
+        method.is_active ? 'تم إخفاء الطريقة من الزبناء' : 'تم تفعيل الطريقة للزبناء',
+        'success'
+      );
       fetchMethods();
     } catch (err: any) {
       showToast('تعذر التحديث', 'error');
     }
+  };
+
+  // الفلترة
+  const filteredMethods = methods.filter(m => {
+    if (filter === 'active') return m.is_active;
+    if (filter === 'hidden') return !m.is_active;
+    return true;
+  });
+
+  const counts = {
+    all: methods.length,
+    active: methods.filter(m => m.is_active).length,
+    hidden: methods.filter(m => !m.is_active).length,
   };
 
   if (loading) return <div className="text-center py-10 text-zinc-500">جاري التحميل...</div>;
@@ -192,15 +209,47 @@ export const PaymentMethodsTab: React.FC = () => {
         </button>
       </div>
 
+      {/* فلاتر (الكل / نشطة / مخفية) */}
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => setFilter('all')}
+          className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
+            filter === 'all' ? 'bg-[#FFC500] text-black' : 'bg-[#111] text-zinc-400 border border-[#2A2B30]'
+          }`}
+        >
+          الكل ({counts.all})
+        </button>
+        <button
+          onClick={() => setFilter('active')}
+          className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
+            filter === 'active' ? 'bg-green-500 text-white' : 'bg-[#111] text-zinc-400 border border-[#2A2B30]'
+          }`}
+        >
+          نشطة ({counts.active})
+        </button>
+        <button
+          onClick={() => setFilter('hidden')}
+          className={`flex-1 py-2 rounded-lg text-xs font-bold transition ${
+            filter === 'hidden' ? 'bg-red-500 text-white' : 'bg-[#111] text-zinc-400 border border-[#2A2B30]'
+          }`}
+        >
+          مخفية ({counts.hidden})
+        </button>
+      </div>
+
       {/* List */}
-      {methods.length === 0 ? (
+      {filteredMethods.length === 0 ? (
         <div className="text-center py-10 text-zinc-500 bg-black border border-[#2A2B30] rounded-xl">
-          لا توجد طرق دفع مضافة. اضغط "إضافة طريقة" للبدء.
+          {filter === 'active' ? 'لا توجد طرق دفع نشطة.' : filter === 'hidden' ? 'لا توجد طرق دفع مخفية.' : 'لا توجد طرق دفع مضافة.'}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {methods.map(method => (
-            <div key={method.id} className="p-4 rounded-xl border border-[#2A2B30] bg-black">
+        <div className="grid grid-cols-1 gap-2">
+          {filteredMethods.map(method => (
+            <div 
+              key={method.id} 
+              className="p-3 rounded-xl border bg-black"
+              style={{ borderColor: method.is_active ? '#2A2B30' : '#EF444440' }}
+            >
               <div className="flex items-start gap-3">
                 {/* Icon */}
                 <div className="w-12 h-12 rounded-lg bg-[#111] flex items-center justify-center overflow-hidden shrink-0 border border-[#2A2B30]">
@@ -213,12 +262,12 @@ export const PaymentMethodsTab: React.FC = () => {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h3 className="font-bold text-white truncate">{method.name}</h3>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                       method.is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
                     }`}>
-                      {method.is_active ? 'نشط' : 'موقوف'}
+                      {method.is_active ? 'نشطة' : 'مخفية'}
                     </span>
                   </div>
                   <p className="text-xs text-zinc-500">
@@ -230,13 +279,30 @@ export const PaymentMethodsTab: React.FC = () => {
 
                 {/* Actions */}
                 <div className="flex flex-col gap-1 shrink-0">
-                  <button onClick={() => handleToggleActive(method)} className="p-1.5 text-zinc-400 hover:text-[#FFC500]" title={method.is_active ? 'إيقاف' : 'تفعيل'}>
-                    {method.is_active ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  <button 
+                    onClick={() => handleToggleActive(method)} 
+                    className={`p-1.5 relative ${method.is_active ? 'text-zinc-400 hover:text-[#FFC500]' : 'text-red-400 hover:text-red-300'}`}
+                    title={method.is_active ? 'إخفاء من الزبناء' : 'تفعيل للزبناء'}
+                  >
+                    <Eye className="w-4 h-4" />
+                    {!method.is_active && (
+                      <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <span className="w-5 h-0.5 bg-red-400 rotate-45 transform origin-center" />
+                      </span>
+                    )}
                   </button>
                   <button onClick={() => setEditing(method)} className="p-1.5 text-zinc-400 hover:text-[#FFC500]" title="تعديل">
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleDelete(method.id)} className="p-1.5 text-zinc-400 hover:text-red-500" title="حذف">
+                  <button 
+                    onClick={() => {
+                      if (confirm('هل أنت متأكد من حذف هذه الطريقة نهائياً؟')) {
+                        handleDelete(method.id);
+                      }
+                    }} 
+                    className="p-1.5 text-zinc-400 hover:text-red-500" 
+                    title="حذف نهائي"
+                  >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -264,7 +330,6 @@ export const PaymentMethodsTab: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              {/* Basic info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-zinc-400 block mb-1">اسم الطريقة *</label>
@@ -273,7 +338,7 @@ export const PaymentMethodsTab: React.FC = () => {
                     value={editing.name}
                     onChange={e => setEditing({ ...editing, name: e.target.value })}
                     placeholder="مثال: محفظة جيب"
-                    className="w-full bg-[#111] border border-[#2A2B30] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none"
+                    className="w-full bg-[#111] border border-[#71767B] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none"
                   />
                 </div>
                 <div>
@@ -281,7 +346,7 @@ export const PaymentMethodsTab: React.FC = () => {
                   <select
                     value={editing.type}
                     onChange={e => setEditing({ ...editing, type: e.target.value })}
-                    className="w-full bg-[#111] border border-[#2A2B30] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none"
+                    className="w-full bg-[#111] border border-[#71767B] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none"
                   >
                     <option value="wallet">محفظة إلكترونية</option>
                     <option value="bank">حساب بنكي</option>
@@ -290,12 +355,11 @@ export const PaymentMethodsTab: React.FC = () => {
                 </div>
               </div>
 
-              {/* Icon & QR */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-zinc-400 block mb-1">الأيقونة</label>
                   <label className="block cursor-pointer">
-                    <div className="w-full h-24 rounded-lg bg-[#111] border border-dashed border-[#2A2B30] flex flex-col items-center justify-center text-zinc-500 hover:border-[#FFC500] transition">
+                    <div className="w-full h-24 rounded-lg bg-[#111] border border-dashed border-[#71767B] flex flex-col items-center justify-center text-zinc-500 hover:border-[#FFC500] transition">
                       {editing.icon_url ? (
                         <img src={editing.icon_url} alt="" className="w-full h-full object-contain p-2" />
                       ) : (
@@ -316,7 +380,7 @@ export const PaymentMethodsTab: React.FC = () => {
                 <div>
                   <label className="text-xs text-zinc-400 block mb-1">الباركود (QR)</label>
                   <label className="block cursor-pointer">
-                    <div className="w-full h-24 rounded-lg bg-[#111] border border-dashed border-[#2A2B30] flex flex-col items-center justify-center text-zinc-500 hover:border-[#FFC500] transition">
+                    <div className="w-full h-24 rounded-lg bg-[#111] border border-dashed border-[#71767B] flex flex-col items-center justify-center text-zinc-500 hover:border-[#FFC500] transition">
                       {editing.qr_code_url ? (
                         <img src={editing.qr_code_url} alt="" className="w-full h-full object-contain p-2" />
                       ) : (
@@ -336,58 +400,57 @@ export const PaymentMethodsTab: React.FC = () => {
                 </div>
               </div>
 
-              {/* Contact fields */}
               <div className="border-t border-[#2A2B30] pt-3">
-                <p className="text-xs text-zinc-500 mb-2">الحقول التي تُملأ تظهر للمستخدم. اترك الحقل فارغاً لإخفائه.</p>
+                <p className="text-xs text-zinc-500 mb-2">الحقول التي تُملأ تظهر للمستخدم.</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs text-zinc-400 block mb-1">رقم الهاتف</label>
-                    <input type="text" value={editing.phone_number || ''} onChange={e => setEditing({ ...editing, phone_number: e.target.value || null })} placeholder="770 XXX XXXX" className="w-full bg-[#111] border border-[#2A2B30] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" dir="ltr" />
+                    <input type="text" value={editing.phone_number || ''} onChange={e => setEditing({ ...editing, phone_number: e.target.value || null })} placeholder="770 XXX XXXX" className="w-full bg-[#111] border border-[#71767B] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" dir="ltr" />
                   </div>
                   <div>
                     <label className="text-xs text-zinc-400 block mb-1">رقم المحفظة</label>
-                    <input type="text" value={editing.wallet_number || ''} onChange={e => setEditing({ ...editing, wallet_number: e.target.value || null })} className="w-full bg-[#111] border border-[#2A2B30] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" dir="ltr" />
+                    <input type="text" value={editing.wallet_number || ''} onChange={e => setEditing({ ...editing, wallet_number: e.target.value || null })} className="w-full bg-[#111] border border-[#71767B] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" dir="ltr" />
                   </div>
                   <div>
                     <label className="text-xs text-zinc-400 block mb-1">رقم النقطة</label>
-                    <input type="text" value={editing.point_number || ''} onChange={e => setEditing({ ...editing, point_number: e.target.value || null })} className="w-full bg-[#111] border border-[#2A2B30] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" dir="ltr" />
+                    <input type="text" value={editing.point_number || ''} onChange={e => setEditing({ ...editing, point_number: e.target.value || null })} className="w-full bg-[#111] border border-[#71767B] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" dir="ltr" />
                   </div>
                   <div>
                     <label className="text-xs text-zinc-400 block mb-1">رقم الحساب البنكي</label>
-                    <input type="text" value={editing.account_number || ''} onChange={e => setEditing({ ...editing, account_number: e.target.value || null })} className="w-full bg-[#111] border border-[#2A2B30] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" dir="ltr" />
+                    <input type="text" value={editing.account_number || ''} onChange={e => setEditing({ ...editing, account_number: e.target.value || null })} className="w-full bg-[#111] border border-[#71767B] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" dir="ltr" />
                   </div>
                   <div>
                     <label className="text-xs text-zinc-400 block mb-1">IBAN (دولي)</label>
-                    <input type="text" value={editing.iban || ''} onChange={e => setEditing({ ...editing, iban: e.target.value || null })} className="w-full bg-[#111] border border-[#2A2B30] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" dir="ltr" />
+                    <input type="text" value={editing.iban || ''} onChange={e => setEditing({ ...editing, iban: e.target.value || null })} className="w-full bg-[#111] border border-[#71767B] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" dir="ltr" />
                   </div>
                   <div>
                     <label className="text-xs text-zinc-400 block mb-1">اسم المستفيد</label>
-                    <input type="text" value={editing.account_name || ''} onChange={e => setEditing({ ...editing, account_name: e.target.value || null })} className="w-full bg-[#111] border border-[#2A2B30] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" />
+                    <input type="text" value={editing.account_name || ''} onChange={e => setEditing({ ...editing, account_name: e.target.value || null })} className="w-full bg-[#111] border border-[#71767B] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" />
                   </div>
                   <div>
                     <label className="text-xs text-zinc-400 block mb-1">اسم البنك (للبنوك فقط)</label>
-                    <input type="text" value={editing.bank_name || ''} onChange={e => setEditing({ ...editing, bank_name: e.target.value || null })} className="w-full bg-[#111] border border-[#2A2B30] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" />
+                    <input type="text" value={editing.bank_name || ''} onChange={e => setEditing({ ...editing, bank_name: e.target.value || null })} className="w-full bg-[#111] border border-[#71767B] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" />
                   </div>
                   <div>
                     <label className="text-xs text-zinc-400 block mb-1">ترتيب العرض</label>
-                    <input type="number" value={editing.display_order} onChange={e => setEditing({ ...editing, display_order: Number(e.target.value) })} className="w-full bg-[#111] border border-[#2A2B30] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" />
+                    <input type="number" value={editing.display_order} onChange={e => setEditing({ ...editing, display_order: Number(e.target.value) })} className="w-full bg-[#111] border border-[#71767B] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" />
                   </div>
                 </div>
               </div>
 
               <div>
                 <label className="text-xs text-zinc-400 block mb-1">تعليمات للمستخدم</label>
-                <textarea value={editing.instructions || ''} onChange={e => setEditing({ ...editing, instructions: e.target.value || null })} rows={2} className="w-full bg-[#111] border border-[#2A2B30] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" />
+                <textarea value={editing.instructions || ''} onChange={e => setEditing({ ...editing, instructions: e.target.value || null })} rows={2} className="w-full bg-[#111] border border-[#71767B] rounded-lg p-2 text-white text-sm focus:border-[#FFC500] outline-none" />
               </div>
 
               <div className="flex items-center gap-2">
                 <input type="checkbox" checked={editing.is_active} onChange={e => setEditing({ ...editing, is_active: e.target.checked })} className="accent-[#FFC500] w-4 h-4" />
-                <span className="text-sm text-white">نشط (يظهر للمستخدمين)</span>
+                <span className="text-sm text-white">نشطة (تظهر للزبناء)</span>
               </div>
             </div>
 
             <div className="flex gap-2 pt-3 border-t border-[#2A2B30]">
-              <button onClick={() => setEditing(null)} className="flex-1 py-2.5 rounded-lg bg-zinc-800 text-white text-xs font-bold active:scale-95 transition">إلغاء</button>
+              <button onClick={() => setEditing(null)} className="flex-1 py-2.5 rounded-lg bg-zinc-900 text-white text-xs font-bold border border-[#71767B] active:scale-95 transition">إلغاء</button>
               <button onClick={handleSave} disabled={isSaving || isUploading} className="flex-1 py-2.5 rounded-lg bg-[#FFC500] text-black text-xs font-bold disabled:opacity-50 active:scale-95 transition">
                 {isSaving ? 'جاري الحفظ...' : isUploading ? 'جاري الرفع...' : 'حفظ'}
               </button>

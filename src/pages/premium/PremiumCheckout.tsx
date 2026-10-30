@@ -33,6 +33,29 @@ interface PaymentMethod {
   display_order: number;
 }
 
+const simulateProgress = (setProgress: (n: number) => void) => {
+  let p = 0;
+  const interval = setInterval(() => {
+    p += Math.random() * 15 + 5;
+    if (p >= 95) {
+      p = 95;
+      clearInterval(interval);
+    }
+    setProgress(Math.min(95, Math.round(p)));
+  }, 150);
+  return () => {
+    clearInterval(interval);
+    setProgress(100);
+  };
+};
+
+const calculateSHA256 = async (file: File): Promise<string> => {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+};
+
 export const PremiumCheckout: React.FC = () => {
   const { planId } = useParams();
   const navigate = useNavigate();
@@ -44,6 +67,8 @@ export const PremiumCheckout: React.FC = () => {
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [referenceNumber, setReferenceNumber] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [success, setSuccess] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [showQR, setShowQR] = useState<string | null>(null);
@@ -99,31 +124,55 @@ export const PremiumCheckout: React.FC = () => {
         .single();
       if (subError) throw subError;
 
-      // 2. رفع إثبات الدفع (إن وجد)
-      let proofUrl = null;
+      // 2. رفع إثبات الدفع + حساب الهاش
+      let proofPath = null;
+      let proofHash = null;
       if (proofFile) {
-        const ext = proofFile.name.split('.').pop();
-        const fileName = `${user.id}/${subData.id}-${Date.now()}.${ext}`;
-        const { error: uploadError } = await supabase.storage
-          .from('payment-proofs')
-          .upload(fileName, proofFile);
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from('payment-proofs').getPublicUrl(fileName);
-          proofUrl = urlData.publicUrl;
+        setIsUploading(true);
+        setUploadProgress(0);
+        const finishProgress = simulateProgress(setUploadProgress);
+
+        try {
+          // حساب SHA-256 للصورة
+          proofHash = await calculateSHA256(proofFile);
+
+          const ext = proofFile.name.split('.').pop();
+          const fileName = `${user.id}/${subData.id}-${Date.now()}.${ext}`;
+          const { error: uploadError } = await supabase.storage
+            .from('payment-proofs')
+            .upload(fileName, proofFile);
+          if (!uploadError) {
+            proofPath = fileName;
+          }
+          finishProgress();
+        } catch (uploadErr) {
+          finishProgress();
+          throw uploadErr;
+        } finally {
+          setIsUploading(false);
         }
       }
 
-      // 3. إضافة سجل الدفع
-      await supabase.from('payment_proofs').insert({
+      // 3. إضافة سجل الدفع (مع الحقول الجديدة)
+      const { data: proofData } = await supabase.from('payment_proofs').insert({
         subscription_id: subData.id,
         user_id: user.id,
         amount: plan.price,
         currency: plan.currency,
         payment_method: selectedMethod.type,
-        proof_url: proofUrl,
+        proof_url: proofPath,
+        proof_hash: proofHash,
+        external_reference: referenceNumber || null,
+        expected_amount: plan.price,
+        expected_currency: plan.currency,
         reference_number: referenceNumber,
         status: 'PENDING',
-      });
+      }).select().single();
+
+      // 4. تشغيل التحقق التلقائي
+      if (proofData?.id) {
+        await supabase.rpc('verify_payment_proof', { p_proof_id: proofData.id });
+      }
 
       setSuccess(true);
     } catch (err: any) {
