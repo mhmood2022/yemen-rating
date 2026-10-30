@@ -1200,6 +1200,13 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                         <span className="text-white text-sm">الدعم الفني</span>
                       </button>
                       <button
+                        onClick={() => { setIsMenuOpen(false); navigate('/my-payments'); }}
+                        className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
+                      >
+                        <CreditCard size={16} className="text-[#FFC500] flex-shrink-0" />
+                        <span className="text-white text-sm">مدفوعاتي</span>
+                      </button>
+                      <button
                         onClick={handleLogout}
                         className="w-full px-3 py-2.5 text-right hover:bg-rose-500/15 active:bg-rose-500/20 flex items-center gap-3 text-white font-bold transition rounded-xl"
                       >

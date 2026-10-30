@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { CreditCard, Package, Users, Building2, Megaphone } from 'lucide-react';
+import { CreditCard, Package, Users, Building2, Megaphone, Wallet } from 'lucide-react';
 import { PendingRequestsTab } from './tabs/PendingRequestsTab';
 import { PlansManagerTab } from './tabs/PlansManagerTab';
 import { ActiveSubscribersTab } from './tabs/ActiveSubscribersTab';
 import { BusinessVerificationTab } from './tabs/BusinessVerificationTab';
 import { AdsManagerTab } from './tabs/AdsManagerTab';
+import { PaymentMethodsTab } from './tabs/PaymentMethodsTab';
 
-type TabType = 'requests' | 'plans' | 'subscribers' | 'businesses' | 'ads';
+type TabType = 'requests' | 'plans' | 'subscribers' | 'businesses' | 'ads' | 'payments';
 
 export const SubscriptionsManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('requests');
@@ -60,6 +61,7 @@ export const SubscriptionsManager: React.FC = () => {
           {activeTab === 'subscribers' && <ActiveSubscribersTab />}
           {activeTab === 'businesses' && <BusinessVerificationTab />}
           {activeTab === 'ads' && <AdsManagerTab />}
+          {activeTab === 'payments' && <PaymentMethodsTab />}
         </div>
       </div>
     </div>

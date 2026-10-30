@@ -33,7 +33,9 @@ import { UserProfilePage } from './pages/user/UserProfilePage';
 import { PremiumPage } from './pages/premium/PremiumPage';
 import { PremiumCheckout } from './pages/premium/PremiumCheckout';
 import { SubscriptionsManager } from './pages/admin/subscriptions/SubscriptionsManager';
+import { PaymentsManager } from './pages/admin/payments/PaymentsManager';
 import { AccountPage } from "./pages/AccountPage";
+import { MyPaymentsPage } from './pages/user/MyPaymentsPage';
 
 // لوحة التحكم الإدارية
 import { AdminMaster } from './pages/admin/AdminMaster';
@@ -130,6 +132,7 @@ export function App() {
           <Route path="categories" element={<CategoriesManager />} />
           <Route path="claims" element={<ClaimsManager />} />
           <Route path="subscriptions" element={<SubscriptionsManager />} />
+          <Route path="payments" element={<PaymentsManager />} />
           <Route path="markets" element={<MarketsManager />} />
           <Route path="auctions" element={<AuctionsManager />} />
           <Route path="auctions/:id" element={<AuctionLiveMonitor />} />
@@ -160,6 +163,7 @@ export function App() {
         <Route path="/u/:username" element={<FollowersPage />} />
         <Route path="/premium" element={<PremiumPage />} />
         <Route path="/premium/checkout/:planId" element={<PremiumCheckout />} />
+        <Route path="/my-payments" element={<MyPaymentsPage />} />
         <Route path="/login" element={<AppShell><AccountPage /></AppShell>} />
       </Routes>
     </BrowserRouter>
