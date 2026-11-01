@@ -2,7 +2,6 @@ import { CommunityManager } from './pages/admin/community/CommunityManager';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { CommunityFeedPage } from './pages/CommunityFeedPage';
 import { SearchPage } from './pages/SearchPage';
-import { AdminOwnersHub } from "./components/admin/AdminOwnersHub";
 import React from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 
@@ -123,7 +122,6 @@ export function App() {
 
                                                                     {/* لوحة التحكم الإدارية الموحدة /admin */}
         <Route path="/admin" element={<AdminMaster />}>
-          <Route path="owners" element={<AdminOwnersHub />} />
           <Route index element={<AdminDashboardOverview />} />
           <Route path="companies" element={<CompaniesManager />} />
           <Route path="reports" element={<ReportsManager />} />

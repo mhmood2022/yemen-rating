@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { OFFICIAL_CATEGORIES } from '../../data/categories';
-import { Sparkles,
+import {
   LayoutDashboard,
   FolderTree,
   ShieldCheck,
@@ -32,7 +32,6 @@ const ADMIN_OPERATIONS = [
   { id: 'community', label: 'المجتمع والتغريدات (X)', icon: MessageSquare, path: '/admin/community' },
   { id: 'real-estate', label: 'العقارات والاستثمار', icon: Home, path: '/admin/real-estate' },
   { id: 'jobs', label: 'الوظائف الشاغرة', icon: Briefcase, path: '/admin/jobs' },
-  { id: 'owners', label: 'صفحات الملاك والطلبات', icon: Sparkles, path: '/admin/owners' },
   { id: 'ratings', label: 'التحكم بالتقييمات والنسب', icon: Star, path: '/admin/ratings' },
   { id: 'categories', label: 'إدارة التصنيفات الرسمية', icon: FolderTree, path: '/admin/categories' },
   { id: 'ads', label: 'الإعلانات و YR Ads', icon: Megaphone, path: '/admin/ads' },
