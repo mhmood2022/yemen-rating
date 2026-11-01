@@ -33,6 +33,7 @@ import { UserProfilePage } from './pages/user/UserProfilePage';
 import { PremiumPage } from './pages/premium/PremiumPage';
 import { PremiumCheckout } from './pages/premium/PremiumCheckout';
 import { SubscriptionsManager } from './pages/admin/subscriptions/SubscriptionsManager';
+import { OperationsHub } from './pages/admin/operations/OperationsHub';
 import { PaymentsManager } from './pages/admin/payments/PaymentsManager';
 import { AccountPage } from "./pages/AccountPage";
 import { MyPaymentsPage } from './pages/user/MyPaymentsPage';
@@ -133,6 +134,7 @@ export function App() {
           <Route path="claims" element={<ClaimsManager />} />
           <Route path="subscriptions" element={<SubscriptionsManager />} />
           <Route path="payments" element={<PaymentsManager />} />
+          <Route path="operations" element={<OperationsHub />} />
           <Route path="markets" element={<MarketsManager />} />
           <Route path="auctions" element={<AuctionsManager />} />
           <Route path="auctions/:id" element={<AuctionLiveMonitor />} />

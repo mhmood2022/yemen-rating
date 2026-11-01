@@ -18,6 +18,7 @@ import { Sparkles,
   CreditCard,
   Wallet,
   FileText,
+  Inbox,
 } from 'lucide-react';
 
 const ADMIN_OPERATIONS = [
@@ -25,6 +26,7 @@ const ADMIN_OPERATIONS = [
   { id: 'all_companies', label: 'كافة المنشآت والأنشطة', icon: Building2, path: '/admin/companies' },
   { id: 'claims', label: 'إثبات الملكية والمطالبات', icon: ShieldCheck, path: '/admin/claims' },
   { id: 'subscriptions', label: 'إدارة التوثيق والاشتراكات', icon: CreditCard, path: '/admin/subscriptions' },
+  { id: 'operations', label: 'مركز العمليات والإدارة', icon: Inbox, path: '/admin/operations' },
   { id: 'payments', label: 'إدارة المدفوعات والمالية', icon: Wallet, path: '/admin/payments' },
   { id: 'reports', label: 'البلاغات والشكاوى', icon: ShieldAlert, path: '/admin/reports' },
   { id: 'community', label: 'المجتمع والتغريدات (X)', icon: MessageSquare, path: '/admin/community' },
