@@ -41,7 +41,6 @@ import { MyPaymentsPage } from './pages/user/MyPaymentsPage';
 import { AdminMaster } from './pages/admin/AdminMaster';
 import { AdminDashboardOverview } from './pages/admin/AdminDashboardOverview';
 import { CompaniesManager } from './pages/admin/companies/CompaniesManager';
-import { ReportsManager } from './pages/admin/reports/ReportsManager';
 import { RatingsManager } from './pages/admin/ratings/RatingsManager';
 import { BanksManager } from './pages/admin/banks/BanksManager';
 import { AuctionsManager } from './pages/admin/auctions/AuctionsManager';
@@ -51,7 +50,6 @@ import { SponsorManager } from './pages/admin/ads/SponsorManager';
 import { AdGeneratorStudio } from './pages/admin/ads/AdGeneratorStudio';
 import { RealEstateManager } from './pages/admin/real-estate/RealEstateManager';
 import { CategoriesManager } from './pages/admin/categories/CategoriesManager';
-import { ClaimsManager } from './pages/admin/claims/ClaimsManager';
 import { UsersRolesManager } from './pages/admin/users/UsersRolesManager';
 import { GoldCurrencyManager } from './pages/admin/gold-currency/GoldCurrencyManager';
 import { JobsManager } from './pages/admin/jobs/JobsManager';
@@ -124,12 +122,12 @@ export function App() {
         <Route path="/admin" element={<AdminMaster />}>
           <Route index element={<AdminDashboardOverview />} />
           <Route path="companies" element={<CompaniesManager />} />
-          <Route path="reports" element={<ReportsManager />} />
+          <Route path="reports" element={<Navigate to="/admin/operations" replace />} />
           <Route path="community" element={<CommunityManager />} />
           <Route path="ratings" element={<RatingsManager />} />
           <Route path="banks" element={<Navigate to="/admin/companies?category=banks" replace />} />
           <Route path="categories" element={<CategoriesManager />} />
-          <Route path="claims" element={<ClaimsManager />} />
+          <Route path="claims" element={<Navigate to="/admin/operations" replace />} />
           <Route path="subscriptions" element={<SubscriptionsManager />} />
           <Route path="payments" element={<PaymentsManager />} />
           <Route path="operations" element={<OperationsHub />} />

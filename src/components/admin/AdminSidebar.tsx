@@ -24,11 +24,9 @@ import {
 const ADMIN_OPERATIONS = [
   { id: 'dashboard', label: 'لوحة التحكم الرئيسية', icon: LayoutDashboard, path: '/admin' },
   { id: 'all_companies', label: 'كافة المنشآت والأنشطة', icon: Building2, path: '/admin/companies' },
-  { id: 'claims', label: 'إثبات الملكية والمطالبات', icon: ShieldCheck, path: '/admin/claims' },
   { id: 'subscriptions', label: 'إدارة التوثيق والاشتراكات', icon: CreditCard, path: '/admin/subscriptions' },
   { id: 'operations', label: 'مركز العمليات والإدارة', icon: Inbox, path: '/admin/operations' },
   { id: 'payments', label: 'إدارة المدفوعات والمالية', icon: Wallet, path: '/admin/payments' },
-  { id: 'reports', label: 'البلاغات والشكاوى', icon: ShieldAlert, path: '/admin/reports' },
   { id: 'community', label: 'المجتمع والتغريدات (X)', icon: MessageSquare, path: '/admin/community' },
   { id: 'real-estate', label: 'العقارات والاستثمار', icon: Home, path: '/admin/real-estate' },
   { id: 'jobs', label: 'الوظائف الشاغرة', icon: Briefcase, path: '/admin/jobs' },

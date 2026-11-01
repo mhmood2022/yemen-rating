@@ -70,14 +70,17 @@ export const AdminMaster: React.FC = () => {
   const fetchAllNotifications = async () => {
     try {
       const allAlerts: SystemNotification[] = [];
+      const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-      // أ) المصدر الأساسي: جدول admin_notifications في Supabase
+      // أ) إشعارات غير مقروءة حديثة فقط من admin_notifications
       if (supabase) {
         const { data: dbNotifs, error: dbErr } = await supabase
           .from("admin_notifications")
           .select("*")
+          .eq("is_read", false)
+          .gte("created_at", cutoff)
           .order("created_at", { ascending: false })
-          .limit(60);
+          .limit(20);
 
         if (dbNotifs && !dbErr) {
           dbNotifs.forEach((n: any) => {
@@ -87,13 +90,13 @@ export const AdminMaster: React.FC = () => {
               message: n.message,
               type: n.type || "system",
               link: n.link || "/admin",
-              is_read: !!n.is_read,
+              is_read: false,
               created_at: n.created_at || new Date().toISOString()
             });
           });
         }
 
-        // ب) جلب طلبات إثبات الملكية من business_claims
+        // ب) طلبات إثبات الملكية المعلقة
         const { data: bClaims } = await supabase
           .from("business_claims")
           .select("*, businesses(name)")
@@ -108,7 +111,7 @@ export const AdminMaster: React.FC = () => {
               title: `🛡️ طلب توثيق ملكية: ${bName}`,
               message: `مقدم الطلب: ${c.claimant_name || "مستخدم"} (${c.claimant_phone || ""})`,
               type: "claim",
-              link: "/admin/claims",
+              link: "/admin/operations?type=claim",
               is_read: false,
               created_at: c.created_at || new Date().toISOString()
             });
@@ -116,15 +119,13 @@ export const AdminMaster: React.FC = () => {
         }
       }
 
-      // ترتيب كل الإشعارات زمنياً من الأحدث للأقدم
       allAlerts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
       setNotifications(allAlerts);
       setUnreadCount(allAlerts.filter(n => !n.is_read).length);
     } catch (err) {
       console.error("Error fetching admin hub notifications:", err);
     }
-  };
+  };;
 
   useEffect(() => {
     if (isAuthenticated) {
