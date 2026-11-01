@@ -1,17 +1,33 @@
 #!/bin/bash
-# toggle-eruda.sh — تشغيل/إيقاف Eruda
+# toggle-eruda.sh — تشغيل/إيقاف Eruda (نسخة موثوقة)
+
+FILES=(index.html public/index.html)
+
+SNIPPET='<script>(function(){var src="https://cdn.jsdelivr.net/npm/eruda";if(!/eruda=true/.test(window.location))return;document.write("<scr"+"ipt src=\"" + src + "\"></scr"+"ipt>");document.write("<scr"+"ipt>eruda.init();</scr"+"ipt>");})();</script>'
 
 if [ "$1" == "on" ]; then
-    # حذف أي eruda قديم
-    sed -i '/eruda/d' index.html
-    # إضافة السكربت قبل </body>
-    sed -i 's|</body>|<script>(function(){var src="https://cdn.jsdelivr.net/npm/eruda";if(!/eruda=true/.test(window.location))return;document.write("<scr"+"ipt src=\\"" + src + "\\"></scr"+"ipt>");document.write("<scr"+"ipt>eruda.init();</scr"+"ipt>");})();</script>\n</body>|' index.html
-    echo "✅ Eruda مفعّل"
-    echo "📱 افتح: http://localhost:5174/admin/community?eruda=true"
+    for f in "${FILES[@]}"; do
+        if [ -f "$f" ]; then
+            # احذف أي سطر فيه eruda
+            grep -v "eruda" "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+            # أضف السكربت قبل </body> باستخدام perl
+            perl -0pi -e "s|</body>|$SNIPPET\n</body>|" "$f"
+            # إن لم يوجد </body>، أضف السكربت في نهاية الملف
+            if ! grep -q "eruda" "$f"; then
+                printf '\n%s\n' "$SNIPPET" >> "$f"
+            fi
+        fi
+    done
+    echo "✅ Eruda مفعّل في: ${FILES[*]}"
+    echo "📱 افتح: http://localhost:5174/?eruda=true"
+    echo "📱 أو:   http://localhost:5174/admin/community?eruda=true"
 elif [ "$1" == "off" ]; then
-    sed -i '/eruda/d' index.html
-    echo "✅ Eruda مخفي"
-    echo "📱 افتح: http://localhost:5174/admin/community"
+    for f in "${FILES[@]}"; do
+        if [ -f "$f" ]; then
+            grep -v "eruda" "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+        fi
+    done
+    echo "✅ Eruda مخفي من: ${FILES[*]}"
 else
     echo "الاستخدام:"
     echo "  ./toggle-eruda.sh on    ← تفعيل Eruda"
