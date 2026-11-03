@@ -32,7 +32,15 @@ export const useRequestDetails = (requestId: string | null) => {
         .single();
 
       if (req) {
+        // جلب بيانات المستخدم من profiles
         let profileId: string | null = req.user_id || null;
+        
+        // إذا لم يوجد user_id، جرب metadata
+        if (!profileId && req.metadata) {
+          profileId = (req.metadata as any).claimant_profile_id || null;
+        }
+        
+        // إذا لم يوجد، جرب target_id (إن كان يشير لمستخدم)
         if (!profileId && req.target_type === 'profile' && req.target_id) {
           profileId = req.target_id;
         }

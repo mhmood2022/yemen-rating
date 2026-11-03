@@ -115,7 +115,7 @@ export function App() {
         <Route path="/exchange-rates" element={<AppShell><ExchangeRatesPage onBack={() => window.history.back()} /></AppShell>} />
 
         {/* لوحة تحكم مالك المنشأة */}
-        <Route path="/owner" element={<AppShell><OwnerDashboardPage /></AppShell>} />
+        <Route path="/owner" element={<OwnerDashboardPage />} />
         <Route path="/profile" element={<Navigate to="/account" replace />} />
 
                                                                     {/* لوحة التحكم الإدارية الموحدة /admin */}

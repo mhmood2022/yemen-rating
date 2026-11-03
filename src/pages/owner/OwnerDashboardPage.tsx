@@ -21,6 +21,7 @@ import { UnifiedFacilityEditor } from '../../components/business/UnifiedFacility
 export const OwnerDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'editor' | 'stats' | 'ads' | 'chat' | 'reviews'>('editor');
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   // Dynamic Owner State from Supabase Auth Session
@@ -34,6 +35,14 @@ export const OwnerDashboardPage: React.FC = () => {
     name: 'منشأتي المعتمدة',
     city: 'الجمهورية اليمنية',
     slug: '',
+    logo_url: '',
+    cover_url: '',
+    category: '',
+    description: '',
+    phone: '',
+    whatsapp: '',
+    address: '',
+    website_url: '',
     views_count: 0,
     call_clicks: 0,
     whatsapp_clicks: 0,
@@ -60,6 +69,13 @@ export const OwnerDashboardPage: React.FC = () => {
 
   // Fetch Current Logged-in Owner & Claimed Business
   useEffect(() => {
+    // إذا كان هناك ?id= في الرابط، اجلب المنشأة مباشرة
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetId = urlParams.get('id');
+    if (targetId) {
+      fetchBusinessDirectly(targetId);
+    }
+
     const fetchCurrentSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -77,8 +93,7 @@ export const OwnerDashboardPage: React.FC = () => {
           // Fetch business claimed/owned by this user ID
           const { data: biz } = await supabase
             .from('businesses')
-            .select('id, name, city, slug, views_count, call_clicks, whatsapp_clicks, rating, review_count')
-            .eq('owner_id', u.id)
+            .select('id, name, city, slug, views_count, call_clicks, whatsapp_clicks, rating, review_count, logo_url, category, description, phone, address, website_url').eq('owner_id', u.id)
             .limit(1)
             .maybeSingle();
 
@@ -86,9 +101,23 @@ export const OwnerDashboardPage: React.FC = () => {
             setBusinessData({
               id: biz.id,
               name: biz.name,
-              city: biz.city || 'اليمن'
+              city: biz.city || 'اليمن',
+              slug: biz.slug || '',
+              logo_url: biz.logo_url || '',
+              cover_url: biz.cover_url || '',
+              category: biz.category || '',
+              description: biz.description || '',
+              phone: biz.phone || '',
+              whatsapp: biz.whatsapp || '',
+              address: biz.address || '',
+              website_url: biz.website_url || '',
+              views_count: biz.views_count || 0,
+              call_clicks: biz.call_clicks || 0,
+              whatsapp_clicks: biz.whatsapp_clicks || 0,
+              rating: biz.rating || 5.0,
+              review_count: biz.review_count || 0
             });
-            loadReviewsForBusiness(biz?.id || bId || data?.id);
+            loadReviewsForBusiness(biz.id);
           }
         }
       } catch (err) {
@@ -222,93 +251,116 @@ export const OwnerDashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#070b13] text-slate-200 flex flex-col font-sans pb-16" dir="rtl">
+    <div className="min-h-screen bg-black text-slate-200 flex flex-col font-sans pb-16" dir="rtl">
       
-      {/* 1. OWNER PROFILE SUB-HEADER BAR */}
-      <div className="bg-[#0e1320] border-b border-[#1c2438] px-4 py-3 sticky top-0 z-30 shadow-md">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+      {/* 1. COVER + BUSINESS IDENTITY (Reflection of Public Page) */}
+      <div className="relative bg-black">
+        {/* Cover Image */}
+        <div className="relative h-[160px] sm:h-[220px] w-full overflow-hidden bg-black">
+          <img 
+            src={businessData.cover_url || 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&auto=format&fit=crop&q=80'} 
+            alt={businessData.name} 
+            className="w-full h-full object-cover opacity-80"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
           
-          <div className="flex items-center gap-3">
-            <div 
-              onClick={() => setIsProfileModalOpen(true)}
-              className="relative cursor-pointer"
-              title="تعديل حساب المالك"
+          {/* Top Buttons (Back & Account) */}
+          <div className="absolute top-3 left-0 right-0 px-4 flex items-center justify-between z-10">
+            <button
+              onClick={() => businessData.slug ? window.location.href = `/bank.html?slug=${encodeURIComponent(businessData.slug)}` : window.history.back()}
+              className="w-9 h-9 rounded-full bg-black/65 backdrop-blur text-white flex items-center justify-center hover:bg-black transition"
+              title="رجوع إلى صفحة المنشأة"
             >
-              {ownerData.avatar ? (
-                <img 
-                  src={ownerData.avatar} 
-                  alt={ownerData.name} 
-                  className="w-11 h-11 rounded-full object-cover border-2 border-amber-500 shadow"
-                />
-              ) : (
-                <div className="w-11 h-11 rounded-full bg-[#161c2e] border-2 border-amber-500 flex items-center justify-center text-amber-400 font-bold shadow">
-                  <User className="w-5 h-5" />
-                </div>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="w-9 h-9 rounded-full bg-black/65 backdrop-blur text-white flex items-center justify-center hover:bg-black transition"
+              title="حسابي"
+            >
+              <User size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* Logo + Business Info (Centered like public page) */}
+        <div className="relative px-4 pb-4 -mt-12 sm:-mt-14 max-w-6xl mx-auto flex flex-col items-center justify-center text-center gap-3">
+          
+          {/* Logo Frame */}
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[18px] bg-white shadow-2xl overflow-hidden shrink-0 z-10 border-0 flex items-center justify-center">
+            {businessData.logo_url ? (
+              <img src={businessData.logo_url} alt={businessData.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-4xl font-black text-[#FFC500]">{(businessData.name || 'م').charAt(0)}</span>
+            )}
+          </div>
+
+          {/* Name, Category, Ratings */}
+          <div className="space-y-1.5 flex flex-col items-center">
+            <h1 className="text-lg sm:text-2xl font-black text-white leading-tight flex items-center justify-center gap-1.5 flex-wrap">
+              <span>{businessData.name || 'إدارة المنشأة'}</span>
+              {businessData.is_verified && (
+                <svg className="w-5 h-5 text-blue-500 fill-current shrink-0" viewBox="0 0 24 24">
+                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"/>
+                </svg>
               )}
-              <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#0e1320]"></span>
-            </div>
-            
-            <div>
-              <h1 className="text-sm md:text-base font-black text-white">{ownerData.name}</h1>
-              <p className="text-[11px] text-slate-400">{businessData.name} • {businessData.city}</p>
-            </div>
-          </div>
+            </h1>
 
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setIsNotificationOpen(true)}
-              className="relative w-9 h-9 rounded-xl bg-[#161c2e] hover:bg-[#202942] border border-[#232d46] text-slate-300 hover:text-white flex items-center justify-center transition"
-              title="الإشعارات"
-            >
-              <Bell className="w-4 h-4" />
-              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
-                1
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-[6px] bg-zinc-900 border border-zinc-800 text-zinc-300">
+                {businessData.category || 'غير مصنف'}
               </span>
-            </button>
+              <span className="text-[11px] text-zinc-500 flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {businessData.city || 'اليمن'}
+              </span>
+            </div>
 
-            <button 
-              onClick={() => setIsProfileModalOpen(true)}
-              className="w-9 h-9 rounded-xl bg-[#161c2e] hover:bg-[#202942] border border-[#232d46] text-amber-400 flex items-center justify-center transition"
-              title="تعديل حساب المالك"
-            >
-              <Settings className="w-4 h-4" />
-            </button>
-
-            <button 
-              onClick={handleSignOut}
-              className="w-9 h-9 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 flex items-center justify-center transition"
-              title="تسجيل الخروج"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            <div className="flex items-center justify-center gap-2 pt-0.5">
+              <div className="flex items-center gap-1 font-black text-white bg-zinc-900 px-2 py-1 rounded-[6px] border border-zinc-800">
+                <Star size={12} className="text-[#FFC500] fill-[#FFC500]" />
+                <span className="text-sm">{businessData.rating || '5.0'}</span>
+              </div>
+              <span className="text-[11px] text-zinc-500">({businessData.review_count || 0} تقييم)</span>
+            </div>
           </div>
-
         </div>
       </div>
 
-      {/* 2. HORIZONTAL NAVIGATION TABS */}
+      {/* Spacer */}
+      <div className="h-2"></div>
+{/* 2. HORIZONTAL NAVIGATION TABS */}
       <div className="max-w-6xl mx-auto w-full px-4 mt-4">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
           
-          <button 
+          <button
+            onClick={() => {
+              if (businessData.slug) {
+                setIsPreviewOpen(true);
+              } else {
+                alert('لا يمكن عرض الصفحة لعدم وجود رابط (Slug) للمنشأة.');
+              }
+            }}
+            className="flex-shrink-0 px-4 py-2.5 rounded-xl bg-black text-white border-2 border-[#2F3336] hover:bg-zinc-900 text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm active:scale-95"
+            title="عرض الصفحة كما يراها الزائر"
+          >
+            <Eye className="w-4 h-4" />
+            <span>كيف يرى الآخرون صفحتك</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('editor')}
-            className={`flex-shrink-0 px-4 py-2.5 rounded-xl border text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm ${
-              activeTab === 'editor' 
-                ? 'bg-amber-500 text-black border-amber-500 font-extrabold shadow-amber-500/10' 
-                : 'bg-[#0e1320] text-slate-300 border-[#222b42] hover:bg-[#161c2e] hover:border-slate-600'
-            }`}
+            className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm active:scale-95 ${activeTab === 'editor' ? 'bg-[#FFC500] text-black border-2 border-[#FFC500]' : 'bg-black text-white border-2 border-[#2F3336] hover:bg-zinc-900'}`}
           >
             <Settings className={`w-4 h-4 ${activeTab === 'editor' ? 'text-black' : 'text-amber-400'}`} />
             <span>تعديل بيانات المنشأة</span>
           </button>
 
-          <button 
+          <button
             onClick={() => setActiveTab('stats')}
-            className={`flex-shrink-0 px-4 py-2.5 rounded-xl border text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm ${
-              activeTab === 'stats' 
-                ? 'bg-amber-500 text-black border-amber-500 font-extrabold shadow-amber-500/10' 
-                : 'bg-[#0e1320] text-slate-300 border-[#222b42] hover:bg-[#161c2e] hover:border-slate-600'
-            }`}
+            className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm active:scale-95 ${activeTab === 'stats' ? 'bg-[#FFC500] text-black border-2 border-[#FFC500]' : 'bg-black text-white border-2 border-[#2F3336] hover:bg-zinc-900'}`}
           >
             <TrendingUp className={`w-4 h-4 ${activeTab === 'stats' ? 'text-black' : 'text-emerald-400'}`} />
             <span>الإحصائيات والنقرات</span>
@@ -316,11 +368,7 @@ export const OwnerDashboardPage: React.FC = () => {
 
           <button 
             onClick={() => setActiveTab('ads')}
-            className={`flex-shrink-0 px-4 py-2.5 rounded-xl border text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm ${
-              activeTab === 'ads' 
-                ? 'bg-amber-500 text-black border-amber-500 font-extrabold shadow-amber-500/10' 
-                : 'bg-[#0e1320] text-slate-300 border-[#222b42] hover:bg-[#161c2e] hover:border-slate-600'
-            }`}
+            className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm active:scale-95 ${activeTab === 'ads' ? 'bg-[#FFC500] text-black border-2 border-[#FFC500]' : 'bg-black text-white border-2 border-[#2F3336] hover:bg-zinc-900'}`}
           >
             <Crown className={`w-4 h-4 ${activeTab === 'ads' ? 'text-black' : 'text-amber-400'}`} />
             <span>الإعلانات والترقية</span>
@@ -328,11 +376,7 @@ export const OwnerDashboardPage: React.FC = () => {
 
           <button 
             onClick={() => setActiveTab('chat')}
-            className={`flex-shrink-0 px-4 py-2.5 rounded-xl border text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm ${
-              activeTab === 'chat' 
-                ? 'bg-amber-500 text-black border-amber-500 font-extrabold shadow-amber-500/10' 
-                : 'bg-[#0e1320] text-slate-300 border-[#222b42] hover:bg-[#161c2e] hover:border-slate-600'
-            }`}
+            className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm active:scale-95 ${activeTab === 'chat' ? 'bg-[#FFC500] text-black border-2 border-[#FFC500]' : 'bg-black text-white border-2 border-[#2F3336] hover:bg-zinc-900'}`}
           >
             <MessageSquare className={`w-4 h-4 ${activeTab === 'chat' ? 'text-black' : 'text-sky-400'}`} />
             <span>دردشة الإدارة العامة</span>
@@ -340,11 +384,7 @@ export const OwnerDashboardPage: React.FC = () => {
 
           <button 
             onClick={() => setActiveTab('reviews')}
-            className={`flex-shrink-0 px-4 py-2.5 rounded-xl border text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm ${
-              activeTab === 'reviews' 
-                ? 'bg-amber-500 text-black border-amber-500 font-extrabold shadow-amber-500/10' 
-                : 'bg-[#0e1320] text-slate-300 border-[#222b42] hover:bg-[#161c2e] hover:border-slate-600'
-            }`}
+            className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm active:scale-95 ${activeTab === 'reviews' ? 'bg-[#FFC500] text-black border-2 border-[#FFC500]' : 'bg-black text-white border-2 border-[#2F3336] hover:bg-zinc-900'}`}
           >
             <Star className={`w-4 h-4 ${activeTab === 'reviews' ? 'text-black' : 'text-amber-400'}`} />
             <span>التقييمات والردود</span>
@@ -361,7 +401,7 @@ export const OwnerDashboardPage: React.FC = () => {
           <div className="space-y-4">
             <div 
               id="facility-editor-container" 
-              className="w-full bg-[#0e1320] rounded-3xl border border-[#222b42] p-4 sm:p-7 shadow-2xl"
+              className="w-full bg-black rounded-3xl border border-[#222b42] p-4 sm:p-7 shadow-2xl"
             >
               <UnifiedFacilityEditor businessId={businessData.id} />
             </div>
@@ -371,7 +411,7 @@ export const OwnerDashboardPage: React.FC = () => {
         {/* TAB 2: REAL-TIME STATISTICS */}
         {activeTab === 'stats' && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-[#0e1320] p-5 rounded-2xl border border-[#222b42]">
+            <div className="bg-black p-5 rounded-2xl border border-[#222b42]">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-400 font-bold">مشاهدات الصفحة</span>
                 <Eye className="w-4 h-4 text-sky-400" />
@@ -380,7 +420,7 @@ export const OwnerDashboardPage: React.FC = () => {
               <span className="text-[11px] text-slate-500 font-bold mt-1 block">إجمالي الزيارات</span>
             </div>
 
-            <div className="bg-[#0e1320] p-5 rounded-2xl border border-[#222b42]">
+            <div className="bg-black p-5 rounded-2xl border border-[#222b42]">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-400 font-bold">نقرات الاتصال</span>
                 <PhoneCall className="w-4 h-4 text-emerald-400" />
@@ -389,7 +429,7 @@ export const OwnerDashboardPage: React.FC = () => {
               <span className="text-[11px] text-slate-500 font-bold mt-1 block">حجوزات واستفسارات</span>
             </div>
 
-            <div className="bg-[#0e1320] p-5 rounded-2xl border border-[#222b42]">
+            <div className="bg-black p-5 rounded-2xl border border-[#222b42]">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-400 font-bold">محادثات الواتساب</span>
                 <MessageCircle className="w-4 h-4 text-emerald-500" />
@@ -398,7 +438,7 @@ export const OwnerDashboardPage: React.FC = () => {
               <span className="text-[11px] text-slate-500 font-bold mt-1 block">تواصل مباشر</span>
             </div>
 
-            <div className="bg-[#0e1320] p-5 rounded-2xl border border-[#222b42]">
+            <div className="bg-black p-5 rounded-2xl border border-[#222b42]">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-slate-400 font-bold">متوسط التقييم</span>
                 <Star className="w-4 h-4 text-amber-400" />
@@ -411,7 +451,7 @@ export const OwnerDashboardPage: React.FC = () => {
 
         {/* TAB 3: PROMOTION & PACKAGES */}
         {activeTab === 'ads' && (
-          <div className="bg-[#0e1320] rounded-3xl border border-[#222b42] p-6 md:p-8">
+          <div className="bg-black rounded-3xl border border-[#222b42] p-6 md:p-8">
             <div className="max-w-2xl mb-6">
               <h2 className="text-lg md:text-xl font-black text-white">ترقية ظهور المنشأة في صدارة محركات البحث</h2>
               <p className="text-xs text-slate-400 mt-1">
@@ -471,7 +511,7 @@ export const OwnerDashboardPage: React.FC = () => {
 
         {/* TAB 4: LIVE CHAT */}
         {activeTab === 'chat' && (
-          <div className="bg-[#0e1320] rounded-3xl border border-[#222b42] overflow-hidden flex flex-col h-[520px] shadow-2xl">
+          <div className="bg-black rounded-3xl border border-[#222b42] overflow-hidden flex flex-col h-[520px] shadow-2xl">
             <div className="bg-[#141a2c] p-4 border-b border-[#222b42] flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-black text-xs">
@@ -495,7 +535,7 @@ export const OwnerDashboardPage: React.FC = () => {
               </a>
             </div>
 
-            <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-[#070b13]/50">
+            <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-black/50">
               {chatMessages.map((msg, idx) => (
                 <div 
                   key={idx} 
@@ -529,7 +569,7 @@ export const OwnerDashboardPage: React.FC = () => {
                   value={chatInput} 
                   onChange={(e) => setChatInput(e.target.value)} 
                   placeholder="اكتب استفسارك للإدارة العامة..." 
-                  className="flex-1 bg-[#0e1320] border border-[#222b42] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
+                  className="flex-1 bg-black border border-[#222b42] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
                 />
                 <button 
                   type="submit" 
@@ -546,13 +586,13 @@ export const OwnerDashboardPage: React.FC = () => {
         {activeTab === 'reviews' && (
           <div className="space-y-4">
             {reviewsList.length === 0 ? (
-              <div className="bg-[#0e1320] p-8 rounded-2xl border border-[#222b42] text-center text-slate-400 text-xs">
+              <div className="bg-black p-8 rounded-2xl border border-[#222b42] text-center text-slate-400 text-xs">
                 لا توجد تقييمات مسجلة لهذه المنشأة حتى الآن.
               </div>
             ) : (
               <div className="space-y-3">
                 {reviewsList.map((rev: any) => (
-                  <div key={rev.id} className="bg-[#0e1320] p-4 sm:p-5 rounded-2xl border border-[#222b42] space-y-3">
+                  <div key={rev.id} className="bg-black p-4 sm:p-5 rounded-2xl border border-[#222b42] space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-[#111111] border border-slate-700 flex items-center justify-center text-amber-400 font-bold text-xs">
@@ -612,7 +652,7 @@ export const OwnerDashboardPage: React.FC = () => {
       {/* 4. NOTIFICATION MODAL */}
       {isNotificationOpen && (
         <div className="fixed inset-0 bg-black  z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0e1320] border border-[#222b42] rounded-3xl w-full max-w-sm p-5 relative shadow-2xl">
+          <div className="bg-black border border-[#222b42] rounded-3xl w-full max-w-sm p-5 relative shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-[#222b42] mb-4">
               <div className="flex items-center gap-2">
                 <Bell className="w-4 h-4 text-amber-400" />
@@ -620,7 +660,7 @@ export const OwnerDashboardPage: React.FC = () => {
               </div>
               <button 
                 onClick={() => setIsNotificationOpen(false)}
-                className="w-7 h-7 rounded-full bg-[#161c2e] text-slate-400 hover:text-white flex items-center justify-center"
+                className="w-7 h-7 rounded-full bg-zinc-900 text-slate-400 hover:text-white flex items-center justify-center"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -640,7 +680,7 @@ export const OwnerDashboardPage: React.FC = () => {
 
             <button 
               onClick={() => setIsNotificationOpen(false)}
-              className="mt-5 w-full py-2.5 rounded-xl bg-[#161c2e] hover:bg-[#202942] text-xs font-bold text-slate-300 transition"
+              className="mt-5 w-full py-2.5 rounded-xl bg-zinc-900 hover:bg-[#202942] text-xs font-bold text-slate-300 transition"
             >
               إغلاق
             </button>
@@ -651,7 +691,7 @@ export const OwnerDashboardPage: React.FC = () => {
       {/* 5. EDIT OWNER PERSONAL PROFILE MODAL */}
       {isProfileModalOpen && (
         <div className="fixed inset-0 bg-black  z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0e1320] border border-[#222b42] rounded-3xl w-full max-w-md p-6 relative shadow-2xl">
+          <div className="bg-black border border-[#222b42] rounded-3xl w-full max-w-md p-6 relative shadow-2xl">
             <button 
               onClick={() => setIsProfileModalOpen(false)}
               className="absolute top-4 left-4 w-8 h-8 rounded-full bg-[#141a2c] text-slate-400 hover:text-white flex items-center justify-center transition"
@@ -733,6 +773,33 @@ export const OwnerDashboardPage: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+
+      {/* LIVE PREVIEW MODAL */}
+      {isPreviewOpen && (
+        <div className="fixed inset-0 z-[9999] bg-black flex flex-col" dir="rtl">
+          <div className="flex items-center justify-between px-4 py-3 bg-black border-b border-zinc-800 shrink-0">
+            <div className="flex items-center gap-2 text-white font-bold text-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              معاينة حية كما يراها الزائر
+            </div>
+            <button
+              onClick={() => setIsPreviewOpen(false)}
+              className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              إغلاق المعاينة
+            </button>
+          </div>
+          <div className="flex-1 bg-zinc-900 overflow-hidden relative">
+            <iframe
+              src={`/bank.html?slug=${encodeURIComponent(businessData.slug)}`}
+              className="w-full h-full border-0 bg-black"
+              title="Business Preview"
+            />
           </div>
         </div>
       )}

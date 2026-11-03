@@ -370,52 +370,145 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     </div>
 
     <!-- 10. نافذة إثبات الملكية -->
-    <div id="claim-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-      <div class="bg-[#0D0D0D] border border-[#2F3336] rounded-2xl w-full max-w-sm p-4 space-y-3 text-right shadow-2xl relative">
-        <div id="claim-success-view" class="hidden text-center py-6 px-3 space-y-3">
-          <div class="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
-            <i class="fa-solid fa-check text-2xl"></i>
-          </div>
-          <h4 class="text-base font-black text-white">تم إرسال الطلب بنجاح</h4>
-          <p class="text-xs text-zinc-400 leading-relaxed">
-            تم تسجيل طلب إثبات ملكية الصفحة بنجاح، وسيتم مراجعته والتواصل معكم من قِبل إدارة منصة يمن ريتنغ.
-          </p>
-          <button type="button" onclick="closeClaimModal()" class="w-full py-2.5 rounded-xl bg-brand-gold text-black font-black text-xs hover:bg-brand-goldHover transition">حسناً، تم</button>
+    <!-- 10. نافذة إثبات الملكية (التصميم الجديد) -->
+    <div id="claim-modal" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto" dir="rtl">
+      <div class="relative w-full max-w-lg my-8 rounded-3xl bg-[#0A0A0B] border border-[#2A2B30] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-[#0A0A0B]/95 backdrop-blur border-b border-[#2A2B30]">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-brand-gold"></i> إثبات ملكية المنشأة
+          </h3>
+          <button type="button" onclick="closeClaimModal()" class="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
-        <div id="claim-form-view">
-        <div class="flex items-center justify-between border-b border-[#2F3336] pb-2">
-          <h4 class="text-sm font-bold text-[#EF4444] flex items-center gap-1.5">
-            <i class="fa-solid fa-shield-halved"></i> طلب إثبات ملكية المنشأة
-          </h4>
-          <button type="button" onclick="closeClaimModal()" class="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+        <div class="flex-1 overflow-y-auto p-5 space-y-6">
+          <div class="relative rounded-2xl overflow-hidden h-32">
+            <img id="claim-cover-img" src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80" class="w-full h-full object-cover opacity-60">
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+            <div class="absolute bottom-3 right-4 left-4 text-center">
+              <h4 class="text-lg font-black text-white mb-1">هل أنت مالك هذه المنشأة؟</h4>
+              <p class="text-[10px] text-zinc-300 leading-relaxed">قدم طلب إثبات الملكية لإدارة منشأتك على يمن ريتنج والاستفادة من خدمات أصحاب المنشآت.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 p-3 rounded-xl bg-[#121217] border border-[#2A2B30]">
+            <div class="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-400">
+              <i class="fa-solid fa-store"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-[10px] text-zinc-400 mb-0.5">المنشأة المحددة</p>
+              <p class="text-sm font-bold text-white" id="claim-business-name">اسم المنشأة</p>
+              <p class="text-[10px] text-zinc-500 font-mono mt-0.5" id="claim-business-id">رقم المنشأة: ...</p>
+            </div>
+          </div>
+          <form id="claim-form" onsubmit="submitClaim(event)" class="space-y-6">
+            <div class="space-y-3">
+              <h5 class="text-sm font-bold text-white flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-brand-gold text-black flex items-center justify-center text-[10px] font-black">1</span>
+                معلومات مقدم الطلب
+              </h5>
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-[11px] text-zinc-400 mb-1">الاسم الكامل <span class="text-red-500">*</span></label>
+                  <input type="text" id="claim-applicant-name" required placeholder="أدخل اسمك الكامل" class="w-full bg-[#121217] border border-[#2A2B30] rounded-xl p-3 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-zinc-400 mb-1">رقم الهاتف <span class="text-red-500">*</span></label>
+                  <input type="tel" id="claim-phone" required maxlength="9" placeholder="مثال: 777123456" class="w-full bg-[#121217] border border-[#2A2B30] rounded-xl p-3 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-zinc-400 mb-1">البريد الإلكتروني (اختياري)</label>
+                  <input type="email" id="claim-email" placeholder="example@email.com" class="w-full bg-[#121217] border border-[#2A2B30] rounded-xl p-3 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
+                </div>
+              </div>
+            </div>
+            <div class="space-y-3">
+              <h5 class="text-sm font-bold text-white flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-brand-gold text-black flex items-center justify-center text-[10px] font-black">2</span>
+                صفتك في المنشأة <span class="text-red-500">*</span>
+              </h5>
+              <div class="space-y-2">
+                <label class="flex items-center gap-3 p-3 rounded-xl bg-[#121217] border border-[#2A2B30] cursor-pointer hover:border-zinc-600 transition">
+                  <input type="radio" name="claim_role" value="مالك المنشأة" required class="w-4 h-4 accent-brand-gold">
+                  <span class="text-xs text-white">مالك المنشأة</span>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-xl bg-[#121217] border border-[#2A2B30] cursor-pointer hover:border-zinc-600 transition">
+                  <input type="radio" name="claim_role" value="شريك في المنشأة" class="w-4 h-4 accent-brand-gold">
+                  <span class="text-xs text-white">شريك في المنشأة</span>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-xl bg-[#121217] border border-[#2A2B30] cursor-pointer hover:border-zinc-600 transition">
+                  <input type="radio" name="claim_role" value="مدير مفوض" class="w-4 h-4 accent-brand-gold">
+                  <span class="text-xs text-white">مدير مفوض</span>
+                </label>
+                <label class="flex items-center gap-3 p-3 rounded-xl bg-[#121217] border border-[#2A2B30] cursor-pointer hover:border-zinc-600 transition">
+                  <input type="radio" name="claim_role" value="ممثل قانوني عن المالك" class="w-4 h-4 accent-brand-gold">
+                  <span class="text-xs text-white">ممثل قانوني عن المالك</span>
+                </label>
+              </div>
+            </div>
+            <div class="space-y-3">
+              <h5 class="text-sm font-bold text-white flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-brand-gold text-black flex items-center justify-center text-[10px] font-black">3</span>
+                إثبات علاقتك بالمنشأة
+              </h5>
+              <div>
+                <p class="text-[10px] text-zinc-400 mb-2 leading-relaxed">اشرح علاقتك بالمنشأة وكيف يمكن التحقق من أنك مخول بإدارتها.</p>
+                <textarea id="claim-notes" rows="3" placeholder="اكتب تفاصيل إضافية عن ملكيتك أو صلاحياتك..." class="w-full bg-[#121217] border border-[#2A2B30] rounded-xl p-3 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition"></textarea>
+              </div>
+            </div>
+            <div class="space-y-3">
+              <h5 class="text-sm font-bold text-white flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-brand-gold text-black flex items-center justify-center text-[10px] font-black">4</span>
+                إرفاق مستندات الإثبات
+              </h5>
+              <div class="border-2 border-dashed border-[#2A2B30] rounded-2xl p-6 text-center hover:border-zinc-600 transition relative">
+                <input type="file" id="claim-docs-file" multiple accept="image/*,.pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="updateClaimFileName(this)">
+                <div class="pointer-events-none flex flex-col items-center justify-center">
+                  <i class="fa-solid fa-cloud-arrow-up text-2xl text-zinc-500 mb-2"></i>
+                  <p class="text-xs font-bold text-white mb-1">أرفق مستندات إثبات الملكية</p>
+                  <p class="text-[10px] text-zinc-500 mb-2">مثل السجل التجاري أو الترخيص أو تفويض الإدارة.</p>
+                  <span class="px-3 py-1 rounded-md bg-zinc-800 text-zinc-400 text-[10px] font-bold">صور أو PDF</span>
+                  <p id="claim-docs-filename" class="text-[10px] text-brand-gold mt-2 hidden"></p>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-3">
+              <h5 class="text-sm font-bold text-white flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-brand-gold text-black flex items-center justify-center text-[10px] font-black">5</span>
+                تأكيد الطلب
+              </h5>
+              <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-emerald-400 leading-relaxed flex items-start gap-2 mb-3">
+                <i class="fa-solid fa-circle-check mt-0.5"></i>
+                <span>تستخدم مستنداتك للتحقق من الطلب ولا تُعرض للعامة.</span>
+              </div>
+              <label class="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" id="claim-confirm" required class="mt-0.5 w-4 h-4 accent-brand-gold">
+                <span class="text-[11px] text-zinc-300">أقر بصحة المعلومات والمستندات المقدمة وأتحمل مسؤولية صحتها.</span>
+              </label>
+            </div>
+            <div class="pt-3 border-t border-[#2A2B30]">
+              <button type="submit" id="claim-submit-btn" class="w-full py-3 rounded-xl bg-zinc-800 text-zinc-500 text-xs font-bold transition cursor-not-allowed" disabled>
+                إرسال طلب إثبات الملكية
+              </button>
+              <p class="text-center text-[10px] text-zinc-500 mt-2">يجب استكمال البيانات والموافقة على الإقرار لإرسال الطلب.</p>
+            </div>
+          </form>
         </div>
-
-        <form id="claim-form" onsubmit="submitClaim(event)" class="space-y-3 text-xs">
-          <div>
-            <label class="block text-white font-bold mb-1">اسم المفوض / ممثل البنك <span class="text-brand-gold">*</span></label>
-            <input type="text" id="claim-applicant-name" required placeholder="الاسم الرباعي كما في الهوية" class="w-full bg-zinc-950 border border-[#2F3336] rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
-          </div>
-
-          <div>
-            <label class="block text-white font-bold mb-1">الصفة أو المسمى الوظيفي <span class="text-brand-gold">*</span></label>
-            <input type="text" id="claim-applicant-role" required placeholder="مثال: مدير الفرع / الممثل القانوني / مسؤول التسويق" class="w-full bg-zinc-950 border border-[#2F3336] rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
-          </div>
-
-          <div>
-            <label class="block text-white font-bold mb-1">رقم الهاتف أو الواتساب الرسمي <span class="text-brand-gold">*</span></label>
-            <input type="tel" id="claim-phone" required maxlength="9" oninput="this.value = this.value.replace(/\D/g, '').slice(0, 9)" class="w-full bg-zinc-950 border border-[#2F3336] rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition" />
-          </div>
-
-          <div>
-            <label class="block text-zinc-300 font-bold mb-1">رقم السجل التجاري أو صفة التفويض (اختياري)</label>
-            <textarea id="claim-notes" rows="2" placeholder="اكتب رقم السجل التجاري أو أي بيانات إضافية للتحقق..." class="w-full bg-zinc-950 border border-[#2F3336] rounded-xl p-2.5 text-white placeholder-zinc-600 text-xs outline-none focus:border-brand-gold transition"></textarea>
-          </div>
-
-          <div class="flex justify-end gap-2 pt-1 border-t border-[#2F3336]">
-            <button type="button" onclick="closeClaimModal()" class="px-3.5 py-1.5 rounded-lg bg-zinc-900 text-zinc-300 cursor-pointer">إلغاء</button>
-            <button type="submit" id="claim-submit-btn" class="px-4 py-1.5 rounded-lg bg-[#EF4444] hover:bg-red-700 text-white font-bold cursor-pointer transition">إرسال الطلب</button>
-          </div>
-        </form>
+      </div>
+    </div>
+    <div id="claim-success-view" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+      <div class="w-full max-w-sm rounded-3xl bg-[#0A0A0B] border border-[#2A2B30] p-6 text-center space-y-4">
+        <div class="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto text-emerald-500">
+          <i class="fa-solid fa-check text-2xl"></i>
+        </div>
+        <div>
+          <h4 class="text-lg font-bold text-white mb-2">تم استلام طلبك بنجاح</h4>
+          <p class="text-xs text-zinc-400 leading-relaxed">سيقوم فريق الإدارة بمراجعة طلبك ومستنداتك في أقرب وقت.</p>
+        </div>
+        <div class="bg-[#121217] rounded-xl p-3 border border-[#2A2B30]">
+          <p class="text-[10px] text-zinc-500 mb-1">رقم الطلب المرجعي</p>
+          <p class="text-sm font-mono font-bold text-brand-gold claim-ref-number" dir="ltr">YR-CLM-XXXXXX</p>
+        </div>
+        <button type="button" onclick="closeClaimModal(); location.reload();" class="w-full py-3 rounded-xl bg-white text-black font-bold text-xs">حسناً</button>
       </div>
     </div>
 
@@ -1091,6 +1184,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 
     // دوال نافذة التقييم
     function openReviewModal() {
+      if (typeof currentUserId !== 'undefined' && currentUserId && currentBank && currentBank.owner_id === currentUserId) {
+        alert('لا يمكنك تقييم منشأتك الخاصة.');
+        return;
+      }
       const sView = document.getElementById('review-success-view');
       const fView = document.getElementById('review-form-view');
       if (sView) sView.classList.add('hidden');
@@ -1200,65 +1297,269 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
       }
     }
 
-    function openClaimModal() {
-      const sView = document.getElementById('claim-success-view');
-      const fView = document.getElementById('claim-form-view');
-      if (sView) sView.classList.add('hidden');
-      if (fView) fView.classList.remove('hidden');
-      document.getElementById('claim-modal').classList.remove('hidden');
+    async function openClaimModal() {
+      const modal = document.getElementById('claim-modal');
+      if (!modal) return;
+      
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+
+      // 1. ملء بيانات المنشأة (من currentBank أو من بيانات بديلة)
+      let bank = null;
+      if (typeof currentBank !== 'undefined' && currentBank) {
+        bank = currentBank;
+      } else if (typeof bankData !== 'undefined' && bankData) {
+        bank = bankData;
+      }
+      // إن لم نجد، نحاول قراءة الاسم من الصفحة نفسها
+      let businessName = (bank && bank.name) ? bank.name : null;
+      let businessId = (bank && bank.id) ? bank.id : null;
+
+      if (!businessName) {
+        const nameEl = document.querySelector('h1');
+        if (nameEl && nameEl.textContent.trim()) businessName = nameEl.textContent.trim();
+      }
+      if (!businessId) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const slug = urlParams.get('slug');
+        if (slug) businessId = slug;
+      }
+
+      document.getElementById('claim-business-name').textContent = businessName || 'منشأة';
+      document.getElementById('claim-business-id').textContent = 'رقم المنشأة: ' + (businessId ? String(businessId).slice(0, 12) : '...');
+      
+      if (bank && bank.cover_url) {
+        const img = document.getElementById('claim-cover-img');
+        if (img) {
+          img.src = bank.cover_url;
+          img.classList.remove('hidden');
+          const ph = document.getElementById('claim-cover-placeholder');
+          if (ph) ph.style.display = 'none';
+          const hint = document.getElementById('claim-cover-hint');
+          if (hint) hint.style.display = 'none';
+        }
+      } else {
+        // لا توجد صورة، أظهر التنبيه
+        const hint = document.getElementById('claim-cover-hint');
+        if (hint) hint.style.display = 'block';
+      }
+      updateClaimSubmitState();
+
+      // 2. جلب بيانات المستخدم من profiles
+      try {
+        let uid = null;
+        // ابحث عن مستخدم من localStorage
+        const keys = Object.keys(localStorage);
+        for (const k of keys) {
+          if (k.includes('auth-token')) {
+            try {
+              const raw = JSON.parse(localStorage.getItem(k));
+              uid = raw?.user?.id || raw?.currentSession?.user?.id;
+              if (uid) break;
+            } catch(_) {}
+          }
+        }
+        // إن لم نجد، جرب currentUserId
+        if (!uid && typeof currentUserId !== 'undefined' && currentUserId) {
+          uid = currentUserId;
+        }
+
+        if (uid) {
+          const resp = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${uid}&select=full_name,phone,email,username`, {
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': 'Bearer ' + SUPABASE_KEY
+            }
+          });
+          const rows = await resp.json().catch(() => []);
+          const profile = Array.isArray(rows) && rows[0] ? rows[0] : null;
+          
+          if (profile) {
+            const nameInput = document.getElementById('claim-applicant-name');
+            const phoneInput = document.getElementById('claim-phone');
+            const emailInput = document.getElementById('claim-email');
+            if (nameInput) nameInput.value = profile.full_name || '';
+            if (phoneInput) phoneInput.value = profile.phone || '';
+            if (emailInput) emailInput.value = profile.email || '';
+          }
+        }
+      } catch (err) {
+        console.warn('Could not prefill user data:', err);
+      }
+
+      // 3. ربط مربع الموافقة بزر الإرسال
+      const confirm = document.getElementById('claim-confirm');
+      if (confirm && !confirm.dataset.bound) {
+        confirm.dataset.bound = 'true';
+        confirm.addEventListener('change', function() {
+          updateClaimSubmitState();
+        });
+      }
     }
 
     function closeClaimModal() {
       document.getElementById('claim-modal').classList.add('hidden');
     }
 
+    
+    
+    let claimCoverFile = null;
+    function updateClaimCover(input) {
+      const file = input.files?.[0];
+      if (file) {
+        claimCoverFile = file;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.getElementById('claim-cover-img');
+          const placeholder = document.getElementById('claim-cover-placeholder');
+          const hint = document.getElementById('claim-cover-hint');
+          if (img) { img.src = e.target.result; img.classList.remove('hidden'); }
+          if (placeholder) placeholder.style.display = 'none';
+          if (hint) hint.style.display = 'none';
+          updateClaimSubmitState();
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    
+    function updateClaimSubmitState() {
+      const btn = document.getElementById('claim-submit-btn');
+      const confirm = document.getElementById('claim-confirm');
+      const hint = document.getElementById('claim-submit-hint');
+      const hasCover = !!claimCoverFile || (typeof currentBank !== 'undefined' && currentBank?.cover_url);
+      const confirmed = confirm?.checked;
+      
+      if (hasCover && confirmed) {
+        btn.disabled = false;
+        btn.className = 'w-full py-3 rounded-xl bg-brand-gold hover:bg-amber-400 text-black text-xs font-bold transition cursor-pointer';
+        if (hint) hint.style.display = 'none';
+      } else {
+        btn.disabled = true;
+        btn.className = 'w-full py-3 rounded-xl bg-zinc-900 text-zinc-600 text-xs font-bold transition cursor-not-allowed';
+        if (hint) {
+          hint.textContent = !hasCover ? 'يجب إضافة صورة المنشأة' : 'يجب الموافقة على الإقرار';
+          hint.style.display = 'block';
+        }
+      }
+    }
+
+    function updateClaimFileName(input) {
+      const filenameEl = document.getElementById('claim-docs-filename');
+      if (input.files && input.files.length > 0) {
+        filenameEl.textContent = input.files[0].name + (input.files.length > 1 ? ' (+' + (input.files.length - 1) + ')' : '');
+        filenameEl.classList.remove('hidden');
+      } else {
+        filenameEl.classList.add('hidden');
+      }
+    }
+
+
     async function submitClaim(e) {
       e.preventDefault();
-      const name = document.getElementById('claim-applicant-name').value.trim();
-      const role = document.getElementById('claim-applicant-role').value.trim();
-      const phone = document.getElementById('claim-phone').value.trim();
-      const notes = document.getElementById('claim-notes').value.trim();
+      
+      const name = document.getElementById('claim-applicant-name')?.value.trim() || '';
+      const phone = document.getElementById('claim-phone')?.value.trim() || '';
+      const email = document.getElementById('claim-email')?.value.trim() || '';
+      const notes = document.getElementById('claim-notes')?.value.trim() || '';
+      const selectedRole = document.querySelector('input[name="claim_role"]:checked')?.value || '';
+      const confirmChecked = document.getElementById('claim-confirm')?.checked;
+      
+      const docsInput = document.getElementById('claim-docs-file');
+      const docsFiles = docsInput?.files || [];
+      
       const btn = document.getElementById('claim-submit-btn');
 
+      if (!name || !phone) { alert('يرجى إدخال الاسم ورقم الهاتف'); return; }
+      if (!selectedRole) { alert('يرجى اختيار صفتك في المنشأة'); return; }
+      if (!confirmChecked) { alert('يجب الموافقة على الإقرار قبل الإرسال'); return; }
+      if (typeof currentBank === 'undefined' || !currentBank || !currentBank.id) {
+        alert('تعذر تحديد المنشأة، يرجى إعادة تحميل الصفحة'); return;
+      }
+
       btn.disabled = true;
-      btn.innerText = 'جاري الإرسال...';
+      btn.innerText = 'جاري الرفع والإرسال...';
 
       try {
-        const payload = {
-          entity_id: currentBank.id,
-          entity_type: 'bank',
-          applicant_name: name,
-          applicant_role: role,
-          phone: phone,
-          notes: notes,
-          status: 'PENDING'
+        // استخراج التوكن
+        let authToken = SUPABASE_KEY;
+        for (const k of Object.keys(localStorage)) {
+          if (k.includes('auth-token')) {
+            try {
+              const raw = JSON.parse(localStorage.getItem(k));
+              if (raw?.access_token) { authToken = raw.access_token; break; }
+            } catch(_) {}
+          }
+        }
+
+        // دالة الرفع
+        const uploadFile = async (file, folder) => {
+          if (!file) return null;
+          try {
+            const ext = file.name.split('.').pop() || 'bin';
+            const path = folder + '/' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+            const resp = await fetch(`${SUPABASE_URL}/storage/v1/object/claims/${path}`, {
+              method: 'POST',
+              headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': 'Bearer ' + authToken,
+                'x-upsert': 'false'
+              },
+              body: file
+            });
+            if (!resp.ok) { console.error('Upload error:', await resp.text()); return null; }
+            return `${SUPABASE_URL}/storage/v1/object/public/claims/${path}`;
+          } catch (err) { console.error('Upload exception:', err); return null; }
         };
 
-        const resp = await fetch(`${SUPABASE_URL}/rest/v1/verification_requests`, {
+        let licenseUrl = null;
+        let commercialUrl = null;
+        let idCardUrl = null;
+        
+        // رفع المرفقات (أول 3 ملفات كحد أقصى)
+        if (docsFiles.length > 0) licenseUrl = await uploadFile(docsFiles[0], 'licenses');
+        if (docsFiles.length > 1) commercialUrl = await uploadFile(docsFiles[1], 'commercial');
+        if (docsFiles.length > 2) idCardUrl = await uploadFile(docsFiles[2], 'ids');
+
+        const fullNotes = 'الصفة: ' + selectedRole + (notes ? ' | ' + notes : '');
+        
+        // إرسال الطلب
+        const rpcResp = await fetch(`${SUPABASE_URL}/rest/v1/rpc/submit_claim_request`, {
           method: 'POST',
           headers: {
             'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
+            'Authorization': 'Bearer ' + authToken,
+            'Content-Type': 'application/json'
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            p_business_id: currentBank.id,
+            p_claimant_name: name,
+            p_claimant_phone: phone,
+            p_claimant_email: email || null,
+            p_notes: fullNotes,
+            p_license_url: licenseUrl,
+            p_commercial_register_url: commercialUrl,
+            p_id_card_file_url: idCardUrl
+          })
         });
 
-        if (!resp.ok) {
-          const errData = await resp.json().catch(() => ({}));
-          throw new Error(errData.message || 'فشل إرسال الطلب');
-        }
+        const result = await rpcResp.json().catch(() => ({}));
+        if (!rpcResp.ok) throw new Error(result?.message || result?.hint || 'فشل إرسال الطلب');
 
-        document.getElementById('claim-form-view').classList.add('hidden');
-        document.getElementById('claim-success-view').classList.remove('hidden');
-        document.getElementById('claim-form').reset();
+        document.getElementById('claim-modal').classList.add('hidden');
+        const successView = document.getElementById('claim-success-view');
+        if (successView) {
+          const refEl = successView.querySelector('.claim-ref-number');
+          if (refEl && result.reference_number) refEl.textContent = result.reference_number;
+          successView.classList.remove('hidden');
+        }
+        
+        if (typeof updateClaimSubmitState === 'function') updateClaimSubmitState();
+        
       } catch (err) {
         console.error('Claim submit error:', err);
         alert('تنبيه: ' + (err.message || 'حدث خطأ أثناء إرسال الطلب'));
-      } finally {
         btn.disabled = false;
-        btn.innerText = 'إرسال الطلب';
+        btn.innerText = 'إرسال طلب إثبات الملكية';
       }
     }
 
