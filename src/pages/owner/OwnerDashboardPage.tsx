@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { UnifiedFacilityEditor } from '../../components/business/UnifiedFacilityEditor';
+import { VerifiedBadge } from '../../components/ui/VerifiedBadge';
 
 export const OwnerDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'editor' | 'stats' | 'ads' | 'chat' | 'reviews'>('editor');
@@ -30,8 +31,11 @@ export const OwnerDashboardPage: React.FC = () => {
   const [replyInput, setReplyInput] = useState<{ [id: string]: string }>({});
   const [submittingReply, setSubmittingReply] = useState<string | null>(null);
 
+  const [categoryName, setCategoryName] = useState<string>('');
   const [businessData, setBusinessData] = useState<any>({
     id: null,
+    is_verified: false,
+    badge_type: 'blue',
     name: 'منشأتي المعتمدة',
     city: 'الجمهورية اليمنية',
     slug: '',
@@ -68,6 +72,21 @@ export const OwnerDashboardPage: React.FC = () => {
   const [chatInput, setChatInput] = useState('');
 
   // Fetch Current Logged-in Owner & Claimed Business
+
+  const fetchCategoryName = async (categoryId: string) => {
+    if (!categoryId) return;
+    try {
+      const { data } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('id', categoryId)
+        .single();
+      if (data) setCategoryName(data.name);
+    } catch (err) {
+      console.error('Error fetching category:', err);
+    }
+  };
+
   useEffect(() => {
     // إذا كان هناك ?id= في الرابط، اجلب المنشأة مباشرة
     const urlParams = new URLSearchParams(window.location.search);
@@ -93,7 +112,7 @@ export const OwnerDashboardPage: React.FC = () => {
           // Fetch business claimed/owned by this user ID
           const { data: biz } = await supabase
             .from('businesses')
-            .select('id, name, city, slug, views_count, call_clicks, whatsapp_clicks, rating, review_count, logo_url, category, description, phone, address, website_url').eq('owner_id', u.id)
+            .select('id, name, city, slug, views_count, call_clicks, whatsapp_clicks, rating, review_count, cover_url, logo_url, category, category_id, description, phone, whatsapp, address, website_url, is_verified, badge_type').eq('owner_id', u.id)
             .limit(1)
             .maybeSingle();
 
@@ -102,6 +121,8 @@ export const OwnerDashboardPage: React.FC = () => {
               id: biz.id,
               name: biz.name,
               city: biz.city || 'اليمن',
+              is_verified: biz.is_verified || false,
+              badge_type: biz.badge_type || 'blue',
               slug: biz.slug || '',
               logo_url: biz.logo_url || '',
               cover_url: biz.cover_url || '',
@@ -118,6 +139,7 @@ export const OwnerDashboardPage: React.FC = () => {
               review_count: biz.review_count || 0
             });
             loadReviewsForBusiness(biz.id);
+            if (biz.category_id) fetchCategoryName(biz.category_id);
           }
         }
       } catch (err) {
@@ -186,6 +208,7 @@ export const OwnerDashboardPage: React.FC = () => {
             review_count: rCount,
             reviews_count: rCount
           });
+          if (bData.category_id) fetchCategoryName(bData.category_id);
         }
       } catch (e) {
         console.error('Error fetching target business:', e);
@@ -253,85 +276,78 @@ export const OwnerDashboardPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-slate-200 flex flex-col font-sans pb-16" dir="rtl">
       
-      {/* 1. COVER + BUSINESS IDENTITY (Reflection of Public Page) */}
-      <div className="relative bg-black">
-        {/* Cover Image */}
-        <div className="relative h-[160px] sm:h-[220px] w-full overflow-hidden bg-black">
+      {/* 1. HEADER (100% identical to public page) */}
+      <div className="relative w-full max-w-md md:max-w-3xl lg:max-w-4xl mx-auto bg-black">
+        {/* الغلاف */}
+        <div className="relative w-full h-44 sm:h-52 md:h-60 bg-black flex items-center justify-center overflow-hidden md:rounded-2xl md:mt-3 shadow-lg">
           <img 
             src={businessData.cover_url || 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&auto=format&fit=crop&q=80'} 
             alt={businessData.name} 
             className="w-full h-full object-cover opacity-80"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
           
-          {/* Top Buttons (Back & Account) */}
-          <div className="absolute top-3 left-0 right-0 px-4 flex items-center justify-between z-10">
-            <button
-              onClick={() => businessData.slug ? window.location.href = `/bank.html?slug=${encodeURIComponent(businessData.slug)}` : window.history.back()}
-              className="w-9 h-9 rounded-full bg-black/65 backdrop-blur text-white flex items-center justify-center hover:bg-black transition"
-              title="رجوع إلى صفحة المنشأة"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </button>
-            <button
-              onClick={() => window.location.href = '/'}
-              className="w-9 h-9 rounded-full bg-black/65 backdrop-blur text-white flex items-center justify-center hover:bg-black transition"
-              title="حسابي"
-            >
-              <User size={18} />
-            </button>
+          
+          
+        </div>
+
+        {/* الشعار (متداخل في اليمين) + شارة "أنت المالك" (في اليسار) */}
+        <div className="px-4 relative flex items-end justify-between -mt-10 mb-2">
+          <div className="relative order-1">
+            <div className="w-20 h-20 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden bg-white">
+              {businessData.logo_url ? (
+                <img src={businessData.logo_url} alt={businessData.name} className="w-full h-full object-contain" />
+              ) : (
+                <span className="text-2xl font-black text-[#FFC500]">{(businessData.name || 'م').charAt(0)}</span>
+              )}
+            </div>
+          </div>
+          <div className="order-2 mb-1">
+            <span className="inline-flex items-center gap-1.5 bg-[#FFC500] text-black text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg">
+              <i className="fa-solid fa-crown"></i>
+              <span>👑 أنت المالك</span>
+            </span>
           </div>
         </div>
 
-        {/* Logo + Business Info (Centered like public page) */}
-        <div className="relative px-4 pb-4 -mt-12 sm:-mt-14 max-w-6xl mx-auto flex flex-col items-center justify-center text-center gap-3">
-          
-          {/* Logo Frame */}
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[18px] bg-white shadow-2xl overflow-hidden shrink-0 z-10 border-0 flex items-center justify-center">
-            {businessData.logo_url ? (
-              <img src={businessData.logo_url} alt={businessData.name} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-4xl font-black text-[#FFC500]">{(businessData.name || 'م').charAt(0)}</span>
+        {/* البيانات الأساسية */}
+        <div className="px-4 space-y-1.5 text-right">
+          <div className="inline-flex items-center gap-1.5 flex-wrap">
+            <h2 className="text-sm sm:text-base font-black text-white leading-snug inline">{businessData.name || 'إدارة المنشأة'}</h2>
+            {/* شارة التوثيق إن وجدت */}
+            {businessData.badge_type && (
+              <VerifiedBadge variant={businessData.badge_type} size={20} />
             )}
           </div>
-
-          {/* Name, Category, Ratings */}
-          <div className="space-y-1.5 flex flex-col items-center">
-            <h1 className="text-lg sm:text-2xl font-black text-white leading-tight flex items-center justify-center gap-1.5 flex-wrap">
-              <span>{businessData.name || 'إدارة المنشأة'}</span>
-              {businessData.is_verified && (
-                <svg className="w-5 h-5 text-blue-500 fill-current shrink-0" viewBox="0 0 24 24">
-                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"/>
-                </svg>
-              )}
-            </h1>
-
-            <div className="flex items-center justify-center gap-2 flex-wrap">
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-[6px] bg-zinc-900 border border-zinc-800 text-zinc-300">
-                {businessData.category || 'غير مصنف'}
-              </span>
-              <span className="text-[11px] text-zinc-500 flex items-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                {businessData.city || 'اليمن'}
-              </span>
+          
+          <div className="flex items-center justify-start gap-1.5 text-[#FFC500] text-xs font-bold">
+            <span className="text-white font-medium text-[11px]">★ التقييمات</span>
+            <div className="flex text-[10px]">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star key={s} size={12} className={s <= Math.round(businessData.rating || 5) ? "fill-[#FFC500]" : "text-zinc-600"} />
+              ))}
             </div>
+            <span className="text-white text-sm font-black">{businessData.rating || '5.0'}</span>
+            <span className="text-zinc-400 font-normal text-[11px]">({businessData.review_count || 0} تقييم)</span>
+          </div>
 
-            <div className="flex items-center justify-center gap-2 pt-0.5">
-              <div className="flex items-center gap-1 font-black text-white bg-zinc-900 px-2 py-1 rounded-[6px] border border-zinc-800">
-                <Star size={12} className="text-[#FFC500] fill-[#FFC500]" />
-                <span className="text-sm">{businessData.rating || '5.0'}</span>
-              </div>
-              <span className="text-[11px] text-zinc-500">({businessData.review_count || 0} تقييم)</span>
+          <p className="text-zinc-300 text-xs leading-snug font-medium pt-1">
+            {businessData.description || 'لا يوجد وصف'}
+          </p>
+
+          <div className="flex items-center justify-start gap-3 text-xs font-semibold text-zinc-400 pt-1 pb-3">
+            <div className="flex items-center gap-1">
+              <i className="fa-solid fa-briefcase text-[#FFC500] text-xs"></i>
+              <span className="text-zinc-300">{categoryName || businessData.category || 'غير مصنف'}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <i className="fa-solid fa-location-dot text-[#FFC500] text-xs"></i>
+              <span className="text-zinc-300">{businessData.city || 'اليمن'}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Spacer */}
-      <div className="h-2"></div>
-{/* 2. HORIZONTAL NAVIGATION TABS */}
+      {/* 2. HORIZONTAL NAVIGATION TABS */}
       <div className="max-w-6xl mx-auto w-full px-4 mt-4">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
           
