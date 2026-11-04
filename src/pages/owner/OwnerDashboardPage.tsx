@@ -1,42 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Bell, 
-  LogOut, 
-  Settings, 
-  TrendingUp, 
-  Eye, 
-  PhoneCall, 
-  MessageSquare, 
-  Crown, 
-  Send, 
-  Star, 
-  Check, 
-  X, 
+import {
+  Bell,
+  LogOut,
+  Settings,
+  TrendingUp,
+  Eye,
+  PhoneCall,
+  MessageSquare,
+  Crown,
+  Send,
+  Star,
+  Check,
+  X,
   MessageCircle,
-  User
+  User,
+  Building2,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { UnifiedFacilityEditor } from '../../components/business/UnifiedFacilityEditor';
 import { VerifiedBadge } from '../../components/ui/VerifiedBadge';
 
 export const OwnerDashboardPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'editor' | 'stats' | 'ads' | 'chat' | 'reviews'>('editor');
+  const [activeTab, setActiveTab] = useState<'home' | 'editor' | 'stats' | 'ads' | 'chat' | 'reviews'>('home');
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-  // Dynamic Owner State from Supabase Auth Session
   const [ownerUser, setOwnerUser] = useState<any>(null);
   const [reviewsList, setReviewsList] = useState<any[]>([]);
   const [replyInput, setReplyInput] = useState<{ [id: string]: string }>({});
   const [submittingReply, setSubmittingReply] = useState<string | null>(null);
 
-  const [categoryName, setCategoryName] = useState<string>('');
   const [businessData, setBusinessData] = useState<any>({
     id: null,
-    is_verified: false,
-    badge_type: 'blue',
     name: 'منشأتي المعتمدة',
     city: 'الجمهورية اليمنية',
     slug: '',
@@ -52,7 +49,9 @@ export const OwnerDashboardPage: React.FC = () => {
     call_clicks: 0,
     whatsapp_clicks: 0,
     rating: 0,
-    review_count: 0
+    review_count: 0,
+    is_verified: false,
+    badge_type: 'blue',
   });
 
   const [ownerData, setOwnerData] = useState({
@@ -62,40 +61,16 @@ export const OwnerDashboardPage: React.FC = () => {
     avatar: '',
   });
 
-  // Chat State (Clean)
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'owner' | 'admin'; text: string; time: string }>>([
     {
       sender: 'admin',
       text: 'مرحباً بك في لوحة تحكم المنشأة 🌹 يسعدنا تواجدك معنا. يمكنك التواصل معنا هنا في أي وقت بخصوص منشأتك أو طلب ترقية إعلاناتك.',
-      time: 'الآن'
-    }
+      time: 'الآن',
+    },
   ]);
   const [chatInput, setChatInput] = useState('');
 
-  // Fetch Current Logged-in Owner & Claimed Business
-
-  const fetchCategoryName = async (categoryId: string) => {
-    if (!categoryId) return;
-    try {
-      const { data } = await supabase
-        .from('categories')
-        .select('name')
-        .eq('id', categoryId)
-        .single();
-      if (data) setCategoryName(data.name);
-    } catch (err) {
-      console.error('Error fetching category:', err);
-    }
-  };
-
   useEffect(() => {
-    // إذا كان هناك ?id= في الرابط، اجلب المنشأة مباشرة
-    const urlParams = new URLSearchParams(window.location.search);
-    const targetId = urlParams.get('id');
-    if (targetId) {
-      fetchBusinessDirectly(targetId);
-    }
-
     const fetchCurrentSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -110,10 +85,10 @@ export const OwnerDashboardPage: React.FC = () => {
             avatar: u.user_metadata?.avatar_url || '',
           });
 
-          // Fetch business claimed/owned by this user ID
           const { data: biz } = await supabase
             .from('businesses')
-            .select('id, name, city, slug, views_count, call_clicks, whatsapp_clicks, rating, review_count, cover_url, logo_url, category, category_id, description, phone, whatsapp, address, website_url, is_verified, badge_type').eq('owner_id', u.id)
+            .select('id, name, city, slug, views_count, call_clicks, whatsapp_clicks, rating, review_count, cover_url, logo_url, category, description, phone, whatsapp, address, website_url, is_verified, badge_type')
+            .eq('owner_id', u.id)
             .limit(1)
             .maybeSingle();
 
@@ -137,132 +112,110 @@ export const OwnerDashboardPage: React.FC = () => {
               call_clicks: biz.call_clicks || 0,
               whatsapp_clicks: biz.whatsapp_clicks || 0,
               rating: biz.rating || 5.0,
-              review_count: biz.review_count || 0
+              review_count: biz.review_count || 0,
             });
-            loadReviewsForBusiness(biz.id);
-            if (biz.category_id) fetchCategoryName(biz.category_id);
+            const { data: rData } = await supabase
+              .from('reviews')
+              .select('*')
+              .eq('entity_id', biz.id)
+              .order('created_at', { ascending: false });
+            setReviewsList(rData || []);
           }
         }
       } catch (err) {
         console.error('Session load error:', err);
       }
     };
-
     fetchCurrentSession();
   }, []);
 
-    const handleOwnerReply = async (reviewId: string) => {
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetId = urlParams.get('id');
+    if (targetId) {
+      const fetchBusinessDirectly = async () => {
+        try {
+          const { data: bData, error } = await supabase
+            .from('businesses')
+            .select('*')
+            .eq('id', targetId)
+            .single();
+
+          if (bData && !error) {
+            const { data: rData } = await supabase
+              .from('reviews')
+              .select('*')
+              .eq('entity_id', targetId)
+              .order('created_at', { ascending: false });
+            setReviewsList(rData || []);
+            setBusinessData({
+              ...bData,
+              views_count: bData.views_count ?? 0,
+              whatsapp_clicks: bData.whatsapp_clicks ?? 0,
+              call_clicks: bData.call_clicks ?? 0,
+              rating: bData.rating || 5.0,
+              review_count: bData.review_count || 0,
+            });
+          }
+        } catch (e) {
+          console.error('Error fetching business:', e);
+        }
+      };
+      fetchBusinessDirectly();
+    }
+  }, []);
+
+  const handleOwnerReply = async (reviewId: string) => {
     const text = replyInput[reviewId]?.trim();
-    if (!text) return;
+    if (!text || submittingReply) return;
+
+    const repliedAt = new Date().toISOString();
+
     try {
       setSubmittingReply(reviewId);
-      const { error } = await supabase.from('reviews').update({
-        owner_reply: text,
-        owner_reply_at: new Date().toISOString()
-      }).eq('id', reviewId);
 
-      if (!error) {
-        setReviewsList(prev => prev.map(r => r.id === reviewId ? { ...r, owner_reply: text, owner_reply_at: new Date().toISOString() } : r));
-        alert('تم إرسال رد المالك بنجاح!');
-      } else {
-        alert('تعذر إرسال الرد');
-      }
-    } catch (_) {
-      alert('خطأ في الاتصال');
+      const { error } = await supabase
+        .from('reviews')
+        .update({
+          owner_reply: text,
+          owner_reply_at: repliedAt
+        })
+        .eq('id', reviewId);
+
+      if (error) throw error;
+
+      setReviewsList(prev =>
+        prev.map(r =>
+          r.id === reviewId
+            ? { ...r, owner_reply: text, owner_reply_at: repliedAt }
+            : r
+        )
+      );
+
+      setReplyInput(prev => ({ ...prev, [reviewId]: '' }));
+      alert('تم إرسال رد المنشأة بنجاح!');
+    } catch (err) {
+      console.error('Owner reply error:', err);
+      alert('تعذر إرسال الرد. حاول مرة أخرى.');
     } finally {
       setSubmittingReply(null);
-    }
-  };
-
-  
-  
-    const fetchBusinessDirectly = async (targetId: string) => {
-      try {
-        const { data: bData, error } = await supabase
-          .from('businesses')
-          .select('*')
-          .eq('id', targetId)
-          .single();
-
-        if (bData && !error) {
-          // جلب التقييمات التابعة للمنشأة
-          const { data: rData } = await supabase
-            .from('reviews')
-            .select('*')
-            .eq('entity_id', targetId)
-            .order('created_at', { ascending: false });
-
-          const reviews = rData || [];
-          setReviewsList(reviews);
-
-          const rCount = reviews.length > 0 ? reviews.length : (bData.review_count || 0);
-          const rAvg = reviews.length > 0
-            ? (reviews.reduce((s: number, r: any) => s + (Number(r.stars) || 5), 0) / reviews.length).toFixed(1)
-            : (bData.rating || 5.0).toString();
-
-          setBusinessData({
-            ...bData,
-            views_count: bData.views_count ?? 142,
-            whatsapp_clicks: bData.whatsapp_clicks ?? 38,
-            call_clicks: bData.call_clicks ?? 19,
-            rating: parseFloat(rAvg),
-            review_count: rCount,
-            reviews_count: rCount
-          });
-          if (bData.category_id) fetchCategoryName(bData.category_id);
-        }
-      } catch (e) {
-        console.error('Error fetching target business:', e);
-      }
-    };
-
-  const loadReviewsForBusiness = async (bId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('reviews')
-        .select('*')
-        .eq('entity_id', bId)
-        .order('created_at', { ascending: false });
-
-      if (!error && data) {
-        setReviewsList(data);
-        const count = data.length;
-        const avg = count > 0 
-          ? (data.reduce((sum: number, r: any) => sum + (Number(r.stars) || 5), 0) / count).toFixed(1)
-          : '5.0';
-        setBusinessData((prev: any) => ({
-          ...prev,
-          rating: parseFloat(avg),
-          review_count: count,
-          reviews_count: count
-        }));
-      }
-    } catch (err) {
-      console.error('Error fetching reviews:', err);
     }
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
-
-    const newMsg = {
-      sender: 'owner' as const,
-      text: chatInput.trim(),
-      time: 'الآن'
-    };
-
-    setChatMessages(prev => [...prev, newMsg]);
+    const newMsg = { sender: 'owner' as const, text: chatInput.trim(), time: 'الآن' };
+    setChatMessages((prev) => [...prev, newMsg]);
     setChatInput('');
-
     setTimeout(() => {
-      setChatMessages(prev => [
+      setChatMessages((prev) => [
         ...prev,
         {
           sender: 'admin' as const,
           text: 'تم استلام استفسارك، سيقوم فريق الإدارة العامة بالرد عليك والمتابعة في أقرب وقت.',
-          time: 'الآن'
-        }
+          time: 'الآن',
+        },
       ]);
     }, 1200);
   };
@@ -275,636 +228,213 @@ export const OwnerDashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-slate-200 flex flex-col font-sans pb-16" dir="rtl">
+    <div className="min-h-screen bg-black text-slate-200 flex flex-col font-sans pb-24" dir="rtl">
       
-      {/* 1. HEADER (100% identical to public page) */}
-      <div className="relative w-full max-w-md md:max-w-3xl lg:max-w-4xl mx-auto bg-black">
-        {/* الغلاف */}
-        <div className="relative w-full h-44 sm:h-52 md:h-60 bg-black flex items-center justify-center overflow-hidden md:rounded-2xl md:mt-3 shadow-lg">
-          {/* زر الثلاث نقاط (خيارات) */}
-          <button
-            onClick={() => setIsOptionsOpen(!isOptionsOpen)}
-            className="absolute top-3.5 left-3.5 z-30 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/15 text-zinc-300 hover:text-[#FFC500] flex items-center justify-center transition active:scale-90 shadow-md"
-            title="خيارات"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="1"></circle>
-              <circle cx="19" cy="12" r="1"></circle>
-              <circle cx="5" cy="12" r="1"></circle>
-            </svg>
-          </button>
+      <main className="flex-1 w-full max-w-6xl mx-auto px-2 sm:px-4 pt-2 pb-24">
+        {activeTab === 'home' && (
+          <div className="fixed inset-0 z-40 bg-black pb-16">
+            <iframe
+  src={`/bank.html?slug=${encodeURIComponent(businessData.slug || businessData.id || '')}`}
+  className="w-full h-full border-0 bg-black block"
+  title="Public Page View"
+/>
+          </div>
+        )}
 
-          {/* القائمة المنسدلة */}
-          {isOptionsOpen && (
-            <div className="absolute top-16 left-4 z-40 w-48 rounded-xl bg-black border border-zinc-800 shadow-2xl overflow-hidden text-right">
+        {activeTab === 'editor' && (
+          <div className="fixed inset-0 z-40 bg-black flex flex-col">
+            {/* شريط الرأس مع زر الرجوع */}
+            <div className="flex items-center justify-between px-4 py-3 bg-black border-b border-zinc-800 shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#FFC500]"></span>
+                <h2 className="text-sm font-bold text-white">تعديل بيانات المنشأة</h2>
+              </div>
               <button
-                onClick={() => { setIsOptionsOpen(false); }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-white hover:bg-[#1c1c1c] transition"
+                onClick={() => setActiveTab('home')}
+                className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition flex items-center gap-1"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                الدعم الفني
-              </button>
-              <button
-                onClick={() => { setIsOptionsOpen(false); }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-white hover:bg-[#1c1c1c] transition"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                مدفوعاتي
-              </button>
-              <button
-                onClick={async () => {
-                  setIsOptionsOpen(false);
-                  await supabase.auth.signOut();
-                  window.location.href = '/';
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-400 hover:bg-[#1c1c1c] transition"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                خروج
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                رجوع
               </button>
             </div>
-          )}
+            
+            {/* محتوى التعديل (قابل للتمرير) */}
+            <div className="flex-1 overflow-y-auto p-4 pb-24">
+              <div className="w-full bg-black rounded-2xl">
+                <UnifiedFacilityEditor businessId={businessData.id} hideAdminOnlyFields={true} />
+              </div>
+            </div>
+          </div>
+        )}
 
-          <img 
-            src={businessData.cover_url || 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&auto=format&fit=crop&q=80'} 
-            alt={businessData.name} 
-            className="w-full h-full object-cover opacity-80"
-          />
-          
-          
-          
-        </div>
+        {activeTab === 'stats' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
+              <h2 className="text-lg sm:text-xl font-black text-white">الإحصائيات والنقرات</h2>
+              <button onClick={() => setActiveTab('home')} className="text-[10px] sm:text-xs font-bold text-[#FFC500] px-2 py-1 rounded-lg bg-[#FFC500]/10 hover:bg-[#FFC500]/20 transition">← رجوع</button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+              <div className="bg-black p-3 sm:p-4 rounded-2xl border border-zinc-800">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-zinc-500 font-bold">مشاهدات الصفحة</span>
+                  <Eye className="w-4 h-4 text-sky-400" />
+                </div>
+                <div className="text-2xl font-black text-white">{businessData.views_count}</div>
+              </div>
+              <div className="bg-black p-3 sm:p-4 rounded-2xl border border-zinc-800">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-zinc-500 font-bold">نقرات الاتصال</span>
+                  <PhoneCall className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-2xl font-black text-white">{businessData.call_clicks}</div>
+              </div>
+              <div className="bg-black p-3 sm:p-4 rounded-2xl border border-zinc-800">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-zinc-500 font-bold">محادثات الواتساب</span>
+                  <MessageCircle className="w-4 h-4 text-emerald-500" />
+                </div>
+                <div className="text-2xl font-black text-white">{businessData.whatsapp_clicks}</div>
+              </div>
+              <div className="bg-black p-3 sm:p-4 rounded-2xl border border-zinc-800">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-zinc-500 font-bold">متوسط التقييم</span>
+                  <Star className="w-4 h-4 text-[#FFC500] fill-[#FFC500]" />
+                </div>
+                <div className="text-2xl font-black text-[#FFC500]">{businessData.rating} <span className="text-xs text-zinc-500">/ 5</span></div>
+              </div>
+            </div>
+          </div>
+        )}
 
-        {/* الشعار (متداخل في اليمين) + شارة "أنت المالك" (في اليسار) */}
-        <div className="px-4 relative flex items-end justify-between -mt-10 mb-2">
-          <div className="relative order-1">
-            <div className="w-20 h-20 rounded-2xl shadow-2xl border-2 border-black flex items-center justify-center overflow-hidden bg-white">
-              {businessData.logo_url ? (
-                <img src={businessData.logo_url} alt={businessData.name} className="w-full h-full object-contain" />
+        {activeTab === 'ads' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
+              <h2 className="text-lg sm:text-xl font-black text-white">الإعلانات والترقية</h2>
+              <button onClick={() => setActiveTab('home')} className="text-[10px] sm:text-xs font-bold text-[#FFC500] px-2 py-1 rounded-lg bg-[#FFC500]/10 hover:bg-[#FFC500]/20 transition">← رجوع</button>
+            </div>
+            <div className="bg-black p-6 rounded-2xl border border-zinc-800 text-center text-zinc-500 text-sm">
+              سيتم إضافة باقات الإعلانات هنا قريباً.
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'chat' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
+              <h2 className="text-lg sm:text-xl font-black text-white">الدردشة مع الإدارة</h2>
+              <button onClick={() => setActiveTab('home')} className="text-[10px] sm:text-xs font-bold text-[#FFC500] px-2 py-1 rounded-lg bg-[#FFC500]/10 hover:bg-[#FFC500]/20 transition">← رجوع</button>
+            </div>
+            <div className="bg-black rounded-2xl border border-zinc-800 p-4 h-96 overflow-y-auto space-y-3">
+              {chatMessages.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.sender === 'owner' ? 'justify-start' : 'justify-end'}`}>
+                  <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.sender === 'owner' ? 'bg-zinc-800 text-white' : 'bg-[#FFC500] text-black'}`}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <form onSubmit={handleSendMessage} className="flex gap-2">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="اكتب رسالتك..."
+                className="flex-1 bg-black border border-zinc-800 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-[#FFC500]"
+              />
+              <button type="submit" className="px-4 py-2 rounded-xl bg-[#FFC500] text-black font-bold">
+                <Send size={16} />
+              </button>
+            </form>
+          </div>
+        )}
+
+        {activeTab === 'reviews' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
+              <h2 className="text-lg sm:text-xl font-black text-white">التنبيهات والتقييمات</h2>
+              <button onClick={() => setActiveTab('home')} className="text-[10px] sm:text-xs font-bold text-[#FFC500] px-2 py-1 rounded-lg bg-[#FFC500]/10 hover:bg-[#FFC500]/20 transition">← رجوع</button>
+            </div>
+            <div className="space-y-3">
+              {reviewsList.length === 0 ? (
+                <p className="text-center text-zinc-500 py-10">لا توجد تقييمات بعد.</p>
               ) : (
-                <span className="text-2xl font-black text-[#FFC500]">{(businessData.name || 'م').charAt(0)}</span>
+                reviewsList.map((rev) => (
+                  <div key={rev.id} className="p-4 rounded-2xl bg-black border border-zinc-800">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-bold text-white">{rev.user_name || 'مستخدم'}</span>
+                      <div className="flex text-[#FFC500]">
+                        {[1,2,3,4,5].map(s => <Star key={s} size={12} className={s <= rev.stars ? 'fill-[#FFC500]' : 'text-zinc-600'} />)}
+                      </div>
+                    </div>
+                    <p className="text-xs text-zinc-400">{rev.comment || 'بدون تعليق'}</p>
+
+                    {rev.owner_reply && (
+                      <div className="mt-3 rounded-xl bg-zinc-900 border border-zinc-800 p-3">
+                        <p className="text-xs font-bold text-[#FFC500] mb-2">
+                          رد المنشأة
+                        </p>
+                        <p className="text-sm text-zinc-200">{rev.owner_reply}</p>
+                        {rev.owner_reply_at && (
+                          <p className="text-[10px] text-zinc-500 mt-2">
+                            {new Date(rev.owner_reply_at).toLocaleString('ar-YE')}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="mt-3 flex gap-2 items-end">
+                      <textarea
+                        value={replyInput[rev.id] || ''}
+                        onChange={(e) =>
+                          setReplyInput(prev => ({ ...prev, [rev.id]: e.target.value }))
+                        }
+                        placeholder="اكتب ردك على تقييم العميل..."
+                        rows={2}
+                        className="flex-1 min-w-0 bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-[#FFC500] resize-none"
+                      />
+                      <button
+                        type="button"
+                        disabled={!replyInput[rev.id]?.trim() || submittingReply !== null}
+                        onClick={() => handleOwnerReply(rev.id)}
+                        className="px-4 py-3 rounded-xl bg-[#FFC500] text-black font-bold text-xs disabled:opacity-40"
+                      >
+                        {submittingReply === rev.id ? 'جارٍ الإرسال...' : 'إرسال'}
+                        <Send size={14} className="inline mr-1" />
+                      </button>
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </div>
-          <div className="order-2 mb-1">
-            <span className="inline-flex items-center gap-1.5 bg-[#FFC500] text-black text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg">
-              <i className="fa-solid fa-crown"></i>
-              <span>👑 أنت المالك</span>
-            </span>
-          </div>
-        </div>
-
-        {/* البيانات الأساسية */}
-        <div className="px-4 space-y-1.5 text-right">
-          <div className="inline-flex items-center gap-1.5 flex-wrap">
-            <h2 className="text-sm sm:text-base font-black text-white leading-snug inline">{businessData.name || 'إدارة المنشأة'}</h2>
-            {/* شارة التوثيق إن وجدت */}
-            {businessData.badge_type && (
-              <VerifiedBadge variant={businessData.badge_type} size={20} />
-            )}
-          </div>
-          
-          <div className="flex items-center justify-start gap-1.5 text-[#FFC500] text-xs font-bold">
-            <span className="text-white font-medium text-[11px]">★ التقييمات</span>
-            <div className="flex text-[10px]">
-              {[1, 2, 3, 4, 5].map((s) => (
-                <Star key={s} size={12} className={s <= Math.round(businessData.rating || 5) ? "fill-[#FFC500]" : "text-zinc-600"} />
-              ))}
-            </div>
-            <span className="text-white text-sm font-black">{businessData.rating || '5.0'}</span>
-            <span className="text-zinc-400 font-normal text-[11px]">({businessData.review_count || 0} تقييم)</span>
-          </div>
-
-          <p className="text-zinc-300 text-xs leading-snug font-medium pt-1">
-            {businessData.description || 'لا يوجد وصف'}
-          </p>
-
-          <div className="flex items-center justify-start gap-3 text-xs font-semibold text-zinc-400 pt-1 pb-3">
-            <div className="flex items-center gap-1">
-              <i className="fa-solid fa-briefcase text-[#FFC500] text-xs"></i>
-              <span className="text-zinc-300">{categoryName || businessData.category || 'غير مصنف'}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <i className="fa-solid fa-location-dot text-[#FFC500] text-xs"></i>
-              <span className="text-zinc-300">{businessData.city || 'اليمن'}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. HORIZONTAL NAVIGATION TABS */}
-      <div className="max-w-6xl mx-auto w-full px-4 mt-4">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-          
-          <button
-            onClick={() => {
-              if (businessData.slug) {
-                setIsPreviewOpen(true);
-              } else {
-                alert('لا يمكن عرض الصفحة لعدم وجود رابط (Slug) للمنشأة.');
-              }
-            }}
-            className="flex-shrink-0 px-4 py-2.5 rounded-xl bg-black text-white border-2 border-[#2F3336] hover:bg-zinc-900 text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm active:scale-95"
-            title="عرض الصفحة كما يراها الزائر"
-          >
-            <Eye className="w-4 h-4" />
-            <span>كيف يرى الآخرون صفحتك</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('editor')}
-            className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm active:scale-95 ${activeTab === 'editor' ? 'bg-[#FFC500] text-black border-2 border-[#FFC500]' : 'bg-black text-white border-2 border-[#2F3336] hover:bg-zinc-900'}`}
-          >
-            <Settings className={`w-4 h-4 ${activeTab === 'editor' ? 'text-black' : 'text-amber-400'}`} />
-            <span>تعديل بيانات المنشأة</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('stats')}
-            className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm active:scale-95 ${activeTab === 'stats' ? 'bg-[#FFC500] text-black border-2 border-[#FFC500]' : 'bg-black text-white border-2 border-[#2F3336] hover:bg-zinc-900'}`}
-          >
-            <TrendingUp className={`w-4 h-4 ${activeTab === 'stats' ? 'text-black' : 'text-emerald-400'}`} />
-            <span>الإحصائيات والنقرات</span>
-          </button>
-
-          <button 
-            onClick={() => setActiveTab('ads')}
-            className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm active:scale-95 ${activeTab === 'ads' ? 'bg-[#FFC500] text-black border-2 border-[#FFC500]' : 'bg-black text-white border-2 border-[#2F3336] hover:bg-zinc-900'}`}
-          >
-            <Crown className={`w-4 h-4 ${activeTab === 'ads' ? 'text-black' : 'text-amber-400'}`} />
-            <span>الإعلانات والترقية</span>
-          </button>
-
-          <button onClick={() => setActiveTab('reviews')} className={`flex flex-col items-center gap-1 transition ${activeTab === 'reviews' ? 'text-[#FFC500]' : 'text-zinc-400 hover:text-white'}`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-          <span className="text-[10px] font-bold">التنبيهات</span>
-        </button>
-
-          <button 
-            onClick={() => setActiveTab('reviews')}
-            className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition shadow-sm active:scale-95 ${activeTab === 'reviews' ? 'bg-[#FFC500] text-black border-2 border-[#FFC500]' : 'bg-black text-white border-2 border-[#2F3336] hover:bg-zinc-900'}`}
-          >
-            <Star className={`w-4 h-4 ${activeTab === 'reviews' ? 'text-black' : 'text-amber-400'}`} />
-            <span>التقييمات والردود</span>
-          </button>
-
-        </div>
-      </div>
-
-      {/* 3. MAIN TABS CONTENT */}
-      <main className="max-w-6xl mx-auto w-full px-4 mt-5 flex-1">
-
-        {/* TAB 1: FACILITY EDITOR */}
-        {activeTab === 'editor' && (
-          <div className="space-y-4">
-            <div 
-              id="facility-editor-container" 
-              className="w-full bg-black rounded-3xl border border-[#222b42] p-4 sm:p-7 shadow-2xl"
-            >
-              <UnifiedFacilityEditor businessId={businessData.id} />
-            </div>
-          </div>
         )}
-
-        {/* TAB 2: REAL-TIME STATISTICS */}
-        {activeTab === 'stats' && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-black p-5 rounded-2xl border border-[#222b42]">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-slate-400 font-bold">مشاهدات الصفحة</span>
-                <Eye className="w-4 h-4 text-sky-400" />
-              </div>
-              <div className="text-2xl md:text-3xl font-black text-white">{businessData.views_count}</div>
-              <span className="text-[11px] text-slate-500 font-bold mt-1 block">إجمالي الزيارات</span>
-            </div>
-
-            <div className="bg-black p-5 rounded-2xl border border-[#222b42]">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-slate-400 font-bold">نقرات الاتصال</span>
-                <PhoneCall className="w-4 h-4 text-emerald-400" />
-              </div>
-              <div className="text-2xl md:text-3xl font-black text-white">{businessData.call_clicks}</div>
-              <span className="text-[11px] text-slate-500 font-bold mt-1 block">حجوزات واستفسارات</span>
-            </div>
-
-            <div className="bg-black p-5 rounded-2xl border border-[#222b42]">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-slate-400 font-bold">محادثات الواتساب</span>
-                <MessageCircle className="w-4 h-4 text-emerald-500" />
-              </div>
-              <div className="text-2xl md:text-3xl font-black text-white">{businessData.whatsapp_clicks}</div>
-              <span className="text-[11px] text-slate-500 font-bold mt-1 block">تواصل مباشر</span>
-            </div>
-
-            <div className="bg-black p-5 rounded-2xl border border-[#222b42]">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-slate-400 font-bold">متوسط التقييم</span>
-                <Star className="w-4 h-4 text-amber-400" />
-              </div>
-              <div className="text-2xl md:text-3xl font-black text-amber-400">{businessData.rating} <span className="text-xs text-slate-400">/ 5</span></div>
-              <span className="text-[11px] text-slate-500 font-bold mt-1 block">من أصل {businessData.review_count} تقييم</span>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: PROMOTION & PACKAGES */}
-        {activeTab === 'ads' && (
-          <div className="bg-black rounded-3xl border border-[#222b42] p-6 md:p-8">
-            <div className="max-w-2xl mb-6">
-              <h2 className="text-lg md:text-xl font-black text-white">ترقية ظهور المنشأة في صدارة محركات البحث</h2>
-              <p className="text-xs text-slate-400 mt-1">
-                تثبيت المنشأة في المركز الأول أو تفعيل الإعلانات المضمنة يضاعف وصول العملاء الحقيقيين.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <div className="bg-[#141a2c] p-5 rounded-2xl border border-[#222b42] flex flex-col justify-between">
-                <div>
-                  <h3 className="font-bold text-white text-base">إعلان أسبوعي عادي</h3>
-                  <div className="my-3 text-2xl font-black text-white">30$<span className="text-xs text-slate-400"> / أسبوع</span></div>
-                  <ul className="text-xs text-slate-300 space-y-2 border-t border-[#222b42] pt-3">
-                    <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-amber-400" /> ظهور في قسم عروض المحافظة</li>
-                    <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-amber-400" /> زر اتصال وواتساب سريع</li>
-                  </ul>
-                </div>
-                <button onClick={() => alert('تم رفع طلب الترقية')} className="mt-5 w-full py-2.5 rounded-xl border border-[#222b42] hover:border-amber-400 text-slate-200 text-xs font-bold transition">
-                  طلب الباقة
-                </button>
-              </div>
-
-              <div className="bg-[#141a2c] p-5 rounded-2xl border-2 border-amber-500 relative flex flex-col justify-between shadow-xl">
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-black text-[10px] font-black px-3 py-0.5 rounded-full uppercase">
-                  الأكثر فاعلية (VIP)
-                </span>
-                <div>
-                  <h3 className="font-black text-amber-400 text-base">الباقة الذهبية (VIP)</h3>
-                  <div className="my-3 text-2xl font-black text-white">120$<span className="text-xs text-slate-400"> / شهرياً</span></div>
-                  <ul className="text-xs text-slate-200 space-y-2 border-t border-[#222b42] pt-3">
-                    <li className="flex items-center gap-2"><Crown className="w-3.5 h-3.5 text-amber-400" /> تثبيت في المركز #1 في محافظتك</li>
-                    <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-amber-400" /> إطار ذهبي مميز للكرت</li>
-                    <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-amber-400" /> دعم تسويقي مخصص</li>
-                  </ul>
-                </div>
-                <button onClick={() => alert('تم تقديم طلب الباقة الذهبية')} className="mt-5 w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black text-xs font-black transition">
-                  ترقية إلى VIP الآن
-                </button>
-              </div>
-
-              <div className="bg-[#141a2c] p-5 rounded-2xl border border-[#222b42] flex flex-col justify-between">
-                <div>
-                  <h3 className="font-bold text-white text-base">الباقة الماسية الشاملة</h3>
-                  <div className="my-3 text-2xl font-black text-white">250$<span className="text-xs text-slate-400"> / 3 أشهر</span></div>
-                  <ul className="text-xs text-slate-300 space-y-2 border-t border-[#222b42] pt-3">
-                    <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-amber-400" /> بنر رئيسي في واجهة المنصة</li>
-                    <li className="flex items-center gap-2"><Check className="w-3.5 h-3.5 text-amber-400" /> تقارير أداء دورية للمبيعات</li>
-                  </ul>
-                </div>
-                <button onClick={() => alert('تم تقديم طلب الباقة الماسية')} className="mt-5 w-full py-2.5 rounded-xl border border-[#222b42] hover:border-amber-400 text-slate-200 text-xs font-bold transition">
-                  طلب الباقة
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: LIVE CHAT */}
-        {activeTab === 'chat' && (
-          <div className="bg-black rounded-3xl border border-[#222b42] overflow-hidden flex flex-col h-[520px] shadow-2xl">
-            <div className="bg-[#141a2c] p-4 border-b border-[#222b42] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-black text-xs">
-                  إ.ع
-                </div>
-                <div>
-                  <h3 className="font-bold text-xs md:text-sm text-white flex items-center gap-2">
-                    الإدارة العامة للمنصة
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  </h3>
-                  <p className="text-[10px] text-slate-400">الدعم المباشر لشركاء المنشآت</p>
-                </div>
-              </div>
-              <a 
-                href="https://wa.me/967770000000" 
-                target="_blank" 
-                className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs font-bold transition flex items-center gap-1.5"
-              >
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span>واتساب الإدارة</span>
-              </a>
-            </div>
-
-            <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-black/50">
-              {chatMessages.map((msg, idx) => (
-                <div 
-                  key={idx} 
-                  className={`flex items-start gap-2.5 max-w-[85%] ${
-                    msg.sender === 'owner' ? 'mr-auto flex-row-reverse' : ''
-                  }`}
-                >
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 ${
-                    msg.sender === 'owner' ? 'bg-amber-500 text-black' : 'bg-[#141a2c] text-amber-400 border border-[#222b42]'
-                  }`}>
-                    {msg.sender === 'owner' ? 'أنت' : 'إدارة'}
-                  </div>
-                  <div>
-                    <div className={`p-3 rounded-2xl text-xs leading-relaxed ${
-                      msg.sender === 'owner' 
-                        ? 'bg-amber-500 text-black font-semibold rounded-tl-none shadow-md' 
-                        : 'bg-[#141a2c] text-slate-200 border border-[#222b42] rounded-tr-none'
-                    }`}>
-                      {msg.text}
-                    </div>
-                    <span className="text-[10px] text-slate-500 mt-1 block">{msg.time}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="p-3 bg-[#141a2c] border-t border-[#222b42]">
-              <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                <input 
-                  type="text" 
-                  value={chatInput} 
-                  onChange={(e) => setChatInput(e.target.value)} 
-                  placeholder="اكتب استفسارك للإدارة العامة..." 
-                  className="flex-1 bg-black border border-[#222b42] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
-                />
-                <button 
-                  type="submit" 
-                  className="w-10 h-10 rounded-xl bg-amber-500 hover:bg-amber-600 text-black flex items-center justify-center transition shadow-md"
-                >
-                  <Send className="w-4 h-4 transform -scale-x-100" />
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 5: REVIEWS */}
-        {activeTab === 'reviews' && (
-          <div className="space-y-4">
-            {reviewsList.length === 0 ? (
-              <div className="bg-black p-8 rounded-2xl border border-[#222b42] text-center text-slate-400 text-xs">
-                لا توجد تقييمات مسجلة لهذه المنشأة حتى الآن.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {reviewsList.map((rev: any) => (
-                  <div key={rev.id} className="bg-black p-4 sm:p-5 rounded-2xl border border-[#222b42] space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-[#111111] border border-slate-700 flex items-center justify-center text-amber-400 font-bold text-xs">
-                          {rev.user_name ? rev.user_name.charAt(0) : 'ع'}
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-bold text-white">{rev.user_name || 'عميل'}</h4>
-                          <span className="text-[10px] text-slate-500">
-                            {rev.created_at ? new Date(rev.created_at).toLocaleDateString('ar-YE') : ''}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 text-amber-400">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} size={12} className={i < (rev.stars || 5) ? 'fill-amber-400 text-amber-400' : 'text-slate-700'} />
-                        ))}
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-slate-300 bg-[#141a2c] p-3 rounded-xl border border-[#222b42]">
-                      {rev.comment || 'لا يوجد تعليق نصي.'}
-                    </p>
-
-                    {rev.owner_reply ? (
-                      <div className="bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl space-y-1">
-                        <div className="text-[11px] font-bold text-amber-400">👑 ردك كمالك:</div>
-                        <p className="text-xs text-slate-200">{rev.owner_reply}</p>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 pt-1">
-                        <input
-                          type="text"
-                          value={replyInput[rev.id] || ''}
-                          onChange={(e) => setReplyInput({ ...replyInput, [rev.id]: e.target.value })}
-                          placeholder="اكتب ردك كمالك على هذا التقييم..."
-                          className="flex-1 bg-[#141a2c] border border-[#222b42] text-xs text-white p-2.5 rounded-xl outline-none focus:border-amber-400"
-                        />
-                        <button
-                          type="button"
-                          disabled={submittingReply === rev.id}
-                          onClick={() => handleOwnerReply(rev.id)}
-                          className="px-3 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold transition disabled:opacity-50"
-                        >
-                          {submittingReply === rev.id ? 'جارٍ الإرسال...' : 'إرسال الرد'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
       </main>
 
-      {/* 4. NOTIFICATION MODAL */}
-      {isNotificationOpen && (
-        <div className="fixed inset-0 bg-black  z-50 flex items-center justify-center p-4">
-          <div className="bg-black border border-[#222b42] rounded-3xl w-full max-w-sm p-5 relative shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-[#222b42] mb-4">
-              <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4 text-amber-400" />
-                <h3 className="text-sm font-black text-white">مركز الإشعارات</h3>
-              </div>
-              <button 
-                onClick={() => setIsNotificationOpen(false)}
-                className="w-7 h-7 rounded-full bg-zinc-900 text-slate-400 hover:text-white flex items-center justify-center"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <div className="p-3 rounded-2xl bg-[#141a2c] border border-[#222b42]">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-bold text-amber-400">أهلاً بك</span>
-                  <span className="text-[10px] text-slate-500">الآن</span>
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  مرحباً بك في لوحة تحكم المنشأة، يمكنك الآن إدخال وتعديل بيانات منشأتك.
-                </p>
-              </div>
-            </div>
-
-            <button 
-              onClick={() => setIsNotificationOpen(false)}
-              className="mt-5 w-full py-2.5 rounded-xl bg-zinc-900 hover:bg-[#202942] text-xs font-bold text-slate-300 transition"
-            >
-              إغلاق
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 5. EDIT OWNER PERSONAL PROFILE MODAL */}
-      {isProfileModalOpen && (
-        <div className="fixed inset-0 bg-black  z-50 flex items-center justify-center p-4">
-          <div className="bg-black border border-[#222b42] rounded-3xl w-full max-w-md p-6 relative shadow-2xl">
-            <button 
-              onClick={() => setIsProfileModalOpen(false)}
-              className="absolute top-4 left-4 w-8 h-8 rounded-full bg-[#141a2c] text-slate-400 hover:text-white flex items-center justify-center transition"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
-                <Settings className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-black text-white">الملف الشخصي للمالك</h3>
-                <p className="text-xs text-slate-400">تعديل بيانات حسابك الشخصي ووسائل الدخول</p>
-              </div>
-            </div>
-
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              try {
-                if (ownerUser) {
-                  await supabase.auth.updateUser({
-                    data: { full_name: ownerData.name, phone: ownerData.phone }
-                  });
-                }
-                alert('تم تحديث بيانات حساب المالك بنجاح');
-                setIsProfileModalOpen(false);
-              } catch (err: any) {
-                alert('حدث خطأ أثناء التحديث: ' + err?.message);
-              }
-            }} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">اسم المالك</label>
-                <input 
-                  type="text" 
-                  value={ownerData.name} 
-                  onChange={(e) => setOwnerData({ ...ownerData, name: e.target.value })} 
-                  className="w-full bg-[#141a2c] border border-[#222b42] rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-400" 
-                  required 
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">رقم الهاتف الشخصي</label>
-                <input 
-                  type="text" 
-                  value={ownerData.phone} 
-                  onChange={(e) => setOwnerData({ ...ownerData, phone: e.target.value })} 
-                  className="w-full bg-[#141a2c] border border-[#222b42] rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-400" 
-                  dir="ltr" 
-                  placeholder="+967..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">البريد الإلكتروني</label>
-                <input 
-                  type="email" 
-                  value={ownerData.email} 
-                  readOnly
-                  className="w-full bg-[#141a2c]/60 border border-[#222b42] rounded-xl p-3 text-xs text-slate-400 focus:outline-none cursor-not-allowed" 
-                  dir="ltr" 
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-[#222b42]">
-                <button 
-                  type="button" 
-                  onClick={() => setIsProfileModalOpen(false)} 
-                  className="px-4 py-2 rounded-xl bg-[#141a2c] text-slate-300 text-xs font-bold"
-                >
-                  إلغاء
-                </button>
-                <button 
-                  type="submit" 
-                  className="px-6 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-black text-xs font-black transition"
-                >
-                  حفظ التعديلات
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-
-      {/* LIVE PREVIEW MODAL */}
-      {isPreviewOpen && (
-        <div className="fixed inset-0 z-[9999] bg-black flex flex-col" dir="rtl">
-          <div className="flex items-center justify-between px-4 py-3 bg-black border-b border-zinc-800 shrink-0">
-            <div className="flex items-center gap-2 text-white font-bold text-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              معاينة حية كما يراها الزائر
-            </div>
-            <button
-              onClick={() => setIsPreviewOpen(false)}
-              className="px-4 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold transition flex items-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-              إغلاق المعاينة
-            </button>
-          </div>
-          <div className="flex-1 bg-zinc-900 overflow-hidden relative">
-            <iframe
-              src={`/bank.html?slug=${encodeURIComponent(businessData.slug)}`}
-              className="w-full h-full border-0 bg-black"
-              title="Business Preview"
-            />
-          </div>
-        </div>
-      )}
-
-
-      {/* الشريط السفلي (Bottom Nav) */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#0A0A0B] border-t border-[#2F3336] flex items-center justify-around py-2 pb-safe overflow-x-auto">
-        
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#0A0A0B] border-t border-[#2F3336] flex items-center justify-around py-2 pb-safe overflow-x-auto max-w-6xl mx-auto">
         <button onClick={() => window.location.href = '/account'} className="flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition px-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          <span className="text-[9px] font-bold">الحساب</span>
+          <User size={16} className="sm:w-5 sm:h-5" />
+          <span className="text-[9px] sm:text-[10px] font-bold">الحساب</span>
         </button>
-
         <button onClick={() => setActiveTab('stats')} className={`flex flex-col items-center gap-1 transition px-2 ${activeTab === 'stats' ? 'text-[#FFC500]' : 'text-zinc-400 hover:text-white'}`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-          <span className="text-[9px] font-bold">الإحصائيات</span>
+          <TrendingUp size={16} className="sm:w-5 sm:h-5" />
+          <span className="text-[9px] sm:text-[10px] font-bold">الإحصائيات</span>
         </button>
-
         <button onClick={() => setActiveTab('ads')} className={`flex flex-col items-center gap-1 transition px-2 ${activeTab === 'ads' ? 'text-[#FFC500]' : 'text-zinc-400 hover:text-white'}`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 11 18-5v12L3 14v-3z"></path><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"></path></svg>
-          <span className="text-[9px] font-bold">الإعلانات</span>
+          <Crown size={16} className="sm:w-5 sm:h-5" />
+          <span className="text-[9px] sm:text-[10px] font-bold">الإعلانات</span>
         </button>
-
         <button onClick={() => setActiveTab('reviews')} className={`flex flex-col items-center gap-1 transition px-2 ${activeTab === 'reviews' ? 'text-[#FFC500]' : 'text-zinc-400 hover:text-white'}`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-          <span className="text-[9px] font-bold">التنبيهات</span>
+          <Bell size={16} className="sm:w-5 sm:h-5" />
+          <span className="text-[9px] sm:text-[10px] font-bold">التنبيهات</span>
         </button>
-
         <button onClick={() => setActiveTab('editor')} className={`flex flex-col items-center gap-1 transition px-2 ${activeTab === 'editor' ? 'text-[#FFC500]' : 'text-zinc-400 hover:text-white'}`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-          <span className="text-[9px] font-bold">تعديل</span>
+          <Settings size={16} className="sm:w-5 sm:h-5" />
+          <span className="text-[9px] sm:text-[10px] font-bold">تعديل</span>
         </button>
-
-        <button 
-          onClick={() => {
-            if (businessData.slug || businessData.id) {
-              window.open(`/bank.html?slug=${businessData.slug || businessData.id}`, '_blank');
-            } else {
-              alert('بيانات المنشأة غير محملة بعد.');
-            }
-          }} 
-          className="flex flex-col items-center gap-1 transition px-2 text-zinc-400 hover:text-white"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-          <span className="text-[9px] font-bold">عرض</span>
+        <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-1 transition px-2 ${activeTab === 'home' ? 'text-[#FFC500]' : 'text-zinc-400 hover:text-white'}`}>
+          <Eye size={16} className="sm:w-5 sm:h-5" />
+          <span className="text-[9px] sm:text-[10px] font-bold">عرض</span>
         </button>
-
       </div>
     </div>
   );

@@ -81,14 +81,14 @@ const CustomDarkSelect: React.FC<CustomSelectProps> = ({ label, value, options, 
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full p-2.5 bg-[#111111] border border-[#2F3336] hover:border-[#FFC500]/50 rounded-xl text-white flex items-center justify-between text-xs outline-none transition"
+        className="w-full p-2.5 bg-black border border-[#2F3336] hover:border-[#FFC500]/50 rounded-xl text-white flex items-center justify-between text-xs outline-none transition"
       >
         <span className="truncate">{selectedLabel}</span>
         <ChevronDown size={14} className={`text-gray-400 transition-transform ${open ? 'rotate-180 text-[#FFC500]' : ''}`} />
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-1 z-50 max-h-60 overflow-y-auto bg-[#111111] border border-[#2F3336] rounded-xl shadow-2xl p-1 space-y-0.5 no-scrollbar">
+        <div className="absolute top-full left-0 right-0 mt-1 z-50 max-h-60 overflow-y-auto bg-black border border-[#2F3336] rounded-xl shadow-2xl p-1 space-y-0.5 no-scrollbar">
           
           {/* خيار افتراضي: اختر الصنف */}
           {allowCustomCategory && (
@@ -142,7 +142,7 @@ const CustomDarkSelect: React.FC<CustomSelectProps> = ({ label, value, options, 
                     value={newCatName}
                     onChange={(e) => setNewCatName(e.target.value)}
                     placeholder="اكتب اسم الصنف الجديد..."
-                    className="w-full p-2 bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-lg text-white text-xs outline-none"
+                    className="w-full p-2 bg-black border border-[#2F3336] focus:border-[#FFC500] rounded-lg text-white text-xs outline-none"
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -162,7 +162,7 @@ const CustomDarkSelect: React.FC<CustomSelectProps> = ({ label, value, options, 
                     <button
                       type="button"
                       onClick={handleAddNewCategory}
-                      className="px-3 py-1 bg-[#FFC500] text-black font-black text-[11px] rounded-md hover:bg-amber-400 transition"
+                      className="px-4 py-2 rounded-xl bg-black border border-zinc-700 text-white text-xs font-bold hover:border-[#FFC500] transition active:scale-95"
                     >
                       تأكيد
                     </button>
@@ -181,9 +181,10 @@ const CustomDarkSelect: React.FC<CustomSelectProps> = ({ label, value, options, 
 interface UnifiedFacilityEditorProps {
   businessId?: string | null;
   onSaved?: (data: any) => void;
+  hideAdminOnlyFields?: boolean;
 }
 
-export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ businessId, onSaved }) => {
+export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ businessId, onSaved, hideAdminOnlyFields = false }) => {
   const [activeTab, setActiveTab] = useState<'info' | 'media' | 'features' | 'ads'>('info');
   const [saving, setSaving] = useState(false);
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
@@ -505,7 +506,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
   return (
     <div className="w-full text-right font-['Cairo',sans-serif]" dir="rtl">
       {successToast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl bg-[#111111] border-2 border-emerald-500 text-emerald-300 font-bold text-xs sm:text-sm flex items-center gap-3 shadow-2xl ">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-2xl bg-black border-2 border-emerald-500 text-emerald-300 font-bold text-xs sm:text-sm flex items-center gap-3 shadow-2xl ">
           <div className="w-6 h-6 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0">
             <Check size={14} className="stroke-[3]" />
           </div>
@@ -539,7 +540,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
             className={`py-2.5 px-3.5 rounded-xl whitespace-nowrap transition-all ${
               activeTab === tab.id
                 ? 'bg-[#FFC500] text-black font-black shadow-md'
-                : 'text-gray-400 hover:text-white hover:bg-[#111111]'
+                : 'text-gray-400 hover:text-white hover:bg-black'
             }`}
           >
             {tab.label}
@@ -566,7 +567,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   value={formData.name}
                   onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
                   placeholder="أدخل اسم المنشأة (شركة، مصنع، بنك، فندق)..."
-                  className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none focus:border-[#FFC500]"
+                  className="w-full p-2.5 bg-black border border-[#2F3336] rounded-xl text-white outline-none focus:border-[#FFC500]"
                 />
               </div>
 
@@ -580,7 +581,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="flex flex-col sm:grid sm:grid-cols-3 gap-3">
               <CustomDarkSelect
                 label="المحافظة / المدينة *"
                 value={formData.city}
@@ -595,12 +596,12 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   value={formData.address}
                   onChange={(e) => setFormData(p => ({ ...p, address: e.target.value }))}
                   placeholder="الشارع، الحي، أقرب معلم بارز..."
-                  className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none"
+                  className="w-full p-2.5 bg-black border border-[#2F3336] rounded-xl text-white outline-none"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="flex flex-col sm:grid sm:grid-cols-3 gap-3">
               <div className="space-y-1">
                 <label className="text-gray-300 font-bold block">رقم الهاتف الرسمي</label>
                 <input
@@ -608,7 +609,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   value={formData.phone}
                   onChange={(e) => setFormData(p => ({ ...p, phone: e.target.value }))}
                   placeholder="+967..."
-                  className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none font-mono"
+                  className="w-full p-2.5 bg-black border border-[#2F3336] rounded-xl text-white outline-none font-mono"
                   dir="ltr"
                 />
               </div>
@@ -620,7 +621,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   value={formData.whatsapp}
                   onChange={(e) => setFormData(p => ({ ...p, whatsapp: e.target.value }))}
                   placeholder="+967..."
-                  className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none font-mono"
+                  className="w-full p-2.5 bg-black border border-[#2F3336] rounded-xl text-white outline-none font-mono"
                   dir="ltr"
                 />
               </div>
@@ -632,7 +633,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   value={formData.website_url}
                   onChange={(e) => setFormData(p => ({ ...p, website_url: e.target.value }))}
                   placeholder="https://..."
-                  className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none font-mono"
+                  className="w-full p-2.5 bg-black border border-[#2F3336] rounded-xl text-white outline-none font-mono"
                   dir="ltr"
                 />
               </div>
@@ -645,7 +646,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                 value={formData.description}
                 onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
                 placeholder="اكتب نبذة مميزة تشرح خدمات وتجهيزات منشأتك..."
-                className="w-full p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-white outline-none resize-none"
+                className="w-full p-2.5 bg-black border border-[#2F3336] rounded-xl text-white outline-none resize-none"
               />
             </div>
           </div>
@@ -655,7 +656,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
         {activeTab === 'media' && (
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="p-3.5 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-2.5">
+              <div className="p-3.5 rounded-2xl bg-black border border-[#2F3336] space-y-2.5">
                 <label className="text-gray-300 font-bold block">شعار المنشأة (Logo)</label>
                 <div className="flex items-center gap-3">
                   <div className="w-16 h-16 rounded-xl bg-black border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0">
@@ -673,7 +674,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-2.5">
+              <div className="p-3.5 rounded-2xl bg-black border border-[#2F3336] space-y-2.5">
                 <label className="text-gray-300 font-bold block">الغلاف البانورامي (Cover Banner)</label>
                 <div className="flex items-center gap-3">
                   <div className="w-24 h-16 rounded-xl bg-black border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0">
@@ -683,7 +684,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                       <ImageIcon className="w-7 h-7 text-gray-500" />
                     )}
                   </div>
-                  <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-[#111111] hover:bg-[#FFC500] hover:text-black border border-[#2F3336] text-white font-bold text-xs flex items-center gap-2 transition-all">
+                  <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-black hover:bg-[#FFC500] hover:text-black border border-[#2F3336] text-white font-bold text-xs flex items-center gap-2 transition-all">
                     <Upload size={14} />
                     {uploadingTarget === 'cover' ? 'جاري الرفع...' : 'رفع غلاف من الهاتف'}
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => handleUploadFile('cover', e)} />
@@ -692,7 +693,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-3">
+            <div className="p-4 rounded-2xl bg-black border border-[#2F3336] space-y-3">
               <label className="text-white font-bold flex items-center gap-2">
                 <ImageIcon size={16} className="text-[#FFC500]" />
                 معرض المنشأة (أربع صور للعرض من استوديو الهاتف)
@@ -738,7 +739,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
         {/* STEP 3: FEATURES & PROMOTIONS */}
         {activeTab === 'features' && (
           <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-2.5">
+            <div className="p-4 rounded-2xl bg-black border border-[#2F3336] space-y-2.5">
               <label className="text-white font-bold flex items-center gap-2">
                 <Bed size={15} className="text-[#FFC500]" />
                 سعة وحجم المنشأة / نطاق العمل (اسحب واختر):
@@ -780,7 +781,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
               }}
             />
 
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-4 shadow-xl">
+            <div className="p-4 sm:p-5 rounded-2xl bg-black border border-[#2F3336] space-y-4 shadow-xl">
               <div className="flex items-center justify-between">
                 <label className="text-white font-bold flex items-center gap-2 text-sm">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#FFC500]"></span>
@@ -794,35 +795,21 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                   type="text"
                   placeholder="عنوان العرض (مثال: خصم خاص، عرض الموسم)..."
                   id="admin-offer-title"
-                  className="bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
+                  className="bg-black border border-[#2F3336] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
                 />
                 <div className="flex gap-2">
                   <input
                     type="text"
                     placeholder="تفاصيل الخصم أو العرض (مثال: خصم 15% على الكشف أو التوصيل)..."
                     id="admin-offer-desc"
-                    className="flex-1 bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
+                    className="flex-1 bg-black border border-[#2F3336] focus:border-[#FFC500] text-white text-xs sm:text-sm rounded-xl px-4 py-3 outline-none transition"
                   />
                   <button
-                    type="button"
-                    onClick={() => {
-                      const titleEl = document.getElementById('admin-offer-title') as HTMLInputElement;
-                      const descEl = document.getElementById('admin-offer-desc') as HTMLInputElement;
-                      if (titleEl && descEl && (titleEl.value.trim() || descEl.value.trim())) {
-                        const newOffer = {
-                          title: titleEl.value.trim() || 'عرض خاص',
-                          description: descEl.value.trim() || ''
-                        };
-                        const currentOffers = (formData as any).biz_promotions || [];
-                        setFormData(prev => ({ ...prev, biz_promotions: [...currentOffers, newOffer] }));
-                        titleEl.value = '';
-                        descEl.value = '';
-                      }
-                    }}
-                    className="bg-[#FFC500] hover:bg-amber-400 text-black font-black text-xs px-5 py-3 rounded-xl transition active:scale-95 shrink-0 cursor-pointer"
-                  >
-                    + إضافة عرض
-                  </button>
+                      type="button"
+                      className="flex-shrink-0 px-4 py-2 rounded-xl bg-[#FFC500] text-black text-xs font-bold hover:bg-amber-400 transition active:scale-95"
+                    >
+                      + إضافة
+                    </button>
                 </div>
               </div>
 
@@ -880,7 +867,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-2">
+            <div className="p-4 rounded-2xl bg-black border border-[#2F3336] space-y-2">
               <label className="text-white font-bold flex items-center gap-1.5">
                 <Clock size={15} className="text-[#FFC500]" />
                 مواعيد وساعات الدوام اليومي:
@@ -908,7 +895,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
         {/* STEP 4: ADS */}
         {activeTab === 'ads' && (
           <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-[#111111] border border-[#2F3336] space-y-3">
+            <div className="p-4 rounded-2xl bg-black border border-[#2F3336] space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-[#2F3336]">
                 <h4 className="font-bold text-white flex items-center gap-2">
                   <Megaphone size={16} className="text-[#FFC500]" />
@@ -939,7 +926,8 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {!hideAdminOnlyFields && (
+              <div className="flex flex-col sm:grid sm:grid-cols-3 gap-3">
               <CustomDarkSelect
                 label="الشارة الملكية"
                 value={formData.badge_type || 'none'}
@@ -974,6 +962,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                 onChange={(val) => setFormData(p => ({ ...p, status: val as any }))}
               />
             </div>
+            )}
           </div>
         )}
 
