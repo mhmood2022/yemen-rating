@@ -22,8 +22,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { supabase } from "../lib/supabase";
 import { getUserProfile, updateUserProfile, getUserPosts, createPost, deletePost, togglePostLike, toggleFollow, checkIsFollowing, toggleBlockUser, checkIsBlocked, uploadSocialImage, Profile, PostItem } from "../services/socialService";
-import {
-  ArrowRight,
+import { ArrowRight,
   RotateCw,
   MoreHorizontal,
   MapPin,
@@ -57,8 +56,7 @@ import {
   Flag,
   Globe,
   Video,
-  CreditCard,
-} from "lucide-react";
+  CreditCard, Building2 } from 'lucide-react';
 import { AuthModal } from '../components/auth/AuthModal';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { ReportPage } from '../components/community/ReportPage';
@@ -180,6 +178,7 @@ export const AccountPage: React.FC = () => {
   const targetIdParam = searchParams.get('id');
 
   const [loading, setLoading] = useState(true);
+  const [ownedBusinessId, setOwnedBusinessId] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('بدء...');
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -261,6 +260,26 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   const [viewingDetailPost, setViewingDetailPost] = useState<Post | null>(null);
 
   // 🔄 تحميل تعليقات viewingDetailPost تلقائياً
+  useEffect(() => {
+    const fetchOwnedBusiness = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const { data: biz } = await supabase
+            .from('businesses')
+            .select('id')
+            .eq('owner_id', session.user.id)
+            .limit(1)
+            .maybeSingle();
+          if (biz) setOwnedBusinessId(biz.id);
+        }
+      } catch (err) {
+        console.error('Error fetching owned business:', err);
+      }
+    };
+    fetchOwnedBusiness();
+  }, []);
+
   useEffect(() => {
     // جلب اسم المستخدم الحالي
     (async () => {
@@ -1190,7 +1209,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                         }}
                         className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
                       >
-                        <Edit3 size={16} className="text-zinc-400 flex-shrink-0" />
+                        <Edit3 size={16} className="text-[#FFC500] flex-shrink-0" />
                         <span className="text-white text-sm">تعديل</span>
                       </button>
                       <button
@@ -1207,6 +1226,16 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                         <CreditCard size={16} className="text-[#FFC500] flex-shrink-0" />
                         <span className="text-white text-sm">مدفوعاتي</span>
                       </button>
+                      {ownedBusinessId && (
+                        <button
+                          onClick={() => { setIsMenuOpen(false); navigate(`/owner?id=${ownedBusinessId}`); }}
+                          className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
+                        >
+                          <Building2 size={16} className="text-[#FFC500] flex-shrink-0" />
+                          <span className="text-white text-sm">إدارة الصفحة</span>
+                        </button>
+                      )}
+                      
                       <button
                         onClick={handleLogout}
                         className="w-full px-3 py-2.5 text-right hover:bg-rose-500/15 active:bg-rose-500/20 flex items-center gap-3 text-white font-bold transition rounded-xl"

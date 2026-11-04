@@ -36,6 +36,7 @@ export const UserProfilePage: React.FC = () => {
 
   // Claims State
   const [claims, setClaims] = useState<any[]>([]);
+  const [ownedBusinessId, setOwnedBusinessId] = useState<string | null>(null);
   const [loadingClaims, setLoadingClaims] = useState(true);
 
   // Chat State with Support
@@ -56,6 +57,18 @@ export const UserProfilePage: React.FC = () => {
         if (session && session.user) {
           const u = session.user;
           const fullName = u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0] || 'عضو معتمد';
+          
+          // جلب المنشأة التي يملكها المستخدم (إن وجدت)
+          const { data: bizData } = await supabase
+            .from('businesses')
+            .select('id')
+            .eq('owner_id', u.id)
+            .limit(1)
+            .maybeSingle();
+          if (bizData) {
+            setOwnedBusinessId(bizData.id);
+          }
+
           setUserData({
             name: fullName,
             phone: u.user_metadata?.phone || u.phone || '',
@@ -175,7 +188,41 @@ export const UserProfilePage: React.FC = () => {
               <Settings className="w-4 h-4" />
             </button>
 
-            <button 
+            {ownedBusinessId && (
+              <button
+                onClick={() => { setIsNotificationOpen(false); navigate(`/owner?id=${ownedBusinessId}`); }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-[#FFC500] hover:bg-[#1c1c1c] transition text-right"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                إدارة الصفحة
+              </button>
+            )}
+            
+            <button
+                onClick={async () => {
+                  setIsNotificationOpen(false);
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (session?.user) {
+                    const { data: biz } = await supabase
+                      .from('businesses')
+                      .select('id')
+                      .eq('owner_id', session.user.id)
+                      .limit(1)
+                      .maybeSingle();
+                    if (biz) {
+                      navigate(`/owner?id=${biz.id}`);
+                    } else {
+                      alert('لا تملك أي منشأة حالياً. يمكنك تقديم طلب إثبات ملكية من صفحة المنشأة.');
+                    }
+                  }
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-[#FFC500] hover:bg-[#1c1c1c] transition text-right"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                إدارة الصفحة
+              </button>
+              
+              <button 
               onClick={handleSignOut}
               className="w-9 h-9 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 flex items-center justify-center transition"
               title="تسجيل الخروج"
