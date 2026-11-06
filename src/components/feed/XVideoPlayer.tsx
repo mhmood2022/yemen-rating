@@ -20,6 +20,7 @@ export interface XVideoPlayerProps {
   onRepost?: () => void;
   onReply?: () => void;
   onShare?: () => void;
+  onBookmark?: () => void;
 }
 
 export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({ 
@@ -37,7 +38,8 @@ export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({
   onLike,
   onRepost,
   onReply,
-  onShare
+  onShare,
+  onBookmark
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -56,9 +58,14 @@ export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({
   const finalAuthorUsername = propAuthorUsername || tweet?.authorUsername || tweet?.userUsername || tweet?.original?.authorUsername || 'user';
   const finalAuthorAvatar = propAuthorAvatar || tweet?.authorAvatar || tweet?.userAvatar || tweet?.original?.authorAvatar || '';
   const finalContent = propContent || tweet?.content || tweet?.text || tweet?.original?.text || '';
-  const finalLikes = propLikesCount ?? tweet?.likes_count ?? tweet?.likes ?? 0;
+  const initialLikes = propLikesCount ?? tweet?.likes_count ?? tweet?.likes ?? 0;
   const finalReposts = propRepostsCount ?? tweet?.reposts_count ?? tweet?.reposts ?? 0;
   const finalComments = propCommentsCount ?? tweet?.comments_count ?? tweet?.comments ?? 0;
+
+  // تفاعل فوري للإعجاب والحفظ داخل المشغل
+  const [isLiked, setIsLiked] = useState<boolean>(Boolean(tweet?.isLiked || tweet?.is_liked || tweet?.has_liked));
+  const [likesCount, setLikesCount] = useState<number>(initialLikes);
+  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
 
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -136,12 +143,37 @@ export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({
     setShowControls((prev) => !prev);
   };
 
+  // معالجات الأزرار
   const handleReplyClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     closeModal();
     if (onReply) {
       onReply();
     }
+  };
+
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsLiked(prev => !prev);
+    setLikesCount(prev => isLiked ? Math.max(0, prev - 1) : prev + 1);
+    if (onLike) onLike();
+  };
+
+  const handleRepostClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    closeModal();
+    if (onRepost) onRepost();
+  };
+
+  const handleBookmarkClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsBookmarked(prev => !prev);
+    if (onBookmark) onBookmark();
+  };
+
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onShare) onShare();
   };
 
   return (
@@ -207,7 +239,6 @@ export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({
               showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
-            {/* زر الرجوع على اليمين */}
             <button
               type="button"
               onClick={closeModal}
@@ -217,7 +248,6 @@ export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({
               <ArrowRight className="w-5 h-5 text-white" />
             </button>
 
-            {/* زر الخيارات على اليسار */}
             <button
               type="button"
               onClick={() => {}}
@@ -240,7 +270,6 @@ export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({
               className="w-full h-full object-contain mx-auto block cursor-pointer"
             />
 
-            {/* زر التشغيل في المنتصف عند الإيقاف */}
             {!isModalPlaying && (
               <button
                 type="button"
@@ -258,7 +287,6 @@ export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({
               </button>
             )}
 
-            {/* زر كتم الصوت */}
             {isModalPlaying && (
               <button
                 type="button"
@@ -276,14 +304,14 @@ export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({
             )}
           </div>
 
-          {/* الطبقة السفلية: بيانات الناشر + النص + كبسولات التفاعل من اليمين لليسار */}
+          {/* الطبقة السفلية: بيانات الناشر + النص + كبسولات التفاعل */}
           <div 
             onClick={(e) => e.stopPropagation()}
             className={`absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-black via-black/90 to-transparent pt-10 pb-3 px-3 flex flex-col gap-2.5 transition-opacity duration-300 ${
               showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
           >
-            {/* شريط الكاتب فوق النص مباشرة بدون أي تداخل */}
+            {/* شريط الكاتب المستقل */}
             <div className="flex items-center gap-2.5 px-2">
               <div className="w-10 h-10 rounded-full bg-zinc-800 border border-white/20 overflow-hidden shrink-0 shadow-md">
                 {finalAuthorAvatar ? (
@@ -318,13 +346,13 @@ export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({
               </div>
             )}
 
-            {/* أزرار التفاعل مرتبة من اليمين إلى اليسار بنمط تويتر العربي الأصلي */}
+            {/* أزرار التفاعل الخمسة من اليمين لليسار */}
             <div className="flex items-center justify-between px-1 text-[#71767B]">
               {/* 1. أقصى اليمين: زر التعليق */}
               <button 
                 type="button" 
                 onClick={handleReplyClick}
-                className="h-9 px-3.5 rounded-full bg-[#16181C]/90 hover:bg-[#202327] flex items-center gap-1.5 text-white/90 hover:text-sky-500 transition text-xs font-bold border border-white/5"
+                className="h-9 px-3.5 rounded-full bg-[#16181C]/90 hover:bg-[#202327] flex items-center gap-1.5 text-white/90 hover:text-sky-500 transition text-xs font-bold border border-white/5 active:scale-95"
                 title="الردود"
               >
                 <MessageCircle className="w-4 h-4 text-white/80" />
@@ -334,8 +362,8 @@ export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({
               {/* 2. إعادة النشر */}
               <button 
                 type="button" 
-                onClick={onRepost}
-                className="h-9 px-3.5 rounded-full bg-[#16181C]/90 hover:bg-[#202327] flex items-center gap-1.5 text-white/90 hover:text-emerald-500 transition text-xs font-bold border border-white/5"
+                onClick={handleRepostClick}
+                className="h-9 px-3.5 rounded-full bg-[#16181C]/90 hover:bg-[#202327] flex items-center gap-1.5 text-white/90 hover:text-emerald-500 transition text-xs font-bold border border-white/5 active:scale-95"
                 title="إعادة النشر"
               >
                 <Repeat2 className="w-4 h-4 text-white/80" />
@@ -345,38 +373,43 @@ export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({
               {/* 3. الإعجاب */}
               <button 
                 type="button" 
-                onClick={onLike}
-                className="h-9 px-3.5 rounded-full bg-[#16181C]/90 hover:bg-[#202327] flex items-center gap-1.5 text-white/90 hover:text-rose-500 transition text-xs font-bold border border-white/5"
+                onClick={handleLikeClick}
+                className={`h-9 px-3.5 rounded-full bg-[#16181C]/90 hover:bg-[#202327] flex items-center gap-1.5 transition text-xs font-bold border border-white/5 active:scale-95 ${
+                  isLiked ? 'text-rose-500' : 'text-white/90 hover:text-rose-500'
+                }`}
                 title="الإعجاب"
               >
-                <Heart className="w-4 h-4 text-white/80" />
-                <span>{finalLikes > 0 ? (finalLikes >= 1000 ? (finalLikes/1000).toFixed(1) + 'K' : finalLikes) : ''}</span>
+                <Heart className={`w-4 h-4 ${isLiked ? 'fill-rose-500 text-rose-500' : 'text-white/80'}`} />
+                <span>{likesCount > 0 ? (likesCount >= 1000 ? (likesCount/1000).toFixed(1) + 'K' : likesCount) : ''}</span>
               </button>
 
               {/* 4. الحفظ */}
               <button 
                 type="button" 
-                className="w-10 h-10 rounded-full bg-[#16181C]/90 hover:bg-[#202327] flex items-center justify-center text-white/80 hover:text-white transition border border-white/5"
+                onClick={handleBookmarkClick}
+                className={`w-10 h-10 rounded-full bg-[#16181C]/90 hover:bg-[#202327] flex items-center justify-center transition border border-white/5 active:scale-95 ${
+                  isBookmarked ? 'text-[#1D9BF0]' : 'text-white/80 hover:text-white'
+                }`}
                 title="حفظ"
               >
-                <Bookmark className="w-4 h-4" />
+                <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-[#1D9BF0] text-[#1D9BF0]' : ''}`} />
               </button>
 
               {/* 5. أقصى اليسار: المشاركة */}
               <button 
                 type="button" 
-                onClick={onShare}
-                className="w-10 h-10 rounded-full bg-[#16181C]/90 hover:bg-[#202327] flex items-center justify-center text-white/80 hover:text-white transition border border-white/5"
+                onClick={handleShareClick}
+                className="w-10 h-10 rounded-full bg-[#16181C]/90 hover:bg-[#202327] flex items-center justify-center text-white/80 hover:text-white transition border border-white/5 active:scale-95"
                 title="مشاركة"
               >
                 <Share2 className="w-4 h-4" />
               </button>
             </div>
 
-            {/* شريط الرد السفلي "نشر ردّك" */}
+            {/* شريط الرد السفلي "نشر ردّك" - النقر عليه يفتح التعليق فوراً */}
             <div 
               onClick={handleReplyClick}
-              className="bg-[#16181C] rounded-full border border-[#2F3336] px-3.5 py-2 flex items-center justify-between shadow-lg cursor-pointer hover:border-white/30 transition"
+              className="bg-[#16181C] rounded-full border border-[#2F3336] px-3.5 py-2 flex items-center justify-between shadow-lg cursor-pointer hover:border-white/30 transition active:scale-[0.99]"
             >
               <div className="flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-full bg-zinc-800 overflow-hidden border border-white/20 shrink-0">
@@ -390,9 +423,9 @@ export const XVideoPlayer: React.FC<XVideoPlayerProps> = ({
               </div>
 
               <div className="flex items-center gap-3 text-white/60">
-                <button type="button" className="hover:text-white transition"><ImageIcon className="w-4 h-4" /></button>
-                <button type="button" className="hover:text-white transition text-[10px] font-bold border border-white/40 rounded px-1">GIF</button>
                 <button type="button" className="hover:text-white transition"><Maximize2 className="w-4 h-4" /></button>
+                <button type="button" className="hover:text-white transition text-[10px] font-bold border border-white/40 rounded px-1">GIF</button>
+                <button type="button" className="hover:text-white transition"><ImageIcon className="w-4 h-4" /></button>
               </div>
             </div>
           </div>

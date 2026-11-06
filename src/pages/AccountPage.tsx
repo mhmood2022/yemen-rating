@@ -1657,7 +1657,27 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   {/* فيديو المنشور */}
                   {!post.isRepost && (post.video_url || post.video) && (
                     <div className="mt-3">
-                      <XVideoPlayer src={post.video_url || post.video} tweet={post} authorName={post.original?.authorName || name} authorUsername={post.original?.authorUsername || username} authorAvatar={post.original?.authorAvatar || avatarUrl} currentUserAvatar={myAvatar} />
+                      <XVideoPlayer 
+                      src={post.video_url || post.video} 
+                      tweet={post} 
+                      authorName={post.original?.authorName || name} 
+                      authorUsername={post.original?.authorUsername || username} 
+                      authorAvatar={post.original?.authorAvatar || avatarUrl} 
+                      currentUserAvatar={myAvatar}
+                      onReply={() => {
+                        setViewingDetailPost(post);
+                        loadComments(post.id.startsWith("repost-") && post.original?.id ? post.original.id : post.id);
+                      }}
+                      onLike={() => handleToggleLike(post.id)}
+                      onRepost={() => setRepostMenu(post)}
+                      onShare={() => {
+                        if (navigator.clipboard) {
+                          navigator.clipboard.writeText(window.location.href);
+                          showToast('تم نسخ الرابط');
+                        }
+                      }}
+                      onBookmark={() => showToast('تمت الإضافة إلى العلامات المرجعية 🔖')}
+                    />
                     </div>
                   )}
 

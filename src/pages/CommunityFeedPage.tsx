@@ -1238,7 +1238,24 @@ const handleAddComment = (e?: React.FormEvent) => {
                             {/* فيديو التغريدة العادية */}
                             {(tweet.video_url || tweet.video) && (
                               <div className="mt-3">
-                                <XVideoPlayer src={tweet.video_url || tweet.video} tweet={tweet} currentUserAvatar={myAvatar} />
+                                <XVideoPlayer 
+                      src={tweet.video_url || tweet.video} 
+                      tweet={tweet} 
+                      authorName={tweet.authorName || tweet.original?.authorName} 
+                      authorUsername={tweet.authorUsername || tweet.original?.authorUsername} 
+                      authorAvatar={tweet.authorAvatar || tweet.original?.authorAvatar} 
+                      currentUserAvatar={myAvatar}
+                      onReply={() => setViewingDetailTweet(tweet)}
+                      onLike={() => handleLike(tweet.id)}
+                      onRepost={() => setRepostMenu(tweet)}
+                      onShare={() => {
+                        if (navigator.clipboard) {
+                          navigator.clipboard.writeText(window.location.href);
+                          showToast('تم نسخ الرابط');
+                        }
+                      }}
+                      onBookmark={() => showToast('تمت الإضافة إلى العلامات المرجعية 🔖')}
+                    />
                               </div>
                             )}
 
