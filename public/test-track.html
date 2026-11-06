@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>اختبار التتبع</title>
+  <style>
+    body { background: #000; color: #fff; font-family: sans-serif; padding: 20px; }
+    .box { background: #111; border: 1px solid #333; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+    .ok { color: #22C55E; font-weight: bold; }
+    .err { color: #EF4444; font-weight: bold; }
+    button { background: #FFC500; color: #000; border: none; padding: 15px 30px; border-radius: 10px; font-weight: bold; font-size: 16px; width: 100%; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>اختبار التتبع (Business Events)</h1>
+  
+  <div class="box" id="result">
+    <p>جاري الاختبار...</p>
+  </div>
+
+  <button onclick="runTest()">إعادة الاختبار</button>
+
+  <script>
+    async function runTest() {
+      const resultEl = document.getElementById('result');
+      resultEl.innerHTML = '<p>جاري الإرسال...</p>';
+      
+      try {
+        const r = await fetch('https://rnmuncxkfyoknmqejghl.supabase.co/rest/v1/business_events', {
+          method: 'POST',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubXVuY3hrZnlva25tcWVqZ2hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjAyNDgsImV4cCI6MjEwNjM5NjI0OH0.brz_j92R3j1FmDUyryxpaoIfn4vK_rcZjelYaCd5T0w',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubXVuY3hrZnlva25tcWVqZ2hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjAyNDgsImV4cCI6MjEwNjM5NjI0OH0.brz_j92R3j1FmDUyryxpaoIfn4vK_rcZjelYaCd5T0w',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            business_id: '79bbae7b-67ad-455e-b600-0d88cecc4c83',
+            event_type: 'view',
+            session_id: 'test_' + Date.now()
+          })
+        });
+
+        const text = await r.text();
+        
+        if (r.status === 201 || r.ok) {
+          resultEl.innerHTML = `
+            <p class="ok">✅ نجح الإرسال!</p>
+            <p>Status: ${r.status}</p>
+            <p>Response: ${text || '(فارغ - نجاح)'}</p>
+          `;
+        } else {
+          resultEl.innerHTML = `
+            <p class="err">❌ فشل الإرسال!</p>
+            <p>Status: ${r.status}</p>
+            <p style="direction: ltr; text-align: left;">Response: ${text}</p>
+          `;
+        }
+      } catch (err) {
+        resultEl.innerHTML = `
+          <p class="err">❌ خطأ في الاتصال!</p>
+          <p style="direction: ltr; text-align: left;">${err.message}</p>
+        `;
+      }
+    }
+
+    runTest();
+  </script>
+</body>
+</html>

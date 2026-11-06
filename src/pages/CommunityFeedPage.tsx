@@ -10,7 +10,7 @@ import { supabase } from '../lib/supabase';
 import { ActiveUsersBar } from '../components/community/ActiveUsersBar';
 import { ReplyBar } from '../components/community/ReplyBar';
 import { ReportPage } from '../components/community/ReportPage';
-import {
+import { 
   ArrowRight,
   Image as ImageIcon,
   Heart,
@@ -34,7 +34,9 @@ import {
   BarChart,
   MoreHorizontal,
   Video,
-  Globe
+  Globe,
+  BarChart2,
+  Share2,
 } from "lucide-react";
 
 interface Comment {
@@ -1162,13 +1164,12 @@ const handleAddComment = (e?: React.FormEvent) => {
                                 className="text-[#71767B] hover:text-[#FFC500] p-1.5 rounded-full hover:bg-[#FFC500]/10 transition shrink-0"
                                 title="المزيد"
                               >
-                                <MoreHorizontal size={18} />
+                                <MoreHorizontal size={14} className="rotate-90 text-[#71767B]" />
                               </button>
                             </div>
                             
-                            {/* النص العادي (للتغريدة العادية) */}
                             {!tweet.quote_text && tweet.text && (
-                              <p className="font-['Tahoma'] mt-2 text-[14px] leading-[1.5] text-[#E7E9EA] font-['Tahoma'] whitespace-pre-wrap">
+                              <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
                                 {tweet.text.split(' ').map((w, i) =>
                                   w.startsWith('#') ? (
                                     <span key={i} className="text-[#FFC500] font-semibold hover:underline cursor-pointer">{w} </span>
@@ -1263,7 +1264,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                               
                               {/* 📊 مشاهدات */}
                               <button className="flex items-center gap-1.5 hover:text-[#FFC500] transition group" title="المشاهدات">
-                                <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10"><BarChart size={16} /></div>
+                                <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10"><BarChart2 size={16} /></div>
                                 <span className="text-[11px]">{tweet.views || 1}</span>
                               </button>
                               
@@ -1626,7 +1627,7 @@ const handleAddComment = (e?: React.FormEvent) => {
               </div>
             </div>
 
-            <p className="font-['Tahoma'] text-[14px] leading-[1.5] text-[#E7E9EA] font-['Tahoma'] break-words [overflow-wrap:anywhere] whitespace-pre-wrap">
+            <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
               {viewingDetailTweet.text}
             </p>
 
@@ -1657,7 +1658,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                 <span className="text-xs">{viewingDetailTweet.likes || 0}</span>
               </button>
               <button onClick={() => { if (navigator.clipboard) { navigator.clipboard.writeText(window.location.href); showToast('تم نسخ الرابط! 🔗'); } }} className="hover:text-white transition">
-                <Share size={16} />
+                <Share2 size={16} />
               </button>
               <button 
                 onClick={(e) => {
@@ -1742,7 +1743,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                         </button>
                         <button type="button" className="flex items-center gap-1 hover:text-white transition group">
                           <div className="p-1 rounded-full group-hover:bg-white/10">
-                            <Share size={16} />
+                            <Share2 size={16} />
                           </div>
                         </button>
                       </div>
@@ -2084,7 +2085,7 @@ const handleAddComment = (e?: React.FormEvent) => {
           {/* الشريط السفلي: خط نحيل باهت والأيقونات الصفراء ترتفع وتنخفض مع الكيبورد */}
           <div className="shrink-0 bg-black border-t border-zinc-800/60 pb-2">
             <div className="flex items-center gap-1.5 text-[13px] font-bold text-[#FFC500] px-4 py-2">
-              <Globe size={15} />
+                <Globe size={15} />
               <span>يمكن للجميع الرد</span>
             </div>
 

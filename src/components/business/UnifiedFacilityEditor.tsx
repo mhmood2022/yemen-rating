@@ -205,7 +205,10 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
     phone: '',
     whatsapp: '',
     email: '',
-    website_url: '',
+    map_url: '',
+    working_hours: '',
+    branches: [] as { name: string; phone?: string; map_url?: string }[],
+            website_url: '',
     description: '',
     logo_url: null as string | null,
     cover_url: null as string | null,
@@ -219,7 +222,6 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
     ad_unit_top: false,
     ad_unit_feed: false,
     ad_unit_sticky: false,
-    working_hours: 'مفتوح 24 ساعة يومياً',
     rooms_count: 'متوسطة (10-30)',
     has_pool: false,
     has_wifi: false,
@@ -289,6 +291,9 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
             phone: b.phone || '',
             whatsapp: b.whatsapp || '',
             email: b.email || '',
+            map_url: b.map_url || '',
+            branches: (b.branches || (sec && sec.branches) || []),
+            working_hours: b.working_hours || (b.sections_config && b.sections_config.working_hours) || '',
             website_url: b.website_url || '',
             description: b.description || '',
             logo_url: b.logo_url || null,
@@ -303,7 +308,6 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
             ad_unit_top: sec.ad_unit_top ?? false,
             ad_unit_feed: sec.ad_unit_feed ?? false,
             ad_unit_sticky: sec.ad_unit_sticky ?? false,
-            working_hours: sec.working_hours || 'مفتوح 24 ساعة يومياً',
             rooms_count: feats.rooms_count || 'متوسطة (10-30)',
             has_pool: !!feats.has_pool,
             has_wifi: !!feats.has_wifi,
@@ -446,7 +450,8 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
       phone: formData.phone || null,
       whatsapp: formData.whatsapp || null,
       email: formData.email || null,
-      website_url: formData.website_url || null,
+      map_url: formData.map_url || null,
+        website_url: formData.website_url || null,
       description: formData.description || null,
       logo_url: formData.logo_url,
       cover_url: formData.cover_url,
@@ -457,7 +462,9 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
       claim_status: formData.claim_status,
       rating: formData.rating ? Number(formData.rating) : 5,
       review_count: Number(formData.review_count) || 0,
+      branches: formData.branches || [],
       sections_config: {
+        branches: formData.branches || [],
         ads: true,
         ad_unit_top: formData.ad_unit_top,
         ad_unit_feed: formData.ad_unit_feed,
@@ -631,12 +638,116 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                 <input
                   type="text"
                   value={formData.website_url}
-                  onChange={(e) => setFormData(p => ({ ...p, website_url: e.target.value }))}
+                  onChange={(e) => setFormData(p => ({ ...p,
+                    website_url: e.target.value }))}
                   placeholder="https://..."
                   className="w-full p-2.5 bg-black border border-[#2F3336] rounded-xl text-white outline-none font-mono"
                   dir="ltr"
                 />
               </div>
+
+              <div className="space-y-1">
+                <label className="text-gray-300 font-bold block">رابط الخريطة (Google Maps)</label>
+                <input
+                  type="text"
+                  value={formData.map_url || ''}
+                  onChange={(e) => setFormData(p => ({ ...p, map_url: e.target.value }))}
+                  placeholder="https://maps.google.com/..."
+                  className="w-full p-2.5 bg-black border border-[#2F3336] rounded-xl text-white outline-none font-mono"
+                  dir="ltr"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-gray-300 font-bold block">ساعات وأيام العمل الرسمية</label>
+                <input
+                  type="text"
+                  value={formData.working_hours || ''}
+                  onChange={(e) => setFormData(p => ({ ...p, working_hours: e.target.value }))}
+                  placeholder="مثال: السبت - الخميس: 8:00 ص - 10:00 م | الجمعة: مغلق"
+                  className="w-full p-2.5 bg-black border border-[#2F3336] rounded-xl text-white outline-none"
+                />
+              </div>
+
+            {/* نظام إدارة الفروع */}
+            <div className="p-4 rounded-2xl bg-black border border-[#2F3336] space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#2F3336]">
+                <label className="text-white font-bold flex items-center gap-2 text-xs sm:text-sm">
+                  <span className="w-2 h-2 rounded-full bg-[#FFC500]"></span>
+                  <span>فروع المنشأة (Branches)</span>
+                </label>
+                <span className="text-[10px] text-gray-400">أضف فروعك في المحافظات لتظهر في نافذة الفروع</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <input
+                  type="text"
+                  id="new-branch-name"
+                  placeholder="اسم الفرع والحي (مثال: فرع حدة)"
+                  className="p-2.5 bg-black border border-[#2F3336] rounded-xl text-white text-xs outline-none focus:border-[#FFC500]"
+                />
+                <input
+                  type="text"
+                  id="new-branch-phone"
+                  placeholder="هاتف الفرع (اختياري)"
+                  className="p-2.5 bg-black border border-[#2F3336] rounded-xl text-white text-xs outline-none font-mono"
+                  dir="ltr"
+                />
+                <div className="flex gap-1.5">
+                  <input
+                    type="text"
+                    id="new-branch-map"
+                    placeholder="رابط خريطة الفرع (اختياري)"
+                    className="flex-1 p-2.5 bg-black border border-[#2F3336] rounded-xl text-white text-xs outline-none font-mono"
+                    dir="ltr"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nameInput = document.getElementById('new-branch-name') as HTMLInputElement;
+                      const phoneInput = document.getElementById('new-branch-phone') as HTMLInputElement;
+                      const mapInput = document.getElementById('new-branch-map') as HTMLInputElement;
+                      if (!nameInput || !nameInput.value.trim()) return;
+                      const newBranch = {
+                        name: nameInput.value.trim(),
+                        phone: phoneInput.value.trim() || undefined,
+                        map_url: mapInput.value.trim() || undefined
+                      };
+                      setFormData(p => ({ ...p, branches: [...(p.branches || []), newBranch] }));
+                      nameInput.value = '';
+                      phoneInput.value = '';
+                      mapInput.value = '';
+                    }}
+                    className="px-3.5 py-2 bg-[#FFC500] hover:bg-amber-400 text-black font-black text-xs rounded-xl shadow transition active:scale-95"
+                  >
+                    + إضافة
+                  </button>
+                </div>
+              </div>
+
+              {formData.branches && formData.branches.length > 0 && (
+                <div className="space-y-2 pt-2">
+                  {formData.branches.map((br, bIdx) => (
+                    <div key={bIdx} className="flex items-center justify-between p-2.5 bg-zinc-950 border border-[#2F3336] rounded-xl text-xs">
+                      <div className="flex items-center gap-3">
+                        <span className="font-bold text-[#FFC500]">📍 {br.name}</span>
+                        {br.phone && <span className="text-gray-400 font-mono">📞 {br.phone}</span>}
+                        {br.map_url && <span className="text-emerald-400 text-[10px]">🗺️ خريطة مضافة</span>}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData(p => ({ ...p, branches: p.branches.filter((_, i) => i !== bIdx) }));
+                        }}
+                        className="text-rose-400 hover:text-rose-300 text-xs px-2 py-1 rounded-lg bg-rose-500/10"
+                      >
+                        حذف
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             </div>
 
             <div className="space-y-1">
