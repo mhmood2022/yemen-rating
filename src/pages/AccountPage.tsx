@@ -22,7 +22,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { supabase } from "../lib/supabase";
 import { getUserProfile, updateUserProfile, getUserPosts, createPost, deletePost, togglePostLike, toggleFollow, checkIsFollowing, toggleBlockUser, checkIsBlocked, uploadSocialImage, Profile, PostItem } from "../services/socialService";
-import { ArrowRight,
+import { Bookmark, ArrowRight,
   RotateCw,
   MoreHorizontal,
   MapPin,
@@ -1628,63 +1628,72 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                     </div>
                   )}
 
-                                              <div className="flex items-center justify-between mt-3 max-w-md">
-                              {/* 💬 التعليقات */}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  alert("زر التعليقات يعمل!");
-                                  setActiveCommentPost(post);
-                                  loadComments(post.id.startsWith('repost-') && post.original?.id ? post.original.id : post.id);
-                                }}
-                                className="flex items-center gap-1.5 text-[#71767B] hover:text-[#FFC500] transition group"
-                                title="الردود"
-                              >
-                                <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10">
-                                  <MessageCircle size={16} />
-                                </div>
-                                <span className="text-[11px]">{post.replies || 0}</span>
-                              </button>
+                                                                <div className="flex items-center justify-between mt-2.5 w-full max-w-[420px] text-[#71767B] ml-0 pr-1">
+                    {/* 💬 التعليقات */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveCommentPost(post);
+                        loadComments(post.id.startsWith('repost-') && post.original?.id ? post.original.id : post.id);
+                      }}
+                      className="flex items-center gap-1 hover:text-[#1D9BF0] transition group"
+                      title="الردود"
+                    >
+                      <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10">
+                        <MessageCircle size={15} />
+                      </div>
+                      <span className="text-[11px]">{post.replies || 0}</span>
+                    </button>
 
-                              {/* 🔁 إعادة التغريد */}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setRepostMenu(post);
-                                }}
-                                className="flex items-center gap-1.5 text-[#71767B] hover:text-emerald-400 transition group"
-                                title="إعادة التغريد"
-                              >
-                                <div className="p-1.5 rounded-full group-hover:bg-emerald-500/10">
-                                  <Repeat2 size={16} />
-                                </div>
-                                <span className="text-[11px]">{post.reposts || 0}</span>
-                              </button>
+                    {/* 🔁 إعادة التغريد */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRepostMenu(post);
+                      }}
+                      className="flex items-center gap-1 hover:text-[#00BA7C] transition group"
+                      title="إعادة التغريد"
+                    >
+                      <div className="p-1.5 rounded-full group-hover:bg-[#00BA7C]/10">
+                        <Repeat2 size={15} />
+                      </div>
+                      <span className="text-[11px]">{post.reposts || 0}</span>
+                    </button>
 
-                              {/* ❤️ الإعجاب */}
-                              <button
-                                onClick={() => handleToggleLike(post.id)}
-                                className={`flex items-center gap-1.5 text-[#71767B] transition group ${post.isLiked ? 'text-rose-500 font-bold' : 'hover:text-rose-500'}`}
-                                title="إعجاب"
-                              >
-                                <div className="p-1.5 rounded-full group-hover:bg-rose-500/10">
-                                  <Heart size={16} className={post.isLiked ? 'fill-current' : ''} />
-                                </div>
-                                <span className="text-[11px]">{post.likes || 0}</span>
-                              </button>
+                    {/* ❤️ الإعجاب */}
+                    <button
+                      onClick={() => handleToggleLike(post.id)}
+                      className={`flex items-center gap-1 transition group ${post.isLiked ? 'text-[#F91880]' : 'hover:text-[#F91880]'}`}
+                      title="إعجاب"
+                    >
+                      <div className="p-1.5 rounded-full group-hover:bg-[#F91880]/10">
+                        <Heart size={15} className={post.isLiked ? 'fill-current text-[#F91880]' : ''} />
+                      </div>
+                      <span className="text-[11px]">{post.likes || 0}</span>
+                    </button>
 
-                              {/* 📊 المشاهدات */}
-                              <button
-                                onClick={(e) => e.stopPropagation()}
-                                className="flex items-center gap-1.5 text-[#71767B] hover:text-[#FFC500] transition group"
-                                title="المشاهدات"
-                              >
-                                <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10">
-                                  <BarChart size={16} />
-                                </div>
-                                <span className="text-[11px]">{post.views || 0}</span>
-                              </button>
-                            </div>
+                    {/* 📊 المشاهدات */}
+                    <button
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1 hover:text-[#1D9BF0] transition group"
+                      title="المشاهدات"
+                    >
+                      <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10">
+                        <BarChart size={15} />
+                      </div>
+                      <span className="text-[11px]">{post.views || 0}</span>
+                    </button>
+
+                    {/* 🔖 حفظ (Bookmark) */}
+                    <button className="hover:text-[#1D9BF0] p-1.5 rounded-full hover:bg-[#1D9BF0]/10 transition group" title="إشارة مرجعية">
+                      <Bookmark size={15} />
+                    </button>
+
+                    {/* 📤 مشاركة (Share) */}
+                    <button className="hover:text-[#1D9BF0] p-1.5 rounded-full hover:bg-[#1D9BF0]/10 transition group" title="مشاركة">
+                      <Share size={15} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </article>
