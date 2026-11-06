@@ -1,3 +1,4 @@
+import { XActionBar } from '../components/feed/XActionBar';
 import { XVideoPlayer } from '../components/feed/XVideoPlayer';
 import { SupportModal } from '../components/support/SupportModal';
 
@@ -22,7 +23,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { supabase } from "../lib/supabase";
 import { getUserProfile, updateUserProfile, getUserPosts, createPost, deletePost, togglePostLike, toggleFollow, checkIsFollowing, toggleBlockUser, checkIsBlocked, uploadSocialImage, Profile, PostItem } from "../services/socialService";
-import { Bookmark, ArrowRight,
+import { Bookmark, ArrowRight, BarChart2,
   RotateCw,
   MoreHorizontal,
   MapPin,
@@ -32,7 +33,7 @@ import { Bookmark, ArrowRight,
   Heart,
   MessageCircle,
   Repeat2,
-  Share,
+  Share, Share2,
   Plus,
   Camera,
   X,
@@ -1193,7 +1194,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               title="خيارات الحساب"
               className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10"
             >
-              <MoreHorizontal size={18} />
+              <MoreHorizontal size={14} className="rotate-90 text-[#71767B]" />
             </button>
 
             {isMenuOpen && (
@@ -1254,7 +1255,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                         }}
                         className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
                       >
-                        <Share size={16} className="text-[#FFC500] flex-shrink-0" />
+                        <Share2 size={16} className="text-[#FFC500] flex-shrink-0" />
                         <span className="text-white text-sm">مشاركة</span>
                       </button>
                       <button
@@ -1569,14 +1570,14 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                       className="text-[#71767B] hover:text-[#FFC500] p-1.5 rounded-full hover:bg-[#FFC500]/10 transition shrink-0"
                       title="المزيد"
                     >
-                      <MoreHorizontal size={18} />
+                      <MoreHorizontal size={14} className="rotate-90 text-[#71767B]" />
                     </button>
                   </div>
 
                   {/* اقتباس — نص + بطاقة */}
                   {post.isRepost && post.quote_text ? (
                     <div className="mt-2">
-                      <p className="text-[15px] leading-5 text-[#E7E9EA] whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                      <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
                         {post.quote_text}
                       </p>
                       {(post.original || post.quote_text) && (
@@ -1610,7 +1611,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                       )}
                     </div>
                   ) : (
-                    <p className="mt-1 text-[15px] leading-5 text-[#E7E9EA] whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                    <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
                       {post.text}
                     </p>
                   )}
@@ -1628,72 +1629,22 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                     </div>
                   )}
 
-                                                                <div className="flex items-center justify-between mt-2.5 w-full max-w-[420px] text-[#71767B] ml-0 pr-1">
-                    {/* 💬 التعليقات */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveCommentPost(post);
-                        loadComments(post.id.startsWith('repost-') && post.original?.id ? post.original.id : post.id);
-                      }}
-                      className="flex items-center gap-1 hover:text-[#1D9BF0] transition group"
-                      title="الردود"
-                    >
-                      <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10">
-                        <MessageCircle size={15} />
-                      </div>
-                      <span className="text-[11px]">{post.replies || 0}</span>
-                    </button>
-
-                    {/* 🔁 إعادة التغريد */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setRepostMenu(post);
-                      }}
-                      className="flex items-center gap-1 hover:text-[#00BA7C] transition group"
-                      title="إعادة التغريد"
-                    >
-                      <div className="p-1.5 rounded-full group-hover:bg-[#00BA7C]/10">
-                        <Repeat2 size={15} />
-                      </div>
-                      <span className="text-[11px]">{post.reposts || 0}</span>
-                    </button>
-
-                    {/* ❤️ الإعجاب */}
-                    <button
-                      onClick={() => handleToggleLike(post.id)}
-                      className={`flex items-center gap-1 transition group ${post.isLiked ? 'text-[#F91880]' : 'hover:text-[#F91880]'}`}
-                      title="إعجاب"
-                    >
-                      <div className="p-1.5 rounded-full group-hover:bg-[#F91880]/10">
-                        <Heart size={15} className={post.isLiked ? 'fill-current text-[#F91880]' : ''} />
-                      </div>
-                      <span className="text-[11px]">{post.likes || 0}</span>
-                    </button>
-
-                    {/* 📊 المشاهدات */}
-                    <button
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1 hover:text-[#1D9BF0] transition group"
-                      title="المشاهدات"
-                    >
-                      <div className="p-1.5 rounded-full group-hover:bg-[#1D9BF0]/10">
-                        <BarChart size={15} />
-                      </div>
-                      <span className="text-[11px]">{post.views || 0}</span>
-                    </button>
-
-                    {/* 🔖 حفظ (Bookmark) */}
-                    <button className="hover:text-[#1D9BF0] p-1.5 rounded-full hover:bg-[#1D9BF0]/10 transition group" title="إشارة مرجعية">
-                      <Bookmark size={15} />
-                    </button>
-
-                    {/* 📤 مشاركة (Share) */}
-                    <button className="hover:text-[#1D9BF0] p-1.5 rounded-full hover:bg-[#1D9BF0]/10 transition group" title="مشاركة">
-                      <Share size={15} />
-                    </button>
-                  </div>
+                                                                <XActionBar
+                    tweet={post}
+                    onReply={() => {
+                      setActiveCommentPost(post);
+                      loadComments(post.id.startsWith("repost-") && post.original?.id ? post.original.id : post.id);
+                    }}
+                    onRepost={(p) => setRepostMenu(p)}
+                    onLike={() => handleToggleLike(post.id)}
+                    onBookmark={() => {}}
+                    onShare={() => {
+                      if (navigator.clipboard) {
+                        navigator.clipboard.writeText(window.location.href);
+                      }
+                    }}
+                    
+                  />
                 </div>
               </div>
             </article>
@@ -2113,7 +2064,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               </div>
             </div>
 
-            <p className="font-['Tahoma'] text-[14px] leading-[1.5] text-[#E7E9EA] break-words [overflow-wrap:anywhere] whitespace-pre-wrap">
+            <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
               {activeCommentPost.text}
             </p>
 
@@ -2144,7 +2095,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 <span className="text-xs">{activeCommentPost.likes || 0}</span>
               </button>
               <button onClick={() => { if (navigator.clipboard) { navigator.clipboard.writeText(window.location.href); showToast('تم نسخ الرابط!'); } }} className="hover:text-white transition">
-                <Share size={16} />
+                <Share2 size={16} />
               </button>
             </div>
 
@@ -2260,7 +2211,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 </div>
               </div>
 
-              <p className="text-white text-[17px] mt-3 whitespace-pre-wrap break-words leading-relaxed">
+              <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
                 {viewingDetailPost.text}
               </p>
 
@@ -2277,39 +2228,25 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 <span>{viewingDetailPost.views || 1} مشاهدة</span>
               </div>
 
-              {/* الأزرار */}
-              <div className="flex items-center justify-around py-3 border-b border-[#2F3336]/40 text-[#71767B]">
-                <button
-                  onClick={() => {
+              {/* الأزرار بنظام X الموحد بالملي */}
+              <div className="py-1 border-b border-[#2F3336]/40">
+                <XActionBar
+                  tweet={viewingDetailPost}
+                  onReply={() => {
                     setActiveCommentPost(viewingDetailPost);
                     setViewingDetailPost(null);
                     loadComments(viewingDetailPost.id);
                   }}
-                  className="flex items-center gap-1.5 hover:text-[#FFC500] transition"
-                >
-                  <MessageCircle size={16} />
-                  <span className="text-sm">{viewingDetailPost.replies || 0}</span>
-                </button>
-
-                <button
-                  onClick={() => handleRepost(viewingDetailPost.id)}
-                  className="flex items-center gap-1.5 hover:text-emerald-400 transition"
-                >
-                  <Repeat2 size={16} />
-                  <span className="text-sm">{viewingDetailPost.reposts || 0}</span>
-                </button>
-
-                <button
-                  onClick={() => handleToggleLike(viewingDetailPost.id)}
-                  className={`flex items-center gap-1.5 transition ${viewingDetailPost.isLiked ? 'text-rose-500' : 'hover:text-rose-500'}`}
-                >
-                  <Heart size={18} className={viewingDetailPost.isLiked ? 'fill-current' : ''} />
-                  <span className="text-sm">{viewingDetailPost.likes || 0}</span>
-                </button>
-
-                <button className="hover:text-[#FFC500] transition">
-                  <BarChart size={18} />
-                </button>
+                  onRepost={() => handleRepost(viewingDetailPost.id)}
+                  onLike={() => handleToggleLike(viewingDetailPost.id)}
+                  onBookmark={() => {}}
+                  onShare={() => {
+                    if (navigator.clipboard) {
+                      navigator.clipboard.writeText(window.location.href);
+                    }
+                  }}
+                  
+                />
               </div>
 
               {/* قائمة التعليقات */}

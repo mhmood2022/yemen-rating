@@ -1,3 +1,4 @@
+import { XActionBar } from '../components/feed/XActionBar';
 
 import { XVideoPlayer } from '../components/feed/XVideoPlayer';
 import { VerifiedBadge } from '../components/common/VerifiedBadge';
@@ -1242,35 +1243,21 @@ const handleAddComment = (e?: React.FormEvent) => {
                               </div>
                             )}
 
-                            {/* أزرار التفاعل */}
-                            <div className="flex items-center justify-between mt-2.5 max-w-md text-[#71767B]">
-                              {/* 💬 تعليق */}
-                              <button onClick={() => setViewingDetailTweet(tweet)} className="flex items-center gap-1.5 hover:text-[#FFC500] transition group">
-                                <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10"><MessageCircle size={16} /></div>
-                                <span className="text-[11px]">{tweet.replies || 0}</span>
-                              </button>
-                              
-                              {/* 🔁 إعادة / اقتباس */}
-                              <button onClick={(e) => { e.stopPropagation(); setRepostMenu(tweet); }} className="flex items-center gap-1.5 hover:text-emerald-400 transition group">
-                                <div className="p-1.5 rounded-full group-hover:bg-emerald-500/10"><Repeat2 size={16} /></div>
-                                <span className="text-[11px]">{tweet.reposts || 0}</span>
-                              </button>
-                              
-                              {/* ❤️ إعجاب */}
-                              <button onClick={() => handleLike(tweet.id)} className={`flex items-center gap-1.5 transition group ${tweet.likedBy?.includes(currentUserId) ? 'text-rose-500' : 'hover:text-rose-500'}`}>
-                                <div className="p-1.5 rounded-full group-hover:bg-rose-500/10"><Heart size={16} className={tweet.likedBy?.includes(currentUserId) ? 'fill-current' : ''} /></div>
-                                <span className="text-[11px]">{tweet.likes || 0}</span>
-                              </button>
-                              
-                              {/* 📊 مشاهدات */}
-                              <button className="flex items-center gap-1.5 hover:text-[#FFC500] transition group" title="المشاهدات">
-                                <div className="p-1.5 rounded-full group-hover:bg-[#FFC500]/10"><BarChart2 size={16} /></div>
-                                <span className="text-[11px]">{tweet.views || 1}</span>
-                              </button>
-                              
-                              
-
-                            </div>
+                            {/* أزرار التفاعل الرسمية بنظام X المطابق بالملي */}
+                    <XActionBar
+                      tweet={tweet}
+                      onReply={() => setViewingDetailTweet(tweet)}
+                      onRepost={(t) => setRepostMenu(t)}
+                      onLike={() => handleLike(tweet.id)}
+                      onBookmark={() => showToast("تمت الإضافة إلى العلامات المرجعية 🔖")}
+                      onShare={() => {
+                        if (navigator.clipboard) {
+                          navigator.clipboard.writeText(window.location.origin + "/feed");
+                          showToast("تم نسخ الرابط! 🔗");
+                        }
+                      }}
+                      currentUserId={currentUserId}
+                    />
                           </div>
                         </div>
                       </article>
@@ -1326,7 +1313,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                     </span>
                   </div>
 
-                  <p className="mt-2 text-[15px] leading-6 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                  <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
                     {activeCommentTweet.text}
                   </p>
 
@@ -1643,23 +1630,24 @@ const handleAddComment = (e?: React.FormEvent) => {
               <span>{viewingDetailTweet.views || 1} مشاهدة</span>
             </div>
 
-            {/* أزرار التفاعل في العرض الكامل */}
-            <div className="flex items-center justify-around py-1 border-b border-[#2F3336]/40 text-[#71767B]">
-              <button onClick={() => { setActiveCommentTweet(viewingDetailTweet); setViewingDetailTweet(null); }} className="flex items-center gap-1.5 hover:text-[#FFC500] transition">
-                <MessageCircle size={16} />
-                <span className="text-xs">{viewingDetailTweet?.comments?.length || 0}</span>
-              </button>
-              <button onClick={() => handleRepost(viewingDetailTweet.id)} className="flex items-center gap-1.5 hover:text-emerald-400 transition">
-                <Repeat2 size={16} />
-                <span className="text-xs">{viewingDetailTweet.reposts || 0}</span>
-              </button>
-              <button onClick={() => handleLike(viewingDetailTweet.id)} className="flex items-center gap-1.5 hover:text-rose-500 transition">
-                <Heart size={16} />
-                <span className="text-xs">{viewingDetailTweet.likes || 0}</span>
-              </button>
-              <button onClick={() => { if (navigator.clipboard) { navigator.clipboard.writeText(window.location.href); showToast('تم نسخ الرابط! 🔗'); } }} className="hover:text-white transition">
-                <Share2 size={16} />
-              </button>
+            {/* أزرار التفاعل في العرض الكامل بنظام X */}
+            <div className="flex items-center justify-between py-1 border-b border-[#2F3336]/40 text-[#71767B] w-full px-2">
+              <div className="flex-1 max-w-[425px]">
+                <XActionBar
+                  tweet={viewingDetailTweet}
+                  onReply={() => { setActiveCommentTweet(viewingDetailTweet); setViewingDetailTweet(null); }}
+                  onRepost={() => handleRepost(viewingDetailTweet.id)}
+                  onLike={() => handleLike(viewingDetailTweet.id)}
+                  onBookmark={() => showToast("تمت الإضافة إلى العلامات المرجعية 🔖")}
+                  onShare={() => {
+                    if (navigator.clipboard) {
+                      navigator.clipboard.writeText(window.location.href);
+                      showToast("تم نسخ الرابط! 🔗");
+                    }
+                  }}
+                  currentUserId={currentUserId}
+                />
+              </div>
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1724,29 +1712,21 @@ const handleAddComment = (e?: React.FormEvent) => {
                         </div>
                       )}
 
-                      {/* أزرار التفاعل المصغرة بنظام X تحت كل تعليق */}
-                      <div className="flex items-center justify-between text-[#71767B] text-[11px] mt-2.5 max-w-xs">
-                        <button type="button" className="flex items-center gap-1 hover:text-[#FFC500] transition group">
-                          <div className="p-1 rounded-full group-hover:bg-[#FFC500]/10">
-                            <MessageCircle size={16} />
-                          </div>
-                        </button>
-                        <button type="button" className="flex items-center gap-1 hover:text-emerald-400 transition group">
-                          <div className="p-1 rounded-full group-hover:bg-emerald-500/10">
-                            <Repeat2 size={16} />
-                          </div>
-                        </button>
-                        <button type="button" className="flex items-center gap-1 hover:text-rose-500 transition group">
-                          <div className="p-1 rounded-full group-hover:bg-rose-500/10">
-                            <Heart size={16} />
-                          </div>
-                        </button>
-                        <button type="button" className="flex items-center gap-1 hover:text-white transition group">
-                          <div className="p-1 rounded-full group-hover:bg-white/10">
-                            <Share2 size={16} />
-                          </div>
-                        </button>
-                      </div>
+                      {/* أزرار التفاعل الرسمية بنظام X تحت كل تعليق */}
+                        <div className="max-w-[320px] -mt-1">
+                          <XActionBar
+                            tweet={c}
+                            onReply={() => {}}
+                            onLike={() => {}}
+                            onShare={() => {
+                              if (navigator.clipboard) {
+                                navigator.clipboard.writeText(window.location.href);
+                                showToast("تم نسخ الرابط! 🔗");
+                              }
+                            }}
+                            currentUserId={currentUserId}
+                          />
+                        </div>
 
                     </div>
                   </div>
