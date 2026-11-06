@@ -57,7 +57,7 @@ export const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
         {/* Crisp White Checkmark */}
         <path
           d="M10.2 15.8L6.4 12L7.8 10.6L10.2 13L16.2 7L17.6 8.4L10.2 15.8Z"
-          fill="#FFFFFF"
+          fill="#000000"
         />
       </svg>
     </span>

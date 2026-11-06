@@ -83,23 +83,28 @@ const REPORTS_KEY = 'yr_community_reports';
 
 function formatTimeAgo(dateStr: string): string {
   try {
-    if (!dateStr) return '';
+    if (!dateStr) return "";
     const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return '';
+    if (isNaN(date.getTime())) return "";
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffSec = Math.floor(diffMs / 1000);
     const diffMin = Math.floor(diffSec / 60);
     const diffHour = Math.floor(diffMin / 60);
     const diffDay = Math.floor(diffHour / 24);
+
+    const toAr = (n) => String(n).replace(/[0-9]/g, (d) => "٠١٢٣٤٥٦٧٨٩"[+d]);
+
+    if (diffSec < 60) return "الآن";
+    if (diffMin < 60) return `${toAr(diffMin)} د`;
+    if (diffHour < 24) return `${toAr(diffHour)} س`;
+    if (diffDay < 7) return `${toAr(diffDay)} ي`;
     
-    if (diffSec < 60) return 'الآن';
-    if (diffMin < 60) return `${diffMin}د`;
-    if (diffHour < 24) return `${diffHour}س`;
-    if (diffDay < 7) return `${diffDay}ي`;
-    return date.toLocaleDateString('ar-YE', { day: 'numeric', month: 'short' });
+    const d = toAr(date.getDate());
+    const m = date.toLocaleDateString("ar-YE", { month: "short" });
+    return `${d} ${m}`;
   } catch {
-    return '';
+    return "";
   }
 }
 
@@ -1145,18 +1150,19 @@ const handleAddComment = (e?: React.FormEvent) => {
                           </button>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between w-full">
-                              <div className="flex items-center gap-1 flex-wrap flex-1 min-w-0">
-                                <span onClick={() => openAuthorProfile(tweet.authorId, tweet)} className="font-bold text-white text-[14px] font-semibold hover:underline cursor-pointer flex items-center gap-1">
-                                  {tweet.authorName}
-                                  {/* شارة التوثيق - تظهر إذا كان المستخدم موثقاً */}
-                                  {tweet.authorName?.includes('احمد') && console.log('🎖️ CommunityFeed tweet:', { name: tweet.authorName, badgeType: tweet.badgeType })}
-                                  {tweet.badgeType && <VerifiedBadge type={tweet.badgeType as any} size={16} />}
-                                </span>
-                                <span className="text-[11px] text-[#71767B] font-normal font-['Tahoma']" dir="ltr">@{tweet.authorUsername}</span>
-                                <span className="text-[11px] text-[#71767B]">·</span>
-                                <span className="text-[11px] text-[#71767B] font-['Tahoma']" title={tweet.createdAtDisplay || tweet.createdAt}>{formatTimeAgo(tweet.createdAt)}</span>
-
-                              </div>
+                              <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden" dir="rtl">
+                      <span onClick={() => openAuthorProfile(tweet.authorId, tweet)} className="font-bold text-[#E7E9EA] text-[12.5px] hover:underline cursor-pointer flex items-center gap-0.5 truncate shrink-0 max-w-[130px] sm:max-w-[180px]">
+                        <span className="truncate">{tweet.authorName}</span>
+                        {tweet.badgeType && <VerifiedBadge type={tweet.badgeType as any} size={14.5} />}
+                      </span>
+                      <span className="text-[11.5px] text-[#71767B] font-normal truncate min-w-0 shrink" dir="ltr">
+                        @{tweet.authorUsername?.replace(/@.*$/, "")}
+                      </span>
+                      <span className="text-[10.5px] text-[#71767B] shrink-0 mx-0.5">·</span>
+                      <span className="text-[10.5px] text-[#71767B] font-normal shrink-0 whitespace-nowrap" title={tweet.createdAtDisplay || tweet.createdAt}>
+                        {formatTimeAgo(tweet.createdAt)}
+                      </span>
+                    </div>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1170,7 +1176,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                             </div>
                             
                             {!tweet.quote_text && tweet.text && (
-                              <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
+                              <p className="-mt-1 text-[13.5px] leading-[20px] text-[#E7E9EA] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
                                 {tweet.text.split(' ').map((w, i) =>
                                   w.startsWith('#') ? (
                                     <span key={i} className="text-[#FFC500] font-semibold hover:underline cursor-pointer">{w} </span>
@@ -1672,64 +1678,73 @@ const handleAddComment = (e?: React.FormEvent) => {
                 <div className="text-center py-8 text-zinc-500 text-xs">لا توجد ردود بعد. كن أول من يرد!</div>
               ) : (
                 viewingDetailTweet?.comments.map(c => (
-                  <div key={c.id} className="py-3 px-1 border-b border-[#2F3336]/40/60 flex gap-3 hover:bg-white/[0.01] transition">
-                    
-                    {/* صورة المستخدم على اليمين */}
-                    <div className="w-[30px] h-[30px] rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
-                      {c.authorAvatar ? (
-                        <img src={c.authorAvatar} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span>{c.authorName ? c.authorName[0] : '؟'}</span>
-                      )}
-                    </div>
+                  <div key={c.id} className="py-3 px-1 border-b border-[#2F3336]/40 flex gap-3 hover:bg-white/[0.01] transition">
+                        {/* صورة المعلق (34px) والضغط عليها ينقل لبروفايله */}
+                        <div
+                          onClick={() => openAuthorProfile(c.authorId, c)}
+                          className="w-[34px] h-[34px] rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden cursor-pointer hover:opacity-80 transition"
+                        >
+                          {c.authorAvatar ? (
+                            <img src={c.authorAvatar} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <span>{c.authorName ? c.authorName[0] : "؟"}</span>
+                          )}
+                        </div>
 
-                    {/* تفاصيل التعليق بنظام X المفتوح */}
-                    <div className="flex-1 min-w-0">
-                      
-                      {/* السطر العلوي: الاسم + اليوزر + الوقت */}
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-bold text-xs text-white hover:underline cursor-pointer">
-                          {c.authorName}
-                        </span>
-                        <span className="text-[11px] text-[#71767B] font-mono" dir="ltr">
-                          @{c.authorUsername || 'user'}
-                        </span>
-                        <span className="text-[11px] text-[#71767B]">·</span>
-                        <span className="text-[#71767B] text-[9px]" title={c.createdAtDisplay || c.createdAt}>
-                          {formatTimeAgo(c.createdAt).relative || c.createdAtDisplay || 'الآن'}
-                        </span>
+                        {/* تفاصيل التعليق بنظام X المتطابق */}
+                        <div className="flex-1 min-w-0">
+                          {/* السطر العلوي: الاسم + اليوزر + النقطة + الوقت في سطر واحد */}
+                          <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden" dir="rtl">
+                            <span
+                              onClick={() => openAuthorProfile(c.authorId, c)}
+                              className="font-bold text-[13.5px] text-[#E7E9EA] hover:underline cursor-pointer flex items-center gap-0.5 truncate shrink-0 max-w-[130px] sm:max-w-[160px]"
+                            >
+                              <span className="truncate">{c.authorName}</span>
+                              {(c.badgeType || c.authorBadge) && (
+                                <VerifiedBadge type={(c.badgeType || c.authorBadge) as any} size={13} />
+                              )}
+                            </span>
+                            <span className="text-[12px] text-[#71767B] font-normal truncate min-w-0 shrink" dir="ltr">
+                              @{c.authorUsername ? c.authorUsername.replace(/@.*$/, "") : "user"}
+                            </span>
+                            <span className="text-[11px] text-[#71767B] shrink-0 mx-0.5">·</span>
+                            <span className="text-[11px] text-[#71767B] font-normal shrink-0 whitespace-nowrap">
+                              {formatTimeAgo(c.createdAt)}
+                            </span>
+                          </div>
+
+                          {/* نص التعليق بخط نظيف ومريح مثل X */}
+                          <p className="text-[13px] text-[#E7E9EA] mt-1 leading-relaxed break-words whitespace-pre-wrap select-text">
+                            {c.text}
+                          </p>
+
+                          {/* صورة التعليق إن وجدت */}
+                          {c.image && (
+                            <div className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-72 bg-black">
+                              <img src={c.image} alt="مرفق الرد" className="w-full h-auto object-cover max-h-72" loading="lazy" />
+                            </div>
+                          )}
+
+                          {/* أزرار التفاعل بنظام X مع ميزة الرد على المعلق */}
+                          <div className="max-w-[320px] -mt-1">
+                            <XActionBar
+                              tweet={c}
+                              onReply={() => {
+                                const mention = "@" + (c.authorUsername || c.authorName || "").replace(/@/g, "") + " ";
+                                setNewCommentText((prev) => (prev.includes(mention) ? prev : mention + prev));
+                              }}
+                              onLike={() => {}}
+                              onShare={() => {
+                                if (navigator.clipboard) {
+                                  navigator.clipboard.writeText(window.location.href);
+                                  showToast("تم نسخ الرابط! 🔗");
+                                }
+                              }}
+                              currentUserId={currentUserId}
+                            />
+                          </div>
+                        </div>
                       </div>
-
-                      {/* نص التعليق */}
-                      <p className="font-['Tahoma'] text-xs text-[#E7E9EA] mt-1.5 leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap select-text">
-                        {c.text}
-                      </p>
-
-                      {/* صورة التعليق إن وجدت */}
-                      {c.image && (
-                        <div className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-72 bg-black">
-                          <img src={c.image} alt="مرفق الرد" className="w-full h-auto object-cover max-h-72" loading="lazy" />
-                        </div>
-                      )}
-
-                      {/* أزرار التفاعل الرسمية بنظام X تحت كل تعليق */}
-                        <div className="max-w-[320px] -mt-1">
-                          <XActionBar
-                            tweet={c}
-                            onReply={() => {}}
-                            onLike={() => {}}
-                            onShare={() => {
-                              if (navigator.clipboard) {
-                                navigator.clipboard.writeText(window.location.href);
-                                showToast("تم نسخ الرابط! 🔗");
-                              }
-                            }}
-                            currentUserId={currentUserId}
-                          />
-                        </div>
-
-                    </div>
-                  </div>
                 ))
               )}
             </div>
@@ -1936,10 +1951,10 @@ const handleAddComment = (e?: React.FormEvent) => {
       {/* زر + (FAB) — يفتح نافذة التغريد المنبثقة */}
       <button
         onClick={() => setIsPostModalOpen(true)}
-        className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-[0_8px_25px_rgba(255,197,0,0.35)] transition"
+        className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-black/60 transition"
         title="تغريدة جديدة"
       >
-        <Plus size={28} className="stroke-[3] text-white" />
+        <Plus size={24} className="stroke-[2.2] text-black" />
       </button>
 
 

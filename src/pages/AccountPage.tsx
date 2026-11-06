@@ -166,7 +166,7 @@ export const VerifiedBadge: React.FC<{ type?: string | boolean; size?: number }>
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="inline-block flex-shrink-0 align-middle mr-1.5 drop-shadow-sm">
       <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6s-2.95.875-3.6 2.148c-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 0 .495.084.965.238 1.4C1.575 9.55.7 10.92.7 12.5s.875 2.95 2.148 3.6c-.154.435-.238.905-.238 1.4 0 2.21 1.79 4 4 4 .495 0 .965-.084 1.4-.238.65 1.273 2.02 2.148 3.6 2.148s2.95-.875 3.6-2.148c.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6z" fill={fill} />
-      <path d="M9.8 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.6-5.6 1.4 1.4-7 7z" fill="#FFFFFF" />
+      <path d="M9.8 16.2l-3.5-3.5 1.4-1.4 2.1 2.1 5.6-5.6 1.4 1.4-7 7z" fill="#000000" />
     </svg>
   );
 };
@@ -1363,7 +1363,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
         {/* 3. الاسم والمعرف */}
         <div className="mt-1">
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden" dir="rtl">
             <h1
               className="text-white select-text"
               style={{ fontSize: '20px', fontWeight: 700, lineHeight: '1.3' }}
@@ -1547,17 +1547,17 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-white text-[13px] hover:underline cursor-pointer cursor-pointer cursor-pointer truncate">{post.authorName || name}</span>
+                      <span className="font-bold text-white text-[12.5px] hover:underline cursor-pointer truncate">{post.authorName || name}</span>
                       {post.authorBadge && post.authorBadge !== "none" && (
-                        <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"
+                        <svg className="w-[14.5px] h-[14.5px] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"
                           style={{color: post.authorBadge === "blue" ? "#1D9BF0" : post.authorBadge === "gold" ? "#FFD700" : "#71767B"}}>
                           <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.918-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.918 1.79-3.918 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.755 2.73 1.882 3.475-.038.2-.058.406-.058.617 0 2.21 1.71 4 3.918 4 .47 0 .92-.085 1.336-.25.52 1.335 1.828 2.25 3.337 2.25s2.816-.917 3.337-2.25c.416.165.866.25 1.336.25 2.21 0 3.918-1.79 3.918-4 0-.21-.02-.417-.058-.617C21.745 15.23 22.5 13.96 22.5 12.5z"/>
-                          <path fill="white" d="M10.825 16.583l-3.66-3.66a.75.75 0 111.06-1.061l2.6 2.6 5.405-5.405a.75.75 0 111.06 1.061l-5.935 5.935a.75.75 0 01-1.06 0z"/>
+                          <path fill="#000000" d="M10.825 16.583l-3.66-3.66a.75.75 0 111.06-1.061l2.6 2.6 5.405-5.405a.75.75 0 111.06 1.061l-5.935 5.935a.75.75 0 01-1.06 0z"/>
                         </svg>
                       )}
-                      <span className="text-[#71767B] text-[13px] truncate">@{post.authorUsername || username}</span>
-                      <span className="text-[#71767B] text-[13px]">·</span>
-                      <span className="text-[#71767B] text-[12px] hover:underline cursor-pointer" title={post.createdAtDisplay || post.createdAt}>
+                      <span className="text-[#71767B] text-[11.5px] truncate" dir="ltr">@{post.authorUsername || username}</span>
+                      <span className="text-[#71767B] text-[10.5px] mx-0.5">·</span>
+                      <span className="text-[#71767B] text-[10.5px] hover:underline cursor-pointer whitespace-nowrap" title={post.createdAtDisplay || post.createdAt}>
                         {formatTimeAgo(post.createdAt).relative}
                       </span>
                     </div>
@@ -2164,10 +2164,10 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       {isOwner && (
         <button
           onClick={() => setIsPostModalOpen(true)}
-          className="fixed bottom-24 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-[0_8px_25px_rgba(255,197,0,0.3)] transition"
+          className="fixed bottom-24 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-black/60 transition"
           title="تغريدة جديدة"
         >
-          <Plus size={28} className="stroke-[2.5]" />
+          <Plus size={24} className="stroke-[2.2] text-black" />
         </button>
       )}
 
@@ -2435,12 +2435,17 @@ function formatTimeAgo(dateStr: string): { relative: string; absolute: string } 
     const diffHour = Math.floor(diffMin / 60);
     const diffDay = Math.floor(diffHour / 24);
     
-    let relative = '';
-    if (diffSec < 60) relative = 'الآن';
-    else if (diffMin < 60) relative = `${diffMin}د`;
-    else if (diffHour < 24) relative = `${diffHour}س`;
-    else if (diffDay < 7) relative = `${diffDay}ي`;
-    else relative = date.toLocaleDateString('ar-YE', { day: 'numeric', month: 'short' });
+    const toAr = (n) => String(n).replace(/[0-9]/g, (d) => "٠١٢٣٤٥٦٧٨٩"[+d]);
+    let relative = "";
+    if (diffSec < 60) relative = "الآن";
+    else if (diffMin < 60) relative = `${toAr(diffMin)} د`;
+    else if (diffHour < 24) relative = `${toAr(diffHour)} س`;
+    else if (diffDay < 7) relative = `${toAr(diffDay)} ي`;
+    else {
+      const d = toAr(date.getDate());
+      const m = date.toLocaleDateString("ar-YE", { month: "short" });
+      relative = `${d} ${m}`;
+    }
     
     const absolute = date.toLocaleDateString('ar-YE', {
       day: 'numeric',
