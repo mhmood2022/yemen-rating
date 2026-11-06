@@ -1,3 +1,4 @@
+import { ReplyBar } from '../components/community/ReplyBar';
 import { XActionBar } from '../components/feed/XActionBar';
 import { XVideoPlayer } from '../components/feed/XVideoPlayer';
 import { SupportModal } from '../components/support/SupportModal';
@@ -194,6 +195,7 @@ export const AccountPage: React.FC = () => {
   const [profileId, setProfileId] = useState<string>('');
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [myName, setMyName] = useState<string>('مستخدم');
+  const [myAvatar, setMyAvatar] = useState<string>('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -366,13 +368,15 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         setCurrentUserId(user.id);
         const { data: myProfile } = await supabase
           .from('profiles')
-          .select('full_name, username')
+          .select('full_name, username, avatar_url')
           .eq('id', user.id)
           .single();
         if (myProfile) {
           setMyName(myProfile.full_name || myProfile.username || 'مستخدم');
+          setMyAvatar(myProfile.avatar_url || user.user_metadata?.avatar_url || '');
         } else {
           setMyName(user.email?.split('@')[0] || 'مستخدم');
+          setMyAvatar(user.user_metadata?.avatar_url || '');
         }
       }
       const myId = user?.id || "";
@@ -897,16 +901,17 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     }
   };
 
-  const handleSubmitComment = async () => {
-    if (!newCommentText.trim() || !sessionUser?.id || !activeCommentPost) {
-      return;
-    }
-    
+    const handleSubmitComment = async () => {
+      const targetPost = viewingDetailPost || activeCommentPost;
+      if (!newCommentText.trim() || !sessionUser?.id || !targetPost) {
+        return;
+      }
+
     try {
-      const postIdToUse = activeCommentPost.id.startsWith('repost-') && activeCommentPost.original?.id 
-        ? activeCommentPost.original.id 
-        : activeCommentPost.id;
-      
+      const postIdToUse = targetPost.id.startsWith('repost-') && targetPost.original?.id
+        ? targetPost.original.id
+        : targetPost.id;
+
       const { error } = await supabase
         .from('post_comments')
         .insert({
@@ -914,15 +919,48 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           user_id: sessionUser.id,
           content: newCommentText.trim(),
         });
-      
+
       if (error) throw error;
-      
+
       setNewCommentText('');
       await loadComments(postIdToUse);
+
+      if (viewingDetailPost && viewingDetailPost.id === targetPost.id) {
+        setViewingDetailPost((prev: any) => prev ? {
+          ...prev,
+          comments_count: (Number(prev.comments_count) || 0) + 1
+        } : prev);
+      }
+
+      setPosts((prevPosts: any[]) =>
+        prevPosts.map((p) =>
+          p.id === postIdToUse
+            ? { ...p, comments_count: (Number(p.comments_count) || 0) + 1 }
+            : p
+        )
+      );
+
       showToast('تم إضافة الرد');
     } catch (e: any) {
       console.error('add comment error:', e);
       showToast('فشل: ' + (e?.message || 'خطأ'));
+    }
+  };
+
+  
+
+
+  const openAuthorProfile = (authorId: string, authorData?: { name?: string; avatarUrl?: string; username?: string }) => {
+    setViewingDetailPost(null);
+    const navState = authorData ? {
+      name: authorData.name,
+      avatarUrl: authorData.avatarUrl,
+      username: authorData.username,
+    } : undefined;
+    if (authorId === currentUserId) {
+      navigate('/account', { state: navState });
+    } else {
+      navigate('/account?id=' + authorId, { state: navState });
     }
   };
 
@@ -1619,7 +1657,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   {/* فيديو المنشور */}
                   {!post.isRepost && (post.video_url || post.video) && (
                     <div className="mt-3">
-                      <XVideoPlayer src={post.video_url || post.video} />
+                      <XVideoPlayer src={post.video_url || post.video} tweet={post} authorName={post.original?.authorName || name} authorUsername={post.original?.authorUsername || username} authorAvatar={post.original?.authorAvatar || avatarUrl} currentUserAvatar={myAvatar} />
                     </div>
                   )}
 
@@ -1632,7 +1670,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                                                                 <XActionBar
                     tweet={post}
                     onReply={() => {
-                      setActiveCommentPost(post);
+                      setViewingDetailPost(post);
                       loadComments(post.id.startsWith("repost-") && post.original?.id ? post.original.id : post.id);
                     }}
                     onRepost={(p) => setRepostMenu(p)}
@@ -1664,7 +1702,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]/40 mb-4">
               <h2 className="text-base font-black">تعديل الملفّ الشخصيّ</h2>
               <button onClick={() => setIsEditModalOpen(false)} className="text-[#71767B] hover:text-white p-1 rounded-full">
-                <X size={20} />
+                <ArrowRight size={20} />
               </button>
             </div>
 
@@ -2037,128 +2075,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         </div>
       )}
 
-      {/* نافذة الردود - نسخة من /feed */}
-      {activeCommentPost && (
-        <div className="fixed inset-0 z-[300] bg-black flex flex-col h-[100dvh] text-white overflow-hidden" dir="rtl">
-          {/* شريط علوي */}
-          <div className="h-14 border-b border-[#2F3336]/40 px-4 flex items-center justify-between shrink-0 bg-black">
-            <div className="flex items-center gap-3">
-              <button onClick={() => setActiveCommentPost(null)} className="p-2 hover:bg-zinc-900 rounded-full text-[#71767B] hover:text-white transition">
-                <ArrowRight size={20} />
-              </button>
-              <h2 className="font-bold text-base">منشور</h2>
-            </div>
-          </div>
-
-          {/* محتوى التغريدة والردود */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            <div className="flex items-center gap-3">
-              <img
-                src={activeCommentPost.authorAvatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + activeCommentPost.authorId}
-                alt=""
-                className="w-12 h-12 rounded-full object-cover border border-[#2F3336]"
-              />
-              <div>
-                <p className="font-['Tahoma'] font-bold text-sm text-white">{activeCommentPost.authorName}</p>
-                <p className="font-['Tahoma'] text-[11px] text-[#71767B] font-normal" dir="ltr">@{activeCommentPost.authorUsername}</p>
-              </div>
-            </div>
-
-            <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
-              {activeCommentPost.text}
-            </p>
-
-            {activeCommentPost.image && (
-              <div className="rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-[450px]">
-                <img src={activeCommentPost.image} alt="" className="w-full h-auto object-cover" />
-              </div>
-            )}
-
-            <div className="text-[11px] text-[#71767B] py-2 border-y border-[#2F3336] flex items-center gap-2">
-              <span>{formatTimeAndDate(activeCommentPost.createdAt)}</span>
-              <span>·</span>
-              <span>{activeCommentPost.views || 1} مشاهدة</span>
-            </div>
-
-            {/* أزرار التفاعل في العرض الكامل */}
-            <div className="flex items-center justify-around py-1 border-b border-[#2F3336]/40 text-[#71767B]">
-              <button className="flex items-center gap-1.5 hover:text-[#FFC500] transition">
-                <MessageCircle size={16} />
-                <span className="text-xs">{postComments.length}</span>
-              </button>
-              <button onClick={() => handleRepost(activeCommentPost.id)} className="flex items-center gap-1.5 hover:text-emerald-400 transition">
-                <Repeat2 size={16} />
-                <span className="text-xs">{activeCommentPost.reposts || 0}</span>
-              </button>
-              <button onClick={() => handleToggleLike(activeCommentPost.id)} className="flex items-center gap-1.5 hover:text-rose-500 transition">
-                <Heart size={16} />
-                <span className="text-xs">{activeCommentPost.likes || 0}</span>
-              </button>
-              <button onClick={() => { if (navigator.clipboard) { navigator.clipboard.writeText(window.location.href); showToast('تم نسخ الرابط!'); } }} className="hover:text-white transition">
-                <Share2 size={16} />
-              </button>
-            </div>
-
-            {/* قائمة التعليقات */}
-            <div className="space-y-3 pt-2">
-              <h3 className="text-xs font-bold text-[#71767B]">الردود ({postComments.length})</h3>
-              {loadingComments ? (
-                <div className="text-center py-8 text-zinc-500 text-xs">جاري التحميل...</div>
-              ) : postComments.length === 0 ? (
-                <div className="text-center py-8 text-zinc-500 text-xs">لا توجد ردود بعد. كن أول من يرد!</div>
-              ) : (
-                postComments.map(c => (
-                  <div key={c.id} className="py-3 px-1 border-b border-[#2F3336]/40/60 flex gap-3 hover:bg-white/[0.01] transition">
-                    <div className="w-[30px] h-[30px] rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
-                      {c.userAvatar ? (
-                        <img src={c.userAvatar} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span>{c.userName ? c.userName[0] : '؟'}</span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-bold text-xs text-white hover:underline cursor-pointer">{c.userName}</span>
-                        <span className="text-[11px] text-[#71767B] font-mono" dir="ltr">@{c.userUsername || 'user'}</span>
-                        <span className="text-[11px] text-[#71767B]">·</span>
-                        <span className="text-[#71767B] text-[9px]" title={c.createdAtDisplay || c.createdAt}>{formatTimeAgo(c.createdAt).relative || c.createdAtDisplay || 'الآن'}</span>
-                      </div>
-                      <p className="font-['Tahoma'] text-xs text-[#E7E9EA] mt-1.5 leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap select-text">{c.content}</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* شريط الكتابة السفلي */}
-          <div className="p-3 border-t border-[#2F3336] bg-black shrink-0">
-            <form onSubmit={(e) => { e.preventDefault(); handleSubmitComment(); }} className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden shrink-0">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xs font-bold">{name ? name[0] : '؟'}</span>
-                )}
-              </div>
-              <input
-                type="text"
-                value={newCommentText}
-                onChange={(e) => setNewCommentText(e.target.value)}
-                placeholder="انشر ردّك..."
-                className="flex-1 bg-[#111111] border border-[#2F3336] rounded-full px-4 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#FFC500]"
-              />
-              <button
-                type="submit"
-                disabled={!newCommentText.trim() || newCommentText.length > 280}
-                className="px-4 py-2 bg-[#FFC500] text-black font-bold text-xs rounded-full hover:bg-[#E5B200] transition disabled:opacity-40"
-              >
-                ردّ
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      
 
       {/* زر + (FAB) — دائم الظهور */}
       {isOwner && (
@@ -2174,7 +2091,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       {/* Modal تفاصيل التغريدة */}
       {viewingDetailPost && (
         <div 
-          className="fixed inset-0 z-50 bg-black  overflow-y-auto"
+          className="fixed inset-0 z-[200] bg-black overflow-y-auto"
           onClick={() => setViewingDetailPost(null)}
           dir="rtl"
         >
@@ -2190,7 +2107,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               >
                 <X size={20} />
               </button>
-              <h2 className="text-white font-bold text-lg">التغريدة</h2>
+              <h2 className="text-white font-bold text-base">منشور</h2>
             </div>
 
             {/* Tweet body */}
@@ -2256,9 +2173,9 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                     الردود ({postComments.length})
                   </h3>
                   {postComments.map((c) => (
-                    <div key={c.id} className="p-3 border-b border-[#2F3336]/40">
+                    <div key={c.id} className="p-3 border-b border-[#2F3336]/40 hover:bg-white/[0.01] transition">
                       <div className="flex gap-3">
-                        <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          <div onClick={() => openAuthorProfile(c.userId, { name: c.userName, avatarUrl: c.userAvatar, username: c.userUsername })} className="w-[42px] h-[42px] min-w-[42px] min-h-[42px] rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer hover:opacity-80 transition">
                           {c.userAvatar ? (
                             <img src={c.userAvatar} alt="" className="w-full h-full object-cover" />
                           ) : (
@@ -2266,22 +2183,47 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1 text-sm">
-                            <span className="font-bold text-white">{c.userName}</span>
-                            <span className="text-[#71767B]">@{c.userUsername}</span>
-                            <span className="text-[#71767B]">·</span>
-                            <span className="text-[#71767B] text-xs" title={c.createdAtDisplay || c.createdAt}>
-                              {formatTimeAgo(c.createdAt).relative || c.createdAtDisplay || 'الآن'}
-                              <span className="text-[9px] text-[#536471] mr-1">· {new Date(c.createdAt).toLocaleDateString("ar-YE", { day: "numeric", month: "short", year: "numeric" })}</span>
-                            </span>
+                          <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden" dir="rtl">
+                              <span onClick={() => openAuthorProfile(c.userId, { name: c.userName, avatarUrl: c.userAvatar, username: c.userUsername })} className="font-bold text-[#E7E9EA] text-[13.5px] truncate shrink-0 cursor-pointer hover:underline">{c.userName}</span>
+                              <span onClick={() => openAuthorProfile(c.userId, { name: c.userName, avatarUrl: c.userAvatar, username: c.userUsername })} className="text-[#71767B] text-[12px] truncate min-w-0 shrink cursor-pointer hover:underline" dir="ltr">@{c.userUsername}</span>
+                            <span className="text-[#71767B] text-[11px] shrink-0 mx-0.5">·</span>
+                            <span className="text-[#71767B] text-[11px] shrink-0 whitespace-nowrap">{formatTimeAgo(c.createdAt).relative || "الآن"}</span>
                           </div>
-                          <p className="text-white text-sm mt-1 whitespace-pre-wrap">{c.content}</p>
+                          <p className="text-[#E7E9EA] text-[13px] mt-1 whitespace-pre-wrap leading-relaxed select-text">{c.content}</p>
+                          
+                          {/* أيقونات التفاعل بنظام X تحت المعلق */}
+                          <div className="max-w-[320px] -mt-1">
+                            <XActionBar
+                              tweet={c}
+                              onReply={() => {
+                                const mention = "@" + (c.userUsername || c.userName || "").replace(/@/g, "") + " ";
+                                setNewCommentText((prev) => (prev.includes(mention) ? prev : mention + prev));
+                              }}
+                              onLike={() => {}}
+                              onShare={() => {
+                                if (navigator.clipboard) {
+                                  navigator.clipboard.writeText(window.location.href);
+                                }
+                              }}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
+              
+              {/* شريط الرد الموحد الحديث أسفل تفاصيل المنشور */}
+              <div className="sticky bottom-0 z-20 bg-black/95 backdrop-blur border-t border-[#2F3336] -mx-4 -mb-4 mt-4">
+                <ReplyBar
+                  value={newCommentText}
+                  onChange={setNewCommentText}
+                  onSubmit={(e) => { e && e.preventDefault(); handleSubmitComment(); }}
+                  myAvatar={myAvatar || sessionUser?.user_metadata?.avatar_url || ''}
+                  myName={myName || 'مستخدم'}
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -1238,7 +1238,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                             {/* فيديو التغريدة العادية */}
                             {(tweet.video_url || tweet.video) && (
                               <div className="mt-3">
-                                <XVideoPlayer src={tweet.video_url || tweet.video} />
+                                <XVideoPlayer src={tweet.video_url || tweet.video} tweet={tweet} currentUserAvatar={myAvatar} />
                               </div>
                             )}
 
@@ -1272,232 +1272,6 @@ const handleAddComment = (e?: React.FormEvent) => {
         )}
       </div>
 
-      {/* نافذة المنشور والردود - تصميم كامل */}
-      {activeCommentTweet && (
-        <div
-          className="fixed inset-0 z-[80] bg-black flex flex-col h-[100dvh] w-full text-white overflow-hidden"
-          dir="rtl"
-        >
-          {/* الشريط العلوي */}
-          <div className="h-14 border-b border-[#2F3336]/40 px-4 flex items-center shrink-0 bg-black">
-            <button
-              type="button"
-              onClick={() => setActiveCommentTweet(null)}
-              className="p-2 -mr-2 rounded-full hover:bg-white/10"
-              aria-label="إغلاق"
-            >
-              <ArrowRight size={20} />
-            </button>
-            <h2 className="font-bold text-base mr-3">منشور</h2>
-          </div>
-
-          {/* محتوى المنشور والردود قابل للتمرير */}
-          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
-            <article className="border-b border-[#2F3336]/40 pb-3">
-              <div className="flex items-start gap-3">
-                <div className="w-11 h-11 rounded-full bg-zinc-800 overflow-hidden shrink-0 flex items-center justify-center">
-                  {activeCommentTweet.authorAvatar ? (
-                    <img
-                      src={activeCommentTweet.authorAvatar}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="font-bold">
-                      {activeCommentTweet.authorName?.[0] || "؟"}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-x-2">
-                    <span className="font-bold text-[15px] break-words">
-                      {activeCommentTweet.authorName}
-                    </span>
-                    <span className="text-[#71767B] text-sm" dir="ltr">
-                      @{activeCommentTweet.authorUsername}
-                    </span>
-                  </div>
-
-                  <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
-                    {activeCommentTweet.text}
-                  </p>
-
-                  {activeCommentTweet.image && (
-                    <img
-                      src={activeCommentTweet.image}
-                      alt="صورة المنشور"
-                      className="mt-3 w-full max-h-[420px] object-contain rounded-2xl border border-[#2F3336] bg-black"
-                    />
-                  )}
-
-                  <div className="mt-3 text-xs text-[#71767B]">
-                    {formatTimeAndDate(activeCommentTweet.createdAt)}
-                    {" · "}
-                    {activeCommentTweet.views || 1} مشاهدة
-                  </div>
-
-                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#2F3336] text-sm text-[#71767B]">
-                    <MessageCircle size={17} />
-                    <span>{activeCommentTweet.comments?.length || 0} رد</span>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            {/* قائمة الردود */}
-            <section className="pt-3 pb-4">
-              <h3 className="font-bold text-sm mb-3">
-                الردود ({activeCommentTweet.comments?.length || 0})
-              </h3>
-
-              {!activeCommentTweet.comments?.length ? (
-                <p className="text-sm text-[#71767B] py-6 text-center">
-                  لا توجد ردود بعد. كن أول من يرد على هذا المنشور.
-                </p>
-              ) : (
-                <div>
-                  {activeCommentTweet.comments.map((comment) => (
-                    <article
-                      key={comment.id}
-                      className="flex gap-3 py-3 border-b border-[#2F3336]/40"
-                    >
-                      <div className="w-9 h-9 rounded-full bg-zinc-800 overflow-hidden shrink-0 flex items-center justify-center">
-                        {comment.authorAvatar ? (
-                          <img
-                            src={comment.authorAvatar}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-xs font-bold">
-                            {comment.authorName?.[0] || "؟"}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-x-2">
-                          <span className="font-bold text-sm break-words">
-                            {comment.authorName}
-                          </span>
-                          <span className="text-[#71767B] text-xs" dir="ltr">
-                            @{comment.authorUsername || "user"}
-                          </span>
-                          <span className="text-[#71767B] text-xs">
-                            {comment.createdAtDisplay || formatTimeAndDate(comment.createdAt)}
-                          </span>
-                        </div>
-
-                        <p className="mt-1 text-sm leading-6 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
-                          {comment.text}
-                        </p>
-
-                        {comment.image && (
-                          <img
-                            src={comment.image}
-                            alt="صورة الرد"
-                            className="mt-2 max-h-64 max-w-full rounded-xl border border-[#2F3336] object-contain"
-                          />
-                        )}
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </section>
-          </div>
-
-          {/* شريط كتابة الرد الثابت أسفل الشاشة */}
-          <div
-            className="shrink-0 border-t border-[#2F3336] bg-black px-3 pt-3"
-            style={{ paddingBottom: Math.max(12, viewportBottomOffset) }}
-          >
-            {commentImage && (
-              <div className="relative mb-2 max-h-36 overflow-hidden rounded-xl border border-[#2F3336]">
-                <img
-                  src={commentImage}
-                  alt="معاينة صورة الرد"
-                  className="max-h-36 w-auto object-contain"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCommentImage("");
-                    setCommentImageFile(null);
-                    if (commentImageInputRef.current) {
-                      commentImageInputRef.current.value = "";
-                    }
-                  }}
-                  className="absolute top-2 left-2 rounded-full bg-black p-1.5 text-white"
-                  aria-label="إزالة الصورة"
-                >
-                  <X size={15} />
-                </button>
-              </div>
-            )}
-
-            <form
-              onSubmit={(e) => handleAddComment(e)}
-              className="flex items-end gap-2"
-            >
-              <div className="w-9 h-9 rounded-full bg-zinc-800 overflow-hidden shrink-0 flex items-center justify-center">
-                {myAvatar ? (
-                  <img src={myAvatar} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="font-bold">{myName?.[0] || "؟"}</span>
-                )}
-              </div>
-
-              <div className="flex-1 min-w-0 rounded-2xl border border-[#2F3336] bg-[#16181C] px-3 py-2">
-                <textarea
-                  rows={1}
-                  value={newCommentText}
-                  onChange={(e) => setNewCommentText(e.target.value)}
-                  placeholder="انشر ردّك..."
-                  maxLength={280}
-                  className="w-full max-h-24 resize-none bg-transparent text-sm leading-6 text-white placeholder-[#71767B] focus:outline-none"
-                />
-
-                <div className="flex items-center justify-between pt-1">
-                  <div className="flex items-center gap-2 text-[#FFC500]">
-                    <input
-                      type="file"
-                      ref={commentImageInputRef}
-                      onChange={handleCommentImageSelect}
-                      accept="image/*,video/*"
-                      className="hidden"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => commentImageInputRef.current?.click()}
-                      className="rounded-full p-1.5 hover:bg-[#FFC500]/10"
-                      title="إرفاق صورة"
-                    >
-                      <ImageIcon size={19} />
-                    </button>
-                  </div>
-
-                  <span
-                    className={`text-[10px] ${newCommentText.length >= 260 ? "text-amber-400" : "text-[#71767B]"}`}
-                    dir="ltr"
-                  >
-                    {newCommentText.length}/280
-                  </span>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={!newCommentText.trim() || newCommentText.length > 280}
-                className="shrink-0 rounded-full bg-[#FFC500] px-4 py-2 text-sm font-bold text-black disabled:opacity-40"
-              >
-                رد
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* نافذة عرض تفاصيل التغريدة الكاملة مع كل الردود (عند النقر على جسم التغريدة) */}
       {/* قائمة إعادة النشر / اقتباس */}
@@ -1641,7 +1415,7 @@ const handleAddComment = (e?: React.FormEvent) => {
               <div className="flex-1 max-w-[425px]">
                 <XActionBar
                   tweet={viewingDetailTweet}
-                  onReply={() => { setActiveCommentTweet(viewingDetailTweet); setViewingDetailTweet(null); }}
+                  onReply={() => { /* التفاعل المباشر مع شريط الرد الحديث */ }}
                   onRepost={() => handleRepost(viewingDetailTweet.id)}
                   onLike={() => handleLike(viewingDetailTweet.id)}
                   onBookmark={() => showToast("تمت الإضافة إلى العلامات المرجعية 🔖")}
@@ -1677,75 +1451,107 @@ const handleAddComment = (e?: React.FormEvent) => {
               {(!viewingDetailTweet?.comments || viewingDetailTweet?.comments.length === 0) ? (
                 <div className="text-center py-8 text-zinc-500 text-xs">لا توجد ردود بعد. كن أول من يرد!</div>
               ) : (
-                viewingDetailTweet?.comments.map(c => (
-                  <div key={c.id} className="py-3 px-1 border-b border-[#2F3336]/40 flex gap-3 hover:bg-white/[0.01] transition">
-                        {/* صورة المعلق (34px) والضغط عليها ينقل لبروفايله */}
+                viewingDetailTweet?.comments.map(c => {
+                      const commentAsTweet = {
+                        id: c.id,
+                        authorId: c.authorId,
+                        authorName: c.authorName,
+                        authorUsername: c.authorUsername,
+                        authorAvatar: c.authorAvatar,
+                        badgeType: c.badgeType || c.authorBadge,
+                        text: c.text,
+                        image: c.image,
+                        createdAt: c.createdAt,
+                        likes: c.likes || 0,
+                        replies: c.replies || 0,
+                        reposts: c.reposts || 0,
+                        views: c.views || 1,
+                        likedBy: c.likedBy || [],
+                        comments: c.comments || []
+                      };
+
+                      return (
                         <div
-                          onClick={() => openAuthorProfile(c.authorId, c)}
-                          className="w-[34px] h-[34px] rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden cursor-pointer hover:opacity-80 transition"
+                          key={c.id}
+                          onClick={() => setViewingDetailTweet(commentAsTweet)}
+                          className="py-3 px-1 border-b border-[#2F3336]/40 flex gap-3 hover:bg-white/[0.02] transition cursor-pointer"
                         >
-                          {c.authorAvatar ? (
-                            <img src={c.authorAvatar} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <span>{c.authorName ? c.authorName[0] : "؟"}</span>
-                          )}
-                        </div>
-
-                        {/* تفاصيل التعليق بنظام X المتطابق */}
-                        <div className="flex-1 min-w-0">
-                          {/* السطر العلوي: الاسم + اليوزر + النقطة + الوقت في سطر واحد */}
-                          <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden" dir="rtl">
-                            <span
-                              onClick={() => openAuthorProfile(c.authorId, c)}
-                              className="font-bold text-[13.5px] text-[#E7E9EA] hover:underline cursor-pointer flex items-center gap-0.5 truncate shrink-0 max-w-[130px] sm:max-w-[160px]"
-                            >
-                              <span className="truncate">{c.authorName}</span>
-                              {(c.badgeType || c.authorBadge) && (
-                                <VerifiedBadge type={(c.badgeType || c.authorBadge) as any} size={13} />
-                              )}
-                            </span>
-                            <span className="text-[12px] text-[#71767B] font-normal truncate min-w-0 shrink" dir="ltr">
-                              @{c.authorUsername ? c.authorUsername.replace(/@.*$/, "") : "user"}
-                            </span>
-                            <span className="text-[11px] text-[#71767B] shrink-0 mx-0.5">·</span>
-                            <span className="text-[11px] text-[#71767B] font-normal shrink-0 whitespace-nowrap">
-                              {formatTimeAgo(c.createdAt)}
-                            </span>
+                          {/* صورة المعلق بالحجم الطبيعي 42px */}
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openAuthorProfile(c.authorId, c);
+                            }}
+                            className="w-[48px] h-[48px] min-w-[48px] min-h-[48px] aspect-square rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden cursor-pointer hover:opacity-80 transition"
+                          >
+                            {c.authorAvatar ? (
+                              <img src={c.authorAvatar} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <span>{c.authorName ? c.authorName[0] : "؟"}</span>
+                            )}
                           </div>
 
-                          {/* نص التعليق بخط نظيف ومريح مثل X */}
-                          <p className="text-[13px] text-[#E7E9EA] mt-1 leading-relaxed break-words whitespace-pre-wrap select-text">
-                            {c.text}
-                          </p>
-
-                          {/* صورة التعليق إن وجدت */}
-                          {c.image && (
-                            <div className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-72 bg-black">
-                              <img src={c.image} alt="مرفق الرد" className="w-full h-auto object-cover max-h-72" loading="lazy" />
+                          {/* تفاصيل التعليق */}
+                          <div className="flex-1 min-w-0">
+                            {/* رأس التعليق */}
+                            <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden" dir="rtl">
+                              <span
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openAuthorProfile(c.authorId, c);
+                                }}
+                                className="font-bold text-[13.5px] text-[#E7E9EA] hover:underline cursor-pointer flex items-center gap-0.5 truncate shrink-0 max-w-[130px] sm:max-w-[160px]"
+                              >
+                                <span className="truncate">{c.authorName}</span>
+                                {(c.badgeType || c.authorBadge) && (
+                                  <VerifiedBadge type={(c.badgeType || c.authorBadge) as any} size={14} />
+                                )}
+                              </span>
+                              <span className="text-[12px] text-[#71767B] font-normal truncate min-w-0 shrink" dir="ltr">
+                                @{c.authorUsername ? c.authorUsername.replace(/@.*$/, "") : "user"}
+                              </span>
+                              <span className="text-[11px] text-[#71767B] shrink-0 mx-0.5">·</span>
+                              <span className="text-[11px] text-[#71767B] font-normal shrink-0 whitespace-nowrap">
+                                {formatTimeAgo(c.createdAt)}
+                              </span>
                             </div>
-                          )}
 
-                          {/* أزرار التفاعل بنظام X مع ميزة الرد على المعلق */}
-                          <div className="max-w-[320px] -mt-1">
-                            <XActionBar
-                              tweet={c}
-                              onReply={() => {
-                                const mention = "@" + (c.authorUsername || c.authorName || "").replace(/@/g, "") + " ";
-                                setNewCommentText((prev) => (prev.includes(mention) ? prev : mention + prev));
-                              }}
-                              onLike={() => {}}
-                              onShare={() => {
-                                if (navigator.clipboard) {
-                                  navigator.clipboard.writeText(window.location.href);
-                                  showToast("تم نسخ الرابط! 🔗");
-                                }
-                              }}
-                              currentUserId={currentUserId}
-                            />
+                            {/* نص التعليق */}
+                            <p className="text-[13px] text-[#E7E9EA] mt-1 leading-relaxed break-words whitespace-pre-wrap select-text">
+                              {c.text}
+                            </p>
+
+                            {/* صورة التعليق إن وجدت */}
+                            {c.image && (
+                              <div className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-72 bg-black">
+                                <img src={c.image} alt="مرفق الرد" className="w-full h-auto object-cover max-h-72" loading="lazy" />
+                              </div>
+                            )}
+
+                            {/* أزرار التفاعل بنظام X مع فتح التعليق والرد عليه */}
+                            <div className="max-w-[320px] -mt-1" onClick={(e) => e.stopPropagation()}>
+                              <XActionBar
+                                tweet={c}
+                                onReply={() => {
+                                  const mention = "@" + (c.authorUsername || c.authorName || "").replace(/@/g, "") + " ";
+                                  setNewCommentText((prev) => (prev.includes(mention) ? prev : mention + prev));
+                                  // تم إلغاء النافذة القديمة والاعتماد على شريط الرد الموحد الحديث
+                                  showToast("الرد على @" + (c.authorUsername || c.authorName || ""));
+                                }}
+                                onLike={() => {}}
+                                onShare={() => {
+                                  if (navigator.clipboard) {
+                                    navigator.clipboard.writeText(window.location.href);
+                                    showToast("تم نسخ الرابط! 🔗");
+                                  }
+                                }}
+                                currentUserId={currentUserId}
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                ))
+                      );
+                    })
               )}
             </div>
           </div>
