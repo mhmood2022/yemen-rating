@@ -180,6 +180,7 @@ export const AccountPage: React.FC = () => {
   const targetIdParam = searchParams.get('id');
 
   const [loading, setLoading] = useState(true);
+  const [showMySentToast, setShowMySentToast] = useState(false);
   const [ownedBusinessId, setOwnedBusinessId] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('بدء...');
   const [sessionUser, setSessionUser] = useState<any>(null);
@@ -846,7 +847,13 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       setNewPostFile(null);
       setIsPostModalOpen(false);
       setIsPostingModal(false);
-      showToast("تم نشر تغريدتك بنجاح! 🚀✨");
+      try {
+        localStorage.removeItem('yr_global_feed');
+        localStorage.removeItem('yr_community_feed');
+        window.dispatchEvent(new Event('storage'));
+      } catch(_) {}
+      setShowMySentToast(true);
+      setTimeout(() => setShowMySentToast(false), 4500);
     } catch (err: any) {
       setIsPostingModal(false);
       console.error("Post error:", err);
@@ -1147,11 +1154,56 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
   return (
     <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#FFC500] selection:text-white pb-32" dir="rtl">
-      
+
+      {/* 💬 إشعار صاحب المنشور: تم إرسال منشورك (مطابق للكبسولة بالملي) */}
+      {showMySentToast && (
+        <div
+          className="fixed top-[52px] left-1/2 -translate-x-1/2 z-[99999] w-[190px] bg-[#242D34] text-white rounded-[16px] py-[8px] px-[10px] shadow-[0_10px_30px_rgba(0,0,0,0.85)] border border-white/20 flex flex-col items-center gap-[6px] select-none overflow-hidden"
+          style={{ direction: "ltr" }}
+        >
+          {/* علامة مائية لشعار X */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.06]">
+            <svg className="w-16 h-16 fill-white" viewBox="0 0 24 24">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </div>
+
+          {/* الصف العلوي: الصح يمين والنص يسار في العرض العربي */}
+          <div className="flex items-center justify-center gap-2 w-full relative z-10" style={{ direction: "rtl" }}>
+            <div className="w-[18px] h-[18px] rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
+              <svg viewBox="0 0 24 24" className="w-[11px] h-[11px] fill-[#242D34] stroke-[#242D34] stroke-[2.5]">
+                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+              </svg>
+            </div>
+            <span className="text-[12px] font-bold tracking-tight text-white font-['Tahoma',sans-serif]">تم إرسال منشورك</span>
+          </div>
+
+          {/* زر عرض المنشور الرمادي الأنيق */}
+          <button
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+              setShowMySentToast(false);
+            }}
+            className="w-full h-[28px] bg-[#3A444C] hover:bg-[#485560] active:scale-[0.98] transition-all text-white font-bold text-[11.5px] rounded-[8px] cursor-pointer border border-white/10 outline-none text-center shadow-md relative z-10 flex items-center justify-center"
+          >
+            عرض المنشور
+          </button>
+        </div>
+      )}
+
       {toastMessage && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[150] bg-black/95 backdrop-blur-2xl border border-[#2F3336] text-white px-5 py-2.5 rounded-full text-xs font-bold shadow-[0_12px_40px_rgba(0,0,0,0.9)] animate-fade-in flex items-center gap-2">
-          <CheckCircle2 size={16} className="text-[#FFC500] flex-shrink-0" />
-          <span>{toastMessage}</span>
+        <div
+          className="fixed top-[52px] left-1/2 -translate-x-1/2 z-[999999] bg-[#242D34] text-white px-4 py-2 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.85)] border border-white/20 flex items-center gap-2 select-none"
+          style={{ direction: "rtl" }}
+        >
+          <div className="w-[18px] h-[18px] rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
+            <svg viewBox="0 0 24 24" className="w-[11px] h-[11px] fill-[#242D34] stroke-[#242D34] stroke-[2.5]">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+            </svg>
+          </div>
+          <span className="text-[12.5px] font-bold text-white font-['Tahoma',sans-serif]">
+            {toastMessage.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]/g, "").trim()}
+          </span>
         </div>
       )}
 
