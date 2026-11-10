@@ -323,8 +323,16 @@ export const CommunityFeedPage: React.FC = () => {
         }
       } catch (_) {}
 
-      try {
-        // 1. جلب جميع التغريدات من السحابة عبر البروكسي النظيف
+      
+    // عرض الكاش فوراً (مثل إكس)
+    try {
+      const cached = JSON.parse(localStorage.getItem(GLOBAL_FEED_KEY) || '[]');
+      if (cached.length > 0) setTweets(cached);
+    } catch(_) {}
+
+    try {
+      // 1. جلب جميع التغريدات من السحابة عبر البروكسي النظيف
+    
                 // جلب إعجابات وإعادات نشر المستخدم الحالي لضمان بقاء الألوان ثابتة
         let myLikedPostIds = new Set();
         let myRepostedPostIds = new Set();
@@ -338,7 +346,7 @@ export const CommunityFeedPage: React.FC = () => {
 
         const { data: dbPosts, error: postsErr } = await supabase
           .from('posts')
-          .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at')
+          .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
           .order('created_at', { ascending: false })
           .limit(300);
         
@@ -360,7 +368,7 @@ export const CommunityFeedPage: React.FC = () => {
         if (repostedPostIds.length > 0) {
           const { data: originals } = await supabase
             .from('posts')
-            .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at')
+            .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
             .in('id', repostedPostIds);
           (originals || []).forEach((p: any) => originalPostsMap.set(p.id, p));
         }
@@ -420,7 +428,7 @@ export const CommunityFeedPage: React.FC = () => {
             isReposted: myRepostedPostIds.has(p.id),
             reposts: p.reposts_count || 0,
             repostedBy: myRepostedPostIds.has(p.id) ? [uid] : [],
-            views: 1,
+            views: p.views_count || 0,
             comments: [],
             replies: p.comments_count || 0
           };
@@ -472,7 +480,7 @@ export const CommunityFeedPage: React.FC = () => {
             likes: original?.likes_count ?? 0,
             reposts: 0,
             replies: original?.comments_count ?? 0,
-            views: 1,
+            views: p.views_count || 0,
             comments: [],
           };
         }).filter(Boolean);
@@ -745,7 +753,7 @@ export const CommunityFeedPage: React.FC = () => {
         likedBy: [],
         reposts: 0,
         repostedBy: [],
-        views: 1,
+        views: p.views_count || 0,
         comments: []
       };
 
