@@ -538,12 +538,39 @@ export const CommunityFeedPage: React.FC = () => {
 
         // إذا كان المغرد شخصاً آخر:
         try {
-          const { data: prof } = await supabase.from('profiles').select('avatar_url, full_name').eq('id', payload.new.user_id).single();
+          const { data: prof } = await supabase.from('profiles').select('avatar_url, full_name, username, verification_type, is_verified').eq('id', payload.new.user_id).single();
           const avatar = prof?.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png';
+          const badgeType = prof?.verification_type || (prof?.is_verified ? 'blue' : null);
+
+          // تجهيز التغريدة بنفس هيكل التغريدات القديمة لكي تظهر بشكل صحيح
+          const formattedNewTweet = {
+            id: payload.new.id,
+            authorId: payload.new.user_id,
+            authorName: prof?.full_name || 'مستخدم يمن ريتنج',
+            authorUsername: prof?.username || 'user',
+            authorAvatar: avatar,
+            badgeType: badgeType,
+            text: payload.new.content,
+            image: payload.new.image_url || undefined,
+            video_url: payload.new.video_url || undefined,
+            video: payload.new.video_url || undefined,
+            createdAt: payload.new.created_at,
+            createdAtDisplay: new Date(payload.new.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
+            likes: 0,
+            isLiked: false,
+            likedBy: [],
+            isReposted: false,
+            reposts: 0,
+            repostedBy: [],
+            views: 1,
+            comments: [],
+            replies: 0
+          };
+
           // إضافة المغرد الجديد بالترتيب وتجنب التكرار
           setNewPostsQueue(prev => {
-            const filtered = prev.filter(p => p.user_id !== payload.new.user_id);
-            return [{ ...payload.new, authorAvatar: avatar, authorName: prof?.full_name }, ...filtered];
+            const filtered = prev.filter(p => p.id !== payload.new.id);
+            return [formattedNewTweet, ...filtered];
           });
         } catch {
           setNewPostsQueue(prev => [payload.new, ...prev]);
