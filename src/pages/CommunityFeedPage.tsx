@@ -348,7 +348,7 @@ export const CommunityFeedPage: React.FC = () => {
           .from('posts')
           .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at')
           .order('created_at', { ascending: false })
-          .limit(300);
+          .limit(30);
         
         if (postsErr) {
           
