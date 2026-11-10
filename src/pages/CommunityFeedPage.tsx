@@ -346,7 +346,7 @@ export const CommunityFeedPage: React.FC = () => {
 
         const { data: dbPosts, error: postsErr } = await supabase
           .from('posts')
-          .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at')
+          .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
           .order('created_at', { ascending: false })
           .limit(30);
         
@@ -368,7 +368,7 @@ export const CommunityFeedPage: React.FC = () => {
         if (repostedPostIds.length > 0) {
           const { data: originals } = await supabase
             .from('posts')
-            .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at')
+            .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
             .in('id', repostedPostIds);
           (originals || []).forEach((p: any) => originalPostsMap.set(p.id, p));
         }
@@ -428,7 +428,7 @@ export const CommunityFeedPage: React.FC = () => {
             isReposted: myRepostedPostIds.has(p.id),
             reposts: p.reposts_count || 0,
             repostedBy: myRepostedPostIds.has(p.id) ? [uid] : [],
-            views: 1,
+            views: p.views_count || 0,
             comments: [],
             replies: p.comments_count || 0
           };
@@ -480,7 +480,7 @@ export const CommunityFeedPage: React.FC = () => {
             likes: original?.likes_count ?? 0,
             reposts: 0,
             replies: original?.comments_count ?? 0,
-            views: 1,
+            views: p.views_count || 0,
             comments: [],
           };
         }).filter(Boolean);
@@ -503,6 +503,15 @@ export const CommunityFeedPage: React.FC = () => {
           
         }, 1500);
         safeSetStorage(GLOBAL_FEED_KEY, mergedTweets);
+        // تسجيل المشاهدة لكل تغريدة جديدة
+        const viewed = JSON.parse(sessionStorage.getItem('viewed_posts') || '[]');
+        let updatedViewed = [...viewed];
+        (dbPosts || []).forEach(post => {
+            supabase.rpc('increment_post_views', { p_post_id: post.id }).then();
+            updatedViewed.push(post.id);
+          }
+        });
+        sessionStorage.setItem('viewed_posts', JSON.stringify(updatedViewed));
       } catch (err) {
         console.error("خطأ في جلب تغريدات المجتمع:", err);
       }
@@ -753,7 +762,7 @@ export const CommunityFeedPage: React.FC = () => {
         likedBy: [],
         reposts: 0,
         repostedBy: [],
-        views: 1,
+        views: p.views_count || 0,
         comments: []
       };
 
