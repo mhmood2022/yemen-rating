@@ -503,15 +503,21 @@ export const CommunityFeedPage: React.FC = () => {
           
         }, 1500);
         safeSetStorage(GLOBAL_FEED_KEY, mergedTweets);
+
         // تسجيل المشاهدة لكل تغريدة جديدة
-        const viewed = JSON.parse(sessionStorage.getItem('viewed_posts') || '[]');
-        let updatedViewed = [...viewed];
-        (dbPosts || []).forEach(post => {
-            supabase.rpc('increment_post_views', { p_post_id: post.id }).then();
-            updatedViewed.push(post.id);
-          }
-        });
-        sessionStorage.setItem('viewed_posts', JSON.stringify(updatedViewed));
+        try {
+          const viewed = JSON.parse(sessionStorage.getItem('viewed_posts') || '[]');
+          const updatedViewed = [...viewed];
+          (dbPosts || []).forEach(post => {
+            if (viewed.indexOf(post.id) === -1) {
+              supabase.rpc('increment_post_views', { p_post_id: post.id }).then();
+              updatedViewed.push(post.id);
+            }
+          });
+          sessionStorage.setItem('viewed_posts', JSON.stringify(updatedViewed));
+        } catch (e) {
+          console.error('view tracking error', e);
+        }
       } catch (err) {
         console.error("خطأ في جلب تغريدات المجتمع:", err);
       }

@@ -868,7 +868,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         likedBy: [],
         replies: 0,
         reposts: 0,
-        views: p.views_count || 0,
+        views: 1,
       };
 
       setUserPosts(prev => [realPost, ...prev]);
