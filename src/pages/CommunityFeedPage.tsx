@@ -346,7 +346,7 @@ export const CommunityFeedPage: React.FC = () => {
 
         const { data: dbPosts, error: postsErr } = await supabase
           .from('posts')
-          .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
+          .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at')
           .order('created_at', { ascending: false })
           .limit(300);
         
@@ -368,7 +368,7 @@ export const CommunityFeedPage: React.FC = () => {
         if (repostedPostIds.length > 0) {
           const { data: originals } = await supabase
             .from('posts')
-            .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
+            .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at')
             .in('id', repostedPostIds);
           (originals || []).forEach((p: any) => originalPostsMap.set(p.id, p));
         }
