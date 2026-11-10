@@ -428,7 +428,7 @@ export const CommunityFeedPage: React.FC = () => {
             isReposted: myRepostedPostIds.has(p.id),
             reposts: p.reposts_count || 0,
             repostedBy: myRepostedPostIds.has(p.id) ? [uid] : [],
-            views: p.views_count || 0,
+            views: 1,
             comments: [],
             replies: p.comments_count || 0
           };
@@ -480,7 +480,7 @@ export const CommunityFeedPage: React.FC = () => {
             likes: original?.likes_count ?? 0,
             reposts: 0,
             replies: original?.comments_count ?? 0,
-            views: p.views_count || 0,
+            views: 1,
             comments: [],
           };
         }).filter(Boolean);
@@ -753,7 +753,7 @@ export const CommunityFeedPage: React.FC = () => {
         likedBy: [],
         reposts: 0,
         repostedBy: [],
-        views: p.views_count || 0,
+        views: 1,
         comments: []
       };
 
