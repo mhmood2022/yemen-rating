@@ -512,7 +512,7 @@ export const CommunityFeedPage: React.FC = () => {
           const updatedViewed = [...viewed];
           (dbPosts || []).forEach(post => {
             if (viewed.indexOf(post.id) === -1) {
-              supabase.rpc('increment_post_views', { p_post_id: post.id }).then();
+              supabase.rpc('increment_post_views', { p_post_id: post.id }).then(({error}) => { if(error) console.error('RPC Error:', error); });
               updatedViewed.push(post.id);
             }
           });
