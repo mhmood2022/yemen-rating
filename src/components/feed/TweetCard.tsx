@@ -49,6 +49,7 @@ export const TweetCard: React.FC<TweetCardProps> = ({
         </div>
       )}
 
+      <div className={tweet.isRepost ? "border-4 border-red-600 rounded-2xl p-3 mt-1" : ""}>
       <div className="flex gap-3">
         {/* الصورة الشخصية */}
         <button onClick={() => onOpenProfile(tweet.authorId || tweet.user_id, tweet)} className="shrink-0 self-start">

@@ -179,7 +179,11 @@ export const AccountPage: React.FC = () => {
   const navState = (routerLocation.state as any) || {};
   const targetIdParam = searchParams.get('id');
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    try {
+      return !localStorage.getItem("yr_my_profile_cache");
+    } catch { return true; }
+  });
   const [showMySentToast, setShowMySentToast] = useState(false);
   const [ownedBusinessId, setOwnedBusinessId] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('بدء...');
@@ -212,6 +216,7 @@ export const AccountPage: React.FC = () => {
   const [followingCount, setFollowingCount] = useState(0);
   const [followersCount, setFollowersCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [confirmUnfollowModal, setConfirmUnfollowModal] = useState(false);
   const [verificationType, setVerificationType] = useState<string>("none");
   const [isBlocked, setIsBlocked] = useState(false);
   const [isDmOpen, setIsDmOpen] = useState(false);
@@ -220,7 +225,19 @@ export const AccountPage: React.FC = () => {
 
   // المنشورات
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'reposts' | 'media' | 'likes'>('posts');
-  const [userPosts, setUserPosts] = useState<Post[]>([]);
+  const [userPosts, setUserPosts] = useState<Post[]>(() => {
+    try {
+      const cached = localStorage.getItem("yr_my_account_posts");
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  });
+
+  // مزامنة التغريدات في الذاكرة الفورية تلقائياً للفتح الفوري مثل X
+  useEffect(() => {
+    if (userPosts && userPosts.length > 0) {
+      try { localStorage.setItem("yr_my_account_posts", JSON.stringify(userPosts)); } catch(_) {}
+    }
+  }, [userPosts]);
   
 function formatTimeAndDate(dateStr: string): string {
   try {
@@ -720,6 +737,19 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   };
 
   // نظام المتابعة الحقيقي (Supabase)
+  const performUnfollow = async () => {
+    if (!sessionUser || !profileId) return;
+    setConfirmUnfollowModal(false);
+    try {
+      const nowFollowing = await toggleFollow(sessionUser.id, profileId);
+      setIsFollowing(nowFollowing);
+      setFollowersCount(prev => Math.max(0, prev - 1));
+      showToast(`ألغيت متابعة ${name}`);
+    } catch (e) {
+      showToast('فشل تحديث المتابعة');
+    }
+  };
+
   const handleToggleFollow = async () => {
     if (!sessionUser) {
       showToast('يرجى تسجيل الدخول أولاً لتتمكن من المتابعة!');
@@ -736,7 +766,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       
       if (nowFollowing) {
         setFollowersCount(prev => prev + 1);
-        showToast(`تابعت ${name} بنجاح! ⭐`);
+        showToast(`تابعت ${name} بنجاح`);
       } else {
         setFollowersCount(prev => Math.max(0, prev - 1));
         showToast(`ألغيت متابعة ${name}`);
@@ -778,7 +808,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     if (fileToUpload) {
       try {
         if (fileToUpload.type.startsWith('video/')) {
-          showToast("جاري رفع الفيديو سحابياً... ⏳");
+          
           const ext = fileToUpload.name.split('.').pop() || 'mp4';
           const filePath = `posts/video_${profileId}_${Date.now()}.${ext}`;
           const { error: upErr } = await supabase.storage
@@ -791,7 +821,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           const { data: pubData } = supabase.storage.from('social-media').getPublicUrl(filePath);
           finalVideoUrl = pubData.publicUrl;
         } else {
-          showToast("جاري رفع الصورة سحابياً... ⏳");
+          
           const ext = fileToUpload.name.split('.').pop() || 'jpg';
           const filePath = `posts/image_${profileId}_${Date.now()}.${ext}`;
           const { error: upErr } = await supabase.storage
@@ -811,7 +841,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       }
     }
 
-    showToast("جاري نشر التغريدة سحابياً... ⏳");
+    
     try {
       const { data: inserted, error: pErr } = await supabase.from("posts").insert({
         user_id: profileId,
@@ -833,7 +863,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         image: finalImageUrl || undefined,
         video: finalVideoUrl || undefined,
         video_url: finalVideoUrl || undefined,
-        createdAt: "الآن",
+        createdAt: new Date().toISOString(),
         likes: 0,
         likedBy: [],
         replies: 0,
@@ -1440,11 +1470,11 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   onClick={handleToggleFollow}
                   className={`px-5 py-1.5 rounded-full text-sm font-bold transition active:scale-95 ${
                     isFollowing
-                      ? 'bg-transparent text-white border border-[#536471] hover:border-red-600 hover:text-red-500'
+                      ? 'bg-black border border-white text-white hover:bg-white/10'
                       : 'bg-white text-black hover:bg-zinc-200'
                   }`}
                 >
-                  {isFollowing ? 'تتابعه' : 'تابع'}
+                  {isFollowing ? 'مُتابَع' : 'تابِع'}
                 </button>
               </div>
             )}
@@ -1543,10 +1573,10 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             <button
               onClick={handleToggleFollow}
               className={`w-full py-2 px-4 rounded-full font-bold text-sm transition flex items-center justify-center gap-1.5 ${
-                isFollowing ? 'border border-[#536471] bg-transparent text-white' : 'bg-white text-black'
+                isFollowing ? 'bg-black border border-white text-white hover:bg-white/10' : 'bg-white text-black hover:bg-gray-200'
               }`}
             >
-              <span>{isFollowing ? 'تتابعه' : 'تابع'}</span>
+              <span>{isFollowing ? 'مُتابَع' : 'تابِع'}</span>
             </button>
           )}
 
@@ -1671,34 +1701,52 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                         {post.quote_text}
                       </p>
                       {(post.original || post.quote_text) && (
-                        <div className="mt-2 border border-[#1a2331] rounded-xl p-2.5">
-                          {!post.original && (
+                        <>
+                                                  {!post.original && (
                             <p className="text-[#71767B] text-xs py-2 text-center">التغريدة الأصلية غير متاحة</p>
                           )}
                           {post.original && (
-                            <>
+                              <div 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/tweet/${post.original.id}`);
+                                }}
+                                className="mt-2.5 rounded-[12px] border border-white/[0.08] hover:bg-white/[0.02] transition cursor-pointer p-2.5 select-none overflow-hidden"
+                              >
+                                {/* رأس الاقتباس: أفاتار 20px + اسم + معرف + نقطة ووقت في سطر واحد */}
+                                <div className="flex items-center gap-1.5 text-xs mb-1.5 overflow-hidden" dir="rtl">
+                                  <div className="w-[18px] h-[18px] rounded-full bg-zinc-800 overflow-hidden flex-shrink-0">
+                                    {post.original.authorAvatar ? (
+                                      <img src={post.original.authorAvatar} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                      <span className="text-white text-[10px] font-bold flex items-center justify-center w-full h-full">{post.original.authorName?.[0]}</span>
+                                    )}
+                                  </div>
+                                  <span className="font-bold text-[#E7E9EA] truncate text-[13px]">{post.original.authorName}</span>
+                                  <span className="text-[#71767B] truncate text-[12px]" dir="ltr">@{post.original.authorUsername}</span>
+                                  {post.original.createdAt && (
+                                    <>
+                                      <span className="text-[#71767B] text-[11px] shrink-0">·</span>
+                                      <span className="text-[#71767B] text-[12px] shrink-0">{post.original.createdAt}</span>
+                                    </>
+                                  )}
+                                </div>
 
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className="w-6 h-6 rounded-full bg-zinc-800 overflow-hidden flex-shrink-0">
-                              {post.original.authorAvatar ? (
-                                <img src={post.original.authorAvatar} alt="" className="w-full h-full object-cover" />
-                              ) : (
-                                <span className="text-white text-[10px] font-bold flex items-center justify-center w-full h-full">
-                                  {post.original.authorName?.[0]}
-                                </span>
-                              )}
-                            </div>
-                            <span className="font-bold text-white text-[12px] font-['Tahoma']">{post.original.authorName}</span>
-                            <span className="text-[#71767B] text-[11px]">@{post.original.authorUsername}</span>
-                          </div>
-                          <p className="text-white text-sm whitespace-pre-wrap">{post.original.text}</p>
-                          {post.original.image && (
-                            <img src={post.original.image} alt="" className="w-full rounded-lg mt-2 max-h-48 object-cover" />
-                          )}
-                            </>
-                          )}
-                        </div>
-                      )}
+                                {/* نص التغريدة المقتبسة المتماسك */}
+                                <p className={`text-[13px] text-[#E7E9EA] leading-[1.38] whitespace-pre-wrap line-clamp-4`}>
+                                  {post.original.text}
+                                </p>
+
+                                {/* صورة المقتبس إن وجدت */}
+                                {post.original.image && (
+                                  <div className="mt-2.5 rounded-[10px] overflow-hidden max-h-60 bg-black">
+                                    <img src={post.original.image} alt="" className="w-full h-full object-cover" />
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </>
+                        )}
                     </div>
                   ) : (
                     <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
@@ -1734,7 +1782,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                   )}
 
                   {!post.isRepost && post.image && !post.video_url && !post.video && (
-                    <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-96">
+                    <div className="mt-3 rounded-2xl overflow-hidden border-0 max-h-96">
                       <img src={post.image} alt="الصورة" className="w-full h-full object-cover" />
                     </div>
                   )}
@@ -2205,13 +2253,13 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               </p>
 
               {viewingDetailPost.image && (
-                <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336]/30">
+                <div className="mt-3 rounded-2xl overflow-hidden border-0">
                   <img src={viewingDetailPost.image} alt="" className="w-full h-auto object-cover" />
                 </div>
               )}
 
               {/* الوقت والتاريخ */}
-              <div className="text-sm text-[#71767B] py-3 border-y border-[#2F3336] flex items-center gap-2 mt-3">
+              <div className="text-sm text-[#71767B] py-3 border-y border-white/[0.07] flex items-center gap-2 mt-3">
                 <span>{formatTimeAndDate(viewingDetailPost.createdAt) || viewingDetailPost.createdAtDisplay || ''}</span>
                 <span>·</span>
                 <span>{viewingDetailPost.views || 1} مشاهدة</span>
@@ -2425,6 +2473,32 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           authorName={reportingItem.targetName}
           authorUsername={''}
         />
+      )}
+
+      {confirmUnfollowModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" onClick={() => setConfirmUnfollowModal(false)}>
+          <div className="w-full max-w-md rounded-2xl bg-[#16181C] border border-[#2F3336] p-6 text-center" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-bold text-white mb-3">هل تريد إلغاء متابعة {name}؟</h3>
+            <p className="text-[15px] text-[#71767B] mb-6 leading-relaxed">لن تظهر منشوراته بعد الآن في صفحتك الرئيسية. سيظل بإمكانك مشاهدة ملفه الشخصي ما لم تكن منشوراته محمية.</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setConfirmUnfollowModal(false)} className="px-5 py-2 rounded-full text-sm font-bold text-white bg-transparent border border-[#536471] hover:bg-white/10 transition">إلغاء</button>
+              <button onClick={performUnfollow} className="px-5 py-2 rounded-full text-sm font-bold text-black bg-white hover:bg-[#E7E9EA] transition">إلغاء المتابعة</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmUnfollowModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" onClick={() => setConfirmUnfollowModal(false)}>
+          <div className="w-full max-w-md rounded-2xl bg-[#16181C] border border-[#2F3336] p-6 text-center" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-bold text-white mb-3">هل تريد إلغاء متابعة {name}؟</h3>
+            <p className="text-[15px] text-[#71767B] mb-6 leading-relaxed">لن تظهر منشوراته بعد الآن في صفحتك الرئيسية. سيظل بإمكانك مشاهدة ملفه الشخصي ما لم تكن منشوراته محمية.</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setConfirmUnfollowModal(false)} className="px-5 py-2 rounded-full text-sm font-bold text-white bg-transparent border border-[#536471] hover:bg-white/10 transition">إلغاء</button>
+              <button onClick={performUnfollow} className="px-5 py-2 rounded-full text-sm font-bold text-black bg-white hover:bg-[#E7E9EA] transition">إلغاء المتابعة</button>
+            </div>
+          </div>
+        </div>
       )}
 
       <MobileBottomNav onNavigate={(path) => navigate(path)} />

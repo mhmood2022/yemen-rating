@@ -1,6 +1,7 @@
 import { XActionBar } from '../components/feed/XActionBar';
 
 import { XVideoPlayer } from '../components/feed/XVideoPlayer';
+import { XImagePlayer } from '../components/feed/XImagePlayer';
 import { VerifiedBadge } from '../components/common/VerifiedBadge';
 'use client';
 
@@ -135,6 +136,8 @@ function formatTimeAndDate(dateStr: string): string {
 }
 
 export const CommunityFeedPage: React.FC = () => {
+  const [viewingImagePost, setViewingImagePost] = useState<any>(null);
+
   const [showMySentToast, setShowMySentToast] = useState(false);
 
   const navigate = useNavigate();
@@ -153,32 +156,30 @@ export const CommunityFeedPage: React.FC = () => {
   const [myUsername, setMyUsername] = useState('user');
   const [myAvatar, setMyAvatar] = useState('');
 
-  // 🔄 جلب بيانات المستخدم الحالي من Supabase
+  // 🔄 جلب بيانات المستخدم الحالي فورياً من الكاش ومطابقتها مع السحابة
   useEffect(() => {
     (async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) return;
-        
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('id, full_name, username, avatar_url')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (error) {
-          console.warn('myProfile fetch:', error.message);
-          return;
-        }
-        
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        setCurrentUserId(user.id);
+        const meta = user.user_metadata || {};
+        if (meta.full_name || meta.name) setMyName(meta.full_name || meta.name);
+        if (meta.avatar_url || meta.picture) setMyAvatar(meta.avatar_url || meta.picture);
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id, full_name, username, avatar_url")
+          .eq("id", user.id)
+          .maybeSingle();
+
         if (profile) {
-          console.log('✅ myProfile loaded:', profile);
           if (profile.full_name) setMyName(profile.full_name);
           if (profile.username) setMyUsername(profile.username);
           if (profile.avatar_url) setMyAvatar(profile.avatar_url);
         }
       } catch (e) {
-        console.warn('myProfile exception:', e);
+        console.warn("myProfile exception:", e);
       }
     })();
   }, []);
@@ -312,6 +313,7 @@ export const CommunityFeedPage: React.FC = () => {
 
   useEffect(() => {
     const loadData = async () => {
+        try { localStorage.removeItem(GLOBAL_FEED_KEY); } catch(_) {}
       let uid = "";
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -323,13 +325,25 @@ export const CommunityFeedPage: React.FC = () => {
 
       try {
         // 1. جلب جميع التغريدات من السحابة عبر البروكسي النظيف
+                // جلب إعجابات وإعادات نشر المستخدم الحالي لضمان بقاء الألوان ثابتة
+        let myLikedPostIds = new Set();
+        let myRepostedPostIds = new Set();
+        if (uid) {
+          const { data: myLikes } = await supabase.from('post_likes').select('post_id').eq('user_id', uid);
+          myLikedPostIds = new Set((myLikes || []).map((l: any) => l.post_id));
+
+          const { data: myUserReposts } = await supabase.from('post_reposts').select('post_id').eq('user_id', uid);
+          myRepostedPostIds = new Set((myUserReposts || []).map((r: any) => r.post_id));
+        }
+
         const { data: dbPosts, error: postsErr } = await supabase
           .from('posts')
           .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at')
           .order('created_at', { ascending: false })
-          .limit(100);
+          .limit(300);
         
         if (postsErr) {
+          
           console.error('Posts fetch error:', postsErr);
           return;
         }
@@ -368,7 +382,7 @@ export const CommunityFeedPage: React.FC = () => {
           ...allPosts.map((p: any) => p.user_id),
           ...(dbReposts || []).map((r: any) => r.user_id),
           ...(dbPosts || []).map((p: any) => p.user_id),
-        ])];
+        ])].filter((id): id is string => Boolean(id) && typeof id === "string" && id.length > 5);
         let profileMap = new Map();
         try {
           const { data: dbProfiles, error: profErr } = await supabase
@@ -401,9 +415,11 @@ export const CommunityFeedPage: React.FC = () => {
             createdAt: p.created_at,
             createdAtDisplay: new Date(p.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
             likes: p.likes_count || 0,
-            likedBy: [],
+            isLiked: myLikedPostIds.has(p.id),
+            likedBy: myLikedPostIds.has(p.id) ? [uid] : [],
+            isReposted: myRepostedPostIds.has(p.id),
             reposts: p.reposts_count || 0,
-            repostedBy: [],
+            repostedBy: myRepostedPostIds.has(p.id) ? [uid] : [],
             views: 1,
             comments: [],
             replies: p.comments_count || 0
@@ -724,7 +740,7 @@ export const CommunityFeedPage: React.FC = () => {
         image: finalImageUrl || undefined,
         video_url: finalVideoUrl || undefined,
         video: finalVideoUrl || undefined,
-        createdAt: "الآن",
+        createdAt: new Date().toISOString(),
         likes: 0,
         likedBy: [],
         reposts: 0,
@@ -749,32 +765,44 @@ export const CommunityFeedPage: React.FC = () => {
   };
 
   // إعجاب سليم ومنضبط
-  const handleLike = (id: string) => {
-    let targetTweet: Tweet | undefined;
-    let nextIsLiked = false;
+  const handleLike = async (id: string) => {
+    if (!currentUserId) {
+      showToast('يرجى تسجيل الدخول');
+      return;
+    }
 
-    const updated = tweets.map(t => {
+    let nextIsLiked = false;
+    let nextLikesCount = 0;
+
+    // تحديث الواجهة فوراً
+    setTweets(prev => prev.map(t => {
       if (t.id === id) {
         const likedBy = t.likedBy || [];
-        const isLiked = likedBy.includes(currentUserId);
+        const isLiked = likedBy.includes(currentUserId) || t.isLiked;
         nextIsLiked = !isLiked;
-        const nextLikedBy = isLiked ? likedBy.filter(uid => uid !== currentUserId) : [...likedBy, currentUserId];
-        targetTweet = t;
+        const nextLikedBy = isLiked ? likedBy.filter((uid: string) => uid !== currentUserId) : [...likedBy, currentUserId];
+        nextLikesCount = nextLikedBy.length;
         return {
           ...t,
           isLiked: nextIsLiked,
-          likes: nextLikedBy.length,
+          likes: nextLikesCount,
           likedBy: nextLikedBy,
         };
       }
       return t;
-    });
+    }));
 
-    setTweets(updated);
-    safeSetStorage(GLOBAL_FEED_KEY, updated);
-
-    if (targetTweet && nextIsLiked) {
-      sendRealNotification(targetTweet.authorId, 'like', `أعجب ${myName} بمنشورك: "${targetTweet.text.slice(0, 35)}..."`, targetTweet.id);
+    // حفظ أو حذف في Supabase post_likes سحابياً ليظل اللون ثابتاً للأبد
+    try {
+      if (nextIsLiked) {
+        await supabase.from('post_likes').upsert({ post_id: id, user_id: currentUserId }, { onConflict: 'user_id,post_id' });
+        await supabase.from('posts').update({ likes_count: nextLikesCount }).eq('id', id);
+      } else {
+        await supabase.from('post_likes').delete().eq('post_id', id).eq('user_id', currentUserId);
+        await supabase.from('posts').update({ likes_count: Math.max(0, nextLikesCount) }).eq('id', id);
+      }
+    } catch (err) {
+      console.error('Like sync error:', err);
     }
   };
 
@@ -943,7 +971,7 @@ const handleAddComment = (e?: React.FormEvent) => {
       authorAvatar: myAvatar || '',
       text: textToSend,
       image: commentImage || undefined,
-      createdAt: 'الآن'
+      createdAt: new Date().toISOString(),
     };
 
     // 1. تحديث فوري فائق السرعة في الواجهة (Optimistic UI)
@@ -1181,12 +1209,16 @@ const handleAddComment = (e?: React.FormEvent) => {
       <header className="sticky top-0 z-40 bg-black/95 backdrop-blur-md">
         {/* الشريط العلوي بدون خط فاصل سفلي */}
         <div className="px-4 py-2.5 flex items-center justify-between">
-          {/* اليمين: صورة البروفايل */}
+          {/* اليمين: صورة البروفايل بحجم طبيعي ومريح قياسي لمنصة X */}
           <button onClick={() => navigate("/account")} title="ملفي الشخصي" className="relative group flex-shrink-0">
-            <div className="w-9 h-9 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold">
-              {myAvatar ? <img src={myAvatar} alt={myName} className="w-full h-full object-cover" /> : <span className="text-white text-xs">{myName ? myName[0] : "؟"}</span>}
+            <div className="w-[38px] h-[38px] rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold shrink-0 shadow-sm">
+              {myAvatar ? (
+                <img src={myAvatar} alt={myName} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white text-[15px] font-bold">{myName ? myName[0] : "؟"}</span>
+              )}
             </div>
-            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-black" />
+            <span className="absolute bottom-[1px] right-[1px] w-[9px] h-[9px] bg-emerald-500 rounded-full border-[1.5px] border-black" />
           </button>
 
           {/* المنتصف: شعار منصة X الأيقوني */}
@@ -1329,22 +1361,42 @@ const handleAddComment = (e?: React.FormEvent) => {
 
                             {/* بطاقة التغريدة الأصلية */}
                             {tweet.original && (
-                              <div className="mt-3 border border-[#1a2331] rounded-xl p-2.5 transition">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <div className="w-6 h-6 rounded-full bg-zinc-800 overflow-hidden flex-shrink-0">
+                              <div 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/tweet/${tweet.original.id}`);
+                                }}
+                                className="mt-2.5 rounded-[12px] border border-white/[0.08] hover:bg-white/[0.02] transition cursor-pointer p-2.5 select-none overflow-hidden"
+                              >
+                                {/* رأس الاقتباس: أفاتار 20px + اسم + معرف + نقطة ووقت في سطر واحد */}
+                                <div className="flex items-center gap-1.5 text-xs mb-1.5 overflow-hidden" dir="rtl">
+                                  <div className="w-[18px] h-[18px] rounded-full bg-zinc-800 overflow-hidden flex-shrink-0">
                                     {tweet.original.authorAvatar ? (
                                       <img src={tweet.original.authorAvatar} alt="" className="w-full h-full object-cover" />
                                     ) : (
                                       <span className="text-white text-[10px] font-bold flex items-center justify-center w-full h-full">{tweet.original.authorName?.[0]}</span>
                                     )}
                                   </div>
-                                  <span className="font-semibold text-white text-[12px]">{tweet.original.authorName}</span>
-                                  <span className="text-[#71767B] text-[11px]">@{tweet.original.authorUsername}</span>
+                                  <span className="font-bold text-[#E7E9EA] truncate text-[13px]">{tweet.original.authorName}</span>
+                                  <span className="text-[#71767B] truncate text-[12px]" dir="ltr">@{tweet.original.authorUsername}</span>
+                                  {tweet.original.createdAt && (
+                                    <>
+                                      <span className="text-[#71767B] text-[11px] shrink-0">·</span>
+                                      <span className="text-[#71767B] text-[12px] shrink-0">{tweet.original.createdAt}</span>
+                                    </>
+                                  )}
                                 </div>
-                                <p className={`text-white text-sm whitespace-pre-wrap ${expandedTweets['orig-'+tweet.id] ? '' : 'line-clamp-4'}`}>{tweet.original.text}</p>
-                                
+
+                                {/* نص التغريدة المقتبسة المتماسك */}
+                                <p className={`text-[13px] text-[#E7E9EA] leading-[1.38] whitespace-pre-wrap ${expandedTweets['orig-'+tweet.id] ? '' : 'line-clamp-4'}`}>
+                                  {tweet.original.text}
+                                </p>
+
+                                {/* صورة المقتبس إن وجدت */}
                                 {tweet.original.image && (
-                                  <img src={tweet.original.image} alt="" className="w-full rounded-lg mt-2 max-h-48 object-cover" />
+                                  <div className="mt-2.5 rounded-[10px] overflow-hidden max-h-60 bg-black">
+                                    <img src={tweet.original.image} alt="" className="w-full h-full object-cover" />
+                                  </div>
                                 )}
                               </div>
                             )}
@@ -1370,13 +1422,44 @@ const handleAddComment = (e?: React.FormEvent) => {
                       }}
                       onBookmark={() => showToast('تمت الإضافة إلى العلامات المرجعية 🔖')}
                     />
+
+      {/* 🖼️ مشغل الصور العالمي بنمط منصة X */}
+      {viewingImagePost && (
+        <XImagePlayer
+          src={viewingImagePost.image}
+          tweet={viewingImagePost}
+          authorName={viewingImagePost.authorName || viewingImagePost.original?.authorName}
+          authorUsername={viewingImagePost.authorUsername || viewingImagePost.original?.authorUsername}
+          authorAvatar={viewingImagePost.authorAvatar || viewingImagePost.original?.authorAvatar}
+          currentUserAvatar={myAvatar}
+          onClose={() => setViewingImagePost(null)}
+          onReply={() => {
+            const t = viewingImagePost;
+            setViewingImagePost(null);
+            setViewingDetailTweet(t);
+          }}
+          onLike={() => handleLike(viewingImagePost.id)}
+          onRepost={() => {
+            const t = viewingImagePost;
+            setViewingImagePost(null);
+            setRepostMenu(t);
+          }}
+          onShare={() => {
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(window.location.href);
+              showToast('تم نسخ الرابط');
+            }
+          }}
+        />
+      )}
+
                               </div>
                             )}
 
                             {/* صورة التغريدة العادية */}
                             {tweet.image && !(tweet.video_url || tweet.video) && (
-                              <div className="mt-3 rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-96">
-                                <img src={tweet.image} alt="صورة" className="w-full h-full object-cover" />
+                              <div className="mt-3 rounded-2xl overflow-hidden border-0 max-h-96">
+                                <img src={tweet.image} alt="صورة" className="w-full h-full object-cover cursor-pointer" onClick={(e) => { e.stopPropagation(); setViewingImagePost(tweet); }} />
                               </div>
                             )}
 
@@ -1452,15 +1535,16 @@ const handleAddComment = (e?: React.FormEvent) => {
               onClick={async () => {
                 if (!currentUserId || !quoteText.trim()) return;
                 try {
+                  const cleanPostId = (quoteOriginal.originalId || quoteOriginal.id || '').toString().replace('repost-', '');
                   const { error } = await supabase.from('post_reposts').upsert({
-                    post_id: quoteOriginal.id,
+                    post_id: cleanPostId,
                     user_id: currentUserId,
                     quote_text: quoteText.trim()
                   }, {
                     onConflict: 'user_id,post_id'
                   });
                   if (error) throw error;
-                  showToast('تم الاقتباس ✅');
+                  showToast('تم الاقتباس');
                   setIsQuoting(false);
                   setQuoteText('');
                   setQuoteOriginal(null);
@@ -1488,13 +1572,21 @@ const handleAddComment = (e?: React.FormEvent) => {
             className="w-full bg-transparent text-white text-lg placeholder-[#71767B] resize-none focus:outline-none mb-4"
             rows={3}
           />
-          <div className="border border border-[#2F3336] rounded-xl p-2.5 mb-4">
-            <div className="flex items-center gap-2 mb-1">
-              <img src={quoteOriginal.authorAvatar} alt="" className="w-8 h-8 rounded-full object-cover" />
-              <span className="font-bold text-white text-sm">{quoteOriginal.authorName}</span>
-              <span className="text-[#71767B] text-xs">@{quoteOriginal.authorUsername}</span>
+          <div className="rounded-[12px] border border-white/[0.08] p-2.5 mb-4 select-none overflow-hidden" dir="rtl">
+            {/* رأس الاقتباس: أفاتار 18px + اسم + معرف في سطر واحد متناسق */}
+            <div className="flex items-center gap-1.5 text-xs mb-1.5 overflow-hidden">
+              <img
+                src={quoteOriginal.authorAvatar || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png'}
+                alt=""
+                className="w-[18px] h-[18px] rounded-full object-cover shrink-0"
+              />
+              <span className="font-bold text-[#E7E9EA] truncate text-[13px]">{quoteOriginal.authorName}</span>
+              <span className="text-[#71767B] truncate text-[12px]" dir="ltr">@{quoteOriginal.authorUsername}</span>
             </div>
-            <p className="font-['Tahoma'] text-white text-sm">{quoteOriginal.text}</p>
+            {/* نص الاقتباس المتماسك بنمط X */}
+            <p className="text-[13px] text-[#E7E9EA] leading-[1.38] font-['Tahoma',sans-serif] whitespace-pre-wrap">
+              {quoteOriginal.text}
+            </p>
           </div>
         </div>
       )}
@@ -1530,12 +1622,12 @@ const handleAddComment = (e?: React.FormEvent) => {
             </p>
 
             {viewingDetailTweet.image && (
-              <div className="rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-[450px]">
+              <div className="rounded-2xl overflow-hidden border-0 max-h-[450px]">
                 <img src={viewingDetailTweet.image} alt="" className="w-full h-auto object-cover" />
               </div>
             )}
 
-            <div className="text-[11px] text-[#71767B] py-2 border-y border-[#2F3336] flex items-center gap-2">
+            <div className="text-[11px] text-[#71767B] py-2 border-y border-white/[0.07] flex items-center gap-2">
               <span>{formatTimeAndDate(viewingDetailTweet.createdAt)}</span>
               <span>·</span>
               <span>{viewingDetailTweet.views || 1} مشاهدة</span>
@@ -1654,7 +1746,7 @@ const handleAddComment = (e?: React.FormEvent) => {
 
                             {/* صورة التعليق إن وجدت */}
                             {c.image && (
-                              <div className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336]/30 max-h-72 bg-black">
+                              <div className="mt-2.5 rounded-2xl overflow-hidden border-0 max-h-72 bg-black">
                                 <img src={c.image} alt="مرفق الرد" className="w-full h-auto object-cover max-h-72" loading="lazy" />
                               </div>
                             )}

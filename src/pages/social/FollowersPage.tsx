@@ -30,6 +30,7 @@ export default function FollowersPage() {
   const [targetName, setTargetName] = useState('');
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [confirmUnfollow, setConfirmUnfollow] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -124,17 +125,35 @@ export default function FollowersPage() {
     })();
   }, [targetUserId, activeTab, currentUserId]);
 
+  const performUnfollow = async () => {
+    if (!confirmUnfollow || !currentUserId) return;
+    const userId = confirmUnfollow.id;
+    setConfirmUnfollow(null);
+    try {
+      await supabase.from('follows').delete()
+        .eq('follower_id', currentUserId)
+        .eq('following_id', userId);
+      setUsers(prev => prev.map(u =>
+        u.id === userId ? { ...u, is_following: false } : u
+      ));
+    } catch (e) {
+      console.warn('unfollow failed:', e);
+    }
+  };
+
   const handleToggle = async (userId: string, currently: boolean) => {
     if (!currentUserId) {
       navigate('/login');
       return;
     }
+    if (currently) {
+      // إلغاء متابعة → افتح نافذة التأكيد أولاً
+      const u = users.find(x => x.id === userId);
+      setConfirmUnfollow({ id: userId, name: u?.full_name || u?.username || 'المستخدم' });
+      return;
+    }
     try {
-      if (currently) {
-        await supabase.from('follows').delete()
-          .eq('follower_id', currentUserId)
-          .eq('following_id', userId);
-      } else {
+      {
         await supabase.from('follows').insert({
           follower_id: currentUserId,
           following_id: userId,
@@ -255,7 +274,7 @@ export default function FollowersPage() {
                   }}
                   className={`px-4 py-1.5 rounded-full text-sm font-bold transition flex-shrink-0 ${
                     u.is_following
-                      ? 'bg-transparent border border-[#536471] text-white hover:border-red-500 hover:text-red-500 hover:bg-red-500/10'
+                      ? 'bg-black border border-white text-white hover:bg-white/10'
                       : 'bg-white text-black hover:bg-[#E7E9EA]'
                   }`}
                 >
@@ -267,6 +286,39 @@ export default function FollowersPage() {
         </div>
       )}
     
+      {confirmUnfollow && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setConfirmUnfollow(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-[#16181C] border border-[#2F3336] p-6 text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold text-white mb-3">
+              هل تريد إلغاء متابعة {confirmUnfollow.name}؟
+            </h3>
+            <p className="text-[15px] text-[#71767B] mb-6 leading-relaxed">
+              لن تظهر منشوراته بعد الآن في صفحتك الرئيسية. سيظل بإمكانك مشاهدة ملفه الشخصي ما لم تكن منشوراته محمية.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmUnfollow(null)}
+                className="px-5 py-2 rounded-full text-sm font-bold text-white bg-transparent border border-[#536471] hover:bg-white/10 transition"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={performUnfollow}
+                className="px-5 py-2 rounded-full text-sm font-bold text-black bg-white hover:bg-[#E7E9EA] transition"
+              >
+                إلغاء المتابعة
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <MobileBottomNav onNavigate={(path) => navigate(path)} />
 </div>
   );

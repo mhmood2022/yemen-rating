@@ -163,13 +163,39 @@ export async function getGlobalFeed(currentUserId?: string): Promise<PostItem[]>
 
 // 2. جلب الملف الشخصي لأي مستخدم في العالم (User Profile)
 export async function getUserProfile(targetUserId: string): Promise<Profile | null> {
-  const { data: profile, error } = await supabase
+  let { data: profile, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', targetUserId)
     .single();
 
-  if (error || !profile) return null;
+  // معالجة ذاتية: إذا لم يوجد بروفايل للمستخدم، نقوم بإنشائه فوراً
+  if (error || !profile) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session && session.user && session.user.id === targetUserId) {
+        const u = session.user;
+        const newProf = {
+          id: targetUserId,
+          full_name: u.user_metadata?.full_name || u.email?.split('@')[0] || 'مستخدم يمن ريتنج',
+          username: u.user_metadata?.username || u.email?.split('@')[0] || ('user_' + targetUserId.slice(0, 6)),
+          avatar_url: u.user_metadata?.avatar_url || '',
+          bio: '',
+          is_verified: false
+        };
+        const { data: created } = await supabase.from('profiles').upsert(newProf).select().single();
+        if (created) {
+          profile = created;
+        } else {
+          profile = newProf;
+        }
+      } else {
+        return null;
+      }
+    } catch (_) {
+      return null;
+    }
+  }
 
   // جلب إحصائيات المتابعين والمتابعة
   const [{ count: followersCount }, { count: followingCount }] = await Promise.all([

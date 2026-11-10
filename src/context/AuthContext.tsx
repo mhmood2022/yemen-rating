@@ -88,7 +88,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 60000);
     return () => clearInterval(interval);
   }, []);
-  }, [supabase, fetchProfile]);
 
   const signInWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
