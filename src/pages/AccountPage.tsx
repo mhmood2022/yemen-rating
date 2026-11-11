@@ -2355,8 +2355,8 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           <div className="w-full sm:w-[350px] bg-black sm:rounded-2xl rounded-t-2xl overflow-hidden pb-8 sm:pb-2 shadow-2xl" onClick={e => e.stopPropagation()} dir="rtl">
             
             <button onClick={() => { handleRepost(repostMenu.id); setRepostMenu(null); }} className="w-full flex items-center justify-start gap-4 px-5 py-4 hover:bg-[#181818] active:bg-[#181818] transition-colors cursor-pointer">
-              <Repeat2 size={22} className="text-white" />
-              <span className="text-white font-bold text-[15px]">إعادة النشر</span>
+              <Repeat2 size={22} className={repostMenu.isReposted ? "text-emerald-400" : "text-white"} />
+              <span className="text-white font-bold text-[15px]">{repostMenu.isReposted ? "التراجع عن إعادة النشر" : "إعادة النشر"}</span>
             </button>
             
             <button onClick={() => { setQuoteOriginal(repostMenu); setQuoteText(''); setIsQuoting(true); setRepostMenu(null); }} className="w-full flex items-center justify-start gap-4 px-5 py-4 hover:bg-[#181818] active:bg-[#181818] transition-colors cursor-pointer">
