@@ -5,6 +5,7 @@ import { XImagePlayer } from '../components/feed/XImagePlayer';
 import { VerifiedBadge } from '../components/common/VerifiedBadge';
 'use client';
 
+import PostEngagementsModal from '../components/feed/PostEngagementsModal';
 import React, { useState, useEffect, useRef } from 'react';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -223,6 +224,7 @@ export const CommunityFeedPage: React.FC = () => {
   const [repostMenu, setRepostMenu] = useState<Tweet | null>(null);
   const [quoteText, setQuoteText] = useState('');
   const [isQuoting, setIsQuoting] = useState(false);
+  const [viewingEngagementsPost, setViewingEngagementsPost] = useState<any>(null);
   const [quoteOriginal, setQuoteOriginal] = useState<Tweet | null>(null);
   const [viewingDetailTweet, setViewingDetailTweet] = useState<Tweet | null>(null);
   const [newCommentText, setNewCommentText] = useState('');
@@ -1466,6 +1468,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                       onReply={() => setViewingDetailTweet(tweet)}
                       onLike={() => handleLike(tweet.id)}
                       onRepost={() => setRepostMenu(tweet)}
+                      onViewEngagements={() => setViewingEngagementsPost(tweet)}
                       onShare={() => {
                         if (navigator.clipboard) {
                           navigator.clipboard.writeText(window.location.href);
@@ -1541,6 +1544,10 @@ const handleAddComment = (e?: React.FormEvent) => {
 
       {/* نافذة عرض تفاصيل التغريدة الكاملة مع كل الردود (عند النقر على جسم التغريدة) */}
       {/* قائمة إعادة النشر / اقتباس */}
+      {viewingEngagementsPost && (
+        <PostEngagementsModal post={viewingEngagementsPost} onClose={() => setViewingEngagementsPost(null)} />
+      )}
+
       {repostMenu && (
         <div className="fixed inset-0 z-[100] bg-black/50 flex flex-col justify-end sm:justify-center items-center" onClick={() => setRepostMenu(null)}>
           <div className="w-full sm:w-[350px] bg-black sm:rounded-2xl rounded-t-2xl overflow-hidden pb-8 sm:pb-2 shadow-2xl" onClick={e => e.stopPropagation()} dir="rtl">

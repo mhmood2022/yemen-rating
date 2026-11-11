@@ -90,6 +90,7 @@ export const XActionBar: React.FC<XActionBarProps> = ({
   tweet,
   onReply,
   onRepost,
+  onViewEngagements,
   onLike,
   onBookmark,
   onShare,

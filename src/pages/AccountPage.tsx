@@ -20,6 +20,7 @@ try {
 
 'use client';
 
+import PostEngagementsModal from '../components/feed/PostEngagementsModal';
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { supabase } from "../lib/supabase";
@@ -276,6 +277,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   const [isRepostDisabled, setIsRepostDisabled] = useState(false);
   const [quoteOriginal, setQuoteOriginal] = useState<Post | null>(null);
   const [isQuoting, setIsQuoting] = useState(false);
+  const [viewingEngagementsPost, setViewingEngagementsPost] = useState<any>(null);
   const [quoteText, setQuoteText] = useState('');
   const [activeCommentPost, setActiveCommentPost] = useState<Post | null>(null);
   const [viewingDetailPost, setViewingDetailPost] = useState<Post | null>(null);
@@ -1769,6 +1771,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                         loadComments(post.id.startsWith("repost-") && post.original?.id ? post.original.id : post.id);
                       }}
                       onLike={() => handleToggleLike(post.id)}
+                      onViewEngagements={() => setViewingEngagementsPost(tweet)}
                       onRepost={() => setRepostMenu(post)}
                       onShare={() => {
                         if (navigator.clipboard) {
@@ -2274,7 +2277,8 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                     setViewingDetailPost(null);
                     loadComments(viewingDetailPost.id);
                   }}
-                  onRepost={() => handleRepost(viewingDetailPost.id)}
+                  onViewEngagements={() => setViewingEngagementsPost(tweet)}
+                      onRepost={() => handleRepost(viewingDetailPost.id)}
                   onLike={() => handleToggleLike(viewingDetailPost.id)}
                   onBookmark={() => {}}
                   onShare={() => {
@@ -2350,6 +2354,10 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       )}
 
       {/* قائمة إعادة النشر / اقتباس */}
+      {viewingEngagementsPost && (
+        <PostEngagementsModal post={viewingEngagementsPost} onClose={() => setViewingEngagementsPost(null)} />
+      )}
+
       {repostMenu && (
         <div className="fixed inset-0 z-[100] bg-black/50 flex flex-col justify-end sm:justify-center items-center" onClick={() => setRepostMenu(null)}>
           <div className="w-full sm:w-[350px] bg-black sm:rounded-2xl rounded-t-2xl overflow-hidden pb-8 sm:pb-2 shadow-2xl" onClick={e => e.stopPropagation()} dir="rtl">
