@@ -23,7 +23,31 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
-  </head>
+  
+
+    <style>
+      body.hide-bottom-nav #mobile-bottom-nav {
+        transform: translateY(100%) !important;
+        transition: transform 0.3s ease-in-out !important;
+      }
+      #mobile-bottom-nav {
+        transition: transform 0.3s ease-in-out !important;
+      }
+    </style>
+    
+        
+        
+    <style>
+      /* حركة الزر الأصفر العائم عند اختفاء الشريط السفلي */
+      .yr-fab {
+        transition: transform 0.3s ease-in-out, bottom 0.3s ease-in-out !important;
+      }
+      body.hide-bottom-nav .yr-fab {
+        transform: translateY(70px) !important; /* ينزل لتحت بمقدار 70 بكسل */
+      }
+    </style>
+    
+</head>
   <body class="bg-black text-white" style="background-color: #000000 !important;">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

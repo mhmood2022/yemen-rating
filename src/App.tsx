@@ -1,6 +1,7 @@
 import { CommunityManager } from './pages/admin/community/CommunityManager';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { CommunityFeedPage } from './pages/CommunityFeedPage';
+import PostEngagementsPage from './pages/PostEngagementsPage';
 import { SearchPage } from './pages/SearchPage';
 import React from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
@@ -153,6 +154,7 @@ export function App() {
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/feed" element={<CommunityFeedPage />} />
+        <Route path="/post/:id/engagements" element={<PostEngagementsPage />} />
         <Route path="/community" element={<AppShell><CommunityFeedPage /></AppShell>} />
         <Route path="/tweets" element={<AppShell><CommunityFeedPage /></AppShell>} />
         <Route path="/account" element={<AccountPage />} />

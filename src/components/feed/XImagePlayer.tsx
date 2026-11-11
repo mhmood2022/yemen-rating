@@ -131,11 +131,11 @@ export const XImagePlayer: React.FC<XImagePlayerProps> = ({
       </div>
 
       {/* 🖼️ 2. منطقة الصورة الكاملة */}
-      <div className="flex-1 flex items-center justify-center w-full h-full p-0 relative overflow-hidden">
+      <div className="absolute inset-0 flex items-center justify-center w-full h-full p-0 z-0 bg-black">
         <img
           src={src}
           alt=""
-          className="max-w-full max-h-screen w-auto h-auto object-contain transition-all duration-300"
+          className="w-full h-auto max-h-screen object-contain"
           style={{ maxHeight: '100vh' }}
         />
       </div>

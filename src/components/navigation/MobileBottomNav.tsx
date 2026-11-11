@@ -4,6 +4,26 @@ import { Home, Globe, Bell, User, Search } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 export const MobileBottomNav: React.FC<{ onNavigate?: (path: string) => void }> = ({ onNavigate }) => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    let lastY = 0;
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      const currentY = target.scrollTop || window.scrollY;
+      if (currentY > lastY && currentY > 40) {
+        setIsVisible(false);
+        document.body.classList.add('hide-bottom-nav');
+      } else {
+        setIsVisible(true);
+        document.body.classList.remove('hide-bottom-nav');
+      }
+      lastY = currentY;
+    };
+    document.addEventListener('scroll', handleScroll, true);
+    return () => document.removeEventListener('scroll', handleScroll, true);
+  }, []);
+
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
@@ -53,7 +73,7 @@ export const MobileBottomNav: React.FC<{ onNavigate?: (path: string) => void }> 
   ];
 
   return (
-    <nav
+    <nav style={{ transform: isVisible ? 'translateY(0)' : 'translateY(100%)', transition: 'transform 0.3s ease-in-out' }} 
       className="fixed bottom-0 left-0 right-0 z-50 bg-black border-t border-[#2F3336] pb-[env(safe-area-inset-bottom,0px)]"
       dir="rtl"
     >
@@ -73,14 +93,14 @@ export const MobileBottomNav: React.FC<{ onNavigate?: (path: string) => void }> 
               }`}
             >
               <div className="relative">
-                <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+                <Icon size={20} strokeWidth={isActive ? 1.8 : 1.5}  fill="none" />
                 {isNotifications && unreadCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] rounded-full bg-[#DC2626] text-white text-[9px] font-black flex items-center justify-center px-1 animate-pulse">
+                  <span className="absolute -top-1.5 -right-2 min-w-[16px] h-[16px] rounded-full bg-[#DC2626] text-white text-[9px] font-semibold flex items-center justify-center px-1 animate-pulse">
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
               </div>
-              <span className="text-[10px] font-bold">{item.label}</span>
+              <span className="text-[10px] font-semibold">{item.label}</span>
             </button>
           );
         })}

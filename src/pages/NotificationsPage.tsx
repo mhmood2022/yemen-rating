@@ -229,7 +229,7 @@ export const NotificationsPage: React.FC = () => {
       <div className="divide-y divide-[#2F3336]">
         {notifications.length === 0 ? (
           <div className="text-center py-24 text-zinc-500 text-xs px-4">
-            <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto mb-3 text-zinc-400">
+            <div className="w-14 h-14 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto mb-3 text-zinc-400">
               <Bell size={28} />
             </div>
             <h3 className="text-sm font-bold text-white mb-1">صندوق التنبيهات فارغ</h3>
@@ -294,34 +294,7 @@ export const NotificationsPage: React.FC = () => {
       </div>
 
       {/* شريط التنقل السفلي مع جرس التنبيهات النشط */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black  border-t border-[#2F3336] py-2 px-6 flex items-center justify-around text-xs font-bold">
-        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-white transition">
-          <Home size={22} />
-          <span>الرئيسية</span>
-        </button>
-
-        <button onClick={() => navigate('/feed')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#FFC500] transition">
-          <MessageSquare size={22} />
-          <span>المنشورات</span>
-        </button>
-
-        <button onClick={() => navigate('/notifications')} className="flex flex-col items-center gap-1 text-[#FFC500] font-black transition relative">
-          <div className="relative">
-            <Bell size={22} className="stroke-[2.5]" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1.5 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-black">
-                {unreadCount}
-              </span>
-            )}
-          </div>
-          <span>التنبيهات</span>
-        </button>
-
-        <button onClick={() => navigate('/account')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#FFC500] transition">
-          <User size={22} />
-          <span>الملف الشخصي</span>
-        </button>
-      </nav>
+      {/* 🛑 تم القضاء على الشريط المزيف نهائياً 🛑 */}
 
     
       <MobileBottomNav onNavigate={(path) => navigate(path)} />

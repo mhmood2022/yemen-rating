@@ -22,6 +22,7 @@ try {
 
 import PostEngagementsModal from '../components/feed/PostEngagementsModal';
 import React, { useState, useEffect, useRef } from 'react';
+import { XImagePlayer } from '../components/feed/XImagePlayer';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { supabase } from "../lib/supabase";
 import { getUserProfile, updateUserProfile, getUserPosts, createPost, deletePost, togglePostLike, toggleFollow, checkIsFollowing, toggleBlockUser, checkIsBlocked, uploadSocialImage, Profile, PostItem } from "../services/socialService";
@@ -186,6 +187,23 @@ export const AccountPage: React.FC = () => {
     } catch { return true; }
   });
   const [showMySentToast, setShowMySentToast] = useState(false);
+  const [viewingImagePost, setViewingImagePost] = useState<any>(null);
+
+  
+  const handleGlobalScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const currentScrollY = e.currentTarget.scrollTop;
+    if (currentScrollY > lastScrollY.current && currentScrollY > 40) {
+      document.body.classList.add('hide-bottom-nav');
+    } else {
+      document.body.classList.remove('hide-bottom-nav');
+    }
+    lastScrollY.current = currentScrollY;
+  };
+
+
+  
+  
+
   const [ownedBusinessId, setOwnedBusinessId] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('بدء...');
   const [sessionUser, setSessionUser] = useState<any>(null);
@@ -1166,7 +1184,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   if (!sessionUser && !targetIdParam) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 text-center font-['Tahoma',sans-serif]" dir="rtl">
-        <div className="w-20 h-20 rounded-3xl bg-[#141E30] border border-[#2F3336] flex items-center justify-center mb-5 text-[#FFC500] shadow-2xl">
+        <div className="w-14 h-14 rounded-3xl bg-[#141E30] border border-[#2F3336] flex items-center justify-center mb-5 text-[#FFC500] shadow-2xl">
           <Lock size={36} />
         </div>
         <h2 className="text-xl font-black mb-2">تسجيل الدخول إلى حسابك</h2>
@@ -1195,7 +1213,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         >
           {/* علامة مائية لشعار X */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.06]">
-            <svg className="w-16 h-16 fill-white" viewBox="0 0 24 24">
+            <svg className="w-14 h-14 fill-white" viewBox="0 0 24 24">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
             </svg>
           </div>
@@ -1425,7 +1443,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         <div className="flex justify-between items-end -mt-10 sm:-mt-12 mb-3">
           {/* الصورة الشخصية */}
           <div className="relative group">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-[3px] border-black bg-zinc-950 overflow-hidden shadow-xl flex items-center justify-center">
+            <div className="w-14 h-14 sm:w-24 sm:h-24 rounded-full border-[3px] border-black bg-zinc-950 overflow-hidden shadow-xl flex items-center justify-center">
               {avatarUrl ? (
                 <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
               ) : (
@@ -1639,7 +1657,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             {isOwner && (
               <button 
                 onClick={() => setIsPostModalOpen(true)}
-                className="px-5 py-2.5 rounded-full bg-[#FFC500] text-white text-xs font-bold hover:bg-[#E5B200] transition shadow-lg"
+                className="yr-fab px-5 py-2.5 rounded-full bg-[#FFC500] text-white text-xs font-bold hover:bg-[#E5B200] transition shadow-lg"
               >
                 اكتب تغريدة جديدة
               </button>
@@ -1742,7 +1760,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                                 {/* صورة المقتبس إن وجدت */}
                                 {post.original.image && (
                                   <div className="mt-2.5 rounded-[10px] overflow-hidden max-h-60 bg-black">
-                                    <img src={post.original.image} alt="" className="w-full h-full object-cover" />
+                                    <img src={post.original.image} alt="" className="w-full h-full object-cover cursor-pointer" onClick={(e) => { e.stopPropagation(); setViewingImagePost(post.original); }} />
                                   </div>
                                 )}
                               </div>
@@ -1771,7 +1789,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                         loadComments(post.id.startsWith("repost-") && post.original?.id ? post.original.id : post.id);
                       }}
                       onLike={() => handleToggleLike(post.id)}
-                      onViewEngagements={() => setViewingEngagementsPost(tweet)}
+                      onViewEngagements={() => { window.location.href = `/post/${ tweet.id.replace('repost-', '') }/engagements`; }}
                       onRepost={() => setRepostMenu(post)}
                       onShare={() => {
                         if (navigator.clipboard) {
@@ -1786,7 +1804,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
                   {!post.isRepost && post.image && !post.video_url && !post.video && (
                     <div className="mt-3 rounded-2xl overflow-hidden border-0 max-h-96">
-                      <img src={post.image} alt="الصورة" className="w-full h-full object-cover" />
+                      <img src={post.image} alt="الصورة" className="w-full h-full object-cover cursor-pointer" onClick={(e) => { e.stopPropagation(); setViewingImagePost(post); }} />
                     </div>
                   )}
 
@@ -2204,7 +2222,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       {isOwner && (
         <button
           onClick={() => setIsPostModalOpen(true)}
-          className="fixed bottom-24 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-black/60 transition"
+          className="yr-fab fixed bottom-24 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-black/60 transition"
           title="تغريدة جديدة"
         >
           <Plus size={24} className="stroke-[2.2] text-black" />
@@ -2277,7 +2295,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                     setViewingDetailPost(null);
                     loadComments(viewingDetailPost.id);
                   }}
-                  onViewEngagements={() => setViewingEngagementsPost(tweet)}
+                  onViewEngagements={() => { window.location.href = `/post/${ tweet.id.replace('repost-', '') }/engagements`; }}
                       onRepost={() => handleRepost(viewingDetailPost.id)}
                   onLike={() => handleToggleLike(viewingDetailPost.id)}
                   onBookmark={() => {}}
@@ -2366,6 +2384,8 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               <Repeat2 size={22} className={repostMenu.isReposted ? "text-emerald-400" : "text-white"} />
               <span className="text-white font-bold text-[15px]">{repostMenu.isReposted ? "التراجع عن إعادة النشر" : "إعادة النشر"}</span>
             </button>
+            
+            
             
             <button onClick={() => { setQuoteOriginal(repostMenu); setQuoteText(''); setIsQuoting(true); setRepostMenu(null); }} className="w-full flex items-center justify-start gap-4 px-5 py-4 hover:bg-[#181818] active:bg-[#181818] transition-colors cursor-pointer">
               <MessageCircle size={22} className="text-white" />
@@ -2509,7 +2529,25 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         onClose={() => setIsSupportOpen(false)}
         currentUser={currentUserId ? { id: currentUserId, name: myName } : null}
       />
-</div>
+
+      {/* 🖼️ مشغل الصور العالمي للحساب */}
+      {viewingImagePost && (
+        <XImagePlayer
+          src={viewingImagePost.image}
+          tweet={viewingImagePost}
+          authorName={viewingImagePost.authorName || name}
+          authorUsername={viewingImagePost.authorUsername || username}
+          authorAvatar={viewingImagePost.authorAvatar || avatarUrl}
+          currentUserAvatar={avatarUrl}
+          onClose={() => setViewingImagePost(null)}
+          onReply={() => setViewingImagePost(null)}
+          onLike={() => {}}
+          onRepost={() => {}}
+          onShare={() => {}}
+        />
+      )}
+
+      </div>
   );
 };
 

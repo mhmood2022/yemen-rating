@@ -134,6 +134,7 @@ export const TweetCard: React.FC<TweetCardProps> = ({
           </div>
         </div>
       </div>
-    </article>
+    </div>
+</article>
   );
 };

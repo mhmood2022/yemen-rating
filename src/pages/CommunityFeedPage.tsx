@@ -35,7 +35,7 @@ import {
   Sparkles,
   Bell,
   BarChart,
-  MoreHorizontal,
+  MoreHorizontal, ChevronDown,
   Video,
   Globe,
   BarChart2,
@@ -149,7 +149,67 @@ export const CommunityFeedPage: React.FC = () => {
   const [editText, setEditText] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [hasActiveSpace, setHasActiveSpace] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [swipeProgress, setSwipeProgress] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
   const [activeTab, setActiveTab] = useState<'forYou' | 'latest' | 'trending'>('forYou');
+  useEffect(() => { setSwipeProgress(activeTab === 'forYou' ? 0 : 1); }, [activeTab]);
+
+  // --- كود السحب الأفقي الآمن ---
+  useEffect(() => {
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      setIsSwiping(true);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
+      const distX = touchStartX - currentX;
+      const distY = touchStartY - currentY;
+
+      if (Math.abs(distX) > Math.abs(distY)) {
+        const maxSwipe = window.innerWidth * 0.25; // المسافة المطلوبة لإكمال السحب
+        const progress = Math.min(1, Math.abs(distX) / maxSwipe);
+
+        if (activeTab === 'forYou' && distX > 0) setSwipeProgress(progress);
+        else if (activeTab === 'latest' && distX < 0) setSwipeProgress(1 - progress);
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      setIsSwiping(false);
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      
+      const distX = touchStartX - touchEndX;
+      const distY = touchStartY - touchEndY;
+
+      if (Math.abs(distX) > Math.abs(distY) && Math.abs(distX) > 40) {
+        if (distX > 0 && activeTab === 'forYou') setActiveTab('latest');
+        else if (distX < 0 && activeTab === 'latest') setActiveTab('forYou');
+      } else {
+        // إذا لم تكن مسافة السحب كافية، يعود الخط لمكانه
+        setSwipeProgress(activeTab === 'forYou' ? 0 : 1);
+      }
+    };
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [activeTab]);
+  // ------------------------------
+
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   // بيانات المستخدم الحالي
@@ -340,6 +400,13 @@ export const CommunityFeedPage: React.FC = () => {
         let myRepostedPostIds = new Set();
         if (uid) {
           const { data: myLikes } = await supabase.from('post_likes').select('post_id').eq('user_id', uid);
+          // جلب قائمة الأشخاص الذين يتابعهم المستخدم
+          const { data: myFollows } = await supabase.from('follows').select('following_id').eq('follower_id', uid);
+          if (myFollows) {
+            setFollowingIds(myFollows.map((f: any) => f.following_id));
+            console.log('تم جلب المتابعين:', myFollows.length); // للتأكد من عمله
+          }
+        
           myLikedPostIds = new Set((myLikes || []).map((l: any) => l.post_id));
 
           const { data: myUserReposts } = await supabase.from('post_reposts').select('post_id').eq('user_id', uid);
@@ -684,6 +751,7 @@ export const CommunityFeedPage: React.FC = () => {
             loadCommentsForPost(activeCommentTweet.id);
     }
   }, [activeCommentTweet?.id]);
+  const [followingIds, setFollowingIds] = useState<string[]>([]);
 
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1122,7 +1190,15 @@ const handleAddComment = (e?: React.FormEvent) => {
     showToast('تم كتم المستخدم (مؤقتاً)');
   };
 
-  const displayedTweets = [...tweets].filter(t => !hiddenTweetIds.includes(t.id)).sort((a, b) => {
+  const displayedTweets = [...tweets]
+      .filter(t => !hiddenTweetIds.includes(t.id))
+      .filter(t => {
+        if (activeTab === 'forYou') return true;
+        const authorId = t.authorId || t.user_id;
+        // عرض تغريدات المتابعين فقط (بدون تغريداتك الشخصية) للتأكد من عمل التبويب
+        return followingIds.includes(authorId);
+      })
+      .sort((a, b) => {
     // الترتيب حسب التبويب
     if (activeTab === 'trending') return b.likes - a.likes;
     if (activeTab === 'forYou') {
@@ -1261,9 +1337,8 @@ const handleAddComment = (e?: React.FormEvent) => {
 
       {/* الهيدر العلوي بنمط منصة X الأصلي */}
       <header className="sticky top-0 z-40 bg-black/95 backdrop-blur-md">
-        {/* الشريط العلوي بدون خط فاصل سفلي */}
-        <div className="px-4 py-2.5 flex items-center justify-between">
-          {/* اليمين: صورة البروفايل بحجم طبيعي ومريح قياسي لمنصة X */}
+        {/* الشريط العلوي */}
+        <div className={`px-4 flex items-center justify-between relative transition-all duration-300 overflow-hidden ${isScrolled ? 'h-0 py-0 opacity-0' : 'h-[58px] py-2.5 opacity-100'}`}>
           <button onClick={() => navigate("/account")} title="ملفي الشخصي" className="relative group flex-shrink-0">
             <div className="w-[38px] h-[38px] rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold shrink-0 shadow-sm">
               {myAvatar ? (
@@ -1275,54 +1350,67 @@ const handleAddComment = (e?: React.FormEvent) => {
             <span className="absolute bottom-[1px] right-[1px] w-[9px] h-[9px] bg-emerald-500 rounded-full border-[1.5px] border-black" />
           </button>
 
-          {/* المنتصف: شعار منصة X الأيقوني */}
-          <div className="flex items-center justify-center cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-            <svg className="w-6 h-6 text-white fill-current hover:opacity-85 transition" viewBox="0 0 24 24">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-            </svg>
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+            <img src="/yr-logo.png" alt="Yemen Rating" className="w-8 h-8 object-contain hover:opacity-85 transition" />
           </div>
 
-          {/* اليسار: زر الترقية بالشارة الزرقاء */}
-          <button
-            onClick={() => navigate("/premium")}
-            className="px-3.5 py-1.5 rounded-full bg-[#FFC500]/15 hover:bg-[#FFC500]/25 border border-[#FFC500]/40 text-white text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm"
-          >
+          <button onClick={() => navigate("/premium")} className="px-3 py-1 rounded-full bg-[#202327] hover:bg-[#2c3035] text-white text-[12px] font-bold flex flex-row-reverse items-center gap-1.5 transition active:scale-95 shadow-sm">
             <span>ترقية</span>
-            <svg className="w-4 h-4 text-[#1D9BF0] fill-current flex-shrink-0" viewBox="0 0 24 24">
+            <svg className="w-[18px] h-[18px] text-[#FFC500] fill-current flex-shrink-0" viewBox="0 0 24 24">
               <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6c-1.58 0-2.95.875-3.6 2.148-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 0 .495.084.965.238 1.4C1.575 9.55.7 10.92.7 12.5c0 1.58.875 2.95 2.148 3.6-.154.435-.238.905-.238 1.4 0 2.21 1.79 4 4 4 .495 0 .965-.084 1.4-.238 1.05 1.273 2.42 2.148 4 2.148 1.58 0 2.95-.875 3.6-2.148.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-1.05 2.148-2.42 2.148-4zm-12.7 3.7l-3.3-3.3 1.4-1.4 1.9 1.9 5.3-5.3 1.4 1.4-6.7 6.7z" />
             </svg>
           </button>
         </div>
 
-        {/* التبويبات بنمط X مع خط سفلي واحد فقط ومحدد بيضاوي ناعم */}
-        <div className="flex text-sm font-bold">
-          <button
-            onClick={() => setActiveTab('forYou')}
-            className={`flex-1 text-center transition flex items-center justify-center ${activeTab === 'forYou' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'}`}
-          >
-            <span className="relative py-3.5 inline-block">
-              لك
-              {activeTab === 'forYou' && <span className="absolute bottom-0 left-0 right-0 h-[3.5px] bg-white rounded-full" />}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('latest')}
-            className={`flex-1 text-center transition flex items-center justify-center ${activeTab === 'latest' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'}`}
-          >
-            <span className="relative py-3.5 inline-block">
-              متابعة
-              {activeTab === 'latest' && <span className="absolute bottom-0 left-0 right-0 h-[3.5px] bg-white rounded-full" />}
-            </span>
+        {/* التبويبات */}
+        <div className="flex bg-black items-center">
+          <div className="flex-1 flex relative">
+            {/* الشريط السفلي المتحرك */}
+            <div className="absolute bottom-0 right-0 w-1/2 flex justify-center pointer-events-none">
+              <div 
+                className="h-[2px] bg-white rounded-full" 
+                style={{ 
+                  width: `${(1 - swipeProgress) * 85}%`, 
+                  opacity: swipeProgress > 0.95 ? 0 : 1,
+                  transition: isSwiping ? 'none' : 'all 0.15s cubic-bezier(0.25, 1, 0.5, 1)'
+                }} 
+              />
+            </div>
+            <div className="absolute bottom-0 left-0 w-1/2 flex justify-center pointer-events-none">
+              <div 
+                className="h-[2px] bg-white rounded-full" 
+                style={{ 
+                  width: `${swipeProgress * 85}%`, 
+                  opacity: swipeProgress < 0.05 ? 0 : 1,
+                  transition: isSwiping ? 'none' : 'all 0.15s cubic-bezier(0.25, 1, 0.5, 1)'
+                }} 
+              />
+            </div>
+            
+            <button onClick={() => setActiveTab('forYou')} style={{ WebkitTapHighlightColor: 'transparent' }} className={`flex-1 py-4 text-center font-bold text-[15px] transition-colors relative flex items-center justify-center gap-1.5 ${activeTab === 'forYou' ? 'text-white' : 'text-[#71767B]'}`}>
+              <span>لك</span>
+              {activeTab === 'forYou' && <ChevronDown size={16} className="text-[#FFC500] stroke-[3]" />}
+            </button>
+            
+            <button onClick={() => setActiveTab('latest')} style={{ WebkitTapHighlightColor: 'transparent' }} className={`flex-1 py-4 text-center font-bold text-[15px] transition-colors relative flex items-center justify-center gap-1.5 ${activeTab === 'latest' ? 'text-white' : 'text-[#71767B]'}`}>
+              <span>متابعة</span>
+              {activeTab === 'latest' && <ChevronDown size={16} className="text-[#FFC500] stroke-[3]" />}
+            </button>
+          </div>
+          
+          <button onClick={() => setIsPostModalOpen(true)} style={{ WebkitTapHighlightColor: 'transparent' }} className="flex-none px-5 flex items-center justify-center text-[#71767B] font-bold transition">
+            <span className="text-[28px] font-bold leading-none mb-1">+</span>
           </button>
         </div>
       </header>
 
       {/* حائط التغريدات */}
-      <div>
+      <div key={activeTab} className="animate-[fadeIn_0.3s_ease-in-out]">
         {displayedTweets.length === 0 ? (
           <div className="text-center py-20 text-zinc-500 text-xs px-4">
-            لا توجد منشورات حتى الآن في المجتمع. كن أول من يغرد!
+            {activeTab === 'forYou' 
+          ? 'لا توجد منشورات حتى الآن في المجتمع. كن أول من يغرد!' 
+          : 'أنت لا تتابع أحداً بعد. ابدأ بمتابعة الأشخاص لتظهر تغريداتهم هنا.'}
           </div>
         ) : (
           displayedTweets.map(tweet => {
@@ -1479,35 +1567,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                       onBookmark={() => showToast('تمت الإضافة إلى العلامات المرجعية 🔖')}
                     />
 
-      {/* 🖼️ مشغل الصور العالمي بنمط منصة X */}
-      {viewingImagePost && (
-        <XImagePlayer
-          src={viewingImagePost.image}
-          tweet={viewingImagePost}
-          authorName={viewingImagePost.authorName || viewingImagePost.original?.authorName}
-          authorUsername={viewingImagePost.authorUsername || viewingImagePost.original?.authorUsername}
-          authorAvatar={viewingImagePost.authorAvatar || viewingImagePost.original?.authorAvatar}
-          currentUserAvatar={myAvatar}
-          onClose={() => setViewingImagePost(null)}
-          onReply={() => {
-            const t = viewingImagePost;
-            setViewingImagePost(null);
-            setViewingDetailTweet(t);
-          }}
-          onLike={() => handleLike(viewingImagePost.id)}
-          onRepost={() => {
-            const t = viewingImagePost;
-            setViewingImagePost(null);
-            setRepostMenu(t);
-          }}
-          onShare={() => {
-            if (navigator.clipboard) {
-              navigator.clipboard.writeText(window.location.href);
-              showToast('تم نسخ الرابط');
-            }
-          }}
-        />
-      )}
+      
 
                               </div>
                             )}
@@ -1735,7 +1795,20 @@ const handleAddComment = (e?: React.FormEvent) => {
                         comments: c.comments || []
                       };
 
-                      return (
+                      
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
                         <div
                           key={c.id}
                           onClick={() => setViewingDetailTweet(commentAsTweet)}
@@ -1879,34 +1952,7 @@ const handleAddComment = (e?: React.FormEvent) => {
       )}
 
       {/* شريط التنقل السفلي */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-black  border-t border-[#2F3336] py-2 px-4 flex items-center justify-around text-xs font-bold">
-        <button onClick={() => navigate('/')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-white transition">
-          <Home size={22} />
-          <span>الرئيسية</span>
-        </button>
-
-        <button onClick={() => navigate('/feed')} className="flex flex-col items-center gap-1 text-[#FFC500] font-black transition">
-          <MessageSquare size={22} className="stroke-[2.5]" />
-          <span>المنشورات</span>
-        </button>
-
-        <button onClick={() => navigate('/notifications')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#FFC500] transition relative">
-          <div className="relative">
-            <Bell size={22} />
-            {unreadNotifs > 0 && (
-              <span className="absolute -top-1 -right-1.5 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-black">
-                {unreadNotifs}
-              </span>
-            )}
-          </div>
-          <span>التنبيهات</span>
-        </button>
-
-        <button onClick={() => navigate('/account')} className="flex flex-col items-center gap-1 text-[#71767B] hover:text-[#FFC500] transition">
-          <User size={22} />
-          <span>الملف الشخصي</span>
-        </button>
-      </nav>
+      
 
     
       {/* قائمة ⋮ — للمجتمع */}
@@ -2022,7 +2068,7 @@ const handleAddComment = (e?: React.FormEvent) => {
       {/* زر + (FAB) — يفتح نافذة التغريد المنبثقة */}
       <button
         onClick={() => setIsPostModalOpen(true)}
-        className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-black/60 transition"
+        className="yr-fab transition-transform duration-300 fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-black/60 transition"
         title="تغريدة جديدة"
       >
         <Plus size={24} className="stroke-[2.2] text-black" />
@@ -2200,6 +2246,35 @@ const handleAddComment = (e?: React.FormEvent) => {
           </div>
         </div>
       )}
-</div>
+{/* 🖼️ مشغل الصور العالمي */}
+      {viewingImagePost && (
+        <XImagePlayer
+          src={viewingImagePost.image}
+          tweet={viewingImagePost}
+          authorName={viewingImagePost.authorName || viewingImagePost.original?.authorName}
+          authorUsername={viewingImagePost.authorUsername || viewingImagePost.original?.authorUsername}
+          authorAvatar={viewingImagePost.authorAvatar || viewingImagePost.original?.authorAvatar}
+          currentUserAvatar={myAvatar}
+          onClose={() => setViewingImagePost(null)}
+          onReply={() => {
+            const t = viewingImagePost;
+            setViewingImagePost(null);
+            setViewingDetailTweet(t);
+          }}
+          onLike={() => handleLike(viewingImagePost.id)}
+          onRepost={() => {
+            const t = viewingImagePost;
+            setViewingImagePost(null);
+            setRepostMenu(t);
+          }}
+          onShare={() => {
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(window.location.href);
+              showToast('تم نسخ الرابط');
+            }
+          }}
+        />
+      )}
+      </div>
   );
 };
