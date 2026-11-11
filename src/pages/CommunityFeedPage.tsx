@@ -1467,6 +1467,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                       currentUserAvatar={myAvatar}
                       onReply={() => setViewingDetailTweet(tweet)}
                       onLike={() => handleLike(tweet.id)}
+                      onViewEngagements={() => setViewingEngagementsPost(tweet)}
                       onRepost={() => setRepostMenu(tweet)}
                       onViewEngagements={() => setViewingEngagementsPost(tweet)}
                       onShare={() => {
