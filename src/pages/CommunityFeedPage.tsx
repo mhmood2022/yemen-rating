@@ -1577,7 +1577,38 @@ const handleAddComment = (e?: React.FormEvent) => {
       )}
 
       {/* نافذة الاقتباس */}
-      {isQuoting && quoteOriginal && (
+      
+      {/* قائمة إعادة النشر والاقتباس (مثل إكس) */}
+      {repostMenu && (
+        <div className="fixed inset-0 z-[80] bg-black/60 flex flex-col justify-end sm:justify-center items-center" onClick={() => setRepostMenu(null)}>
+          <div className="w-full sm:w-[400px] bg-black sm:rounded-2xl rounded-t-3xl border border-zinc-800 overflow-hidden pb-4 sm:pb-0" onClick={e => e.stopPropagation()}>
+            <div className="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mt-3 mb-2 sm:hidden"></div>
+            <button 
+              onClick={() => { 
+                handleRepost(repostMenu.id); 
+                setRepostMenu(null); 
+              }} 
+              className="w-full flex items-center gap-4 p-4 hover:bg-zinc-900 text-white font-bold text-[15px] transition-colors"
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z"></path></svg>
+              إعادة نشر
+            </button>
+            <button 
+              onClick={() => { 
+                setQuoteOriginal(repostMenu); 
+                setIsQuoting(true); 
+                setRepostMenu(null); 
+              }} 
+              className="w-full flex items-center gap-4 p-4 hover:bg-zinc-900 text-white font-bold text-[15px] border-t border-zinc-800 transition-colors"
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M14.23 1.65L23.63 11.05L14.23 20.45V14.45C9.63 14.45 6.53 15.05 3.63 18.85C3.63 13.65 5.73 8.15 14.23 7.65V1.65ZM12.63 9.45V12.65C6.83 13.25 4.73 16.35 3.23 20.35C2.73 16.85 3.83 13.25 6.73 10.95C8.63 9.45 10.73 9.05 12.63 9.45Z"></path></svg>
+              اقتباس
+            </button>
+          </div>
+        </div>
+      )}
+
+{isQuoting && quoteOriginal && (
         <div className="fixed inset-0 z-[70] bg-black flex flex-col p-4" dir="rtl">
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => { setIsQuoting(false); setQuoteOriginal(null); }} className="text-white p-2">
