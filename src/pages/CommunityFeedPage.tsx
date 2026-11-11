@@ -2075,7 +2075,6 @@ const handleAddComment = (e?: React.FormEvent) => {
           <div className="flex-1 min-h-0 px-4 pt-2 overflow-y-auto flex flex-col bg-black">
             <div className="flex items-start gap-3 flex-1">
               {/* صورة الأفاتار فقط أعلى اليمين */}
-              <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 overflow-hidden flex items-center justify-center font-bold shrink-0 mt-1">
                 {myAvatar ? (
                   <img src={myAvatar} alt={myName} className="w-full h-full object-cover" />
                 ) : (
