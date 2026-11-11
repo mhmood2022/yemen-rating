@@ -2351,22 +2351,24 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
       {/* قائمة إعادة النشر / اقتباس */}
       {repostMenu && (
-        <div className="fixed inset-0 z-[100] bg-[#5b708366] flex flex-col justify-end sm:justify-center items-center" onClick={() => setRepostMenu(null)}>
-          <div className="w-full sm:w-[350px] bg-black sm:rounded-2xl rounded-t-2xl overflow-hidden pb-4 sm:pb-0" onClick={e => e.stopPropagation()} dir="rtl">
+        <div className="fixed inset-0 z-[100] bg-black/50 flex flex-col justify-end sm:justify-center items-center" onClick={() => setRepostMenu(null)}>
+          <div className="w-full sm:w-[350px] bg-black sm:rounded-2xl rounded-t-2xl overflow-hidden pb-6 sm:pb-0 shadow-2xl" onClick={e => e.stopPropagation()} dir="rtl">
             <div className="w-10 h-1 bg-[#333639] rounded-full mx-auto mt-2 mb-1 sm:hidden"></div>
-            <button onClick={() => { handleRepost(repostMenu.id); setRepostMenu(null); }} className="w-full flex items-center justify-start gap-4 px-4 py-4 hover:bg-[#181818] transition-colors cursor-pointer">
-              <Repeat2 size={20} className="text-white" />
-              <span className="text-[#e7e9ea] font-bold text-[15px]">إعادة النشر</span>
+            
+            <button onClick={() => { handleRepost(repostMenu.id); setRepostMenu(null); }} className="w-full flex items-center justify-start gap-4 px-4 py-4 hover:bg-[#181818] active:bg-[#181818] transition-colors cursor-pointer border-b border-[#2F3336]">
+              <Repeat2 size={22} className="text-white" />
+              <span className="text-white font-bold text-[15px]">إعادة النشر</span>
             </button>
-            <button onClick={() => { setQuoteOriginal(repostMenu); setQuoteText(''); setIsQuoting(true); setRepostMenu(null); }} className="w-full flex items-center justify-start gap-4 px-4 py-4 hover:bg-[#181818] transition-colors cursor-pointer">
-              <MessageCircle size={20} className="text-white" />
-              <span className="text-[#e7e9ea] font-bold text-[15px]">اقتباس</span>
+            
+            <button onClick={() => { setQuoteOriginal(repostMenu); setQuoteText(''); setIsQuoting(true); setRepostMenu(null); }} className="w-full flex items-center justify-start gap-4 px-4 py-4 hover:bg-[#181818] active:bg-[#181818] transition-colors cursor-pointer">
+              <MessageCircle size={22} className="text-white" />
+              <span className="text-white font-bold text-[15px]">اقتباس</span>
             </button>
+            
           </div>
         </div>
       )}
 
-      {/* نافذة الاقتباس */}
       {isQuoting && quoteOriginal && (
         <div className="fixed inset-0 z-[70] bg-black flex flex-col p-4" dir="rtl">
           <div className="flex items-center justify-between mb-4">
