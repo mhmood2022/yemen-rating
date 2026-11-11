@@ -1542,35 +1542,16 @@ const handleAddComment = (e?: React.FormEvent) => {
       {/* نافذة عرض تفاصيل التغريدة الكاملة مع كل الردود (عند النقر على جسم التغريدة) */}
       {/* قائمة إعادة النشر / اقتباس */}
       {repostMenu && (
-        <div className="fixed inset-0 z-[60] bg-black flex items-end justify-center p-2" onClick={() => setRepostMenu(null)}>
-          <div className="w-full max-w-md bg-[#16181C] rounded-2xl overflow-hidden mb-20" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => {
-                handleRepost(repostMenu.id);
-                setRepostMenu(null);
-              }}
-              className="w-full px-4 py-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3"
-            >
-              <Repeat2 size={20} className="text-emerald-400" />
-              <span>إعادة النشر</span>
+        <div className="fixed inset-0 z-[100] bg-[#5b708366] flex flex-col justify-end sm:justify-center items-center" onClick={() => setRepostMenu(null)}>
+          <div className="w-full sm:w-[350px] bg-black sm:rounded-2xl rounded-t-2xl overflow-hidden pb-4 sm:pb-0" onClick={e => e.stopPropagation()} dir="rtl">
+            <div className="w-10 h-1 bg-[#333639] rounded-full mx-auto mt-2 mb-1 sm:hidden"></div>
+            <button onClick={() => { handleRepost(repostMenu.id); setRepostMenu(null); }} className="w-full flex items-center justify-start gap-4 px-4 py-4 hover:bg-[#181818] transition-colors cursor-pointer">
+              <Repeat2 size={20} className="text-white" />
+              <span className="text-[#e7e9ea] font-bold text-[15px]">إعادة النشر</span>
             </button>
-            <button
-              onClick={() => {
-                setQuoteOriginal(repostMenu);
-                setQuoteText('');
-                setIsQuoting(true);
-                setRepostMenu(null);
-              }}
-              className="w-full px-4 py-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3"
-            >
-              <MessageCircle size={20} className="text-[#FFC500]" />
-              <span>اقتباس</span>
-            </button>
-            <button
-              onClick={() => setRepostMenu(null)}
-              className="w-full p-3 text-center text-white/60 font-bold hover:bg-white/5 transition"
-            >
-              إلغاء
+            <button onClick={() => { setQuoteOriginal(repostMenu); setQuoteText(''); setIsQuoting(true); setRepostMenu(null); }} className="w-full flex items-center justify-start gap-4 px-4 py-4 hover:bg-[#181818] transition-colors cursor-pointer">
+              <MessageCircle size={20} className="text-white" />
+              <span className="text-[#e7e9ea] font-bold text-[15px]">اقتباس</span>
             </button>
           </div>
         </div>
@@ -1578,37 +1559,7 @@ const handleAddComment = (e?: React.FormEvent) => {
 
       {/* نافذة الاقتباس */}
       
-      {/* قائمة إعادة النشر والاقتباس (مثل إكس) */}
-      {repostMenu && (
-        <div className="fixed inset-0 z-[80] bg-black/60 flex flex-col justify-end sm:justify-center items-center" onClick={() => setRepostMenu(null)}>
-          <div className="w-full sm:w-[400px] bg-black sm:rounded-2xl rounded-t-3xl border border-zinc-800 overflow-hidden pb-4 sm:pb-0" onClick={e => e.stopPropagation()}>
-            <div className="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mt-3 mb-2 sm:hidden"></div>
-            <button 
-              onClick={() => { 
-                handleRepost(repostMenu.id); 
-                setRepostMenu(null); 
-              }} 
-              className="w-full flex items-center gap-4 p-4 hover:bg-zinc-900 text-white font-bold text-[15px] transition-colors"
-            >
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z"></path></svg>
-              إعادة نشر
-            </button>
-            <button 
-              onClick={() => { 
-                setQuoteOriginal(repostMenu); 
-                setIsQuoting(true); 
-                setRepostMenu(null); 
-              }} 
-              className="w-full flex items-center gap-4 p-4 hover:bg-zinc-900 text-white font-bold text-[15px] border-t border-zinc-800 transition-colors"
-            >
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current"><path d="M14.23 1.65L23.63 11.05L14.23 20.45V14.45C9.63 14.45 6.53 15.05 3.63 18.85C3.63 13.65 5.73 8.15 14.23 7.65V1.65ZM12.63 9.45V12.65C6.83 13.25 4.73 16.35 3.23 20.35C2.73 16.85 3.83 13.25 6.73 10.95C8.63 9.45 10.73 9.05 12.63 9.45Z"></path></svg>
-              اقتباس
-            </button>
-          </div>
-        </div>
-      )}
-
-{isQuoting && quoteOriginal && (
+      {isQuoting && quoteOriginal && (
         <div className="fixed inset-0 z-[70] bg-black flex flex-col p-4" dir="rtl">
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => { setIsQuoting(false); setQuoteOriginal(null); }} className="text-white p-2">
