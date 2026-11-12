@@ -47,6 +47,23 @@
       }
     </style>
     
+
+    <style>
+      /* 🔪 القضاء نهائياً على أي توهج أصفر أو أزرق حول الحقول */
+      input:focus, textarea:focus, select:focus, button:focus {
+        outline: none !important;
+        box-shadow: none !important;
+      }
+      /* إجبار المؤشر النابض (Caret) على اللون الأبيض */
+      input, textarea {
+        caret-color: #FFFFFF !important;
+      }
+      /* التأكد من أن حدود الحقول في نافذة الدخول تصبح بيضاء عند التركيز */
+      .auth-modal-input:focus {
+        border-color: #FFFFFF !important;
+      }
+    </style>
+    
 </head>
   <body class="bg-black text-white" style="background-color: #000000 !important;">
     <div id="root"></div>

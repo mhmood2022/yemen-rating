@@ -74,7 +74,7 @@ html, body {
 .dark input:focus,
 .dark select:focus,
 .dark textarea:focus {
-  border-color: #F5C400 !important;
+  border-color: #FFFFFF !important;
 }
 
 .dark input:-webkit-autofill,
@@ -193,7 +193,7 @@ select:hover {
 
 select:focus,
 select:focus-visible {
-  border-color: #FFC500 !important;
+  border-color: #FFFFFF !important;
   box-shadow: 0 0 0 1px rgba(255, 197, 0, 0.4) !important;
 }
 
@@ -234,12 +234,12 @@ select optgroup {
 input,
 textarea {
   color-scheme: dark !important;
-  caret-color: #FFC500 !important;
+  caret-color: #FFFFFF !important;
 }
 
 input:focus-visible,
 textarea:focus-visible {
-  outline: 1px solid #FFC500 !important;
+  outline: none !important;
   outline-offset: 0px !important;
 }
 

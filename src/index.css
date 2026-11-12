@@ -15,7 +15,7 @@ body {
    ========================================================= */
 :root {
   color-scheme: dark;
-  accent-color: #FFC500;
+  accent-color: #FFFFFF !important;
 
   /* لوحة الألوان المعتمدة */
   --yr-bg-black: #000000;
@@ -45,7 +45,7 @@ body {
 @layer base {
   /* 1. تحديد النصوص باللون الذهبي والأسود */
   ::selection {
-    background-color: var(--yr-accent-gold);
+    background-color: #FFFFFF;
     color: #0a0f1d;
   }
 
@@ -66,7 +66,7 @@ body {
     border-radius: 9999px;
   }
   *::-webkit-scrollbar-thumb:hover {
-    background-color: var(--yr-accent-gold);
+    background-color: #FFFFFF;
   }
 
   /* 3. توحيد القوائم المنسدلة الافتراضية (select & option) */
@@ -74,7 +74,7 @@ body {
     background-color: var(--yr-surface-elevated);
     color: var(--yr-text-primary);
     border-color: var(--yr-border-dark);
-    accent-color: var(--yr-accent-gold);
+    accent-color: #FFFFFF;
   }
   
   select option {
@@ -89,7 +89,7 @@ body {
   /* 4. حقول الإدخال والملاحظات (input & textarea) */
   input,
   textarea {
-    caret-color: var(--yr-accent-gold);
+    caret-color: #FFFFFF !important;
   }
 
   input::placeholder,
@@ -435,8 +435,8 @@ html body input:focus,
 html body textarea:focus,
 html body select:focus {
   outline: none !important;
-  border-color: #FFC500 !important;
-  box-shadow: 0 0 0 1px #FFC500 !important;
+  border-color: #FFFFFF !important;
+  box-shadow: 0 0 0 1px #FFFFFF !important;
 }
 
 html body input::placeholder,

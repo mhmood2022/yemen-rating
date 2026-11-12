@@ -893,42 +893,57 @@ export const CommunityFeedPage: React.FC = () => {
       return;
     }
 
-    let nextIsLiked = false;
-    let nextLikesCount = 0;
+    // 1. حساب الحالة الجديدة من الحالة الحالية (قبل setTweets)
+    const tweet = tweets.find(t => t.id === id);
+    if (!tweet) return;
 
-    // تحديث الواجهة فوراً
-    setTweets(prev => prev.map(t => {
-      if (t.id === id) {
-        const likedBy = t.likedBy || [];
-        const isLiked = likedBy.includes(currentUserId) || t.isLiked;
-        nextIsLiked = !isLiked;
-        const nextLikedBy = isLiked ? likedBy.filter((uid: string) => uid !== currentUserId) : [...likedBy, currentUserId];
-        nextLikesCount = nextLikedBy.length;
-        return {
-          ...t,
-          isLiked: nextIsLiked,
-          likes: nextLikesCount,
-          likedBy: nextLikedBy,
-        };
-      }
-      return t;
-    }));
+    const likedBy = tweet.likedBy || [];
+    const isLiked = likedBy.includes(currentUserId) || !!tweet.isLiked;
+    const nextIsLiked = !isLiked;
+    const nextLikedBy = nextIsLiked
+      ? [...likedBy, currentUserId]
+      : likedBy.filter((u: string) => u !== currentUserId);
+    const nextLikesCount = nextLikedBy.length;
 
-    // حفظ أو حذف في Supabase post_likes سحابياً ليظل اللون ثابتاً للأبد
+    // 2. تحديث الواجهة فوراً
+    setTweets(prev => prev.map(t =>
+      t.id === id
+        ? { ...t, isLiked: nextIsLiked, likes: nextLikesCount, likedBy: nextLikedBy }
+        : t
+    ));
+
+    // 3. الحفظ مع فحص الخطأ الفعلي
     try {
       if (nextIsLiked) {
-        await supabase.from('post_likes').upsert({ post_id: id, user_id: currentUserId }, { onConflict: 'user_id,post_id' });
-        await supabase.from('posts').update({ likes_count: nextLikesCount }).eq('id', id);
+        const { error: e1 } = await supabase
+          .from('post_likes')
+          .upsert({ post_id: id, user_id: currentUserId }, { onConflict: 'user_id,post_id' });
+        if (e1) throw e1;
+
+        const { error: e2 } = await supabase
+          .from('posts').update({ likes_count: nextLikesCount }).eq('id', id);
+        if (e2) throw e2;
       } else {
-        await supabase.from('post_likes').delete().eq('post_id', id).eq('user_id', currentUserId);
-        await supabase.from('posts').update({ likes_count: Math.max(0, nextLikesCount) }).eq('id', id);
+        const { error: e1 } = await supabase
+          .from('post_likes').delete().eq('post_id', id).eq('user_id', currentUserId);
+        if (e1) throw e1;
+
+        const { error: e2 } = await supabase
+          .from('posts').update({ likes_count: Math.max(0, nextLikesCount) }).eq('id', id);
+        if (e2) throw e2;
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Like sync error:', err);
+      // تراجع عن التحديث المحلي عند الفشل
+      setTweets(prev => prev.map(t =>
+        t.id === id ? { ...t, isLiked, likes: likedBy.length, likedBy } : t
+      ));
+      showToast('فشل حفظ الإعجاب: ' + (err?.message || ''));
     }
   };
 
   // إعادة التغريد
+
   const handleRepost = async (id: string) => {
     if (!currentUserId) {
       showToast('يرجى تسجيل الدخول');

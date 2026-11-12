@@ -1159,17 +1159,22 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     }
   };
 
-  const handleLogout = async () => {
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogout = () => {
     setIsMenuOpen(false);
-    if (window.confirm('هل تريد تسجيل الخروج؟')) {
-      await supabase.auth.signOut();
-      localStorage.removeItem('sb-auth-token');
-      showToast('تم تسجيل الخروج بنجاح 👋');
-      setTimeout(() => {
-        navigate('/');
-        window.location.reload();
-      }, 300);
-    }
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = async () => {
+    setShowLogoutConfirm(false);
+    await supabase.auth.signOut();
+    localStorage.removeItem('sb-auth-token');
+    showToast('تم تسجيل الخروج بنجاح 👋');
+    setTimeout(() => {
+      navigate('/');
+      window.location.reload();
+    }, 300);
   };
 
   if (loading) {
@@ -1928,6 +1933,31 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       )}
 
       {/* مودال منشور جديد (تصميم منصة X المتوافق مع الكيبورد) */}
+      
+      {/* Custom Logout Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" dir="rtl">
+          <div className="bg-[#16181C] border border-[#2F3336] rounded-2xl w-full max-w-[280px] p-5 flex flex-col items-center text-center shadow-2xl">
+            <h3 className="text-white text-[16px] font-bold mb-1">تسجيل الخروج</h3>
+            <p className="text-[#71767B] text-[13px] mb-5 leading-relaxed">هل أنت متأكد أنك تريد تسجيل الخروج من حسابك؟</p>
+            <div className="flex gap-2 w-full">
+              <button 
+                onClick={confirmLogout}
+                className="flex-1 bg-white text-black font-bold text-[13px] py-1.5 rounded-full hover:bg-gray-200 transition"
+              >
+                نعم
+              </button>
+              <button 
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 bg-transparent border border-[#536471] text-white font-bold text-[13px] py-1.5 rounded-full hover:bg-white/10 transition"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {isPostModalOpen && (
         <div 
           className="fixed inset-0 z-[150] bg-black text-white flex flex-col justify-between overflow-hidden" 

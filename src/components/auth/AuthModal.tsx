@@ -24,6 +24,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -41,6 +43,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // إنشاء حساب جديد
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!fullName.trim()) { setNameError('الاسم مطلوب'); setEmailError(null); setPasswordError(null); return; }
+    if (!email.trim()) { setEmailError('البريد الإلكتروني مطلوب'); setNameError(null); setPasswordError(null); return; }
+    if (!password.trim()) { setPasswordError('كلمة المرور مطلوبة'); setNameError(null); setEmailError(null); return; }
+    setNameError(null); setEmailError(null); setPasswordError(null);
+
+
+    if (!email.trim()) { setEmailError('يرجى إدخال البريد الإلكتروني'); setPasswordError(null); return; }
+    if (!password.trim()) { setPasswordError('يرجى إدخال كلمة المرور'); setEmailError(null); return; }
+    setEmailError(null);
+    setPasswordError(null);
+
     if (!fullName.trim()) {
       setErrorMsg('يرجى كتابة الاسم الكامل');
       return;
@@ -75,6 +89,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // تسجيل الدخول المحمي والذكي
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email.trim()) { setEmailError('يرجى إدخال البريد الإلكتروني'); setPasswordError(null); return; }
+    if (!password.trim()) { setPasswordError('يرجى إدخال كلمة المرور'); setEmailError(null); return; }
+    setEmailError(null);
+    setPasswordError(null);
+
     setLoading(true);
     setErrorMsg(null);
     setSuccessMsg(null);
@@ -165,19 +185,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       {/* البطاقة المطابقة تماماً للصورة */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-[420px] bg-[#060C1B] border border-blue-950/60 rounded-[32px] p-6 sm:p-7 shadow-[0_10px_50px_rgba(0,0,0,0.8)] text-white overflow-hidden"
+        className="relative w-full max-w-[420px] bg-black border border-[#2F3336] rounded-[32px] p-6 sm:p-7 shadow-[0_10px_50px_rgba(0,0,0,0.8)] text-white overflow-hidden"
       >
-        {/* الخطوط الموجية الزرقاء في الخلفية */}
-        <svg 
-          className="absolute inset-0 w-full h-full pointer-events-none opacity-30" 
-          viewBox="0 0 420 600" 
-          fill="none" 
-          preserveAspectRatio="none"
-        >
-          <path d="M-50 150 C100 50, 250 250, 470 120" stroke="#1E3A8A" strokeWidth="2.5" />
-          <path d="M-30 200 C150 100, 270 290, 480 180" stroke="#1D4ED8" strokeWidth="1.8" />
-          <path d="M-60 260 C120 180, 280 340, 490 240" stroke="#1E3A8A" strokeWidth="1.2" />
-        </svg>
+        
 
         {/* زر الإغلاق */}
         <button
@@ -191,33 +201,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* الشعار: الدرع الملكي مع النجمة والقوس الذهبي */}
         <div className="flex justify-center pt-1 mb-2 relative z-10">
-          <svg className="w-20 h-20 drop-shadow-[0_4px_15px_rgba(245,184,0,0.3)]" viewBox="0 0 100 100" fill="none">
-            {/* الدرع الخارجي الأبيض/الفضي */}
-            <path 
-              d="M50 10 L82 23 V48 C82 69 50 90 50 90 C50 90 18 69 18 48 V23 Z" 
-              fill="#060C1B" 
-              stroke="#FFFFFF" 
-              strokeWidth="4" 
-              strokeLinejoin="round" 
-            />
-            {/* القوس الذهبي المحيط بالنجمة */}
-            <path 
-              d="M26 62 C34 76 66 78 75 58 C66 70 36 71 26 62 Z" 
-              fill="#F5B800" 
-            />
-            {/* النجمة الذهبية في الوسط */}
-            <path 
-              d="M50 28 L54.5 39.5 H67 L57.2 47.5 L60.8 59.5 L50 52 L39.2 59.5 L42.8 47.5 L33 39.5 H45.5 Z" 
-              fill="#F5B800" 
-            />
-          </svg>
+          <img src="/yr-logo.png" alt="Yemen Rating" className="w-20 h-20 object-contain" />
         </div>
 
         {/* العنوان والخطوط الجانبية */}
         <div className="flex items-center gap-3 my-3.5 relative z-10">
           <div className="h-[1px] bg-zinc-700/60 flex-1" />
           <h2 className="text-sm sm:text-base font-black text-white whitespace-nowrap tracking-wide">
-            مرحباً <span className="text-[#F5B800]">بك</span> في منصة يمن ريتنغ
+            مرحباً <span className="text-white">بك</span> في منصة يمن ريتنغ
           </h2>
           <div className="h-[1px] bg-zinc-700/60 flex-1" />
         </div>
@@ -230,8 +221,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => { setAuthMode('login'); setErrorMsg(null); setSuccessMsg(null); }}
               className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-extrabold transition-all duration-150 ${
                 authMode === 'login'
-                  ? 'bg-[#F5B800] text-black shadow-md'
-                  : 'bg-[#141E30] text-zinc-300 border border-[#263750] hover:text-white'
+                  ? 'bg-white text-black font-bold'
+                  : 'bg-[#16181C] border border-[#333639] text-[#E7E9EA] hover:bg-[#1f2326]'
               }`}
             >
               تسجيل الدخول
@@ -241,8 +232,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => { setAuthMode('register'); setErrorMsg(null); setSuccessMsg(null); }}
               className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-extrabold transition-all duration-150 ${
                 authMode === 'register'
-                  ? 'bg-[#F5B800] text-black shadow-md'
-                  : 'bg-[#141E30] text-zinc-300 border border-[#263750] hover:text-white'
+                  ? 'bg-white text-black font-bold'
+                  : 'bg-[#16181C] border border-[#333639] text-[#E7E9EA] hover:bg-[#1f2326]'
               }`}
             >
               حساب جديد
@@ -256,7 +247,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <button
               type="button"
               onClick={handleGoogleAuth}
-              className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-lg bg-[#006020] hover:bg-[#037027] border border-[#0e7e34] text-white text-xs sm:text-sm font-bold transition shadow-sm active:scale-[0.99]"
+              className="w-full flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-lg bg-black hover:bg-white/5 border border-black text-white text-xs sm:text-sm font-bold transition active:scale-[0.99]"
             >
               <span>المتابعة عبر حساب Google</span>
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
@@ -308,28 +299,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div>
               <label className="block text-xs font-bold text-white mb-1.5">الاسم الكامل</label>
               <div className="relative">
-                <input
-                  type="text"
-                  required
-                  placeholder="محمد عبدالله"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 pr-10 rounded-lg bg-[#101928] border border-[#263750] text-xs text-white placeholder-zinc-500 focus:border-[#F5B800] focus:outline-none transition"
+                <input type="text"  placeholder="username" value={fullName} onChange={(e) => setFullName(e.target.value)}
+                  className="w-full px-3.5 py-2.5 pr-10 rounded-lg bg-[#16181C] border border-[#333639] text-xs text-white placeholder-[#71767B] focus:border-white focus:outline-none transition"
                 />
                 <User size={16} className="text-zinc-500 absolute right-3.5 top-3" />
               </div>
+            {nameError && (
+              <p className="text-xs text-red-500 mt-1 pr-1">{nameError}</p>
+            )}
             </div>
           )}
 
           <div>
             <label className="block text-xs font-bold text-white mb-1.5">البريد الإلكتروني</label>
             <div className="relative">
-              <input
-                type="email"
-                required
-                placeholder="example@domain.com"
-                value={email}
-                onChange={(e) => {
+              <input type="email" placeholder="example@domain.com" value={email} onChange={(e) => {
                   const val = e.target.value;
                   setEmail(val);
                   if (val) {
@@ -343,10 +327,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     setEmailError(null);
                   }
                 }}
-                className={`w-full px-3.5 py-2.5 pr-10 rounded-lg bg-[#101928] border text-xs text-white placeholder-zinc-500 focus:outline-none transition ${
+                className={`w-full px-3.5 py-2.5 pr-10 rounded-lg bg-[#16181C] border text-xs text-white placeholder-[#71767B] focus:outline-none transition ${
                   emailError 
                     ? 'border-red-500 focus:border-red-500' 
-                    : 'border-[#263750] focus:border-[#F5B800]'
+                    : 'border-[#333639] focus:border-white'
                 }`}
               />
               <Mail size={16} className="text-zinc-500 absolute right-3.5 top-3" />
@@ -364,40 +348,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <button
                     type="button"
                     onClick={() => { setAuthMode('forgot'); setErrorMsg(null); setSuccessMsg(null); }}
-                    className="text-xs font-bold text-[#F5B800] hover:underline transition"
+                    className="text-xs font-bold text-white hover:underline transition"
                   >
                     نسيت كلمة المرور؟
                   </button>
                 )}
               </div>
               <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  minLength={6}
-                  placeholder="********"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-10 py-2.5 pr-10 rounded-lg bg-[#101928] border border-[#263750] text-xs text-white placeholder-zinc-500 focus:border-[#F5B800] focus:outline-none transition"
+                <input type={showPassword ? 'text' : 'password'}  placeholder="********" value={password} onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-10 py-2.5 pr-10 rounded-lg bg-[#16181C] border border-[#333639] text-xs text-white placeholder-[#71767B] focus:border-white focus:outline-none transition"
                 />
                 <Lock size={16} className="text-zinc-500 absolute right-3.5 top-3" />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-3.5 top-3 text-zinc-500 hover:text-zinc-300 focus:outline-none transition"
+                  className="absolute left-3.5 top-3 text-zinc-500 hover:text-white focus:outline-none transition"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-            </div>
+                {passwordError && (
+                  <p className="text-[10px] text-red-400 mt-1 pr-1">{passwordError}</p>
+                )}
+              </div>
           )}
+
 
           {/* الزر الرئيسي الأصفر العريض المطابق للصورة */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-3 px-4 rounded-2xl bg-[#F5B800] hover:bg-[#E5AC00] active:scale-[0.99] text-black text-sm font-black transition shadow-[0_4px_20px_rgba(245,184,0,0.25)] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full mt-2 py-3 px-4 rounded-2xl bg-white hover:bg-[#E7E9EA] active:scale-[0.99] text-black text-sm font-black transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <Loader2 size={18} className="animate-spin text-black" />
