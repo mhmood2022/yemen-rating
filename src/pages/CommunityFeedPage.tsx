@@ -1398,9 +1398,7 @@ const handleAddComment = (e?: React.FormEvent) => {
             </button>
           </div>
           
-          <button onClick={() => setIsPostModalOpen(true)} style={{ WebkitTapHighlightColor: 'transparent' }} className="flex-none px-5 flex items-center justify-center text-[#71767B] font-bold transition">
-            <span className="text-[28px] font-bold leading-none mb-1">+</span>
-          </button>
+          
         </div>
       </header>
 
@@ -1756,12 +1754,7 @@ const handleAddComment = (e?: React.FormEvent) => {
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
-                  setReportingItem({
-                    type: 'post',
-                    targetId: tweet.id,
-                    targetName: tweet.authorName || 'مستخدم',
-                    targetAuthorId: tweet.authorId || ''
-                  });
+                  setReportingItem({ type: 'post', targetId: viewingDetailTweet.id, targetName: viewingDetailTweet.authorName || 'مستخدم', targetAuthorId: viewingDetailTweet.authorId || '' });
                 }} 
                 className="hover:text-rose-500 transition p-1"
                 title="إبلاغ عن التغريدة"
