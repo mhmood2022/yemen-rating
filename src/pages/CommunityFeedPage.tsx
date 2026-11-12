@@ -1796,17 +1796,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                       };
 
                       
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  
 
   return (
                         <div
