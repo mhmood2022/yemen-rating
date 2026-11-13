@@ -19,6 +19,8 @@ interface PaymentProof {
   subscription_id: string | null;
   plan_name?: string;
   plan_badge?: string;
+  verification_status?: string | null;
+  verification_notes?: { warnings?: Array<{ message: string }> } | null;
 }
 
 export const PaymentProofsTab: React.FC = () => {

@@ -23,7 +23,7 @@ export const MobileUsersTab: React.FC<Props> = ({ searchQuery = '' }) => {
     let list = users;
     if (filter === 'verified') list = list.filter(u => u.verification_type || u.is_verified);
     else if (filter === 'unverified') list = list.filter(u => !u.verification_type && !u.is_verified);
-    else if (filter === 'blocked' || filter === 'banned') list = list.filter(u => u.is_blocked);
+    else if (filter === 'blocked') list = list.filter(u => u.is_blocked);
     else if (filter === 'online') list = list.filter(u => u.last_seen && (new Date().getTime() - new Date(u.last_seen).getTime()) < 5 * 60 * 1000);
 
     if (searchQuery.trim()) {

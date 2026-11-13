@@ -71,8 +71,16 @@ interface Post {
   authorName: string;
   authorUsername: string;
   authorAvatar: string;
+  authorBadge?: any;
   text: string;
   image?: string;
+  video?: string;
+  video_url?: string;
+  quote_text?: string;
+  original?: any;
+  isRepost?: boolean;
+  isReposted?: boolean;
+  originalId?: string;
   createdAt: string;
   createdAtDisplay?: string;
   isPinned?: boolean;
@@ -150,7 +158,7 @@ const compressImage = (file: File, maxWidth: number, maxHeight: number, quality 
 
 export const VerifiedBadge: React.FC<{ type?: string | boolean; size?: number }> = ({ type, size = 19 }) => {
   // 1. معالجة القيم الفارغة أو "none"
-  if (!type || type === "none" || type === false) return null;
+  if (!type || type === "none") return null;
   const bType = type === true ? "blue" : type;
   if (bType === "none") return null;
 
@@ -225,10 +233,18 @@ export const AccountPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
+  const lastScrollY = useRef(0);
   const [location, setLocation] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [joinDate, setJoinDate] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string>('');
+      useEffect(() => {
+        const handleScroll = () => setIsScrolled(window.scrollY > 50);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+      }, []);
+    
   const [coverUrl, setCoverUrl] = useState<string>('');
 
   // أرقام المتابعة الحقيقية
@@ -630,7 +646,31 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   }, [profileId, sessionUser?.id]);
 
   // تغيير وحفظ الصور مع الضغط التلقائي
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'avatar' | 'cover') => {
+    // دالة لتحويل الهاشتاج إلى رابط قابل للنقر
+  const renderBioText = (text: string) => {
+    if (!text) return null;
+    // هذا التعبير يبحث عن أي كلمة تبدأ بـ # وتحتوي على أحرف عربية أو إنجليزية أو أرقام
+    const parts = text.split(/(#[\u0600-\u06FFa-zA-Z0-9_]+)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('#')) {
+        return (
+          <span
+            key={i}
+            className="text-[#FFC500] hover:underline cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/search?q=${encodeURIComponent(part)}`);
+            }}
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
+const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'avatar' | 'cover') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -989,7 +1029,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         } : prev);
       }
 
-      setPosts((prevPosts: any[]) =>
+      setUserPosts((prevPosts: any[]) =>
         prevPosts.map((p) =>
           p.id === postIdToUse
             ? { ...p, comments_count: (Number(p.comments_count) || 0) + 1 }
@@ -1209,89 +1249,8 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
   return (
     <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#FFC500] selection:text-white pb-32" dir="rtl">
-
-      {/* 💬 إشعار صاحب المنشور: تم إرسال منشورك (مطابق للكبسولة بالملي) */}
-      {showMySentToast && (
-        <div
-          className="fixed top-[52px] left-1/2 -translate-x-1/2 z-[99999] w-[190px] bg-[#242D34] text-white rounded-[16px] py-[8px] px-[10px] shadow-[0_10px_30px_rgba(0,0,0,0.85)] border border-white/20 flex flex-col items-center gap-[6px] select-none overflow-hidden"
-          style={{ direction: "ltr" }}
-        >
-          {/* علامة مائية لشعار X */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.06]">
-            <svg className="w-14 h-14 fill-white" viewBox="0 0 24 24">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-            </svg>
-          </div>
-
-          {/* الصف العلوي: الصح يمين والنص يسار في العرض العربي */}
-          <div className="flex items-center justify-center gap-2 w-full relative z-10" style={{ direction: "rtl" }}>
-            <div className="w-[18px] h-[18px] rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
-              <svg viewBox="0 0 24 24" className="w-[11px] h-[11px] fill-[#242D34] stroke-[#242D34] stroke-[2.5]">
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
-              </svg>
-            </div>
-            <span className="text-[12px] font-bold tracking-tight text-white font-['Tahoma',sans-serif]">تم إرسال منشورك</span>
-          </div>
-
-          {/* زر عرض المنشور الرمادي الأنيق */}
-          <button
-            onClick={() => {
-              window.scrollTo({ top: 0, behavior: "smooth" });
-              setShowMySentToast(false);
-            }}
-            className="w-full h-[28px] bg-[#3A444C] hover:bg-[#485560] active:scale-[0.98] transition-all text-white font-bold text-[11.5px] rounded-[8px] cursor-pointer border border-white/10 outline-none text-center shadow-md relative z-10 flex items-center justify-center"
-          >
-            عرض المنشور
-          </button>
-        </div>
-      )}
-
-      {toastMessage && (
-        <div
-          className="fixed top-[52px] left-1/2 -translate-x-1/2 z-[999999] bg-[#242D34] text-white px-4 py-2 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.85)] border border-white/20 flex items-center gap-2 select-none"
-          style={{ direction: "rtl" }}
-        >
-          <div className="w-[18px] h-[18px] rounded-full bg-white flex items-center justify-center shrink-0 shadow-sm">
-            <svg viewBox="0 0 24 24" className="w-[11px] h-[11px] fill-[#242D34] stroke-[#242D34] stroke-[2.5]">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
-            </svg>
-          </div>
-          <span className="text-[12.5px] font-bold text-white font-['Tahoma',sans-serif]">
-            {toastMessage.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]/g, "").trim()}
-          </span>
-        </div>
-      )}
-
-      {isOwner && (
-        <>
-          <input type="file" ref={avatarInputRef} className="hidden" accept="image/*" onChange={(e) => handlePhotoUpload(e, 'avatar')} />
-          <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={(e) => handlePhotoUpload(e, 'cover')} />
-          <input type="file" ref={postImageInputRef} className="hidden" accept="image/*,video/*" onChange={async (e) => {
-            const f = e.target.files?.[0];
-            if (f) {
-              if (f.type.startsWith('video/')) {
-                setNewPostFile(f);
-                setNewPostImage(URL.createObjectURL(f));
-              } else {
-                try {
-                  const compressed = await compressImage(f, 1200, 1200, 0.85);
-                  setNewPostImage(compressed);
-                  const res = await fetch(compressed);
-                  const blob = await res.blob();
-                  const compressedFile = new File([blob], f.name.replace(/\.[^.]+$/, '.jpg') || 'image.jpg', { type: 'image/jpeg' });
-                  setNewPostFile(compressedFile);
-                } catch (_) {
-                  setNewPostFile(f);
-                  setNewPostImage(URL.createObjectURL(f));
-                }
-              }
-            }
-          }} />
-        </>
-      )}
-
       {/* 1. الغلاف بنمط أبو شرواني */}
-      <div className="relative w-full h-36 sm:h-40 bg-gradient-to-r from-zinc-950 via-[#0A1224] to-zinc-950">
+      <div className="sticky top-0 z-40 w-full h-36 sm:h-40 bg-gradient-to-r from-zinc-950 via-[#0A1224] to-zinc-950">
         {coverUrl ? (
           <img src={coverUrl} alt="الغلاف" className="w-full h-full object-cover" />
         ) : (
@@ -1311,7 +1270,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         )}
 
         {/* أزرار الهيدر العلوية */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-20">
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-40">
           <button
             onClick={() => navigate(-1)}
             className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10"
@@ -1339,7 +1298,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
               title="خيارات الحساب"
               className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10"
             >
-              <MoreHorizontal size={14} className="rotate-90 text-[#71767B]" />
+              <MoreHorizontal size={20} className="rotate-90 text-white" />
             </button>
 
             {isMenuOpen && (
@@ -1444,11 +1403,11 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       </div>
 
       {/* 2. الصورة الشخصية والشارة العلوية */}
-      <div className="px-4 relative">
-        <div className="flex justify-between items-end -mt-10 sm:-mt-12 mb-3">
+      <div className={`px-4 relative ${isScrolled ? 'z-20' : 'z-50'}`}>
+        <div className="flex justify-between items-end -mt-16 sm:-mt-20 mb-3">
           {/* الصورة الشخصية */}
           <div className="relative group">
-            <div className="w-14 h-14 sm:w-24 sm:h-24 rounded-full border-[3px] border-black bg-zinc-950 overflow-hidden shadow-xl flex items-center justify-center">
+            <div className="w-[84px] h-[84px] sm:w-[124px] sm:h-[124px] rounded-full border-4 border-black bg-zinc-950 overflow-hidden shadow-xl flex items-center justify-center">
               {avatarUrl ? (
                 <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
               ) : (
@@ -1511,13 +1470,13 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden" dir="rtl">
             <h1
               className="text-white select-text"
-              style={{ fontSize: '20px', fontWeight: 700, lineHeight: '1.3' }}
+              style={{ fontSize: '16px', fontWeight: 700, lineHeight: '1.3' }}
             >
               {name || "مستخدم يمن ريتنج"}
             </h1>
             <VerifiedBadge type={verificationType} size={16} />
           </div>
-          <p className="text-[15px] text-[#71767B] font-normal mt-0.5 text-right select-text">
+          <p className="text-[15px] text-[#71767B] font-normal mt-0.5 select-text" dir="ltr" style={{ textAlign: 'right', lineHeight: '1.3' }}>
             @{username || 'user'}
           </p>
         </div>
@@ -1525,10 +1484,10 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         {/* 4. النبذة التعريفية */}
         {bio ? (
           <p
-            className="mt-3 text-[#E7E9EA] whitespace-pre-wrap"
-            style={{ fontSize: '15px', fontWeight: 400, lineHeight: '1.4' }}
+            className="mt-2.5 text-[#E7E9EA] whitespace-pre-wrap"
+            style={{ fontSize: '12px', fontWeight: 400, lineHeight: '1.4' }}
           >
-            {bio}
+            {renderBioText(bio)}
           </p>
         ) : isOwner ? (
           <p className="mt-2 text-xs text-zinc-600 italic cursor-pointer hover:text-zinc-400" onClick={() => setIsEditModalOpen(true)}>
@@ -1537,7 +1496,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         ) : null}
 
         {/* 5. البيانات (أيقونات رمادية هادئة) */}
-        <div className="flex flex-wrap items-center gap-y-1.5 gap-x-4 mt-3 text-sm text-[#71767B]">
+        <div className="flex flex-wrap items-center gap-y-1 gap-x-3 mt-2.5 text-[11px] text-[#71767B]">
           {location && (
             <div className="flex items-center gap-1">
               <MapPin size={15} />
@@ -1565,19 +1524,19 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
         </div>
 
         {/* 6. عداد المتابعين (أرقام بيضاء عريضة وكلمات رمادية) */}
-        <div className="flex items-center gap-4 mt-3.5 text-sm">
+        <div className="flex items-center gap-4 mt-3 text-[11px]">
           <div 
             onClick={() => navigate(`/u/${username}?tab=following`)}
             className="hover:underline cursor-pointer flex items-center gap-1"
           >
-            <span className="font-bold text-white">{followingCount}</span>
+            <span className="font-bold text-white">{Number(followingCount || 0).toLocaleString('ar-EG')}</span>
             <span className="text-[#71767B]">متابَعاً</span>
           </div>
           <div 
             onClick={() => navigate(`/u/${username}?tab=followers`)}
             className="hover:underline cursor-pointer flex items-center gap-1"
           >
-            <span className="font-bold text-white">{followersCount}</span>
+            <span className="font-bold text-white">{Number(followersCount || 0).toLocaleString('ar-EG')}</span>
             <span className="text-[#71767B]">متابِعاً</span>
           </div>
         </div>
@@ -1618,7 +1577,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       </div>
 
       {/* 8. التبويبات */}
-      <div className="mt-4 border-b border-[#2F3336]/40 flex items-center justify-around text-sm font-bold">
+      <div className="sticky top-36 sm:top-40 z-30 bg-black/95 backdrop-blur-md border-b border-[#2F3336]/40 flex items-center justify-around text-sm font-bold">
         <button 
           onClick={() => setActiveTab('posts')}
           className={`py-3 flex-1 flex items-center justify-center gap-1.5 relative transition ${
@@ -1715,7 +1674,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                       className="text-[#71767B] hover:text-[#FFC500] p-1.5 rounded-full hover:bg-[#FFC500]/10 transition shrink-0"
                       title="المزيد"
                     >
-                      <MoreHorizontal size={14} className="rotate-90 text-[#71767B]" />
+                      <MoreHorizontal size={20} className="rotate-90 text-white" />
                     </button>
                   </div>
 
@@ -1794,7 +1753,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                         loadComments(post.id.startsWith("repost-") && post.original?.id ? post.original.id : post.id);
                       }}
                       onLike={() => handleToggleLike(post.id)}
-                      onViewEngagements={() => { window.location.href = `/post/${ tweet.id.replace('repost-', '') }/engagements`; }}
+                  onViewEngagements={() => { window.location.href = `/post/${viewingDetailPost.id.replace('repost-', '')}/engagements`; }}
                       onRepost={() => setRepostMenu(post)}
                       onShare={() => {
                         if (navigator.clipboard) {
@@ -2325,7 +2284,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
                     setViewingDetailPost(null);
                     loadComments(viewingDetailPost.id);
                   }}
-                  onViewEngagements={() => { window.location.href = `/post/${ tweet.id.replace('repost-', '') }/engagements`; }}
+                  onViewEngagements={() => { window.location.href = `/post/${viewingDetailPost.id.replace('repost-', '')}/engagements`; }}
                       onRepost={() => handleRepost(viewingDetailPost.id)}
                   onLike={() => handleToggleLike(viewingDetailPost.id)}
                   onBookmark={() => {}}

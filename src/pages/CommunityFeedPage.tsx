@@ -49,26 +49,51 @@ interface Comment {
   authorName: string;
   authorUsername: string;
   authorAvatar: string;
+  authorBadge?: any;
+  badgeType?: any;
   text: string;
   createdAt: string;
+  likes?: number;
+  replies?: number;
+  reposts?: number;
+  views?: number;
+  likedBy?: string[];
+  comments?: Comment[];
 }
 
 interface Tweet {
   id: string;
+  user_id?: string;
   createdAtDisplay?: string;
   authorId: string;
   authorName: string;
   authorUsername: string;
   authorAvatar: string;
+  authorBadge?: any;
+  badgeType?: any;
   text: string;
   image?: string;
+  video?: string;
+  video_url?: string;
+  quote_text?: string;
+  original?: any;
+  originalId?: string;
+  isRepost?: boolean;
+  isReposted?: boolean;
+  repostId?: string;
+  reposterName?: string;
+  reposterUsername?: string;
+  reposterAvatar?: string;
   createdAt: string;
   isPinned?: boolean;
   likes: number;
   likedBy?: string[];
+  isLiked?: boolean;
   reposts: number;
   repostedBy?: string[];
   views: number;
+  views_count?: number;
+  replies?: number;
   comments?: Comment[];
 }
 
@@ -148,6 +173,7 @@ export const CommunityFeedPage: React.FC = () => {
   const [editingTweet, setEditingTweet] = useState<any>(null);
   const [editText, setEditText] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const reloadFeedRef = useRef<(() => void) | null>(null);
   const [hasActiveSpace, setHasActiveSpace] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [swipeProgress, setSwipeProgress] = useState(0);
@@ -363,10 +389,10 @@ export const CommunityFeedPage: React.FC = () => {
       
       if (error) {
         console.error('❌ Notification insert FAILED:', error);
-        showToastMsg && showToastMsg('❌ فشل الإشعار: ' + error.message);
+        showToast('❌ فشل الإشعار: ' + error.message);
       } else {
         console.log('✅ Notification created:', data);
-        showToastMsg && showToastMsg('✅ تم إرسال الإشعار');
+        showToast('✅ تم إرسال الإشعار');
       }
     } catch (e) {
       console.warn('Notification exception:', e);
@@ -492,7 +518,6 @@ export const CommunityFeedPage: React.FC = () => {
             createdAt: p.created_at,
             createdAtDisplay: new Date(p.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
             likes: p.likes_count || 0,
-            views: p.views_count || 1,
             isLiked: myLikedPostIds.has(p.id),
             likedBy: myLikedPostIds.has(p.id) ? [uid] : [],
             isReposted: myRepostedPostIds.has(p.id),
@@ -551,7 +576,6 @@ export const CommunityFeedPage: React.FC = () => {
             views: original?.views_count || 1,
             reposts: 0,
             replies: original?.comments_count ?? 0,
-            views: original?.views_count || 1,
             comments: [],
           };
         }).filter(Boolean);
@@ -593,6 +617,7 @@ export const CommunityFeedPage: React.FC = () => {
         console.error("خطأ في جلب تغريدات المجتمع:", err);
       }
     };
+    reloadFeedRef.current = loadData;
     loadData();
 
     // اشتراك Realtime لحظي بين جميع المتصفحات والحسابات
@@ -1205,6 +1230,36 @@ const handleAddComment = (e?: React.FormEvent) => {
     showToast('تم كتم المستخدم (مؤقتاً)');
   };
 
+  const handleSaveEdit = async () => {
+    if (!editingTweet?.id || !editText.trim()) return;
+    setIsSavingEdit(true);
+    try {
+      const postId = editingTweet.id.toString().replace('repost-', '');
+      const nextText = editText.trim();
+      const { error } = await supabase
+        .from('posts')
+        .update({ content: nextText })
+        .eq('id', postId);
+      if (error) throw error;
+
+      setTweets(prev => prev.map(t => {
+        if (t.id === editingTweet.id) return { ...t, text: nextText };
+        if (t.original?.id === postId) {
+          return { ...t, original: { ...t.original, text: nextText } };
+        }
+        return t;
+      }));
+      setViewingDetailTweet(prev => prev && prev.id === editingTweet.id ? { ...prev, text: nextText } : prev);
+      setEditingTweet(null);
+      setEditText('');
+      showToast('تم حفظ التعديل');
+    } catch (e: any) {
+      showToast('فشل حفظ التعديل: ' + (e?.message || ''));
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
   const displayedTweets = [...tweets]
       .filter(t => !hiddenTweetIds.includes(t.id))
       .filter(t => {
@@ -1570,7 +1625,6 @@ const handleAddComment = (e?: React.FormEvent) => {
                       onLike={() => handleLike(tweet.id)}
                       onViewEngagements={() => setViewingEngagementsPost(tweet)}
                       onRepost={() => setRepostMenu(tweet)}
-                      onViewEngagements={() => setViewingEngagementsPost(tweet)}
                       onShare={() => {
                         if (navigator.clipboard) {
                           navigator.clipboard.writeText(window.location.href);
@@ -1666,9 +1720,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                   
                   // إعادة جلب التغريدات لتظهر فوراً (بدون إعادة تحميل الصفحة)
                   setTimeout(() => {
-                    if (typeof loadData === 'function') {
-                      loadData();
-                    }
+                    reloadFeedRef.current?.();
                   }, 500);
                 } catch (e: any) {
                   showToast('فشل: ' + (e?.message || ''));

@@ -27,9 +27,14 @@ export interface JobVacancy {
   title: string;
   companyId: string;
   companyName: string;
-  companyLogo: string;
+  companyLogo?: string;
+  contactPerson?: string;
+  phone?: string;
+  whatsapp?: string;
+  email?: string;
+  locationDetails?: string;
   isVerifiedEmployer: boolean;
-  verifiedBadgeType: 'gold' | 'blue' | 'gray';
+  verifiedBadgeType?: 'gold' | 'blue' | 'gray';
   city: YemenCity;
   sector: JobSector;
   workType: JobWorkType;
@@ -39,9 +44,73 @@ export interface JobVacancy {
   deadline: string;
   description: string;
   requirements: string[];
-  benefits: string[];
-  matchScore: number; // AI Match percentage
+  qualifications?: string[];
+  skills?: string[];
+  benefits?: string[];
+  status?: 'active' | 'paused' | 'closed' | 'draft';
+  employerAgreedCommission?: boolean;
+  matchScore?: number; // AI Match percentage
   applicantsCount: number;
+}
+
+export interface JobSeekerProfile {
+  id: string;
+  fullName: string;
+  phone: string;
+  whatsapp: string;
+  email: string;
+  city: string;
+  qualification: string;
+  specialization: string;
+  experienceYears: string;
+  skills: string[];
+  summary: string;
+  createdAt: string;
+  applicantAgreedCommission: boolean;
+}
+
+export interface JobMatchRecord {
+  id: string;
+  orderNumber: string;
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  companyPhone: string;
+  companyWhatsapp: string;
+  companyLocation: string;
+  applicantId: string;
+  applicantName: string;
+  applicantPhone: string;
+  matchDate: string;
+  matchedCriteria: string[];
+  status: 'matched' | 'interviewing' | 'hired' | 'rejected';
+}
+
+export interface CommissionPolicy {
+  isEnabled: boolean;
+  payer: 'employer_only' | 'seeker_only' | 'both';
+  calculationType: 'percentage' | 'fixed';
+  percentageValue: number;
+  fixedValue: number;
+  sectorRules: Record<string, { type: 'percentage' | 'fixed'; value: number }>;
+}
+
+export interface ConfirmedHireRecord {
+  id: string;
+  orderNumber: string;
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  applicantName: string;
+  applicantPhone: string;
+  hiredDate: string;
+  startDate: string;
+  agreedSalary: string;
+  commissionAmountText: string;
+  payer: string;
+  commissionStatus: 'due' | 'paid' | 'pending';
+  dueDate: string;
+  reminderSent: boolean;
 }
 
 export interface JobFilterState {

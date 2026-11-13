@@ -85,7 +85,7 @@ export const DEMO_JOBS: JobVacancy[] = [
     email: 'marketing@media-agency.ye',
     locationDetails: 'المكلا - الشرج',
     isVerifiedEmployer: true,
-    city: 'حضرموت - المكلا',
+    city: 'حضرموت',
     sector: 'مبيعات وتسويق',
     workType: 'عن بعد (Remote)',
     experienceLevel: 'متوسط (2-4 سنوات)',

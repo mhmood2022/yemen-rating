@@ -56,6 +56,15 @@ export interface BusinessBranch {
   phone?: string;
 }
 
+export interface MenuItem {
+  id: string;
+  name: string;
+  description?: string;
+  price: string | number;
+  categoryName: string;
+  isSpecialty?: boolean;
+}
+
 export interface BusinessItem {
   id: string;
   businessType: BusinessType;
@@ -84,6 +93,7 @@ export interface BusinessItem {
   agentCount?: number;
   exchangeRates?: { currency: string; code: string; buy: number; sell: number }[];
   walletFees?: { serviceName: string; feeAmount: string; limits?: string }[];
+  menuItems?: MenuItem[];
   reviews?: BusinessReview[];
   stats?: {
     views7d: number;

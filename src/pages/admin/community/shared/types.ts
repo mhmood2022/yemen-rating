@@ -45,6 +45,7 @@ export interface ProfileItem {
   is_verified?: boolean;
   is_blocked?: boolean;
   posts_count?: number;
+  last_seen?: string;
   created_at?: string;
 }
 

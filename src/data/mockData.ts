@@ -32,6 +32,8 @@ export interface BusinessItem {
   coverImage: string;
   logo: string;
   gallery: string[]; // 4 صور عالية الدقة
+  images?: string[];
+  sectionsConfig?: Record<string, any>;
   reviews: Review[];
 }
 

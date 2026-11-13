@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import {
   Star, MapPin, Phone, ArrowRight, Share2, ShieldCheck, CheckCircle2,
   MessageCircle, X, ZoomIn, Bed, Wifi, Car, Stethoscope, Sparkles,
-  Users, Truck, Gem, Award, Send
+  Users, Truck, Gem, Award, Send, Waves
 } from 'lucide-react';
 import { BusinessItem } from '../../data/mockData';
 import { AdBanner } from '../common/AdBanner';
