@@ -21,6 +21,7 @@ try {
 'use client';
 
 import PostEngagementsModal from '../components/feed/PostEngagementsModal';
+import { HashtagText } from '../components/common/HashtagText';
 import React, { useState, useEffect, useRef } from 'react';
 import { XImagePlayer } from '../components/feed/XImagePlayer';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
@@ -174,6 +175,10 @@ export const VerifiedBadge: React.FC<{ type?: string | boolean; size?: number }>
   const fill = colors[bType];
   if (!fill) return null;
 
+
+
+
+  
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="inline-block flex-shrink-0 align-middle mr-1.5 drop-shadow-sm">
       <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6s-2.95.875-3.6 2.148c-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 0 .495.084.965.238 1.4C1.575 9.55.7 10.92.7 12.5s.875 2.95 2.148 3.6c-.154.435-.238.905-.238 1.4 0 2.21 1.79 4 4 4 .495 0 .965-.084 1.4-.238.65 1.273 2.02 2.148 3.6 2.148s2.95-.875 3.6-2.148c.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6z" fill={fill} />
@@ -195,7 +200,8 @@ export const AccountPage: React.FC = () => {
     } catch { return true; }
   });
   const [showMySentToast, setShowMySentToast] = useState(false);
-  const [viewingImagePost, setViewingImagePost] = useState<any>(null);
+
+      const [viewingImagePost, setViewingImagePost] = useState<any>(null);
 
   
   const handleGlobalScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -242,7 +248,9 @@ export const AccountPage: React.FC = () => {
       useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 50);
         window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+      
+
+  return () => window.removeEventListener('scroll', handleScroll);
       }, []);
     
   const [coverUrl, setCoverUrl] = useState<string>('');
@@ -298,7 +306,8 @@ function formatTimeAndDate(dateStr: string): string {
 
 const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const [reportingItem, setReportingItem] = useState<{
+  const [editPostText, setEditPostText] = useState('');
+    const [reportingItem, setReportingItem] = useState<{
     type: 'post' | 'image' | 'account';
     targetId: string;
     targetName: string;
@@ -395,7 +404,9 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     vv.addEventListener('resize', updateHeight);
     vv.addEventListener('scroll', updateHeight);
 
-    return () => {
+  
+
+  return () => {
       vv.removeEventListener('resize', updateHeight);
       vv.removeEventListener('scroll', updateHeight);
     };
@@ -585,7 +596,9 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     
     tryLoad();
     
-    return () => {
+  
+
+  return () => {
       cancelled = true;
     };
   }, [targetIdParam]);
@@ -642,7 +655,9 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       })
       .subscribe();
     
-    return () => { supabase.removeChannel(channel); };
+  
+
+  return () => { supabase.removeChannel(channel); };
   }, [profileId, sessionUser?.id]);
 
   // تغيير وحفظ الصور مع الضغط التلقائي
@@ -653,7 +668,9 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     const parts = text.split(/(#[\u0600-\u06FFa-zA-Z0-9_]+)/g);
     return parts.map((part, i) => {
       if (part.startsWith('#')) {
-        return (
+      
+
+  return (
           <span
             key={i}
             className="text-[#FFC500] hover:underline cursor-pointer"
@@ -1218,7 +1235,9 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
   };
 
   if (loading) {
-    return (
+  
+
+  return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white font-['Tahoma',sans-serif]">
         <Loader2 className="w-8 h-8 animate-spin text-[#FFC500]" />
       </div>
@@ -1227,7 +1246,9 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
 
   // إذا لم يكن مسجل دخول وليس هناك بروفايل لشخص آخر يتصفحه: عرض شاشة تسجيل الدخول
   if (!sessionUser && !targetIdParam) {
-    return (
+  
+
+  return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 text-center font-['Tahoma',sans-serif]" dir="rtl">
         <div className="w-14 h-14 rounded-3xl bg-[#141E30] border border-[#2F3336] flex items-center justify-center mb-5 text-[#FFC500] shadow-2xl">
           <Lock size={36} />
@@ -1246,6 +1267,23 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
       </div>
     );
   }
+
+
+
+  const handleSaveEdit = async () => {
+    if (!editingPost || !editPostText.trim()) return;
+    try {
+      await supabase.from('posts').update({ content: editPostText }).eq('id', editingPost.id);
+      // تحديث الواجهة
+      if (typeof setUserPosts !== 'undefined') {
+        setUserPosts((prev: any[]) => prev.map(p => p.id === editingPost.id ? { ...p, text: editPostText } : p));
+      }
+      setEditingPost(null);
+      if (typeof showToast !== 'undefined') showToast('تم تعديل التغريدة بنجاح');
+    } catch (e) {
+      if (typeof showToast !== 'undefined') showToast('حدث خطأ أثناء التعديل');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#FFC500] selection:text-white pb-32" dir="rtl">
@@ -1298,7 +1336,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
               title="خيارات الحساب"
               className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10"
             >
-              <MoreHorizontal size={20} className="rotate-90 text-white" />
+              <MoreHorizontal size={14} className="rotate-90 text-[#71767B] hover:text-[#FFC500] transition" />
             </button>
 
             {isMenuOpen && (
@@ -1467,7 +1505,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
 
         {/* 3. الاسم والمعرف */}
         <div className="mt-1">
-          <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden" dir="rtl">
+          <div className="flex items-center flex-nowrap min-w-0 w-full  gap-1.5 min-w-0 flex-1 flex-nowrap overflow-hidden" dir="rtl">
             <h1
               className="text-white select-text"
               style={{ fontSize: '16px', fontWeight: 700, lineHeight: '1.3' }}
@@ -1476,7 +1514,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
             </h1>
             <VerifiedBadge type={verificationType} size={16} />
           </div>
-          <p className="text-[15px] text-[#71767B] font-normal mt-0.5 select-text" dir="ltr" style={{ textAlign: 'right', lineHeight: '1.3' }}>
+          <p className="text-[15px] text-[#71767B] font-normal mt-0.5 select-text truncate shrink max-w-[80px] sm:max-w-[100px]" dir="ltr" style={{ textAlign: 'right', lineHeight: '1.3' }}>
             @{username || 'user'}
           </p>
         </div>
@@ -1529,14 +1567,14 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
             onClick={() => navigate(`/u/${username}?tab=following`)}
             className="hover:underline cursor-pointer flex items-center gap-1"
           >
-            <span className="font-bold text-white">{Number(followingCount || 0).toLocaleString('ar-EG')}</span>
+            <span className="font-bold text-white truncate shrink max-w-[130px] sm:max-w-[150px]">{Number(followingCount || 0).toLocaleString('ar-EG')}</span>
             <span className="text-[#71767B]">متابَعاً</span>
           </div>
           <div 
             onClick={() => navigate(`/u/${username}?tab=followers`)}
             className="hover:underline cursor-pointer flex items-center gap-1"
           >
-            <span className="font-bold text-white">{Number(followersCount || 0).toLocaleString('ar-EG')}</span>
+            <span className="font-bold text-white truncate shrink max-w-[130px] sm:max-w-[150px]">{Number(followersCount || 0).toLocaleString('ar-EG')}</span>
             <span className="text-[#71767B]">متابِعاً</span>
           </div>
         </div>
@@ -1612,7 +1650,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
       <div className="divide-y divide-[#2F3336]/40">
         {userPosts.length === 0 ? (
           <div className="text-center py-16 px-4">
-            <h3 className="text-sm font-bold text-white mb-1">
+            <h3 className="text-sm font-bold text-white mb-1 truncate shrink max-w-[130px] sm:max-w-[150px]">
               {isOwner ? 'لم تقم بنشر أي منشور بعد' : `لا توجد منشورات لـ ${name}`}
             </h3>
             <p className="text-[11px] text-[#71767B] mb-4">
@@ -1640,7 +1678,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
               }}
             >
               <div className="flex gap-3">
-                <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold text-white text-lg">
+                <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold text-white text-lg truncate shrink max-w-[130px] sm:max-w-[150px]">
                   {post.authorAvatar ? (
                     <img src={post.authorAvatar} alt={post.authorName || name} className="w-full h-full object-cover" />
                   ) : (
@@ -1651,7 +1689,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-white text-[12.5px] hover:underline cursor-pointer truncate">{post.authorName || name}</span>
+                      <span className="font-bold text-white text-[12.5px] hover:underline cursor-pointer truncate truncate shrink max-w-[130px] sm:max-w-[150px]">{post.authorName || name}</span>
                       {post.authorBadge && post.authorBadge !== "none" && (
                         <svg className="w-[14.5px] h-[14.5px] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"
                           style={{color: post.authorBadge === "blue" ? "#1D9BF0" : post.authorBadge === "gold" ? "#FFD700" : "#71767B"}}>
@@ -1659,10 +1697,10 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                           <path fill="#000000" d="M10.825 16.583l-3.66-3.66a.75.75 0 111.06-1.061l2.6 2.6 5.405-5.405a.75.75 0 111.06 1.061l-5.935 5.935a.75.75 0 01-1.06 0z"/>
                         </svg>
                       )}
-                      <span className="text-[#71767B] text-[11.5px] truncate" dir="ltr">@{post.authorUsername || username}</span>
+                      <span className="text-[#71767B] text-[11.5px] truncate truncate shrink max-w-[80px] sm:max-w-[100px]" dir="ltr">@{post.authorUsername || username}</span>
                       <span className="text-[#71767B] text-[10.5px] mx-0.5">·</span>
-                      <span className="text-[#71767B] text-[10.5px] hover:underline cursor-pointer whitespace-nowrap" title={post.createdAtDisplay || post.createdAt}>
-                        {formatTimeAgo(post.createdAt).relative}
+                      <span className="text-[#71767B] text-[10.5px] hover:underline cursor-pointer whitespace-nowrap shrink-0 whitespace-nowrap"  title={post.createdAtDisplay || post.createdAt}>
+{formatTimeAgo(post.createdAt).relative}
                       </span>
                     </div>
                     
@@ -1674,7 +1712,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                       className="text-[#71767B] hover:text-[#FFC500] p-1.5 rounded-full hover:bg-[#FFC500]/10 transition shrink-0"
                       title="المزيد"
                     >
-                      <MoreHorizontal size={20} className="rotate-90 text-white" />
+                      <MoreHorizontal size={14} className="rotate-90 text-[#71767B] hover:text-[#FFC500] transition" />
                     </button>
                   </div>
 
@@ -1682,7 +1720,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                   {post.isRepost && post.quote_text ? (
                     <div className="mt-2">
                       <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
-                        {post.quote_text}
+                        <HashtagText text={post.quote_text} />
                       </p>
                       {(post.original || post.quote_text) && (
                         <>
@@ -1698,7 +1736,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                                 className="mt-2.5 rounded-[12px] border border-white/[0.08] hover:bg-white/[0.02] transition cursor-pointer p-2.5 select-none overflow-hidden"
                               >
                                 {/* رأس الاقتباس: أفاتار 20px + اسم + معرف + نقطة ووقت في سطر واحد */}
-                                <div className="flex items-center gap-1.5 text-xs mb-1.5 overflow-hidden" dir="rtl">
+                                <div className="flex items-center flex-nowrap min-w-0 w-full  gap-1.5 text-xs mb-1.5 overflow-hidden" dir="rtl">
                                   <div className="w-[18px] h-[18px] rounded-full bg-zinc-800 overflow-hidden flex-shrink-0">
                                     {post.original.authorAvatar ? (
                                       <img src={post.original.authorAvatar} alt="" className="w-full h-full object-cover" />
@@ -1706,8 +1744,13 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                                       <span className="text-white text-[10px] font-bold flex items-center justify-center w-full h-full">{post.original.authorName?.[0]}</span>
                                     )}
                                   </div>
-                                  <span className="font-bold text-[#E7E9EA] truncate text-[13px]">{post.original.authorName}</span>
-                                  <span className="text-[#71767B] truncate text-[12px]" dir="ltr">@{post.original.authorUsername}</span>
+                                  <div className="flex items-center gap-1 shrink min-w-0 max-w-[130px] sm:max-w-[160px]">
+                                    <span className="font-bold text-[#E7E9EA] truncate text-[13px]">{post.original.authorName}</span>
+                                    {((post.original as any).badgeType || (post.original as any).authorBadge || (post.original as any).verification_type) && ((post.original as any).badgeType || (post.original as any).authorBadge || (post.original as any).verification_type) !== 'none' && (
+                                      <VerifiedBadge type={((post.original as any).badgeType || (post.original as any).authorBadge || (post.original as any).verification_type) as any} size={14} />
+                                    )}
+                                  </div>
+                                  <span className="text-[#71767B] truncate text-[12px] truncate shrink max-w-[80px] sm:max-w-[100px]" dir="ltr">@{post.original.authorUsername}</span>
                                   {post.original.createdAt && (
                                     <>
                                       <span className="text-[#71767B] text-[11px] shrink-0">·</span>
@@ -1718,7 +1761,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
 
                                 {/* نص التغريدة المقتبسة المتماسك */}
                                 <p className={`text-[13px] text-[#E7E9EA] leading-[1.38] whitespace-pre-wrap line-clamp-4`}>
-                                  {post.original.text}
+                                  <HashtagText text={post.original.text} />
                                 </p>
 
                                 {/* صورة المقتبس إن وجدت */}
@@ -1734,7 +1777,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                     </div>
                   ) : (
                     <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
-                      {post.text}
+                      <HashtagText text={post.text} />
                     </p>
                   )}
 
@@ -1802,7 +1845,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
 
       {/* مودال تعديل الملف الشخصي */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-3 sm:p-4" dir="rtl">
+        <div className="fixed inset-0 z-50 bg-black  flex items-center flex-nowrap min-w-0 w-full  justify-center p-3 sm:p-4" dir="rtl">
           <div className="bg-[#000000] border border-[#2F3336] w-full max-w-lg rounded-3xl p-5 sm:p-6 text-white max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]/40 mb-4">
               <h2 className="text-base font-black">تعديل الملفّ الشخصيّ</h2>
@@ -1895,7 +1938,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
       
       {/* Custom Logout Modal */}
       {showLogoutConfirm && (
-        <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" dir="rtl">
+        <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center flex-nowrap min-w-0 w-full  justify-center p-4" dir="rtl">
           <div className="bg-[#16181C] border border-[#2F3336] rounded-2xl w-full max-w-[280px] p-5 flex flex-col items-center text-center shadow-2xl">
             <h3 className="text-white text-[16px] font-bold mb-1">تسجيل الخروج</h3>
             <p className="text-[#71767B] text-[13px] mb-5 leading-relaxed">هل أنت متأكد أنك تريد تسجيل الخروج من حسابك؟</p>
@@ -2073,7 +2116,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
               </div>
 
               {/* عداد الحروف (280) */}
-              <div className="flex items-center gap-1.5 text-xs font-mono select-none px-2 text-[#71767B]" dir="ltr">
+              <div className="flex items-center gap-1.5 text-xs font-mono select-none px-2 text-[#71767B] truncate shrink max-w-[80px] sm:max-w-[100px]" dir="ltr">
                 <span className={newPostText.length > 280 ? "text-rose-500 font-bold" : newPostText.length >= 260 ? "text-[#FFC500] font-bold" : "text-zinc-500"}>
                   {newPostText.length}
                 </span>
@@ -2123,7 +2166,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
             <div className="flex gap-2">
               <button
                 onClick={() => setConfirmModal(null)}
-                className="flex-1 py-2.5 rounded-full text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-white transition active:scale-95"
+                className="flex-1 py-2.5 rounded-full text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-white transition active:scale-95 truncate shrink max-w-[130px] sm:max-w-[150px]"
               >
                 إلغاء
               </button>
@@ -2150,7 +2193,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
             {isOwner && (
               <button onClick={() => {
                 setEditingPost(activeMenuPost);
-                setIsEditModalOpen(true);
+                setEditPostText(activeMenuPost.text);
                 setActiveMenuPost(null);
               }} className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition border-b border-[#2F3336]/40 flex items-center gap-3 text-sm">
                 <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -2252,7 +2295,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1">
-                    <span className="font-bold text-white text-[15px]">{viewingDetailPost.authorName}</span>
+                    <span className="font-bold text-white text-[15px] truncate shrink max-w-[130px] sm:max-w-[150px]">{viewingDetailPost.authorName}</span>
                     <span className="text-[#71767B] text-[15px]">@{viewingDetailPost.authorUsername}</span>
                   </div>
                 </div>
@@ -2314,11 +2357,12 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden" dir="rtl">
+                          <div className="flex items-center flex-nowrap min-w-0 w-full  gap-1.5 min-w-0 flex-1 flex-nowrap overflow-hidden" dir="rtl">
                               <span onClick={() => openAuthorProfile(c.userId, { name: c.userName, avatarUrl: c.userAvatar, username: c.userUsername })} className="font-bold text-[#E7E9EA] text-[13.5px] truncate shrink-0 cursor-pointer hover:underline">{c.userName}</span>
-                              <span onClick={() => openAuthorProfile(c.userId, { name: c.userName, avatarUrl: c.userAvatar, username: c.userUsername })} className="text-[#71767B] text-[12px] truncate min-w-0 shrink cursor-pointer hover:underline" dir="ltr">@{c.userUsername}</span>
+                              <span onClick={() => openAuthorProfile(c.userId, { name: c.userName, avatarUrl: c.userAvatar, username: c.userUsername })} className="text-[#71767B] text-[12px] truncate min-w-0 shrink cursor-pointer hover:underline truncate shrink max-w-[80px] sm:max-w-[100px]" dir="ltr">@{c.userUsername}</span>
                             <span className="text-[#71767B] text-[11px] shrink-0 mx-0.5">·</span>
-                            <span className="text-[#71767B] text-[11px] shrink-0 whitespace-nowrap">{formatTimeAgo(c.createdAt).relative || "الآن"}</span>
+                            <span className="text-[#71767B] text-[11px] shrink-0 whitespace-nowrap shrink-0 whitespace-nowrap" >
+{formatTimeAgo(c.createdAt).relative || "الآن"}</span>
                           </div>
                           <p className="text-[#E7E9EA] text-[13px] mt-1 whitespace-pre-wrap leading-relaxed select-text">{c.content}</p>
                           
@@ -2435,10 +2479,10 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
               <div className="w-6 h-6 rounded-full overflow-hidden">
                 {quoteOriginal.authorAvatar ? <img src={quoteOriginal.authorAvatar} alt="" className="w-full h-full object-cover" /> : <span>{quoteOriginal.authorName?.[0]}</span>}
               </div>
-              <span className="font-bold text-white text-sm">{quoteOriginal.authorName}</span>
+              <span className="font-bold text-white text-sm truncate shrink max-w-[130px] sm:max-w-[150px]">{quoteOriginal.authorName}</span>
               <span className="text-[#71767B] text-xs">@{quoteOriginal.authorUsername}</span>
             </div>
-            <p className="text-white text-sm">{quoteOriginal.text}</p>
+            <p className="text-white text-sm"><HashtagText text={quoteOriginal.text} /></p>
           </div>
         </div>
       )}
@@ -2488,10 +2532,10 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
       {confirmUnfollowModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" onClick={() => setConfirmUnfollowModal(false)}>
           <div className="w-full max-w-md rounded-2xl bg-[#16181C] border border-[#2F3336] p-6 text-center" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-xl font-bold text-white mb-3">هل تريد إلغاء متابعة {name}؟</h3>
+            <h3 className="text-xl font-bold text-white mb-3 truncate shrink max-w-[130px] sm:max-w-[150px]">هل تريد إلغاء متابعة {name}؟</h3>
             <p className="text-[15px] text-[#71767B] mb-6 leading-relaxed">لن تظهر منشوراته بعد الآن في صفحتك الرئيسية. سيظل بإمكانك مشاهدة ملفه الشخصي ما لم تكن منشوراته محمية.</p>
             <div className="flex justify-end gap-3">
-              <button onClick={() => setConfirmUnfollowModal(false)} className="px-5 py-2 rounded-full text-sm font-bold text-white bg-transparent border border-[#536471] hover:bg-white/10 transition">إلغاء</button>
+              <button onClick={() => setConfirmUnfollowModal(false)} className="px-5 py-2 rounded-full text-sm font-bold text-white bg-transparent border border-[#536471] hover:bg-white/10 transition truncate shrink max-w-[130px] sm:max-w-[150px]">إلغاء</button>
               <button onClick={performUnfollow} className="px-5 py-2 rounded-full text-sm font-bold text-black bg-white hover:bg-[#E7E9EA] transition">إلغاء المتابعة</button>
             </div>
           </div>
@@ -2501,10 +2545,10 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
       {confirmUnfollowModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4" onClick={() => setConfirmUnfollowModal(false)}>
           <div className="w-full max-w-md rounded-2xl bg-[#16181C] border border-[#2F3336] p-6 text-center" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-xl font-bold text-white mb-3">هل تريد إلغاء متابعة {name}؟</h3>
+            <h3 className="text-xl font-bold text-white mb-3 truncate shrink max-w-[130px] sm:max-w-[150px]">هل تريد إلغاء متابعة {name}؟</h3>
             <p className="text-[15px] text-[#71767B] mb-6 leading-relaxed">لن تظهر منشوراته بعد الآن في صفحتك الرئيسية. سيظل بإمكانك مشاهدة ملفه الشخصي ما لم تكن منشوراته محمية.</p>
             <div className="flex justify-end gap-3">
-              <button onClick={() => setConfirmUnfollowModal(false)} className="px-5 py-2 rounded-full text-sm font-bold text-white bg-transparent border border-[#536471] hover:bg-white/10 transition">إلغاء</button>
+              <button onClick={() => setConfirmUnfollowModal(false)} className="px-5 py-2 rounded-full text-sm font-bold text-white bg-transparent border border-[#536471] hover:bg-white/10 transition truncate shrink max-w-[130px] sm:max-w-[150px]">إلغاء</button>
               <button onClick={performUnfollow} className="px-5 py-2 rounded-full text-sm font-bold text-black bg-white hover:bg-[#E7E9EA] transition">إلغاء المتابعة</button>
             </div>
           </div>
@@ -2536,7 +2580,31 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
         />
       )}
 
-      </div>
+  
+      {/* مودال تعديل التغريدة */}
+      {editingPost && (
+        <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" dir="rtl">
+          <div className="bg-black border border-[#2F3336] rounded-2xl w-full max-w-lg p-4 shadow-2xl">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-white font-bold text-lg">تعديل التغريدة</h2>
+              <button onClick={() => setEditingPost(null)} className="text-[#71767B] hover:text-white p-1 rounded-full hover:bg-white/10 transition">
+                <X size={20} />
+              </button>
+            </div>
+            <textarea
+              className="w-full bg-transparent text-white text-[15px] leading-relaxed min-h-[120px] outline-none resize-none placeholder-[#71767B]"
+              value={editPostText}
+              onChange={(e) => setEditPostText(e.target.value)}
+              placeholder="ماذا يجري؟"
+            />
+            <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-[#2F3336]">
+              <button onClick={() => setEditingPost(null)} className="px-4 py-2 text-white font-bold rounded-full hover:bg-white/10 transition">إلغاء</button>
+              <button onClick={handleSaveEdit} disabled={!editPostText.trim()} className="px-5 py-2 bg-[#FFC500] text-black font-bold rounded-full hover:bg-[#E5B200] transition disabled:opacity-50">حفظ</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

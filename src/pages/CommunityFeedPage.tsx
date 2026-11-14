@@ -6,6 +6,7 @@ import { VerifiedBadge } from '../components/common/VerifiedBadge';
 'use client';
 
 import PostEngagementsModal from '../components/feed/PostEngagementsModal';
+import { HashtagText } from '../components/common/HashtagText';
 import React, { useState, useEffect, useRef } from 'react';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -108,30 +109,37 @@ const GLOBAL_FEED_KEY = 'yr_community_global_posts';
 const USERS_DIR_KEY = 'yr_users_directory';
 const REPORTS_KEY = 'yr_community_reports';
 
-function formatTimeAgo(dateStr: string): string {
+function formatTimeAgo(dateStr: string): { relative: string; absolute: string } {
   try {
-    if (!dateStr) return "";
     const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return "";
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffSec = Math.floor(diffMs / 1000);
     const diffMin = Math.floor(diffSec / 60);
     const diffHour = Math.floor(diffMin / 60);
     const diffDay = Math.floor(diffHour / 24);
-
-    const toAr = (n) => String(n).replace(/[0-9]/g, (d) => "٠١٢٣٤٥٦٧٨٩"[+d]);
-
-    if (diffSec < 60) return "الآن";
-    if (diffMin < 60) return `${toAr(diffMin)} د`;
-    if (diffHour < 24) return `${toAr(diffHour)} س`;
-    if (diffDay < 7) return `${toAr(diffDay)} ي`;
     
-    const d = toAr(date.getDate());
-    const m = date.toLocaleDateString("ar-YE", { month: "short" });
-    return `${d} ${m}`;
+    const toAr = (n) => String(n).replace(/[0-9]/g, (d) => "٠١٢٣٤٥٦٧٨٩"[+d]);
+    let relative = "";
+    if (diffSec < 60) relative = "الآن";
+    else if (diffMin < 60) relative = `${toAr(diffMin)} د`;
+    else if (diffHour < 24) relative = `${toAr(diffHour)} س`;
+    else if (diffDay < 7) relative = `${toAr(diffDay)} ي`;
+    else {
+      const d = toAr(date.getDate());
+      const m = date.toLocaleDateString("ar-YE", { month: "short" });
+      relative = `${d} ${m}`;
+    }
+    
+    const absolute = date.toLocaleDateString('ar-YE', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+    
+    return { relative, absolute };
   } catch {
-    return "";
+    return { relative: '', absolute: '' };
   }
 }
 
@@ -228,7 +236,9 @@ export const CommunityFeedPage: React.FC = () => {
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
 
-    return () => {
+  
+  
+  return () => {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
@@ -508,9 +518,9 @@ export const CommunityFeedPage: React.FC = () => {
             id: p.id,
             authorId: p.user_id,
             authorName: author?.full_name || "مستخدم يمن ريتنج",
+            badgeType: (author as any)?.verification_type || (author as any)?.badge_type || (author?.is_verified ? 'blue' : 'none'),
             authorUsername: author?.username || "user",
             authorAvatar: author?.avatar_url || (localUsers[p.user_id]?.avatarUrl) || (p.user_id === uid ? myAvatar : "") || "",
-            badgeType: badgeType,
             text: p.content,
             image: p.image_url || undefined,
             video_url: p.video_url || undefined,
@@ -550,6 +560,7 @@ export const CommunityFeedPage: React.FC = () => {
             
             authorId: r.user_id,
             authorName: reposter.full_name || 'مستخدم',
+            badgeType: (reposter as any).verification_type || (reposter as any).badge_type || (reposter.is_verified ? 'blue' : 'none'),
             authorUsername: reposter.username || 'user',
             authorAvatar: reposter.avatar_url || '',
             
@@ -561,6 +572,7 @@ export const CommunityFeedPage: React.FC = () => {
               : (original?.image_url ?? undefined),
             
             original: r.quote_text ? {
+              badgeType: originalAuthor?.verification_type || originalAuthor?.badge_type || (originalAuthor?.is_verified ? "blue" : "none"),
               id: original?.id ?? 'deleted',
               authorName: originalAuthor?.full_name ?? 'مستخدم',
               authorUsername: originalAuthor?.username ?? 'user',
@@ -641,9 +653,9 @@ export const CommunityFeedPage: React.FC = () => {
             id: payload.new.id,
             authorId: payload.new.user_id,
             authorName: prof?.full_name || 'مستخدم يمن ريتنج',
+            badgeType: (prof as any)?.verification_type || (prof as any)?.badge_type || (prof?.is_verified ? 'blue' : 'none'),
             authorUsername: prof?.username || 'user',
             authorAvatar: avatar,
-            badgeType: badgeType,
             text: payload.new.content,
             image: payload.new.image_url || undefined,
             video_url: payload.new.video_url || undefined,
@@ -727,6 +739,9 @@ export const CommunityFeedPage: React.FC = () => {
           id: c.id,
           authorId: c.user_id,
           authorName: profile?.full_name || 'مستخدم',
+            badgeType: (profile as any)?.verification_type || (profile as any)?.badge_type || (profile?.is_verified ? 'blue' : 'none'),
+
+
           authorUsername: profile?.username || 'user',
           authorAvatar: profile?.avatar_url || '',
           text: c.content,
@@ -1326,7 +1341,7 @@ const handleAddComment = (e?: React.FormEvent) => {
               <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
             </svg>
           </div>
-          <span className="text-[12.5px] font-bold text-white font-['Tahoma',sans-serif]">
+          <span className="text-[12.5px] font-bold text-white font-['Tahoma',sans-serif] truncate shrink max-w-[130px] sm:max-w-[150px]">
             {toastMsg.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]/g, "").trim()}
           </span>
         </div>
@@ -1354,7 +1369,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
               </svg>
             </div>
-            <span className="text-[12px] font-bold tracking-tight text-white font-['Tahoma',sans-serif]">تم إرسال منشورك</span>
+            <span className="text-[12px] font-bold tracking-tight text-white font-['Tahoma',sans-serif] truncate shrink max-w-[130px] sm:max-w-[150px]">تم إرسال منشورك</span>
           </div>
 
           {/* زر عرض المنشور الرمادي الأنيق */}
@@ -1481,95 +1496,75 @@ const handleAddComment = (e?: React.FormEvent) => {
           : 'أنت لا تتابع أحداً بعد. ابدأ بمتابعة الأشخاص لتظهر تغريداتهم هنا.'}
           </div>
         ) : (
-          displayedTweets.map(tweet => {
-          
+displayedTweets.map(tweet => {
+            
             const hasUserReposted = tweet.repostedBy?.includes(currentUserId);
             const hasUserLiked = tweet.likedBy?.includes(currentUserId);
 
             return (
-                                    <article
-                        key={tweet.id}
-                        onClick={(e) => {
-                          const target = e.target as HTMLElement;
-                          if (!target.closest('button') && !target.closest('a')) {
-                            setViewingDetailTweet(tweet);
-                          }
-                        }}
-                        className="px-4 pt-3 pb-2.5 hover:bg-white/[0.02] cursor-pointer transition select-none border-b border-[#2F3336]/40"
-                      >
-                        {/* رأس الاقتباس - صاحب الاقتباس */}
-                        <div className="flex gap-3">
-                          <button onClick={() => openAuthorProfile(tweet.authorId, tweet)} className="shrink-0 self-start">
-                            <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold shrink-0 text-white text-lg">
-                              {tweet.authorAvatar ? <img src={tweet.authorAvatar} alt={tweet.authorName} className="w-full h-full object-cover" /> : <span>{tweet.authorName ? tweet.authorName[0] : '؟'}</span>}
-                            </div>
-                          </button>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between w-full">
-                              <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden" dir="rtl">
-                      <span onClick={() => openAuthorProfile(tweet.authorId, tweet)} className="font-bold text-[#E7E9EA] text-[12.5px] hover:underline cursor-pointer flex items-center gap-0.5 truncate shrink-0 max-w-[130px] sm:max-w-[180px]">
-                        <span className="truncate">{tweet.authorName}</span>
-                        {tweet.badgeType && <VerifiedBadge type={tweet.badgeType as any} size={14.5} />}
-                      </span>
-                      <span className="text-[11.5px] text-[#71767B] font-normal truncate min-w-0 shrink" dir="ltr">
-                        @{tweet.authorUsername?.replace(/@.*$/, "")}
-                      </span>
-                      <span className="text-[10.5px] text-[#71767B] shrink-0 mx-0.5">·</span>
-                      <span className="text-[10.5px] text-[#71767B] font-normal shrink-0 whitespace-nowrap" title={tweet.createdAtDisplay || tweet.createdAt}>
-                        {formatTimeAgo(tweet.createdAt)}
-                      </span>
-                    </div>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveMenuPost(tweet);
-                                }}
-                                className="text-[#71767B] hover:text-[#FFC500] p-1.5 rounded-full hover:bg-[#FFC500]/10 transition shrink-0"
-                                title="المزيد"
-                              >
-                                <MoreHorizontal size={14} className="rotate-90 text-[#71767B]" />
-                              </button>
-                            </div>
-                            
-                            {!tweet.quote_text && tweet.text && (
-                              <p className="-mt-1 text-[13.5px] leading-[20px] text-[#E7E9EA] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
-                                {tweet.text.split(' ').map((w, i) =>
-                                  w.startsWith('#') ? (
-                                    <span key={i} className="text-[#FFC500] font-semibold hover:underline cursor-pointer">{w} </span>
-                                  ) : (
-                                    w + ' '
-                                  )
-                                )}
-                              </p>
-                            )}
-                            
-                            {/* نص الاقتباس */}
-                            {tweet.quote_text && (
-                              <div className="mt-2">
-                                <p className={`text-[15px] leading-[1.5] text-[#E7E9EA] whitespace-pre-wrap ${expandedTweets[tweet.id] ? '' : 'line-clamp-6'}`}>
-                                  {tweet.quote_text.split(' ').map((w, i) =>
-                                    w.startsWith('#') ? (
-                                      <span key={i} className="text-[#FFC500] font-semibold hover:underline cursor-pointer">{w} </span>
-                                    ) : (
-                                      w + ' '
-                                    )
-                                  )}
-                                </p>
-                                {tweet.quote_text.length > 280 && (
-                                  <button 
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setExpandedTweets(prev => ({...prev, [tweet.id]: !prev[tweet.id]}));
-                                    }}
-                                    className="text-[#FFC500] text-[10px] font-bold mt-1 hover:underline"
-                                  >
-                                    {expandedTweets[tweet.id] ? 'عرض أقل' : 'عرض المزيد'}
-                                  </button>
-                                )}
-                              </div>
-                            )}
+              <article
+                key={tweet.id}
+                className="p-3 border-b border-[#2F3336]/40 hover:bg-white/[0.03] transition cursor-pointer"
+                onClick={(e) => {
+                  const target = e.target as HTMLElement;
+                  if (!target.closest('button') && !target.closest('a')) {
+                    setViewingDetailTweet(tweet);
+                  }
+                }}
+              >
+                <div className="flex gap-3">
+                  <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold text-white text-lg truncate shrink max-w-[130px] sm:max-w-[150px]">
+                    {tweet.authorAvatar ? (
+                      <img src={tweet.authorAvatar} alt={tweet.authorName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{tweet.authorName?.[0] || '؟'}</span>
+                    )}
+                  </div>
 
-                            {/* بطاقة التغريدة الأصلية */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center flex-nowrap min-w-0 w-full gap-1">
+                        <span className="font-bold text-[#E7E9EA] text-[12.5px] hover:underline cursor-pointer truncate shrink max-w-[130px] sm:max-w-[180px]">{tweet.authorName}</span>
+                        {tweet.badgeType && tweet.badgeType !== "none" && tweet.badgeType !== false && (
+                          <VerifiedBadge type={tweet.badgeType as any} size={14.5} className="shrink-0" />
+                        )}
+                        <span className="text-[11.5px] text-[#71767B] truncate shrink max-w-[90px] sm:max-w-[120px]" dir="ltr">@{tweet.authorUsername?.replace(/@.*$/, "")}</span>
+                        <span className="text-[#71767B] text-[10.5px] mx-0.5 shrink-0">·</span>
+                        <span className="text-[#71767B] text-[10.5px] hover:underline cursor-pointer whitespace-nowrap shrink-0"  title={tweet.createdAtDisplay || tweet.createdAt}>
+{formatTimeAgo(tweet.createdAt).relative}
+                        </span>
+                      </div>
+                      
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenuPost(tweet);
+                        }}
+                        className="text-[#71767B] hover:text-[#FFC500] p-1.5 rounded-full hover:bg-[#FFC500]/10 transition shrink-0"
+                        title="المزيد"
+                      >
+                        <MoreHorizontal size={14} className="rotate-90 text-[#71767B] hover:text-[#FFC500] transition" />
+                      </button>
+</div>
+                    
+                    {/* نص التغريدة العادي */}
+                    {!tweet.isRepost && tweet.text && (
+                      <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
+                        <HashtagText text={tweet.text} />
+                      </p>
+                    )}
+                    
+                    {/* اقتباس — نص + بطاقة */}
+                    {tweet.isRepost && tweet.quote_text ? (
+                      <div className="mt-2">
+                        <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
+                          <HashtagText text={tweet.quote_text} />
+                        </p>
+                        {(tweet.original || tweet.quote_text) && (
+                          <>
+                            {!tweet.original && (
+                              <p className="text-[#71767B] text-xs py-2 text-center">التغريدة الأصلية غير متاحة</p>
+                            )}
                             {tweet.original && (
                               <div 
                                 onClick={(e) => {
@@ -1579,7 +1574,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                                 className="mt-2.5 rounded-[12px] border border-white/[0.08] hover:bg-white/[0.02] transition cursor-pointer p-2.5 select-none overflow-hidden"
                               >
                                 {/* رأس الاقتباس: أفاتار 20px + اسم + معرف + نقطة ووقت في سطر واحد */}
-                                <div className="flex items-center gap-1.5 text-xs mb-1.5 overflow-hidden" dir="rtl">
+                                <div className="flex items-center flex-nowrap min-w-0 w-full gap-1 text-[15px] mb-1.5 overflow-hidden" dir="rtl">
                                   <div className="w-[18px] h-[18px] rounded-full bg-zinc-800 overflow-hidden flex-shrink-0">
                                     {tweet.original.authorAvatar ? (
                                       <img src={tweet.original.authorAvatar} alt="" className="w-full h-full object-cover" />
@@ -1587,83 +1582,88 @@ const handleAddComment = (e?: React.FormEvent) => {
                                       <span className="text-white text-[10px] font-bold flex items-center justify-center w-full h-full">{tweet.original.authorName?.[0]}</span>
                                     )}
                                   </div>
-                                  <span className="font-bold text-[#E7E9EA] truncate text-[13px]">{tweet.original.authorName}</span>
-                                  <span className="text-[#71767B] truncate text-[12px]" dir="ltr">@{tweet.original.authorUsername}</span>
+                                  <div className="flex items-center gap-1 shrink min-w-0 max-w-[130px] sm:max-w-[180px]">
+  <span className="font-bold text-[#E7E9EA] truncate text-[13px]">{tweet.original.authorName}</span>
+  {tweet.original.badgeType && tweet.original.badgeType !== "none" && tweet.original.badgeType !== false && (
+    <VerifiedBadge type={tweet.original.badgeType as any} size={14} className="shrink-0" />
+  )}
+</div>
+                                  <span className="text-[#71767B] text-[14px] truncate shrink max-w-[90px]" dir="ltr">@{tweet.original?.authorUsername?.replace(/@.*$/, "") || tweet.original?.authorUsername}</span>
                                   {tweet.original.createdAt && (
                                     <>
-                                      <span className="text-[#71767B] text-[11px] shrink-0">·</span>
-                                      <span className="text-[#71767B] text-[12px] shrink-0">{tweet.original.createdAt}</span>
+                                      <span className="text-[#71767B] text-[13px] shrink-0 mx-0.5">·</span>
+                                      <span className="text-[#71767B] text-[13px] shrink-0 whitespace-nowrap">{formatTimeAgo(tweet.original.createdAt).relative}</span>
                                     </>
                                   )}
                                 </div>
 
                                 {/* نص التغريدة المقتبسة المتماسك */}
-                                <p className={`text-[13px] text-[#E7E9EA] leading-[1.38] whitespace-pre-wrap ${expandedTweets['orig-'+tweet.id] ? '' : 'line-clamp-4'}`}>
-                                  {tweet.original.text}
+                                <p className="text-[13px] text-[#E7E9EA] leading-[1.38] whitespace-pre-wrap line-clamp-4">
+                                  <HashtagText text={tweet.original.text} />
                                 </p>
 
                                 {/* صورة المقتبس إن وجدت */}
                                 {tweet.original.image && (
                                   <div className="mt-2.5 rounded-[10px] overflow-hidden max-h-60 bg-black">
-                                    <img src={tweet.original.image} alt="" className="w-full h-full object-cover" />
+                                    <img src={tweet.original.image} alt="" className="w-full h-full object-cover cursor-pointer" onClick={(e) => { e.stopPropagation(); setViewingImagePost(tweet.original); }} />
                                   </div>
                                 )}
                               </div>
                             )}
-                            
-                            {/* فيديو التغريدة العادية */}
-                            {(tweet.video_url || tweet.video) && (
-                              <div className="mt-3">
-                                <XVideoPlayer 
-                      src={tweet.video_url || tweet.video} 
-                      tweet={tweet} 
-                      authorName={tweet.authorName || tweet.original?.authorName} 
-                      authorUsername={tweet.authorUsername || tweet.original?.authorUsername} 
-                      authorAvatar={tweet.authorAvatar || tweet.original?.authorAvatar} 
-                      currentUserAvatar={myAvatar}
-                      onReply={() => setViewingDetailTweet(tweet)}
-                      onLike={() => handleLike(tweet.id)}
-                      onViewEngagements={() => setViewingEngagementsPost(tweet)}
-                      onRepost={() => setRepostMenu(tweet)}
-                      onShare={() => {
-                        if (navigator.clipboard) {
-                          navigator.clipboard.writeText(window.location.href);
-                          showToast('تم نسخ الرابط');
-                        }
-                      }}
-                      onBookmark={() => showToast('تمت الإضافة إلى العلامات المرجعية 🔖')}
-                    />
+                          </>
+                        )}
+                      </div>
+                    ) : null}
 
-      
+                    {/* فيديو التغريدة العادية */}
+                    {!tweet.isRepost && (tweet.video_url || tweet.video) && (
+                      <div className="mt-3">
+                        <XVideoPlayer 
+                          src={tweet.video_url || tweet.video} 
+                          tweet={tweet} 
+                          authorName={tweet.original?.authorName || tweet.authorName} 
+                          authorUsername={tweet.original?.authorUsername || tweet.authorUsername} 
+                          authorAvatar={tweet.original?.authorAvatar || tweet.authorAvatar} 
+                          currentUserAvatar={myAvatar}
+                          onReply={() => setViewingDetailTweet(tweet)}
+                          onLike={() => handleLike(tweet.id)}
+                          onViewEngagements={() => setViewingEngagementsPost(tweet)}
+                          onRepost={() => setRepostMenu(tweet)}
+                          onShare={() => {
+                            if (navigator.clipboard) {
+                              navigator.clipboard.writeText(window.location.href);
+                              showToast('تم نسخ الرابط');
+                            }
+                          }}
+                          onBookmark={() => showToast('تمت الإضافة إلى العلامات المرجعية 🔖')}
+                        />
+                      </div>
+                    )}
 
-                              </div>
-                            )}
+                    {/* صورة التغريدة العادية */}
+                    {!tweet.isRepost && tweet.image && !tweet.video_url && !tweet.video && (
+                      <div className="mt-3 rounded-2xl overflow-hidden border-0 max-h-96">
+                        <img src={tweet.image} alt="الصورة" className="w-full h-full object-cover cursor-pointer" onClick={(e) => { e.stopPropagation(); setViewingImagePost(tweet); }} />
+                      </div>
+                    )}
 
-                            {/* صورة التغريدة العادية */}
-                            {tweet.image && !(tweet.video_url || tweet.video) && (
-                              <div className="mt-3 rounded-2xl overflow-hidden border-0 max-h-96">
-                                <img src={tweet.image} alt="صورة" className="w-full h-full object-cover cursor-pointer" onClick={(e) => { e.stopPropagation(); setViewingImagePost(tweet); }} />
-                              </div>
-                            )}
-
-                            {/* أزرار التفاعل الرسمية بنظام X المطابق بالملي */}
+                    {/* أزرار التفاعل الرسمية بنظام X المطابق بالملي */}
                     <XActionBar
                       tweet={tweet}
                       onReply={() => setViewingDetailTweet(tweet)}
-                      onRepost={(t) => setRepostMenu(t)}
+                      onRepost={(p) => setRepostMenu(p)}
                       onLike={() => handleLike(tweet.id)}
-                      onBookmark={() => showToast("تمت الإضافة إلى العلامات المرجعية 🔖")}
+                      onBookmark={() => {}}
                       onShare={() => {
                         if (navigator.clipboard) {
-                          navigator.clipboard.writeText(window.location.origin + "/feed");
-                          showToast("تم نسخ الرابط! 🔗");
+                          navigator.clipboard.writeText(window.location.href);
                         }
                       }}
                       currentUserId={currentUserId}
                     />
-                          </div>
-                        </div>
-                      </article>
+                  </div>
+                </div>
+              </article>
             );
           })
         )}
@@ -1748,11 +1748,11 @@ const handleAddComment = (e?: React.FormEvent) => {
                 className="w-[18px] h-[18px] rounded-full object-cover shrink-0"
               />
               <span className="font-bold text-[#E7E9EA] truncate text-[13px]">{quoteOriginal.authorName}</span>
-              <span className="text-[#71767B] truncate text-[12px]" dir="ltr">@{quoteOriginal.authorUsername}</span>
+              <span className="text-[#71767B] truncate text-[12px] truncate shrink max-w-[80px] sm:max-w-[100px]" dir="ltr">@{quoteOriginal.authorUsername}</span>
             </div>
             {/* نص الاقتباس المتماسك بنمط X */}
             <p className="text-[13px] text-[#E7E9EA] leading-[1.38] font-['Tahoma',sans-serif] whitespace-pre-wrap">
-              {quoteOriginal.text}
+              <HashtagText text={quoteOriginal.text} />
             </p>
           </div>
         </div>
@@ -1779,8 +1779,8 @@ const handleAddComment = (e?: React.FormEvent) => {
                 className="w-12 h-12 rounded-full object-cover border border-[#2F3336]" 
               />
               <div>
-                <p className="font-['Tahoma'] font-bold text-sm text-white">{viewingDetailTweet.authorName}</p>
-                <p className="font-['Tahoma'] text-[11px] text-[#71767B] font-normal font-['Tahoma']" dir="ltr">@{viewingDetailTweet.authorUsername}</p>
+                <p className="font-['Tahoma'] font-bold text-sm text-white truncate shrink max-w-[130px] sm:max-w-[150px]">{viewingDetailTweet.authorName}</p>
+                <p className="font-['Tahoma'] text-[11px] text-[#71767B] font-normal font-['Tahoma'] truncate shrink max-w-[80px] sm:max-w-[100px]" dir="ltr">@{viewingDetailTweet.authorUsername}</p>
               </div>
             </div>
 
@@ -1882,7 +1882,7 @@ const handleAddComment = (e?: React.FormEvent) => {
                           {/* تفاصيل التعليق */}
                           <div className="flex-1 min-w-0">
                             {/* رأس التعليق */}
-                            <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden" dir="rtl">
+                            <div className="flex items-center flex-nowrap min-w-0 w-full  flex-nowrap min-w-0 w-full  gap-1.5 min-w-0 flex-1 flex-nowrap overflow-hidden" dir="rtl">
                               <span
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -1895,18 +1895,18 @@ const handleAddComment = (e?: React.FormEvent) => {
                                   <VerifiedBadge type={(c.badgeType || c.authorBadge) as any} size={14} />
                                 )}
                               </span>
-                              <span className="text-[12px] text-[#71767B] font-normal truncate min-w-0 shrink" dir="ltr">
+                              <span className="text-[12px] text-[#71767B] font-normal truncate min-w-0 shrink truncate shrink max-w-[80px] sm:max-w-[100px]" dir="ltr">
                                 @{c.authorUsername ? c.authorUsername.replace(/@.*$/, "") : "user"}
                               </span>
                               <span className="text-[11px] text-[#71767B] shrink-0 mx-0.5">·</span>
-                              <span className="text-[11px] text-[#71767B] font-normal shrink-0 whitespace-nowrap">
-                                {formatTimeAgo(c.createdAt)}
+                              <span className="text-[11px] text-[#71767B] font-normal shrink-0 whitespace-nowrap shrink-0 whitespace-nowrap" >
+{formatTimeAgo(c.createdAt).relative}
                               </span>
                             </div>
 
                             {/* نص التعليق */}
                             <p className="text-[13px] text-[#E7E9EA] mt-1 leading-relaxed break-words whitespace-pre-wrap select-text">
-                              {c.text}
+                              <HashtagText text={c.text} />
                             </p>
 
                             {/* صورة التعليق إن وجدت */}
@@ -2286,7 +2286,7 @@ const handleAddComment = (e?: React.FormEvent) => {
               </div>
 
               {/* عداد الحروف (280) */}
-              <div className="flex items-center gap-1.5 text-xs font-mono select-none px-2 text-[#71767B]" dir="ltr">
+              <div className="flex items-center gap-1.5 text-xs font-mono select-none px-2 text-[#71767B] truncate shrink max-w-[80px] sm:max-w-[100px]" dir="ltr">
                 <span className={tweetText.length > 280 ? "text-rose-500 font-bold" : tweetText.length >= 260 ? "text-[#FFC500] font-bold" : "text-zinc-500"}>
                   {tweetText.length}
                 </span>
