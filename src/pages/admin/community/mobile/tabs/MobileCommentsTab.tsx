@@ -46,7 +46,7 @@ export const MobileCommentsTab: React.FC<Props> = ({ searchQuery = '' }) => {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-semibold truncate" style={{ color: '#FFF' }}>{comment.authorName}</span>
-                {comment.authorBadge && comment.authorBadge !== 'none' && <VerifiedBadge type={comment.authorBadge as any} size={16} />}
+                {comment.authorBadge && <VerifiedBadge type={comment.authorBadge as any} size={16} />}
                 <span className="text-xs text-zinc-500">@{comment.authorUsername}</span>
                 <span className="text-xs text-zinc-600">· {timeAgo(comment.created_at)}</span>
               </div>

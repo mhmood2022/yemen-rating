@@ -29,9 +29,10 @@ interface CustomSelectProps {
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
   allowCustomCategory?: boolean;
+  onCategoryCreated?: (category: { id: string; name: string; slug: string }) => void;
 }
 
-const CustomDarkSelect: React.FC<CustomSelectProps> = ({ label, value, options, onChange, allowCustomCategory }) => {
+const CustomDarkSelect: React.FC<CustomSelectProps> = ({ label, value, options, onChange, allowCustomCategory, onCategoryCreated }) => {
   const [open, setOpen] = useState(false);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newCatName, setNewCatName] = useState('');
@@ -61,7 +62,7 @@ const CustomDarkSelect: React.FC<CustomSelectProps> = ({ label, value, options, 
         .select()
         .single();
       if (data) {
-        setDynamicCategories(prev => [...prev, data]);
+        onCategoryCreated?.(data);
         onChange(data.id);
       } else {
         onChange(trimmed);
@@ -254,7 +255,7 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
   }, []);
 
   const categoryOptions = useMemo(() => {
-    return OFFICIAL_CATEGORIES.map(c => {
+    const official = OFFICIAL_CATEGORIES.map(c => {
       const dbCat = categoriesMap[c.slug];
       return {
         value: dbCat?.id || c.slug,
@@ -262,7 +263,12 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
         slug: c.slug
       };
     });
-  }, [categoriesMap]);
+    const officialIds = new Set(official.map(o => o.value));
+    const extras = dynamicCategories
+      .filter(c => !officialIds.has(c.id))
+      .map(c => ({ value: c.id, label: c.name, slug: c.slug }));
+    return [...official, ...extras];
+  }, [categoriesMap, dynamicCategories]);
 
   const cityOptions = useMemo(() => {
     return YEMEN_CITIES.map(c => ({ value: c, label: c }));
@@ -585,6 +591,10 @@ export const UnifiedFacilityEditor: React.FC<UnifiedFacilityEditorProps> = ({ bu
                 options={categoryOptions}
                 onChange={(val) => setFormData(p => ({ ...p, category_id: val }))}
                 allowCustomCategory={true}
+                onCategoryCreated={(cat) => {
+                  setDynamicCategories(prev => [...prev, cat]);
+                  setCategoriesMap(prev => ({ ...prev, [cat.id]: cat, [cat.slug]: cat }));
+                }}
               />
             </div>
 

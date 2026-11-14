@@ -102,7 +102,7 @@ export const CategoryHubPage: React.FC<CategoryHubPageProps> = ({
         <div className="space-y-3">
           <div className="flex gap-2">
             <div className="flex-1">
-              <SearchInput value={searchQuery} onChange={setSearchQuery} placeholder={`ابحث في ${categoryTitle}...`} />
+              <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={`ابحث في ${categoryTitle}...`} />
             </div>
             <div className="w-40">
               <Select

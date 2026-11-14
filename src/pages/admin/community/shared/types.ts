@@ -1,4 +1,4 @@
-export type CommunityTab = 'reports' | 'posts' | 'users' | 'storage' | 'logs' | 'support';
+export type CommunityTab = 'reports' | 'posts' | 'comments' | 'users' | 'storage' | 'logs' | 'support';
 
 export type BadgeType = 'blue' | 'gold' | 'gray' | null;
 
@@ -34,6 +34,7 @@ export interface CommentItem {
   authorName?: string;
   authorUsername?: string;
   authorAvatar?: string;
+  authorBadge?: BadgeType;
 }
 
 export interface ProfileItem {

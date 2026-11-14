@@ -106,3 +106,82 @@ export interface YRBusinessAnalytics {
   messages_sent: number;
   recorded_date: string;
 }
+
+export interface AnonymizedJob {
+  id: string;
+  business_id: string;
+  title: string;
+  city: string;
+  job_type: string;
+  salary_min: number;
+  salary_max: number;
+  salary_currency: string;
+  experience_years: number;
+  skills_required: string[];
+  description: string;
+  requirements: string;
+  status: string;
+  applicants_count: number;
+  commission_amount: number;
+  commission_currency: string;
+  commission_locked_at: string;
+  created_at: string;
+}
+
+export interface JobApplication {
+  id?: string;
+  job_id: string;
+  applicant_name: string;
+  phone: string;
+  email?: string;
+  skills: string[];
+  experience_years: number;
+  education_level: string;
+  ai_match_score?: number;
+  ai_match_reasons?: Record<string, any>;
+  status?: string;
+  commission_paid?: boolean;
+  created_at?: string;
+}
+
+export interface Property {
+  id: string;
+  title: string;
+  property_type: string;
+  listing_type: string;
+  price: number;
+  currency: string;
+  area_sqm: number;
+  bedrooms: number;
+  bathrooms: number;
+  city: string;
+  district: string;
+  features: string[];
+  image_urls: string[];
+  commission_amount: number;
+  commission_locked_at: string;
+  status?: string;
+}
+
+export interface PropertyInquiry {
+  id?: string;
+  property_id: string;
+  contact_name: string;
+  phone: string;
+  message?: string;
+  status?: string;
+  ai_match_score?: number;
+  created_at?: string;
+}
+
+export interface ExchangeRate {
+  id: string;
+  market: 'sanaa' | 'aden';
+  currency_code: string;
+  buy_price: number;
+  sell_price: number;
+  previous_buy_price: number;
+  previous_sell_price: number;
+  source_name: string;
+  created_at: string;
+}

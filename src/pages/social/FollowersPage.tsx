@@ -12,6 +12,7 @@ interface FollowUser {
   avatar_url: string;
   bio?: string;
   is_verified?: boolean;
+  verification_type?: string;
   is_following?: boolean;
   follows_me?: boolean;
 }

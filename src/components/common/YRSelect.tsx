@@ -13,6 +13,7 @@ export interface YRSelectProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  compact?: boolean;
 }
 
 export const YRSelect: React.FC<YRSelectProps> = ({
@@ -21,7 +22,8 @@ export const YRSelect: React.FC<YRSelectProps> = ({
   onChange,
   placeholder = 'اختر من القائمة...',
   className = '',
-  disabled = false
+  disabled = false,
+  compact = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -44,7 +46,9 @@ export const YRSelect: React.FC<YRSelectProps> = ({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full bg-[#111111] text-white border border-[#2F3336] hover:border-[#F5C400]/60 focus:border-[#F5C400] rounded-xl px-3.5 py-2.5 text-xs flex items-center justify-between gap-2 transition-all cursor-pointer shadow-inner ${
+        className={`w-full bg-[#111111] text-white border border-[#2F3336] hover:border-[#F5C400]/60 focus:border-[#F5C400] rounded-xl flex items-center justify-between gap-2 transition-all cursor-pointer shadow-inner ${
+          compact ? 'px-2.5 py-1.5 text-[11px]' : 'px-3.5 py-2.5 text-xs'
+        } ${
           isOpen ? 'border-[#F5C400] ring-1 ring-[#F5C400]/40' : ''
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >

@@ -8,7 +8,8 @@ export type NotificationType =
   | 'subscription'   // 3. طلب اشتراك / ترقية باقة
   | 'ad_request'     // 4. طلب إعلان YR Ads
   | 'edit_request'   // 5. تعديل بيانات
-  | 'inquiry';       // 6. استفسار أو رسالة عامة
+  | 'facility'       // 6. طلب إضافة منشأة جديدة
+  | 'inquiry';       // 7. استفسار أو رسالة عامة
 
 export interface NotificationAttachment {
   type: 'image' | 'pdf' | 'document';

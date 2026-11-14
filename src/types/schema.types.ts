@@ -50,6 +50,7 @@ export interface BankEntity extends BaseEntity {
   address?: string;
   branches_count: number;
   atms_count?: number;
+  ownership_status?: string;
   services: string[];
   media: MediaItem[];
   reviews: ReviewData[];

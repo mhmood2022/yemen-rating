@@ -23,12 +23,9 @@ export const YrVerifiedBadge: React.FC<YrVerifiedBadgeProps> = ({
   };
 
   return (
-    <VerifiedBadge
-      variant={variant}
-      size={pixelSizes[size]}
-      text={text}
-      showText={showText}
-      className={className}
-    />
+    <span className={`inline-flex items-center gap-1 ${className || ''}`}>
+      <VerifiedBadge variant={variant} size={pixelSizes[size]} />
+      {showText && <span className="text-xs font-bold">{text}</span>}
+    </span>
   );
 };

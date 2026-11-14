@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabase';
 import { Property, PropertyInquiry } from '../types/database.types';
 
 export const propertyService = {

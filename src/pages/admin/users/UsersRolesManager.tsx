@@ -120,7 +120,7 @@ export const UsersRolesManager: React.FC = () => {
   // مصفوفة الأدوار والصلاحيات
   const [rolePermissions, setRolePermissions] = useState<Record<string, string[]>>(INITIAL_PERMS);
 
-  const [rolesList] = useState<Record<string, { label: string; desc: string; color: string }>>(INITIAL_ROLES);
+  const [rolesList, setRolesList] = useState<Record<string, { label: string; desc: string; color: string }>>(INITIAL_ROLES);
 
   const [selectedRoleKey, setSelectedRoleKey] = useState<string>('super_admin');
   const [isSavingRolePerms, setIsSavingRolePerms] = useState(false);
@@ -321,6 +321,32 @@ export const UsersRolesManager: React.FC = () => {
   const handleRevokeAllPermissions = () => {
     setRolePermissions((prev) => ({ ...prev, [selectedRoleKey]: [] }));
     showToast("تم سحب جميع الصلاحيات (لم تُحفظ بعد)", "success");
+  };
+
+  const handleCreateNewRole = (e: React.FormEvent) => {
+    e.preventDefault();
+    const key = newRoleKey.trim();
+    const label = newRoleLabel.trim();
+    if (!key || !label) return;
+    if (rolesList[key]) {
+      showToast("معرف الدور مستخدم مسبقاً", "error");
+      return;
+    }
+    setRolesList((prev) => ({
+      ...prev,
+      [key]: {
+        label,
+        desc: newRoleDesc.trim() || 'دور مخصص تم إنشاؤه من لوحة الإدارة',
+        color: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
+      },
+    }));
+    setRolePermissions((prev) => ({ ...prev, [key]: [] }));
+    setSelectedRoleKey(key);
+    setNewRoleKey('');
+    setNewRoleLabel('');
+    setNewRoleDesc('');
+    setIsNewRoleModalOpen(false);
+    showToast(`تم إنشاء الدور: ${label}`, "success");
   };
 
   // 💾 حفظ صلاحيات الدور في Supabase

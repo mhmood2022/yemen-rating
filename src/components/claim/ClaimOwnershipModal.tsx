@@ -41,7 +41,7 @@ export const ClaimOwnershipModal: React.FC<ClaimOwnershipModalProps> = ({
     if (!applicantName.trim() || !applicantPhone.trim() || !consentChecked) return;
 
     // توثيق الطلب وإرساله للإدارة
-    adminAuditService.logAction(
+    adminAuditService.log(
       `تقديم طلب إثبات ملكية (${entityName})`,
       'claim_request',
       entityId,

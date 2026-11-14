@@ -70,7 +70,7 @@ const HomeRoute: React.FC = () => {
       <HomeView
         businesses={SAMPLE_BUSINESSES}
         onSelectCategory={(slug) => navigate('/directory?category=' + encodeURIComponent(slug))}
-        onSelectBusiness={(biz) => navigate('/businesses/' + (biz.id || biz.slug))}
+        onSelectBusiness={(biz) => navigate('/businesses/' + biz.id)}
         onNavigateAuctions={() => navigate('/auctions')}
         onNavigateRealEstate={() => navigate('/properties')}
         onNavigateJobs={() => navigate('/jobs')}

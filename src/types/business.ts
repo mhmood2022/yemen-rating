@@ -65,8 +65,33 @@ export interface MenuItem {
   isSpecialty?: boolean;
 }
 
+export interface CarListing {
+  id: string;
+  title: string;
+  imageUrl: string;
+  price: string | number;
+  condition: string;
+  year: number | string;
+  transmission: string;
+  fuelType: string;
+  mileageKm?: number;
+}
+
+export interface RealEstateListing {
+  id: string;
+  title: string;
+  imageUrl: string;
+  price: string | number;
+  dealType: string;
+  areaM2: number;
+  rooms?: number;
+  bathrooms?: number;
+  location: string;
+}
+
 export interface BusinessItem {
   id: string;
+  slug?: string;
   businessType: BusinessType;
   name: string;
   commercialName?: string;
@@ -94,6 +119,8 @@ export interface BusinessItem {
   exchangeRates?: { currency: string; code: string; buy: number; sell: number }[];
   walletFees?: { serviceName: string; feeAmount: string; limits?: string }[];
   menuItems?: MenuItem[];
+  carListings?: CarListing[];
+  realEstateListings?: RealEstateListing[];
   reviews?: BusinessReview[];
   stats?: {
     views7d: number;

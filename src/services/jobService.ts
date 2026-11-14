@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabase';
 import { AnonymizedJob, JobApplication } from '../types/database.types';
 
 export const jobService = {

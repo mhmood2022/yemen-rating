@@ -104,7 +104,7 @@ export const ReportCard: React.FC<Props> = ({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
                 <p className="text-xs font-semibold truncate" style={{ color: '#FFFFFF' }}>{targetName}</p>
-                {targetBadge && targetBadge !== 'none' && <VerifiedBadge type={targetBadge as any} size={16} />}
+                {targetBadge && <VerifiedBadge type={targetBadge as any} size={16} />}
               </div>
               <p className="text-[11px] truncate" style={{ color: '#9CA3AF' }} dir="ltr">@{targetUsername}</p>
             </div>
@@ -160,7 +160,7 @@ export const ReportCard: React.FC<Props> = ({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1">
                   <p className="text-sm font-bold text-white">{targetName}</p>
-                  {targetBadge && targetBadge !== 'none' && <VerifiedBadge type={targetBadge as any} size={16} />}
+                  {targetBadge && <VerifiedBadge type={targetBadge as any} size={16} />}
                 </div>
                 <p className="text-xs text-zinc-400" dir="ltr">@{targetUsername}</p>
               </div>

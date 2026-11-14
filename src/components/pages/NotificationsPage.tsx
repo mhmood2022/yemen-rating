@@ -3,7 +3,7 @@ import {
   notificationService, 
   NotificationItem, 
   NotificationType 
-} from '../services/notificationService';
+} from '../../services/notificationService';
 import { 
   Building2, 
   ShieldAlert, 
@@ -73,6 +73,8 @@ export const NotificationsPage: React.FC = () => {
         return { label: 'طلب اشتراك / باقة', icon: Crown, color: 'text-amber-700 bg-amber-50 border-amber-200' };
       case 'ad_request':
         return { label: 'طلب إعلان YR Ads', icon: Megaphone, color: 'text-purple-700 bg-purple-50 border-purple-200' };
+      case 'facility':
+        return { label: 'طلب إضافة منشأة', icon: Building2, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' };
       case 'inquiry':
         return { label: 'استفسار عام', icon: HelpCircle, color: 'text-blue-700 bg-blue-50 border-blue-200' };
       default:

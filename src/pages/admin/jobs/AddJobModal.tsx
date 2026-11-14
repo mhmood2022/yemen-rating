@@ -236,8 +236,8 @@ export const AddJobModal: React.FC<AddJobModalProps> = ({
   const [publishDate, setPublishDate] = useState(initialData?.publishDate || todayStr);
   const [expiryDate, setExpiryDate] = useState(initialData?.expiryDate || nextMonthStr);
 
-  const [isFeatured, setIsFeatured] = useState(initialData?.isFeatured || false);
-  const [showOnHome, setShowOnHome] = useState(initialData?.showOnHome || true);
+  const [isFeatured, setIsFeatured] = useState<boolean>(initialData?.isFeatured || false);
+  const [showOnHome, setShowOnHome] = useState<boolean>(initialData?.showOnHome ?? true);
   const [isPinned, setIsPinned] = useState(initialData?.isPinned || false);
 
   useEffect(() => {

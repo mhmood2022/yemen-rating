@@ -214,7 +214,10 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
         contactValue: employerPhone.trim(),
         publishDate: new Date().toISOString().split("T")[0],
         expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-        isFeatured: false
+        isFeatured: false,
+        showOnHome: false,
+        isPinned: false,
+        status: "published"
       };
 
       const res = await onSubmit(payload);

@@ -1,12 +1,29 @@
 import { supabase } from '../lib/supabase';
 import { YRBusiness } from '../types/database.types';
 
-export const fetchBusinesses = async (): Promise<YRBusiness[]> => {
+export const fetchBusinesses = async (categorySlug?: string): Promise<YRBusiness[]> => {
   try {
-    const { data, error } = await supabase
+    let categoryId: string | null = null;
+    if (categorySlug) {
+      const { data: category } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', categorySlug)
+        .maybeSingle();
+      if (!category?.id) return [];
+      categoryId = category.id;
+    }
+
+    let query = supabase
       .from('businesses')
       .select('*')
       .order('created_at', { ascending: false });
+
+    if (categoryId) {
+      query = query.eq('category_id', categoryId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Supabase fetch error:', error);

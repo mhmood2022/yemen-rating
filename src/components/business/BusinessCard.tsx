@@ -1,13 +1,16 @@
 import React, { useMemo } from 'react';
-import { BusinessItem } from '../../types/database.types';
+import { BusinessItem } from '../../types/business';
+
+type BusinessCardItem = BusinessItem & Record<string, any>;
 
 interface Props {
-  business: BusinessItem;
+  business: BusinessCardItem;
   rank?: number;
-  onOpenProfile: (b: BusinessItem) => void;
-  onOpenQuote: (b: BusinessItem) => void;
-  onToggleCompare: (id: string) => void;
-  isCompared: boolean;
+  onOpenProfile?: (b: BusinessItem) => void;
+  onOpenQuote?: (b: BusinessItem) => void;
+  onToggleCompare?: (id: string) => void;
+  isCompared?: boolean;
+  onNavigate?: (id: string) => void;
 }
 
 export const BusinessCard: React.FC<Props> = ({
@@ -16,8 +19,14 @@ export const BusinessCard: React.FC<Props> = ({
   onOpenProfile,
   onOpenQuote,
   onToggleCompare,
-  isCompared
+  isCompared = false,
+  onNavigate
 }) => {
+  const handleOpenProfile = () => {
+    if (onOpenProfile) onOpenProfile(business);
+    else if (onNavigate) onNavigate(business.id);
+  };
+
   const badgeColor = business.badge_type === 'gold' ? '#FFB800' : business.badge_type === 'blue' ? '#29A6FF' : '#8E8E93';
 
   // استخراج ميزات القطاع المفعلة فقط دون أي قيم وهمية
@@ -40,7 +49,7 @@ export const BusinessCard: React.FC<Props> = ({
 
   return (
     <div
-      onClick={() => onOpenProfile(business)}
+      onClick={handleOpenProfile}
       className="bg-[#14141C] border border-[#22222E] hover:border-amber-400/40 rounded-2xl overflow-hidden transition duration-200 cursor-pointer flex flex-col md:grid md:grid-cols-[240px_1fr] group shadow-lg hover:-translate-y-0.5"
       dir="rtl"
     >
@@ -156,7 +165,7 @@ export const BusinessCard: React.FC<Props> = ({
               </a>
             )}
             <button
-              onClick={() => onToggleCompare(business.id)}
+              onClick={() => onToggleCompare?.(business.id)}
               className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition ${isCompared ? 'bg-amber-400 text-black border-amber-400 font-black' : 'bg-[#1A1A24] border-[#22222E] text-neutral-200 hover:border-amber-400'}`}
             >
               <i className="fa-solid fa-scale-balanced text-xs"></i>
@@ -165,7 +174,7 @@ export const BusinessCard: React.FC<Props> = ({
           </div>
 
           <button
-            onClick={() => onOpenQuote(business)}
+            onClick={() => onOpenQuote?.(business)}
             className="px-4 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-500 text-black font-black text-xs flex items-center gap-1.5 shadow transition active:scale-95"
           >
             <span>طلب عرض سعر</span>

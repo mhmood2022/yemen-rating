@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { BusinessItem } from '../../types/database.types';
-import { BusinessTabs } from './BusinessTabs';
+import { BusinessItem } from '../../types/business';
 import { BusinessReviews } from './BusinessReviews';
 import { MenuSection } from './sections/MenuSection';
 import { CarDealerSection } from './sections/CarDealerSection';
@@ -8,8 +7,10 @@ import { RealEstateSection } from './sections/RealEstateSection';
 import { WalletFeesSection } from './sections/WalletFeesSection';
 import { OverviewSection } from './sections/OverviewSection';
 
+type BusinessProfileItem = BusinessItem & Record<string, any>;
+
 interface Props {
-  business: BusinessItem;
+  business: BusinessProfileItem;
   onNavigate: (path: string) => void;
 }
 
@@ -76,7 +77,7 @@ export const BusinessProfileEngine: React.FC<Props> = ({ business, onNavigate })
           </div>
         );
       case 'reviews':
-        return <BusinessReviews businessId={business.id} />;
+        return <BusinessReviews reviews={business.reviews} />;
       case 'contact':
         return (
           <div className="p-4 space-y-3">
@@ -123,7 +124,23 @@ export const BusinessProfileEngine: React.FC<Props> = ({ business, onNavigate })
 
   return (
     <div className="bg-[#121217] border-t border-[#20202A]">
-      <BusinessTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+      <div className="flex items-center gap-1.5 border-b border-[#20202A] px-3 py-2 overflow-x-auto no-scrollbar">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition ${
+              activeTab === tab.id
+                ? 'bg-[#FFC107] text-black'
+                : 'text-zinc-400 hover:bg-[#1A1A1A] hover:text-white'
+            }`}
+          >
+            <i className={`fa-solid ${tab.icon}`}></i>
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
       <div className="pb-6">{renderContent()}</div>
     </div>
   );

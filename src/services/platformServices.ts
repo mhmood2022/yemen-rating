@@ -161,7 +161,7 @@ export const PropertyService = {
       id: 'demo-prop-villa-aden',
       slug: 'luxury-villa-aden',
       title: 'فيلا مستقلة فاخرة مسبح وحديقة — خور مكسر',
-      property_type: 'فلل',
+      property_type: 'فيلا',
       listing_type: 'sale',
       price: 240000000,
       currency: 'YER',

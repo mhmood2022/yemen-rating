@@ -1,6 +1,6 @@
 import React from 'react';
-import { useComparison } from '../../context/ComparisonContext';
-import { YRBusiness } from '../../types/database.types';
+import { useComparison } from '../context/ComparisonContext';
+import { YRBusiness } from '../types/database.types';
 
 interface ComparisonModalProps {
   isOpen: boolean;

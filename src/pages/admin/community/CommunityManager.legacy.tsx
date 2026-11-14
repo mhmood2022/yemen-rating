@@ -84,7 +84,7 @@ export const CommunityManager: React.FC = () => {
   let currentAdminUser: any = null;
   try {
     // محاولة قراءة السياق بأمان
-    const adminCtx = useAdmin();
+    const adminCtx = useAdmin() as any;
     currentAdminUser = adminCtx?.currentAdminUser;
   } catch (_) {
     // في حال عدم وجود AdminProvider، نقرأ من التخزين المحلي مباشرة

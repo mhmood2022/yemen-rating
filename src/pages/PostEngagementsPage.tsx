@@ -34,7 +34,7 @@ export default function PostEngagementsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const showToast = (msg: string) => alert(msg);
-  const handleLike = () => {};
+  const handleLike = (_postId?: string) => {};
   const openAuthorProfile = (authorId: string) => { if(authorId) navigate(`/account?id=${authorId}`); };
   const formatTimeAgo = (date: string) => { return 'الآن'; };
 
@@ -123,7 +123,7 @@ export default function PostEngagementsPage() {
       setLoading(true);
       try {
         const { data: postData } = await supabase.from('posts').select('*').eq('id', cleanId).single();
-        const { data: engagements } = await supabase.from('post_reposts').select('user_id, quote_text, created_at').eq('post_id', cleanId).order('created_at', { ascending: false });
+        const { data: engagements } = await supabase.from('post_reposts').select('id, user_id, quote_text, created_at').eq('post_id', cleanId).order('created_at', { ascending: false });
 
         const all = engagements || [];
         

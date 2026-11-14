@@ -24,11 +24,7 @@ export const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
 }) => {
   const badgeType = type ?? variant;
 
-  if (
-    !badgeType ||
-    badgeType === 'none' ||
-    badgeType === false
-  ) {
+  if (!badgeType || badgeType === 'none') {
     return null;
   }
 

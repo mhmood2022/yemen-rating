@@ -57,7 +57,7 @@ export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onNavigate
                   size={16}
                   className="text-[#16A34A] dark:text-[#22C55E] shrink-0"
                   strokeWidth={2}
-                  title="مؤسسة مالية موثقة"
+                  aria-label="مؤسسة مالية موثقة"
                 />
               )}
             </h3>

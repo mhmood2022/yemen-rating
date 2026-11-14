@@ -84,6 +84,13 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
             website: b.website_url || '',
             address: b.address || b.city || 'اليمن',
             description: b.description || '',
+            workingHours: b.working_hours || '',
+            amenities: [],
+            stats: {
+              viewsCount: Number(b.views_count) || 0,
+              savesCount: Number(b.saves_count) || 0
+            },
+            gallery: Array.isArray(b.gallery_urls) ? b.gallery_urls : [],
             sectionsConfig: b.sections_config || {},
             reviews: []
           }));

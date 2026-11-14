@@ -332,6 +332,22 @@ export const adminAuctionsService = {
   },
 
   // تحديث حالة المزاد المعتمد مع تسجيل التدقيق
+  async updateAuctionStatus(auctionId: string, status: string, reason?: string) {
+    try {
+      const { data, error } = await supabase
+        .from('auctions')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', auctionId)
+        .select()
+        .maybeSingle();
+      if (error) throw error;
+      await adminAuditService.log(`تحديث حالة المزاد إلى ${status}`, 'auction', auctionId, { status }, reason);
+      return { success: true, data };
+    } catch (err: any) {
+      console.error("🚨 SUPABASE_REAL_ERROR in src/services/adminService.ts:", err?.message || err);
+      return { success: false, error: formatArabicError(err), data: null };
+    }
+  },
 
   // إعدادات عمولة المنصة
 

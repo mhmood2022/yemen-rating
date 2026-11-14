@@ -47,7 +47,8 @@ const CustomSelect: React.FC<{
   options: { value: string; label: string }[];
   onChange: (val: string) => void;
   placeholder?: string;
-}> = ({ label, value, options, onChange, placeholder }) => {
+  onCategoryCreated?: (category: { id: string; name: string; slug: string }) => void;
+}> = ({ label, value, options, onChange, placeholder, onCategoryCreated }) => {
   const [open, setOpen] = useState(false);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newCatName, setNewCatName] = useState('');
@@ -161,7 +162,7 @@ const CustomSelect: React.FC<{
                             .select()
                             .single();
                           if (data) {
-                            setDynamicCategories(prev => [...prev, data]);
+                            onCategoryCreated?.(data);
                             onChange(data.id);
                           } else {
                             onChange(trimmed);
@@ -211,6 +212,7 @@ interface BusinessRecord {
   rating: number;
   review_count: number;
   sections_config: any;
+  sector_features?: any[];
   created_at?: string;
   category_name?: string;
   category_slug?: string;
@@ -1107,6 +1109,7 @@ export const CompaniesManager: React.FC = () => {
                       value={formData.category_id}
                       options={categoryDropdownOptions}
                       onChange={(val) => setFormData(p => ({ ...p, category_id: val }))}
+                      onCategoryCreated={(cat) => setDynamicCategories(prev => [...prev, cat])}
                     />
                   </div>
 

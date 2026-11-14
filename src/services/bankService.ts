@@ -22,7 +22,7 @@ const mapBankData = (row: any) => ({
   rating_summary: {
     average: Number(row.rating) || 0,
     count: Number(row.review_count) || 0,
-    distribution: {} // يمكن حسابها لاحقاً
+    distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } // يمكن حسابها لاحقاً
   },
   media: [],
   services: [],

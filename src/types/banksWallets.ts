@@ -11,6 +11,7 @@ export interface BankWalletFee {
 
 export interface BankWalletItem {
   id: string;
+  slug?: string;
   type: EntityType;
   name: string;
   commercialName?: string;
