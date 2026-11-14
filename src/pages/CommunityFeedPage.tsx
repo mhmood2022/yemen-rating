@@ -6,6 +6,7 @@ import { VerifiedBadge } from '../components/common/VerifiedBadge';
 'use client';
 
 import PostEngagementsModal from '../components/feed/PostEngagementsModal';
+import { RichTextarea } from '../components/common/RichTextarea';
 import { HashtagText } from '../components/common/HashtagText';
 import React, { useState, useEffect, useRef } from 'react';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
@@ -1732,12 +1733,10 @@ displayedTweets.map(tweet => {
               اقتباس
             </button>
           </div>
-          <textarea
+          <RichTextarea
             value={quoteText}
             onChange={(e) => setQuoteText(e.target.value)}
             placeholder="أضف تعليقك..."
-            className="w-full bg-transparent text-white text-lg placeholder-[#71767B] resize-none focus:outline-none mb-4"
-            rows={3}
           />
           <div className="rounded-[12px] border border-white/[0.08] p-2.5 mb-4 select-none overflow-hidden" dir="rtl">
             {/* رأس الاقتباس: أفاتار 18px + اسم + معرف في سطر واحد متناسق */}
@@ -2096,7 +2095,7 @@ displayedTweets.map(tweet => {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
-            <textarea
+            <RichTextarea
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
               className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-3 text-white text-sm focus:outline-none focus:border-[#FFC500] resize-none h-32"
@@ -2202,7 +2201,7 @@ displayedTweets.map(tweet => {
                       </mark>
                     )}
                   </div>
-                  <textarea
+                  <RichTextarea
                     autoFocus
                     value={tweetText}
                     onInput={(e) => {

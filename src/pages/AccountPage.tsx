@@ -21,6 +21,7 @@ try {
 'use client';
 
 import PostEngagementsModal from '../components/feed/PostEngagementsModal';
+import { RichTextarea } from '../components/common/RichTextarea';
 import { HashtagText } from '../components/common/HashtagText';
 import React, { useState, useEffect, useRef } from 'react';
 import { XImagePlayer } from '../components/feed/XImagePlayer';
@@ -1891,13 +1892,12 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
 
               <div>
                 <label className="block text-[#71767B] font-bold mb-1">النبذة التعريفية (Bio)</label>
-                <textarea 
-                  rows={3} 
-                  value={editBio} 
-                  onChange={(e) => setEditBio(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-black border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none" 
-                  placeholder="اكتب نبذتك الشخصية..."
-                />
+                <RichTextarea
+                    autoFocus
+                    value={newPostText}
+                    onChange={(e) => setNewPostText(e.target.value)}
+                    placeholder="ماذا يحدث؟"
+                  />
               </div>
 
               <div>
@@ -2021,35 +2021,11 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
 
               <div className="flex-1 min-w-0 flex flex-col">
                 <div className="relative w-full">
-                  <div
-                    aria-hidden="true"
-                    className="absolute inset-0 pointer-events-none whitespace-pre-wrap break-words overflow-hidden text-transparent text-[17px] leading-[26px] p-0 font-normal select-none"
-                    style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
-                  >
-                    <span>{newPostText.slice(0, 250)}</span>
-                    {newPostText.length > 250 && (
-                      <mark className="bg-[#782229] text-transparent rounded-sm py-0.5">
-                        {newPostText.slice(250)}
-                      </mark>
-                    )}
-                  </div>
-                  <textarea
+                  <RichTextarea
                     autoFocus
                     value={newPostText}
-                    onInput={(e) => {
-                      const t = e.currentTarget;
-                      t.style.height = 'auto';
-                      t.style.height = Math.max(120, t.scrollHeight) + 'px';
-                    }}
-                    onChange={(e) => {
-                      setNewPostText(e.target.value);
-                      const t = e.currentTarget;
-                      t.style.height = 'auto';
-                      t.style.height = Math.max(120, t.scrollHeight) + 'px';
-                    }}
+                    onChange={(e) => setNewPostText(e.target.value)}
                     placeholder="ماذا يحدث؟"
-                    className="clean-tweet-textarea relative z-10 w-full bg-transparent text-white text-[17px] leading-[26px] placeholder-[#71767B] focus:outline-none focus:ring-0 focus:border-none border-0 p-0 resize-none overflow-hidden caret-[#FFC500]"
-                    style={{ outline: 'none', border: 'none', boxShadow: 'none', WebkitTapHighlightColor: 'transparent', wordBreak: 'break-word', overflowWrap: 'break-word', minHeight: '120px' }}
                   />
                 </div>
 
@@ -2140,7 +2116,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
               </h3>
             </div>
             <form onSubmit={handleSendDm} className="space-y-4">
-              <textarea
+              <RichTextarea
                 value={dmContent}
                 onChange={(e) => setDmContent(e.target.value)}
                 placeholder="اكتب رسالتك الخاصة هنا..."
@@ -2467,7 +2443,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
               اقتباس
             </button>
           </div>
-          <textarea
+          <RichTextarea
             value={quoteText}
             onChange={(e) => setQuoteText(e.target.value)}
             placeholder="أضف تعليقك..."
@@ -2591,7 +2567,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                 <X size={20} />
               </button>
             </div>
-            <textarea
+            <RichTextarea
               className="w-full bg-transparent text-white text-[15px] leading-relaxed min-h-[120px] outline-none resize-none placeholder-[#71767B]"
               value={editPostText}
               onChange={(e) => setEditPostText(e.target.value)}

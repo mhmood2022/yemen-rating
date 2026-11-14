@@ -89,7 +89,7 @@ body {
   /* 4. حقول الإدخال والملاحظات (input & textarea) */
   input,
   textarea {
-    caret-color: #FFFFFF !important;
+    caret-color: #FFC500 !important;
   }
 
   input::placeholder,

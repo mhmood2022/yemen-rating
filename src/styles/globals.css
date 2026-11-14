@@ -234,7 +234,7 @@ select optgroup {
 input,
 textarea {
   color-scheme: dark !important;
-  caret-color: #FFFFFF !important;
+  caret-color: #FFC500 !important;
 }
 
 input:focus-visible,
