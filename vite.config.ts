@@ -1,9 +1,33 @@
+import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { fileURLToPath } from "node:url";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+        VitePWA({
+          workbox: {
+            maximumFileSizeToCacheInBytes: 5 * 1024 * 1024 // 5 MB
+          },
+          registerType: 'autoUpdate',
+          includeAssets: ['yr-logo.png', 'icon-512.png'],
+          manifest: {
+            name: 'يمن ريتنج',
+            short_name: 'YR',
+            description: 'منصة يمن ريتنج',
+            theme_color: '#000000',
+            background_color: '#000000',
+            display: 'standalone',
+            icons: [
+              {
+                src: 'icon-512.png',
+                sizes: '512x512',
+                type: 'image/png',
+                purpose: 'any maskable'
+              }
+            ]
+          }
+        }),react()],
   server: {
     port: 5174,
     strictPort: false,
