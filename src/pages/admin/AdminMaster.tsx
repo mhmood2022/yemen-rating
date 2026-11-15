@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { AdminSidebar } from '../../components/admin/AdminSidebar';
 import { AdminLogin } from './auth/AdminLogin';
 import { 
-  Menu, ShieldAlert, LogOut, Bell, 
+  Menu, ShieldAlert, LogOut, Bell, ExternalLink, 
   ShieldCheck, AlertTriangle, DollarSign, Gavel, Star, CheckCheck, X, ArrowRight, Briefcase 
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -449,6 +449,16 @@ export const AdminMaster: React.FC = () => {
                 </>
               )}
             </div>
+
+            {/* زر العودة إلى الموقع */}
+            <a
+              href="/"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FFC500]/10 text-[#FFC500] hover:bg-[#FFC500]/20 text-xs font-bold transition-colors cursor-pointer"
+              title="العودة إلى الموقع"
+            >
+              <ExternalLink size={15} />
+              <span>الموقع</span>
+            </a>
 
             {/* زر الخروج الآمن */}
             <button
