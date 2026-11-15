@@ -178,6 +178,7 @@ export const CommunityFeedPage: React.FC = () => {
   const navigate = useNavigate();
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [activeMenuPost, setActiveMenuPost] = useState<any>(null);
+  const [shareMenuPost, setShareMenuPost] = useState<any>(null);
   const [hiddenTweetIds, setHiddenTweetIds] = useState<string[]>([]);
   const [editingTweet, setEditingTweet] = useState<any>(null);
   const [editText, setEditText] = useState('');
@@ -808,6 +809,36 @@ export const CommunityFeedPage: React.FC = () => {
     // تثبيت الملف فوراً في الذاكرة
     setSelectedFile(file);
     setTweetImage(URL.createObjectURL(file));
+  };
+
+  
+  const handlePasteUrl = async (e: React.ClipboardEvent) => {
+    const text = e.clipboardData.getData('text');
+    const match = text.match(/\/post\/([a-zA-Z0-9-]+)/) || text.match(/\/tweet\/([a-zA-Z0-9-]+)/);
+    if (match) {
+      e.preventDefault();
+      const postId = match[1];
+      try {
+        const { data, error } = await supabase.from('posts').select('*, profiles:user_id(full_name, username, avatar_url, verification_type)').eq('id', postId).single();
+        if (data) {
+          const originalData = {
+             id: data.id,
+             authorId: data.user_id,
+             authorName: data.profiles?.full_name || 'مستخدم',
+             authorUsername: data.profiles?.username || 'user',
+             authorAvatar: data.profiles?.avatar_url || '',
+             text: data.content,
+             image: data.image_url,
+             createdAt: data.created_at,
+             badgeType: data.profiles?.verification_type || 'none'
+          };
+          setQuoteOriginal(originalData as any);
+          showToast('تم إضافة الاقتباس ✅');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
   };
 
   const handlePostTweet = async (e?: React.FormEvent | React.MouseEvent) => {
@@ -1515,17 +1546,19 @@ displayedTweets.map(tweet => {
               >
                 <div className="flex gap-3">
                   <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold text-white text-lg truncate shrink max-w-[130px] sm:max-w-[150px]">
-                    {tweet.authorAvatar ? (
-                      <img src={tweet.authorAvatar} alt={tweet.authorName} className="w-full h-full object-cover" />
-                    ) : (
-                      <span>{tweet.authorName?.[0] || '؟'}</span>
-                    )}
+                    <div onClick={(e) => { e.stopPropagation(); openAuthorProfile(tweet.authorId, tweet); }} className="w-full h-full cursor-pointer hover:opacity-80 transition">
+                      {tweet.authorAvatar ? (
+                        <img src={tweet.authorAvatar} alt={tweet.authorName} className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{tweet.authorName?.[0] || '؟'}</span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center flex-nowrap min-w-0 w-full gap-1">
-                        <span className="font-bold text-[#E7E9EA] text-[12.5px] hover:underline cursor-pointer truncate shrink max-w-[130px] sm:max-w-[180px]">{tweet.authorName}</span>
+                        <span onClick={(e) => { e.stopPropagation(); openAuthorProfile(tweet.authorId, tweet); }} className="font-bold text-[#E7E9EA] text-[12.5px] hover:underline cursor-pointer truncate shrink max-w-[130px] sm:max-w-[180px]">{tweet.authorName}</span>
                         {tweet.badgeType && tweet.badgeType !== "none" && tweet.badgeType !== false && (
                           <VerifiedBadge type={tweet.badgeType as any} size={14.5} className="shrink-0" />
                         )}
@@ -1630,12 +1663,7 @@ displayedTweets.map(tweet => {
                           onLike={() => handleLike(tweet.id)}
                           onViewEngagements={() => setViewingEngagementsPost(tweet)}
                           onRepost={() => setRepostMenu(tweet)}
-                          onShare={() => {
-                            if (navigator.clipboard) {
-                              navigator.clipboard.writeText(window.location.href);
-                              showToast('تم نسخ الرابط');
-                            }
-                          }}
+                          onShare={(t) => setShareMenuPost(t)}
                           onBookmark={() => showToast('تمت الإضافة إلى العلامات المرجعية 🔖')}
                         />
                       </div>
@@ -1655,11 +1683,7 @@ displayedTweets.map(tweet => {
                       onRepost={(p) => setRepostMenu(p)}
                       onLike={() => handleLike(tweet.id)}
                       onBookmark={() => {}}
-                      onShare={() => {
-                        if (navigator.clipboard) {
-                          navigator.clipboard.writeText(window.location.href);
-                        }
-                      }}
+                      onShare={(t) => setShareMenuPost(t)}
                       currentUserId={currentUserId}
                     />
                   </div>
@@ -1737,6 +1761,7 @@ displayedTweets.map(tweet => {
             value={quoteText}
             onChange={(e) => setQuoteText(e.target.value)}
             placeholder="أضف تعليقك..."
+            onPaste={handlePasteUrl}
           />
           <div className="rounded-[12px] border border-white/[0.08] p-2.5 mb-4 select-none overflow-hidden" dir="rtl">
             {/* رأس الاقتباس: أفاتار 18px + اسم + معرف في سطر واحد متناسق */}
@@ -1808,12 +1833,7 @@ displayedTweets.map(tweet => {
                   onRepost={() => handleRepost(viewingDetailTweet.id)}
                   onLike={() => handleLike(viewingDetailTweet.id)}
                   onBookmark={() => showToast("تمت الإضافة إلى العلامات المرجعية 🔖")}
-                  onShare={() => {
-                    if (navigator.clipboard) {
-                      navigator.clipboard.writeText(window.location.href);
-                      showToast("تم نسخ الرابط! 🔗");
-                    }
-                  }}
+                  onShare={(t) => setShareMenuPost(t)}
                   currentUserId={currentUserId}
                 />
               </div>
@@ -1926,12 +1946,7 @@ displayedTweets.map(tweet => {
                                   showToast("الرد على @" + (c.authorUsername || c.authorName || ""));
                                 }}
                                 onLike={() => {}}
-                                onShare={() => {
-                                  if (navigator.clipboard) {
-                                    navigator.clipboard.writeText(window.location.href);
-                                    showToast("تم نسخ الرابط! 🔗");
-                                  }
-                                }}
+                                onShare={(t) => setShareMenuPost(c)}
                                 currentUserId={currentUserId}
                               />
                             </div>
@@ -2204,6 +2219,7 @@ displayedTweets.map(tweet => {
                   <RichTextarea
                     autoFocus
                     value={tweetText}
+                    onPaste={handlePasteUrl}
                     onInput={(e) => {
                       const t = e.currentTarget;
                       t.style.height = 'auto';
@@ -2316,14 +2332,51 @@ displayedTweets.map(tweet => {
             setViewingImagePost(null);
             setRepostMenu(t);
           }}
-          onShare={() => {
-            if (navigator.clipboard) {
-              navigator.clipboard.writeText(window.location.href);
-              showToast('تم نسخ الرابط');
-            }
-          }}
+          onShare={(t) => setShareMenuPost(t)}
         />
       )}
-      </div>
+  
+      {/* نافذة المشاركة (نمط X) */}
+      {shareMenuPost && (
+        <div className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-sm flex items-end justify-center p-0 sm:p-4" onClick={() => setShareMenuPost(null)}>
+          <div className="w-full max-w-md bg-[#0A0A0A] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border-t sm:border border-[#2F3336]" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 text-center text-white font-bold border-b border-[#2F3336]">
+              مشاركة التغريدة
+            </div>
+            <button 
+              onClick={() => {
+                const url = window.location.origin + '/post/' + (shareMenuPost.id || '').replace('repost-', '') + '/engagements';
+                navigator.clipboard.writeText(url);
+                showToast('تم نسخ رابط التغريدة');
+                setShareMenuPost(null);
+              }}
+              className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition flex items-center gap-3 border-b border-[#2F3336]/60"
+            >
+              <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              نسخ الرابط
+            </button>
+            <button 
+              onClick={() => {
+                const url = window.location.origin + '/post/' + (shareMenuPost.id || '').replace('repost-', '') + '/engagements';
+                if (navigator.share) {
+                  navigator.share({ title: 'Yemen Rating', text: shareMenuPost.text || '', url: url }).catch(console.error);
+                }
+                setShareMenuPost(null);
+              }}
+              className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition flex items-center gap-3 border-b border-[#2F3336]/60"
+            >
+              <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+              مشاركة عبر...
+            </button>
+            <button 
+              onClick={() => setShareMenuPost(null)}
+              className="w-full p-4 text-center text-[#71767B] font-bold hover:bg-white/5 transition"
+            >
+              إلغاء
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };

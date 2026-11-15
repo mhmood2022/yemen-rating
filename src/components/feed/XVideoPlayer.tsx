@@ -20,7 +20,7 @@ export interface XVideoPlayerProps {
   onRepost?: () => void;
   onReply?: () => void;
   onViewEngagements?: () => void;
-  onShare?: () => void;
+  onShare?: (tweet?: any) => void;
   onBookmark?: () => void;
 }
 

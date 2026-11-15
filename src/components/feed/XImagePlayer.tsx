@@ -12,7 +12,7 @@ interface XImagePlayerProps {
   onRepost?: () => void;
   onReply?: () => void;
   onBookmark?: () => void;
-  onShare?: () => void;
+  onShare?: (tweet?: any) => void;
 }
 
 export const XImagePlayer: React.FC<XImagePlayerProps> = ({

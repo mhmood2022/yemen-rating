@@ -22,6 +22,8 @@ try {
 
 import PostEngagementsModal from '../components/feed/PostEngagementsModal';
 import { RichTextarea } from '../components/common/RichTextarea';
+import { CustomDatePicker } from '../components/common/CustomDatePicker';
+import { ImageCropper } from '../components/common/ImageCropper';
 import { HashtagText } from '../components/common/HashtagText';
 import React, { useState, useEffect, useRef } from 'react';
 import { XImagePlayer } from '../components/feed/XImagePlayer';
@@ -180,6 +182,7 @@ export const VerifiedBadge: React.FC<{ type?: string | boolean; size?: number }>
 
 
   
+
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="inline-block flex-shrink-0 align-middle mr-1.5 drop-shadow-sm">
       <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.79-4-4-4-.495 0-.965.084-1.4.238C14.55 2.475 13.18 1.6 11.6 1.6s-2.95.875-3.6 2.148c-.435-.154-.905-.238-1.4-.238-2.21 0-4 1.79-4 4 0 .495.084.965.238 1.4C1.575 9.55.7 10.92.7 12.5s.875 2.95 2.148 3.6c-.154.435-.238.905-.238 1.4 0 2.21 1.79 4 4 4 .495 0 .965-.084 1.4-.238.65 1.273 2.02 2.148 3.6 2.148s2.95-.875 3.6-2.148c.435.154.905.238 1.4.238 2.21 0 4-1.79 4-4 0-.495-.084-.965-.238-1.4 1.273-.65 2.148-2.02 2.148-3.6z" fill={fill} />
@@ -242,16 +245,18 @@ export const AccountPage: React.FC = () => {
   const [bio, setBio] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
   const lastScrollY = useRef(0);
+  const profileDetailsRef = useRef<HTMLDivElement>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
   const [location, setLocation] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [joinDate, setJoinDate] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string>('');
+  const [cropImage, setCropImage] = useState<string | null>(null);
+  const [cropTarget, setCropTarget] = useState<'avatar' | 'cover' | null>(null);
       useEffect(() => {
-        const handleScroll = () => setIsScrolled(window.scrollY > 50);
+        const handleScroll = () => setIsScrolled(window.scrollY > 1);
         window.addEventListener('scroll', handleScroll);
-      
-
-  return () => window.removeEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
       }, []);
     
   const [coverUrl, setCoverUrl] = useState<string>('');
@@ -269,12 +274,45 @@ export const AccountPage: React.FC = () => {
 
   // المنشورات
   const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'reposts' | 'media' | 'likes'>('posts');
+
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+    const tabs: ('posts' | 'replies' | 'reposts' | 'media')[] = ['posts', 'replies', 'reposts', 'media'];
+    const currentIndex = tabs.indexOf(activeTab as any);
+    if (isLeftSwipe && currentIndex < tabs.length - 1) setActiveTab(tabs[currentIndex + 1]);
+    if (isRightSwipe && currentIndex > 0) setActiveTab(tabs[currentIndex - 1]);
+  };
+
+
   const [userPosts, setUserPosts] = useState<Post[]>(() => {
     try {
       const cached = localStorage.getItem("yr_my_account_posts");
       return cached ? JSON.parse(cached) : [];
     } catch { return []; }
   });
+
+  const filteredPosts = userPosts.filter(post => {
+    if (activeTab === 'replies') return post.text && post.text.startsWith('@');
+    if (activeTab === 'reposts') return post.isRepost;
+    if (activeTab === 'media') return post.image || post.video || post.video_url;
+    return !post.isRepost && (!post.text || !post.text.startsWith('@'));
+  });
+
 
   // مزامنة التغريدات في الذاكرة الفورية تلقائياً للفتح الفوري مثل X
   useEffect(() => {
@@ -306,6 +344,7 @@ function formatTimeAndDate(dateStr: string): string {
 }
 
 const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
+  const [shareMenuPost, setShareMenuPost] = useState<any>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [editPostText, setEditPostText] = useState('');
     const [reportingItem, setReportingItem] = useState<{
@@ -688,63 +727,44 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     });
   };
 
-const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'avatar' | 'cover') => {
+const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avatar' | 'cover') => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setCropImage(reader.result as string);
+        setCropTarget(target);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
+  const handleCropSave = async (base64: string) => {
+    if (!cropTarget) return;
     try {
-      showToast('جاري تجهيز الصورة...');
-      // ضغط وتصغير الصورة لتخزين فوري بدون أي أخطاء
-      const maxWidth = target === 'avatar' ? 180 : 600;
-      const maxHeight = target === 'avatar' ? 180 : 250;
-      const compressedDataUrl = await compressImage(file, maxWidth, maxHeight, 0.6);
+      showToast('جاري حفظ الصورة...');
+      const res = await fetch(base64);
+      const blob = await res.blob();
+      const file = new File([blob], `crop_${Date.now()}.jpg`, { type: 'image/jpeg' });
+      const filePath = `posts/${cropTarget}_${profileId}_${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage.from('social-media').upload(filePath, file, { upsert: true, contentType: 'image/jpeg' });
+      if (upErr) throw upErr;
+      const { data: pubData } = supabase.storage.from('social-media').getPublicUrl(filePath);
+      const url = pubData.publicUrl;
 
-      if (target === 'avatar') {
-        setAvatarUrl(compressedDataUrl);
+      if (cropTarget === 'avatar') {
+        setAvatarUrl(url);
+        await updateUserProfile(profileId, { avatar_url: url });
       } else {
-        setCoverUrl(compressedDataUrl);
+        setCoverUrl(url);
+        await updateUserProfile(profileId, { cover_url: url });
       }
-
-      // حفظ فوري في بيانات الحساب
-      const usersDir = JSON.parse(localStorage.getItem(USERS_DIR_KEY) || '{}');
-      if (usersDir[profileId]) {
-        if (target === 'avatar') usersDir[profileId].avatarUrl = compressedDataUrl;
-        if (target === 'cover') usersDir[profileId].coverUrl = compressedDataUrl;
-        safeSetStorage(USERS_DIR_KEY, usersDir);
-      }
-
-      // مزامنة الصورة في جميع تغريداته
-      if (target === 'avatar') {
-        const globalFeed: Post[] = JSON.parse(localStorage.getItem(GLOBAL_FEED_KEY) || '[]');
-        const updatedFeed = globalFeed.map(t => t.authorId === profileId ? { ...t, authorAvatar: compressedDataUrl } : t);
-        localStorage.setItem(GLOBAL_FEED_KEY, JSON.stringify(updatedFeed));
-        setUserPosts(updatedFeed.filter(t => t.authorId === profileId));
-      }
-
-      // محاولة الحفظ في Supabase Auth
-// لا نخزن الصور الضخمة في جلسة Supabase لمنع QuotaExceededError
-
-      if (profileId && profileId !== "guest") {
-        const pObj = target === "avatar" ? { avatar_url: compressedDataUrl } : { cover_url: compressedDataUrl };
-        supabase.auth.getSession().then(({ data: { session } }) => {
-        const uToken = session?.access_token || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubXVuY3hrZnlva25tcWVqZ2hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjAyNDgsImV4cCI6MjEwNjM5NjI0OH0.brz_j92R3j1FmDUyryxpaoIfn4vK_rcZjelYaCd5T0w";
-        fetch("/supabase-api/rest/v1/profiles?id=eq." + profileId, {
-          method: "PATCH",
-          credentials: "omit",
-          headers: {
-            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJubXVuY3hrZnlva25tcWVqZ2hsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA4MjAyNDgsImV4cCI6MjEwNjM5NjI0OH0.brz_j92R3j1FmDUyryxpaoIfn4vK_rcZjelYaCd5T0w",
-            "Authorization": "Bearer " + uToken,
-            "Content-Type": "application/json",
-            "Prefer": "return=representation"
-          },
-          body: JSON.stringify(pObj)
-        }).catch(console.error);
-      });
-      }
-      showToast(target === "avatar" ? "تم تغيير الصورة الشخصية بنجاح! ✅" : "تم تغيير الغلاف بنجاح! ✅");
-    } catch (err) {
-      console.error(err);
-      showToast('تعذر معالجة الصورة، يرجى تجربة صورة أخرى');
+      showToast("تم تحديث الصورة بنجاح ✅");
+    } catch (err: any) {
+      showToast("فشل رفع الصورة: " + (err.message || ''));
+    } finally {
+      setCropImage(null);
+      setCropTarget(null);
     }
   };
 
@@ -856,6 +876,36 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
   };
 
   // إنشاء منشور حقيقي
+
+  const handlePasteUrl = async (e: React.ClipboardEvent) => {
+    const text = e.clipboardData.getData('text');
+    const match = text.match(/\/post\/([a-zA-Z0-9-]+)/) || text.match(/\/tweet\/([a-zA-Z0-9-]+)/);
+    if (match) {
+      e.preventDefault();
+      const postId = match[1];
+      try {
+        const { data, error } = await supabase.from('posts').select('*, profiles:user_id(full_name, username, avatar_url, verification_type)').eq('id', postId).single();
+        if (data) {
+          const originalData = {
+             id: data.id,
+             authorId: data.user_id,
+             authorName: data.profiles?.full_name || 'مستخدم',
+             authorUsername: data.profiles?.username || 'user',
+             authorAvatar: data.profiles?.avatar_url || '',
+             text: data.content,
+             image: data.image_url,
+             createdAt: data.created_at,
+             badgeType: data.profiles?.verification_type || 'none'
+          };
+          setQuoteOriginal(originalData as any);
+          showToast('تم إضافة الاقتباس ✅');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
   const handleCreatePost = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e && e.preventDefault) e.preventDefault();
     if (isPostingModal) return;
@@ -921,14 +971,25 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
 
     
     try {
-      const { data: inserted, error: pErr } = await supabase.from("posts").insert({
-        user_id: profileId,
-        content: newPostText.trim(),
-        image_url: finalImageUrl || null,
-        video_url: finalVideoUrl || null,
-      }).select().single();
-
-      if (pErr) throw pErr;
+      let inserted: any = null;
+      if (quoteOriginal) {
+        const { data: repost, error: rErr } = await supabase.from('post_reposts').insert({
+            post_id: quoteOriginal.id,
+            user_id: profileId,
+            quote_text: newPostText.trim()
+        }).select().single();
+        if (rErr) throw rErr;
+        inserted = repost;
+      } else {
+        const { data, error: pErr } = await supabase.from("posts").insert({
+          user_id: profileId,
+          content: newPostText.trim(),
+          image_url: finalImageUrl || null,
+          video_url: finalVideoUrl || null,
+        }).select().single();
+        if (pErr) throw pErr;
+        inserted = data;
+      }
 
       const realPost: Post = {
         id: inserted?.id || Date.now().toString(),
@@ -947,6 +1008,9 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
         replies: 0,
         reposts: 0,
         views: 1,
+        isRepost: !!quoteOriginal,
+        quote_text: quoteOriginal ? newPostText.trim() : undefined,
+        original: quoteOriginal ? quoteOriginal : undefined,
       };
 
       setUserPosts(prev => [realPost, ...prev]);
@@ -1298,18 +1362,10 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
           </div>
         )}
 
-        {isOwner && (
-          <button
-            onClick={() => coverInputRef.current?.click()}
-            className="absolute bottom-2.5 left-2.5 bg-black/60 hover:bg-black/90 active:scale-95 text-white/90 p-2 rounded-full border border-white/10 transition backdrop-blur-md z-10"
-            title="تغيير صورة الغلاف"
-          >
-            <Camera size={15} />
-          </button>
-        )}
+
 
         {/* أزرار الهيدر العلوية */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-40">
+        <div className="fixed top-3 left-3 right-3 flex items-center justify-between z-50">
           <button
             onClick={() => navigate(-1)}
             className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10"
@@ -1337,13 +1393,13 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
               title="خيارات الحساب"
               className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10"
             >
-              <MoreHorizontal size={14} className="rotate-90 text-[#71767B] hover:text-[#FFC500] transition" />
+              <MoreHorizontal size={22} className="rotate-90 text-white" />
             </button>
 
             {isMenuOpen && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
-                <div className="absolute left-0 top-12 w-44 bg-black/95 backdrop-blur-2xl border border-[#2F3336] rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.95)] p-1.5 z-50 text-xs animate-fade-in divide-y divide-[#2F3336]/60">
+                <div className="fixed inset-0 z-[100]" onClick={() => setIsMenuOpen(false)} />
+                <div className="absolute left-0 top-12 w-44 bg-black/95 backdrop-blur-2xl border border-[#2F3336] rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.95)] p-1.5 z-[110] text-xs animate-fade-in divide-y divide-[#2F3336]/60">
                   {isOwner ? (
                     <div className="space-y-1">
                       <button
@@ -1442,10 +1498,10 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
       </div>
 
       {/* 2. الصورة الشخصية والشارة العلوية */}
-      <div className={`px-4 relative ${isScrolled ? 'z-20' : 'z-50'}`}>
+      <div className={`px-4 relative ${isScrolled ? 'z-10' : 'z-50'}`}>
         <div className="flex justify-between items-end -mt-16 sm:-mt-20 mb-3">
           {/* الصورة الشخصية */}
-          <div className="relative group">
+          <div className="relative group z-50">
             <div className="w-[84px] h-[84px] sm:w-[124px] sm:h-[124px] rounded-full border-4 border-black bg-zinc-950 overflow-hidden shadow-xl flex items-center justify-center">
               {avatarUrl ? (
                 <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
@@ -1456,15 +1512,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
               )}
             </div>
 
-            {isOwner && (
-              <button
-                onClick={() => avatarInputRef.current?.click()}
-                className="absolute bottom-0 right-0 p-1.5 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-90 text-black border-2 border-black shadow-md transition"
-                title="تغيير الصورة الشخصية"
-              >
-                <Camera size={13} />
-              </button>
-            )}
+
           </div>
 
           {/* الجهة المقابلة للصورة: وثّق حسابك مثل أبو شرواني أو أزرار المتابعة */}
@@ -1615,41 +1663,50 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
         </div>
       </div>
 
-      {/* 8. التبويبات */}
-      <div className="sticky top-36 sm:top-40 z-30 bg-black/95 backdrop-blur-md border-b border-[#2F3336]/40 flex items-center justify-around text-sm font-bold">
-        <button 
-          onClick={() => setActiveTab('posts')}
-          className={`py-3 flex-1 flex items-center justify-center gap-1.5 relative transition ${
-            activeTab === 'posts' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'
-          }`}
-        >
-          <span className="flex items-center gap-1.5">
-                        <svg className="w-4 h-4 text-white shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="3" width="18" height="18" rx="2" />
-                          <line x1="7" y1="8" x2="17" y2="8" />
-                          <line x1="7" y1="12" x2="17" y2="12" />
-                          <line x1="7" y1="16" x2="12" y2="16" />
-                        </svg>
-                        <span>المنشورات ({userPosts.length})</span>
-                      </span>
-        
-          {activeTab === 'posts' && <div className="absolute bottom-0 w-16 h-1 bg-white rounded-full" />}
+      {/* 8. التبويبات (نمط X) */}
+      <div className="sticky top-36 sm:top-40 z-40 bg-black border-b border-[#2F3336]/40 flex items-center justify-around text-[14px]" ref={tabsRef}>
+        {/* المنشورات */}
+        <button onClick={() => setActiveTab('posts')} className={`flex-1 py-3.5 flex items-center justify-center relative transition ${activeTab === 'posts' ? 'text-white font-bold' : 'text-[#71767B]'}`}>
+          <div className="flex flex-row items-center gap-1.5 whitespace-nowrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="w-4 h-4 fill-current"><g><path d="M3 4.5C3 3.12 4.12 2 5.5 2h13C19.88 2 21 3.12 21 4.5v15c0 1.38-1.12 2.5-2.5 2.5h-13C4.12 22 3 20.88 3 19.5v-15zM5.5 4c-.28 0-.5.22-.5.5v15c0 .28.22.5.5.5h13c.28 0 .5-.22.5-.5v-15c0-.28-.22-.5-.5-.5h-13zM16 10H8V8h8v2zm-8 2h8v2H8v-2z"></path></g></svg>
+            {activeTab === 'posts' && <span>المنشورات</span>}
+            {activeTab === 'posts' && <svg viewBox="0 0 24 24" fill="none" stroke="#FFC500" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3"><polyline points="6 9 12 15 18 9"></polyline></svg>}
+          </div>
+          {activeTab === 'posts' && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white rounded-t-full" />}
         </button>
 
-        <button 
-          onClick={() => setActiveTab('likes')}
-          className={`py-3 flex-1 flex items-center justify-center relative transition ${
-            activeTab === 'likes' ? 'text-white font-black' : 'text-[#71767B] hover:text-white'
-          }`}
-        >
-          <Heart size={16} />
-          {activeTab === 'likes' && <div className="absolute bottom-0 w-8 h-1 bg-white rounded-full" />}
+        {/* الردود */}
+        <button onClick={() => setActiveTab('replies')} className={`flex-1 py-3.5 flex items-center justify-center relative transition ${activeTab === 'replies' ? 'text-white font-bold' : 'text-[#71767B]'}`}>
+          <div className="flex flex-row items-center gap-1.5 whitespace-nowrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="w-4 h-4 fill-current"><g><path d="M1.751 10c0-4.42 3.584-8 8.005-8h4.366c4.49 0 8.129 3.64 8.129 8.13 0 2.96-1.607 5.68-4.196 7.11l-8.054 4.46v-3.69h-.067c-4.49.1-8.133-3.544-8.133-8.01zm8.005-6c-3.317 0-6.005 2.69-6.005 6 0 3.312 2.688 6 6.005 6h2.067v2.31l5.854-3.24c1.876-1.04 3.034-2.99 3.034-5.03 0-3.316-2.689-6-6.129-6H9.756z"></path></g></svg>
+            {activeTab === 'replies' && <span>الردود</span>}
+            {activeTab === 'replies' && <svg viewBox="0 0 24 24" fill="none" stroke="#FFC500" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3"><polyline points="6 9 12 15 18 9"></polyline></svg>}
+          </div>
+          {activeTab === 'replies' && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white rounded-t-full" />}
+        </button>
+
+        {/* إعادة النشر */}
+        <button onClick={() => setActiveTab('reposts')} className={`flex-1 py-3.5 flex items-center justify-center relative transition ${activeTab === 'reposts' ? 'text-white font-bold' : 'text-[#71767B]'}`}>
+          <div className="flex flex-row items-center gap-1.5 whitespace-nowrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="w-4 h-4 fill-current"><g><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z"></path></g></svg>
+            {activeTab === 'reposts' && <span>إعادة النشر</span>}
+            {activeTab === 'reposts' && <svg viewBox="0 0 24 24" fill="none" stroke="#FFC500" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3"><polyline points="6 9 12 15 18 9"></polyline></svg>}
+          </div>
+          {activeTab === 'reposts' && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white rounded-t-full" />}
+        </button>
+
+        {/* الفيديوهات */}
+        <button onClick={() => setActiveTab('media')} className={`flex-1 py-3.5 flex items-center justify-center relative transition ${activeTab === 'media' ? 'text-white font-bold' : 'text-[#71767B]'}`}>
+          <div className="flex flex-row items-center gap-1.5 whitespace-nowrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="w-4 h-4 fill-current"><g><path d="M3 5.5C3 4.119 4.119 3 5.5 3h13C19.881 3 21 4.119 21 5.5v13c0 1.381-1.119 2.5-2.5 2.5h-13C4.119 21 3 19.881 3 18.5v-13zM5.5 5c-.276 0-.5.224-.5.5v13c0 .276.224.5.5.5h13c.276 0 .5-.224.5-.5v-13c0-.276-.224-.5-.5-.5h-13zM9 9l7 3-7 3V9z"></path></g></svg>
+            {activeTab === 'media' && <span>الفيديوهات</span>}
+            {activeTab === 'media' && <svg viewBox="0 0 24 24" fill="none" stroke="#FFC500" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3"><polyline points="6 9 12 15 18 9"></polyline></svg>}
+          </div>
+          {activeTab === 'media' && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white rounded-t-full" />}
         </button>
       </div>
-
-      {/* 9. المنشورات الفعلية الحقيقية فقط */}
-      <div className="divide-y divide-[#2F3336]/40">
-        {userPosts.length === 0 ? (
+      <div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} className="divide-y divide-[#2F3336]/40 relative z-0">
+        {filteredPosts.length === 0 ? (
           <div className="text-center py-16 px-4">
             <h3 className="text-sm font-bold text-white mb-1 truncate shrink max-w-[130px] sm:max-w-[150px]">
               {isOwner ? 'لم تقم بنشر أي منشور بعد' : `لا توجد منشورات لـ ${name}`}
@@ -1667,7 +1724,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
             )}
           </div>
         ) : (
-          userPosts.map(post => (
+          filteredPosts.map(post => (
             <article 
               key={post.id} 
               className="p-3 border-b border-[#2F3336]/40 hover:bg-white/[0.03] transition cursor-pointer"
@@ -1680,17 +1737,21 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
             >
               <div className="flex gap-3">
                 <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold text-white text-lg truncate shrink max-w-[130px] sm:max-w-[150px]">
+                  <div onClick={(e) => { e.stopPropagation(); openAuthorProfile(post.authorId, { name: post.authorName || name, avatarUrl: post.authorAvatar, username: post.authorUsername }); }} className="w-full h-full cursor-pointer hover:opacity-80 transition">
+                  <div onClick={(e) => { e.stopPropagation(); openAuthorProfile(post.authorId, { name: post.authorName || name, avatarUrl: post.authorAvatar, username: post.authorUsername }); }} className="w-full h-full cursor-pointer hover:opacity-80 transition">
                   {post.authorAvatar ? (
                     <img src={post.authorAvatar} alt={post.authorName || name} className="w-full h-full object-cover" />
                   ) : (
                     <span>{post.authorName?.[0] || name?.[0] || '؟'}</span>
                   )}
+                  </div>
+                  </div>
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-bold text-white text-[12.5px] hover:underline cursor-pointer truncate truncate shrink max-w-[130px] sm:max-w-[150px]">{post.authorName || name}</span>
+                      <span onClick={(e) => { e.stopPropagation(); openAuthorProfile(post.authorId, { name: post.authorName || name, avatarUrl: post.authorAvatar, username: post.authorUsername }); }} className="font-bold text-white text-[12.5px] hover:underline cursor-pointer truncate truncate shrink max-w-[130px] sm:max-w-[150px]">{post.authorName || name}</span>
                       {post.authorBadge && post.authorBadge !== "none" && (
                         <svg className="w-[14.5px] h-[14.5px] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"
                           style={{color: post.authorBadge === "blue" ? "#1D9BF0" : post.authorBadge === "gold" ? "#FFD700" : "#71767B"}}>
@@ -1797,14 +1858,9 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                         loadComments(post.id.startsWith("repost-") && post.original?.id ? post.original.id : post.id);
                       }}
                       onLike={() => handleToggleLike(post.id)}
-                  onViewEngagements={() => { window.location.href = `/post/${viewingDetailPost.id.replace('repost-', '')}/engagements`; }}
+                  onViewEngagements={() => { window.location.href = `/post/${(viewingDetailPost?.id || '').replace('repost-', '')}/engagements`; }}
                       onRepost={() => setRepostMenu(post)}
-                      onShare={() => {
-                        if (navigator.clipboard) {
-                          navigator.clipboard.writeText(window.location.href);
-                          showToast('تم نسخ الرابط');
-                        }
-                      }}
+                      onShare={() => setShareMenuPost(viewingDetailPost)}
                       onBookmark={() => showToast('تمت الإضافة إلى العلامات المرجعية 🔖')}
                     />
                     </div>
@@ -1825,11 +1881,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                     onRepost={(p) => setRepostMenu(p)}
                     onLike={() => handleToggleLike(post.id)}
                     onBookmark={() => {}}
-                    onShare={() => {
-                      if (navigator.clipboard) {
-                        navigator.clipboard.writeText(window.location.href);
-                      }
-                    }}
+                    onShare={(t) => setShareMenuPost(t)}
                     
                   />
                 </div>
@@ -1844,92 +1896,161 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
       {/* شريط التنقل السفلي مع جرس التنبيهات */}
       
 
-      {/* مودال تعديل الملف الشخصي */}
+      {/* مودال تعديل الملف الشخصي (نمط X - شاشة كاملة) */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black  flex items-center flex-nowrap min-w-0 w-full  justify-center p-3 sm:p-4" dir="rtl">
-          <div className="bg-[#000000] border border-[#2F3336] w-full max-w-lg rounded-3xl p-5 sm:p-6 text-white max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[#2F3336]/40 mb-4">
-              <h2 className="text-base font-black">تعديل الملفّ الشخصيّ</h2>
-              <button onClick={() => setIsEditModalOpen(false)} className="text-[#71767B] hover:text-white p-1 rounded-full">
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col overflow-y-auto" dir="rtl">
+          {/* إدخالات الملفات المخفية لربط الكاميرا */}
+          <input type="file" ref={avatarInputRef} className="hidden" accept="image/*" onChange={(e) => handlePhotoUpload(e, 'avatar')} />
+          <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={(e) => handlePhotoUpload(e, 'cover')} />
+
+          {/* هيدر X العلوي */}
+          <div className="sticky top-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-between px-4 h-[76px] border-b border-[#2F3336]">
+            <div className="flex items-center gap-6">
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-white hover:bg-white/10 p-1.5 rounded-full transition"
+                title="رجوع"
+              >
                 <ArrowRight size={20} />
+              </button>
+              <h2 className="text-white font-bold text-[15px]">تعديل الملف الشخصي</h2>
+            </div>
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); handleSaveProfile(e); }}
+              disabled={savingProfile}
+              className="px-4 py-1.5 text-white font-bold text-base rounded-full hover:bg-white/10 transition disabled:opacity-50"
+            >
+              حفظ
+            </button>
+          </div>
+
+          <div className="flex-1 pb-24">
+            {/* الغلاف مع زر الكاميرا */}
+            <div className="relative w-full h-40 sm:h-48 bg-gradient-to-br from-[#0B1528] via-[#050C18] to-black">
+              {coverUrl && <img src={coverUrl} alt="غلاف" className="w-full h-full object-cover" />}
+              <button
+                type="button"
+                onClick={() => coverInputRef.current?.click()}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white p-2.5 rounded-full transition backdrop-blur-md border border-white/20"
+                title="تغيير صورة الغلاف"
+              >
+                <Camera size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-[#71767B] font-bold mb-1">الاسم الكامل</label>
-                <input 
-                  type="text" 
-                  value={editName} 
+            {/* الصورة الشخصية مع زر الكاميرا */}
+            <div className="px-4">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 -mt-12 sm:-mt-14 rounded-full border-4 border-black bg-zinc-950 overflow-hidden shadow-xl">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="صورة" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white text-3xl font-bold bg-[#182338]">
+                    {name ? name[0] : '؟'}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="absolute inset-0 bg-black/50 hover:bg-black/30 flex items-center justify-center text-white transition"
+                  title="تغيير الصورة"
+                >
+                  <Camera size={22} />
+                </button>
+              </div>
+            </div>
+
+            {/* الحقول المسطحة (نمط X) */}
+            <div className="px-4 pt-6 space-y-4">
+              {/* الاسم */}
+              <div className="relative border-b border-[#2F3336] focus-within:border-[#FFC500] transition py-1">
+                <label className="block text-[#71767B] text-xs font-bold mb-1">الاسم</label>
+                <input
+                  type="text"
+                  value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-black border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none" 
+                  onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                  maxLength={50}
+                  className="w-full bg-transparent text-white text-base pb-2 outline-none placeholder-[#71767B]"
+                  placeholder="اسمك الكامل"
                   required
+                />
+                <span className="absolute left-0 bottom-2 text-[10px] text-[#71767B]">{editName.length}/50</span>
+              </div>
+
+              {/* النبذة */}
+              <div className="relative border-b border-[#2F3336] focus-within:border-[#FFC500] transition py-1">
+                <label className="block text-[#71767B] text-xs font-bold mb-1">النبذة التعريفية</label>
+                <textarea
+                  value={editBio}
+                  onChange={(e) => setEditBio(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                  maxLength={160}
+                  rows={2}
+                  className="w-full bg-transparent text-white text-base pb-2 outline-none resize-none placeholder-[#71767B] overflow-hidden"
+                  placeholder="عرّف بنفسك..."
+                />
+                <span className="absolute left-0 bottom-2 text-[10px] text-[#71767B]">{editBio.length}/160</span>
+              </div>
+
+              {/* الموقع */}
+              <div className="relative border-b border-[#2F3336] focus-within:border-[#FFC500] transition py-1">
+                <label className="block text-[#71767B] text-xs font-bold mb-1">الموقع الجغرافي</label>
+                <input
+                  type="text"
+                  value={editLocation}
+                  onChange={(e) => setEditLocation(e.target.value)}
+                  className="w-full bg-transparent text-white text-base pb-2 outline-none placeholder-[#71767B]"
+                  placeholder="مثال: صنعاء، اليمن"
                 />
               </div>
 
-              <div>
-                <label className="block text-[#71767B] font-bold mb-1">رقم الهاتف</label>
-                <input 
-                  type="tel" 
-                  value={editPhone} 
+              {/* المعرّف */}
+              <div className="relative border-b border-[#2F3336] focus-within:border-[#FFC500] transition py-1">
+                <label className="block text-[#71767B] text-xs font-bold mb-1">المعرّف (@Username)</label>
+                <input
+                  type="text"
+                  value={editUsername}
+                  onChange={(e) => setEditUsername(e.target.value)}
+                  className="w-full bg-transparent text-white text-base pb-2 outline-none placeholder-[#71767B]"
+                  placeholder="username"
+                  dir="ltr"
+                />
+              </div>
+
+              {/* الهاتف */}
+              <div className="relative border-b border-[#2F3336] focus-within:border-[#FFC500] transition py-1">
+                <label className="block text-[#71767B] text-xs font-bold mb-1">رقم الهاتف</label>
+                <input
+                  type="tel"
+                  value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-black border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none font-mono" 
+                  onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                  className="w-full bg-transparent text-white text-base pb-2 outline-none placeholder-[#71767B]"
                   placeholder="+967 77xxxxxxx"
                   dir="ltr"
                 />
               </div>
 
-              <div>
-                <label className="block text-[#71767B] font-bold mb-1">المعرّف (@Username)</label>
-                <input 
-                  type="text" 
-                  value={editUsername} 
-                  onChange={(e) => setEditUsername(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-black border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none font-mono" 
-                  dir="ltr"
-                />
+              {/* تاريخ الميلاد */}
+              <div className="relative border-b border-[#2F3336] focus-within:border-[#FFC500] transition py-1">
+                <label className="block text-[#71767B] text-xs font-bold mb-1">تاريخ الميلاد</label>
+                <CustomDatePicker value={editBirthDate} onChange={setEditBirthDate} />
               </div>
 
-              <div>
-                <label className="block text-[#71767B] font-bold mb-1">النبذة التعريفية (Bio)</label>
-                <RichTextarea
-                    autoFocus
-                    value={newPostText}
-                    onChange={(e) => setNewPostText(e.target.value)}
-                    placeholder="ماذا يحدث؟"
-                  />
-              </div>
-
-              <div>
-                <label className="block text-[#71767B] font-bold mb-1">الموقع / المدينة</label>
-                <input 
-                  type="text" 
-                  value={editLocation} 
-                  onChange={(e) => setEditLocation(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-black border border-[#2F3336] text-white focus:border-[#FFC500] focus:outline-none" 
-                  placeholder="صنعاء، اليمن"
-                />
-              </div>
-
-              <div className="pt-2 space-y-2">
-                <button
-                  type="submit"
-                  disabled={savingProfile}
-                  className="w-full py-3 rounded-full bg-white hover:bg-zinc-200 active:scale-98 text-black font-extrabold text-sm transition"
-                >
-                  {savingProfile ? 'جاري الحفظ...' : 'حفظ التعديلات'}
-                </button>
-
+              {/* زر تسجيل الخروج (أسفل الصفحة) */}
+              <div className="pt-6">
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="w-full py-2.5 rounded-full border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 font-bold text-xs transition flex items-center justify-center gap-1.5"
+                  className="w-full py-3 rounded-full border border-rose-500/40 text-rose-500 hover:bg-rose-500/10 font-bold text-sm transition flex items-center justify-center gap-2"
                 >
-                  <LogOut size={15} />
+                  <LogOut size={16} />
                   <span>تسجيل الخروج من الحساب</span>
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
@@ -1961,7 +2082,9 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
       )}
       
       {isPostModalOpen && (
-        <div 
+        <div
+
+ 
           className="fixed inset-0 z-[150] bg-black text-white flex flex-col justify-between overflow-hidden" 
           dir="rtl"
           style={{ 
@@ -1969,6 +2092,19 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
             maxHeight: modalHeight ? `${modalHeight}px` : '100dvh'
           }}
         >
+          <input type="file" ref={postImageInputRef} className="hidden" accept="image/*,video/*" onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                if (file.type.startsWith('video/')) {
+                  setNewPostFile(file);
+                  setNewPostImage(URL.createObjectURL(file));
+                } else {
+                  const reader = new FileReader();
+                  reader.onload = (ev) => { setNewPostImage(ev.target?.result as string); setNewPostFile(file); };
+                  reader.readAsDataURL(file);
+                }
+              }
+            }} />
           {/* كود صارم لإلغاء أي مستطيل أو إطار تركيز من المتصفح */}
           <style>{`
             .clean-tweet-textarea,
@@ -2026,7 +2162,23 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                     value={newPostText}
                     onChange={(e) => setNewPostText(e.target.value)}
                     placeholder="ماذا يحدث؟"
+                    onPaste={handlePasteUrl}
                   />
+                {quoteOriginal && (
+                  <div className="rounded-[12px] border border-white/[0.08] p-2.5 mb-4 mt-2 select-none overflow-hidden relative" dir="rtl">
+                    <button onClick={() => setQuoteOriginal(null)} className="absolute top-2 left-2 z-10 bg-black/60 p-1 rounded-full text-white"><X size={14} /></button>
+                    <div className="flex items-center gap-1.5 text-xs mb-1.5 overflow-hidden">
+                       <img src={quoteOriginal.authorAvatar} className="w-[18px] h-[18px] rounded-full object-cover shrink-0" />
+                       <span className="font-bold text-[#E7E9EA] truncate text-[13px]">{quoteOriginal.authorName}</span>
+                       <span className="text-[#71767B] truncate text-[12px] shrink max-w-[80px]" dir="ltr">@{quoteOriginal.authorUsername}</span>
+                    </div>
+                    <p className="text-[13px] text-[#E7E9EA] leading-[1.38] whitespace-pre-wrap line-clamp-3">
+                       <HashtagText text={quoteOriginal.text} />
+                    </p>
+                    {quoteOriginal.image && <img src={quoteOriginal.image} className="mt-2 rounded-lg max-h-40 object-cover" />}
+                  </div>
+                )}
+
                 </div>
 
                 {/* معاينة الوسائط عند اختيارها */}
@@ -2303,15 +2455,11 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                     setViewingDetailPost(null);
                     loadComments(viewingDetailPost.id);
                   }}
-                  onViewEngagements={() => { window.location.href = `/post/${viewingDetailPost.id.replace('repost-', '')}/engagements`; }}
+                  onViewEngagements={() => { window.location.href = `/post/${(viewingDetailPost?.id || '').replace('repost-', '')}/engagements`; }}
                       onRepost={() => handleRepost(viewingDetailPost.id)}
                   onLike={() => handleToggleLike(viewingDetailPost.id)}
                   onBookmark={() => {}}
-                  onShare={() => {
-                    if (navigator.clipboard) {
-                      navigator.clipboard.writeText(window.location.href);
-                    }
-                  }}
+                  onShare={(t) => setShareMenuPost(t)}
                   
                 />
               </div>
@@ -2351,11 +2499,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
                                 setNewCommentText((prev) => (prev.includes(mention) ? prev : mention + prev));
                               }}
                               onLike={() => {}}
-                              onShare={() => {
-                                if (navigator.clipboard) {
-                                  navigator.clipboard.writeText(window.location.href);
-                                }
-                              }}
+                              onShare={(t) => setShareMenuPost(t)}
                             />
                           </div>
                         </div>
@@ -2552,7 +2696,7 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
           onReply={() => setViewingImagePost(null)}
           onLike={() => {}}
           onRepost={() => {}}
-          onShare={() => {}}
+          onShare={() => setShareMenuPost(viewingImagePost)}
         />
       )}
 
@@ -2579,6 +2723,63 @@ const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target:
             </div>
           </div>
         </div>
+      )}
+
+      {/* نافذة المشاركة (نمط X) */}
+      {shareMenuPost && (
+        <div className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-sm flex items-end justify-center p-0 sm:p-4" onClick={() => setShareMenuPost(null)}>
+          <div className="w-full max-w-md bg-[#0A0A0A] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border-t sm:border border-[#2F3336]" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 text-center text-white font-bold border-b border-[#2F3336]">
+              مشاركة التغريدة
+            </div>
+            <button 
+              onClick={() => {
+                const url = window.location.origin + '/post/' + (shareMenuPost.id || '').replace('repost-', '') + '/engagements';
+                const el = document.createElement('textarea');
+                el.value = url;
+                el.style.position = 'fixed';
+                el.style.opacity = '0';
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                showToast('تم نسخ رابط التغريدة');
+                setShareMenuPost(null);
+              }}
+              className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition flex items-center gap-3 border-b border-[#2F3336]/60"
+            >
+              <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              نسخ الرابط
+            </button>
+            <button 
+              onClick={() => {
+                const url = window.location.origin + '/post/' + (shareMenuPost.id || '').replace('repost-', '') + '/engagements';
+                if (navigator.share) {
+                  navigator.share({ title: 'Yemen Rating', text: shareMenuPost.text || '', url: url }).catch(console.error);
+                }
+                setShareMenuPost(null);
+              }}
+              className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition flex items-center gap-3 border-b border-[#2F3336]/60"
+            >
+              <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+              مشاركة عبر...
+            </button>
+            <button 
+              onClick={() => setShareMenuPost(null)}
+              className="w-full p-4 text-center text-[#71767B] font-bold hover:bg-white/5 transition"
+            >
+              إلغاء
+            </button>
+          </div>
+        </div>
+      )}
+      {cropImage && cropTarget && (
+        <ImageCropper
+          image={cropImage}
+          aspect={cropTarget === 'avatar' ? 1 : 3}
+          onCrop={handleCropSave}
+          onCancel={() => { setCropImage(null); setCropTarget(null); }}
+        />
       )}
     </div>
   );
