@@ -13,7 +13,7 @@ export default defineConfig({
           includeAssets: ['yr-logo.png', 'icon-512.png'],
           manifest: {
             name: 'يمن ريتنج',
-            short_name: 'YR',
+            short_name: 'يمن ريتنج',
             description: 'منصة يمن ريتنج',
             theme_color: '#000000',
             background_color: '#000000',
