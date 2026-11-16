@@ -3,35 +3,19 @@ import { XActionBar } from '../components/feed/XActionBar';
 import { XVideoPlayer } from '../components/feed/XVideoPlayer';
 import { SupportModal } from '../components/support/SupportModal';
 
-// تنظيف أمان لمنع امتلاء localStorage وضمان وجود مساحة لرمز جلسة Supabase
-try {
-  const cleanKey = 'yr_storage_cleaned_v2';
-  if (!localStorage.getItem(cleanKey)) {
-    // إزالة السجلات المتضخمة القديمة فقط مع الحفاظ على بيانات الدخول
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (k && (k.startsWith('yr_x_') || k.startsWith('yr_user_profile_') || k === 'yr_community_reports')) {
-        localStorage.removeItem(k);
-      }
-    }
-    localStorage.setItem(cleanKey, 'true');
-  }
-} catch (_) {}
-
 'use client';
 
 import PostEngagementsModal from '../components/feed/PostEngagementsModal';
 import { RichTextarea } from '../components/common/RichTextarea';
-import { CustomDatePicker } from '../components/common/CustomDatePicker';
 import { ImageCropper } from '../components/common/ImageCropper';
 import { HashtagText } from '../components/common/HashtagText';
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { XImagePlayer } from '../components/feed/XImagePlayer';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation, useParams } from 'react-router-dom';
 import { supabase } from "../lib/supabase";
 import { getUserProfile, updateUserProfile, getUserPosts, createPost, deletePost, togglePostLike, toggleFollow, checkIsFollowing, toggleBlockUser, checkIsBlocked, uploadSocialImage, Profile, PostItem } from "../services/socialService";
-import { Bookmark, ArrowRight, BarChart2,
+import { Star, ArrowRight, BarChart2,
   RotateCw,
   MoreHorizontal,
   MapPin,
@@ -68,8 +52,16 @@ import { Bookmark, ArrowRight, BarChart2,
   CreditCard, Building2 } from 'lucide-react';
 import { AuthModal } from '../components/auth/AuthModal';
 import { ReportPage } from '../components/community/ReportPage';
-import { CreateBusinessPageModal, BusinessPageDraft } from '../components/business/CreateBusinessPageModal';
-import { getStoredBusinessPage, saveStoredBusinessPage, StoredBusinessPage } from '../utils/businessPageDraft';
+import { RateBusinessModal } from '../components/reviews/RateBusinessModal';
+import {
+  getStoredBusinessPage,
+  saveStoredBusinessPage,
+  getStoredBusinessPosts,
+  getStoredBusinessReviews,
+  addStoredBusinessReview,
+  StoredBusinessPage,
+  StoredBusinessReview,
+} from '../utils/businessPageDraft';
 
 interface Post {
   id: string;
@@ -166,7 +158,7 @@ const compressImage = (file: File, maxWidth: number, maxHeight: number, quality 
 };
 
 
-export const VerifiedBadge: React.FC<{ type?: string | boolean; size?: number }> = ({ type, size = 19 }) => {
+const VerifiedBadge: React.FC<{ type?: string | boolean; size?: number }> = ({ type, size = 19 }) => {
   // 1. معالجة القيم الفارغة أو "none"
   if (!type || type === "none") return null;
   const bType = type === true ? "blue" : type;
@@ -197,7 +189,8 @@ export const VerifiedBadge: React.FC<{ type?: string | boolean; size?: number }>
   );
 };
 
-export const AccountPage: React.FC = () => {
+export const BusinessPage: React.FC = () => {
+  const { id: routeBusinessId } = useParams<{ id?: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const routerLocation = useLocation();
@@ -230,7 +223,10 @@ export const AccountPage: React.FC = () => {
 
   const [ownedBusinessId, setOwnedBusinessId] = useState<string | null>(null);
   const [businessPage, setBusinessPage] = useState<StoredBusinessPage | null>(() => getStoredBusinessPage());
-  const [isCreateBizModalOpen, setIsCreateBizModalOpen] = useState(false);
+  const [bizRating, setBizRating] = useState<number>(0);
+  const [bizReviewCount, setBizReviewCount] = useState<number>(0);
+  const [bizReviews, setBizReviews] = useState<StoredBusinessReview[]>([]);
+  const [isRateModalOpen, setIsRateModalOpen] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string>('بدء...');
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -296,7 +292,7 @@ export const AccountPage: React.FC = () => {
   const [dmContent, setDmContent] = useState("");
 
   // المنشورات
-  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'reposts' | 'media' | 'likes'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'reposts' | 'media' | 'reviews' | 'likes'>('posts');
 
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -315,7 +311,7 @@ export const AccountPage: React.FC = () => {
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > 50;
     const isRightSwipe = distance < -50;
-    const tabs: ('posts' | 'replies' | 'reposts' | 'media')[] = ['posts', 'replies', 'reposts', 'media'];
+    const tabs: ('posts' | 'replies' | 'reposts' | 'media' | 'reviews')[] = ['posts', 'replies', 'reposts', 'media', 'reviews'];
     const currentIndex = tabs.indexOf(activeTab as any);
     if (isLeftSwipe && currentIndex < tabs.length - 1) setActiveTab(tabs[currentIndex + 1]);
     if (isRightSwipe && currentIndex > 0) setActiveTab(tabs[currentIndex - 1]);
@@ -323,11 +319,35 @@ export const AccountPage: React.FC = () => {
 
 
   const [userPosts, setUserPosts] = useState<Post[]>(() => {
-    try {
-      const cached = localStorage.getItem("yr_my_account_posts");
-      return cached ? JSON.parse(cached) : [];
-    } catch { return []; }
+    const activeBizId = routeBusinessId || navState?.id || getStoredBusinessPage()?.id || 'draft-business';
+    return getStoredBusinessPosts(activeBizId);
   });
+
+  useEffect(() => {
+    const stored = getStoredBusinessPage();
+    const activeBizId = routeBusinessId || navState?.id || stored?.id || 'draft-business';
+    setName(navState?.name || stored?.name || 'صفحة المنشأة');
+    setUsername(navState?.username || stored?.username || 'business');
+    if (navState?.avatarUrl || stored?.avatarUrl) setAvatarUrl(navState?.avatarUrl || stored?.avatarUrl || '');
+    if (navState?.coverUrl || stored?.coverUrl) setCoverUrl(navState?.coverUrl || stored?.coverUrl || '');
+    setBio(navState?.description || stored?.description || '');
+    setLocation(navState?.city || stored?.city || 'صنعاء، اليمن');
+    setPhone(navState?.phone || stored?.phone || '');
+    if (typeof navState?.isOwner === 'boolean') setIsOwner(navState.isOwner);
+    if (stored) setBusinessPage(stored);
+    setUserPosts(getStoredBusinessPosts(activeBizId));
+
+    const existingRevs = getStoredBusinessReviews(activeBizId);
+    setBizReviews(existingRevs);
+    if (existingRevs.length > 0) {
+      const avg = Number((existingRevs.reduce((acc, r) => acc + r.stars, 0) / existingRevs.length).toFixed(1));
+      setBizRating(avg);
+      setBizReviewCount(existingRevs.length);
+    } else {
+      setBizRating(navState?.rating ?? stored?.rating ?? 0);
+      setBizReviewCount(navState?.reviewCount ?? stored?.reviewCount ?? 0);
+    }
+  }, [routeBusinessId]);
   useEffect(() => {
     if (activeTab === 'replies' && userPosts.length > 0) {
       const parentIds = [...new Set(userPosts.filter(p => p.parent_id).map(p => p.parent_id))].filter(Boolean) as string[];
@@ -615,41 +635,11 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       setIsOwner(viewingOwner);
       setProfileId(targetId);
 
-      // بديل فوري في 0 ثانية لحسابي من بيانات الجلسة حتى لا تنتظر الصفحة
       if (viewingOwner && user) {
-        const meta = user.user_metadata || {};
-        setName(meta.full_name || meta.name || user.email?.split("@")[0] || "مستخدم يمن ريتنج");
-        setUsername(meta.username || user.email?.split("@")[0] || "user");
-        if (meta.avatar_url) setAvatarUrl(meta.avatar_url);
-        if (meta.bio) setBio(meta.bio);
         setEmail(user.email || "");
-        setPhone(meta.phone || user.phone || "");
-        if (user.created_at) {
-          const d = new Date(user.created_at);
-          const months = ["يناير", "فبراير", "مارس", "إبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-          setJoinDate("انضم في " + months[d.getMonth()] + " " + d.getFullYear());
-        }
-        // إزالة شاشة التحميل فوراً لحسابك
         setLoading(false);
       }
-
-      // جلب السحابة مع حماية أقصاها 2.5 ثانية لمنع أي تعليق
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject("timeout"), 2500));
-
-      try {
-        const pData: any = await getUserProfile(targetId);
-        if (pData) {
-          if (pData.full_name) setName(pData.full_name); else if (navState.name) setName(navState.name);
-          if (pData.username) setUsername(pData.username); else if (navState.username) setUsername(navState.username);
-          if (pData.avatar_url) setAvatarUrl(pData.avatar_url); else if (navState.avatarUrl) setAvatarUrl(navState.avatarUrl);
-          if (pData.cover_url) setCoverUrl(pData.cover_url);
-          if (pData.bio) setBio(pData.bio);
-          if (pData.location) setLocation(pData.location);
-          setFollowersCount(pData.followers_count || 0);
-          setFollowingCount(pData.following_count || 0);
-          setVerificationType(pData.verification_type || (pData.is_verified ? "blue" : "none"));
-        }
-      } catch (_) {}
 
       // فحص المتابعة والحظر
       if (myId && myId !== targetId) {
@@ -666,7 +656,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       // جلب التغريدات
       try {
         console.log('🟢 Before getUserPosts — targetId:', targetId, '| myId:', myId);
-        const dbPosts: any = await getUserPosts(targetId, myId);
+        const dbPosts: any = getStoredBusinessPosts(routeBusinessId || navState?.id || getStoredBusinessPage()?.id || 'draft-business');
         
         const errMsg = (window as any).__lastGetUserPostsError;
         if (errMsg) {
@@ -755,8 +745,9 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   useEffect(() => {
     if (!profileId || profileId === 'guest') return;
     
+    return;
     const channel = supabase
-      .channel(`account-posts-${profileId}`)
+      .channel(`business-posts-${profileId}`)
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'posts',
         filter: `user_id=eq.${profileId}`,
@@ -864,12 +855,21 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       const { data: pubData } = supabase.storage.from('social-media').getPublicUrl(filePath);
       const url = pubData.publicUrl;
 
+      const currBiz = getStoredBusinessPage();
       if (cropTarget === 'avatar') {
         setAvatarUrl(url);
-        await updateUserProfile(profileId, { avatar_url: url });
+        if (currBiz) {
+          const updatedBiz = { ...currBiz, avatarUrl: url };
+          saveStoredBusinessPage(updatedBiz);
+          setBusinessPage(updatedBiz);
+        }
       } else {
         setCoverUrl(url);
-        await updateUserProfile(profileId, { cover_url: url });
+        if (currBiz) {
+          const updatedBiz = { ...currBiz, coverUrl: url };
+          saveStoredBusinessPage(updatedBiz);
+          setBusinessPage(updatedBiz);
+        }
       }
       showToast("تم تحديث الصورة بنجاح ✅");
     } catch (err: any) {
@@ -884,62 +884,31 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingProfile(true);
-
-    const updated = {
-      id: profileId,
-      name: editName.trim() || name,
-      phone: editPhone.trim(),
-      username: editUsername.trim() || username,
-      bio: editBio.trim(),
-      location: editLocation.trim(),
-      birthDate: editBirthDate.trim(),
-      avatarUrl,
-      coverUrl,
-    };
-
-    setName(updated.name);
-    setPhone(updated.phone);
-    setUsername(updated.username);
-    setBio(updated.bio);
-    setLocation(updated.location);
-    setBirthDate(updated.birthDate);
-
-    // حفظ في دليل المستخدمين
-    const usersDir = JSON.parse(localStorage.getItem(USERS_DIR_KEY) || '{}');
-    usersDir[profileId] = { ...usersDir[profileId], ...updated };
-    safeSetStorage(USERS_DIR_KEY, usersDir);
-
-    // تحديث اسم المغرد في تغريداته
-    const globalFeed: Post[] = JSON.parse(localStorage.getItem(GLOBAL_FEED_KEY) || '[]');
-    const synced = globalFeed.map(t => t.authorId === profileId ? { ...t, authorName: updated.name, authorUsername: updated.username } : t);
-    localStorage.setItem(GLOBAL_FEED_KEY, JSON.stringify(synced));
-    setUserPosts(synced.filter(t => t.authorId === profileId));
-
     try {
-      if (sessionUser) {
-        // نرسل البيانات النصية فقط إلى Supabase Auth حتى لا يتضخم رمز الجلسة auth-token
-        await supabase.auth.updateUser({
-          data: {
-            full_name: updated.name,
-            phone: updated.phone,
-            username: updated.username,
-            bio: updated.bio,
-          }
-        }).catch(() => {});
-        if (profileId && profileId !== "guest") {
-          await supabase.from("profiles").update({
-            full_name: updated.name,
-            username: updated.username,
-            phone: updated.phone,
-            bio: updated.bio,
-            location: updated.location
-          }).eq("id", profileId);
-        }
+      const nextName = editName.trim() || name;
+      const nextPhone = editPhone.trim();
+      const nextUsername = editUsername.trim().replace(/^@+/, '') || username;
+      const nextBio = editBio.trim();
+      const nextLocation = editLocation.trim();
+      setName(nextName);
+      setPhone(nextPhone);
+      setUsername(nextUsername);
+      setBio(nextBio);
+      setLocation(nextLocation);
+      const currBiz = getStoredBusinessPage();
+      if (currBiz) {
+        const updatedBiz: StoredBusinessPage = {
+          ...currBiz,
+          name: nextName,
+          username: nextUsername,
+          phone: nextPhone,
+          description: nextBio,
+          city: nextLocation,
+        };
+        saveStoredBusinessPage(updatedBiz);
+        setBusinessPage(updatedBiz);
       }
-      showToast('تم حفظ التعديلات بنجاح');
-      setIsEditModalOpen(false);
-    } catch (_) {
-      showToast('تم الحفظ محلياً بنجاح!');
+      showToast('تم حفظ تعديلات صفحة المنشأة بنجاح ✅');
       setIsEditModalOpen(false);
     } finally {
       setSavingProfile(false);
