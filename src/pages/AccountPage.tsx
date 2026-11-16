@@ -68,6 +68,8 @@ import { Bookmark, ArrowRight, BarChart2,
   CreditCard, Building2 } from 'lucide-react';
 import { AuthModal } from '../components/auth/AuthModal';
 import { ReportPage } from '../components/community/ReportPage';
+import { CreateBusinessPageModal, BusinessPageDraft } from '../components/business/CreateBusinessPageModal';
+import { getStoredBusinessPage, saveStoredBusinessPage, StoredBusinessPage } from '../utils/businessPageDraft';
 
 interface Post {
   id: string;
@@ -227,6 +229,8 @@ export const AccountPage: React.FC = () => {
   
 
   const [ownedBusinessId, setOwnedBusinessId] = useState<string | null>(null);
+  const [businessPage, setBusinessPage] = useState<StoredBusinessPage | null>(() => getStoredBusinessPage());
+  const [isCreateBizModalOpen, setIsCreateBizModalOpen] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string>('بدء...');
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -1636,6 +1640,17 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                         <CreditCard size={16} className="text-[#FFC500] flex-shrink-0" />
                         <span className="text-white text-sm">مدفوعاتي</span>
                       </button>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard?.writeText(window.location.href);
+                          setIsMenuOpen(false);
+                          showToast('تم نسخ رابط الملف الشخصي!');
+                        }}
+                        className="w-full px-3 py-2.5 text-right hover:bg-white/10 active:bg-white/15 flex items-center gap-3 text-white font-bold transition rounded-xl"
+                      >
+                        <Share2 size={16} className="text-[#FFC500] flex-shrink-0" />
+                        <span className="text-white text-sm">مشاركة الحساب</span>
+                      </button>
                       {ownedBusinessId && (
                         <button
                           onClick={() => { setIsMenuOpen(false); navigate(`/owner?id=${ownedBusinessId}`); }}
@@ -1862,15 +1877,39 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
             </button>
           )}
 
-          <button
-            onClick={() => {
-              navigator.clipboard?.writeText(window.location.href);
-              showToast('تم نسخ رابط الملف الشخصي!');
-            }}
-            className="w-full py-2 px-4 rounded-full border border-[#536471] hover:bg-white/10 active:scale-[0.98] text-white text-sm font-bold transition flex items-center justify-center gap-1.5"
-          >
-            <span>مشاركة</span>
-          </button>
+          {isOwner ? (
+            <button
+              onClick={() => {
+                if (businessPage) {
+                  navigate(`/business-page/${businessPage.id}`, {
+                    state: {
+                      ...businessPage,
+                      isOwner: true,
+                      viewerName: name,
+                      viewerUsername: username,
+                      viewerAvatar: avatarUrl,
+                    },
+                  });
+                } else {
+                  setIsCreateBizModalOpen(true);
+                }
+              }}
+              className="w-full py-2 px-4 rounded-full border border-[#536471] hover:bg-white/10 active:scale-[0.98] text-white text-sm font-bold transition flex items-center justify-center gap-1.5 min-w-0"
+            >
+              <Building2 size={14} className="text-[#FFC500] shrink-0" />
+              <span className="truncate">{businessPage ? businessPage.name : 'إنشاء صفحة منشأة'}</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                navigator.clipboard?.writeText(window.location.href);
+                showToast('تم نسخ رابط الملف الشخصي!');
+              }}
+              className="w-full py-2 px-4 rounded-full border border-[#536471] hover:bg-white/10 active:scale-[0.98] text-white text-sm font-bold transition flex items-center justify-center gap-1.5"
+            >
+              <span>مشاركة</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -3338,6 +3377,35 @@ ${url}` : url;
           onCancel={() => { setCropImage(null); setCropTarget(null); }}
         />
       )}
+
+      <CreateBusinessPageModal
+        isOpen={isCreateBizModalOpen}
+        onClose={() => setIsCreateBizModalOpen(false)}
+        onCreated={(draft: BusinessPageDraft) => {
+          const newPage: StoredBusinessPage = {
+            id: `biz-${Date.now()}`,
+            ownerId: profileId || sessionUser?.id,
+            name: draft.name,
+            username: draft.username,
+            businessType: draft.businessType,
+            city: draft.city,
+            phone: draft.phone,
+            description: draft.description,
+            avatarUrl: draft.avatarUrl,
+            coverUrl: draft.coverUrl,
+            verificationType: 'none',
+            rating: 0,
+            reviewCount: 0,
+            followersCount: 0,
+            followingCount: 0,
+            createdAt: new Date().toISOString(),
+          };
+          saveStoredBusinessPage(newPage);
+          setBusinessPage(newPage);
+          setIsCreateBizModalOpen(false);
+          showToast(`تم إنشاء صفحة "${newPage.name}" بنجاح`);
+        }}
+      />
     </div>
   );
 };

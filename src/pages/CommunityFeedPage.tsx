@@ -15,6 +15,8 @@ import { supabase } from '../lib/supabase';
 import { ActiveUsersBar } from '../components/community/ActiveUsersBar';
 import { ReplyBar } from '../components/community/ReplyBar';
 import { ReportPage } from '../components/community/ReportPage';
+import { RateBusinessModal } from '../components/reviews/RateBusinessModal';
+import { getStoredBusinessPage, addStoredBusinessReview, StoredBusinessPage } from '../utils/businessPageDraft';
 import { 
   ArrowRight,
   Image as ImageIcon,
@@ -97,6 +99,9 @@ interface Tweet {
   views_count?: number;
   replies?: number;
   comments?: Comment[];
+  isBusinessPost?: boolean;
+  businessId?: string;
+  isRated?: boolean;
 }
 
 
@@ -179,6 +184,9 @@ export const CommunityFeedPage: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [activeMenuPost, setActiveMenuPost] = useState<any>(null);
   const [shareMenuPost, setShareMenuPost] = useState<any>(null);
+  const [myBusinessPage, setMyBusinessPage] = useState<StoredBusinessPage | null>(() => getStoredBusinessPage());
+  const [publishAsBusiness, setPublishAsBusiness] = useState<boolean>(false);
+  const [ratingTargetTweet, setRatingTargetTweet] = useState<any>(null);
   const [shareUsers, setShareUsers] = useState<any[]>([]);
   const [shareSearch, setShareSearch] = useState('');
   const [selectedShareUsers, setSelectedShareUsers] = useState<string[]>([]);
@@ -950,6 +958,38 @@ export const CommunityFeedPage: React.FC = () => {
       return;
     }
 
+    if (publishAsBusiness && myBusinessPage && !quoteOriginal) {
+      setIsPosting(true);
+      const bizTweet: Tweet = {
+        id: `biz-post-${Date.now()}`,
+        authorId: activeUser.id,
+        authorName: myBusinessPage.name,
+        authorUsername: myBusinessPage.username,
+        authorAvatar: myBusinessPage.avatarUrl,
+        badgeType: myBusinessPage.verificationType || 'none',
+        isBusinessPost: true,
+        businessId: myBusinessPage.id,
+        text: textToSend,
+        image: tweetImage || undefined,
+        createdAt: new Date().toISOString(),
+        likes: 0,
+        likedBy: [],
+        reposts: 0,
+        repostedBy: [],
+        views: 1,
+        comments: [],
+      };
+      setTweets([bizTweet, ...tweets]);
+      setTweetText('');
+      setTweetImage('');
+      setSelectedFile(null);
+      if (imageInputRef.current) imageInputRef.current.value = '';
+      setIsPostModalOpen(false);
+      setIsPosting(false);
+      showToast(`تم النشر باسم "${myBusinessPage.name}"`);
+      return;
+    }
+
     setIsPosting(true);
     let finalImageUrl: string | null = null;
     let finalVideoUrl: string | null = null;
@@ -1470,6 +1510,26 @@ const handleAddComment = (e?: React.FormEvent) => {
   }
 
   const openAuthorProfile = (authorId: string, tweetData?: any) => {
+    if (tweetData?.isBusinessPost || tweetData?.businessId || tweetData?.business_id) {
+      const bizId = tweetData.businessId || tweetData.business_id || authorId;
+      const latestBiz = getStoredBusinessPage();
+      navigate(`/business-page/${bizId}`, {
+        state: {
+          ...(latestBiz && latestBiz.id === bizId ? latestBiz : {}),
+          id: bizId,
+          name: tweetData.authorName,
+          username: tweetData.authorUsername,
+          avatarUrl: tweetData.authorAvatar,
+          verificationType: tweetData.badgeType || tweetData.authorBadge || 'none',
+          isOwner: authorId === currentUserId,
+          viewerName: myName,
+          viewerUsername: myUsername,
+          viewerAvatar: myAvatar,
+        },
+      });
+      return;
+    }
+
     const navState = tweetData ? {
       name: tweetData.authorName,
       avatarUrl: tweetData.authorAvatar,
@@ -1594,7 +1654,7 @@ const handleAddComment = (e?: React.FormEvent) => {
           </button>
 
           <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-            <img src="/yr-logo.png" alt="Yemen Rating" className="w-8 h-8 object-contain hover:opacity-85 transition" />
+            <img src="/yr-community-logo.png" alt="Yemen Rating" className="w-7 h-7 object-contain hover:opacity-85 transition" />
           </div>
 
           <button onClick={() => navigate("/premium")} className="px-3 py-1 rounded-full bg-[#202327] hover:bg-[#2c3035] text-white text-[12px] font-bold flex flex-row-reverse items-center gap-1.5 transition active:scale-95 shadow-sm">
@@ -1809,6 +1869,7 @@ displayedTweets.map(tweet => {
                       onRepost={(p) => setRepostMenu(p)}
                       onLike={() => handleLike(tweet.id)}
                       onBookmark={() => {}}
+                      onRate={(t) => setRatingTargetTweet(t)}
                       onShare={(t) => setShareMenuPost(t)}
                       currentUserId={currentUserId}
                     />
@@ -1825,6 +1886,37 @@ displayedTweets.map(tweet => {
       {/* قائمة إعادة النشر / اقتباس */}
       {viewingEngagementsPost && (
         <PostEngagementsModal post={viewingEngagementsPost} onClose={() => setViewingEngagementsPost(null)} />
+      )}
+
+      {ratingTargetTweet && (
+        <RateBusinessModal
+          isOpen={Boolean(ratingTargetTweet)}
+          onClose={() => setRatingTargetTweet(null)}
+          businessId={ratingTargetTweet.businessId || ratingTargetTweet.business_id || ratingTargetTweet.authorId}
+          businessName={ratingTargetTweet.authorName || 'المنشأة'}
+          businessAvatar={ratingTargetTweet.authorAvatar}
+          reviewerName={myName || 'مستخدم'}
+          reviewerUsername={myUsername}
+          reviewerAvatar={myAvatar}
+          onSubmit={({ businessId, stars, comment }) => {
+            addStoredBusinessReview({
+              id: Date.now().toString(),
+              businessId,
+              authorName: myName || 'مستخدم',
+              authorUsername: myUsername,
+              authorAvatar: myAvatar,
+              stars,
+              comment,
+              createdAt: 'الآن',
+            });
+            setTweets((prev) =>
+              prev.map((item) =>
+                item.id === ratingTargetTweet.id ? { ...item, isRated: true } : item
+              )
+            );
+            showToast('تم تسجيل تقييمك للمنشأة بنجاح');
+          }}
+        />
       )}
 
       {repostMenu && (
@@ -2317,13 +2409,47 @@ displayedTweets.map(tweet => {
 
           {/* محتوى الكتابة: الأفاتار وبجانبه المؤشر الصغير المتحرك مباشرة وباقي الصفحة سوداء */}
           <div className="flex-1 min-h-0 px-4 pt-2 overflow-y-auto flex flex-col bg-black">
+            {myBusinessPage && !quoteOriginal && (
+              <div className="flex items-center gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setPublishAsBusiness(false)}
+                  className={`px-3 py-1 rounded-full text-xs font-bold border transition ${
+                    !publishAsBusiness
+                      ? 'bg-[#FFC500] text-black border-[#FFC500]'
+                      : 'bg-black text-[#71767B] border-[#2F3336] hover:text-white'
+                  }`}
+                >
+                  {myName || 'الحساب الشخصي'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPublishAsBusiness(true)}
+                  className={`px-3 py-1 rounded-full text-xs font-bold border transition ${
+                    publishAsBusiness
+                      ? 'bg-[#FFC500] text-black border-[#FFC500]'
+                      : 'bg-black text-[#71767B] border-[#2F3336] hover:text-white'
+                  }`}
+                >
+                  {myBusinessPage.name}
+                </button>
+              </div>
+            )}
             <div className="flex items-start gap-3 flex-1">
               {/* صورة الأفاتار فقط أعلى اليمين */}
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 overflow-hidden flex items-center justify-center font-bold shrink-0 mt-1">
-                {myAvatar ? (
-                  <img src={myAvatar} alt={myName} className="w-full h-full object-cover" />
+                {(publishAsBusiness && myBusinessPage ? myBusinessPage.avatarUrl : myAvatar) ? (
+                  <img
+                    src={publishAsBusiness && myBusinessPage ? myBusinessPage.avatarUrl : myAvatar}
+                    alt={publishAsBusiness && myBusinessPage ? myBusinessPage.name : myName}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                  <span className="text-white text-sm">{myName ? myName[0] : '؟'}</span>
+                  <span className="text-white text-sm">
+                    {publishAsBusiness && myBusinessPage
+                      ? (myBusinessPage.name?.[0] || 'م')
+                      : (myName ? myName[0] : '؟')}
+                  </span>
                 )}
               </div>
 

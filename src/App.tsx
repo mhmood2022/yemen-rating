@@ -36,6 +36,7 @@ import { SubscriptionsManager } from './pages/admin/subscriptions/SubscriptionsM
 import { OperationsHub } from './pages/admin/operations/OperationsHub';
 import { PaymentsManager } from './pages/admin/payments/PaymentsManager';
 import { AccountPage } from "./pages/AccountPage";
+import { BusinessPage } from "./pages/BusinessPage";
 import { MyPaymentsPage } from './pages/user/MyPaymentsPage';
 
 // لوحة التحكم الإدارية
@@ -158,6 +159,8 @@ export function App() {
         <Route path="/community" element={<AppShell><CommunityFeedPage /></AppShell>} />
         <Route path="/tweets" element={<AppShell><CommunityFeedPage /></AppShell>} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/business-page" element={<BusinessPage />} />
+        <Route path="/business-page/:id" element={<BusinessPage />} />
         <Route path="/u/:username/followers" element={<FollowersPage />} />
         <Route path="/u/:username/following" element={<FollowersPage />} />
         <Route path="/u/:username" element={<FollowersPage />} />

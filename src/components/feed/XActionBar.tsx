@@ -7,8 +7,10 @@ interface XActionBarProps {
   onViewEngagements?: (tweet: any) => void;
   onLike?: (tweet: any) => void;
   onBookmark?: (tweet: any) => void;
+  onRate?: (tweet: any) => void;
   onShare?: (tweet: any) => void;
   currentUserId?: string;
+  isBusinessPost?: boolean;
 }
 
 const formatCountArabic = (count?: number) => {
@@ -65,6 +67,23 @@ const BookmarkIcon = ({ isBookmarked }: { isBookmarked?: boolean }) => (
   </svg>
 );
 
+const StarRateIcon = ({ isRated }: { isRated?: boolean }) => (
+  <svg
+    viewBox="0 0 24 24"
+    width="13.5"
+    height="13.5"
+    style={{ ...iconStyle, pointerEvents: 'none' }}
+    aria-hidden="true"
+    fill={isRated ? 'currentColor' : 'none'}
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
 const ShareIcon = () => (
   <svg viewBox="0 0 24 24" width="13.5" height="13.5" style={iconStyle} aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="18" cy="5" r="2.5" />
@@ -76,11 +95,19 @@ const ShareIcon = () => (
 );
 
 export const XActionBar: React.FC<XActionBarProps> = ({
-  tweet, onReply, onRepost, onViewEngagements, onLike, onBookmark, onShare, currentUserId,
+  tweet, onReply, onRepost, onViewEngagements, onLike, onBookmark, onRate, onShare, currentUserId, isBusinessPost,
 }) => {
   const isLiked = tweet.isLiked || tweet.liked || (tweet.likedBy && currentUserId && tweet.likedBy.includes(currentUserId));
   const isReposted = tweet.isReposted || tweet.retweeted || (tweet.repostedBy && currentUserId && tweet.repostedBy.includes(currentUserId));
   const isBookmarked = tweet.isBookmarked || tweet.bookmarked || (tweet.bookmarkedBy && currentUserId && tweet.bookmarkedBy.includes(currentUserId));
+  const isRated = Boolean(tweet.isRated || tweet.userRating);
+  const showBusinessStar = Boolean(
+    isBusinessPost ||
+    tweet?.isBusinessPost ||
+    tweet?.authorType === 'business' ||
+    tweet?.business_id ||
+    tweet?.businessId
+  );
 
   const repliesCount = tweet.repliesCount ?? tweet.replies ?? 0;
   const repostsCount = tweet.retweetsCount ?? tweet.repostsCount ?? tweet.reposts ?? tweet.retweets ?? 0;
@@ -89,13 +116,12 @@ export const XActionBar: React.FC<XActionBarProps> = ({
 
   return (
     <div className="flex items-center justify-between text-[#71767B] w-full mt-2 mb-0 pb-0.5 px-0 select-none leading-none" dir="rtl">
-      
       <button onClick={(e) => { e.stopPropagation(); onReply && onReply(tweet); }} className="flex items-center gap-[1.5px] hover:text-[#1D9BF0] transition-colors group cursor-pointer p-0" title="رد">
         <ReplyIcon />
         <span className="text-[10px] font-normal leading-none transition-colors group-hover:text-[#1D9BF0]">{formatCountArabic(repliesCount)}</span>
       </button>
 
-      <a 
+      <a
         href={`/post/${tweet.originalId || tweet.id.replace('repost-', '')}/engagements`}
         onClick={(e) => { e.stopPropagation(); }}
         className={`flex items-center gap-[2px] transition-colors group p-0 relative cursor-pointer ${isReposted ? 'text-[#00BA7C]' : 'hover:text-[#00BA7C]'}`}
@@ -103,14 +129,14 @@ export const XActionBar: React.FC<XActionBarProps> = ({
         <button
           onPointerDown={(e) => { e.stopPropagation(); }}
           onTouchStart={(e) => { e.stopPropagation(); }}
-          onClick={(e) => { 
-            e.preventDefault(); 
-            e.stopPropagation(); 
-            if(onRepost) onRepost(tweet); 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (onRepost) onRepost(tweet);
           }}
-          onContextMenu={(e) => { 
-            e.preventDefault(); 
-            window.location.href = `/post/${tweet.originalId || tweet.id.replace('repost-', '')}/engagements`; 
+          onContextMenu={(e) => {
+            e.preventDefault();
+            window.location.href = `/post/${tweet.originalId || tweet.id.replace('repost-', '')}/engagements`;
           }}
           className="cursor-pointer border-0 bg-transparent p-0 flex items-center select-none"
         >
@@ -132,9 +158,23 @@ export const XActionBar: React.FC<XActionBarProps> = ({
       </button>
 
       <div className="flex items-center gap-3 p-0">
-        <button onClick={(e) => { e.stopPropagation(); onBookmark && onBookmark(tweet); }} className={`hover:text-[#1D9BF0] transition-colors group cursor-pointer p-0 ${isBookmarked ? 'text-[#1D9BF0]' : ''}`} title="حفظ">
-          <BookmarkIcon isBookmarked={isBookmarked} />
-        </button>
+        {showBusinessStar ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); onRate && onRate(tweet); }}
+            className={`hover:text-[#FFC500] transition-colors group cursor-pointer p-0 ${isRated ? 'text-[#FFC500]' : ''}`}
+            title="تقييم المنشأة"
+          >
+            <StarRateIcon isRated={isRated} />
+          </button>
+        ) : (
+          <button
+            onClick={(e) => { e.stopPropagation(); onBookmark && onBookmark(tweet); }}
+            className={`hover:text-[#1D9BF0] transition-colors group cursor-pointer p-0 ${isBookmarked ? 'text-[#1D9BF0]' : ''}`}
+            title="حفظ"
+          >
+            <BookmarkIcon isBookmarked={isBookmarked} />
+          </button>
+        )}
         <button onClick={(e) => { e.stopPropagation(); onShare && onShare(tweet); }} className="hover:text-[#1D9BF0] transition-colors group cursor-pointer p-0" title="مشاركة">
           <ShareIcon />
         </button>
