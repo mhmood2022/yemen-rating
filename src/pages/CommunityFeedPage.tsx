@@ -518,6 +518,7 @@ export const CommunityFeedPage: React.FC = () => {
           const badgeType = author?.verification_type || (author?.is_verified ? 'blue' : null);
           return {
             id: p.id,
+            parent_id: (p as any).parent_id,
             authorId: p.user_id,
             authorName: author?.full_name || "مستخدم يمن ريتنج",
             badgeType: (author as any)?.verification_type || (author as any)?.badge_type || (author?.is_verified ? 'blue' : 'none'),
@@ -1220,8 +1221,22 @@ const handleAddComment = (e?: React.FormEvent) => {
         : prev
     );
 
-    // 2. حفظ سحابي في الخلفية دون تعطيل الواجهة
+    // 2. حفظ الرد في جدول posts (ليظهر في تبويب الردود) + post_comments
     if (currentUserId && currentUserId !== 'guest') {
+      // حفظ في posts مع parent_id
+      supabase.from("posts").insert({
+        user_id: currentUserId,
+        content: textToSend,
+        parent_id: targetPost.id,
+        image_url: commentImage || null
+      }).then(({ error }) => {
+        if (error) console.error('Error saving reply to posts:', error);
+        else {
+          showToast('تم حفظ الرد في ملفك الشخصي أيضاً ✅');
+        }
+      });
+
+      // حفظ في post_comments (لنافذة التفاصيل)
       supabase.from("post_comments").insert({
         post_id: targetPost.id,
         user_id: currentUserId,

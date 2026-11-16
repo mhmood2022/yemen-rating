@@ -306,6 +306,7 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
     const author = profileMap.get(p.user_id);
     return {
       id: p.id,
+            parent_id: p.parent_id,
       user_id: p.user_id,
       authorId: p.user_id,
       authorName: author?.full_name || 'مستخدم يمن ريتنج',
@@ -623,6 +624,7 @@ export async function getFollowers(
     
     return (profiles || []).map((p: any) => ({
       id: p.id,
+            parent_id: p.parent_id,
       full_name: p.full_name || 'مستخدم',
       username: p.username || 'user',
       avatar_url: p.avatar_url || '',
@@ -676,6 +678,7 @@ export async function getFollowing(
     
     return (profiles || []).map((p: any) => ({
       id: p.id,
+            parent_id: p.parent_id,
       full_name: p.full_name || 'مستخدم',
       username: p.username || 'user',
       avatar_url: p.avatar_url || '',

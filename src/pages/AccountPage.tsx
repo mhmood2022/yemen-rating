@@ -85,6 +85,7 @@ interface Post {
   isRepost?: boolean;
   isReposted?: boolean;
   originalId?: string;
+  parent_id?: string | null;
   createdAt: string;
   createdAtDisplay?: string;
   isPinned?: boolean;
@@ -305,12 +306,37 @@ export const AccountPage: React.FC = () => {
       return cached ? JSON.parse(cached) : [];
     } catch { return []; }
   });
+  useEffect(() => {
+    if (activeTab === 'replies' && userPosts.length > 0) {
+      const parentIds = [...new Set(userPosts.filter(p => p.parent_id).map(p => p.parent_id))].filter(Boolean);
+      if (parentIds.length > 0) {
+        supabase.from('posts').select('*, profiles:user_id(full_name, username, avatar_url, verification_type)').in('id', parentIds).then(({ data }) => {
+          if (data) {
+            const map: Record<string, any> = {};
+            data.forEach(p => {
+              map[p.id] = {
+                id: p.id,
+                authorName: p.profiles?.full_name || 'مستخدم',
+                authorUsername: p.profiles?.username || 'user',
+                authorAvatar: p.profiles?.avatar_url || '',
+                text: p.content,
+                createdAt: p.created_at,
+                authorBadge: p.profiles?.verification_type
+              };
+            });
+            setParentTweets(map);
+          }
+        });
+      }
+    }
+  }, [activeTab, userPosts]);
+
 
   const filteredPosts = userPosts.filter(post => {
-    if (activeTab === 'replies') return post.text && post.text.startsWith('@');
-    if (activeTab === 'reposts') return post.isRepost;
-    if (activeTab === 'media') return post.image || post.video || post.video_url;
-    return !post.isRepost && (!post.text || !post.text.startsWith('@'));
+    if (activeTab === 'replies') return !!post.parent_id; // الردود
+    if (activeTab === 'reposts') return post.isRepost; // إعادات النشر
+    if (activeTab === 'media') return post.image || post.video || post.video_url; // الفيديوهات والصور
+    return !post.isRepost && !post.parent_id && (!post.text || !post.text.startsWith('@')); // المنشورات العادية
   });
 
 
@@ -425,6 +451,8 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
 
   // منشور جديد
   const [newPostText, setNewPostText] = useState('');
+  const [replyToPost, setReplyToPost] = useState<Post | null>(null);
+  const [parentTweets, setParentTweets] = useState<Record<string, any>>({});
   const [newPostImage, setNewPostImage] = useState('');
   const [newPostFile, setNewPostFile] = useState<File | null>(null);
   const [isPostingModal, setIsPostingModal] = useState(false);
@@ -986,6 +1014,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
           content: newPostText.trim(),
           image_url: finalImageUrl || null,
           video_url: finalVideoUrl || null,
+          parent_id: replyToPost?.id || null,
         }).select().single();
         if (pErr) throw pErr;
         inserted = data;
@@ -1017,6 +1046,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       setNewPostText("");
       setNewPostImage("");
       setNewPostFile(null);
+      setReplyToPost(null);
       setIsPostModalOpen(false);
       setIsPostingModal(false);
       try {
@@ -1332,6 +1362,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       </div>
     );
   }
+
 
 
 
@@ -1707,15 +1738,16 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       </div>
       <div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} className="divide-y divide-[#2F3336]/40 relative z-0">
         {filteredPosts.length === 0 ? (
-          <div className="text-center py-16 px-4">
+          <div className="text-center min-h-[50vh] flex flex-col items-center justify-center px-4">
             <h3 className="text-sm font-bold text-white mb-1 truncate shrink max-w-[130px] sm:max-w-[150px]">
-              {isOwner ? 'لم تقم بنشر أي منشور بعد' : `لا توجد منشورات لـ ${name}`}
+              {activeTab === 'posts' ? (isOwner ? 'لم تقم بنشر أي منشور بعد' : `لا توجد منشورات لـ ${name}`)
+               : activeTab === 'replies' ? 'لا توجد ردود'
+               : activeTab === 'reposts' ? 'لا توجد إعادات نشر'
+               : 'لا توجد فيديوهات'}
             </h3>
-            <p className="text-[11px] text-[#71767B] mb-4">
-              {isOwner ? 'انقر على زر (+) بالأسفل لتنشر أول تغريدة وتشاركها مع الجميع!' : 'عندما ينشر هذا المستخدم تغريدات، ستظهر هنا فوراً.'}
-            </p>
-            {isOwner && (
-              <button 
+            
+            {isOwner && activeTab === 'posts' && (
+              <button
                 onClick={() => setIsPostModalOpen(true)}
                 className="yr-fab px-5 py-2.5 rounded-full bg-[#FFC500] text-white text-xs font-bold hover:bg-[#E5B200] transition shadow-lg"
               >
@@ -1738,7 +1770,6 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
               <div className="flex gap-3">
                 <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold text-white text-lg truncate shrink max-w-[130px] sm:max-w-[150px]">
                   <div onClick={(e) => { e.stopPropagation(); openAuthorProfile(post.authorId, { name: post.authorName || name, avatarUrl: post.authorAvatar, username: post.authorUsername }); }} className="w-full h-full cursor-pointer hover:opacity-80 transition">
-                  <div onClick={(e) => { e.stopPropagation(); openAuthorProfile(post.authorId, { name: post.authorName || name, avatarUrl: post.authorAvatar, username: post.authorUsername }); }} className="w-full h-full cursor-pointer hover:opacity-80 transition">
                   {post.authorAvatar ? (
                     <img src={post.authorAvatar} alt={post.authorName || name} className="w-full h-full object-cover" />
                   ) : (
@@ -1746,7 +1777,6 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                   )}
                   </div>
                   </div>
-                </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
@@ -1854,8 +1884,8 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                       authorAvatar={post.original?.authorAvatar || avatarUrl} 
                       currentUserAvatar={myAvatar}
                       onReply={() => {
-                        setViewingDetailPost(post);
-                        loadComments(post.id.startsWith("repost-") && post.original?.id ? post.original.id : post.id);
+                        setReplyToPost(post);
+                        setIsPostModalOpen(true);
                       }}
                       onLike={() => handleToggleLike(post.id)}
                   onViewEngagements={() => { window.location.href = `/post/${(viewingDetailPost?.id || '').replace('repost-', '')}/engagements`; }}
@@ -1875,8 +1905,8 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                                                                 <XActionBar
                     tweet={post}
                     onReply={() => {
-                      setViewingDetailPost(post);
-                      loadComments(post.id.startsWith("repost-") && post.original?.id ? post.original.id : post.id);
+                      setReplyToPost(post);
+                      setIsPostModalOpen(true);
                     }}
                     onRepost={(p) => setRepostMenu(p)}
                     onLike={() => handleToggleLike(post.id)}
@@ -2146,6 +2176,13 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
 
           {/* محتوى الكتابة: الأفاتار وبجانبه المؤشر الصغير المتحرك وباقي الصفحة سوداء بالكامل */}
           <div className="flex-1 min-h-0 px-4 pt-2 overflow-y-auto flex flex-col bg-black">
+            {replyToPost && (
+              <div className="text-[#71767B] text-sm mb-2 flex items-center gap-2" dir="rtl">
+                <span>رداً على</span>
+                <span className="text-[#FFC500]">@{replyToPost.authorUsername || 'user'}</span>
+                <button onClick={() => setReplyToPost(null)} className="text-rose-500 mr-auto hover:underline text-xs">إلغاء الرد</button>
+              </div>
+            )}
             <div className="flex items-start gap-3 flex-1">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 overflow-hidden flex items-center justify-center font-bold shrink-0 mt-1">
                 {avatarUrl ? (
@@ -2379,9 +2416,9 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       
 
       {/* زر + (FAB) — دائم الظهور */}
-      {isOwner && (
-        <button
-          onClick={() => setIsPostModalOpen(true)}
+      {isOwner && activeTab === 'posts' && (
+              <button
+                onClick={() => setIsPostModalOpen(true)}
           className="yr-fab fixed bottom-24 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-black/60 transition"
           title="تغريدة جديدة"
         >
