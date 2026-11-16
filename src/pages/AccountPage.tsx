@@ -26,6 +26,7 @@ import { CustomDatePicker } from '../components/common/CustomDatePicker';
 import { ImageCropper } from '../components/common/ImageCropper';
 import { HashtagText } from '../components/common/HashtagText';
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { XImagePlayer } from '../components/feed/XImagePlayer';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { supabase } from "../lib/supabase";
@@ -66,7 +67,6 @@ import { Bookmark, ArrowRight, BarChart2,
   Video,
   CreditCard, Building2 } from 'lucide-react';
 import { AuthModal } from '../components/auth/AuthModal';
-import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { ReportPage } from '../components/community/ReportPage';
 
 interface Post {
@@ -245,8 +245,11 @@ export const AccountPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isAvatarBehind, setIsAvatarBehind] = useState(false);
   const lastScrollY = useRef(0);
   const profileDetailsRef = useRef<HTMLDivElement>(null);
+  const avatarRef = useRef<HTMLDivElement>(null);
+  const avatarRowRef = useRef<HTMLDivElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
   const [location, setLocation] = useState('');
   const [birthDate, setBirthDate] = useState('');
@@ -254,11 +257,23 @@ export const AccountPage: React.FC = () => {
   const [avatarUrl, setAvatarUrl] = useState<string>('');
   const [cropImage, setCropImage] = useState<string | null>(null);
   const [cropTarget, setCropTarget] = useState<'avatar' | 'cover' | null>(null);
-      useEffect(() => {
-        const handleScroll = () => setIsScrolled(window.scrollY > 1);
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-      }, []);
+  useEffect(() => {
+    const handleScroll = () => {
+      const y = window.scrollY;
+      const progress = Math.min(1, Math.max(0, y / 36));
+      if (avatarRef.current) {
+        const scale = 1 - progress * 0.55;
+        const translateY = progress * 8;
+        avatarRef.current.style.transform = `translateY(${translateY}px) scale(${scale})`;
+        avatarRef.current.style.opacity = `${1 - progress}`;
+      }
+      setIsAvatarBehind(y > 16);
+      setIsScrolled(y > 48);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
     
   const [coverUrl, setCoverUrl] = useState<string>('');
 
@@ -308,28 +323,62 @@ export const AccountPage: React.FC = () => {
   });
   useEffect(() => {
     if (activeTab === 'replies' && userPosts.length > 0) {
-      const parentIds = [...new Set(userPosts.filter(p => p.parent_id).map(p => p.parent_id))].filter(Boolean);
+      const parentIds = [...new Set(userPosts.filter(p => p.parent_id).map(p => p.parent_id))].filter(Boolean) as string[];
       if (parentIds.length > 0) {
-        supabase.from('posts').select('*, profiles:user_id(full_name, username, avatar_url, verification_type)').in('id', parentIds).then(({ data }) => {
-          if (data) {
-            const map: Record<string, any> = {};
-            data.forEach(p => {
-              map[p.id] = {
-                id: p.id,
-                authorName: p.profiles?.full_name || 'مستخدم',
-                authorUsername: p.profiles?.username || 'user',
-                authorAvatar: p.profiles?.avatar_url || '',
-                text: p.content,
-                createdAt: p.created_at,
-                authorBadge: p.profiles?.verification_type
-              };
-            });
-            setParentTweets(map);
-          }
-        });
+        (async () => {
+          const { data: parents, error } = await supabase
+            .from('posts')
+            .select('*')
+            .in('id', parentIds);
+          if (error || !parents || parents.length === 0) return;
+
+          const authorIds = [...new Set(parents.map((p: any) => p.user_id).filter(Boolean))];
+          const [{ data: profilesData }, likesRes, repostsRes] = await Promise.all([
+            authorIds.length > 0
+              ? supabase.from('profiles').select('id, full_name, username, avatar_url, verification_type, is_verified').in('id', authorIds)
+              : Promise.resolve({ data: [] as any[] }),
+            sessionUser?.id
+              ? supabase.from('post_likes').select('post_id').eq('user_id', sessionUser.id).in('post_id', parentIds)
+              : Promise.resolve({ data: [] as any[] }),
+            sessionUser?.id
+              ? supabase.from('post_reposts').select('post_id').eq('user_id', sessionUser.id).in('post_id', parentIds)
+              : Promise.resolve({ data: [] as any[] }),
+          ]);
+
+          const profileMap = new Map((profilesData || []).map((pr: any) => [pr.id, pr]));
+          const likedIds = new Set((likesRes.data || []).map((l: any) => l.post_id));
+          const repostedIds = new Set((repostsRes.data || []).map((r: any) => r.post_id));
+
+          const map: Record<string, any> = {};
+          parents.forEach((p: any) => {
+            const prof: any = profileMap.get(p.user_id);
+            map[p.id] = {
+              id: p.id,
+              text: p.content || p.text || '',
+              image: p.image_url || p.image || undefined,
+              video_url: p.video_url || p.video || undefined,
+              video: p.video_url || p.video || undefined,
+              createdAt: p.created_at,
+              createdAtDisplay: p.created_at ? new Date(p.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }) : '',
+              authorId: p.user_id,
+              authorName: prof?.full_name || 'مستخدم',
+              authorUsername: prof?.username || 'user',
+              authorAvatar: prof?.avatar_url || '',
+              authorBadge: prof?.verification_type || (prof?.is_verified ? 'blue' : 'none'),
+              likes: p.likes_count || p.likes || 0,
+              isLiked: likedIds.has(p.id),
+              likedBy: likedIds.has(p.id) && sessionUser?.id ? [sessionUser.id] : [],
+              replies: p.comments_count || p.replies_count || p.replies || 0,
+              reposts: p.reposts_count || p.reposts || 0,
+              isReposted: repostedIds.has(p.id),
+              views: p.views_count || p.views || 1,
+            };
+          });
+          setParentTweets(map);
+        })();
       }
     }
-  }, [activeTab, userPosts]);
+  }, [activeTab, userPosts, sessionUser?.id]);
 
 
   const filteredPosts = userPosts.filter(post => {
@@ -1234,6 +1283,19 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       return p;
     });
     setUserPosts(updated);
+    setParentTweets(prev => {
+      if (!prev[postId]) return prev;
+      const pt = prev[postId];
+      const nextLiked = !pt.isLiked;
+      return {
+        ...prev,
+        [postId]: {
+          ...pt,
+          isLiked: nextLiked,
+          likes: nextLiked ? (pt.likes || 0) + 1 : Math.max(0, (pt.likes || 0) - 1),
+        }
+      };
+    });
 
     const globalFeed: Post[] = JSON.parse(localStorage.getItem(GLOBAL_FEED_KEY) || '[]');
     const synced = globalFeed.map(t => {
@@ -1384,9 +1446,9 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
   return (
     <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#FFC500] selection:text-white pb-32" dir="rtl">
       {/* 1. الغلاف بنمط أبو شرواني */}
-      <div className="sticky top-0 z-40 w-full h-36 sm:h-40 bg-gradient-to-r from-zinc-950 via-[#0A1224] to-zinc-950">
+      <div className="sticky -top-12 z-40 w-full h-36 sm:h-40 overflow-hidden bg-black bg-gradient-to-r from-zinc-950 via-[#0A1224] to-zinc-950">
         {coverUrl ? (
-          <img src={coverUrl} alt="الغلاف" className="w-full h-full object-cover" />
+          <img src={coverUrl} alt="الغلاف" className="w-full h-full object-cover transition-all duration-300" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-[#0B1528] via-[#050C18] to-black flex items-center justify-center text-zinc-700 text-xs font-bold">
             {isOwner && 'انقر على زر الكاميرا لإضافة غلاف'}
@@ -1396,14 +1458,38 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
 
 
         {/* أزرار الهيدر العلوية */}
-        <div className="fixed top-3 left-3 right-3 flex items-center justify-between z-50">
-          <button
-            onClick={() => navigate(-1)}
-            className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10"
-            title="رجوع"
-          >
-            <ArrowRight size={18} />
-          </button>
+        <div className="fixed top-3 left-3 right-3 flex items-center justify-between gap-2 z-50">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={() => navigate('/feed')}
+              className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10 shrink-0"
+              title="رجوع"
+            >
+              <ArrowRight size={18} />
+            </button>
+
+            <div className={`flex flex-col min-w-0 transition-all duration-300 ${isScrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
+              <div className="flex items-center gap-1 min-w-0">
+                <span
+                  className="text-white font-bold text-[15px] leading-tight truncate"
+                  style={{ textShadow: '0 1px 3px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.85)' }}
+                >
+                  {name || 'مستخدم يمن ريتنج'}
+                </span>
+                {verificationType && verificationType !== 'none' && (
+                  <span className="shrink-0 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                    <VerifiedBadge type={verificationType as any} size={15} />
+                  </span>
+                )}
+              </div>
+              <span
+                className="text-white font-medium text-[11.5px] leading-tight mt-0.5 truncate"
+                style={{ textShadow: '0 1px 3px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.85)' }}
+              >
+                {userPosts.filter(p => !p.parent_id).length.toLocaleString('ar-EG')} من المنشورات
+              </span>
+            </div>
+          </div>
 
           <div className="flex items-center gap-2 relative">
             <button
@@ -1424,13 +1510,13 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
               title="خيارات الحساب"
               className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10"
             >
-              <MoreHorizontal size={22} className="rotate-90 text-white" />
+              <MoreHorizontal size={22} className="text-white" />
             </button>
 
-            {isMenuOpen && (
+            {isMenuOpen && createPortal(
               <>
-                <div className="fixed inset-0 z-[100]" onClick={() => setIsMenuOpen(false)} />
-                <div className="absolute left-0 top-12 w-44 bg-black/95 backdrop-blur-2xl border border-[#2F3336] rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.95)] p-1.5 z-[110] text-xs animate-fade-in divide-y divide-[#2F3336]/60">
+                <div className="fixed inset-0 z-[9998]" onClick={() => setIsMenuOpen(false)} />
+                <div className="fixed top-[60px] left-3 w-44 bg-black/95 backdrop-blur-2xl border border-[#2F3336] rounded-2xl shadow-[0_16px_50px_rgba(0,0,0,0.95)] p-1.5 z-[9999] text-xs animate-fade-in divide-y divide-[#2F3336]/60">
                   {isOwner ? (
                     <div className="space-y-1">
                       <button
@@ -1522,17 +1608,18 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                     </div>
                   )}
                 </div>
-              </>
+              </>,
+              document.body
             )}
           </div>
         </div>
       </div>
 
       {/* 2. الصورة الشخصية والشارة العلوية */}
-      <div className={`px-4 relative ${isScrolled ? 'z-10' : 'z-50'}`}>
-        <div className="flex justify-between items-end -mt-16 sm:-mt-20 mb-3">
+      <div className="px-4 relative">
+        <div className="flex justify-between items-end -mt-[28px] sm:-mt-[41px] mb-3">
           {/* الصورة الشخصية */}
-          <div className="relative group z-50">
+          <div ref={avatarRef} className={`relative group origin-bottom will-change-transform ${isAvatarBehind ? 'z-10 pointer-events-none' : 'z-[45]'}`}>
             <div className="w-[84px] h-[84px] sm:w-[124px] sm:h-[124px] rounded-full border-4 border-black bg-zinc-950 overflow-hidden shadow-xl flex items-center justify-center">
               {avatarUrl ? (
                 <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
@@ -1547,7 +1634,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
           </div>
 
           {/* الجهة المقابلة للصورة: وثّق حسابك مثل أبو شرواني أو أزرار المتابعة */}
-          <div>
+          <div className={`relative z-10 transition-all duration-300 ${isScrolled ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-100'}`}>
             {isOwner ? (
               <button
                 onClick={() => navigate('/premium')}
@@ -1584,7 +1671,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
         </div>
 
         {/* 3. الاسم والمعرف */}
-        <div className="mt-1">
+        <div className="mt-1 relative z-10">
           <div className="flex items-center flex-nowrap min-w-0 w-full  gap-1.5 min-w-0 flex-1 flex-nowrap overflow-hidden" dir="rtl">
             <h1
               className="text-white select-text"
@@ -1695,7 +1782,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       </div>
 
       {/* 8. التبويبات (نمط X) */}
-      <div className="sticky top-36 sm:top-40 z-40 bg-black border-b border-[#2F3336]/40 flex items-center justify-around text-[14px]" ref={tabsRef}>
+      <div className="sticky top-24 sm:top-28 z-[35] bg-black border-b border-[#2F3336]/40 flex items-center justify-around text-[14px]" ref={tabsRef}>
         {/* المنشورات */}
         <button onClick={() => setActiveTab('posts')} className={`flex-1 py-3.5 flex items-center justify-center relative transition ${activeTab === 'posts' ? 'text-white font-bold' : 'text-[#71767B]'}`}>
           <div className="flex flex-row items-center gap-1.5 whitespace-nowrap">
@@ -1736,7 +1823,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
           {activeTab === 'media' && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white rounded-t-full" />}
         </button>
       </div>
-      <div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} className="divide-y divide-[#2F3336]/40 relative z-0">
+      <div onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} className="divide-y divide-[#2F3336]/40">
         {filteredPosts.length === 0 ? (
           <div className="text-center min-h-[50vh] flex flex-col items-center justify-center px-4">
             <h3 className="text-sm font-bold text-white mb-1 truncate shrink max-w-[130px] sm:max-w-[150px]">
@@ -1756,9 +1843,11 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
             )}
           </div>
         ) : (
-          filteredPosts.map(post => (
-            <article 
-              key={post.id} 
+          filteredPosts.map(post => {
+            const parentTweet = activeTab === 'replies' && post.parent_id ? parentTweets[post.parent_id] : null;
+            return (
+            <article
+              key={post.id}
               className="p-3 border-b border-[#2F3336]/40 hover:bg-white/[0.03] transition cursor-pointer"
               onClick={(e) => {
                 const target = e.target as HTMLElement;
@@ -1767,7 +1856,142 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                 }
               }}
             >
-              <div className="flex gap-3">
+              {parentTweet && (
+                <div
+                  className="flex gap-3"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const target = e.target as HTMLElement;
+                    if (!target.closest('button') && !target.closest('a')) {
+                      setViewingDetailPost(parentTweet);
+                    }
+                  }}
+                >
+                  <div className="flex flex-col items-center shrink-0">
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openAuthorProfile(parentTweet.authorId, {
+                          name: parentTweet.authorName,
+                          avatarUrl: parentTweet.authorAvatar,
+                          username: parentTweet.authorUsername,
+                        });
+                      }}
+                      className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold text-white text-lg cursor-pointer hover:opacity-80 transition"
+                    >
+                      {parentTweet.authorAvatar ? (
+                        <img src={parentTweet.authorAvatar} alt={parentTweet.authorName} className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{parentTweet.authorName?.[0] || '؟'}</span>
+                      )}
+                    </div>
+                    <div className="w-[2px] flex-1 bg-[#333639] mt-1.5 min-h-[20px] rounded-full" />
+                  </div>
+
+                  <div className="flex-1 min-w-0 pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openAuthorProfile(parentTweet.authorId, {
+                              name: parentTweet.authorName,
+                              avatarUrl: parentTweet.authorAvatar,
+                              username: parentTweet.authorUsername,
+                            });
+                          }}
+                          className="font-bold text-white text-[12.5px] hover:underline cursor-pointer truncate shrink max-w-[130px] sm:max-w-[150px]"
+                        >
+                          {parentTweet.authorName}
+                        </span>
+                        {parentTweet.authorBadge && parentTweet.authorBadge !== "none" && (
+                          <svg
+                            className="w-[14.5px] h-[14.5px] flex-shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            style={{ color: parentTweet.authorBadge === "blue" ? "#1D9BF0" : parentTweet.authorBadge === "gold" ? "#FFD700" : "#71767B" }}
+                          >
+                            <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.918-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.337 2.25c-.416-.165-.866-.25-1.336-.25-2.21 0-3.918 1.79-3.918 4 0 .495.084.965.238 1.4-1.273.65-2.148 2.02-2.148 3.6 0 1.46.755 2.73 1.882 3.475-.038.2-.058.406-.058.617 0 2.21 1.71 4 3.918 4 .47 0 .92-.085 1.336-.25.52 1.335 1.828 2.25 3.337 2.25s2.816-.917 3.337-2.25c.416.165.866.25 1.336.25 2.21 0 3.918-1.79 3.918-4 0-.21-.02-.417-.058-.617C21.745 15.23 22.5 13.96 22.5 12.5z" />
+                            <path fill="#000000" d="M10.825 16.583l-3.66-3.66a.75.75 0 111.06-1.061l2.6 2.6 5.405-5.405a.75.75 0 111.06 1.061l-5.935 5.935a.75.75 0 01-1.06 0z" />
+                          </svg>
+                        )}
+                        <span className="text-[#71767B] text-[11.5px] truncate shrink max-w-[80px] sm:max-w-[100px]" dir="ltr">
+                          @{parentTweet.authorUsername}
+                        </span>
+                        <span className="text-[#71767B] text-[10.5px] mx-0.5">·</span>
+                        <span className="text-[#71767B] text-[10.5px] whitespace-nowrap shrink-0">
+                          {formatTimeAgo(parentTweet.createdAt).relative}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenuPost(parentTweet);
+                        }}
+                        className="text-[#71767B] hover:text-[#FFC500] p-1.5 rounded-full hover:bg-[#FFC500]/10 transition shrink-0"
+                        title="المزيد"
+                      >
+                        <MoreHorizontal size={14} className="rotate-90 text-[#71767B] hover:text-[#FFC500] transition" />
+                      </button>
+                    </div>
+
+                    <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
+                      <HashtagText text={parentTweet.text} />
+                    </p>
+
+                    {parentTweet.video_url && (
+                      <div className="mt-3">
+                        <XVideoPlayer
+                          src={parentTweet.video_url}
+                          tweet={parentTweet}
+                          authorName={parentTweet.authorName}
+                          authorUsername={parentTweet.authorUsername}
+                          authorAvatar={parentTweet.authorAvatar}
+                          currentUserAvatar={myAvatar}
+                          onReply={() => {
+                            setReplyToPost(parentTweet);
+                            setIsPostModalOpen(true);
+                          }}
+                          onLike={() => handleToggleLike(parentTweet.id)}
+                          onViewEngagements={() => { window.location.href = `/post/${(parentTweet.id || '').replace('repost-', '')}/engagements`; }}
+                          onRepost={() => setRepostMenu(parentTweet)}
+                          onShare={() => setShareMenuPost(parentTweet)}
+                          onBookmark={() => showToast('تمت الإضافة إلى العلامات المرجعية 🔖')}
+                        />
+                      </div>
+                    )}
+
+                    {parentTweet.image && !parentTweet.video_url && (
+                      <div className="mt-3 rounded-2xl overflow-hidden border-0 max-h-96">
+                        <img
+                          src={parentTweet.image}
+                          alt="الصورة"
+                          className="w-full h-full object-cover cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setViewingImagePost(parentTweet);
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    <XActionBar
+                      tweet={parentTweet}
+                      onReply={() => {
+                        setReplyToPost(parentTweet);
+                        setIsPostModalOpen(true);
+                      }}
+                      onRepost={(p) => setRepostMenu(p)}
+                      onLike={() => handleToggleLike(parentTweet.id)}
+                      onBookmark={() => {}}
+                      onShare={(t) => setShareMenuPost(t)}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className={`flex gap-3 ${parentTweet ? 'pt-1' : ''}`}>
                 <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold text-white text-lg truncate shrink max-w-[130px] sm:max-w-[150px]">
                   <div onClick={(e) => { e.stopPropagation(); openAuthorProfile(post.authorId, { name: post.authorName || name, avatarUrl: post.authorAvatar, username: post.authorUsername }); }} className="w-full h-full cursor-pointer hover:opacity-80 transition">
                   {post.authorAvatar ? (
@@ -1917,7 +2141,8 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                 </div>
               </div>
             </article>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -2419,7 +2644,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       {isOwner && activeTab === 'posts' && (
               <button
                 onClick={() => setIsPostModalOpen(true)}
-          className="yr-fab fixed bottom-24 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-black/60 transition"
+          className="yr-fab fixed bottom-6 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-black/60 transition"
           title="تغريدة جديدة"
         >
           <Plus size={24} className="stroke-[2.2] text-black" />
@@ -2712,7 +2937,6 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
         </div>
       )}
 
-      <MobileBottomNav onNavigate={(path) => navigate(path)} />
 
       <SupportModal
         isOpen={isSupportOpen}

@@ -98,7 +98,7 @@ export const XActionBar: React.FC<XActionBarProps> = ({
       <a 
         href={`/post/${tweet.originalId || tweet.id.replace('repost-', '')}/engagements`}
         onClick={(e) => { e.stopPropagation(); }}
-        className={`flex items-center gap-[2px] transition-colors group p-0 relative z-30 cursor-pointer ${isReposted ? 'text-[#00BA7C]' : 'hover:text-[#00BA7C]'}`}
+        className={`flex items-center gap-[2px] transition-colors group p-0 relative cursor-pointer ${isReposted ? 'text-[#00BA7C]' : 'hover:text-[#00BA7C]'}`}
       >
         <button
           onPointerDown={(e) => { e.stopPropagation(); }}
