@@ -1,0 +1,1403 @@
+import { supabase } from '../../../lib/supabase';
+import { adsDatabaseService } from "../../../services/adsDatabaseService";
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  Sparkles, Smartphone, Tablet, Monitor, Image as ImageIcon, 
+  Crop, Video, Upload, Layers, Eye, CheckCircle2, 
+  ArrowRight, Trash2, Maximize2, Move, MessageCircle, Phone, 
+  Link as LinkIcon, Calendar, Flame, Award, Clock, Type, Palette as PaletteIcon,
+  Tag, QrCode, Star, ShieldCheck, DollarSign, Layout, Play, RefreshCw, Sliders, Shield
+} from 'lucide-react';
+import { YR_AD_PLACEMENTS } from '../../../utils/adGeneratorEngine';
+import { adminAuditService } from '../../../services/adminService';
+
+export interface PublishedAd {
+  id: string;
+  placementId: string;
+  placementName: string;
+  adCategoryType: 'image' | 'text_only' | 'image_text' | 'video' | 'discount' | 'service' | 'product' | 'event' | 'job';
+  designTheme: 'pro' | 'modern' | 'luxury' | 'minimal' | 'bold' | 'formal' | 'youth' | 'marketing';
+  layoutStyle: 'full_overlay' | 'image_left' | 'image_right' | 'image_top' | 'card' | 'text_only';
+  adTier: 'basic' | 'professional' | 'premium';
+  
+  // الوسائط
+  mediaUrl: string;
+  mediaType: 'image' | 'video';
+  imageFit: 'contain' | 'cover';
+  useBlurBackground: boolean;
+  imgPosX: number;
+  imgPosY: number;
+  imgScale: number;
+  
+  // الشعار
+  showLogo: boolean;
+  logoUrl: string;
+  logoPosition: 'top_right' | 'top_left' | 'bottom_right' | 'bottom_left';
+  logoSize: number;
+
+  // النصوص
+  showBadge: boolean;
+  badgeText: string;
+  badgeBgColor: string;
+  badgeTextColor: string;
+  
+  showHeadline: boolean;
+  headline: string;
+  headlineColor: string;
+  headlineFont: string;
+  headlineSize: 'sm' | 'md' | 'lg' | 'xl';
+  headlineWeight: 'normal' | 'medium' | 'bold';
+  hasTextShadow: boolean;
+  
+  showDescription: boolean;
+  description: string;
+  descColor: string;
+  descLines: 1 | 2 | 3 | 4;
+  textAlign: 'right' | 'center' | 'left';
+
+  // الأسعار
+  showPricing: boolean;
+  currentPrice: string;
+  oldPrice: string;
+  discountPercentage: string;
+  currency: string;
+  showRating: boolean;
+  ratingValue: number;
+  showLocation: boolean;
+  locationText: string;
+  showVerifiedBadge: boolean;
+  showQrCode: boolean;
+  promoSticker: 'none' | 'discount50' | 'verified_gold' | 'hot_deal' | 'limited' | 'exclusive';
+
+  // الزر
+  showButton: boolean;
+  ctaText: string;
+  btnBgColor: string;
+  btnTextColor: string;
+  btnShape: 'rounded' | 'pill' | 'square';
+  btnSize: 'sm' | 'md' | 'lg';
+  btnAnimation: 'none' | 'shimmer' | 'pulse' | 'glow' | 'bounce';
+  actionType: 'link' | 'whatsapp' | 'call' | 'internal';
+  targetUrl: string;
+  whatsappPhone: string;
+  whatsappMessage: string;
+  callPhone: string;
+
+  // الاستهداف
+  targetCity: string;
+  targetCategory: string;
+  endDate: string;
+
+  // الحركات
+  motionPreset: 'calm' | 'balanced' | 'engaging' | 'custom';
+  headlineMotion: 'none' | 'fadeIn' | 'slideRight' | 'slideLeft' | 'slideUp' | 'bounce' | 'pulse';
+  descMotion: 'none' | 'fadeIn' | 'slideUp' | 'slideRight';
+  btnMotion: 'none' | 'fadeIn' | 'slideUp' | 'bounce' | 'pulse' | 'shine';
+  mediaMotion: 'none' | 'fadeIn' | 'kenBurns' | 'slowZoom';
+
+  hasProgressBar: boolean;
+  progressBarColor: string;
+  progressDuration: number;
+
+  hasBorder: boolean;
+  borderWidth: number;
+  borderColor: string;
+  borderRadius: number;
+  hasGlow: boolean;
+  bgColor: string;
+  bgStyle: 'gradient' | 'solid' | 'transparent';
+  brightness: number;
+  contrast: number;
+  imgOverlay: number;
+  
+  status: 'active' | 'paused' | 'archived';
+  views: number;
+  clicks: number;
+  createdAt: string;
+}
+
+export const AdGeneratorStudio: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('editId');
+  const [isMediaUploading, setIsMediaUploading] = useState<boolean>(false);
+  const [uploadStatusText, setUploadStatusText] = useState<string>('');
+
+    // تحميل بيانات الإعلان بدقة في حال كان المطلوب تعديله
+  useEffect(() => {
+    if (editId) {
+      const loadAdForEdit = async () => {
+        try {
+          const targetAd = await adsDatabaseService.getAdById(String(editId));
+          if (targetAd) {
+            if (targetAd.placementId) {
+              const found = YR_AD_PLACEMENTS.find(p => String(p.id) === String(targetAd.placementId));
+              if (found) setSelectedPlacement(found);
+            }
+            if (targetAd.adTier) setAdTier(targetAd.adTier);
+            if (targetAd.adCategoryType) setAdCategoryType(targetAd.adCategoryType);
+            if (targetAd.designTheme) setDesignTheme(targetAd.designTheme);
+            if (targetAd.layoutStyle) setLayoutStyle(targetAd.layoutStyle);
+
+            if (targetAd.mediaUrl !== undefined) setMediaFileUrl(targetAd.mediaUrl);
+            if (targetAd.mediaType) setMediaType(targetAd.mediaType);
+            if (targetAd.imageFit) setImageFit(targetAd.imageFit);
+            if (targetAd.useBlurBackground !== undefined) setUseBlurBackground(targetAd.useBlurBackground);
+            if (targetAd.imgPosX !== undefined) setImgPosX(targetAd.imgPosX);
+            if (targetAd.imgPosY !== undefined) setImgPosY(targetAd.imgPosY);
+            if (targetAd.imgScale !== undefined) setImgScale(targetAd.imgScale);
+            if (targetAd.brightness !== undefined) setBrightness(targetAd.brightness);
+            if (targetAd.contrast !== undefined) setContrast(targetAd.contrast);
+            if (targetAd.imgOverlay !== undefined) setImgOverlay(targetAd.imgOverlay);
+
+            if (targetAd.showLogo !== undefined) setShowLogo(targetAd.showLogo);
+            if (targetAd.logoUrl !== undefined) setLogoUrl(targetAd.logoUrl);
+            if (targetAd.logoPosition) setLogoPosition(targetAd.logoPosition);
+            if (targetAd.logoSize !== undefined) setLogoSize(targetAd.logoSize);
+
+            if (targetAd.showBadge !== undefined) setShowBadge(targetAd.showBadge);
+            if (targetAd.badgeText !== undefined) setBadgeText(targetAd.badgeText);
+            if (targetAd.badgeBgColor) setBadgeBgColor(targetAd.badgeBgColor);
+            if (targetAd.badgeTextColor) setBadgeTextColor(targetAd.badgeTextColor);
+
+            if (targetAd.showHeadline !== undefined) setShowHeadline(targetAd.showHeadline);
+            if (targetAd.headline !== undefined) setHeadline(targetAd.headline);
+            if (targetAd.headlineColor) setHeadlineColor(targetAd.headlineColor);
+            if (targetAd.headlineFont) setHeadlineFont(targetAd.headlineFont);
+            if (targetAd.headlineSize) setHeadlineSize(targetAd.headlineSize);
+            if (targetAd.headlineWeight) setHeadlineWeight(targetAd.headlineWeight);
+            if (targetAd.hasTextShadow !== undefined) setHasTextShadow(targetAd.hasTextShadow);
+
+            if (targetAd.showDescription !== undefined) setShowDescription(targetAd.showDescription);
+            if (targetAd.description !== undefined) setDescription(targetAd.description);
+            if (targetAd.descColor) setDescColor(targetAd.descColor);
+            if (targetAd.descLines !== undefined) setDescLines(targetAd.descLines);
+            if (targetAd.textAlign) setTextAlign(targetAd.textAlign);
+
+            if (targetAd.showPricing !== undefined) setShowPricing(targetAd.showPricing);
+            if (targetAd.currentPrice !== undefined) setCurrentPrice(targetAd.currentPrice);
+            if (targetAd.oldPrice !== undefined) setOldPrice(targetAd.oldPrice);
+            if (targetAd.discountPercentage !== undefined) setDiscountPercentage(targetAd.discountPercentage);
+            if (targetAd.currency) setCurrency(targetAd.currency);
+
+            if (targetAd.showRating !== undefined) setShowRating(targetAd.showRating);
+            if (targetAd.ratingValue !== undefined) setRatingValue(targetAd.ratingValue);
+
+            if (targetAd.showLocation !== undefined) setShowLocation(targetAd.showLocation);
+            if (targetAd.locationText !== undefined) setLocationText(targetAd.locationText);
+
+            if (targetAd.showVerifiedBadge !== undefined) setShowVerifiedBadge(targetAd.showVerifiedBadge);
+            if (targetAd.showQrCode !== undefined) setShowQrCode(targetAd.showQrCode);
+            if (targetAd.promoSticker) setPromoSticker(targetAd.promoSticker);
+
+            if (targetAd.showButton !== undefined) setShowButton(targetAd.showButton);
+            if (targetAd.ctaText !== undefined) setCtaText(targetAd.ctaText);
+            if (targetAd.btnBgColor) setBtnBgColor(targetAd.btnBgColor);
+            if (targetAd.btnTextColor) setBtnTextColor(targetAd.btnTextColor);
+            if (targetAd.btnShape) setBtnShape(targetAd.btnShape);
+            if (targetAd.btnSize) setBtnSize(targetAd.btnSize);
+            if (targetAd.btnAnimation) setBtnAnimation(targetAd.btnAnimation);
+
+            if (targetAd.actionType) setActionType(targetAd.actionType);
+            if (targetAd.targetUrl !== undefined) setTargetUrl(targetAd.targetUrl);
+            if (targetAd.whatsappPhone !== undefined) setWhatsappPhone(targetAd.whatsappPhone);
+            if (targetAd.whatsappMessage !== undefined) setWhatsappMessage(targetAd.whatsappMessage);
+            if (targetAd.callPhone !== undefined) setCallPhone(targetAd.callPhone);
+
+            if (targetAd.targetCity) setTargetCity(targetAd.targetCity);
+            if (targetAd.targetCategory) setTargetCategory(targetAd.targetCategory);
+            if (targetAd.endDate) setEndDate(targetAd.endDate);
+          }
+        } catch (err) {
+          console.error("Error loading ad for edit:", err);
+        }
+      };
+      loadAdForEdit();
+    }
+  }, [editId]);
+  const [adTier, setAdTier] = useState<'basic' | 'professional' | 'premium'>('professional');
+  const [adCategoryType, setAdCategoryType] = useState<PublishedAd['adCategoryType']>('image_text');
+  const [designTheme, setDesignTheme] = useState<PublishedAd['designTheme']>('modern');
+  const [layoutStyle, setLayoutStyle] = useState<PublishedAd['layoutStyle']>('full_overlay');
+  const [selectedPlacement, setSelectedPlacement] = useState(YR_AD_PLACEMENTS[0]);
+  const [viewMode, setViewMode] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
+
+  // الوسائط
+  const [mediaFileUrl, setMediaFileUrl] = useState<string>('');
+  const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
+  const [imageFit, setImageFit] = useState<'contain' | 'cover'>('cover');
+  const [useBlurBackground, setUseBlurBackground] = useState(true);
+  const [imgPosX, setImgPosX] = useState(50);
+  const [imgPosY, setImgPosY] = useState(50);
+  const [imgScale, setImgScale] = useState(100);
+  const [brightness, setBrightness] = useState(100);
+  const [contrast, setContrast] = useState(100);
+  const [imgOverlay, setImgOverlay] = useState(30);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
+
+  // الشعار
+  const [showLogo, setShowLogo] = useState(false);
+  const [logoUrl, setLogoUrl] = useState('');
+  const [logoPosition, setLogoPosition] = useState<PublishedAd['logoPosition']>('top_left');
+  const [logoSize, setLogoSize] = useState(36);
+
+  // النصوص
+  const [showBadge, setShowBadge] = useState(false);
+  const [badgeText, setBadgeText] = useState('');
+  const [badgeBgColor, setBadgeBgColor] = useState('rgba(255, 197, 0, 0.25)');
+  const [badgeTextColor, setBadgeTextColor] = useState('#FFC500');
+
+  const [showHeadline, setShowHeadline] = useState(true);
+  const [headline, setHeadline] = useState('');
+  const [headlineColor, setHeadlineColor] = useState('#FFFFFF');
+  const [headlineFont, setHeadlineFont] = useState('Cairo');
+  const [headlineSize, setHeadlineSize] = useState<PublishedAd['headlineSize']>('lg');
+  const [headlineWeight, setHeadlineWeight] = useState<PublishedAd['headlineWeight']>('bold');
+  const [hasTextShadow, setHasTextShadow] = useState(true);
+
+  const [showDescription, setShowDescription] = useState(true);
+  const [description, setDescription] = useState('');
+  const [descColor, setDescColor] = useState('#E5E7EB');
+  const [descLines, setDescLines] = useState<PublishedAd['descLines']>(2);
+  const [textAlign, setTextAlign] = useState<PublishedAd['textAlign']>('right');
+
+  // الأسعار
+  const [showPricing, setShowPricing] = useState(false);
+  const [currentPrice, setCurrentPrice] = useState('');
+  const [oldPrice, setOldPrice] = useState('');
+  const [discountPercentage, setDiscountPercentage] = useState('');
+  const [currency, setCurrency] = useState('YER');
+  const [showRating, setShowRating] = useState(false);
+  const [ratingValue, setRatingValue] = useState(4.9);
+  const [showLocation, setShowLocation] = useState(false);
+  const [locationText, setLocationText] = useState('');
+  const [showVerifiedBadge, setShowVerifiedBadge] = useState(true);
+  const [showQrCode, setShowQrCode] = useState(false);
+  const [promoSticker, setPromoSticker] = useState<PublishedAd['promoSticker']>('none');
+
+  // الزر والتحويل
+  const [showButton, setShowButton] = useState(true);
+  const [ctaText, setCtaText] = useState('');
+  const [btnBgColor, setBtnBgColor] = useState('#FFC500');
+  const [btnTextColor, setBtnTextColor] = useState('#000000');
+  const [btnShape, setBtnShape] = useState<PublishedAd['btnShape']>('pill');
+  const [btnSize, setBtnSize] = useState<PublishedAd['btnSize']>('md');
+  const [btnAnimation, setBtnAnimation] = useState<PublishedAd['btnAnimation']>('shimmer');
+  const [actionType, setActionType] = useState<PublishedAd['actionType']>('link');
+  const [targetUrl, setTargetUrl] = useState('');
+  const [whatsappPhone, setWhatsappPhone] = useState('');
+  const [whatsappMessage, setWhatsappMessage] = useState('');
+  const [callPhone, setCallPhone] = useState('');
+
+  // الاستهداف
+  const [targetCity, setTargetCity] = useState('كل المحافظات');
+  const [targetCategory, setTargetCategory] = useState('الجميع');
+  const [endDate, setEndDate] = useState('2026-12-31');
+
+  // الحركات والتحكم بها
+  const [motionPreset, setMotionPreset] = useState<PublishedAd['motionPreset']>('balanced');
+  const [headlineMotion, setHeadlineMotion] = useState<PublishedAd['headlineMotion']>('slideRight');
+  const [descMotion, setDescMotion] = useState<PublishedAd['descMotion']>('fadeIn');
+  const [btnMotion, setBtnMotion] = useState<PublishedAd['btnMotion']>('bounce');
+  const [mediaMotion, setMediaMotion] = useState<PublishedAd['mediaMotion']>('kenBurns');
+  const [animTriggerKey, setAnimTriggerKey] = useState(1);
+
+  // شريط التمرير والحواف
+  const [hasProgressBar, setHasProgressBar] = useState(true);
+  const [progressBarColor, setProgressBarColor] = useState('#FFC500');
+  const [progressDuration, setProgressDuration] = useState(8);
+  const [hasBorder, setHasBorder] = useState(false);
+  const [borderWidth, setBorderWidth] = useState(2);
+  const [borderColor, setBorderColor] = useState('#FFC500');
+  const [borderRadius, setBorderRadius] = useState(0);
+  const [hasGlow, setHasGlow] = useState(false);
+  const [bgColor, setBgColor] = useState('#0B0F17');
+  const [bgStyle, setBgStyle] = useState<'gradient' | 'solid' | 'transparent'>('solid');
+
+  const [activeTab, setActiveTab] = useState<'layout' | 'media' | 'typography' | 'pricing' | 'action' | 'motion' | 'colors' | 'border' | 'target'>('layout');
+  const [publishedAlert, setPublishedAlert] = useState(false);
+
+  // إعادة تشغيل الحركة في المعاينة
+  const replayAnimation = () => {
+    setAnimTriggerKey(prev => prev + 1);
+  };
+
+    
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const isVid = file.type.startsWith('video/');
+      setMediaType(isVid ? 'video' : 'image');
+      setIsMediaUploading(true);
+      setUploadStatusText('جاري رفع الملف إلى السحابة... يرجى الانتظار ⏳');
+
+      try {
+        const ext = file.name.split('.').pop() || (isVid ? 'mp4' : 'jpg');
+        const fileName = `ads/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from('businesses')
+          .upload(fileName, file, { upsert: true });
+
+        if (!uploadErr) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('businesses')
+            .getPublicUrl(fileName);
+          if (publicUrl) {
+            setMediaFileUrl(publicUrl);
+            setUploadStatusText('✅ تم رفع الملف إلى السحابة بنجاح وبشكل دائم!');
+          }
+        } else {
+          setUploadStatusText('❌ فشل الرفع للسحابة: ' + uploadErr.message);
+          setMediaFileUrl(URL.createObjectURL(file));
+        }
+      } catch (err: any) {
+        setUploadStatusText('❌ خطأ في الاتصال أثناء الرفع: ' + err.message);
+        setMediaFileUrl(URL.createObjectURL(file));
+      } finally {
+        setIsMediaUploading(false);
+      }
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setShowLogo(true);
+      const tempUrl = URL.createObjectURL(file);
+      setLogoUrl(tempUrl);
+
+      try {
+        const ext = file.name.split('.').pop() || 'png';
+        const fileName = `ads_logos/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from('businesses')
+          .upload(fileName, file, { upsert: true });
+
+        if (!uploadErr) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('businesses')
+            .getPublicUrl(fileName);
+          if (publicUrl) {
+            setLogoUrl(publicUrl);
+          }
+        }
+      } catch (err) {
+        console.error("Logo upload error:", err);
+      }
+    }
+  };
+
+  const applyMotionPreset = (preset: 'calm' | 'balanced' | 'engaging' | 'custom') => {
+    setMotionPreset(preset);
+    if (preset === 'calm') {
+      setHeadlineMotion('fadeIn');
+      setDescMotion('fadeIn');
+      setBtnMotion('none');
+      setMediaMotion('none');
+      setBtnAnimation('none');
+    } else if (preset === 'balanced') {
+      setHeadlineMotion('slideRight');
+      setDescMotion('fadeIn');
+      setBtnMotion('bounce');
+      setMediaMotion('kenBurns');
+      setBtnAnimation('shimmer');
+    } else if (preset === 'engaging') {
+      setHeadlineMotion('bounce');
+      setDescMotion('slideUp');
+      setBtnMotion('pulse');
+      setMediaMotion('kenBurns');
+      setBtnAnimation('pulse');
+    }
+    replayAnimation();
+  };
+
+  const handleSaveAndPublish = () => {
+    const finalTarget = actionType === 'whatsapp' 
+      ? `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`
+      : actionType === 'call' ? `tel:${callPhone}` : targetUrl;
+
+    const newAd: PublishedAd = {
+      id: editId || `AD-${Date.now()}`,
+      placementId: selectedPlacement.id,
+      placementName: selectedPlacement.name,
+      adCategoryType,
+      designTheme,
+      layoutStyle,
+      adTier,
+      mediaUrl: mediaFileUrl,
+      mediaType,
+      imageFit,
+      useBlurBackground,
+      imgPosX,
+      imgPosY,
+      imgScale,
+      showLogo,
+      logoUrl,
+      logoPosition,
+      logoSize,
+      showBadge,
+      badgeText,
+      badgeBgColor,
+      badgeTextColor,
+      showHeadline,
+      headline,
+      headlineColor,
+      headlineFont,
+      headlineSize,
+      headlineWeight,
+      hasTextShadow,
+      showDescription,
+      description,
+      descColor,
+      descLines,
+      textAlign,
+      showPricing,
+      currentPrice,
+      oldPrice,
+      discountPercentage,
+      currency,
+      showRating,
+      ratingValue,
+      showLocation,
+      locationText,
+      showVerifiedBadge,
+      showQrCode,
+      promoSticker,
+      showButton,
+      ctaText,
+      btnBgColor,
+      btnTextColor,
+      btnShape,
+      btnSize,
+      btnAnimation,
+      actionType,
+      targetUrl: finalTarget,
+      whatsappPhone,
+      whatsappMessage,
+      callPhone,
+      targetCity,
+      targetCategory,
+      endDate,
+      motionPreset,
+      headlineMotion,
+      descMotion,
+      btnMotion,
+      mediaMotion,
+      hasProgressBar,
+      progressBarColor,
+      progressDuration,
+      hasBorder,
+      borderWidth,
+      borderColor,
+      borderRadius,
+      hasGlow,
+      bgColor,
+      bgStyle,
+      brightness,
+      contrast,
+      imgOverlay,
+      status: 'active',
+      views: 1,
+      clicks: 0,
+      createdAt: new Date().toLocaleDateString('ar-YE')
+    };
+
+    const existing = JSON.parse(localStorage.getItem('yr_published_ads') || '[]');
+    if (editId) { localStorage.setItem('yr_published_ads', JSON.stringify(existing.map((a: any) => a.id === editId ? newAd : a))); } else { localStorage.setItem('yr_published_ads', JSON.stringify([newAd, ...existing])); }
+    adsDatabaseService.publishAd(newAd);
+    try {
+          if (typeof (adminAuditService as any)?.logAction === 'function') {
+            (adminAuditService as any).logAction('نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
+          } else if (typeof (adminAuditService as any)?.logActivity === 'function') {
+            (adminAuditService as any).logActivity('نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
+          } else if (typeof (adminAuditService as any)?.log === 'function') {
+            (adminAuditService as any).log('نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
+          } else {
+            console.info('🛡️ [Audit Policy Recorded]:', 'نشر إعلان متطور باستهداف وإجراء ذكي', 'ad_campaign', newAd.id, { headline, actionType });
+          }
+        } catch (auditErr) {
+          console.warn('⚠️ تنبيه سجل التدقيق (تم الحفظ واستمرار السياسة):', auditErr);
+        }
+
+        setPublishedAlert(true);
+    // إشعار نجاح ثم خروج تلقائي لمعرض الإعلانات
+    setTimeout(() => {
+      setPublishedAlert(false);
+      navigate('/admin/ads');
+    }, 1500);
+  };
+
+  return (
+    <div className="space-y-6 font-['Cairo',sans-serif] pb-16">
+      
+      {/* تضمين مباشر لـ CSS Animations لضمان عملها فوراً */}
+      <style>{`
+        @keyframes yrSlideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes yrSlideInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes yrSlideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes yrFade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes yrBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes yrPulseGlow { 0%, 100% { box-shadow: 0 0 10px rgba(255,197,0,0.3); } 50% { box-shadow: 0 0 25px rgba(255,197,0,0.8); } }
+        @keyframes yrShimmerEffect { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes yrKenBurnsZoom { 0% { transform: scale(1); } 50% { transform: scale(1.15) translate(-1%, -1%); } 100% { transform: scale(1); } }
+        
+        .anim-slide-right { animation: yrSlideInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .anim-slide-left { animation: yrSlideInLeft 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .anim-slide-up { animation: yrSlideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .anim-fade { animation: yrFade 0.8s ease forwards; }
+        .anim-bounce { animation: yrBounce 2s infinite ease-in-out; }
+        .anim-pulse-glow { animation: yrPulseGlow 2.5s infinite ease-in-out; }
+        .anim-shimmer { background-size: 200% 100% !important; background-image: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.4) 50%, transparent 70%) !important; animation: yrShimmerEffect 3s infinite linear !important; }
+        .anim-kenburns { animation: yrKenBurnsZoom 16s ease-in-out infinite alternate !important; }
+      `}</style>
+
+      {/* 1. منطقة المعاينة العلوية المثبتة للموبايل بتنسيق محكم وجميل */}
+      <div className="sticky top-16 z-30 bg-[#000000]/95  p-4 rounded-2xl border border-[#2F3336] shadow-2xl">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#2F3336]">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#16A34A] animate-ping" />
+            <span className="text-xs font-black text-white">المعاينة الحية الفورية (Live Studio Render)</span>
+            <button
+              onClick={replayAnimation}
+              className="p-1 rounded-lg bg-[#161D2B] text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all text-[11px] font-bold flex items-center gap-1"
+              title="إعادة تشغيل الحركة"
+            >
+              <RefreshCw size={12} />
+              <span className="hidden sm:inline">تشغيل الحركة</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1 bg-[#161D2B] p-1 rounded-xl">
+            <button onClick={() => setViewMode('mobile')} className={`p-1.5 rounded-lg text-xs ${viewMode === 'mobile' ? 'bg-[#FFC500] text-black font-bold' : 'text-[#9CA3AF]'}`}><Smartphone size={14} /></button>
+            <button onClick={() => setViewMode('tablet')} className={`p-1.5 rounded-lg text-xs ${viewMode === 'tablet' ? 'bg-[#FFC500] text-black font-bold' : 'text-[#9CA3AF]'}`}><Tablet size={14} /></button>
+            <button onClick={() => setViewMode('desktop')} className={`p-1.5 rounded-lg text-xs ${viewMode === 'desktop' ? 'bg-[#FFC500] text-black font-bold' : 'text-[#9CA3AF]'}`}><Monitor size={14} /></button>
+          </div>
+        </div>
+
+        {/* مجسم الإعلان الحقيقي — هندسة تصميم محكمة 100% */}
+        <div className="w-full flex justify-center overflow-x-auto py-1">
+          <div 
+            key={animTriggerKey}
+            className={`w-full transition-all duration-300 ${viewMode === 'mobile' ? 'max-w-[390px]' : viewMode === 'tablet' ? 'max-w-[560px]' : 'max-w-[850px]'}`}
+          >
+            <div
+              style={{
+                borderRadius: `${borderRadius}px`,
+                border: hasBorder ? `${borderWidth}px solid ${borderColor}` : 'none',
+                backgroundColor: bgStyle === 'transparent' ? 'transparent' : bgColor,
+                backgroundImage: bgStyle === 'gradient' ? `linear-gradient(135deg, ${bgColor} 0%, #161D2B 100%)` : 'none',
+                boxShadow: hasGlow && hasBorder ? `0 0 25px ${borderColor}40` : 'none',
+              }}
+              className="relative overflow-hidden w-full min-h-[92px] h-auto p-2.5 sm:p-3.5 flex flex-col justify-between"
+            >
+              {/* شريط التمرير الزمني */}
+              {hasProgressBar && (
+                <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 z-30 overflow-hidden">
+                  <div 
+                    style={{ 
+                      backgroundColor: progressBarColor,
+                      animation: `yrAdProgress ${progressDuration}s linear infinite`
+                    }}
+                    className="h-full w-full origin-left"
+                  />
+                </div>
+              )}
+
+              {/* الوسائط مع حركات Ken Burns */}
+              {mediaFileUrl && layoutStyle !== 'text_only' && (
+                <div className={`overflow-hidden flex items-center justify-center ${
+                  layoutStyle === 'image_left' || layoutStyle === 'image_right' ? 'w-1/3 h-28 rounded-xl shrink-0 relative z-10' :
+                  layoutStyle === 'image_top' ? 'w-full h-36 rounded-xl shrink-0 relative z-10 mb-3' : 'absolute inset-0 z-0'
+                }`}>
+                  {imageFit === 'contain' && useBlurBackground && mediaType === 'image' && layoutStyle === 'full_overlay' && (
+                    <img src={mediaFileUrl} alt="Blur" className="absolute inset-0 w-full h-full object-cover blur-lg scale-125 opacity-50" />
+                  )}
+
+                  {mediaType === 'video' ? (
+                    <video src={mediaFileUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                  ) : (
+                    <img 
+                      src={mediaFileUrl} 
+                      alt="Ad" 
+                      style={{ 
+                        objectFit: imageFit,
+                        objectPosition: `${imgPosX}% ${imgPosY}%`,
+                        transform: `scale(${imgScale / 100})`,
+                        filter: `brightness(${brightness}%) contrast(${contrast}%)`,
+                        imageRendering: 'crisp-edges'
+                      }}
+                      className={`w-full h-full relative z-10 transition-all duration-300 ${mediaMotion === 'kenBurns' ? 'anim-kenburns' : mediaMotion === 'fadeIn' ? 'anim-fade' : ''}`} 
+                    />
+                  )}
+                  {imgOverlay > 0 && layoutStyle === 'full_overlay' && (
+                    <div className="absolute inset-0 bg-black z-10" style={{ opacity: imgOverlay / 100 }} />
+                  )}
+                </div>
+              )}
+
+              {/* الشعار */}
+              {showLogo && logoUrl && (
+                <div className={`absolute z-30 p-2 ${
+                  logoPosition === 'top_left' ? 'top-2 left-2' :
+                  logoPosition === 'top_right' ? 'top-2 right-2' :
+                  logoPosition === 'bottom_left' ? 'bottom-2 left-2' : 'bottom-2 right-2'
+                }`}>
+                  <img src={logoUrl} alt="Logo" style={{ width: `${logoSize}px`, height: `${logoSize}px` }} className="object-contain rounded-lg drop-shadow-md" />
+                </div>
+              )}
+
+              {/* الملصقات الترويجية */}
+              {promoSticker !== 'none' && (
+                <div className="absolute top-3 left-3 z-30">
+                  {promoSticker === 'discount50' && <span className="px-2.5 py-1 rounded-xl bg-[#DC2626] text-white text-[11px] font-black shadow-lg">خصم 50% 🔥</span>}
+                  {promoSticker === 'verified_gold' && <span className="px-2.5 py-1 rounded-xl bg-[#FFC500] text-black text-[11px] font-black shadow-lg flex items-center gap-1"><Award size={13} /> موثق ذهبي</span>}
+                  {promoSticker === 'hot_deal' && <span className="px-2.5 py-1 rounded-xl bg-orange-600 text-white text-[11px] font-black shadow-lg flex items-center gap-1"><Flame size={13} /> عرض ناري</span>}
+                  {promoSticker === 'limited' && <span className="px-2.5 py-1 rounded-xl bg-amber-500 text-black text-[11px] font-black shadow-lg flex items-center gap-1"><Clock size={13} /> لفترة محدودة</span>}
+                  {promoSticker === 'exclusive' && <span className="px-2.5 py-1 rounded-xl bg-purple-600 text-white text-[11px] font-black shadow-lg">⭐ حصري</span>}
+                </div>
+              )}
+
+              {/* المحتوى والنصوص والشارات — توزيع أفقي سليم يمنع التشوّه */}
+              <div className={`relative z-20 space-y-2 max-w-xl ${textAlign === 'center' ? 'text-center' : textAlign === 'left' ? 'text-left' : 'text-right'}`}>
+                {/* شريط الشارات العلوية كبسولات أفقية أنيقة */}
+                {(showBadge || showVerifiedBadge) && (
+                  <div className="flex items-center gap-2 flex-wrap pb-1">
+                    {showBadge && (
+                      <span 
+                        style={{ backgroundColor: badgeBgColor, color: badgeTextColor, borderColor: badgeTextColor }} 
+                        className="inline-flex items-center px-3 py-0.5 rounded-full text-[10px] font-black border tracking-wide whitespace-nowrap shadow-sm "
+                      >
+                        {badgeText}
+                      </span>
+                    )}
+                    {showVerifiedBadge && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#16A34A]/20 text-[#16A34A] border border-[#16A34A]/40 text-[10px] font-black whitespace-nowrap">
+                        <ShieldCheck size={12} /> موثّق YR
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* العنوان مع حركة مخصصة */}
+                {showHeadline && (
+                  <h3 
+                    style={{ 
+                      color: headlineColor, 
+                      fontFamily: headlineFont,
+                      textShadow: hasTextShadow ? '0 2px 10px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.8)' : 'none'
+                    }} 
+                    className={`leading-snug ${
+                      headlineSize === 'xl' ? 'text-lg sm:text-xl font-black' :
+                      headlineSize === 'lg' ? 'text-base sm:text-lg font-black' :
+                      headlineSize === 'md' ? 'text-sm sm:text-base font-bold' : 'text-xs sm:text-sm font-semibold'
+                    } ${
+                      headlineMotion === 'slideRight' ? 'anim-slide-right' :
+                      headlineMotion === 'slideLeft' ? 'anim-slide-left' :
+                      headlineMotion === 'slideUp' ? 'anim-slide-up' :
+                      headlineMotion === 'bounce' ? 'anim-bounce' :
+                      headlineMotion === 'fadeIn' ? 'anim-fade' : ''
+                    }`}
+                  >
+                    {headline}
+                  </h3>
+                )}
+
+                {/* الوصف مع حركة مخصصة */}
+                {showDescription && (
+                  <p 
+                    style={{ 
+                      color: descColor,
+                      textShadow: hasTextShadow ? '0 1px 6px rgba(0,0,0,0.9)' : 'none'
+                    }} 
+                    className={`text-xs text-gray-200 mt-1 leading-relaxed ${
+                      descLines === 1 ? 'line-clamp-1' : descLines === 2 ? 'line-clamp-2' : descLines === 3 ? 'line-clamp-3' : ''
+                    } ${
+                      descMotion === 'slideUp' ? 'anim-slide-up' :
+                      descMotion === 'fadeIn' ? 'anim-fade' : ''
+                    }`}
+                  >
+                    {description}
+                  </p>
+                )}
+
+                {/* شريط الأسعار والتقييم */}
+                {(showPricing || showRating || showLocation) && (
+                  <div className="flex items-center gap-3 pt-1 flex-wrap">
+                    {showPricing && (
+                      <div className="flex items-center gap-1.5 font-mono">
+                        <span className="text-sm font-black text-[#FFC500]">{currentPrice} {currency}</span>
+                        {oldPrice && <span className="text-xs text-gray-400 line-through">{oldPrice}</span>}
+                        {discountPercentage && <span className="text-[10px] px-1.5 py-0.2 rounded bg-red-600 text-white font-bold">-{discountPercentage}</span>}
+                      </div>
+                    )}
+                    {showRating && (
+                      <span className="flex items-center gap-1 text-[11px] text-[#FFC500] font-bold">
+                        <Star size={13} fill="#FFC500" /> {ratingValue}
+                      </span>
+                    )}
+                    {showLocation && (
+                      <span className="text-[10px] text-gray-300 font-medium">📍 {locationText}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* زر الإجراء السفلي والـ QR Code */}
+              {(showButton || showQrCode) && (
+                <div className="relative z-20 pt-2 mt-1.5 flex justify-between items-center border-t border-white/10 shrink-0">
+                  {showButton ? (
+                    <button 
+                      style={{ backgroundColor: btnBgColor, color: btnTextColor }} 
+                      className={`font-black shadow-xl flex items-center gap-1.5 cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+                        btnShape === 'pill' ? 'rounded-full' : btnShape === 'square' ? 'rounded-none' : 'rounded-xl'
+                      } ${
+                        btnSize === 'lg' ? 'px-5 py-2.5 text-sm' : btnSize === 'md' ? 'px-4 py-2 text-xs' : 'px-3 py-1.5 text-[11px]'
+                      } ${
+                        btnAnimation === 'pulse' ? 'anim-pulse-glow' :
+                        btnAnimation === 'shimmer' ? 'anim-shimmer' :
+                        btnAnimation === 'bounce' ? 'anim-bounce' : ''
+                      }`}
+                    >
+                      {actionType === 'whatsapp' && <MessageCircle size={14} />}
+                      {actionType === 'call' && <Phone size={14} />}
+                      <span>{ctaText}</span>
+                      <ArrowRight size={13} className="rtl:rotate-180" />
+                    </button>
+                  ) : <div />}
+
+                  {showQrCode ? (
+                    <div className="bg-white p-1 rounded-lg shrink-0">
+                      <QrCode size={24} className="text-black" />
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-white/80 font-mono bg-black/40 px-2 py-0.5 rounded ">
+                      {selectedPlacement.name.split(' ')[0]}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {publishedAlert && (
+        <div className="p-4 rounded-xl bg-[#16A34A]/20 border border-[#16A34A] text-white text-xs font-bold flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 size={18} className="text-[#16A34A]" />
+            <span>تم حفظ ونشر الإعلان بنجاح مع كافة الحركات والتنسيق المطور!</span>
+          </div>
+          <a href="/admin/ads" className="px-3 py-1.5 rounded-lg bg-[#FFC500] text-black font-black text-xs">مشاهدة المعرض</a>
+        </div>
+      )}
+
+      {/* 2. شريط المواضع الـ 10 ومستويات الإعلان */}
+      <div className="bg-[#0B0F17] p-3 rounded-xl border border-[#2F3336] space-y-2.5">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <label className="text-[11px] font-bold text-gray-300">موضع العرض:</label>
+          <div className="flex items-center gap-1 bg-[#161D2B] p-0.5 rounded-lg border border-[#2F3336]">
+            {(["basic", "professional", "premium"] as const).map(tier => (
+              <button
+                key={tier}
+                onClick={() => setAdTier(tier)}
+                className={`px-2 py-0.5 rounded-md text-[10px] font-bold transition-all ${
+                  adTier === tier ? "bg-[#FFC500] text-black shadow-sm" : "text-[#9CA3AF] hover:text-white"
+                }`}
+              >
+                {tier === "basic" ? "بسيط" : tier === "professional" ? "احترافي" : "VIP"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+          {YR_AD_PLACEMENTS.map((p) => {
+            const cleanName = p.name.replace(/\(.*?\)/g, "").replace(/^[^\s]+—\s*/, "").trim() || p.name;
+            return (
+              <button
+                key={p.id}
+                onClick={() => setSelectedPlacement(p)}
+                className={`shrink-0 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+                  selectedPlacement.id === p.id 
+                    ? "bg-[#FFC500] text-black border-[#FFC500] font-bold shadow-sm" 
+                    : "bg-[#161D2B] text-[#9CA3AF] border-[#2F3336] hover:text-white"
+                }`}
+              >
+                #{p.id} {cleanName}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 3. شريط أدوات الاستوديو الشامل */}
+      <div className="bg-[#0B0F17] p-3.5 sm:p-4 rounded-xl border border-[#2F3336] space-y-4">
+
+        {/* التبويبات المكتملة */}
+        <div className="flex gap-1 overflow-x-auto pb-1 p-1 bg-[#161D2B] rounded-lg border border-[#2F3336] text-[11px] font-medium custom-scrollbar">
+          {[
+            { id: "layout", label: "التخطيط" },
+            { id: "media", label: "الوسائط والشعار" },
+            { id: "typography", label: "النصوص" },
+            { id: "pricing", label: "السعر والتقييم" },
+            { id: "action", label: "زر الإجراء" },
+            { id: "motion", label: "الحركات" },
+            { id: "colors", label: "الألوان" },
+            { id: "border", label: "الحواف والظل" },
+            { id: "target", label: "الاستهداف" },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`shrink-0 px-2.5 py-1 rounded-md transition-all ${
+                activeTab === tab.id ? "bg-[#FFC500] text-black font-bold shadow-sm" : "text-[#9CA3AF] hover:text-white"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* تبويب 1: التخطيط والنوع والنمط */}
+        {activeTab === "layout" && (
+          <div className="space-y-3">
+            <div>
+              <label className="text-[11px] font-semibold text-gray-400 block mb-1">نوع الإعلان:</label>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                {[
+                  { id: "image_text", label: "صورة + نص" },
+                  { id: "image", label: "صورة فقط" },
+                  { id: "text_only", label: "نص فقط" },
+                  { id: "video", label: "فيديو" },
+                  { id: "discount", label: "خصم وعرض" },
+                  { id: "service", label: "خدمة" },
+                  { id: "product", label: "منتج" },
+                  { id: "event", label: "مناسبة" },
+                  { id: "job", label: "وظيفة" },
+                ].map(type => (
+                  <button
+                    key={type.id}
+                    onClick={() => {
+                      setAdCategoryType(type.id as any);
+                      if (type.id === "discount") setShowPricing(true);
+                    }}
+                    className={`py-1.5 px-2 rounded-lg border text-[11px] font-medium transition-all ${
+                      adCategoryType === type.id 
+                        ? "bg-[#FFC500] text-black border-[#FFC500] font-bold shadow-sm" 
+                        : "bg-[#161D2B] text-gray-300 border-[#2F3336] hover:border-gray-600"
+                    }`}
+                  >
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-semibold text-gray-400 block mb-1">تخطيط العناصر:</label>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                {[
+                  { id: "full_overlay", label: "تراكب كامل" },
+                  { id: "image_right", label: "يمين / يسار" },
+                  { id: "image_left", label: "يسار / يمين" },
+                  { id: "image_top", label: "عمودي" },
+                  { id: "text_only", label: "بطاقة نصية" },
+                ].map(l => (
+                  <button
+                    key={l.id}
+                    onClick={() => setLayoutStyle(l.id as any)}
+                    className={`py-1.5 px-2 rounded-lg border text-[11px] font-medium transition-all ${
+                      layoutStyle === l.id 
+                        ? "bg-[#FFC500] text-black border-[#FFC500] font-bold shadow-sm" 
+                        : "bg-[#161D2B] text-gray-300 border-[#2F3336] hover:border-gray-600"
+                    }`}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-semibold text-gray-400 block mb-1">النمط البصري:</label>
+              <div className="grid grid-cols-4 sm:grid-cols-8 gap-1">
+                {[
+                  { id: "pro", label: "احترافي" },
+                  { id: "modern", label: "عصري" },
+                  { id: "luxury", label: "فاخر" },
+                  { id: "minimal", label: "بسيط" },
+                  { id: "bold", label: "جريء" },
+                  { id: "formal", label: "رسمي" },
+                  { id: "youth", label: "شبابي" },
+                  { id: "marketing", label: "تسويقي" },
+                ].map(th => (
+                  <button
+                    key={th.id}
+                    onClick={() => setDesignTheme(th.id as any)}
+                    className={`py-1.5 px-1 rounded-md border text-[10.5px] font-medium transition-all ${
+                      designTheme === th.id 
+                        ? "bg-[#FFC500] text-black border-[#FFC500] font-bold shadow-sm" 
+                        : "bg-[#161D2B] text-[#9CA3AF] border-[#2F3336] hover:border-gray-600"
+                    }`}
+                  >
+                    {th.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        
+{/* تبويب 2: الوسائط والشعار */}
+        {activeTab === 'media' && (
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-white block mb-2">تحميل صورة أو فيديو الإعلان من هاتفك:</label>
+              <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileUpload} className="hidden" />
+              <div className="flex gap-2">
+                <button onClick={() => fileInputRef.current?.click()} className="flex-1 py-3 px-4 rounded-xl bg-[#161D2B] border-2 border-dashed border-[#FFC500] text-white text-xs font-bold flex items-center justify-center gap-2 cursor-pointer">
+                  <Upload size={16} className="text-[#FFC500]" />
+                  <span>تحميل وسائط من الهاتف</span>
+                </button>
+                {mediaFileUrl && (
+                  <button onClick={() => setMediaFileUrl('')} className="p-3 rounded-xl bg-[#DC2626]/10 text-[#DC2626] border border-[#DC2626]/30">
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* الشعار Logo */}
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-white">إظهار شعار المنشأة (Logo)</span>
+                <button onClick={() => setShowLogo(!showLogo)} className={`px-3 py-1 rounded-lg text-xs font-bold ${showLogo ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
+                  {showLogo ? 'مفعل' : 'معطل'}
+                </button>
+              </div>
+              {showLogo && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-[#2F3336]">
+                  <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                  <button onClick={() => logoInputRef.current?.click()} className="py-2 px-3 rounded-lg bg-[#0B0F17] border border-[#2F3336] text-xs text-[#FFC500] font-bold">
+                    رفع الشعار
+                  </button>
+                  <select value={logoPosition} onChange={(e) => setLogoPosition(e.target.value as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
+                    <option value="top_left">أعلى اليسار</option>
+                    <option value="top_right">أعلى اليمين</option>
+                    <option value="bottom_left">أسفل اليسار</option>
+                    <option value="bottom_right">أسفل اليمين</option>
+                  </select>
+                  <div className="flex items-center gap-2">
+                    <label className="text-[10px] text-[#9CA3AF]">الحجم: {logoSize}px</label>
+                    <input type="range" min="20" max="64" value={logoSize} onChange={(e) => setLogoSize(Number(e.target.value))} className="w-full accent-[#FFC500]" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* قص وتموضع وفلاتر */}
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => { setImageFit('contain'); setImgScale(100); }} className={`p-2.5 rounded-xl border text-xs font-bold ${imageFit === 'contain' ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#0B0F17] text-white border-[#2F3336]'}`}>
+                  عرض كامل الصورة
+                </button>
+                <button onClick={() => setImageFit('cover')} className={`p-2.5 rounded-xl border text-xs font-bold ${imageFit === 'cover' ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#0B0F17] text-white border-[#2F3336]'}`}>
+                  ملء واقتصاص مخصص
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-[11px] text-[#9CA3AF] block mb-1">التقريب (Zoom): {imgScale}%</label>
+                  <input type="range" min="100" max="250" value={imgScale} onChange={(e) => setImgScale(Number(e.target.value))} className="w-full accent-[#FFC500]" />
+                </div>
+                <div>
+                  <label className="text-[11px] text-[#9CA3AF] block mb-1">إزاحة أفقية X: {imgPosX}%</label>
+                  <input type="range" min="0" max="100" value={imgPosX} onChange={(e) => setImgPosX(Number(e.target.value))} className="w-full accent-[#FFC500]" />
+                </div>
+                <div>
+                  <label className="text-[11px] text-[#9CA3AF] block mb-1">إزاحة رأسية Y: {imgPosY}%</label>
+                  <input type="range" min="0" max="100" value={imgPosY} onChange={(e) => setImgPosY(Number(e.target.value))} className="w-full accent-[#FFC500]" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* تبويب 3: النصوص والخطوط والمحاذاة */}
+        {activeTab === 'typography' && (
+          <div className="space-y-4">
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-white">العنوان الرئيسي</span>
+                <button onClick={() => setShowHeadline(!showHeadline)} className={`px-2.5 py-0.5 rounded text-xs font-bold ${showHeadline ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
+                  {showHeadline ? 'مفعل' : 'معطل'}
+                </button>
+              </div>
+              {showHeadline && (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input type="text" value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="اكتب العنوان..." className="flex-1 bg-[#0B0F17] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white font-bold" />
+                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#2F3336] px-2 rounded-xl">
+                      <input type="color" value={headlineColor} onChange={(e) => setHeadlineColor(e.target.value)} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer" />
+                      <span className="text-[10px] text-[#9CA3AF]">لون</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <select value={headlineSize} onChange={(e) => setHeadlineSize(e.target.value as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
+                      <option value="sm">حجم صغير</option>
+                      <option value="md">حجم متوسط</option>
+                      <option value="lg">حجم كبير</option>
+                      <option value="xl">حجم ضخم</option>
+                    </select>
+                    <select value={headlineWeight} onChange={(e) => setHeadlineWeight(e.target.value as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
+                      <option value="normal">خط عادي</option>
+                      <option value="medium">خط متوسط</option>
+                      <option value="bold">خط عريض</option>
+                    </select>
+                    <button onClick={() => setHasTextShadow(!hasTextShadow)} className={`p-2 rounded-xl text-xs font-bold border ${hasTextShadow ? 'border-[#FFC500] text-[#FFC500]' : 'border-[#2F3336] text-[#9CA3AF]'}`}>
+                      {hasTextShadow ? 'الظل مفعل' : 'بدون ظل'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-white">نص الوصف</span>
+                <button onClick={() => setShowDescription(!showDescription)} className={`px-2.5 py-0.5 rounded text-xs font-bold ${showDescription ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
+                  {showDescription ? 'مفعل' : 'معطل'}
+                </button>
+              </div>
+              {showDescription && (
+                <div className="space-y-2">
+                  <textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full bg-[#0B0F17] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white" />
+                  <div className="grid grid-cols-3 gap-2">
+                    <select value={descLines} onChange={(e) => setDescLines(Number(e.target.value) as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
+                      <option value={1}>سطر واحد</option>
+                      <option value={2}>سطران</option>
+                      <option value={3}>3 أسطر</option>
+                    </select>
+                    <select value={textAlign} onChange={(e) => setTextAlign(e.target.value as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
+                      <option value="right">محاذاة يمين</option>
+                      <option value="center">محاذاة وسط</option>
+                      <option value="left">محاذاة يسار</option>
+                    </select>
+                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#2F3336] px-2 rounded-lg">
+                      <input type="color" value={descColor} onChange={(e) => setDescColor(e.target.value)} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer" />
+                      <span className="text-[10px] text-[#9CA3AF]">لون الوصف</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* تبويب 4: الأسعار والتقييم والعناصر الإضافية */}
+        {activeTab === 'pricing' && (
+          <div className="space-y-4">
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-white">عرض الأسعار ونسبة الخصم</span>
+                <button onClick={() => setShowPricing(!showPricing)} className={`px-2.5 py-0.5 rounded text-xs font-bold ${showPricing ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
+                  {showPricing ? 'مفعل' : 'معطل'}
+                </button>
+              </div>
+              {showPricing && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <input type="text" value={currentPrice} onChange={(e) => setCurrentPrice(e.target.value)} placeholder="السعر الحالي..." className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white" />
+                  <input type="text" value={oldPrice} onChange={(e) => setOldPrice(e.target.value)} placeholder="السعر القديم..." className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white" />
+                  <input type="text" value={discountPercentage} onChange={(e) => setDiscountPercentage(e.target.value)} placeholder="نسبة الخصم %..." className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white" />
+                  <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
+                    <option value="YER">ريال يمني (YER)</option>
+                    <option value="SAR">ريال سعودي (SAR)</option>
+                    <option value="USD">دولار (USD)</option>
+                  </select>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] flex items-center justify-between">
+                <span className="text-xs text-white font-bold">تقييم النجوم ⭐</span>
+                <button onClick={() => setShowRating(!showRating)} className={`px-2 py-0.5 rounded text-xs font-bold ${showRating ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
+                  {showRating ? 'مفعل' : 'معطل'}
+                </button>
+              </div>
+
+              <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] flex items-center justify-between">
+                <span className="text-xs text-white font-bold">شارة موثّق YR</span>
+                <button onClick={() => setShowVerifiedBadge(!showVerifiedBadge)} className={`px-2 py-0.5 rounded text-xs font-bold ${showVerifiedBadge ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
+                  {showVerifiedBadge ? 'مفعل' : 'معطل'}
+                </button>
+              </div>
+
+              <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] flex items-center justify-between">
+                <span className="text-xs text-white font-bold">رمز QR للطلب</span>
+                <button onClick={() => setShowQrCode(!showQrCode)} className={`px-2 py-0.5 rounded text-xs font-bold ${showQrCode ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
+                  {showQrCode ? 'مفعل' : 'معطل'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* تبويب 5: زر CTA والتحويل الذكي */}
+        {activeTab === 'action' && (
+          <div className="space-y-4">
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-white">إعدادات الزر (CTA Button)</span>
+                <button onClick={() => setShowButton(!showButton)} className={`px-2.5 py-0.5 rounded text-xs font-bold ${showButton ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
+                  {showButton ? 'مفعل' : 'معطل'}
+                </button>
+              </div>
+              {showButton && (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <select value={btnShape} onChange={(e) => setBtnShape(e.target.value as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
+                      <option value="pill">شكل كبسولة دائرية</option>
+                      <option value="rounded">مستطيل بحواف ناعمة</option>
+                      <option value="square">مستطيل كلاسيكي</option>
+                    </select>
+                    <select value={btnSize} onChange={(e) => setBtnSize(e.target.value as any)} className="bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white">
+                      <option value="sm">حجم صغير</option>
+                      <option value="md">حجم متوسط</option>
+                      <option value="lg">حجم كبير</option>
+                    </select>
+                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#2F3336] px-2 rounded-lg">
+                      <input type="color" value={btnBgColor} onChange={(e) => setBtnBgColor(e.target.value)} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer" />
+                      <span className="text-[10px] text-[#9CA3AF]">خلفية الزر</span>
+                    </div>
+                    <div className="flex items-center gap-1 bg-[#0B0F17] border border-[#2F3336] px-2 rounded-lg">
+                      <input type="color" value={btnTextColor} onChange={(e) => setBtnTextColor(e.target.value)} className="w-6 h-6 rounded bg-transparent border-0 cursor-pointer" />
+                      <span className="text-[10px] text-[#9CA3AF]">لون النص</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] text-[#9CA3AF] block mb-1">نصوص جاهزة سريعة للزر:</label>
+                    <div className="flex gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+                      {['اتصل الآن', 'واتساب', 'احجز الآن', 'اطلب الآن', 'اعرف المزيد', 'زيارة الصفحة', 'إرسال رسالة'].map(text => (
+                        <button
+                          key={text}
+                          onClick={() => {
+                            setCtaText(text);
+                            if (text === 'واتساب') setActionType('whatsapp');
+                            if (text === 'اتصل الآن') setActionType('call');
+                          }}
+                          className="shrink-0 px-2.5 py-1 rounded-lg bg-[#0B0F17] border border-[#2F3336] text-[11px] text-white hover:border-[#FFC500]"
+                        >
+                          {text}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* تبويب 6: محرك الحركات Animation */}
+        {activeTab === 'motion' && (
+          <div className="space-y-4">
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-[#FFC500] block">أنماط الحركات الجاهزة:</label>
+                <button onClick={replayAnimation} className="text-xs text-[#FFC500] flex items-center gap-1 font-bold">
+                  <RefreshCw size={13} /> معاينة الحركة
+                </button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { id: 'calm', label: 'هادئ (بسيط واحترافي)' },
+                  { id: 'balanced', label: 'متوازن (واضح وأنيق)' },
+                  { id: 'engaging', label: 'جذاب (لفت انتباه ناعم)' },
+                  { id: 'custom', label: 'مخصص (لكل عنصر)' },
+                ].map(m => (
+                  <button
+                    key={m.id}
+                    onClick={() => applyMotionPreset(m.id as any)}
+                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all ${
+                      motionPreset === m.id ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-[#0B0F17] text-[#9CA3AF] border-[#2F3336]'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-[#161D2B] rounded-xl border border-[#2F3336]">
+              <div>
+                <label className="text-xs text-white font-bold block mb-1">حركة العنوان الرئيسي:</label>
+                <select 
+                  value={headlineMotion} 
+                  onChange={(e) => { setHeadlineMotion(e.target.value as any); replayAnimation(); }} 
+                  className="w-full bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white"
+                >
+                  <option value="none">بدون حركة</option>
+                  <option value="fadeIn">Fade In تدريجي</option>
+                  <option value="slideRight">Slide From Right (انزلاق من اليمين)</option>
+                  <option value="slideLeft">Slide From Left (انزلاق من اليسار)</option>
+                  <option value="slideUp">Slide From Bottom (انزلاق من الأسفل)</option>
+                  <option value="bounce">Bounce خفيف</option>
+                  <option value="pulse">Pulse نبض</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-white font-bold block mb-1">حركة زر الإجراء CTA:</label>
+                <select 
+                  value={btnAnimation} 
+                  onChange={(e) => { setBtnAnimation(e.target.value as any); replayAnimation(); }} 
+                  className="w-full bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white"
+                >
+                  <option value="none">ثابت عادي</option>
+                  <option value="shimmer">لمعان متحرك (Shine / Shimmer)</option>
+                  <option value="pulse">نبضة متكررة (Pulse Glow)</option>
+                  <option value="bounce">Bounce قفزة لطيفة</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-white font-bold block mb-1">حركة الصورة / الخلفية:</label>
+                <select 
+                  value={mediaMotion} 
+                  onChange={(e) => { setMediaMotion(e.target.value as any); replayAnimation(); }} 
+                  className="w-full bg-[#0B0F17] border border-[#2F3336] rounded-lg p-2 text-xs text-white"
+                >
+                  <option value="none">ثابتة بدون حركة</option>
+                  <option value="kenBurns">Ken Burns (تكبير بطيء وسلس)</option>
+                  <option value="fadeIn">Fade In</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs text-white font-bold block mb-1">شريط تقدم الإعلان الزمني:</label>
+                <div className="flex items-center gap-2">
+                  <input type="color" value={progressBarColor} onChange={(e) => setProgressBarColor(e.target.value)} className="w-8 h-8 rounded bg-transparent border-0 cursor-pointer" />
+                  <input type="range" min="3" max="25" value={progressDuration} onChange={(e) => setProgressDuration(Number(e.target.value))} className="flex-1 accent-[#FFC500]" />
+                  <span className="text-xs font-mono text-white">{progressDuration}s</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* تبويب 7: الألوان */}
+        {activeTab === 'colors' && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#2F3336]">
+              <label className="text-[10px] text-[#9CA3AF] block mb-1 font-bold">خلفية الإعلان</label>
+              <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
+            </div>
+            <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#2F3336]">
+              <label className="text-[10px] text-[#9CA3AF] block mb-1 font-bold">لون العنوان</label>
+              <input type="color" value={headlineColor} onChange={(e) => setHeadlineColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
+            </div>
+            <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#2F3336]">
+              <label className="text-[10px] text-[#9CA3AF] block mb-1 font-bold">لون الوصف</label>
+              <input type="color" value={descColor} onChange={(e) => setDescColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
+            </div>
+            <div className="p-2.5 bg-[#161D2B] rounded-xl border border-[#2F3336]">
+              <label className="text-[10px] text-[#9CA3AF] block mb-1 font-bold">خلفية الزر</label>
+              <input type="color" value={btnBgColor} onChange={(e) => setBtnBgColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
+            </div>
+          </div>
+        )}
+
+        {/* تبويب 8: الحواف */}
+        {activeTab === 'border' && (
+          <div className="space-y-3">
+            <div className="p-3 bg-[#161D2B] rounded-xl border border-[#2F3336] flex items-center justify-between">
+              <span className="text-xs font-bold text-white">تفعيل الإطار والحواف</span>
+              <button onClick={() => setHasBorder(!hasBorder)} className={`px-3 py-1 rounded-lg text-xs font-bold ${hasBorder ? 'bg-[#16A34A] text-white' : 'bg-gray-700 text-gray-300'}`}>
+                {hasBorder ? 'مفعل' : 'ملغي (صافي)'}
+              </button>
+            </div>
+            {hasBorder && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 bg-[#161D2B] rounded-xl border border-[#2F3336]">
+                <div>
+                  <label className="text-[10px] text-[#9CA3AF] block mb-1">السماكة: {borderWidth}px</label>
+                  <input type="range" min="1" max="8" value={borderWidth} onChange={(e) => setBorderWidth(Number(e.target.value))} className="w-full accent-[#FFC500]" />
+                </div>
+                <div>
+                  <label className="text-[10px] text-[#9CA3AF] block mb-1">انحناء الحواف: {borderRadius}px</label>
+                  <input type="range" min="0" max="32" value={borderRadius} onChange={(e) => setBorderRadius(Number(e.target.value))} className="w-full accent-[#FFC500]" />
+                </div>
+                <div>
+                  <label className="text-[10px] text-[#9CA3AF] block mb-1">لون الإطار</label>
+                  <input type="color" value={borderColor} onChange={(e) => setBorderColor(e.target.value)} className="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* تبويب 9: الاستهداف */}
+        {activeTab === 'target' && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">المدينة المستهدفة</label>
+              <select value={targetCity} onChange={(e) => setTargetCity(e.target.value)} className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white">
+                <option value="كل المحافظات">كل المحافظات</option>
+                <option value="صنعاء">صنعاء</option>
+                <option value="عدن">عدن</option>
+                <option value="حضرموت">حضرموت - المكلا</option>
+                <option value="تعز">تعز</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">القسم المستهدف</label>
+              <select value={targetCategory} onChange={(e) => setTargetCategory(e.target.value)} className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white">
+                <option value="الجميع">جميع الأقسام</option>
+                <option value="عقارات">عقارات</option>
+                <option value="مزادات">مزادات</option>
+                <option value="وظائف">وظائف</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">تاريخ الانتهاء</label>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white font-mono" />
+            </div>
+          </div>
+        )}
+
+        {/* مؤشر حالة الرفع السحابي */}
+        {uploadStatusText && (
+          <div className={`p-3 rounded-xl text-xs font-bold text-center border mb-3 ${
+            isMediaUploading 
+              ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 animate-pulse' 
+              : uploadStatusText.includes('✅') 
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+                : 'bg-red-500/10 border-red-500/30 text-red-400'
+          }`}>
+            {uploadStatusText}
+          </div>
+        )}
+
+        {/* زر النشر النهائي المحمي */}
+        <button
+            onClick={handleSaveAndPublish}
+            disabled={isMediaUploading}
+            className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-md ${
+              isMediaUploading
+                ? "bg-[#1A1A1A] text-zinc-500 cursor-not-allowed border border-[#2F3336]"
+                : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20 active:scale-[0.99] cursor-pointer"
+            }`}
+          >
+            <Sparkles size={15} />
+            <span>{isMediaUploading ? "جاري رفع الوسائط..." : "حفظ ونشر الإعلان في المنصة"}</span>
+          </button>
+      </div>
+
+    </div>
+  );
+};
