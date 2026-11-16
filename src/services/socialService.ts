@@ -28,6 +28,14 @@ export interface PostItem {
   profile?: Profile;
   isLiked?: boolean;
   isReposted?: boolean;
+  isRepost?: boolean;
+  quote_text?: string;
+  original?: any;
+  originalId?: string;
+  reposterId?: string;
+  reposterName?: string;
+  reposterUsername?: string;
+  repostedAt?: string;
 }
 
 export interface CommentItem {
@@ -268,7 +276,7 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
     const postIds = [...new Set(reposts.map((r: any) => r.post_id))];
     const { data: originals } = await supabase
       .from('posts')
-      .select('id, user_id, content, image_url, likes_count, comments_count, reposts_count, created_at')
+      .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, views_count, created_at')
       .in('id', postIds);
     originalPosts = originals || [];
   }
@@ -287,17 +295,29 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
   
   const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
 
-  // 5) جلب likes
+  // 5) جلب likes و reposts الحالية للمستخدم
   let likedSet = new Set<string>();
+  let repostedSet = new Set<string>();
   if (currentUserId) {
-    const postIds = (posts || []).map((p: any) => p.id);
-    if (postIds.length > 0) {
-      const { data: userLikes } = await supabase
-        .from('post_likes')
-        .select('post_id')
-        .eq('user_id', currentUserId)
-        .in('post_id', postIds);
+    const allPostIds = Array.from(new Set([
+      ...(posts || []).map((p: any) => p.id),
+      ...(originalPosts || []).map((p: any) => p.id),
+    ]));
+    if (allPostIds.length > 0) {
+      const [{ data: userLikes }, { data: userReposts }] = await Promise.all([
+        supabase
+          .from('post_likes')
+          .select('post_id')
+          .eq('user_id', currentUserId)
+          .in('post_id', allPostIds),
+        supabase
+          .from('post_reposts')
+          .select('post_id')
+          .eq('user_id', currentUserId)
+          .in('post_id', allPostIds),
+      ]);
       likedSet = new Set((userLikes || []).map((l: any) => l.post_id));
+      repostedSet = new Set((userReposts || []).map((r: any) => r.post_id));
     }
   }
 
@@ -335,52 +355,107 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
       profile: author ? { ...author, verification_type: author.verification_type, is_verified: author.is_verified } : null,
       badgeType: author?.verification_type || (author?.is_verified ? 'blue' : null),
       isLiked: likedSet.has(p.id),
+      isReposted: repostedSet.has(p.id),
     };
   });
 
-  // 7) بناء repostTweets
+  // 7) بناء repostTweets (تمييز إعادة النشر الصافية عن الاقتباس مثل X)
   const repostTweets = (reposts || []).map((r: any) => {
     const original = originalPosts.find((p: any) => p.id === r.post_id);
     const reposter = profileMap.get(r.user_id);
     const originalAuthor = original ? profileMap.get(original.user_id) : null;
+    const isQuote = !!r.quote_text;
+    const origId = original?.id || r.post_id;
+    const origCreatedAt = original?.created_at || r.created_at;
+
+    if (!isQuote) {
+      if (!original) return null;
+      return {
+        id: `repost-${r.id}`,
+        originalId: origId,
+        user_id: original.user_id,
+        content: original.content || '',
+        image_url: original.image_url || null,
+        video_url: original.video_url || undefined,
+        likes_count: original.likes_count || 0,
+        comments_count: original.comments_count || 0,
+        reposts_count: original.reposts_count || 0,
+        views_count: original.views_count || 1,
+        created_at: origCreatedAt,
+        repostedAt: r.created_at,
+        profile: originalAuthor ? { ...originalAuthor, verification_type: originalAuthor.verification_type, is_verified: originalAuthor.is_verified } : null,
+        badgeType: originalAuthor?.verification_type || (originalAuthor?.is_verified ? 'blue' : null),
+        isLiked: likedSet.has(origId),
+        isReposted: repostedSet.has(origId) || (currentUserId ? r.user_id === currentUserId : false),
+        authorId: original.user_id,
+        authorName: originalAuthor?.full_name || 'مستخدم',
+        authorUsername: originalAuthor?.username || 'user',
+        authorAvatar: originalAuthor?.avatar_url || '',
+        reposterId: r.user_id,
+        reposterName: reposter?.full_name || 'مستخدم',
+        reposterUsername: reposter?.username || 'user',
+        text: original.content || '',
+        image: original.image_url || undefined,
+        video: original.video_url || undefined,
+        createdAt: origCreatedAt,
+        createdAtDisplay: new Date(origCreatedAt).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
+        likes: original.likes_count || 0,
+        reposts: original.reposts_count || 0,
+        replies: original.comments_count || 0,
+        views: original.views_count || 1,
+        comments: [],
+        isRepost: true,
+        quote_text: undefined,
+        original: null,
+      };
+    }
 
     return {
       id: `repost-${r.id}`,
+      originalId: origId,
       user_id: r.user_id,
-      content: r.quote_text || (original?.content || ''),
-      image_url: r.quote_text ? null : (original?.image_url || null),
+      content: r.quote_text || '',
+      image_url: null,
       likes_count: original?.likes_count || 0,
       comments_count: original?.comments_count || 0,
       reposts_count: 0,
+      views_count: original?.views_count || 1,
       created_at: r.created_at,
-      profile: reposter || null,
+      repostedAt: r.created_at,
+      profile: reposter ? { ...reposter, verification_type: reposter.verification_type, is_verified: reposter.is_verified } : null,
+      badgeType: reposter?.verification_type || (reposter?.is_verified ? 'blue' : null),
       isLiked: false,
+      isReposted: false,
       authorId: r.user_id,
       authorName: reposter?.full_name || 'مستخدم',
       authorUsername: reposter?.username || 'user',
       authorAvatar: reposter?.avatar_url || '',
-      text: r.quote_text || (original?.content || ''),
-      image: r.quote_text ? undefined : (original?.image_url || undefined),
-      video: r.quote_text ? undefined : (original?.video_url || undefined),
-      video_url: r.quote_text ? undefined : (original?.video_url || undefined),
+      reposterId: r.user_id,
+      reposterName: reposter?.full_name || 'مستخدم',
+      reposterUsername: reposter?.username || 'user',
+      text: r.quote_text || '',
+      image: undefined,
+      video: undefined,
+      video_url: undefined,
       createdAt: r.created_at,
       createdAtDisplay: new Date(r.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
-      likes: original?.likes_count || 0,
+      likes: 0,
       reposts: 0,
-      replies: original?.comments_count || 0,
+      replies: 0,
       views: 1,
-      views_count: original?.views_count || 1,
       comments: [],
       isRepost: true,
       quote_text: r.quote_text,
-      original: r.quote_text ? {
+      original: {
         id: original?.id ?? 'deleted',
         authorName: originalAuthor?.full_name ?? 'مستخدم',
         authorUsername: originalAuthor?.username ?? 'user',
         authorAvatar: originalAuthor?.avatar_url ?? '',
+        authorBadge: originalAuthor?.verification_type || (originalAuthor?.is_verified ? 'blue' : 'none'),
         text: original?.content ?? 'التغريدة الأصلية غير متاحة',
         image: original?.image_url ?? null,
-      } : null,
+        createdAt: original?.created_at ? new Date(original.created_at).toLocaleDateString('ar-YE') : '',
+      },
     };
   }).filter(Boolean);
 
@@ -403,8 +478,8 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
     : cloudTweets;
 
   const all = [...filteredCloudTweets, ...repostTweets].sort((a: any, b: any) => {
-    const da = new Date(a.created_at || a.createdAt || 0).getTime();
-    const db = new Date(b.created_at || b.createdAt || 0).getTime();
+    const da = new Date(a.repostedAt || a.created_at || a.createdAt || 0).getTime();
+    const db = new Date(b.repostedAt || b.created_at || b.createdAt || 0).getTime();
     return db - da;
   });
 

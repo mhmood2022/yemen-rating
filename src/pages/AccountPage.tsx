@@ -85,6 +85,9 @@ interface Post {
   isRepost?: boolean;
   isReposted?: boolean;
   originalId?: string;
+  reposterId?: string;
+  reposterName?: string;
+  reposterUsername?: string;
   parent_id?: string | null;
   createdAt: string;
   createdAtDisplay?: string;
@@ -383,9 +386,9 @@ export const AccountPage: React.FC = () => {
 
   const filteredPosts = userPosts.filter(post => {
     if (activeTab === 'replies') return !!post.parent_id; // الردود
-    if (activeTab === 'reposts') return post.isRepost; // إعادات النشر
+    if (activeTab === 'reposts') return post.isRepost && !post.quote_text; // إعادات النشر الصافية فقط مثل X
     if (activeTab === 'media') return post.image || post.video || post.video_url; // الفيديوهات والصور
-    return !post.isRepost && !post.parent_id && (!post.text || !post.text.startsWith('@')); // المنشورات العادية
+    return (!post.isRepost || !!post.quote_text) && !post.parent_id && (!post.text || !post.text.startsWith('@')); // المنشورات والاقتباسات مثل X
   });
 
 
@@ -420,6 +423,29 @@ function formatTimeAndDate(dateStr: string): string {
 
 const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   const [shareMenuPost, setShareMenuPost] = useState<any>(null);
+  const [shareUsers, setShareUsers] = useState<any[]>([]);
+  const [shareSearch, setShareSearch] = useState('');
+  const [selectedShareUsers, setSelectedShareUsers] = useState<string[]>([]);
+  const [isSendingShareDm, setIsSendingShareDm] = useState(false);
+
+  useEffect(() => {
+    if (!shareMenuPost) {
+      setShareSearch('');
+      setSelectedShareUsers([]);
+      return;
+    }
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('id, full_name, username, avatar_url, verification_type, is_verified')
+          .limit(30);
+        if (data) {
+          setShareUsers(data.filter((u: any) => u.id !== sessionUser?.id));
+        }
+      } catch (_) {}
+    })();
+  }, [shareMenuPost, sessionUser?.id]);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [editPostText, setEditPostText] = useState('');
     const [reportingItem, setReportingItem] = useState<{
@@ -735,24 +761,29 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           const dbPosts: any = await getUserPosts(profileId, sessionUser?.id);
           if (Array.isArray(dbPosts)) {
             setUserPosts(dbPosts.map((p: any) => ({
+              ...p,
               id: p.id,
-              authorId: p.user_id,
-              authorName: p.profile?.full_name || '',
-              authorUsername: p.profile?.username || '',
-              authorAvatar: p.profile?.avatar_url || '',
-              authorBadge: p.badgeType || p.profile?.verification_type || (p.profile?.is_verified ? 'blue' : 'none'),
-              text: p.content,
-              image: p.image_url || undefined,
+              authorId: p.authorId || p.user_id,
+              authorName: p.authorName || p.profile?.full_name || '',
+              authorUsername: p.authorUsername || p.profile?.username || '',
+              authorAvatar: p.authorAvatar || p.profile?.avatar_url || '',
+              authorBadge: p.badgeType || p.authorBadge || p.profile?.verification_type || (p.profile?.is_verified ? 'blue' : 'none'),
+              text: p.text || p.content,
+              image: p.image || p.image_url || undefined,
               video_url: p.video_url || p.video || undefined,
               video: p.video_url || p.video || undefined,
-              createdAt: p.created_at,
-              createdAtDisplay: new Date(p.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
-              likes: p.likes_count || 0,
-              likedBy: [],
+              createdAt: p.createdAt || p.created_at,
+              createdAtDisplay: p.createdAtDisplay || new Date(p.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
+              likes: p.likes ?? p.likes_count ?? 0,
+              likedBy: p.likedBy || [],
               isLiked: p.isLiked,
-              replies: p.comments_count || 0,
-              reposts: p.reposts_count || 0,
-              views: p.views_count || 1,
+              isReposted: p.isReposted,
+              replies: p.replies ?? p.comments_count ?? 0,
+              reposts: p.reposts ?? p.reposts_count ?? 0,
+              views: p.views ?? p.views_count ?? 1,
+              isRepost: p.isRepost,
+              quote_text: p.quote_text,
+              original: p.original,
             })));
           }
         } catch (_) {}
@@ -954,33 +985,95 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
 
   // إنشاء منشور حقيقي
 
+  const getPostShareUrl = (post: any) => {
+    const cleanId = (post?.originalId || post?.id || '').toString().replace(/^repost-/, '');
+    return `${window.location.origin}/post/${cleanId}/engagements`;
+  };
+
+  const copyTextReliable = async (text: string): Promise<boolean> => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (_) {}
+    try {
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.setAttribute('readonly', '');
+      el.style.position = 'fixed';
+      el.style.top = '0';
+      el.style.left = '-9999px';
+      document.body.appendChild(el);
+      el.focus();
+      el.select();
+      el.setSelectionRange(0, text.length);
+      const ok = document.execCommand('copy');
+      document.body.removeChild(el);
+      if (ok) return true;
+    } catch (_) {}
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  };
+
+  const loadQuotedPostById = async (postId: string) => {
+    try {
+      const cleanId = postId.replace(/^repost-/, '');
+      const { data: postData, error } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('id', cleanId)
+        .maybeSingle();
+      if (error || !postData) return;
+
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('id, full_name, username, avatar_url, verification_type, is_verified')
+        .eq('id', postData.user_id)
+        .maybeSingle();
+
+      const originalData = {
+        id: postData.id,
+        authorId: postData.user_id,
+        authorName: prof?.full_name || 'مستخدم',
+        authorUsername: prof?.username || 'user',
+        authorAvatar: prof?.avatar_url || '',
+        text: postData.content || '',
+        image: postData.image_url || undefined,
+        createdAt: postData.created_at,
+        badgeType: prof?.verification_type || (prof?.is_verified ? 'blue' : 'none'),
+      };
+      setQuoteOriginal(originalData as any);
+      showToast('تم إرفاق التغريدة للاقتباس ✅');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handlePasteUrl = async (e: React.ClipboardEvent) => {
-    const text = e.clipboardData.getData('text');
+    const text = e.clipboardData?.getData('text') || '';
     const match = text.match(/\/post\/([a-zA-Z0-9-]+)/) || text.match(/\/tweet\/([a-zA-Z0-9-]+)/);
     if (match) {
       e.preventDefault();
-      const postId = match[1];
-      try {
-        const { data, error } = await supabase.from('posts').select('*, profiles:user_id(full_name, username, avatar_url, verification_type)').eq('id', postId).single();
-        if (data) {
-          const originalData = {
-             id: data.id,
-             authorId: data.user_id,
-             authorName: data.profiles?.full_name || 'مستخدم',
-             authorUsername: data.profiles?.username || 'user',
-             authorAvatar: data.profiles?.avatar_url || '',
-             text: data.content,
-             image: data.image_url,
-             createdAt: data.created_at,
-             badgeType: data.profiles?.verification_type || 'none'
-          };
-          setQuoteOriginal(originalData as any);
-          showToast('تم إضافة الاقتباس ✅');
-        }
-      } catch (err) {
-        console.error(err);
-      }
+      await loadQuotedPostById(match[1]);
     }
+  };
+
+  const handleComposeTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    const urlMatch = val.match(/https?:\/\/[^\s]*\/(?:post|tweet)\/([a-zA-Z0-9-]+)(?:\/[^\s]*)?/) || val.match(/\/(?:post|tweet)\/([a-zA-Z0-9-]+)(?:\/[^\s]*)?/);
+    if (urlMatch && !quoteOriginal) {
+      const cleaned = val.replace(urlMatch[0], '').trim();
+      setNewPostText(cleaned);
+      loadQuotedPostById(urlMatch[1]);
+      return;
+    }
+    setNewPostText(val);
   };
 
   const handleCreatePost = async (e?: React.FormEvent | React.MouseEvent) => {
@@ -1856,6 +1949,13 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                 }
               }}
             >
+              {post.isRepost && !post.quote_text && (
+                <div className="flex items-center gap-2 text-[#71767B] text-[12px] font-bold mb-1.5 pr-[42px] select-none">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" className="w-3.5 h-3.5 fill-current shrink-0"><g><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z"></path></g></svg>
+                  <span>{isOwner ? 'أعاد أنت النشر' : `أعاد ${post.reposterName || name} النشر`}</span>
+                </div>
+              )}
+
               {parentTweet && (
                 <div
                   className="flex gap-3"
@@ -2077,7 +2177,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
 
                                 {/* نص التغريدة المقتبسة المتماسك */}
                                 <p className={`text-[13px] text-[#E7E9EA] leading-[1.38] whitespace-pre-wrap line-clamp-4`}>
-                                  <HashtagText text={post.original.text} />
+                                  <HashtagText text={post.original.text} expandable={false} />
                                 </p>
 
                                 {/* صورة المقتبس إن وجدت */}
@@ -2098,7 +2198,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                   )}
 
                   {/* فيديو المنشور */}
-                  {!post.isRepost && (post.video_url || post.video) && (
+                  {(!post.isRepost || !post.quote_text) && (post.video_url || post.video) && (
                     <div className="mt-3">
                       <XVideoPlayer 
                       src={post.video_url || post.video} 
@@ -2114,13 +2214,13 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                       onLike={() => handleToggleLike(post.id)}
                   onViewEngagements={() => { window.location.href = `/post/${(viewingDetailPost?.id || '').replace('repost-', '')}/engagements`; }}
                       onRepost={() => setRepostMenu(post)}
-                      onShare={() => setShareMenuPost(viewingDetailPost)}
+                      onShare={() => setShareMenuPost(post)}
                       onBookmark={() => showToast('تمت الإضافة إلى العلامات المرجعية 🔖')}
                     />
                     </div>
                   )}
 
-                  {!post.isRepost && post.image && !post.video_url && !post.video && (
+                  {(!post.isRepost || !post.quote_text) && post.image && !post.video_url && !post.video && (
                     <div className="mt-3 rounded-2xl overflow-hidden border-0 max-h-96">
                       <img src={post.image} alt="الصورة" className="w-full h-full object-cover cursor-pointer" onClick={(e) => { e.stopPropagation(); setViewingImagePost(post); }} />
                     </div>
@@ -2422,7 +2522,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                   <RichTextarea
                     autoFocus
                     value={newPostText}
-                    onChange={(e) => setNewPostText(e.target.value)}
+                    onChange={handleComposeTextChange}
                     placeholder="ماذا يحدث؟"
                     onPaste={handlePasteUrl}
                   />
@@ -2986,51 +3086,247 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
         </div>
       )}
 
-      {/* نافذة المشاركة (نمط X) */}
+      {/* نافذة المشاركة (نمط X الكامل) */}
       {shareMenuPost && (
-        <div className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-sm flex items-end justify-center p-0 sm:p-4" onClick={() => setShareMenuPost(null)}>
-          <div className="w-full max-w-md bg-[#0A0A0A] rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl border-t sm:border border-[#2F3336]" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 text-center text-white font-bold border-b border-[#2F3336]">
-              مشاركة التغريدة
+        <div
+          className="fixed inset-0 z-[99999] bg-black/75 backdrop-blur-sm flex items-end justify-center p-0 sm:p-4"
+          onClick={() => setShareMenuPost(null)}
+        >
+          <div
+            className="w-full max-w-md bg-black rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl border-t sm:border border-[#2F3336] flex flex-col max-h-[82vh]"
+            dir="rtl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* مقبض السحب */}
+            <div className="pt-3 pb-2 flex justify-center shrink-0">
+              <div className="w-10 h-1 bg-[#333639] rounded-full" />
             </div>
-            <button 
-              onClick={() => {
-                const url = window.location.origin + '/post/' + (shareMenuPost.id || '').replace('repost-', '') + '/engagements';
-                const el = document.createElement('textarea');
-                el.value = url;
-                el.style.position = 'fixed';
-                el.style.opacity = '0';
-                document.body.appendChild(el);
-                el.select();
-                document.execCommand('copy');
-                document.body.removeChild(el);
-                showToast('تم نسخ رابط التغريدة');
-                setShareMenuPost(null);
-              }}
-              className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition flex items-center gap-3 border-b border-[#2F3336]/60"
-            >
-              <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-              نسخ الرابط
-            </button>
-            <button 
-              onClick={() => {
-                const url = window.location.origin + '/post/' + (shareMenuPost.id || '').replace('repost-', '') + '/engagements';
-                if (navigator.share) {
-                  navigator.share({ title: 'Yemen Rating', text: shareMenuPost.text || '', url: url }).catch(console.error);
-                }
-                setShareMenuPost(null);
-              }}
-              className="w-full p-4 text-right text-white font-bold hover:bg-white/5 transition flex items-center gap-3 border-b border-[#2F3336]/60"
-            >
-              <svg className="w-5 h-5 text-[#FFC500]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-              مشاركة عبر...
-            </button>
-            <button 
-              onClick={() => setShareMenuPost(null)}
-              className="w-full p-4 text-center text-[#71767B] font-bold hover:bg-white/5 transition"
-            >
-              إلغاء
-            </button>
+
+            {/* شريط البحث */}
+            <div className="px-4 pb-3 shrink-0">
+              <div className="flex items-center gap-2.5 bg-[#202327] rounded-full px-4 py-2.5 border border-transparent focus-within:border-[#FFFFFF]">
+                <svg className="w-4 h-4 text-[#71767B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  value={shareSearch}
+                  onChange={(e) => setShareSearch(e.target.value)}
+                  placeholder="بحث"
+                  className="w-full bg-transparent text-white text-sm outline-none placeholder-[#71767B]"
+                />
+              </div>
+            </div>
+
+            {/* قائمة المستخدمين للإرسال في الدردشات */}
+            <div className="flex-1 overflow-y-auto px-4 divide-y divide-[#2F3336]/30 min-h-[180px]">
+              {shareUsers
+                .filter((u) => {
+                  const q = shareSearch.trim().toLowerCase();
+                  if (!q) return true;
+                  return (u.full_name || '').toLowerCase().includes(q) || (u.username || '').toLowerCase().includes(q);
+                })
+                .map((u) => {
+                  const isSelected = selectedShareUsers.includes(u.id);
+                  return (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onClick={() =>
+                        setSelectedShareUsers((prev) =>
+                          prev.includes(u.id) ? prev.filter((id) => id !== u.id) : [...prev, u.id]
+                        )
+                      }
+                      className="w-full py-2.5 flex items-center justify-between gap-3 hover:bg-white/[0.03] transition text-right"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-11 h-11 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden shrink-0 flex items-center justify-center text-white font-bold">
+                          {u.avatar_url ? (
+                            <img src={u.avatar_url} alt={u.full_name || ''} className="w-full h-full object-cover" />
+                          ) : (
+                            <span>{(u.full_name || 'م')[0]}</span>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1 min-w-0">
+                            <span className="font-bold text-white text-[14px] truncate">{u.full_name || 'مستخدم'}</span>
+                            {(u.verification_type && u.verification_type !== 'none') || u.is_verified ? (
+                              <VerifiedBadge type={(u.verification_type && u.verification_type !== 'none' ? u.verification_type : 'blue') as any} size={14} />
+                            ) : null}
+                          </div>
+                          <div className="text-[#71767B] text-[13px] truncate text-right" dir="ltr">
+                            @{u.username || 'user'}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition ${
+                          isSelected ? 'border-[#FFC500] bg-[#FFC500]' : 'border-[#536471]'
+                        }`}
+                      >
+                        {isSelected && (
+                          <svg className="w-3 h-3 text-black" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              {shareUsers.length === 0 && (
+                <div className="py-8 text-center text-[#71767B] text-xs">جاري تحميل قائمة الحسابات...</div>
+              )}
+            </div>
+
+            {/* زر إرسال عند اختيار شخص أو أكثر */}
+            {selectedShareUsers.length > 0 && (
+              <div className="px-4 py-2.5 border-t border-[#2F3336]/60 bg-black shrink-0">
+                <button
+                  type="button"
+                  disabled={isSendingShareDm}
+                  onClick={async () => {
+                    if (!sessionUser?.id) {
+                      showToast('يرجى تسجيل الدخول للمراسلة');
+                      return;
+                    }
+                    setIsSendingShareDm(true);
+                    try {
+                      const url = getPostShareUrl(shareMenuPost);
+                      const msgText = shareMenuPost.text ? `${shareMenuPost.text.slice(0, 80)}
+${url}` : url;
+                      await Promise.all(
+                        selectedShareUsers.map((uid) =>
+                          supabase.from('direct_messages').insert({
+                            sender_id: sessionUser.id,
+                            receiver_id: uid,
+                            content: msgText,
+                          })
+                        )
+                      );
+                      showToast(`تم إرسال التغريدة إلى ${selectedShareUsers.length} حساب ✉️`);
+                      setShareMenuPost(null);
+                    } catch (_) {
+                      showToast('تعذر إرسال التغريدة');
+                    } finally {
+                      setIsSendingShareDm(false);
+                    }
+                  }}
+                  className="w-full py-2.5 rounded-full bg-[#FFC500] hover:bg-[#E5B200] text-black font-bold text-sm transition disabled:opacity-50"
+                >
+                  {isSendingShareDm ? 'جاري الإرسال...' : `إرسال (${selectedShareUsers.length})`}
+                </button>
+              </div>
+            )}
+
+            {/* شريط أيقونات المشاركة السفلي */}
+            <div className="border-t border-[#2F3336] px-3 py-4 bg-black shrink-0">
+              <div className="flex items-start justify-around gap-2">
+                {/* الدردشات */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedShareUsers.length > 0) return;
+                    const url = getPostShareUrl(shareMenuPost);
+                    copyTextReliable(url);
+                    setShareMenuPost(null);
+                    navigate('/messages');
+                  }}
+                  className="flex flex-col items-center gap-1.5 group w-14"
+                >
+                  <div className="w-12 h-12 rounded-full bg-[#0084FF] group-hover:opacity-90 flex items-center justify-center text-white transition active:scale-95">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C6.477 2 2 6.145 2 11.259c0 2.913 1.454 5.512 3.726 7.21V22l3.405-1.869c.909.252 1.871.388 2.869.388 5.523 0 10-4.145 10-9.259C22 6.145 17.523 2 12 2zm1.06 12.413l-2.548-2.718-4.97 2.718 5.468-5.805 2.61 2.718 4.908-2.718-5.468 5.805z" />
+                    </svg>
+                  </div>
+                  <span className="text-[11px] text-[#E7E9EA] truncate w-full text-center">الدردشات</span>
+                </button>
+
+                {/* واتساب */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = getPostShareUrl(shareMenuPost);
+                    const txt = encodeURIComponent((shareMenuPost.text ? shareMenuPost.text.slice(0, 120) + '\n' : '') + url);
+                    window.open(`https://wa.me/?text=${txt}`, '_blank');
+                    setShareMenuPost(null);
+                  }}
+                  className="flex flex-col items-center gap-1.5 group w-14"
+                >
+                  <div className="w-12 h-12 rounded-full bg-[#25D366] group-hover:opacity-90 flex items-center justify-center text-white transition active:scale-95">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12.031 2c-5.516 0-9.969 4.453-9.969 9.969 0 1.766.469 3.484 1.344 5l-1.406 5.156 5.281-1.375c1.469.797 3.109 1.219 4.75 1.219 5.516 0 9.969-4.453 9.969-9.969S17.547 2 12.031 2zm5.813 14.125c-.25.703-1.438 1.344-2 1.422-.516.078-1.172.109-1.891-.125-.438-.141-.984-.328-1.703-.641-2.984-1.281-4.922-4.297-5.078-4.5-.141-.203-1.203-1.609-1.203-3.063s.766-2.172 1.031-2.469c.266-.297.578-.375.781-.375.188 0 .391 0 .563.016.172 0 .406-.063.641.484.25.578.828 2.016.906 2.156.078.156.125.328.031.531-.109.203-.156.328-.313.5-.141.172-.313.391-.438.516-.141.141-.297.297-.125.594.172.297.766 1.266 1.641 2.047 1.125 1 2.078 1.313 2.375 1.469.297.141.469.125.641-.078.172-.203.734-.859.938-1.156.203-.297.391-.25.656-.156.266.094 1.703.797 1.984.938.297.156.484.219.563.344.078.125.078.734-.172 1.438z" />
+                    </svg>
+                  </div>
+                  <span className="text-[11px] text-[#E7E9EA] truncate w-full text-center">واتساب</span>
+                </button>
+
+                {/* Telegram */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = encodeURIComponent(getPostShareUrl(shareMenuPost));
+                    const txt = encodeURIComponent((shareMenuPost.text || '').slice(0, 120));
+                    window.open(`https://t.me/share/url?url=${url}&text=${txt}`, '_blank');
+                    setShareMenuPost(null);
+                  }}
+                  className="flex flex-col items-center gap-1.5 group w-14"
+                >
+                  <div className="w-12 h-12 rounded-full bg-[#2AABEE] group-hover:opacity-90 flex items-center justify-center text-white transition active:scale-95">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z" />
+                    </svg>
+                  </div>
+                  <span className="text-[11px] text-[#E7E9EA] truncate w-full text-center">Telegram</span>
+                </button>
+
+                {/* نسخ الرابط */}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const url = getPostShareUrl(shareMenuPost);
+                    const copied = await copyTextReliable(url);
+                    showToast(copied ? 'تم نسخ رابط التغريدة' : 'تعذر نسخ الرابط');
+                    setShareMenuPost(null);
+                  }}
+                  className="flex flex-col items-center gap-1.5 group w-14"
+                >
+                  <div className="w-12 h-12 rounded-full bg-white/10 group-hover:bg-white/20 border border-white/10 flex items-center justify-center text-white transition active:scale-95">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                  </div>
+                  <span className="text-[11px] text-[#E7E9EA] truncate w-full text-center">نسخ الرابط</span>
+                </button>
+
+                {/* مشاركة عبر... */}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const url = getPostShareUrl(shareMenuPost);
+                    if (navigator.share) {
+                      navigator.share({ title: 'Yemen Rating', text: shareMenuPost.text || '', url }).catch(() => {});
+                    } else {
+                      await copyTextReliable(url);
+                      showToast('تم نسخ الرابط للمشاركة');
+                    }
+                    setShareMenuPost(null);
+                  }}
+                  className="flex flex-col items-center gap-1.5 group w-14"
+                >
+                  <div className="w-12 h-12 rounded-full bg-white/10 group-hover:bg-white/20 border border-white/10 flex items-center justify-center text-white transition active:scale-95">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <circle cx="18" cy="5" r="2.5" />
+                      <circle cx="6" cy="12" r="2.5" />
+                      <circle cx="18" cy="19" r="2.5" />
+                      <line x1="8.5" y1="13.5" x2="15.5" y2="17.5" />
+                      <line x1="15.5" y1="6.5" x2="8.5" y2="10.5" />
+                    </svg>
+                  </div>
+                  <span className="text-[11px] text-[#E7E9EA] truncate w-full text-center">مشاركة عبر...</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
