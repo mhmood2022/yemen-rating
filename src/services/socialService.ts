@@ -244,7 +244,7 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
     .order('created_at', { ascending: false });
   
   if (userId) {
-    postsQuery = postsQuery.eq('user_id', userId).limit(30);
+    postsQuery = postsQuery.eq('user_id', userId).is('business_id', null).limit(30);
   } else {
     postsQuery = postsQuery.limit(100);
   }
@@ -276,7 +276,7 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
     const postIds = [...new Set(reposts.map((r: any) => r.post_id))];
     const { data: originals } = await supabase
       .from('posts')
-      .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, views_count, created_at')
+      .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, views_count, created_at')
       .in('id', postIds);
     originalPosts = originals || [];
   }
@@ -294,6 +294,19 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
     .in('id', Array.from(allUserIds));
   
   const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
+
+  const allBusinessIds = Array.from(new Set([
+    ...(posts || []).map((p: any) => p.business_id).filter(Boolean),
+    ...(originalPosts || []).map((p: any) => p.business_id).filter(Boolean),
+  ]));
+  let businessMap = new Map<string, any>();
+  if (allBusinessIds.length > 0) {
+    const { data: bizRows } = await supabase
+      .from('businesses')
+      .select('id, owner_id, name, slug, logo_url, is_verified, badge_type')
+      .in('id', allBusinessIds);
+    businessMap = new Map((bizRows || []).map((b: any) => [b.id, b]));
+  }
 
   // 5) جلب likes و reposts الحالية للمستخدم
   let likedSet = new Set<string>();
@@ -324,14 +337,18 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
   // 6) بناء cloudTweets
   const cloudTweets = (posts || []).map((p: any) => {
     const author = profileMap.get(p.user_id);
+    const biz = p.business_id ? businessMap.get(p.business_id) : null;
+    const bizBadge = biz ? (biz.badge_type && biz.badge_type !== 'none' ? biz.badge_type : (biz.is_verified ? 'gold' : null)) : null;
     return {
       id: p.id,
             parent_id: p.parent_id,
       user_id: p.user_id,
       authorId: p.user_id,
-      authorName: author?.full_name || 'مستخدم يمن ريتنج',
-      authorUsername: author?.username || 'user',
-      authorAvatar: author?.avatar_url || '',
+      businessId: p.business_id || undefined,
+      isBusinessPost: Boolean(p.business_id && biz),
+      authorName: biz ? biz.name : (author?.full_name || 'مستخدم يمن ريتنج'),
+      authorUsername: biz ? (biz.slug || 'business') : (author?.username || 'user'),
+      authorAvatar: biz ? (biz.logo_url || '') : (author?.avatar_url || ''),
       text: p.content,
       content: p.content,
       image: p.image_url || undefined,
@@ -353,7 +370,7 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
       replies: p.comments_count || 0,
       comments_count: p.comments_count || 0,
       profile: author ? { ...author, verification_type: author.verification_type, is_verified: author.is_verified } : null,
-      badgeType: author?.verification_type || (author?.is_verified ? 'blue' : null),
+      badgeType: biz ? bizBadge : (author?.verification_type || (author?.is_verified ? 'blue' : null)),
       isLiked: likedSet.has(p.id),
       isReposted: repostedSet.has(p.id),
     };

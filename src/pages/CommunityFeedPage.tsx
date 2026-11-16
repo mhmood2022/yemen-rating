@@ -16,7 +16,7 @@ import { ActiveUsersBar } from '../components/community/ActiveUsersBar';
 import { ReplyBar } from '../components/community/ReplyBar';
 import { ReportPage } from '../components/community/ReportPage';
 import { RateBusinessModal } from '../components/reviews/RateBusinessModal';
-import { getStoredBusinessPage, addStoredBusinessReview, StoredBusinessPage } from '../utils/businessPageDraft';
+import { getMyBusinessPage, submitBusinessReview, BusinessPageRecord } from '../services/businessPageService';
 import { 
   ArrowRight,
   Image as ImageIcon,
@@ -184,7 +184,7 @@ export const CommunityFeedPage: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [activeMenuPost, setActiveMenuPost] = useState<any>(null);
   const [shareMenuPost, setShareMenuPost] = useState<any>(null);
-  const [myBusinessPage, setMyBusinessPage] = useState<StoredBusinessPage | null>(() => getStoredBusinessPage());
+  const [myBusinessPage, setMyBusinessPage] = useState<BusinessPageRecord | null>(null);
   const [publishAsBusiness, setPublishAsBusiness] = useState<boolean>(false);
   const [ratingTargetTweet, setRatingTargetTweet] = useState<any>(null);
   const [shareUsers, setShareUsers] = useState<any[]>([]);
@@ -451,6 +451,7 @@ export const CommunityFeedPage: React.FC = () => {
         if (session?.user) {
           uid = session.user.id;
           setCurrentUserId(session.user.id);
+          getMyBusinessPage(session.user.id).then((biz) => { if (biz) setMyBusinessPage(biz); });
         }
       } catch (_) {}
 
@@ -484,7 +485,7 @@ export const CommunityFeedPage: React.FC = () => {
 
         const { data: dbPosts, error: postsErr } = await supabase
           .from('posts')
-          .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
+          .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
           .order('created_at', { ascending: false })
           .limit(30);
         
@@ -506,7 +507,7 @@ export const CommunityFeedPage: React.FC = () => {
         if (repostedPostIds.length > 0) {
           const { data: originals } = await supabase
             .from('posts')
-            .select('id, user_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
+            .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
             .in('id', repostedPostIds);
           (originals || []).forEach((p: any) => originalPostsMap.set(p.id, p));
         }
@@ -544,17 +545,30 @@ export const CommunityFeedPage: React.FC = () => {
         } catch (_) {}
 
         // 3. بناء قائمة المجتمع وعرض كل التغريدات (لكل المغردين)
-        const cloudTweets = dbPosts.map((p) => {
+        const bizIds = [...new Set(allPosts.map((p: any) => p.business_id).filter(Boolean))];
+        let bizMap = new Map<string, any>();
+        if (bizIds.length > 0) {
+          const { data: dbBusinesses } = await supabase
+            .from('businesses')
+            .select('id, owner_id, name, slug, logo_url, is_verified, badge_type')
+            .in('id', bizIds);
+          (dbBusinesses || []).forEach((b: any) => bizMap.set(b.id, b));
+        }
+
+        const cloudTweets = dbPosts.map((p: any) => {
           const author = profileMap.get(p.user_id);
-          const badgeType = author?.verification_type || (author?.is_verified ? 'blue' : null);
+          const biz = p.business_id ? bizMap.get(p.business_id) : null;
+          const bizBadge = biz ? (biz.badge_type && biz.badge_type !== 'none' ? biz.badge_type : (biz.is_verified ? 'gold' : 'none')) : null;
           return {
             id: p.id,
             parent_id: (p as any).parent_id,
             authorId: p.user_id,
-            authorName: author?.full_name || "مستخدم يمن ريتنج",
-            badgeType: (author as any)?.verification_type || (author as any)?.badge_type || (author?.is_verified ? 'blue' : 'none'),
-            authorUsername: author?.username || "user",
-            authorAvatar: author?.avatar_url || (localUsers[p.user_id]?.avatarUrl) || (p.user_id === uid ? myAvatar : "") || "",
+            businessId: p.business_id || undefined,
+            isBusinessPost: Boolean(p.business_id && biz),
+            authorName: biz ? biz.name : (author?.full_name || "مستخدم يمن ريتنج"),
+            badgeType: biz ? bizBadge : ((author as any)?.verification_type || (author as any)?.badge_type || (author?.is_verified ? 'blue' : 'none')),
+            authorUsername: biz ? (biz.slug || "business") : (author?.username || "user"),
+            authorAvatar: biz ? (biz.logo_url || "") : (author?.avatar_url || (localUsers[p.user_id]?.avatarUrl) || (p.user_id === uid ? myAvatar : "") || ""),
             text: p.content,
             image: p.image_url || undefined,
             video_url: p.video_url || undefined,
@@ -678,6 +692,11 @@ export const CommunityFeedPage: React.FC = () => {
 
         // إذا كان المغرد شخصاً آخر:
         try {
+          let bizRow: any = null;
+          if (payload.new.business_id) {
+            const { data: bData } = await supabase.from('businesses').select('id, name, slug, logo_url, is_verified, badge_type').eq('id', payload.new.business_id).maybeSingle();
+            bizRow = bData;
+          }
           const { data: prof } = await supabase.from('profiles').select('avatar_url, full_name, username, verification_type, is_verified').eq('id', payload.new.user_id).single();
           const avatar = prof?.avatar_url || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png';
           const badgeType = prof?.verification_type || (prof?.is_verified ? 'blue' : null);
@@ -686,10 +705,12 @@ export const CommunityFeedPage: React.FC = () => {
           const formattedNewTweet = {
             id: payload.new.id,
             authorId: payload.new.user_id,
-            authorName: prof?.full_name || 'مستخدم يمن ريتنج',
-            badgeType: (prof as any)?.verification_type || (prof as any)?.badge_type || (prof?.is_verified ? 'blue' : 'none'),
-            authorUsername: prof?.username || 'user',
-            authorAvatar: avatar,
+            businessId: payload.new.business_id || undefined,
+            isBusinessPost: Boolean(payload.new.business_id && bizRow),
+            authorName: bizRow ? bizRow.name : (prof?.full_name || 'مستخدم يمن ريتنج'),
+            badgeType: bizRow ? (bizRow.badge_type && bizRow.badge_type !== 'none' ? bizRow.badge_type : (bizRow.is_verified ? 'gold' : 'none')) : ((prof as any)?.verification_type || (prof as any)?.badge_type || (prof?.is_verified ? 'blue' : 'none')),
+            authorUsername: bizRow ? (bizRow.slug || 'business') : (prof?.username || 'user'),
+            authorAvatar: bizRow ? (bizRow.logo_url || '') : avatar,
             text: payload.new.content,
             image: payload.new.image_url || undefined,
             video_url: payload.new.video_url || undefined,
@@ -958,38 +979,6 @@ export const CommunityFeedPage: React.FC = () => {
       return;
     }
 
-    if (publishAsBusiness && myBusinessPage && !quoteOriginal) {
-      setIsPosting(true);
-      const bizTweet: Tweet = {
-        id: `biz-post-${Date.now()}`,
-        authorId: activeUser.id,
-        authorName: myBusinessPage.name,
-        authorUsername: myBusinessPage.username,
-        authorAvatar: myBusinessPage.avatarUrl,
-        badgeType: myBusinessPage.verificationType || 'none',
-        isBusinessPost: true,
-        businessId: myBusinessPage.id,
-        text: textToSend,
-        image: tweetImage || undefined,
-        createdAt: new Date().toISOString(),
-        likes: 0,
-        likedBy: [],
-        reposts: 0,
-        repostedBy: [],
-        views: 1,
-        comments: [],
-      };
-      setTweets([bizTweet, ...tweets]);
-      setTweetText('');
-      setTweetImage('');
-      setSelectedFile(null);
-      if (imageInputRef.current) imageInputRef.current.value = '';
-      setIsPostModalOpen(false);
-      setIsPosting(false);
-      showToast(`تم النشر باسم "${myBusinessPage.name}"`);
-      return;
-    }
-
     setIsPosting(true);
     let finalImageUrl: string | null = null;
     let finalVideoUrl: string | null = null;
@@ -1048,10 +1037,12 @@ export const CommunityFeedPage: React.FC = () => {
         insertedPost = res.data;
         pErr = res.error;
       } else {
+        const isBizIdentity = Boolean(publishAsBusiness && myBusinessPage);
         const res = await supabase
           .from('posts')
           .insert({
             user_id: activeUser.id,
+            business_id: isBizIdentity && myBusinessPage ? myBusinessPage.id : null,
             content: textToSend,
             image_url: finalImageUrl || null,
             video_url: finalVideoUrl || null
@@ -1069,12 +1060,16 @@ export const CommunityFeedPage: React.FC = () => {
         return;
       }
 
+      const useBiz = Boolean(publishAsBusiness && myBusinessPage && !quoteOriginal);
       const newTweet: Tweet = {
         id: quoteOriginal ? `repost-${insertedPost?.id || Date.now()}` : (insertedPost?.id || Date.now().toString()),
         authorId: activeUser.id,
-        authorName: myName,
-        authorUsername: myUsername,
-        authorAvatar: myAvatar,
+        businessId: useBiz && myBusinessPage ? myBusinessPage.id : undefined,
+        isBusinessPost: useBiz,
+        authorName: useBiz && myBusinessPage ? myBusinessPage.name : myName,
+        authorUsername: useBiz && myBusinessPage ? myBusinessPage.username : myUsername,
+        authorAvatar: useBiz && myBusinessPage ? myBusinessPage.avatarUrl : myAvatar,
+        badgeType: useBiz && myBusinessPage ? myBusinessPage.verificationType : undefined,
         text: textToSend,
         image: quoteOriginal ? undefined : (finalImageUrl || undefined),
         video_url: quoteOriginal ? undefined : (finalVideoUrl || undefined),
@@ -1512,10 +1507,8 @@ const handleAddComment = (e?: React.FormEvent) => {
   const openAuthorProfile = (authorId: string, tweetData?: any) => {
     if (tweetData?.isBusinessPost || tweetData?.businessId || tweetData?.business_id) {
       const bizId = tweetData.businessId || tweetData.business_id || authorId;
-      const latestBiz = getStoredBusinessPage();
       navigate(`/business-page/${bizId}`, {
         state: {
-          ...(latestBiz && latestBiz.id === bizId ? latestBiz : {}),
           id: bizId,
           name: tweetData.authorName,
           username: tweetData.authorUsername,
@@ -1898,23 +1891,18 @@ displayedTweets.map(tweet => {
           reviewerName={myName || 'مستخدم'}
           reviewerUsername={myUsername}
           reviewerAvatar={myAvatar}
-          onSubmit={({ businessId, stars, comment }) => {
-            addStoredBusinessReview({
-              id: Date.now().toString(),
-              businessId,
-              authorName: myName || 'مستخدم',
-              authorUsername: myUsername,
-              authorAvatar: myAvatar,
-              stars,
-              comment,
-              createdAt: 'الآن',
-            });
+          onSubmit={async ({ businessId, stars, comment }) => {
+            const res = await submitBusinessReview({ businessId, stars, comment });
+            if (res.error) {
+              showToast('تعذر حفظ التقييم: ' + res.error);
+              return;
+            }
             setTweets((prev) =>
               prev.map((item) =>
                 item.id === ratingTargetTweet.id ? { ...item, isRated: true } : item
               )
             );
-            showToast('تم تسجيل تقييمك للمنشأة بنجاح');
+            showToast(`تم تسجيل تقييمك بنجاح (${res.avgRating.toFixed(1)} ★)`);
           }}
         />
       )}

@@ -54,14 +54,17 @@ import { AuthModal } from '../components/auth/AuthModal';
 import { ReportPage } from '../components/community/ReportPage';
 import { RateBusinessModal } from '../components/reviews/RateBusinessModal';
 import {
-  getStoredBusinessPage,
-  saveStoredBusinessPage,
-  getStoredBusinessPosts,
-  getStoredBusinessReviews,
-  addStoredBusinessReview,
-  StoredBusinessPage,
-  StoredBusinessReview,
-} from '../utils/businessPageDraft';
+  getMyBusinessPage,
+  getBusinessPageById,
+  updateBusinessPage,
+  getBusinessPosts,
+  getBusinessReviews,
+  submitBusinessReview,
+  checkIsFollowingBusiness,
+  toggleBusinessFollow,
+  BusinessPageRecord,
+  BusinessReviewRecord,
+} from '../services/businessPageService';
 
 interface Post {
   id: string;
@@ -222,10 +225,10 @@ export const BusinessPage: React.FC = () => {
   
 
   const [ownedBusinessId, setOwnedBusinessId] = useState<string | null>(null);
-  const [businessPage, setBusinessPage] = useState<StoredBusinessPage | null>(() => getStoredBusinessPage());
+  const [businessPage, setBusinessPage] = useState<BusinessPageRecord | null>(null);
   const [bizRating, setBizRating] = useState<number>(0);
   const [bizReviewCount, setBizReviewCount] = useState<number>(0);
-  const [bizReviews, setBizReviews] = useState<StoredBusinessReview[]>([]);
+  const [bizReviews, setBizReviews] = useState<BusinessReviewRecord[]>([]);
   const [isRateModalOpen, setIsRateModalOpen] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string>('بدء...');
   const [sessionUser, setSessionUser] = useState<any>(null);
@@ -318,36 +321,60 @@ export const BusinessPage: React.FC = () => {
   };
 
 
-  const [userPosts, setUserPosts] = useState<Post[]>(() => {
-    const activeBizId = routeBusinessId || navState?.id || getStoredBusinessPage()?.id || 'draft-business';
-    return getStoredBusinessPosts(activeBizId);
-  });
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
 
   useEffect(() => {
-    const stored = getStoredBusinessPage();
-    const activeBizId = routeBusinessId || navState?.id || stored?.id || 'draft-business';
-    setName(navState?.name || stored?.name || 'صفحة المنشأة');
-    setUsername(navState?.username || stored?.username || 'business');
-    if (navState?.avatarUrl || stored?.avatarUrl) setAvatarUrl(navState?.avatarUrl || stored?.avatarUrl || '');
-    if (navState?.coverUrl || stored?.coverUrl) setCoverUrl(navState?.coverUrl || stored?.coverUrl || '');
-    setBio(navState?.description || stored?.description || '');
-    setLocation(navState?.city || stored?.city || 'صنعاء، اليمن');
-    setPhone(navState?.phone || stored?.phone || '');
-    if (typeof navState?.isOwner === 'boolean') setIsOwner(navState.isOwner);
-    if (stored) setBusinessPage(stored);
-    setUserPosts(getStoredBusinessPosts(activeBizId));
+    let cancelled = false;
+    const loadBusinessFromCloud = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const uid = session?.user?.id || '';
+        const targetBizId = routeBusinessId || navState?.id;
+        const biz = targetBizId
+          ? await getBusinessPageById(targetBizId)
+          : (uid ? await getMyBusinessPage(uid) : null);
 
-    const existingRevs = getStoredBusinessReviews(activeBizId);
-    setBizReviews(existingRevs);
-    if (existingRevs.length > 0) {
-      const avg = Number((existingRevs.reduce((acc, r) => acc + r.stars, 0) / existingRevs.length).toFixed(1));
-      setBizRating(avg);
-      setBizReviewCount(existingRevs.length);
-    } else {
-      setBizRating(navState?.rating ?? stored?.rating ?? 0);
-      setBizReviewCount(navState?.reviewCount ?? stored?.reviewCount ?? 0);
-    }
+        if (cancelled) return;
+        if (biz) {
+          setBusinessPage(biz);
+          setName(biz.name);
+          setUsername(biz.username);
+          setAvatarUrl(biz.avatarUrl);
+          setCoverUrl(biz.coverUrl);
+          setBio(biz.description);
+          setLocation(biz.city);
+          setPhone(biz.phone);
+          setVerificationType(biz.verificationType || 'none');
+          setBizRating(biz.rating);
+          setBizReviewCount(biz.reviewCount);
+          setFollowersCount(biz.followersCount);
+          setIsOwner(Boolean(uid && biz.ownerId === uid));
+
+          const [posts, revs, following] = await Promise.all([
+            getBusinessPosts(biz.id, uid || undefined),
+            getBusinessReviews(biz.id),
+            uid && biz.ownerId !== uid ? checkIsFollowingBusiness(uid, biz.id) : Promise.resolve(false),
+          ]);
+          if (cancelled) return;
+          setUserPosts(posts);
+          setBizReviews(revs);
+          setIsFollowing(following);
+          if (revs.length > 0 && !biz.reviewCount) {
+            const avg = Number((revs.reduce((a, r) => a + r.stars, 0) / revs.length).toFixed(1));
+            setBizRating(avg);
+            setBizReviewCount(revs.length);
+          }
+        }
+      } catch (err) {
+        console.error('loadBusinessFromCloud error:', err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    loadBusinessFromCloud();
+    return () => { cancelled = true; };
   }, [routeBusinessId]);
+
   useEffect(() => {
     if (activeTab === 'replies' && userPosts.length > 0) {
       const parentIds = [...new Set(userPosts.filter(p => p.parent_id).map(p => p.parent_id))].filter(Boolean) as string[];
@@ -656,7 +683,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       // جلب التغريدات
       try {
         console.log('🟢 Before getUserPosts — targetId:', targetId, '| myId:', myId);
-        const dbPosts: any = getStoredBusinessPosts(routeBusinessId || navState?.id || getStoredBusinessPage()?.id || 'draft-business');
+        const dbPosts: any = businessPage?.id ? await getBusinessPosts(businessPage.id, myId) : [];
         
         const errMsg = (window as any).__lastGetUserPostsError;
         if (errMsg) {
@@ -855,20 +882,17 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       const { data: pubData } = supabase.storage.from('social-media').getPublicUrl(filePath);
       const url = pubData.publicUrl;
 
-      const currBiz = getStoredBusinessPage();
-      if (cropTarget === 'avatar') {
-        setAvatarUrl(url);
-        if (currBiz) {
-          const updatedBiz = { ...currBiz, avatarUrl: url };
-          saveStoredBusinessPage(updatedBiz);
-          setBusinessPage(updatedBiz);
-        }
-      } else {
-        setCoverUrl(url);
-        if (currBiz) {
-          const updatedBiz = { ...currBiz, coverUrl: url };
-          saveStoredBusinessPage(updatedBiz);
-          setBusinessPage(updatedBiz);
+      const activeBizId = businessPage?.id || routeBusinessId;
+      const ownerUid = sessionUser?.id || profileId;
+      if (activeBizId && ownerUid) {
+        if (cropTarget === 'avatar') {
+          setAvatarUrl(url);
+          await updateBusinessPage(activeBizId, ownerUid, { avatarUrl: url });
+          setBusinessPage((prev) => prev ? { ...prev, avatarUrl: url } : prev);
+        } else {
+          setCoverUrl(url);
+          await updateBusinessPage(activeBizId, ownerUid, { coverUrl: url });
+          setBusinessPage((prev) => prev ? { ...prev, coverUrl: url } : prev);
         }
       }
       showToast("تم تحديث الصورة بنجاح ✅");
@@ -890,25 +914,37 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       const nextUsername = editUsername.trim().replace(/^@+/, '') || username;
       const nextBio = editBio.trim();
       const nextLocation = editLocation.trim();
-      setName(nextName);
-      setPhone(nextPhone);
-      setUsername(nextUsername);
-      setBio(nextBio);
-      setLocation(nextLocation);
-      const currBiz = getStoredBusinessPage();
-      if (currBiz) {
-        const updatedBiz: StoredBusinessPage = {
-          ...currBiz,
+      const activeBizId = businessPage?.id || routeBusinessId;
+      const ownerUid = sessionUser?.id || profileId;
+
+      if (activeBizId && ownerUid) {
+        const res = await updateBusinessPage(activeBizId, ownerUid, {
           name: nextName,
           username: nextUsername,
           phone: nextPhone,
           description: nextBio,
           city: nextLocation,
-        };
-        saveStoredBusinessPage(updatedBiz);
-        setBusinessPage(updatedBiz);
+        });
+        if (!res.ok) {
+          showToast('تعذر الحفظ: ' + (res.error || 'خطأ'));
+          return;
+        }
       }
-      showToast('تم حفظ تعديلات صفحة المنشأة بنجاح ✅');
+
+      setName(nextName);
+      setPhone(nextPhone);
+      setUsername(nextUsername);
+      setBio(nextBio);
+      setLocation(nextLocation);
+      setBusinessPage((prev) => prev ? {
+        ...prev,
+        name: nextName,
+        username: nextUsername,
+        phone: nextPhone,
+        description: nextBio,
+        city: nextLocation,
+      } : prev);
+      showToast('تم حفظ تعديلات صفحة المنشأة سحابياً ✅');
       setIsEditModalOpen(false);
     } finally {
       setSavingProfile(false);
@@ -935,23 +971,14 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       setAuthModalOpen(true);
       return;
     }
-    const myId = sessionUser.id;
-    const targetId = profileId;
-    if (!targetId || myId === targetId) return;
-    
+    const activeBizId = businessPage?.id || routeBusinessId;
+    if (!activeBizId) return;
     try {
-      const nowFollowing = await toggleFollow(myId, targetId);
+      const nowFollowing = await toggleBusinessFollow(sessionUser.id, activeBizId);
       setIsFollowing(nowFollowing);
-      
-      if (nowFollowing) {
-        setFollowersCount(prev => prev + 1);
-        showToast(`تابعت ${name} بنجاح`);
-      } else {
-        setFollowersCount(prev => Math.max(0, prev - 1));
-        showToast(`ألغيت متابعة ${name}`);
-      }
-    } catch (e: any) {
-      console.error('Toggle follow error:', e);
+      setFollowersCount((prev) => Math.max(0, prev + (nowFollowing ? 1 : -1)));
+      showToast(nowFollowing ? `تابعت ${name} بنجاح` : `ألغيت متابعة ${name}`);
+    } catch {
       showToast('فشل تحديث المتابعة');
     }
   };
@@ -1124,8 +1151,11 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
         if (rErr) throw rErr;
         inserted = repost;
       } else {
+        const activeBizId = businessPage?.id || routeBusinessId || null;
+        const actorUid = sessionUser?.id || profileId;
         const { data, error: pErr } = await supabase.from("posts").insert({
-          user_id: profileId,
+          user_id: actorUid,
+          business_id: activeBizId,
           content: newPostText.trim(),
           image_url: finalImageUrl || null,
           video_url: finalVideoUrl || null,
@@ -3402,24 +3432,21 @@ ${url}` : url;
       <RateBusinessModal
         isOpen={isRateModalOpen}
         onClose={() => setIsRateModalOpen(false)}
-        businessId={routeBusinessId || businessPage?.id || 'draft-business'}
+        businessId={businessPage?.id || routeBusinessId || ''}
         businessName={name || 'المنشأة'}
         businessAvatar={avatarUrl}
         reviewerName={myName || 'مستخدم'}
         reviewerUsername={navState?.viewerUsername}
         reviewerAvatar={myAvatar}
-        onSubmit={({ businessId, stars, comment }) => {
-          const res = addStoredBusinessReview({
-            id: Date.now().toString(),
-            businessId,
-            authorName: myName || 'مستخدم',
-            authorUsername: navState?.viewerUsername,
-            authorAvatar: myAvatar,
-            stars,
-            comment,
-            createdAt: 'الآن',
-          });
-          setBizReviews(res.reviews);
+        onSubmit={async ({ businessId, stars, comment }) => {
+          const res = await submitBusinessReview({ businessId, stars, comment });
+          if (res.error) {
+            showToast('تعذر إرسال التقييم: ' + res.error);
+            return;
+          }
+          if (res.review) {
+            setBizReviews((prev) => [res.review!, ...prev]);
+          }
           setBizRating(res.avgRating);
           setBizReviewCount(res.count);
           showToast('تم تسجيل تقييمك بنجاح');

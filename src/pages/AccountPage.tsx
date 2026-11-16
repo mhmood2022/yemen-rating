@@ -69,7 +69,7 @@ import { Bookmark, ArrowRight, BarChart2,
 import { AuthModal } from '../components/auth/AuthModal';
 import { ReportPage } from '../components/community/ReportPage';
 import { CreateBusinessPageModal, BusinessPageDraft } from '../components/business/CreateBusinessPageModal';
-import { getStoredBusinessPage, saveStoredBusinessPage, StoredBusinessPage } from '../utils/businessPageDraft';
+import { getMyBusinessPage, createBusinessPage, BusinessPageRecord } from '../services/businessPageService';
 
 interface Post {
   id: string;
@@ -229,7 +229,8 @@ export const AccountPage: React.FC = () => {
   
 
   const [ownedBusinessId, setOwnedBusinessId] = useState<string | null>(null);
-  const [businessPage, setBusinessPage] = useState<StoredBusinessPage | null>(() => getStoredBusinessPage());
+  const [businessPage, setBusinessPage] = useState<BusinessPageRecord | null>(null);
+  const [isCreatingBiz, setIsCreatingBiz] = useState(false);
   const [isCreateBizModalOpen, setIsCreateBizModalOpen] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string>('بدء...');
   const [sessionUser, setSessionUser] = useState<any>(null);
@@ -483,6 +484,8 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
             .limit(1)
             .maybeSingle();
           if (biz) setOwnedBusinessId(biz.id);
+          const myBiz = await getMyBusinessPage(session.user.id);
+          if (myBiz) setBusinessPage(myBiz);
         }
       } catch (err) {
         console.error('Error fetching owned business:', err);
@@ -3381,29 +3384,25 @@ ${url}` : url;
       <CreateBusinessPageModal
         isOpen={isCreateBizModalOpen}
         onClose={() => setIsCreateBizModalOpen(false)}
-        onCreated={(draft: BusinessPageDraft) => {
-          const newPage: StoredBusinessPage = {
-            id: `biz-${Date.now()}`,
-            ownerId: profileId || sessionUser?.id,
-            name: draft.name,
-            username: draft.username,
-            businessType: draft.businessType,
-            city: draft.city,
-            phone: draft.phone,
-            description: draft.description,
-            avatarUrl: draft.avatarUrl,
-            coverUrl: draft.coverUrl,
-            verificationType: 'none',
-            rating: 0,
-            reviewCount: 0,
-            followersCount: 0,
-            followingCount: 0,
-            createdAt: new Date().toISOString(),
-          };
-          saveStoredBusinessPage(newPage);
-          setBusinessPage(newPage);
+        isSubmitting={isCreatingBiz}
+        onCreated={async (draft: BusinessPageDraft) => {
+          const uid = sessionUser?.id || profileId;
+          if (!uid || uid === 'guest') {
+            showToast('يرجى تسجيل الدخول أولاً');
+            setAuthModalOpen(true);
+            return;
+          }
+          setIsCreatingBiz(true);
+          const { page, error } = await createBusinessPage(uid, draft);
+          setIsCreatingBiz(false);
+          if (error || !page) {
+            showToast(error || 'تعذر إنشاء صفحة المنشأة');
+            return;
+          }
+          setBusinessPage(page);
+          setOwnedBusinessId(page.id);
           setIsCreateBizModalOpen(false);
-          showToast(`تم إنشاء صفحة "${newPage.name}" بنجاح`);
+          showToast(`تم إنشاء صفحة "${page.name}" بنجاح`);
         }}
       />
     </div>
