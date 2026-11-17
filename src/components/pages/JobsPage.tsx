@@ -1,7 +1,8 @@
 import { PublicAddJobModal } from "../jobs/PublicAddJobModal";
 import { JobFormData } from "../../pages/admin/jobs/AddJobModal";
 import React, { useState, useEffect } from 'react';
-import { Briefcase, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X, Building2, MapPin, Coins, PhoneCall, FileText, Lock, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Briefcase, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X, Building2, MapPin, Coins, PhoneCall, FileText, Lock, Sparkles, Search } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { adminAuctionsService } from '../../services/adminService';
 import { AdBanner } from '../common/AdBanner';
@@ -50,9 +51,10 @@ const SECTORS = [
   { value: 'خدمات عامة', label: 'خدمات عامة' }
 ];
 
-export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
+export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = ({ onBack, embedded = false }) => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [cityFilter, setCityFilter] = useState('all');
   const [workTypeFilter, setWorkTypeFilter] = useState('all');
 
@@ -204,7 +206,9 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
     const workType = job.work_type || job.workType;
     const matchCity = cityFilter === 'all' || (job.city && job.city.includes(cityFilter));
     const matchType = workTypeFilter === 'all' || workType === workTypeFilter;
-    return matchCity && matchType;
+    const q = searchQuery.trim().toLowerCase();
+    const matchSearch = !q || (job.title || '').toLowerCase().includes(q) || (job.description || '').toLowerCase().includes(q) || (job.city || '').toLowerCase().includes(q);
+    return matchCity && matchType && matchSearch;
   });
 
   const jobCommissionAmount = commissionSettings?.default_fixed_commission_amount || 20000;
@@ -212,8 +216,8 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   const jobCommText = `${jobCommissionAmount.toLocaleString()} ${jobCommissionCurr}`;
 
   return (
-    <div dir="rtl" className="bg-black min-h-screen max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Tahoma'] text-white">
-      <AdBanner placementId="4" className="mb-1" />
+    <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "bg-black min-h-screen max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Tahoma'] text-white"}>
+      {!embedded && <AdBanner placementId="4" className="mb-1" />}
 
       {toastMessage && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#F5C400] text-black px-4 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2">
@@ -222,73 +226,126 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* الرأس مع زر أضف وظيفة */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2F3336] pb-3">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => { window.location.href = '/'; }}
-            title="رجوع للرئيسية"
-            className="p-2 rounded-xl bg-black border border-[#2F3336] text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all cursor-pointer shadow-sm"
-          >
-            <ArrowRight size={16} />
-          </button>
-          <div className="flex items-center gap-1.5">
-            <Briefcase className="w-5 h-5 text-[#F5C400]" />
-            <h1 className="text-sm sm:text-base font-black text-white">فرص العمل والوظائف</h1>
+      {!embedded && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2F3336] pb-3">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => { window.location.href = '/'; }}
+              title="رجوع للرئيسية"
+              className="p-2 rounded-xl bg-black border border-[#2F3336] text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all cursor-pointer shadow-sm"
+            >
+              <ArrowRight size={16} />
+            </button>
+            <div className="flex items-center gap-1.5">
+              <Briefcase className="w-5 h-5 text-[#F5C400]" />
+              <h1 className="text-sm sm:text-base font-black text-white">فرص العمل والوظائف</h1>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleOpenAddModal}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs transition-colors shadow-md"
+            >
+              <Plus size={15} />
+              <span>أضف وظيفة</span>
+            </button>
+
+            <button
+              onClick={fetchJobs}
+              disabled={loading}
+              className="p-2 bg-[#111111] border border-[#2F3336] text-slate-300 hover:text-white rounded-xl transition-colors"
+              title="تحديث"
+            >
+              <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
+            </button>
           </div>
         </div>
+      )}
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleOpenAddModal}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs transition-colors shadow-md"
-          >
-            <Plus size={15} />
-            <span>أضف وظيفة</span>
-          </button>
-
-          <button
-            onClick={fetchJobs}
-            disabled={loading}
-            className="p-2 bg-[#111111] border border-[#2F3336] text-slate-300 hover:text-white rounded-xl transition-colors"
-            title="تحديث"
-          >
-            <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
-          </button>
+      {/* الرأس الموحد: بحث + إعلان راعي + فلتر */}
+      <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "bg-[#111111] p-3 rounded-2xl border border-[#2F3336] space-y-2.5"}>
+        <div className="flex items-center bg-black border border-[#2F3336] focus-within:border-white rounded-full px-3.5 py-1.5 transition-colors">
+          <Search size={15} className="text-[#71767B] ml-2 shrink-0" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="ابحث عن وظيفة أو مدينة..."
+            className="flex-1 bg-transparent text-[13px] text-white placeholder-[#71767B] outline-none caret-white"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')} className="text-[#71767B] hover:text-white">
+              <X size={13} />
+            </button>
+          )}
         </div>
-      </div>
 
-      {/* شريط الفلترة الموحد الأنيق */}
-      <div className="bg-[#111111] p-3 rounded-2xl border border-[#2F3336] space-y-2.5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {embedded && <AdBanner placementId="4" className="py-0.5" />}
+
+        <div className="grid grid-cols-2 gap-2">
           <YRSelect
             value={cityFilter}
             options={YEMEN_GOVERNORATES}
             onChange={(val) => setCityFilter(val)}
-            placeholder="كل المدن والمحافظات"
+            placeholder="كل المحافظات"
           />
           <YRSelect
             value={workTypeFilter}
             options={WORK_TYPES}
             onChange={(val) => setWorkTypeFilter(val)}
-            placeholder="كافة أنواع الدوام"
+            placeholder="نوع الدوام"
           />
         </div>
-        
       </div>
 
-      {/* المحتوى */}
+      {/* المحتوى بأسلوب تغريدات X */}
       {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-[#F5C400] border-t-transparent animate-spin" />
-          <span className="text-xs font-bold text-white">جاري تحميل الوظائف الحقيقية...</span>
+        <div className="py-20 flex flex-col items-center justify-center text-[#71767B] gap-3">
+          <div className="w-7 h-7 rounded-full border-2 border-[#FFC500] border-t-transparent animate-spin" />
+          <span className="text-xs font-bold text-white">جاري تحميل الوظائف...</span>
         </div>
       ) : filteredJobs.length === 0 ? (
-        <div className="py-16 text-center bg-[#111111] rounded-2xl border border-[#2F3336] p-6 space-y-3">
-          <AlertCircle className="w-12 h-12 text-[#F5C400] mx-auto opacity-70" />
-          <h3 className="text-base font-bold text-white">لا توجد وظائف شاغرة معلنة حالياً</h3>
-          <p className="text-xs text-slate-300">كن أول من ينشر شاغراً بالضغط على زر "أضف وظيفة" أعلاه.</p>
+        <div className="py-16 text-center text-[#71767B] p-6 space-y-2">
+          <AlertCircle className="w-9 h-9 text-[#FFC500] mx-auto opacity-75" />
+          <h3 className="text-sm font-bold text-white">لا توجد وظائف شاغرة حالياً</h3>
+          <p className="text-xs">اضغط على زر + لإضافة فرصة عمل جديدة.</p>
+        </div>
+      ) : embedded ? (
+        <div className="divide-y divide-[#2F3336]/40">
+          {filteredJobs.map((job) => {
+            const cleanDesc = (job.description || '').split('--- [بيانات جهة النشر والوساطة] ---')[0].split('[معلومات جهة العمل والتواصل]')[0].split('[ملف الوصف الوظيفي PDF]')[0].trim();
+            const jobType = job.type || job.work_type || 'دوام كامل';
+            const salary = job.salary || job.salary_range || 'عند المقابلة';
+            return (
+              <Link
+                key={job.id}
+                to={`/jobs/${job.id}`}
+                className="p-3 bg-black hover:bg-white/[0.03] transition flex gap-3"
+              >
+                <div className="w-11 h-11 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 text-[#FFC500]">
+                  <Briefcase size={18} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap text-[13px]">
+                    <span className="font-bold text-white truncate max-w-[200px]">{job.title}</span>
+                    <ShieldCheck size={14} className="text-[#FFC500] shrink-0" />
+                    <span className="text-[#71767B] text-[12px]">@{job.city || 'اليمن'} · {jobType}</span>
+                  </div>
+                  {cleanDesc && (
+                    <p className="mt-1 text-[13.5px] text-[#E7E9EA] leading-relaxed line-clamp-2">
+                      {cleanDesc}
+                    </p>
+                  )}
+                  <div className="mt-2 flex items-center justify-between text-[12px] text-[#71767B]">
+                    <span className="text-[#FFC500] font-bold">{salary}</span>
+                    <span className="text-white/80 font-bold">عرض والتقديم ←</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -296,6 +353,16 @@ export const JobsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             <JobCard key={job.id} job={job} />
           ))}
         </div>
+      )}
+
+      {embedded && !isAddModalOpen && (
+        <button
+          onClick={handleOpenAddModal}
+          className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-black flex items-center justify-center shadow-lg shadow-black/60 transition"
+          title="أضف وظيفة"
+        >
+          <Plus size={24} className="stroke-[2.2]" />
+        </button>
       )}
 
       {/* نافذة أضف وظيفة - القالب الفاخر المعتمد 842 سطراً */}

@@ -48,6 +48,7 @@ const compressImageFile = (file: File): Promise<string> => {
 import { createPortal } from 'react-dom';
 import { adminAuctionsService } from '../../services/adminService';
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Gavel, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, 
   ShieldCheck, X, ImagePlus, Trash2, Tag, Search, Filter, 
@@ -115,7 +116,7 @@ const YEMEN_GOVERNORATES = [
   const getFormattedStartDate = () => "2026 / 10 / 11   11 : 58 م";
   const getFormattedEndDate = () => "2026 / 10 / 16   11 : 58 م";
 
-export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
+export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = ({ onBack, embedded = false }) => {
   const [listings, setListings] = useState<any[]>([]);
   const [isCreateAuctionOpen, setIsCreateAuctionOpen] = useState<boolean>(false);
 
@@ -463,8 +464,8 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
   });
 
   return (
-    <div dir="rtl" className="max-w-7xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white bg-black min-h-screen">
-      <AdBanner placementId="6" className="mb-1" />
+    <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-7xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white bg-black min-h-screen"}>
+      {!embedded && <AdBanner placementId="6" className="mb-1" />}
 
       {toastMessage && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#F5C400] text-black px-5 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2 border border-black/10 animate-bounce">
@@ -473,131 +474,109 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       )}
 
-      {/* الترويسة الرئيسية - بدون وساطة معتمدة */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-black border border-[#2F3336] p-4 rounded-2xl">
-        <div className="flex items-center gap-3">
-          {onBack && (
-            <button onClick={onBack} className="p-2 rounded-xl bg-[#111111] border border-[#2F3336] text-[#F5C400]">
-              <ArrowRight size={16} />
+      {!embedded && (
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-black border border-[#2F3336] p-4 rounded-2xl">
+          <div className="flex items-center gap-3">
+            {onBack && (
+              <button onClick={onBack} className="p-2 rounded-xl bg-[#111111] border border-[#2F3336] text-[#F5C400]">
+                <ArrowRight size={16} />
+              </button>
+            )}
+            <div>
+              <h1 className="text-xl font-black text-white flex items-center gap-2">
+                <Gavel size={22} className="text-[#F5C400]" />
+                <span>منصة المزادات والعروض</span>
+              </h1>
+              <p className="text-xs text-slate-400 mt-0.5">مزادات علنية حية وصفقات بيع مباشر بمواصفات حقيقية موثقة</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsCreateAuctionOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs sm:text-sm shadow-md cursor-pointer"
+            >
+              <Plus size={16} />
+              <span>إضافة مزاد جديد</span>
             </button>
-          )}
-          <div>
-            <h1 className="text-xl font-black text-white flex items-center gap-2">
-              <Gavel size={22} className="text-[#F5C400]" />
-              <span>منصة المزادات والعروض</span>
-            </h1>
-            <p className="text-xs text-slate-400 mt-0.5">مزادات علنية حية وصفقات بيع مباشر بمواصفات حقيقية موثقة</p>
+            <button onClick={fetchAuctions} className="p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-slate-300">
+              <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
+            </button>
           </div>
         </div>
+      )}
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsCreateAuctionOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs sm:text-sm shadow-md cursor-pointer"
-          >
-            <Plus size={16} />
-            <span>إضافة مزاد جديد</span>
-          </button>
-          <button onClick={fetchAuctions} className="p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-slate-300">
-            <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
-          </button>
-        </div>
-      </div>
-
-      {/* تبويبات التصنيفات العامة الستة بدون أي إيموجي */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-        {GENERAL_CATEGORIES.map((cat) => {
-          const Icon = cat.icon;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCat(cat.id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap border flex items-center gap-1.5 transition-all ${
-                selectedCat === cat.id
-                  ? 'bg-[#F5C400] text-black border-[#F5C400] font-black shadow-md'
-                  : 'bg-black text-slate-300 border-[#2F3336] hover:text-white'
-              }`}
-            >
-              {Icon && <Icon size={14} />}
-              <span>{cat.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* تبويبات الحالة: المزادات النشطة، البيع المباشر، المزادات المنتهية */}
-      <div className="grid grid-cols-3 gap-1.5 bg-black p-1.5 rounded-2xl border border-[#2F3336] text-center">
-        <button
-          type="button"
-          onClick={() => setStatusTab('ACTIVE')}
-          className={`py-2 px-1.5 rounded-xl transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 ${
-            statusTab === 'ACTIVE'
-              ? 'bg-[#F5C400] text-black font-black shadow-md shadow-[#F5C400]/15'
-              : 'text-slate-400 hover:text-white hover:bg-[#1A1A1A] font-bold'
-          }`}
-        >
-          <span className="text-[11px] sm:text-xs leading-none">المزادات النشطة</span>
-          <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md leading-none ${
-            statusTab === 'ACTIVE' ? 'bg-black text-black' : 'bg-[#111111] text-slate-300 border border-[#2F3336]'
-          }`}>
-            {activeAuctions.length}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setStatusTab('DIRECT')}
-          className={`py-2 px-1.5 rounded-xl transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 ${
-            statusTab === 'DIRECT'
-              ? 'bg-[#F5C400] text-black font-black shadow-md shadow-[#F5C400]/15'
-              : 'text-slate-400 hover:text-white hover:bg-[#1A1A1A] font-bold'
-          }`}
-        >
-          <span className="text-[11px] sm:text-xs leading-none">البيع المباشر</span>
-          <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md leading-none ${
-            statusTab === 'DIRECT' ? 'bg-black text-black' : 'bg-[#111111] text-slate-300 border border-[#2F3336]'
-          }`}>
-            {directSales.length}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setStatusTab('ENDED')}
-          className={`py-2 px-1.5 rounded-xl transition-all cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 ${
-            statusTab === 'ENDED'
-              ? 'bg-[#F5C400] text-black font-black shadow-md shadow-[#F5C400]/15'
-              : 'text-slate-400 hover:text-white hover:bg-[#1A1A1A] font-bold'
-          }`}
-        >
-          <span className="text-[11px] sm:text-xs leading-none">المزادات المنتهية</span>
-          <span className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md leading-none ${
-            statusTab === 'ENDED' ? 'bg-black text-black' : 'bg-[#111111] text-slate-300 border border-[#2F3336]'
-          }`}>
-            {endedListings.length}
-          </span>
-        </button>
-      </div>
-
-      {/* شريط البحث والمدينة المخصص بدون رمادي أندرويد */}
-      <div className="bg-black p-3 rounded-2xl border border-[#2F3336] flex flex-col sm:flex-row items-stretch gap-2.5">
-        <div className="relative flex-1">
+      {/* الرأس الموحد: بحث + إعلان راعي + فلتر */}
+      <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "space-y-3"}>
+        <div className="flex items-center bg-black border border-[#2F3336] focus-within:border-white rounded-full px-3.5 py-1.5 transition-colors">
+          <Search size={15} className="text-[#71767B] ml-2 shrink-0" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="ابحث باسم السلعة أو الموديل..."
-            className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#F5C400] rounded-xl py-2.5 pr-9 pl-8 text-xs text-white placeholder-slate-500 focus:outline-none"
+            placeholder="ابحث باسم السلعة أو المزاد..."
+            className="flex-1 bg-transparent text-[13px] text-white placeholder-[#71767B] outline-none caret-white"
           />
-          <Search className="absolute right-3 top-3 w-4 h-4 text-[#F5C400]" />
           {searchTerm && (
-            <button onClick={() => setSearchTerm('')} className="absolute left-3 top-3 text-slate-400">
-              <X size={14} />
+            <button onClick={() => setSearchTerm('')} className="text-[#71767B] hover:text-white">
+              <X size={13} />
             </button>
           )}
         </div>
 
-        <div className="w-full sm:w-64">
+        {embedded && <AdBanner placementId="6" className="py-0.5" />}
+
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
+          {GENERAL_CATEGORIES.map((cat) => {
+            const Icon = cat.icon;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCat(cat.id)}
+                className={`px-3 py-1 rounded-full text-[11.5px] font-bold whitespace-nowrap border flex items-center gap-1 transition-all ${
+                  selectedCat === cat.id
+                    ? 'bg-white text-black border-white'
+                    : 'bg-black text-[#71767B] border-[#2F3336] hover:text-white'
+                }`}
+              >
+                {Icon && <Icon size={12} />}
+                <span>{cat.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setStatusTab('ACTIVE')}
+            className={`flex-1 py-1 px-2 rounded-full text-[11.5px] font-bold border transition-all ${
+              statusTab === 'ACTIVE' ? 'bg-white/10 text-white border-white' : 'bg-black text-[#71767B] border-[#2F3336]'
+            }`}
+          >
+            النشطة ({activeAuctions.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusTab('DIRECT')}
+            className={`flex-1 py-1 px-2 rounded-full text-[11.5px] font-bold border transition-all ${
+              statusTab === 'DIRECT' ? 'bg-white/10 text-white border-white' : 'bg-black text-[#71767B] border-[#2F3336]'
+            }`}
+          >
+            مباشر ({directSales.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusTab('ENDED')}
+            className={`flex-1 py-1 px-2 rounded-full text-[11.5px] font-bold border transition-all ${
+              statusTab === 'ENDED' ? 'bg-white/10 text-white border-white' : 'bg-black text-[#71767B] border-[#2F3336]'
+            }`}
+          >
+            منتهية ({endedListings.length})
+          </button>
+        </div>
+
+        <div>
           <YRSelect
             value={cityFilter}
             options={YEMEN_GOVERNORATES}
@@ -607,25 +586,75 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* شبكة عرض كروت المزادات */}
+      {/* المحتوى بأسلوب تغريدات X */}
       {loading ? (
-        <div className="py-24 flex flex-col items-center justify-center text-slate-400 gap-3 bg-black rounded-2xl border border-[#2F3336]">
-          <div className="w-8 h-8 rounded-full border-2 border-[#F5C400] border-t-transparent animate-spin" />
-          <span className="text-xs font-bold text-white">جاري مزامنة بيانات المزادات...</span>
+        <div className="py-20 flex flex-col items-center justify-center text-[#71767B] gap-3">
+          <div className="w-7 h-7 rounded-full border-2 border-[#FFC500] border-t-transparent animate-spin" />
+          <span className="text-xs font-bold text-white">جاري مزامنة المزادات...</span>
         </div>
       ) : displayedListings.length === 0 ? (
-        <div className="py-20 text-center bg-black rounded-2xl border border-[#2F3336] p-8 space-y-3">
-          <AlertCircle size={44} className="text-[#F5C400] mx-auto opacity-70" />
-          <h3 className="text-base font-bold text-white">لا توجد معروضات مسجلة في هذا القسم حالياً</h3>
-          <p className="text-xs text-slate-400 max-w-2xl mx-auto">
-            كن أول من يضيف معروضاً للمزاد أو البيع المباشر عبر الزر أعلاه.
-          </p>
-          <button
-            onClick={() => setIsCreateAuctionOpen(true)}
-            className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 bg-[#F5C400] text-black font-black rounded-xl text-xs"
-          >
-            <Plus size={14} /> إضافة معروض جديد
-          </button>
+        <div className="py-16 text-center text-[#71767B] p-6 space-y-2">
+          <AlertCircle size={36} className="text-[#FFC500] mx-auto opacity-75" />
+          <h3 className="text-sm font-bold text-white">لا توجد مزادات مسجلة حالياً</h3>
+          <p className="text-xs">اضغط على زر + لإضافة مزاد أو عرض جديد.</p>
+        </div>
+      ) : embedded ? (
+        <div className="divide-y divide-[#2F3336]/40">
+          {displayedListings.map((auc) => {
+            let aucImg: string | null = auc.image_url || null;
+            if (!aucImg && Array.isArray(auc.images) && auc.images.length > 0) aucImg = auc.images[0];
+            else if (!aucImg && typeof auc.images === 'string') {
+              try {
+                const parsed = JSON.parse(auc.images);
+                if (Array.isArray(parsed) && parsed.length > 0) aucImg = parsed[0];
+              } catch {
+                if (auc.images.startsWith('http') || auc.images.startsWith('data:')) aucImg = auc.images.split(',')[0].trim();
+              }
+            }
+            const bidVal = Number(auc.current_bid || auc.starting_price || auc.final_price || 0);
+            const isDirect = auc.sale_type === 'fixed_price';
+            let desc = auc.description || '';
+            if (desc.startsWith('{')) {
+              try { const p = JSON.parse(desc); desc = p.notes || p.description || ''; } catch {}
+            }
+            return (
+              <Link
+                key={auc.id}
+                to={`/auctions/${auc.id}`}
+                className="p-3 bg-black hover:bg-white/[0.03] transition flex gap-3"
+              >
+                <div className="w-11 h-11 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 text-[#FFC500]">
+                  <Gavel size={18} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap text-[13px]">
+                    <span className="font-bold text-white">{isDirect ? 'بيع مباشر' : 'مزاد علني'}</span>
+                    <ShieldCheck size={14} className="text-[#FFC500] shrink-0" />
+                    <span className="text-[#71767B] text-[12px]">@{auc.city || 'اليمن'}</span>
+                  </div>
+                  <div className="mt-1 text-[14.5px] font-bold text-[#E7E9EA] leading-snug">
+                    {auc.title}
+                  </div>
+                  {desc && (
+                    <p className="mt-0.5 text-[13px] text-[#D6D9DB] line-clamp-2 leading-relaxed">
+                      {desc}
+                    </p>
+                  )}
+                  {aucImg && (
+                    <div className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336]/50 max-h-80 bg-zinc-950">
+                      <img src={aucImg} alt={auc.title} className="w-full max-h-80 object-cover" loading="lazy" />
+                    </div>
+                  )}
+                  <div className="mt-2.5 flex items-center justify-between text-[12px] text-[#71767B]">
+                    <span className="text-[#FFC500] font-bold">
+                      {bidVal.toLocaleString()} {auc.currency || 'SAR'}
+                    </span>
+                    <span className="text-white/80 font-bold">{isDirect ? 'شراء وتفاصيل ←' : 'مزايدة ←'}</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -633,6 +662,16 @@ export const AuctionsPage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             <AuctionCard key={auc.id} auction={auc} />
           ))}
         </div>
+      )}
+
+      {embedded && !isCreateAuctionOpen && (
+        <button
+          onClick={() => setIsCreateAuctionOpen(true)}
+          className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-black flex items-center justify-center shadow-lg shadow-black/60 transition"
+          title="إضافة مزاد جديد"
+        >
+          <Plus size={24} className="stroke-[2.2]" />
+        </button>
       )}
 
       {/* نافذة إضافة معروض جديد بنظام الثيم الداكن المخصص بدون افتراضيات أندرويد */}

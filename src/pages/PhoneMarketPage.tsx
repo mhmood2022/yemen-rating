@@ -140,7 +140,7 @@ const INITIAL_PHONES: PhoneDeviceItem[] = [
   }
 ];
 
-export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
+export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; embedded?: boolean }> = ({ onNavigate, embedded = false }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'phones' | 'accessories' | 'maintenance' | 'sim_services'>('all');
   const [selectedBrand, setSelectedBrand] = useState<string>('all');
   const [selectedCondition, setSelectedCondition] = useState<string>('all');
@@ -262,13 +262,12 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
   }, [phonesList, activeTab, selectedBrand, selectedCondition, selectedCity, searchQuery]);
 
   return (
-    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Cairo',sans-serif] text-white">
-      
-      {/* 1. إعلان البانر المخصص #9 */}
-      <AdBanner placementId="9" className="mb-1" />
+    <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Cairo',sans-serif] text-white"}>
 
-      {/* 2. رأس الصفحة الرسمي بالأيقونات الرسمية */}
-      <div className="flex items-center justify-between border-b border-[#2F3336] pb-2.5">
+      {!embedded && <AdBanner placementId="9" className="mb-1" />}
+
+      {(!embedded || selectedPhone) && (
+      <div className={`flex items-center justify-between border-b border-[#2F3336] ${embedded ? 'px-3 py-2.5' : 'pb-2.5'}`}>
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
             <Smartphone size={16} className="stroke-[2.5]" />
@@ -284,23 +283,28 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="px-3 py-1.5 rounded-xl bg-[#FFC500] text-black font-black text-[11px] hover:bg-[#FFC500]/90 transition-all flex items-center gap-1 cursor-pointer shadow-sm"
-          >
-            <Plus size={13} />
-            <span>عرض هاتف للبيع</span>
-          </button>
-          
-          <button
-            onClick={selectedPhone ? () => setSelectedPhone(null) : () => onNavigate('home')}
-            className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1 cursor-pointer"
-          >
-            <span>{selectedPhone ? 'رجوع' : 'الرئيسية'}</span>
-            <ArrowRight size={13} className="rtl:rotate-180" />
-          </button>
+          {!embedded && (
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="px-3 py-1.5 rounded-xl bg-[#FFC500] text-black font-black text-[11px] hover:bg-[#FFC500]/90 transition-all flex items-center gap-1 cursor-pointer shadow-sm"
+            >
+              <Plus size={13} />
+              <span>عرض هاتف للبيع</span>
+            </button>
+          )}
+
+          {(selectedPhone || !embedded) && (
+            <button
+              onClick={selectedPhone ? () => setSelectedPhone(null) : () => onNavigate('home')}
+              className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1 cursor-pointer"
+            >
+              <span>{selectedPhone ? 'رجوع' : 'الرئيسية'}</span>
+              <ArrowRight size={13} className="rtl:rotate-180" />
+            </button>
+          )}
         </div>
       </div>
+      )}
 
       {toastMessage && (
         <div className="p-2.5 rounded-xl bg-[#16A34A]/20 border border-[#16A34A] text-white text-xs font-bold flex items-center gap-2">
@@ -449,35 +453,37 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
         /* ============================================================
            عرض قائمة سوق الهواتف
            ============================================================ */
-        <div className="space-y-3">
-          
-          {/* شريط الفلاتر والبحث */}
-          <div className="space-y-2 bg-[#0F0F12] p-2.5 rounded-2xl border border-[#222226]">
-            
-            {/* حقل البحث */}
-            <div className="flex items-center bg-[#18181C] border border-[#27272A] rounded-xl px-2.5 py-1">
-              <Search size={14} className="text-gray-400 ml-2 shrink-0" />
+        <div className={embedded ? "divide-y divide-[#2F3336]/40" : "space-y-3"}>
+
+          {/* شريط البحث + الإعلان الراعي + الفلتر */}
+          <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "space-y-2 bg-[#0F0F12] p-2.5 rounded-2xl border border-[#222226]"}>
+            {/* 1. شريط البحث */}
+            <div className="flex items-center bg-black border border-[#2F3336] focus-within:border-white rounded-full px-3.5 py-1.5 transition-colors">
+              <Search size={15} className="text-[#71767B] ml-2 shrink-0" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث عن جوال، ماركة، أو محل..."
-                className="flex-1 bg-transparent text-xs text-white placeholder-gray-500 outline-none"
+                placeholder="ابحث في سوق الهواتف..."
+                className="flex-1 bg-transparent text-[13px] text-white placeholder-[#71767B] outline-none caret-white"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="text-xs text-gray-400">
-                  <X size={12} />
+                <button onClick={() => setSearchQuery('')} className="text-[#71767B] hover:text-white">
+                  <X size={13} />
                 </button>
               )}
             </div>
 
-            {/* الأقسام السريعة بالأيقونات الرسمية */}
-            <div className="flex gap-1 overflow-x-auto pb-0.5 no-scrollbar">
+            {/* 2. إعلان راعي */}
+            {embedded && <AdBanner placementId="9" className="py-0.5" />}
+
+            {/* 3. الفلتر */}
+            <div className="flex gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
               {[
                 { id: 'all', label: 'الكل', icon: Sparkles },
                 { id: 'phones', label: 'الجوالات', icon: Smartphone },
                 { id: 'accessories', label: 'الإكسسوارات', icon: Tag },
-                { id: 'maintenance', label: 'الصيانة والقطع', icon: Wrench },
+                { id: 'maintenance', label: 'الصيانة', icon: Wrench },
                 { id: 'sim_services', label: 'الشرائح', icon: Radio },
               ].map(tab => {
                 const Icon = tab.icon;
@@ -485,10 +491,10 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all flex items-center gap-1 ${
-                      activeTab === tab.id 
-                        ? 'bg-[#FFC500] text-black border-[#FFC500]' 
-                        : 'bg-[#18181C] text-gray-400 border-[#27272A]'
+                    className={`shrink-0 px-3 py-1 rounded-full text-[11.5px] font-bold border transition-all flex items-center gap-1 ${
+                      activeTab === tab.id
+                        ? 'bg-white text-black border-white'
+                        : 'bg-black text-[#71767B] border-[#2F3336] hover:text-white'
                     }`}
                   >
                     <Icon size={12} />
@@ -498,11 +504,10 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
               })}
             </div>
 
-            {/* الماركات والمحافظات */}
-            <div className="flex items-center justify-between gap-1 pt-1 border-t border-[#2F3336]/50">
+            <div className="flex items-center justify-between gap-1.5 pt-1">
               <div className="flex gap-1 overflow-x-auto no-scrollbar flex-1">
                 {[
-                  { id: 'all', label: 'الماركات' },
+                  { id: 'all', label: 'كل الماركات' },
                   { id: 'Apple', label: 'Apple' },
                   { id: 'Samsung', label: 'Samsung' },
                   { id: 'Xiaomi', label: 'Xiaomi' },
@@ -511,10 +516,10 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
                   <button
                     key={b.id}
                     onClick={() => setSelectedBrand(b.id)}
-                    className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold border transition-all ${
-                      selectedBrand === b.id 
-                        ? 'bg-[#18181C] border-[#FFC500] text-[#FFC500]' 
-                        : 'bg-[#121215] border-[#222226] text-gray-400'
+                    className={`shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-bold border transition-all ${
+                      selectedBrand === b.id
+                        ? 'bg-white/10 border-white text-white'
+                        : 'bg-black border-[#2F3336] text-[#71767B]'
                     }`}
                   >
                     {b.label}
@@ -522,11 +527,10 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
                 ))}
               </div>
 
-              {/* اختيار المحافظة */}
               <select
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
-                className="bg-[#18181C] border border-[#27272A] rounded-lg px-2 py-0.5 text-[10px] font-bold text-[#D1D5DB] outline-none cursor-pointer shrink-0"
+                className="bg-black border border-[#2F3336] focus:border-white rounded-full px-2.5 py-0.5 text-[11px] font-bold text-[#E7E9EA] outline-none cursor-pointer shrink-0"
               >
                 <option value="all">كل المحافظات</option>
                 <option value="صنعاء">صنعاء</option>
@@ -540,61 +544,79 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void }> =
             </div>
           </div>
 
-          {/* شبكة كروت الهواتف */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+          {/* قائمة المنشورات بأسلوب تغريدات X */}
+          <div className="divide-y divide-[#2F3336]/40">
             {filteredPhones.map((phone) => (
-              <div
+              <article
                 key={phone.id}
-                className="bg-[#0F0F12] rounded-2xl border border-[#222226] hover:border-[#FFC500]/40 overflow-hidden shadow-md transition-all flex flex-col justify-between"
+                onClick={() => handleOpenPhone(phone)}
+                className="p-3 bg-black hover:bg-white/[0.03] transition cursor-pointer flex gap-3"
               >
-                <div className="h-40 w-full relative bg-[#161619]">
-                  <img src={phone.images[0]} alt={phone.name} className="w-full h-full object-cover" />
-                  
-                  <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-md text-[9px] font-black ${
-                    phone.condition === 'جديد كرت' ? 'bg-[#16A34A] text-white' : 'bg-[#FFC500] text-black'
-                  }`}>
-                    {phone.condition}
-                  </span>
-
-                  <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black text-[#FFC500] text-[10px] font-mono font-black border border-white/10">
-                    {phone.price.toLocaleString()} {phone.currency}
-                  </span>
-
-                  <span className="absolute bottom-2 right-2 px-1.5 py-0.2 rounded bg-black text-gray-300 text-[8.5px] font-mono flex items-center gap-1">
-                    <Cpu size={10} /> {phone.storage}
-                  </span>
+                <div className="w-11 h-11 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 text-white font-bold text-sm">
+                  {phone.sellerName?.[0] || <Smartphone size={18} />}
                 </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap text-[13px]">
+                    <span className="font-bold text-white truncate max-w-[160px]">{phone.sellerName}</span>
+                    {phone.isVerified && <ShieldCheck size={14} className="text-[#FFC500] shrink-0" />}
+                    <span className="text-[#71767B] text-[12px]">@{phone.city} · {phone.brand}</span>
+                    <span className="text-[#71767B] text-[11px] mr-auto">{phone.createdAt}</span>
+                  </div>
 
-                <div className="p-3 space-y-2">
-                  <div>
-                    <div className="flex items-center gap-1.5 text-[9.5px] text-gray-400 mb-0.5">
-                      <span className="text-[#FFC500] font-bold">{phone.brand}</span>
-                      <span>•</span>
-                      <span className="flex items-center gap-0.5"><MapPin size={10} /> {phone.city}</span>
+                  <div className="mt-1 text-[14.5px] font-bold text-[#E7E9EA] leading-snug">
+                    {phone.name}
+                  </div>
+                  <div className="mt-0.5 text-[12.5px] text-[#71767B] flex flex-wrap items-center gap-2">
+                    <span>{phone.condition}</span>
+                    <span>·</span>
+                    <span>{phone.storage}{phone.ram ? ` / ${phone.ram}` : ''}</span>
+                    <span className="text-[#FFC500] font-bold">· {phone.price.toLocaleString()} {phone.currency}</span>
+                  </div>
+                  {phone.description && (
+                    <p className="mt-1 text-[13px] text-[#D6D9DB] line-clamp-2 leading-relaxed">
+                      {phone.description}
+                    </p>
+                  )}
+
+                  {phone.images?.[0] && (
+                    <div className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336]/50 max-h-80 bg-zinc-950">
+                      <img src={phone.images[0]} alt={phone.name} className="w-full max-h-80 object-cover" loading="lazy" />
                     </div>
-                    <h3 className="text-xs sm:text-sm font-bold text-white truncate">
-                      {phone.name}
-                    </h3>
-                  </div>
+                  )}
 
-                  <div className="pt-1 flex items-center justify-between border-t border-[#2F3336]">
-                    <span className="text-[10px] text-gray-300 font-bold truncate max-w-[120px]">
-                      {phone.sellerName}
-                    </span>
-
-                    <button
-                      onClick={() => handleOpenPhone(phone)}
-                      className="px-3 py-1.5 rounded-xl bg-[#FFC500] text-black font-black text-xs hover:bg-[#FFC500]/90 transition-all flex items-center gap-1 cursor-pointer active:scale-98"
-                    >
-                      <span>عرض التفاصيل</span>
-                      <ArrowRight size={11} className="rtl:rotate-180" />
+                  <div className="mt-2.5 flex items-center justify-between text-[#71767B] text-[12px] pt-1" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={() => handleOpenPhone(phone)} className="hover:text-white transition flex items-center gap-1">
+                      <ArrowRight size={14} className="rtl:rotate-180" />
+                      <span>التفاصيل</span>
                     </button>
+                    <a
+                      href={`https://wa.me/${phone.sellerPhone}?text=${encodeURIComponent(`مرحباً، أرغب بالاستفسار عن ${phone.name}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-emerald-400 transition flex items-center gap-1"
+                    >
+                      <MessageCircle size={14} />
+                      <span>واتساب</span>
+                    </a>
+                    <a href={`tel:${phone.sellerPhone}`} className="hover:text-[#FFC500] transition flex items-center gap-1">
+                      <Phone size={14} />
+                      <span>اتصال</span>
+                    </a>
                   </div>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
 
+          {embedded && !selectedPhone && !isAddModalOpen && (
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-black flex items-center justify-center shadow-lg shadow-black/60 transition"
+              title="عرض هاتف للبيع"
+            >
+              <Plus size={24} className="stroke-[2.2]" />
+            </button>
+          )}
         </div>
       )}
 

@@ -10,13 +10,17 @@ import { RichTextarea } from '../components/common/RichTextarea';
 import { HashtagText } from '../components/common/HashtagText';
 import React, { useState, useEffect, useRef } from 'react';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { ActiveUsersBar } from '../components/community/ActiveUsersBar';
 import { ReplyBar } from '../components/community/ReplyBar';
 import { ReportPage } from '../components/community/ReportPage';
 import { RateBusinessModal } from '../components/reviews/RateBusinessModal';
 import { getMyBusinessPage, submitBusinessReview, BusinessPageRecord } from '../services/businessPageService';
+import { PhoneMarketPage } from './PhoneMarketPage';
+import { JobsPage } from '../components/pages/JobsPage';
+import { RealEstatePage } from '../components/pages/RealEstatePage';
+import { AuctionsPage } from '../components/pages/AuctionsPage';
 import { 
   ArrowRight,
   Image as ImageIcon,
@@ -44,6 +48,11 @@ import {
   Globe,
   BarChart2,
   Share2,
+  Smartphone,
+  Briefcase,
+  Building,
+  Gavel,
+  Users,
 } from "lucide-react";
 
 interface Comment {
@@ -184,8 +193,26 @@ export const CommunityFeedPage: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [activeMenuPost, setActiveMenuPost] = useState<any>(null);
   const [shareMenuPost, setShareMenuPost] = useState<any>(null);
+  const routerLocation = useLocation();
   const [myBusinessPage, setMyBusinessPage] = useState<BusinessPageRecord | null>(null);
-  const [publishAsBusiness, setPublishAsBusiness] = useState<boolean>(false);
+  const [publishAsBusiness, setPublishAsBusiness] = useState<boolean>(() => {
+    try {
+      const navIdentity = (routerLocation.state as any)?.communityIdentity;
+      if (navIdentity === 'personal') return false;
+      if (navIdentity === 'business') return true;
+      const saved = localStorage.getItem('yr_community_identity');
+      if (saved === 'personal') return false;
+      return true;
+    } catch {
+      return true;
+    }
+  });
+  const switchCommunityIdentity = (asBusiness: boolean) => {
+    setPublishAsBusiness(asBusiness);
+    try {
+      localStorage.setItem('yr_community_identity', asBusiness ? 'business' : 'personal');
+    } catch (_) {}
+  };
   const [ratingTargetTweet, setRatingTargetTweet] = useState<any>(null);
   const [shareUsers, setShareUsers] = useState<any[]>([]);
   const [shareSearch, setShareSearch] = useState('');
@@ -219,30 +246,36 @@ export const CommunityFeedPage: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [swipeProgress, setSwipeProgress] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
-  const [activeTab, setActiveTab] = useState<'forYou' | 'latest' | 'trending'>('forYou');
+  const [activeTab, setActiveTab] = useState<'forYou' | 'latest' | 'trending' | 'phones' | 'jobs' | 'properties' | 'auctions'>('forYou');
   useEffect(() => { setSwipeProgress(activeTab === 'forYou' ? 0 : 1); }, [activeTab]);
 
-  // --- كود السحب الأفقي الآمن ---
+  // --- كود السحب الأفقي الآمن بين التبويبات ---
   useEffect(() => {
     let touchStartX = 0;
     let touchStartY = 0;
+    let ignoreSwipe = false;
+    const tabOrder: Array<'forYou' | 'latest' | 'phones' | 'jobs' | 'properties' | 'auctions'> = [
+      'forYou', 'latest', 'phones', 'jobs', 'properties', 'auctions'
+    ];
 
     const handleTouchStart = (e: TouchEvent) => {
+      const targetEl = e.target as HTMLElement | null;
+      ignoreSwipe = Boolean(targetEl?.closest('.no-scrollbar, .overflow-x-auto'));
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
-      setIsSwiping(true);
+      setIsSwiping(!ignoreSwipe);
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      if (ignoreSwipe) return;
       const currentX = e.touches[0].clientX;
       const currentY = e.touches[0].clientY;
       const distX = touchStartX - currentX;
       const distY = touchStartY - currentY;
 
       if (Math.abs(distX) > Math.abs(distY)) {
-        const maxSwipe = window.innerWidth * 0.25; // المسافة المطلوبة لإكمال السحب
+        const maxSwipe = window.innerWidth * 0.25;
         const progress = Math.min(1, Math.abs(distX) / maxSwipe);
-
         if (activeTab === 'forYou' && distX > 0) setSwipeProgress(progress);
         else if (activeTab === 'latest' && distX < 0) setSwipeProgress(1 - progress);
       }
@@ -250,17 +283,20 @@ export const CommunityFeedPage: React.FC = () => {
 
     const handleTouchEnd = (e: TouchEvent) => {
       setIsSwiping(false);
+      if (ignoreSwipe) return;
       const touchEndX = e.changedTouches[0].clientX;
       const touchEndY = e.changedTouches[0].clientY;
-      
+
       const distX = touchStartX - touchEndX;
       const distY = touchStartY - touchEndY;
 
-      if (Math.abs(distX) > Math.abs(distY) && Math.abs(distX) > 40) {
-        if (distX > 0 && activeTab === 'forYou') setActiveTab('latest');
-        else if (distX < 0 && activeTab === 'latest') setActiveTab('forYou');
+      if (Math.abs(distX) > Math.abs(distY) && Math.abs(distX) > 55) {
+        const idx = tabOrder.indexOf(activeTab as any);
+        if (idx !== -1) {
+          if (distX > 0 && idx < tabOrder.length - 1) setActiveTab(tabOrder[idx + 1]);
+          else if (distX < 0 && idx > 0) setActiveTab(tabOrder[idx - 1]);
+        }
       } else {
-        // إذا لم تكن مسافة السحب كافية، يعود الخط لمكانه
         setSwipeProgress(activeTab === 'forYou' ? 0 : 1);
       }
     };
@@ -269,9 +305,7 @@ export const CommunityFeedPage: React.FC = () => {
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
 
-  
-  
-  return () => {
+    return () => {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
@@ -418,11 +452,14 @@ export const CommunityFeedPage: React.FC = () => {
     try {
       console.log('🔔 SENDING NOTIFICATION:', { targetUid, type, currentUserId, myName });
       
+      const isBizNotif = Boolean(publishAsBusiness && myBusinessPage);
+      const notifActorName = isBizNotif ? (myBusinessPage?.name || myName) : myName;
+      const notifActorAvatar = isBizNotif ? (myBusinessPage?.avatarUrl || myAvatar) : myAvatar;
       const { data, error } = await supabase.from('notifications').insert({
         user_id: targetUid,
         actor_id: currentUserId,
-        actor_name: myName,
-        actor_avatar: myAvatar,
+        actor_name: notifActorName,
+        actor_avatar: notifActorAvatar,
         post_id: postId || null,
         title: msg.slice(0, 100),
         message: msg,
@@ -451,7 +488,20 @@ export const CommunityFeedPage: React.FC = () => {
         if (session?.user) {
           uid = session.user.id;
           setCurrentUserId(session.user.id);
-          getMyBusinessPage(session.user.id).then((biz) => { if (biz) setMyBusinessPage(biz); });
+          getMyBusinessPage(session.user.id).then((biz) => {
+            if (biz) {
+              setMyBusinessPage(biz);
+              try {
+                const navIdentity = (routerLocation.state as any)?.communityIdentity;
+                const saved = localStorage.getItem('yr_community_identity');
+                if (navIdentity === 'personal' || (!navIdentity && saved === 'personal')) {
+                  setPublishAsBusiness(false);
+                } else {
+                  setPublishAsBusiness(true);
+                }
+              } catch (_) {}
+            }
+          });
         }
       } catch (_) {}
 
@@ -1318,13 +1368,14 @@ const handleAddComment = (e?: React.FormEvent) => {
       return;
     }
 
+    const useBizComment = Boolean(publishAsBusiness && myBusinessPage);
     const commentId = Date.now().toString();
     const newComment: Comment = {
       id: commentId,
       authorId: currentUserId || 'guest',
-      authorName: myName || 'مستخدم',
-      authorUsername: myUsername || 'user',
-      authorAvatar: myAvatar || '',
+      authorName: useBizComment ? (myBusinessPage?.name || 'منشأة') : (myName || 'مستخدم'),
+      authorUsername: useBizComment ? (myBusinessPage?.username || 'business') : (myUsername || 'user'),
+      authorAvatar: useBizComment ? (myBusinessPage?.avatarUrl || '') : (myAvatar || ''),
       text: textToSend,
       image: commentImage || undefined,
       createdAt: new Date().toISOString(),
@@ -1393,7 +1444,8 @@ const handleAddComment = (e?: React.FormEvent) => {
       });
     }
 
-    sendRealNotification(targetPost.authorId, 'comment', `علّق ${myName} على منشورك: "${textToSend.slice(0, 30)}..."`, targetPost.id);
+    const commenterName = useBizComment ? (myBusinessPage?.name || myName) : myName;
+    sendRealNotification(targetPost.authorId, 'comment', `علّق ${commenterName} على منشورك: "${textToSend.slice(0, 30)}..."`, targetPost.id);
   };
 
   // إرسال البلاغ
@@ -1635,17 +1687,42 @@ const handleAddComment = (e?: React.FormEvent) => {
       {/* الهيدر العلوي بنمط منصة X الأصلي */}
       <header className="sticky top-0 z-40 bg-black/95 backdrop-blur-md">
         {/* الشريط العلوي */}
-        <div className={`px-4 flex items-center justify-between relative transition-all duration-300 overflow-hidden ${isScrolled ? 'h-0 py-0 opacity-0' : 'h-[58px] py-2.5 opacity-100'}`}>
-          <button onClick={() => navigate("/account")} title="ملفي الشخصي" className="relative group flex-shrink-0">
-            <div className="w-[38px] h-[38px] rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold shrink-0 shadow-sm">
-              {myAvatar ? (
-                <img src={myAvatar} alt={myName} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-white text-[15px] font-bold">{myName ? myName[0] : "؟"}</span>
-              )}
-            </div>
-            <span className="absolute bottom-[1px] right-[1px] w-[9px] h-[9px] bg-emerald-500 rounded-full border-[1.5px] border-black" />
-          </button>
+        <div className={`px-4 flex items-center justify-between relative transition-all duration-300 overflow-hidden ${(isScrolled || ['phones', 'jobs', 'properties', 'auctions'].includes(activeTab)) ? 'h-0 py-0 opacity-0 pointer-events-none' : 'h-[58px] py-2.5 opacity-100'}`}>
+          {(() => {
+            const isBizHeader = Boolean(publishAsBusiness && myBusinessPage);
+            const headerAvatar = isBizHeader ? (myBusinessPage?.avatarUrl || '') : myAvatar;
+            const headerName = isBizHeader ? (myBusinessPage?.name || 'المنشأة') : myName;
+            return (
+              <button
+                onClick={() => {
+                  if (isBizHeader && myBusinessPage) {
+                    navigate(`/business-page/${myBusinessPage.id}`, {
+                      state: {
+                        ...myBusinessPage,
+                        isOwner: true,
+                        viewerName: myName,
+                        viewerUsername: myUsername,
+                        viewerAvatar: myAvatar,
+                      },
+                    });
+                  } else {
+                    navigate("/account");
+                  }
+                }}
+                title={isBizHeader ? (myBusinessPage?.name || "صفحة المنشأة") : "ملفي الشخصي"}
+                className="relative group flex-shrink-0"
+              >
+                <div className="w-[38px] h-[38px] rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold shrink-0 shadow-sm">
+                  {headerAvatar ? (
+                    <img src={headerAvatar} alt={headerName} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-white text-[15px] font-bold">{headerName ? headerName[0] : "؟"}</span>
+                  )}
+                </div>
+                <span className="absolute bottom-[1px] right-[1px] w-[9px] h-[9px] bg-emerald-500 rounded-full border-[1.5px] border-black" />
+              </button>
+            );
+          })()}
 
           <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
             <img src="/yr-community-logo.png" alt="Yemen Rating" className="w-7 h-7 object-contain hover:opacity-85 transition" />
@@ -1659,49 +1736,62 @@ const handleAddComment = (e?: React.FormEvent) => {
           </button>
         </div>
 
-        {/* التبويبات */}
-        <div className="flex bg-black items-center">
-          <div className="flex-1 flex relative">
-            {/* الشريط السفلي المتحرك */}
-            <div className="absolute bottom-0 right-0 w-1/2 flex justify-center pointer-events-none">
-              <div 
-                className="h-[2px] bg-white rounded-full" 
-                style={{ 
-                  width: `${(1 - swipeProgress) * 85}%`, 
-                  opacity: swipeProgress > 0.95 ? 0 : 1,
-                  transition: isSwiping ? 'none' : 'all 0.15s cubic-bezier(0.25, 1, 0.5, 1)'
-                }} 
-              />
-            </div>
-            <div className="absolute bottom-0 left-0 w-1/2 flex justify-center pointer-events-none">
-              <div 
-                className="h-[2px] bg-white rounded-full" 
-                style={{ 
-                  width: `${swipeProgress * 85}%`, 
-                  opacity: swipeProgress < 0.05 ? 0 : 1,
-                  transition: isSwiping ? 'none' : 'all 0.15s cubic-bezier(0.25, 1, 0.5, 1)'
-                }} 
-              />
-            </div>
-            
-            <button onClick={() => setActiveTab('forYou')} style={{ WebkitTapHighlightColor: 'transparent' }} className={`flex-1 py-4 text-center font-bold text-[15px] transition-colors relative flex items-center justify-center gap-1.5 ${activeTab === 'forYou' ? 'text-white' : 'text-[#71767B]'}`}>
-              <span>لك</span>
-              {activeTab === 'forYou' && <ChevronDown size={16} className="text-[#FFC500] stroke-[3]" />}
-            </button>
-            
-            <button onClick={() => setActiveTab('latest')} style={{ WebkitTapHighlightColor: 'transparent' }} className={`flex-1 py-4 text-center font-bold text-[15px] transition-colors relative flex items-center justify-center gap-1.5 ${activeTab === 'latest' ? 'text-white' : 'text-[#71767B]'}`}>
-              <span>متابعة</span>
-              {activeTab === 'latest' && <ChevronDown size={16} className="text-[#FFC500] stroke-[3]" />}
-            </button>
-          </div>
-          
-          
+        {/* التبويبات بتصميم صفحة المنشأة */}
+        <div className="bg-black border-b border-[#2F3336]/40 flex items-center justify-around text-[14px]">
+          {[
+            { id: 'forYou', label: 'لك', icon: Sparkles },
+            { id: 'latest', label: 'متابعة', icon: Users },
+            { id: 'phones', label: 'سوق الهواتف', icon: Smartphone },
+            { id: 'jobs', label: 'الوظائف', icon: Briefcase },
+            { id: 'properties', label: 'العقارات', icon: Building },
+            { id: 'auctions', label: 'المزادات', icon: Gavel },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+                className={`flex-1 py-3.5 flex items-center justify-center relative transition ${
+                  isActive ? 'text-white font-bold' : 'text-[#71767B]'
+                }`}
+              >
+                <div className="flex flex-row items-center gap-1 whitespace-nowrap px-1">
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {isActive && <span className="text-[12.5px]">{tab.label}</span>}
+                  {isActive && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#FFC500" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 shrink-0">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  )}
+                </div>
+                {isActive && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white rounded-t-full" />}
+              </button>
+            );
+          })}
         </div>
       </header>
 
-      {/* حائط التغريدات */}
+      {/* حائط التغريدات والأقسام */}
       <div key={activeTab} className="animate-[fadeIn_0.3s_ease-in-out]">
-        {displayedTweets.length === 0 ? (
+        {activeTab === 'phones' ? (
+          <div className="pb-24">
+            <PhoneMarketPage onNavigate={(path) => navigate(path)} embedded />
+          </div>
+        ) : activeTab === 'jobs' ? (
+          <div className="pb-24">
+            <JobsPage embedded />
+          </div>
+        ) : activeTab === 'properties' ? (
+          <div className="pb-24">
+            <RealEstatePage embedded />
+          </div>
+        ) : activeTab === 'auctions' ? (
+          <div className="pb-24">
+            <AuctionsPage embedded />
+          </div>
+        ) : displayedTweets.length === 0 ? (
           <div className="text-center py-20 text-zinc-500 text-xs px-4">
             {activeTab === 'forYou' 
           ? 'لا توجد منشورات حتى الآن في المجتمع. كن أول من يغرد!' 
@@ -1915,14 +2005,14 @@ displayedTweets.map(tweet => {
               <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[#2F3336]/50">
                 <button
                   type="button"
-                  onClick={() => setPublishAsBusiness(false)}
+                  onClick={() => switchCommunityIdentity(false)}
                   className={`px-3 py-1 rounded-full text-xs font-bold border transition ${!publishAsBusiness ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-black text-[#71767B] border-[#2F3336]'}`}
                 >
                   {myName || 'الحساب الشخصي'}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPublishAsBusiness(true)}
+                  onClick={() => switchCommunityIdentity(true)}
                   className={`px-3 py-1 rounded-full text-xs font-bold border transition ${publishAsBusiness ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-black text-[#71767B] border-[#2F3336]'}`}
                 >
                   {myBusinessPage.name}
@@ -2355,6 +2445,7 @@ displayedTweets.map(tweet => {
       
 
       {/* زر + (FAB) — يفتح نافذة التغريد المنبثقة */}
+      {!['phones', 'jobs', 'properties', 'auctions'].includes(activeTab) && (
       <button
         onClick={() => setIsPostModalOpen(true)}
         className="yr-fab transition-transform duration-300 fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-black/60 transition"
@@ -2362,7 +2453,7 @@ displayedTweets.map(tweet => {
       >
         <Plus size={24} className="stroke-[2.2] text-black" />
       </button>
-
+      )}
 
       {/* نافذة التغريد المنبثقة بكامل الشاشة (تصميم منصة X) */}
       {isPostModalOpen && (
@@ -2420,7 +2511,7 @@ displayedTweets.map(tweet => {
               <div className="flex items-center gap-2 mb-3">
                 <button
                   type="button"
-                  onClick={() => setPublishAsBusiness(false)}
+                  onClick={() => switchCommunityIdentity(false)}
                   className={`px-3 py-1 rounded-full text-xs font-bold border transition ${
                     !publishAsBusiness
                       ? 'bg-[#FFC500] text-black border-[#FFC500]'
@@ -2431,7 +2522,7 @@ displayedTweets.map(tweet => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPublishAsBusiness(true)}
+                  onClick={() => switchCommunityIdentity(true)}
                   className={`px-3 py-1 rounded-full text-xs font-bold border transition ${
                     publishAsBusiness
                       ? 'bg-[#FFC500] text-black border-[#FFC500]'

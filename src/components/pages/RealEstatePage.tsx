@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Building, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X, ImagePlus, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Building, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X, ImagePlus, Trash2, Search, Maximize2, BedDouble } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdBanner } from '../common/AdBanner';
 import { PropertyCard } from '../properties/PropertyCard';
@@ -46,9 +47,10 @@ const CURRENCIES = [
   { value: 'USD', label: 'دولار أمريكي (USD)' }
 ];
 
-export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
+export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean }> = ({ onBack, embedded = false }) => {
   const [properties, setProperties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [dealTypeFilter, setDealTypeFilter] = useState<'all' | 'بيع' | 'إيجار'>('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [cityFilter, setCityFilter] = useState('all');
@@ -199,13 +201,15 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
     const matchDeal = dealTypeFilter === 'all' || dealType === dealTypeFilter;
     const matchType = typeFilter === 'all' || propType === typeFilter;
     const matchCity = cityFilter === 'all' || (prop.city && prop.city.includes(cityFilter));
+    const q = searchQuery.trim().toLowerCase();
+    const matchSearch = !q || (prop.title || '').toLowerCase().includes(q) || (prop.city || '').toLowerCase().includes(q) || (propType || '').toLowerCase().includes(q);
 
-    return matchDeal && matchType && matchCity;
+    return matchDeal && matchType && matchCity && matchSearch;
   });
 
   return (
-    <div dir="rtl" className="max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Tahoma'] text-white bg-black min-h-screen">
-      <AdBanner placementId="5" className="mb-1" />
+    <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Tahoma'] text-white bg-black min-h-screen"}>
+      {!embedded && <AdBanner placementId="5" className="mb-1" />}
 
       {toastMessage && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#F5C400] text-black px-4 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2">
@@ -214,73 +218,81 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
         </div>
       )}
 
-      {/* الرأس مع زر أضف عقار */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2F3336] pb-3">
-        <div className="flex items-center gap-2.5">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="p-2 rounded-xl bg-[#000000] border border-[#2F3336] text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all"
-            >
-              <ArrowRight size={16} className="rtl:rotate-180" />
-            </button>
-          )}
+      {!embedded && (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2F3336] pb-3">
+          <div className="flex items-center gap-2.5">
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="p-2 rounded-xl bg-[#000000] border border-[#2F3336] text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all"
+              >
+                <ArrowRight size={16} className="rtl:rotate-180" />
+              </button>
+            )}
+            <div className="flex items-center gap-2">
+              <Building className="w-6 h-6 text-[#F5C400]" />
+              <h1 className="text-lg sm:text-xl font-black text-white">سوق العقارات المعتمد</h1>
+            </div>
+          </div>
+
           <div className="flex items-center gap-2">
-            <Building className="w-6 h-6 text-[#F5C400]" />
-            <h1 className="text-lg sm:text-xl font-black text-white">سوق العقارات المعتمد</h1>
+            <button
+              onClick={handleOpenAddModal}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs transition-colors shadow-md"
+            >
+              <Plus size={15} />
+              <span>أضف عقار</span>
+            </button>
+
+            <button
+              onClick={fetchProperties}
+              disabled={loading}
+              className="p-2 bg-[#000000] border border-[#2F3336] text-slate-300 hover:text-white rounded-xl transition-colors"
+              title="تحديث"
+            >
+              <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
+            </button>
           </div>
         </div>
+      )}
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleOpenAddModal}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs transition-colors shadow-md"
-          >
-            <Plus size={15} />
-            <span>أضف عقار</span>
-          </button>
-
-          <button
-            onClick={fetchProperties}
-            disabled={loading}
-            className="p-2 bg-[#000000] border border-[#2F3336] text-slate-300 hover:text-white rounded-xl transition-colors"
-            title="تحديث"
-          >
-            <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
-          </button>
-        </div>
-      </div>
-
-      {/* شريط الفلترة الموحد الأنيق بدون أي ألوان رمادية */}
-      <div className="bg-[#000000] p-3 rounded-2xl border border-[#2F3336] space-y-2.5">
-        <div className="flex items-center gap-1 bg-[#111111] p-1 rounded-xl border border-[#2F3336]">
-          <button
-            onClick={() => setDealTypeFilter('all')}
-            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-              dealTypeFilter === 'all' ? 'bg-[#F5C400] text-black font-black' : 'text-slate-300 hover:text-white'
-            }`}
-          >
-            الكل
-          </button>
-          <button
-            onClick={() => setDealTypeFilter('بيع')}
-            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-              dealTypeFilter === 'بيع' ? 'bg-[#F5C400] text-black font-black' : 'text-slate-300 hover:text-white'
-            }`}
-          >
-            للبيع
-          </button>
-          <button
-            onClick={() => setDealTypeFilter('إيجار')}
-            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-              dealTypeFilter === 'إيجار' ? 'bg-[#F5C400] text-black font-black' : 'text-slate-300 hover:text-white'
-            }`}
-          >
-            للإيجار
-          </button>
+      {/* الرأس الموحد: بحث + إعلان راعي + فلتر */}
+      <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "bg-[#000000] p-3 rounded-2xl border border-[#2F3336] space-y-2.5"}>
+        <div className="flex items-center bg-black border border-[#2F3336] focus-within:border-white rounded-full px-3.5 py-1.5 transition-colors">
+          <Search size={15} className="text-[#71767B] ml-2 shrink-0" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="ابحث عن عقار، حي، أو مدينة..."
+            className="flex-1 bg-transparent text-[13px] text-white placeholder-[#71767B] outline-none caret-white"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')} className="text-[#71767B] hover:text-white">
+              <X size={13} />
+            </button>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {embedded && <AdBanner placementId="5" className="py-0.5" />}
+
+        <div className="flex items-center gap-1.5">
+          {(['all', 'بيع', 'إيجار'] as const).map((dt) => (
+            <button
+              key={dt}
+              onClick={() => setDealTypeFilter(dt)}
+              className={`flex-1 py-1 text-xs font-bold rounded-full border transition-all ${
+                dealTypeFilter === dt
+                  ? 'bg-white text-black border-white'
+                  : 'bg-black text-[#71767B] border-[#2F3336] hover:text-white'
+              }`}
+            >
+              {dt === 'all' ? 'الكل' : dt === 'بيع' ? 'للبيع' : 'للإيجار'}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
           <YRSelect
             value={typeFilter}
             options={PROPERTY_TYPES}
@@ -291,22 +303,70 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
             value={cityFilter}
             options={YEMEN_GOVERNORATES}
             onChange={(val) => setCityFilter(val)}
-            placeholder="كل المدن والمحافظات"
+            placeholder="كل المحافظات"
           />
         </div>
       </div>
 
-      {/* المحتوى */}
+      {/* المحتوى بأسلوب تغريدات X */}
       {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-[#F5C400] border-t-transparent animate-spin" />
-          <span className="text-xs font-bold text-white">جاري تحميل العقارات الحقيقية...</span>
+        <div className="py-20 flex flex-col items-center justify-center text-[#71767B] gap-3">
+          <div className="w-7 h-7 rounded-full border-2 border-[#FFC500] border-t-transparent animate-spin" />
+          <span className="text-xs font-bold text-white">جاري تحميل العقارات...</span>
         </div>
       ) : filteredProperties.length === 0 ? (
-        <div className="py-16 text-center bg-[#000000] rounded-2xl border border-[#2F3336] p-6 space-y-3">
-          <AlertCircle className="w-12 h-12 text-[#F5C400] mx-auto opacity-70" />
-          <h3 className="text-base font-bold text-white">لا توجد عقارات معروضة حالياً</h3>
-          <p className="text-xs text-slate-300">كن أول من يضيف عقاراً بالضغط على زر "أضف عقار" أعلاه.</p>
+        <div className="py-16 text-center text-[#71767B] p-6 space-y-2">
+          <AlertCircle className="w-9 h-9 text-[#FFC500] mx-auto opacity-75" />
+          <h3 className="text-sm font-bold text-white">لا توجد عقارات معروضة حالياً</h3>
+          <p className="text-xs">اضغط على زر + لإضافة عقار جديد.</p>
+        </div>
+      ) : embedded ? (
+        <div className="divide-y divide-[#2F3336]/40">
+          {filteredProperties.map((prop) => {
+            const mainImage = prop.images && prop.images.length > 0 ? prop.images[0] : null;
+            const dealType = prop.deal_type || prop.dealType || 'متاح';
+            const propType = prop.property_type || prop.propertyType || 'عقار';
+            return (
+              <Link
+                key={prop.id}
+                to={`/properties/${prop.id}`}
+                className="p-3 bg-black hover:bg-white/[0.03] transition flex gap-3"
+              >
+                <div className="w-11 h-11 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 text-[#FFC500]">
+                  <Building size={18} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap text-[13px]">
+                    <span className="font-bold text-white">{propType} ({dealType})</span>
+                    <ShieldCheck size={14} className="text-[#FFC500] shrink-0" />
+                    <span className="text-[#71767B] text-[12px]">@{prop.city || 'اليمن'}</span>
+                  </div>
+                  <div className="mt-1 text-[14.5px] font-bold text-[#E7E9EA] leading-snug">
+                    {prop.title}
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-3 text-[12px] text-[#71767B]">
+                    {(prop.area_m2 || prop.area) ? (
+                      <span className="flex items-center gap-1"><Maximize2 size={12} /> {prop.area_m2 || prop.area} م²</span>
+                    ) : null}
+                    {prop.rooms ? (
+                      <span className="flex items-center gap-1"><BedDouble size={12} /> {prop.rooms} غرف</span>
+                    ) : null}
+                    <span className="text-[#FFC500] font-bold">
+                      {prop.price ? `${Number(prop.price).toLocaleString()} ${prop.currency || 'YER'}` : 'عند المعاينة'}
+                    </span>
+                  </div>
+                  {mainImage && (
+                    <div className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336]/50 max-h-80 bg-zinc-950">
+                      <img src={mainImage} alt={prop.title} className="w-full max-h-80 object-cover" loading="lazy" />
+                    </div>
+                  )}
+                  <div className="mt-2 flex items-center justify-end text-[12px] text-white/80 font-bold">
+                    <span>عرض التفاصيل ←</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -314,6 +374,16 @@ export const RealEstatePage: React.FC<{ onBack?: () => void }> = ({ onBack }) =>
             <PropertyCard key={prop.id} property={prop} />
           ))}
         </div>
+      )}
+
+      {embedded && !isAddModalOpen && (
+        <button
+          onClick={handleOpenAddModal}
+          className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-black flex items-center justify-center shadow-lg shadow-black/60 transition"
+          title="أضف عقار"
+        >
+          <Plus size={24} className="stroke-[2.2]" />
+        </button>
       )}
 
       {/* نافذة أضف عقار */}
