@@ -2963,11 +2963,23 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
               onClick={async () => {
                 if (!sessionUser?.id || !quoteText.trim()) return;
                 try {
-                  const { error } = await supabase.from('post_reposts').upsert({
-                    post_id: quoteOriginal.id,
-                    user_id: sessionUser.id,
-                    quote_text: quoteText.trim()
-                  }, { onConflict: 'user_id,post_id' });
+                  const cleanPostId = (quoteOriginal.originalId || quoteOriginal.id || '').toString().replace(/^repost-/, '');
+                  const { data: existingQuote } = await supabase
+                    .from('post_reposts')
+                    .select('id')
+                    .eq('post_id', cleanPostId)
+                    .eq('user_id', sessionUser.id)
+                    .is('business_id', null)
+                    .maybeSingle();
+
+                  const { error } = existingQuote
+                    ? await supabase.from('post_reposts').update({ quote_text: quoteText.trim() }).eq('id', existingQuote.id)
+                    : await supabase.from('post_reposts').insert({
+                        post_id: cleanPostId,
+                        user_id: sessionUser.id,
+                        business_id: null,
+                        quote_text: quoteText.trim()
+                      });
                   
                   if (error) {
                     if (error.message?.includes('uuid')) {
@@ -3372,6 +3384,13 @@ ${url}` : url;
           </div>
         </div>
       )}
+      {toastMessage && createPortal(
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[99999] bg-[#16181C] border border-[#2F3336] text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl max-w-[90vw] text-center" dir="rtl">
+          {toastMessage}
+        </div>,
+        document.body
+      )}
+
       {cropImage && cropTarget && (
         <ImageCropper
           image={cropImage}

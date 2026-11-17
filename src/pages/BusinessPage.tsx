@@ -330,9 +330,8 @@ export const BusinessPage: React.FC = () => {
         const { data: { session } } = await supabase.auth.getSession();
         const uid = session?.user?.id || '';
         const targetBizId = routeBusinessId || navState?.id;
-        const biz = targetBizId
-          ? await getBusinessPageById(targetBizId)
-          : (uid ? await getMyBusinessPage(uid) : null);
+        let biz = targetBizId ? await getBusinessPageById(targetBizId) : null;
+        if (!biz && uid) biz = await getMyBusinessPage(uid);
 
         if (cancelled) return;
         if (biz) {
@@ -446,7 +445,7 @@ export const BusinessPage: React.FC = () => {
   // مزامنة التغريدات في الذاكرة الفورية تلقائياً للفتح الفوري مثل X
   useEffect(() => {
     if (userPosts && userPosts.length > 0) {
-      try { localStorage.setItem("yr_my_account_posts", JSON.stringify(userPosts)); } catch(_) {}
+      // keep personal account cache untouched
     }
   }, [userPosts]);
   
@@ -914,21 +913,27 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       const nextUsername = editUsername.trim().replace(/^@+/, '') || username;
       const nextBio = editBio.trim();
       const nextLocation = editLocation.trim();
-      const activeBizId = businessPage?.id || routeBusinessId;
+      const activeBizId = businessPage?.id || (routeBusinessId && !routeBusinessId.startsWith('biz-') ? routeBusinessId : '');
       const ownerUid = sessionUser?.id || profileId;
 
-      if (activeBizId && ownerUid) {
-        const res = await updateBusinessPage(activeBizId, ownerUid, {
-          name: nextName,
-          username: nextUsername,
-          phone: nextPhone,
-          description: nextBio,
-          city: nextLocation,
-        });
-        if (!res.ok) {
-          showToast('تعذر الحفظ: ' + (res.error || 'خطأ'));
-          return;
-        }
+      if (!activeBizId || !ownerUid) {
+        showToast('لم يتم ربط صفحة المنشأة في القاعدة بعد — تأكد من تشغيل SQL وإنشاء الصفحة');
+        return;
+      }
+
+      const res = await updateBusinessPage(activeBizId, ownerUid, {
+        name: nextName,
+        username: nextUsername,
+        phone: nextPhone,
+        description: nextBio,
+        city: nextLocation,
+      });
+      if (!res.ok) {
+        showToast('تعذر الحفظ: ' + (res.error || 'خطأ'));
+        return;
+      }
+      if (res.page) {
+        setBusinessPage(res.page);
       }
 
       setName(nextName);
@@ -1143,9 +1148,12 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
     try {
       let inserted: any = null;
       if (quoteOriginal) {
+        const activeBizId = businessPage?.id || (routeBusinessId && !routeBusinessId.startsWith('biz-') ? routeBusinessId : null);
+        const actorUid = sessionUser?.id || profileId;
         const { data: repost, error: rErr } = await supabase.from('post_reposts').insert({
             post_id: quoteOriginal.id,
-            user_id: profileId,
+            user_id: actorUid,
+            business_id: activeBizId,
             quote_text: newPostText.trim()
         }).select().single();
         if (rErr) throw rErr;
@@ -1266,15 +1274,49 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
         ? targetPost.original.id
         : targetPost.id;
 
+      const replyText = newCommentText.trim();
+      const activeBizId = businessPage?.id || (routeBusinessId && !routeBusinessId.startsWith('biz-') ? routeBusinessId : null);
+
       const { error } = await supabase
         .from('post_comments')
         .insert({
           post_id: postIdToUse,
           user_id: sessionUser.id,
-          content: newCommentText.trim(),
+          content: replyText,
         });
 
       if (error) throw error;
+
+      const { data: replyPostRow } = await supabase
+        .from('posts')
+        .insert({
+          user_id: sessionUser.id,
+          business_id: activeBizId,
+          content: replyText,
+          parent_id: postIdToUse,
+        })
+        .select()
+        .single();
+
+      if (replyPostRow) {
+        const newReplyPost: Post = {
+          id: replyPostRow.id,
+          parent_id: postIdToUse,
+          authorId: sessionUser.id,
+          authorName: name,
+          authorUsername: username,
+          authorAvatar: avatarUrl,
+          authorBadge: verificationType,
+          text: replyText,
+          createdAt: replyPostRow.created_at || new Date().toISOString(),
+          likes: 0,
+          likedBy: [],
+          replies: 0,
+          reposts: 0,
+          views: 1,
+        };
+        setUserPosts((prev) => [newReplyPost, ...prev]);
+      }
 
       setNewCommentText('');
       await loadComments(postIdToUse);
@@ -1323,37 +1365,38 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       showToast('يرجى تسجيل الدخول');
       return;
     }
-    
+    const activeBizId = businessPage?.id || (routeBusinessId && !routeBusinessId.startsWith('biz-') ? routeBusinessId : null);
+    const cleanId = postId.replace(/^repost-/, '');
+
     try {
-      // تحقق من وجود إعادة تغريد
-      const { data: existing } = await supabase
+      let checkQ = supabase
         .from('post_reposts')
         .select('id')
-        .eq('post_id', postId)
-        .eq('user_id', sessionUser.id)
-        .maybeSingle();
-      
+        .eq('post_id', cleanId)
+        .eq('user_id', sessionUser.id);
+      checkQ = activeBizId ? checkQ.eq('business_id', activeBizId) : checkQ.is('business_id', null);
+      const { data: existing } = await checkQ.maybeSingle();
+
       if (existing) {
-        // إلغاء
-        await supabase
-          .from('post_reposts')
-          .delete()
-          .eq('post_id', postId)
-          .eq('user_id', sessionUser.id);
-        
-        setUserPosts(prev => prev.map(p => 
-          p.id === postId ? { ...p, reposts: Math.max(0, (p.reposts || 0) - 1) } : p
-        ));
+        await supabase.from('post_reposts').delete().eq('id', existing.id);
+        setUserPosts((prev) =>
+          prev
+            .filter((p) => p.id !== `repost-${existing.id}`)
+            .map((p) => p.id === cleanId ? { ...p, reposts: Math.max(0, (p.reposts || 0) - 1), isReposted: false } : p)
+        );
         showToast('تم إلغاء إعادة النشر');
       } else {
-        // إعادة جديدة
-        await supabase
+        const { data: ins, error: insErr } = await supabase
           .from('post_reposts')
-          .insert({ post_id: postId, user_id: sessionUser.id });
-        
-        setUserPosts(prev => prev.map(p => 
-          p.id === postId ? { ...p, reposts: (p.reposts || 0) + 1 } : p
-        ));
+          .insert({ post_id: cleanId, user_id: sessionUser.id, business_id: activeBizId })
+          .select()
+          .single();
+        if (insErr) throw insErr;
+
+        if (activeBizId) {
+          const fresh = await getBusinessPosts(activeBizId, sessionUser.id);
+          setUserPosts(fresh);
+        }
         showToast('تمت إعادة النشر');
       }
     } catch (e: any) {
@@ -2411,7 +2454,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
             {/* الحقول المسطحة (نمط X) */}
             <div className="px-4 pt-6 space-y-4">
               {/* الاسم */}
-              <div className="relative border-b border-[#2F3336] focus-within:border-[#FFC500] transition py-1">
+              <div className="relative border-b border-[#2F3336] focus-within:border-white transition py-1">
                 <label className="block text-[#71767B] text-xs font-bold mb-1">الاسم</label>
                 <input
                   type="text"
@@ -2427,7 +2470,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
               </div>
 
               {/* النبذة */}
-              <div className="relative border-b border-[#2F3336] focus-within:border-[#FFC500] transition py-1">
+              <div className="relative border-b border-[#2F3336] focus-within:border-white transition py-1">
                 <label className="block text-[#71767B] text-xs font-bold mb-1">النبذة التعريفية</label>
                 <textarea
                   value={editBio}
@@ -2442,7 +2485,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
               </div>
 
               {/* الموقع */}
-              <div className="relative border-b border-[#2F3336] focus-within:border-[#FFC500] transition py-1">
+              <div className="relative border-b border-[#2F3336] focus-within:border-white transition py-1">
                 <label className="block text-[#71767B] text-xs font-bold mb-1">الموقع الجغرافي</label>
                 <input
                   type="text"
@@ -2454,7 +2497,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
               </div>
 
               {/* المعرّف */}
-              <div className="relative border-b border-[#2F3336] focus-within:border-[#FFC500] transition py-1">
+              <div className="relative border-b border-[#2F3336] focus-within:border-white transition py-1">
                 <label className="block text-[#71767B] text-xs font-bold mb-1">المعرّف (@Username)</label>
                 <input
                   type="text"
@@ -2467,7 +2510,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
               </div>
 
               {/* الهاتف */}
-              <div className="relative border-b border-[#2F3336] focus-within:border-[#FFC500] transition py-1">
+              <div className="relative border-b border-[#2F3336] focus-within:border-white transition py-1">
                 <label className="block text-[#71767B] text-xs font-bold mb-1">رقم الهاتف</label>
                 <input
                   type="tel"
@@ -3011,11 +3054,17 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
               onClick={async () => {
                 if (!sessionUser?.id || !quoteText.trim()) return;
                 try {
-                  const { error } = await supabase.from('post_reposts').upsert({
+                  const activeBizId = businessPage?.id || (routeBusinessId && !routeBusinessId.startsWith('biz-') ? routeBusinessId : null);
+                  const { error } = await supabase.from('post_reposts').insert({
                     post_id: quoteOriginal.id,
                     user_id: sessionUser.id,
+                    business_id: activeBizId,
                     quote_text: quoteText.trim()
-                  }, { onConflict: 'user_id,post_id' });
+                  });
+                  if (!error && activeBizId) {
+                    const fresh = await getBusinessPosts(activeBizId, sessionUser.id);
+                    setUserPosts(fresh);
+                  }
                   
                   if (error) {
                     if (error.message?.includes('uuid')) {
@@ -3420,6 +3469,13 @@ ${url}` : url;
           </div>
         </div>
       )}
+      {toastMessage && createPortal(
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[99999] bg-[#16181C] border border-[#2F3336] text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl max-w-[90vw] text-center" dir="rtl">
+          {toastMessage}
+        </div>,
+        document.body
+      )}
+
       {cropImage && cropTarget && (
         <ImageCropper
           image={cropImage}

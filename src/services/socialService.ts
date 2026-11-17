@@ -259,11 +259,11 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
   // 2) جلب reposts
   let repostsQuery = supabase
     .from('post_reposts')
-    .select('id, post_id, user_id, quote_text, created_at')
+    .select('id, post_id, user_id, business_id, quote_text, created_at')
     .order('created_at', { ascending: false });
   
   if (userId) {
-    repostsQuery = repostsQuery.eq('user_id', userId).limit(30);
+    repostsQuery = repostsQuery.eq('user_id', userId).is('business_id', null).limit(30);
   } else {
     repostsQuery = repostsQuery.limit(50);
   }

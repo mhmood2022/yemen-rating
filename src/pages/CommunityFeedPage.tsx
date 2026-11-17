@@ -1171,12 +1171,14 @@ export const CommunityFeedPage: React.FC = () => {
 
     try {
       // 1) التحقق من وجود إعادة نشر سابقة
-      const { data: existing, error: checkErr } = await supabase
+      const useBizRepost = Boolean(publishAsBusiness && myBusinessPage);
+      let checkQ = supabase
         .from('post_reposts')
         .select('id')
         .eq('post_id', id)
-        .eq('user_id', currentUserId)
-        .maybeSingle();
+        .eq('user_id', currentUserId);
+      checkQ = useBizRepost && myBusinessPage ? checkQ.eq('business_id', myBusinessPage.id) : checkQ.is('business_id', null);
+      const { data: existing, error: checkErr } = await checkQ.maybeSingle();
 
       if (checkErr) {
         console.error('Check repost error:', checkErr);
@@ -1198,13 +1200,11 @@ export const CommunityFeedPage: React.FC = () => {
         // إعادة نشر جديدة
         const { error: insErr } = await supabase
           .from('post_reposts')
-          .upsert({
+          .insert({
             post_id: id,
             user_id: currentUserId,
+            business_id: useBizRepost && myBusinessPage ? myBusinessPage.id : null,
             quote_text: null
-          }, {
-            onConflict: 'user_id,post_id',
-            ignoreDuplicates: true
           });
         
         if (insErr) throw insErr;
@@ -1372,6 +1372,7 @@ const handleAddComment = (e?: React.FormEvent) => {
       // حفظ في posts مع parent_id
       supabase.from("posts").insert({
         user_id: currentUserId,
+        business_id: publishAsBusiness && myBusinessPage ? myBusinessPage.id : null,
         content: textToSend,
         parent_id: targetPost.id,
         image_url: commentImage || null
@@ -1910,6 +1911,24 @@ displayedTweets.map(tweet => {
       {repostMenu && (
         <div className="fixed inset-0 z-[100] bg-black/50 flex flex-col justify-end sm:justify-center items-center" onClick={() => setRepostMenu(null)}>
           <div className="w-full sm:w-[350px] bg-black sm:rounded-2xl rounded-t-2xl overflow-hidden pb-8 sm:pb-2 shadow-2xl" onClick={e => e.stopPropagation()} dir="rtl">
+            {myBusinessPage && (
+              <div className="flex items-center gap-2 px-5 pt-4 pb-2 border-b border-[#2F3336]/50">
+                <button
+                  type="button"
+                  onClick={() => setPublishAsBusiness(false)}
+                  className={`px-3 py-1 rounded-full text-xs font-bold border transition ${!publishAsBusiness ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-black text-[#71767B] border-[#2F3336]'}`}
+                >
+                  {myName || 'الحساب الشخصي'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPublishAsBusiness(true)}
+                  className={`px-3 py-1 rounded-full text-xs font-bold border transition ${publishAsBusiness ? 'bg-[#FFC500] text-black border-[#FFC500]' : 'bg-black text-[#71767B] border-[#2F3336]'}`}
+                >
+                  {myBusinessPage.name}
+                </button>
+              </div>
+            )}
             
             <button onClick={() => { handleRepost(repostMenu.id); setRepostMenu(null); }} className="w-full flex items-center justify-start gap-4 px-5 py-4 hover:bg-[#181818] active:bg-[#181818] transition-colors cursor-pointer">
               <Repeat2 size={22} className={repostMenu.isReposted ? "text-emerald-400" : "text-white"} />

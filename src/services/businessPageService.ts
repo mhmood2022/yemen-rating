@@ -173,52 +173,100 @@ export async function updateBusinessPage(
     avatarUrl?: string;
     coverUrl?: string;
   }
-): Promise<{ ok: boolean; error?: string }> {
-  const payload: Record<string, any> = { updated_at: new Date().toISOString() };
+): Promise<{ ok: boolean; page?: BusinessPageRecord; error?: string }> {
+  if (!businessId || !ownerId) {
+    return { ok: false, error: 'معرّف المنشأة أو المالك غير متوفر' };
+  }
+  const payload: Record<string, any> = {};
   if (updates.name !== undefined) payload.name = updates.name;
-  if (updates.username !== undefined) payload.slug = updates.username.replace(/^@+/, '').trim();
+  if (updates.username !== undefined) payload.slug = updates.username.replace(/^@+/, '').trim().toLowerCase();
   if (updates.city !== undefined) payload.city = updates.city;
   if (updates.phone !== undefined) payload.phone = updates.phone;
   if (updates.description !== undefined) payload.description = updates.description;
   if (updates.avatarUrl !== undefined) payload.logo_url = updates.avatarUrl;
   if (updates.coverUrl !== undefined) payload.cover_url = updates.coverUrl;
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('businesses')
     .update(payload)
     .eq('id', businessId)
-    .eq('owner_id', ownerId);
+    .eq('owner_id', ownerId)
+    .select()
+    .maybeSingle();
 
-  return { ok: !error, error: error?.message };
+  if (error) {
+    if (error.code === '23505') return { ok: false, error: 'معرّف المنشأة مستخدم مسبقاً' };
+    return { ok: false, error: error.message };
+  }
+  if (!data) return { ok: false, error: 'لم يتم تحديث أي صف في businesses' };
+  return { ok: true, page: mapBusinessToPage(data) };
 }
 
 export async function getBusinessPosts(businessId: string, currentUserId?: string): Promise<any[]> {
   if (!businessId) return [];
   const biz = await getBusinessPageById(businessId);
 
-  const { data: posts, error } = await supabase
-    .from('posts')
-    .select('*')
-    .eq('business_id', businessId)
-    .order('created_at', { ascending: false })
-    .limit(50);
+  const [{ data: posts, error }, { data: reposts }] = await Promise.all([
+    supabase
+      .from('posts')
+      .select('*')
+      .eq('business_id', businessId)
+      .order('created_at', { ascending: false })
+      .limit(50),
+    supabase
+      .from('post_reposts')
+      .select('id, post_id, user_id, business_id, quote_text, created_at')
+      .eq('business_id', businessId)
+      .order('created_at', { ascending: false })
+      .limit(50),
+  ]);
 
-  if (error || !posts) return [];
+  if (error) return [];
+
+  let originalPosts: any[] = [];
+  if (reposts && reposts.length > 0) {
+    const origIds = [...new Set(reposts.map((r: any) => r.post_id).filter(Boolean))];
+    if (origIds.length > 0) {
+      const { data: originals } = await supabase
+        .from('posts')
+        .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, views_count, created_at')
+        .in('id', origIds);
+      originalPosts = originals || [];
+    }
+  }
+
+  const origUserIds = [...new Set(originalPosts.map((p: any) => p.user_id).filter(Boolean))];
+  const origBizIds = [...new Set(originalPosts.map((p: any) => p.business_id).filter(Boolean))];
+
+  const [origProfilesRes, origBizRes] = await Promise.all([
+    origUserIds.length > 0
+      ? supabase.from('profiles').select('id, full_name, username, avatar_url, verification_type, is_verified').in('id', origUserIds)
+      : Promise.resolve({ data: [] as any[] }),
+    origBizIds.length > 0
+      ? supabase.from('businesses').select('id, name, slug, logo_url, is_verified, badge_type').in('id', origBizIds)
+      : Promise.resolve({ data: [] as any[] }),
+  ]);
+
+  const origProfileMap = new Map((origProfilesRes.data || []).map((p: any) => [p.id, p]));
+  const origBizMap = new Map((origBizRes.data || []).map((b: any) => [b.id, b]));
+
+  const allPostIds = Array.from(new Set([
+    ...(posts || []).map((p: any) => p.id),
+    ...originalPosts.map((p: any) => p.id),
+  ]));
 
   let likedSet = new Set<string>();
   let repostedSet = new Set<string>();
-  const postIds = posts.map((p: any) => p.id);
-
-  if (currentUserId && postIds.length > 0) {
-    const [{ data: likes }, { data: reposts }] = await Promise.all([
-      supabase.from('post_likes').select('post_id').eq('user_id', currentUserId).in('post_id', postIds),
-      supabase.from('post_reposts').select('post_id').eq('user_id', currentUserId).in('post_id', postIds),
+  if (currentUserId && allPostIds.length > 0) {
+    const [{ data: likes }, { data: myReposts }] = await Promise.all([
+      supabase.from('post_likes').select('post_id').eq('user_id', currentUserId).in('post_id', allPostIds),
+      supabase.from('post_reposts').select('post_id').eq('user_id', currentUserId).in('post_id', allPostIds),
     ]);
     likedSet = new Set((likes || []).map((l: any) => l.post_id));
-    repostedSet = new Set((reposts || []).map((r: any) => r.post_id));
+    repostedSet = new Set((myReposts || []).map((r: any) => r.post_id));
   }
 
-  return posts.map((p: any) => ({
+  const directPosts = (posts || []).map((p: any) => ({
     id: p.id,
     parent_id: p.parent_id,
     user_id: p.user_id,
@@ -248,6 +296,100 @@ export async function getBusinessPosts(businessId: string, currentUserId?: strin
     replies: p.comments_count || 0,
     views: p.views_count || 1,
   }));
+
+  const repostItems = (reposts || []).map((r: any) => {
+    const orig = originalPosts.find((p: any) => p.id === r.post_id);
+    const origBiz = orig?.business_id ? origBizMap.get(orig.business_id) : null;
+    const origProf = orig ? origProfileMap.get(orig.user_id) : null;
+    const origName = origBiz ? origBiz.name : (origProf?.full_name || 'مستخدم');
+    const origUser = origBiz ? (origBiz.slug || 'business') : (origProf?.username || 'user');
+    const origAvatar = origBiz ? (origBiz.logo_url || '') : (origProf?.avatar_url || '');
+    const origBadge = origBiz
+      ? (origBiz.badge_type && origBiz.badge_type !== 'none' ? origBiz.badge_type : (origBiz.is_verified ? 'gold' : 'none'))
+      : (origProf?.verification_type || (origProf?.is_verified ? 'blue' : 'none'));
+
+    if (!r.quote_text) {
+      if (!orig) return null;
+      return {
+        id: `repost-${r.id}`,
+        originalId: orig.id,
+        user_id: orig.user_id,
+        authorId: orig.user_id,
+        businessId: orig.business_id || undefined,
+        isBusinessPost: Boolean(orig.business_id && origBiz),
+        authorName: origName,
+        authorUsername: origUser,
+        authorAvatar: origAvatar,
+        authorBadge: origBadge,
+        badgeType: origBadge,
+        reposterId: r.user_id,
+        reposterName: biz?.name || 'منشأة',
+        reposterUsername: biz?.username || 'business',
+        text: orig.content || '',
+        content: orig.content || '',
+        image: orig.image_url || undefined,
+        video: orig.video_url || undefined,
+        video_url: orig.video_url || undefined,
+        createdAt: orig.created_at,
+        repostedAt: r.created_at,
+        createdAtDisplay: new Date(orig.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
+        likes: orig.likes_count || 0,
+        isLiked: likedSet.has(orig.id),
+        likedBy: likedSet.has(orig.id) && currentUserId ? [currentUserId] : [],
+        reposts: orig.reposts_count || 0,
+        isReposted: true,
+        repostedBy: currentUserId ? [currentUserId] : [],
+        replies: orig.comments_count || 0,
+        views: orig.views_count || 1,
+        isRepost: true,
+        quote_text: undefined,
+        original: null,
+      };
+    }
+
+    return {
+      id: `repost-${r.id}`,
+      originalId: orig?.id || r.post_id,
+      user_id: r.user_id,
+      authorId: r.user_id,
+      businessId: businessId,
+      isBusinessPost: true,
+      authorName: biz?.name || 'منشأة',
+      authorUsername: biz?.username || 'business',
+      authorAvatar: biz?.avatarUrl || '',
+      authorBadge: biz?.verificationType || 'none',
+      badgeType: biz?.verificationType || 'none',
+      reposterName: biz?.name || 'منشأة',
+      reposterUsername: biz?.username || 'business',
+      text: r.quote_text,
+      content: r.quote_text,
+      createdAt: r.created_at,
+      repostedAt: r.created_at,
+      createdAtDisplay: new Date(r.created_at).toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' }),
+      likes: 0,
+      reposts: 0,
+      replies: 0,
+      views: 1,
+      isRepost: true,
+      quote_text: r.quote_text,
+      original: {
+        id: orig?.id || 'deleted',
+        authorName: origName,
+        authorUsername: origUser,
+        authorAvatar: origAvatar,
+        authorBadge: origBadge,
+        text: orig?.content || 'التغريدة الأصلية غير متاحة',
+        image: orig?.image_url || null,
+        createdAt: orig?.created_at ? new Date(orig.created_at).toLocaleDateString('ar-YE') : '',
+      },
+    };
+  }).filter(Boolean);
+
+  return [...directPosts, ...repostItems].sort((a: any, b: any) => {
+    const da = new Date(a.repostedAt || a.createdAt || 0).getTime();
+    const db = new Date(b.repostedAt || b.createdAt || 0).getTime();
+    return db - da;
+  });
 }
 
 export async function getBusinessReviews(businessId: string): Promise<BusinessReviewRecord[]> {
