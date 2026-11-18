@@ -388,18 +388,17 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
 
       {/* نافذة أضف عقار */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4">
-          <div className="bg-[#000000] border border-[#2F3336] rounded-2xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto font-['Tahoma'] text-white shadow-2xl">
-            <div className="flex justify-between items-center border-b border-[#2F3336] pb-2">
-              <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
-                <Plus size={16} className="text-[#F5C400]" /> إضافة عقار جديد
-              </h3>
-              <button onClick={() => setIsAddModalOpen(false)} className="p-1 rounded-lg bg-[#111111] text-slate-400 hover:text-white">
-                <X size={16} />
+        <div className="fixed inset-0 z-[150] bg-black sm:bg-black/80 flex items-center justify-center sm:p-4" onClick={() => setIsAddModalOpen(false)}>
+          <div className="bg-black sm:border sm:border-[#2F3336] sm:rounded-2xl w-full sm:max-w-md h-full sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden font-['Tahoma',sans-serif] text-white" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center px-4 py-3 border-b border-[#2F3336]/60 shrink-0">
+              <button type="button" onClick={() => setIsAddModalOpen(false)} className="p-1.5 rounded-full hover:bg-white/10 text-white transition">
+                <X size={18} />
               </button>
+              <span className="text-[13px] font-bold text-[#71767B]">إضافة عقار جديد</span>
+              <span className="w-7" />
             </div>
 
-            <form onSubmit={handleAddProperty} className="space-y-3 text-xs">
+            <form onSubmit={handleAddProperty} className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
               <div>
                 <label className="text-[11px] text-[#F5C400] block mb-1 font-bold">نوع المعاملة *</label>
                 <div className="grid grid-cols-2 gap-2">
@@ -407,7 +406,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
                     type="button"
                     onClick={() => setNewDealType('بيع')}
                     className={`py-2 rounded-xl font-bold border transition-all ${
-                      newDealType === 'بيع' ? 'bg-[#F5C400] text-black border-[#F5C400]' : 'bg-[#111111] text-slate-300 border-[#2F3336]'
+                      newDealType === 'بيع' ? 'bg-white text-black border-white' : 'bg-black text-slate-300 border-[#2F3336]'
                     }`}
                   >
                     للبيع
@@ -416,7 +415,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
                     type="button"
                     onClick={() => setNewDealType('إيجار')}
                     className={`py-2 rounded-xl font-bold border transition-all ${
-                      newDealType === 'إيجار' ? 'bg-[#F5C400] text-black border-[#F5C400]' : 'bg-[#111111] text-slate-300 border-[#2F3336]'
+                      newDealType === 'إيجار' ? 'bg-white text-black border-white' : 'bg-black text-slate-300 border-[#2F3336]'
                     }`}
                   >
                     للإيجار
@@ -432,7 +431,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="مثال: شقة سوبر ديلوكس في حي حدة"
-                  className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
+                  className="w-full bg-black border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-white caret-white"
                 />
               </div>
 
@@ -461,7 +460,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadedImages.length >= 6}
-                  className="w-full py-2.5 border border-dashed border-[#2F3336] hover:border-[#F5C400] rounded-xl bg-[#111111] text-white flex items-center justify-center gap-2 text-xs font-bold transition-all disabled:opacity-50"
+                  className="w-full py-2.5 border border-dashed border-[#2F3336] hover:border-white rounded-xl bg-black text-white flex items-center justify-center gap-2 text-xs font-bold transition-all disabled:opacity-50"
                 >
                   <ImagePlus size={16} className="text-[#F5C400]" />
                   <span>{uploadedImages.length >= 6 ? 'تم بلوغ الحد الأقصى (6 صور)' : 'اضغط لاختيار الصور من استوديو الجوال'}</span>
@@ -470,7 +469,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
                 {uploadedImages.length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mt-2">
                     {uploadedImages.map((img, idx) => (
-                      <div key={idx} className="relative h-20 rounded-lg overflow-hidden border border-[#2F3336] bg-[#111111]">
+                      <div key={idx} className="relative h-20 rounded-lg overflow-hidden border border-[#2F3336] bg-black">
                         <img src={img} alt={`preview-${idx}`} className="w-full h-full object-cover" />
                         <button
                           type="button"
@@ -512,7 +511,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
                     type="number"
                     value={newPrice}
                     onChange={(e) => setNewPrice(e.target.value)}
-                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
+                    className="w-full bg-black border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-white caret-white"
                   />
                 </div>
                 <div>
@@ -532,7 +531,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
                     type="number"
                     value={newArea}
                     onChange={(e) => setNewArea(e.target.value)}
-                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
+                    className="w-full bg-black border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-white caret-white"
                   />
                 </div>
                 <div>
@@ -541,7 +540,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
                     type="number"
                     value={newRooms}
                     onChange={(e) => setNewRooms(e.target.value)}
-                    className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
+                    className="w-full bg-black border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-white caret-white"
                   />
                 </div>
               </div>
@@ -557,7 +556,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
                   value={ownerPhone}
                   onChange={handlePhoneChange}
                   placeholder="77XXXXXXX"
-                  className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white text-left font-mono focus:outline-none focus:border-[#F5C400]"
+                  className="w-full bg-black border border-[#2F3336] rounded-xl p-2.5 text-white text-left font-mono focus:outline-none focus:border-white caret-white"
                 />
                 <span className="text-[10px] text-slate-300 block mt-0.5">
                   تم إدخال: {ownerPhone.length} من 9 أرقام
@@ -571,7 +570,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
                   value={newLocationDetails}
                   onChange={(e) => setNewLocationDetails(e.target.value)}
                   placeholder="مثال: خلف مجمع حدة السكني"
-                  className="w-full bg-[#111111] border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-[#F5C400]"
+                  className="w-full bg-black border border-[#2F3336] rounded-xl p-2.5 text-white focus:outline-none focus:border-white caret-white"
                 />
               </div>
 
@@ -599,14 +598,14 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#111111] border border-[#2F3336] text-white text-xs font-bold"
+                  className="px-4 py-2 rounded-xl bg-black border border-[#2F3336] text-white text-xs font-bold"
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
                   disabled={!agreedToCommission || ownerPhone.length !== 9 || submitting}
-                  className="px-5 py-2 rounded-xl bg-[#F5C400] disabled:opacity-40 text-black font-black text-xs transition-colors shadow-md"
+                  className="px-5 py-2 rounded-xl bg-[#FFC500] disabled:opacity-40 text-black font-bold text-xs rounded-full transition-colors shadow-md"
                 >
                   {submitting ? 'جاري الإرسال...' : 'إرسال العقار للاعتماد'}
                 </button>

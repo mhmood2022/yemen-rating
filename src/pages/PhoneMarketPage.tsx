@@ -317,46 +317,84 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
           عرض تفاصيل الهاتف المحدد
           ============================================================ */}
       {selectedPhone ? (
-        <div className="space-y-3">
-          <div className="bg-[#0F0F12] rounded-2xl border border-[#222226] overflow-hidden shadow-xl">
-            
-            {/* معرض الصور باللمس (1-6 صور) */}
-            <div 
-              className="relative h-56 sm:h-72 w-full bg-[#161619] overflow-hidden cursor-pointer select-none"
+        <div className="bg-black min-h-screen pb-24 divide-y divide-[#2F3336]/40">
+          {/* منشور التفاصيل الرئيسي بنكهة X */}
+          <div className="p-3.5 space-y-3">
+            {/* صف البائع */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-11 h-11 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 text-white font-bold text-sm">
+                  {selectedPhone.sellerName?.[0] || <Smartphone size={18} />}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-white text-[14.5px] truncate">{selectedPhone.sellerName}</span>
+                    {selectedPhone.isVerified && <ShieldCheck size={14} className="text-[#FFC500] shrink-0" />}
+                  </div>
+                  <div className="text-[12px] text-[#71767B] truncate">
+                    @{selectedPhone.city} · {selectedPhone.brand} · {selectedPhone.createdAt}
+                  </div>
+                </div>
+              </div>
+              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
+                selectedPhone.condition === 'جديد كرت'
+                  ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/10'
+                  : 'border-[#2F3336] text-[#E7E9EA] bg-black'
+              }`}>
+                {selectedPhone.condition}
+              </span>
+            </div>
+
+            {/* العنوان والسعر */}
+            <div className="space-y-1">
+              <h2 className="text-[16px] font-bold text-white leading-snug">{selectedPhone.name}</h2>
+              <div className="text-[15px] font-bold text-[#FFC500] font-mono">
+                {selectedPhone.price.toLocaleString()} {selectedPhone.currency}
+              </div>
+            </div>
+
+            {/* المواصفات كسطر أنيق */}
+            <div className="flex flex-wrap items-center gap-2 text-[12px] text-[#71767B]">
+              <span className="px-2.5 py-1 rounded-full border border-[#2F3336] text-[#E7E9EA]">السعة: {selectedPhone.storage}</span>
+              <span className="px-2.5 py-1 rounded-full border border-[#2F3336] text-[#E7E9EA]">الذاكرة: {selectedPhone.ram || '—'}</span>
+              <span className="px-2.5 py-1 rounded-full border border-[#2F3336] text-[#E7E9EA]">اللون: {selectedPhone.color || 'أصلي'}</span>
+            </div>
+
+            {/* الوصف */}
+            {selectedPhone.description && (
+              <p className="text-[14px] text-[#E7E9EA] leading-relaxed whitespace-pre-wrap">
+                {selectedPhone.description}
+              </p>
+            )}
+
+            {/* الصورة الرئيسية بنمط X */}
+            <div
+              className="relative rounded-2xl overflow-hidden border border-[#2F3336]/60 bg-black cursor-pointer select-none"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
               onClick={() => setIsLightboxOpen(true)}
             >
-              <img 
-                src={selectedPhone.images[activeImageIndex]} 
-                alt={selectedPhone.name} 
-                className="w-full h-full object-cover transition-all duration-300" 
+              <img
+                src={selectedPhone.images[activeImageIndex]}
+                alt={selectedPhone.name}
+                className="w-full max-h-[380px] object-cover"
               />
-              
-              <span className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-lg text-[10px] font-black shadow-md ${
-                selectedPhone.condition === 'جديد كرت' ? 'bg-[#16A34A] text-white' : 'bg-[#FFC500] text-black'
-              }`}>
-                {selectedPhone.condition}
-              </span>
-
-              <span className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-xl bg-black text-[#FFC500] text-xs font-mono font-black border border-[#FFC500]/30 ">
-                {selectedPhone.price.toLocaleString()} {selectedPhone.currency}
-              </span>
-
-              <span className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-lg bg-black text-white text-[9px] font-bold border border-white/10 flex items-center gap-1">
-                <Camera size={11} /> {activeImageIndex + 1} من {selectedPhone.images.length}
-              </span>
+              {selectedPhone.images.length > 1 && (
+                <span className="absolute bottom-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-black/80 text-white text-[11px] font-bold border border-white/10 flex items-center gap-1">
+                  <Camera size={11} /> {activeImageIndex + 1} / {selectedPhone.images.length}
+                </span>
+              )}
             </div>
 
-            {/* صور مصغرة للتنقل السريع */}
+            {/* صور مصغرة */}
             {selectedPhone.images.length > 1 && (
-              <div className="flex gap-1.5 p-2 bg-[#121215] border-t border-[#2F3336] overflow-x-auto no-scrollbar">
+              <div className="flex gap-1.5 overflow-x-auto no-scrollbar pt-1">
                 {selectedPhone.images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setActiveImageIndex(idx)}
-                    className={`w-12 h-9 rounded-lg overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
-                      activeImageIndex === idx ? 'border-[#FFC500]' : 'border-transparent opacity-60'
+                    className={`w-12 h-10 rounded-xl overflow-hidden shrink-0 border transition-all cursor-pointer ${
+                      activeImageIndex === idx ? 'border-white' : 'border-[#2F3336] opacity-55'
                     }`}
                   >
                     <img src={img} alt="thumb" className="w-full h-full object-cover" />
@@ -364,88 +402,30 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                 ))}
               </div>
             )}
+          </div>
 
-            {/* التفاصيل والمواصفات */}
-            <div className="p-3.5 sm:p-4 space-y-3">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="px-2 py-0.5 rounded bg-[#FFC500]/15 text-[#FFC500] text-[10px] font-bold">
-                    {selectedPhone.brand}
-                  </span>
-                  <span className="text-[11px] text-gray-400 flex items-center gap-1">
-                    <MapPin size={12} className="text-[#FFC500]" /> {selectedPhone.city}
-                  </span>
-                  {selectedPhone.isVerified && (
-                    <span className="text-[9px] text-[#16A34A] font-bold flex items-center gap-0.5">
-                      <ShieldCheck size={11} /> موثق
-                    </span>
-                  )}
-                </div>
-                <h2 className="text-sm sm:text-base font-black text-white leading-snug">
-                  {selectedPhone.name}
-                </h2>
-              </div>
-
-              {/* شبكة مواصفات الذاكرة واللون */}
-              <div className="grid grid-cols-3 gap-2 py-1 text-center font-mono">
-                <div className="p-2 rounded-xl bg-[#161619] border border-[#27272A]">
-                  <span className="text-[8.5px] text-[#9CA3AF] font-['Cairo'] block">السعة التخزينية</span>
-                  <b className="text-xs text-white font-bold">{selectedPhone.storage}</b>
-                </div>
-                <div className="p-2 rounded-xl bg-[#161619] border border-[#27272A]">
-                  <span className="text-[8.5px] text-[#9CA3AF] font-['Cairo'] block">الذاكرة العشوائية</span>
-                  <b className="text-xs text-white font-bold">{selectedPhone.ram || '—'}</b>
-                </div>
-                <div className="p-2 rounded-xl bg-[#161619] border border-[#27272A]">
-                  <span className="text-[8.5px] text-[#9CA3AF] font-['Cairo'] block">اللون</span>
-                  <b className="text-xs text-white font-bold font-['Cairo']">{selectedPhone.color || 'أصلي'}</b>
-                </div>
-              </div>
-
-              {selectedPhone.description && (
-                <div className="space-y-1">
-                  <h3 className="text-xs font-bold text-[#D1D5DB]">ملاحظات ومواصفات الجهاز:</h3>
-                  <p className="text-xs text-[#9CA3AF] leading-relaxed font-medium">
-                    {selectedPhone.description}
-                  </p>
-                </div>
-              )}
-
-              {/* أزرار التواصل المباشر */}
-              <div className="bg-[#161619] p-3.5 rounded-xl border border-[#27272A] space-y-2.5">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-1.5">
-                    <User size={14} className="text-[#FFC500]" />
-                    <span className="text-xs font-bold text-white">{selectedPhone.sellerName}</span>
-                  </div>
-                  <span className="text-[9.5px] text-gray-400">تاريخ العرض: {selectedPhone.createdAt}</span>
-                </div>
-
-                <div className="pt-2 border-t border-[#27272A] flex items-center justify-between gap-2">
-                  <div className="text-xs font-mono font-bold text-gray-200">
-                    <span>{selectedPhone.sellerPhone}</span>
-                  </div>
-
-                  <div className="flex gap-1.5">
-                    <a
-                      href={`https://wa.me/${selectedPhone.sellerPhone}?text=${encodeURIComponent(`مرحباً، أرغب بالاستفسار عن جهاز ${selectedPhone.name} المعروض في يمن ريتنغ بسعر ${selectedPhone.price} ${selectedPhone.currency}`)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-1.5 rounded-lg bg-[#16A34A] text-white text-[11px] font-bold flex items-center gap-1 hover:bg-[#16A34A]/90"
-                    >
-                      <MessageCircle size={13} />
-                      <span>واتساب</span>
-                    </a>
-                    <a
-                      href={`tel:${selectedPhone.sellerPhone}`}
-                      className="p-1.5 rounded-lg bg-[#18181C] text-white border border-[#27272A] hover:border-[#FFC500]"
-                    >
-                      <Phone size={13} />
-                    </a>
-                  </div>
-                </div>
-              </div>
-
+          {/* شريط التواصل بنمط X */}
+          <div className="px-3.5 py-3 flex items-center justify-between gap-2">
+            <div className="text-[12.5px] font-mono text-[#71767B]" dir="ltr">
+              {selectedPhone.sellerPhone}
+            </div>
+            <div className="flex items-center gap-2">
+              <a
+                href={`https://wa.me/${selectedPhone.sellerPhone}?text=${encodeURIComponent(`مرحباً، أرغب بالاستفسار عن جهاز ${selectedPhone.name} المعروض في يمن ريتنغ بسعر ${selectedPhone.price} ${selectedPhone.currency}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-1.5 rounded-full bg-[#FFC500] text-black text-[12px] font-bold flex items-center gap-1.5 hover:bg-[#e6b100] transition"
+              >
+                <MessageCircle size={14} />
+                <span>واتساب</span>
+              </a>
+              <a
+                href={`tel:${selectedPhone.sellerPhone}`}
+                className="px-3.5 py-1.5 rounded-full bg-black text-white border border-[#2F3336] hover:border-white text-[12px] font-bold flex items-center gap-1.5 transition"
+              >
+                <Phone size={13} />
+                <span>اتصال</span>
+              </a>
             </div>
           </div>
         </div>
@@ -667,60 +647,68 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
           نافذة إضافة هاتف للبيع (رفع من 1 إلى 6 صور)
           ============================================================ */}
       {isAddModalOpen && (
-        <div 
-          className="fixed inset-0 z-50 bg-black  flex items-center justify-center p-4 cursor-pointer"
+        <div
+          className="fixed inset-0 z-[150] bg-black sm:bg-black/80 flex items-center justify-center sm:p-4"
           onClick={() => setIsAddModalOpen(false)}
         >
-          <div 
-            className="bg-[#0F0F12] border border-[#222226] rounded-2xl w-full max-w-md p-4 sm:p-5 space-y-3 max-h-[90vh] overflow-y-auto cursor-default shadow-2xl"
-            onClick={e => e.stopPropagation()}
+          <form
+            onSubmit={handleSubmitPhone}
+            className="bg-black sm:border sm:border-[#2F3336] sm:rounded-2xl w-full sm:max-w-md h-full sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden text-white"
+            dir="rtl"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center border-b border-[#222226] pb-2">
-              <h3 className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
-                <Plus size={15} className="text-[#FFC500]" /> عرض هاتف للبيع
-              </h3>
-              <button 
-                onClick={() => setIsAddModalOpen(false)} 
-                className="px-2.5 py-1 rounded-lg bg-[#18181C] text-xs font-bold text-gray-300 hover:text-white cursor-pointer"
+            {/* شريط X العلوي: إلغاء + زر نشر */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#2F3336]/60 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="p-1.5 rounded-full hover:bg-white/10 text-white transition cursor-pointer"
+                aria-label="إغلاق"
               >
-                رجوع
+                <X size={18} />
+              </button>
+              <span className="text-[13px] font-bold text-[#71767B]">عرض هاتف للبيع</span>
+              <button
+                type="submit"
+                className="px-5 py-1.5 rounded-full bg-[#FFC500] hover:bg-[#e6b100] text-black font-bold text-[13px] transition cursor-pointer"
+              >
+                نشر
               </button>
             </div>
 
-            <form onSubmit={handleSubmitPhone} className="space-y-2.5 text-xs">
-              
-              <div className="grid grid-cols-2 gap-2">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-[11px] text-gray-400 block mb-1">اسم البائع / المحل</label>
+                  <label className="text-[11px] text-[#71767B] block mb-1">اسم البائع / المحل</label>
                   <input
                     type="text"
                     required
                     placeholder="اسمك أو اسم المحل..."
                     value={sellerName}
                     onChange={(e) => setSellerName(e.target.value)}
-                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]"
+                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2.5 text-xs text-white outline-none caret-white"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-gray-400 block mb-1">رقم الهاتف (للاتصال والواتساب)</label>
+                  <label className="text-[11px] text-[#71767B] block mb-1">رقم الهاتف</label>
                   <input
                     type="tel"
                     required
                     placeholder="967777..."
                     value={sellerPhone}
                     onChange={(e) => setSellerPhone(e.target.value)}
-                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-[#FFC500]"
+                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2.5 text-xs text-white font-mono outline-none caret-white"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-[11px] text-gray-400 block mb-1">ماركة الهاتف</label>
+                  <label className="text-[11px] text-[#71767B] block mb-1">الماركة</label>
                   <select
                     value={phoneBrand}
                     onChange={(e) => setPhoneBrand(e.target.value as any)}
-                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none font-bold"
+                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2.5 text-xs text-white outline-none font-bold"
                   >
                     <option value="Apple">Apple</option>
                     <option value="Samsung">Samsung</option>
@@ -729,174 +717,146 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                     <option value="Other">ماركات أخرى</option>
                   </select>
                 </div>
-
                 <div>
-                  <label className="text-[11px] text-gray-400 block mb-1">موديل الجهاز</label>
+                  <label className="text-[11px] text-[#71767B] block mb-1">موديل الجهاز</label>
                   <input
                     type="text"
                     required
-                    placeholder="مثال: iPhone 14 Pro Max..."
+                    placeholder="iPhone 15 Pro Max..."
                     value={phoneModel}
                     onChange={(e) => setPhoneModel(e.target.value)}
-                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none focus:border-[#FFC500]"
+                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2.5 text-xs text-white outline-none caret-white"
                   />
                 </div>
               </div>
 
-              {/* رفع صور الهاتف من 1 إلى 6 صور */}
+              {/* رفع الصور */}
               <div>
-                <label className="text-[11px] text-gray-400 block mb-1">صور الهاتف (من 1 إلى 6 صور)</label>
-                <input 
-                  ref={fileInputRef} 
-                  type="file" 
-                  accept="image/*" 
-                  multiple 
-                  onChange={handleImagesUpload} 
-                  className="hidden" 
+                <label className="text-[11px] text-[#71767B] block mb-1">صور الهاتف (1 إلى 6 صور)</label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImagesUpload}
+                  className="hidden"
                 />
-                
-                <div className="flex gap-2 items-center flex-wrap">
-                  {uploadedImages.length < 6 && (
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="py-2 px-3 rounded-xl bg-[#18181C] border border-dashed border-[#FFC500]/60 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:border-[#FFC500]"
-                    >
-                      <Upload size={14} className="text-[#FFC500]" />
-                      <span>اختيار صور من الهاتف</span>
-                    </button>
-                  )}
-
-                  {uploadedImages.map((img, idx) => (
-                    <div key={idx} className="relative w-12 h-12 rounded-lg overflow-hidden border border-[#27272A] shrink-0">
-                      <img src={img} alt="upload" className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => removeUploadedImage(idx)}
-                        className="absolute top-0.5 right-0.5 p-0.5 rounded bg-red-600 text-white text-[9px]"
-                      >
-                        <Trash2 size={10} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full py-2.5 rounded-xl border border-dashed border-[#2F3336] hover:border-white text-white/80 flex items-center justify-center gap-2 text-xs font-bold transition cursor-pointer"
+                >
+                  <Upload size={14} className="text-[#FFC500]" />
+                  <span>اختر صور الجهاز ({uploadedImages.length}/6)</span>
+                </button>
+                {uploadedImages.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {uploadedImages.map((img, i) => (
+                      <div key={i} className="relative h-16 rounded-xl overflow-hidden border border-[#2F3336]">
+                        <img src={img} alt="" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeUploadedImage(i)}
+                          className="absolute top-1 left-1 w-5 h-5 rounded-full bg-black/80 text-white flex items-center justify-center"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="text-[11px] text-gray-400 block mb-1">الذاكرة والتخزين</label>
-                  <select
-                    value={phoneStorage}
-                    onChange={(e) => setPhoneStorage(e.target.value)}
-                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none font-mono"
-                  >
-                    <option value="64GB">64 GB</option>
-                    <option value="128GB">128 GB</option>
-                    <option value="256GB">256 GB</option>
-                    <option value="512GB">512 GB</option>
-                    <option value="1TB">1 TB</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-[11px] text-gray-400 block mb-1">حالة الجهاز</label>
+                  <label className="text-[11px] text-[#71767B] block mb-1">الحالة</label>
                   <select
                     value={phoneCondition}
                     onChange={(e) => setPhoneCondition(e.target.value as any)}
-                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none font-bold"
+                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white outline-none"
                   >
                     <option value="جديد كرت">جديد كرت</option>
                     <option value="شبه جديد">شبه جديد</option>
                     <option value="مستعمل نظيف">مستعمل نظيف</option>
                   </select>
                 </div>
+                <div>
+                  <label className="text-[11px] text-[#71767B] block mb-1">السعة</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="256GB"
+                    value={phoneStorage}
+                    onChange={(e) => setPhoneStorage(e.target.value)}
+                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white font-mono outline-none caret-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-[#71767B] block mb-1">الرام</label>
+                  <input
+                    type="text"
+                    placeholder="8GB"
+                    value={phoneRam}
+                    onChange={(e) => setPhoneRam(e.target.value)}
+                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white font-mono outline-none caret-white"
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="text-[11px] text-gray-400 block mb-1">السعر المطلوب</label>
+                  <label className="text-[11px] text-[#71767B] block mb-1">السعر</label>
                   <input
                     type="number"
                     required
+                    placeholder="250000"
                     value={phonePrice}
                     onChange={(e) => setPhonePrice(Number(e.target.value))}
-                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white font-mono outline-none"
+                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white font-mono outline-none caret-white"
                   />
                 </div>
-
                 <div>
-                  <label className="text-[11px] text-gray-400 block mb-1">العملة</label>
+                  <label className="text-[11px] text-[#71767B] block mb-1">العملة</label>
                   <select
                     value={phoneCurrency}
                     onChange={(e) => setPhoneCurrency(e.target.value)}
-                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none font-bold"
+                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white outline-none"
                   >
-                    <option value="YER">ريال يمني (YER)</option>
-                    <option value="SAR">ريال سعودي (SAR)</option>
-                    <option value="USD">دولار أمريكي (USD)</option>
+                    <option value="ر.ي">ر.ي</option>
+                    <option value="ر.س">ر.س</option>
+                    <option value="$">$</option>
                   </select>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[11px] text-gray-400 block mb-1">المحافظة</label>
+                  <label className="text-[11px] text-[#71767B] block mb-1">المدينة</label>
                   <select
                     value={phoneCity}
                     onChange={(e) => setPhoneCity(e.target.value)}
-                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
+                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white outline-none"
                   >
                     <option value="صنعاء">صنعاء</option>
                     <option value="عدن">عدن</option>
                     <option value="تعز">تعز</option>
-                    <option value="حضرموت - المكلا">حضرموت - المكلا</option>
-                    <option value="الحديدة">الحديدة</option>
+                    <option value="حضرموت">حضرموت</option>
                     <option value="إب">إب</option>
+                    <option value="الحديدة">الحديدة</option>
                     <option value="مأرب">مأرب</option>
-                    <option value="ذمار">ذمار</option>
                   </select>
-                </div>
-
-                <div>
-                  <label className="text-[11px] text-gray-400 block mb-1">لون الجهاز</label>
-                  <input
-                    type="text"
-                    placeholder="مثال: أسود، أزرق، تيتانيوم..."
-                    value={phoneColor}
-                    onChange={(e) => setPhoneColor(e.target.value)}
-                    className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
-                  />
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] text-gray-400 block mb-1">تفاصيل ومواصفات إضافية</label>
+                <label className="text-[11px] text-[#71767B] block mb-1">ملاحظات ومواصفات</label>
                 <textarea
-                  rows={2}
+                  rows={3}
+                  placeholder="اكتب مواصفات الجهاز وحالة البطارية والملحقات..."
                   value={phoneDesc}
                   onChange={(e) => setPhoneDesc(e.target.value)}
-                  placeholder="اكتب حالة البطارية، الملحقات، أو الضمان..."
-                  className="w-full bg-[#18181C] border border-[#27272A] rounded-xl p-2 text-xs text-white outline-none"
+                  className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2.5 text-xs text-white outline-none resize-none caret-white"
                 />
               </div>
-
-              <div className="flex justify-end gap-2 pt-2 border-t border-[#222226]">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#18181C] text-gray-300 text-xs font-bold cursor-pointer"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#FFC500] text-black text-xs font-black hover:bg-[#FFC500]/90 cursor-pointer shadow-md"
-                >
-                  نشر الهاتف في السوق
-                </button>
-              </div>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       )}
 

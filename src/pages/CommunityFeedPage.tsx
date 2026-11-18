@@ -246,8 +246,23 @@ export const CommunityFeedPage: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [swipeProgress, setSwipeProgress] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
-  const [activeTab, setActiveTab] = useState<'forYou' | 'latest' | 'trending' | 'phones' | 'jobs' | 'properties' | 'auctions'>('forYou');
-  useEffect(() => { setSwipeProgress(activeTab === 'forYou' ? 0 : 1); }, [activeTab]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialUrlTab = searchParams.get('tab');
+  const validUrlTabs = ['forYou', 'latest', 'trending', 'phones', 'jobs', 'properties', 'auctions'] as const;
+  const [activeTab, setActiveTab] = useState<'forYou' | 'latest' | 'trending' | 'phones' | 'jobs' | 'properties' | 'auctions'>(
+    validUrlTabs.includes(initialUrlTab as any) ? (initialUrlTab as any) : 'forYou'
+  );
+  useEffect(() => {
+    setSwipeProgress(activeTab === 'forYou' ? 0 : 1);
+    const currentParam = searchParams.get('tab') || 'forYou';
+    if (currentParam !== activeTab) {
+      if (activeTab === 'forYou') {
+        setSearchParams({}, { replace: true });
+      } else {
+        setSearchParams({ tab: activeTab }, { replace: true });
+      }
+    }
+  }, [activeTab]);
 
   // --- كود السحب الأفقي الآمن بين التبويبات ---
   useEffect(() => {
