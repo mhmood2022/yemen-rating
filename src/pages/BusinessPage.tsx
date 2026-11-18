@@ -15,7 +15,7 @@ import { XImagePlayer } from '../components/feed/XImagePlayer';
 import { useNavigate, useSearchParams, useLocation, useParams } from 'react-router-dom';
 import { supabase } from "../lib/supabase";
 import { getUserProfile, updateUserProfile, getUserPosts, createPost, deletePost, togglePostLike, toggleFollow, checkIsFollowing, toggleBlockUser, checkIsBlocked, uploadSocialImage, Profile, PostItem } from "../services/socialService";
-import { Star, ArrowRight, BarChart2,
+import { Star, ArrowRight, ArrowLeft, BarChart2,
   RotateCw,
   MoreHorizontal,
   MapPin,
@@ -206,6 +206,8 @@ export const BusinessPage: React.FC = () => {
     } catch { return true; }
   });
   const [showMySentToast, setShowMySentToast] = useState(false);
+  const [showCommunitySwitchModal, setShowCommunitySwitchModal] = useState(false);
+  const [selectedCommunityIdentity, setSelectedCommunityIdentity] = useState<'business' | 'personal'>('business');
 
       const [viewingImagePost, setViewingImagePost] = useState<any>(null);
 
@@ -329,6 +331,11 @@ export const BusinessPage: React.FC = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         const uid = session?.user?.id || '';
+        if (session?.user) {
+          setSessionUser(session.user);
+          setCurrentUserId(uid);
+          setProfileId(uid);
+        }
         const targetBizId = routeBusinessId || navState?.id;
         let biz = targetBizId ? await getBusinessPageById(targetBizId) : null;
         if (!biz && uid) biz = await getMyBusinessPage(uid);
@@ -624,6 +631,7 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
       // تحديث currentUserId و myName
       if (user) {
         setCurrentUserId(user.id);
+        setProfileId(user.id);
         const { data: myProfile } = await supabase
           .from('profiles')
           .select('full_name, username, avatar_url')
@@ -637,88 +645,9 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
           setMyAvatar(user.user_metadata?.avatar_url || '');
         }
       }
-      const myId = user?.id || "";
-      const targetId = targetIdParam || myId;
-      
-      console.log('🟢 DEBUG:', { targetId, targetIdParam, myId, profileId });
-      console.log('🟢 targetId:', targetId, '| myId:', myId);
-
-      if (!targetId) {
-        setLoading(false);
-        return;
+      if (user?.email) {
+        setEmail(user.email);
       }
-
-      const viewingOwner = (targetId === myId);
-
-      // قراءة الجسر الذكي القادم من المجتمع في 0 ثانية
-      if (navState && navState.name) {
-        setName(navState.name);
-        if (navState.username) setUsername(navState.username);
-        if (navState.avatarUrl) setAvatarUrl(navState.avatarUrl);
-        setLoading(false);
-      }
-
-      setIsOwner(viewingOwner);
-      setProfileId(targetId);
-
-      if (viewingOwner && user) {
-        setEmail(user.email || "");
-        setLoading(false);
-      }
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject("timeout"), 2500));
-
-      // فحص المتابعة والحظر
-      if (myId && myId !== targetId) {
-        try {
-          const [following, blocked]: any = await Promise.race([
-            Promise.all([checkIsFollowing(myId, targetId), checkIsBlocked(myId, targetId)]),
-            timeoutPromise
-          ]);
-          setIsFollowing(!!following);
-          setIsBlocked(!!blocked);
-        } catch (_) {}
-      }
-
-      // جلب التغريدات
-      try {
-        console.log('🟢 Before getUserPosts — targetId:', targetId, '| myId:', myId);
-        const dbPosts: any = businessPage?.id ? await getBusinessPosts(businessPage.id, myId) : [];
-        
-        const errMsg = (window as any).__lastGetUserPostsError;
-        if (errMsg) {
-          
-        }
-        console.log('🟢 After getUserPosts — got:', dbPosts?.length || 0, 'posts');
-        if (dbPosts && dbPosts[0]) console.log('   first:', dbPosts[0].content);
-        if (Array.isArray(dbPosts)) {
-          console.log('🟢 About to setUserPosts with:', dbPosts.length);
-              setUserPosts(dbPosts.map((p: any) => ({
-            ...p,
-            id: p.id,
-            authorId: p.authorId || p.user_id,
-            authorName: p.authorName || p.profile?.full_name || name,
-            authorUsername: p.authorUsername || p.profile?.username || username,
-            authorAvatar: p.authorAvatar || p.profile?.avatar_url || '',
-            authorBadge: p.badgeType || p.authorBadge || p.profile?.verification_type || (p.profile?.is_verified ? "blue" : "none"),
-            text: p.text || p.content,
-            image: p.image || p.image_url || undefined,
-            video_url: p.video_url || p.video || undefined,
-            video: p.video_url || p.video || undefined,
-            createdAt: p.createdAt || p.created_at,
-            createdAtDisplay: p.createdAtDisplay || new Date(p.created_at).toLocaleTimeString("ar-YE", { hour: "2-digit", minute: "2-digit" }),
-            likes: p.likes || p.likes_count || 0,
-            likedBy: p.likedBy || [],
-            isLiked: p.isLiked,
-            replies: p.replies || p.comments_count || 0,
-            reposts: p.reposts || p.reposts_count || 0,
-            views: p.views || p.views_count || 1,
-            isRepost: p.isRepost,
-            quote_text: p.quote_text,
-            original: p.original,
-          })));
-        }
-      } catch (_) {}
-
     } catch (e) {
       console.error("LoadProfile error:", e);
     } finally {
@@ -1600,7 +1529,14 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
         <div className="fixed top-3 left-3 right-3 flex items-center justify-between gap-2 z-50">
           <div className="flex items-center gap-3 min-w-0">
             <button
-              onClick={() => navigate('/feed')}
+              onClick={() => {
+                if (isOwner && businessPage) {
+                  setSelectedCommunityIdentity('business');
+                  setShowCommunitySwitchModal(true);
+                } else {
+                  navigate('/feed');
+                }
+              }}
               className="w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 backdrop-blur-md text-white flex items-center justify-center transition active:scale-95 border border-white/10 shrink-0"
               title="رجوع"
             >
@@ -3010,7 +2946,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                   value={newCommentText}
                   onChange={setNewCommentText}
                   onSubmit={(e) => { e && e.preventDefault(); handleSubmitComment(); }}
-                  myAvatar={myAvatar || sessionUser?.user_metadata?.avatar_url || ''}
+                  myAvatar={isOwner ? (avatarUrl || '') : (myAvatar || sessionUser?.user_metadata?.avatar_url || '')}
                   myName={myName || 'مستخدم'}
                 />
               </div>
@@ -3508,6 +3444,116 @@ ${url}` : url;
           showToast('تم تسجيل تقييمك بنجاح');
         }}
       />
+      {showCommunitySwitchModal && isOwner && businessPage && (
+        <div
+          className="fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setShowCommunitySwitchModal(false)}
+        >
+          <div
+            className="w-full max-w-[315px] bg-black border border-[#2F3336]/80 rounded-2xl p-3.5 shadow-[0_18px_55px_rgba(0,0,0,0.95)]"
+            dir="rtl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span className="text-white font-bold text-[12.5px] truncate">
+                  {selectedCommunityIdentity === 'business'
+                    ? 'سيتم الدخول باسم المنشأة'
+                    : 'سيتم الدخول بحسابك الشخصي'}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCommunitySwitchModal(false)}
+                className="w-7 h-7 rounded-full hover:bg-white/10 text-[#71767B] hover:text-white flex items-center justify-center transition shrink-0"
+                aria-label="إغلاق"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* اليمين: حساب المنشأة | الوسط: سهم يمين وسهم شمال | اليسار: الحساب الشخصي */}
+            <div className="flex items-center justify-between gap-1.5 mb-3">
+              {/* اليمين: حساب المنشأة (الافتراضي) */}
+              <button
+                type="button"
+                onClick={() => setSelectedCommunityIdentity('business')}
+                className={`flex-1 min-w-0 rounded-xl p-2.5 border transition flex flex-col items-center text-center gap-1.5 ${
+                  selectedCommunityIdentity === 'business'
+                    ? 'border-white/80 bg-white/[0.04]'
+                    : 'border-[#2F3336]/60 bg-black opacity-55 hover:opacity-85'
+                }`}
+              >
+                <div className="w-11 h-11 rounded-full bg-black border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Building2 size={18} className="text-white" />
+                  )}
+                </div>
+                <div className="w-full min-w-0">
+                  <div className="text-white font-bold text-[12px] truncate">{name || 'المنشأة'}</div>
+                  <div className="text-[#71767B] text-[10px]">حساب المنشأة</div>
+                </div>
+              </button>
+
+              {/* الوسط: سهم يمين وسهم شمال للتبديل */}
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedCommunityIdentity((prev) => (prev === 'business' ? 'personal' : 'business'))
+                }
+                title="تبديل الحساب"
+                className="w-8 h-8 rounded-full bg-black border border-[#2F3336] hover:border-white/60 text-white flex flex-col items-center justify-center shrink-0 transition active:scale-95"
+              >
+                <ArrowLeft size={12} className="-mb-0.5" />
+                <ArrowRight size={12} className="-mt-0.5 text-[#71767B]" />
+              </button>
+
+              {/* اليسار: الحساب الشخصي */}
+              <button
+                type="button"
+                onClick={() => setSelectedCommunityIdentity('personal')}
+                className={`flex-1 min-w-0 rounded-xl p-2.5 border transition flex flex-col items-center text-center gap-1.5 ${
+                  selectedCommunityIdentity === 'personal'
+                    ? 'border-white/80 bg-white/[0.04]'
+                    : 'border-[#2F3336]/60 bg-black opacity-55 hover:opacity-85'
+                }`}
+              >
+                <div className="w-11 h-11 rounded-full bg-black border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0">
+                  {myAvatar ? (
+                    <img src={myAvatar} alt={myName} className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={18} className="text-white" />
+                  )}
+                </div>
+                <div className="w-full min-w-0">
+                  <div className="text-white font-bold text-[12px] truncate">{myName || 'الحساب الشخصي'}</div>
+                  <div className="text-[#71767B] text-[10px]">الحساب الشخصي</div>
+                </div>
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  localStorage.setItem('yr_community_identity', selectedCommunityIdentity);
+                } catch (_) {}
+                setShowCommunitySwitchModal(false);
+                navigate('/feed', { state: { communityIdentity: selectedCommunityIdentity } });
+              }}
+              className="w-full py-2.5 rounded-full bg-[#FFC500] hover:bg-[#e6b100] active:scale-[0.99] text-black font-bold text-[12.5px] transition"
+            >
+              {selectedCommunityIdentity === 'business'
+                ? 'المتابعة باسم المنشأة'
+                : 'المتابعة بالحساب الشخصي'}
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

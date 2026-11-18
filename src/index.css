@@ -461,3 +461,8 @@ html body .input-wrapper,
 html body .form-group {
   border-color: #71767B !important;
 }
+
+
+/* --- إخفاء شريط التمرير في التبويبات --- */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
