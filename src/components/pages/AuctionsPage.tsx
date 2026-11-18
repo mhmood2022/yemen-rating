@@ -59,6 +59,9 @@ import { AdBanner } from '../common/AdBanner';
 import { AuctionCard } from '../auctions/AuctionCard';
 import { YRSelect } from '../common/YRSelect';
 import { AuctionCreateModal } from '../auctions/AuctionCreateModal';
+import { BadgeType } from '../common/VerifiedBadge';
+import { mapBusinessToPage, BusinessPageRecord } from '../../services/businessPageService';
+import { XMarketItem, XSearchFilterBar, XFilterModal, XMarketTweetCard, XMarketDetailView, XImageLightbox, YEMEN_GOV_FILTER_OPTIONS } from '../common/XMarketUI';
 
 // إعدادات نسب العمولة المعتمدة للمنصة
 const sellerRate = 5;
@@ -227,6 +230,11 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
   const [statusTab, setStatusTab] = useState<'ACTIVE' | 'ENDED' | 'DIRECT'>('ACTIVE');
   const [selectedCat, setSelectedCat] = useState('all');
   const [cityFilter, setCityFilter] = useState('all');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [businessesList, setBusinessesList] = useState<BusinessPageRecord[]>([]);
+  const [selectedItem, setSelectedItem] = useState<XMarketItem | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   // نموذج إضافة المعروض
@@ -275,7 +283,8 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
     try {
       setLoading(true);
       await supabase.from('auctions').delete().ilike('title', '%لاندكروزر%');
-      const { data, error } = await supabase.from('auctions').select('*').order('created_at', { ascending: false });
+      const [{ data, error }, { data: bizData }] = await Promise.all([supabase.from('auctions').select('*').order('created_at', { ascending: false }), supabase.from('businesses').select('*').limit(200)]);
+      if (bizData) setBusinessesList(bizData.map(mapBusinessToPage));
       if (error) throw error;
       setListings(data || []);
     } catch (err) {
@@ -463,9 +472,22 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
     return true;
   });
 
+  const toAucX = (auc: any): XMarketItem => {
+    const cl = (s?: string) => (s || '').replace(/\D/g, '').slice(-9);
+    const biz = businessesList.find((b) => (auc.business_id && b.id === auc.business_id) || (auc.owner_id && b.ownerId === auc.owner_id) || (auc.seller_name && b.name.trim() === auc.seller_name.trim()) || (cl(auc.seller_phone) && cl(b.phone) === cl(auc.seller_phone))) || null;
+    let imgs: string[] = Array.isArray(auc.images) ? auc.images : [];
+    if (!imgs.length && typeof auc.images === 'string') { try { const x = JSON.parse(auc.images); if (Array.isArray(x)) imgs = x; } catch {} }
+    if (!imgs.length && auc.image_url) imgs = [auc.image_url];
+    const bid = Number(auc.current_bid || auc.starting_price || auc.final_price || 0);
+    const dir = auc.sale_type === 'fixed_price' || auc.sale_type === 'direct';
+    let desc = auc.description || '';
+    if (desc.startsWith('{')) { try { const x = JSON.parse(desc); desc = x.notes || x.description || ''; } catch {} }
+    return { id: auc.id, detailPath: `/auctions/${auc.id}`, actionLabel: dir ? 'التفاصيل' : 'المزايدة', actionIcon: <Gavel size={14} />, authorName: biz?.name || auc.seller_name || (dir ? 'بيع مباشر' : 'مزاد علني'), authorUsername: biz?.username || auc.city || 'auction', authorAvatar: biz?.avatarUrl || '', badgeType: biz ? ((biz.verificationType as BadgeType) || (biz.isVerified ? 'gold' : 'none')) : 'none', businessPath: biz ? `/businesses/${biz.username || biz.id}` : undefined, createdAt: auc.created_at, title: auc.title, priceText: `${bid.toLocaleString()} ${auc.currency || 'SAR'}`, description: desc, metaParts: [dir ? 'بيع مباشر' : 'مزاد علني', auc.category, auc.city].filter(Boolean), tagLabel: dir ? 'بيع مباشر' : 'مزاد علني', images: imgs, city: auc.city, phone: auc.seller_phone || biz?.phone || '' };
+  };
+  const onShareX = (it: XMarketItem) => { navigator.clipboard?.writeText(it.title); setToastMessage('تم نسخ التفاصيل'); setTimeout(() => setToastMessage(null), 2500); };
   return (
     <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-7xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white bg-black min-h-screen"}>
-      {!embedded && <AdBanner placementId="6" className="mb-1" />}
+      {!embedded && !selectedItem && <AdBanner placementId="6" className="mb-1" />}
 
       {toastMessage && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#F5C400] text-black px-5 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2 border border-black/10 animate-bounce">
@@ -474,7 +496,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
         </div>
       )}
 
-      {!embedded && (
+      {!embedded && !selectedItem && (
         <div className="flex flex-wrap items-center justify-between gap-3 bg-black border border-[#2F3336] p-4 rounded-2xl">
           <div className="flex items-center gap-3">
             {onBack && (
@@ -506,84 +528,11 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
         </div>
       )}
 
-      {/* الرأس الموحد: بحث + إعلان راعي + فلتر */}
+      {selectedItem ? <XMarketDetailView item={selectedItem} activeImageIndex={activeImageIndex} onChangeImageIndex={setActiveImageIndex} onBack={() => setSelectedItem(null)} onOpenLightbox={() => setIsLightboxOpen(true)} onShare={() => onShareX(selectedItem)} /> : (<>
+      {/* الرأس الموحد: بحث + أيقونة الفلتر يساراً مثل سوق الهواتف */}
       <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "space-y-3"}>
-        <div className="flex items-center bg-black border border-[#2F3336] focus-within:border-white rounded-full px-3.5 py-1.5 transition-colors">
-          <Search size={15} className="text-[#71767B] ml-2 shrink-0" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="ابحث باسم السلعة أو المزاد..."
-            className="flex-1 bg-transparent text-[13px] text-white placeholder-[#71767B] outline-none caret-white"
-          />
-          {searchTerm && (
-            <button onClick={() => setSearchTerm('')} className="text-[#71767B] hover:text-white">
-              <X size={13} />
-            </button>
-          )}
-        </div>
-
+        <XSearchFilterBar searchQuery={searchTerm} onSearchChange={setSearchTerm} placeholder="ابحث باسم السلعة أو المزاد..." activeFiltersCount={(selectedCat !== 'all' ? 1 : 0) + (statusTab !== 'ACTIVE' ? 1 : 0) + (cityFilter !== 'all' ? 1 : 0)} onOpenFilter={() => setIsFilterModalOpen(true)} />
         {embedded && <AdBanner placementId="6" className="py-0.5" />}
-
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
-          {GENERAL_CATEGORIES.map((cat) => {
-            const Icon = cat.icon;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCat(cat.id)}
-                className={`px-3 py-1 rounded-full text-[11.5px] font-bold whitespace-nowrap border flex items-center gap-1 transition-all ${
-                  selectedCat === cat.id
-                    ? 'bg-white text-black border-white'
-                    : 'bg-black text-[#71767B] border-[#2F3336] hover:text-white'
-                }`}
-              >
-                {Icon && <Icon size={12} />}
-                <span>{cat.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setStatusTab('ACTIVE')}
-            className={`flex-1 py-1 px-2 rounded-full text-[11.5px] font-bold border transition-all ${
-              statusTab === 'ACTIVE' ? 'bg-white/10 text-white border-white' : 'bg-black text-[#71767B] border-[#2F3336]'
-            }`}
-          >
-            النشطة ({activeAuctions.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusTab('DIRECT')}
-            className={`flex-1 py-1 px-2 rounded-full text-[11.5px] font-bold border transition-all ${
-              statusTab === 'DIRECT' ? 'bg-white/10 text-white border-white' : 'bg-black text-[#71767B] border-[#2F3336]'
-            }`}
-          >
-            مباشر ({directSales.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusTab('ENDED')}
-            className={`flex-1 py-1 px-2 rounded-full text-[11.5px] font-bold border transition-all ${
-              statusTab === 'ENDED' ? 'bg-white/10 text-white border-white' : 'bg-black text-[#71767B] border-[#2F3336]'
-            }`}
-          >
-            منتهية ({endedListings.length})
-          </button>
-        </div>
-
-        <div>
-          <YRSelect
-            value={cityFilter}
-            options={YEMEN_GOVERNORATES}
-            onChange={(val) => setCityFilter(val)}
-            placeholder="كل المحافظات"
-          />
-        </div>
       </div>
 
       {/* المحتوى بأسلوب تغريدات X */}
@@ -599,63 +548,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
           <p className="text-xs">اضغط على زر + لإضافة مزاد أو عرض جديد.</p>
         </div>
       ) : embedded ? (
-        <div className="divide-y divide-[#2F3336]/40">
-          {displayedListings.map((auc) => {
-            let aucImg: string | null = auc.image_url || null;
-            if (!aucImg && Array.isArray(auc.images) && auc.images.length > 0) aucImg = auc.images[0];
-            else if (!aucImg && typeof auc.images === 'string') {
-              try {
-                const parsed = JSON.parse(auc.images);
-                if (Array.isArray(parsed) && parsed.length > 0) aucImg = parsed[0];
-              } catch {
-                if (auc.images.startsWith('http') || auc.images.startsWith('data:')) aucImg = auc.images.split(',')[0].trim();
-              }
-            }
-            const bidVal = Number(auc.current_bid || auc.starting_price || auc.final_price || 0);
-            const isDirect = auc.sale_type === 'fixed_price';
-            let desc = auc.description || '';
-            if (desc.startsWith('{')) {
-              try { const p = JSON.parse(desc); desc = p.notes || p.description || ''; } catch {}
-            }
-            return (
-              <Link
-                key={auc.id}
-                to={`/auctions/${auc.id}`}
-                className="p-3 bg-black hover:bg-white/[0.03] transition flex gap-3"
-              >
-                <div className="w-11 h-11 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 text-[#FFC500]">
-                  <Gavel size={18} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap text-[13px]">
-                    <span className="font-bold text-white">{isDirect ? 'بيع مباشر' : 'مزاد علني'}</span>
-                    <ShieldCheck size={14} className="text-[#FFC500] shrink-0" />
-                    <span className="text-[#71767B] text-[12px]">@{auc.city || 'اليمن'}</span>
-                  </div>
-                  <div className="mt-1 text-[14.5px] font-bold text-[#E7E9EA] leading-snug">
-                    {auc.title}
-                  </div>
-                  {desc && (
-                    <p className="mt-0.5 text-[13px] text-[#D6D9DB] line-clamp-2 leading-relaxed">
-                      {desc}
-                    </p>
-                  )}
-                  {aucImg && (
-                    <div className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336]/50 max-h-80 bg-zinc-950">
-                      <img src={aucImg} alt={auc.title} className="w-full max-h-80 object-cover" loading="lazy" />
-                    </div>
-                  )}
-                  <div className="mt-2.5 flex items-center justify-between text-[12px] text-[#71767B]">
-                    <span className="text-[#FFC500] font-bold">
-                      {bidVal.toLocaleString()} {auc.currency || 'SAR'}
-                    </span>
-                    <span className="text-white/80 font-bold">{isDirect ? 'شراء وتفاصيل ←' : 'مزايدة ←'}</span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <div className="divide-y divide-[#2F3336]/60">{displayedListings.map((auc) => { const item = toAucX(auc); return <XMarketTweetCard key={auc.id} item={item} onOpenDetail={() => { setSelectedItem(item); setActiveImageIndex(0); window.scrollTo({ top: 0, behavior: "instant" }); }} onOpenImage={(idx) => { setSelectedItem(item); setActiveImageIndex(idx); setIsLightboxOpen(true); }} onShare={() => onShareX(item)} />; })}</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {displayedListings.map((auc) => (
@@ -664,7 +557,8 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
         </div>
       )}
 
-      {embedded && !isCreateAuctionOpen && (
+      </>)}
+      {embedded && !selectedItem && !isCreateAuctionOpen && (
         <button
           onClick={() => setIsCreateAuctionOpen(true)}
           className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-black flex items-center justify-center shadow-lg shadow-black/60 transition"
@@ -685,6 +579,12 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
         }}
       />
       )}
+      <XImageLightbox isOpen={isLightboxOpen} item={selectedItem} activeIndex={activeImageIndex} onChangeIndex={setActiveImageIndex} onClose={() => setIsLightboxOpen(false)} />
+      <XFilterModal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} title="تصفية المزادات" activeFiltersCount={(selectedCat !== 'all' ? 1 : 0) + (statusTab !== 'ACTIVE' ? 1 : 0) + (cityFilter !== 'all' ? 1 : 0)} onReset={() => { setSelectedCat('all'); setStatusTab('ACTIVE'); setCityFilter('all'); }} resultsCount={displayedListings.length} fields={[
+        { label: 'القسم', value: selectedCat, onChange: setSelectedCat, options: GENERAL_CATEGORIES.map((x) => ({ value: x.id, label: x.label })) },
+        { label: 'الحالة', value: statusTab, onChange: (v) => setStatusTab(v as any), options: [{ value: 'ACTIVE', label: `المزادات النشطة (${activeAuctions.length})` }, { value: 'DIRECT', label: `البيع المباشر (${directSales.length})` }, { value: 'ENDED', label: `المزادات المنتهية (${endedListings.length})` }] },
+        { label: 'المحافظة', value: cityFilter, onChange: setCityFilter, options: YEMEN_GOV_FILTER_OPTIONS },
+      ]} />
     </div>
   );
 };

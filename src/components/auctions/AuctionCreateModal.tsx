@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Gavel, Tag, X, ImagePlus, ShieldCheck, CheckCircle2, AlertCircle, Lock } from 'lucide-react';
 import { YRSelect, YRSelectOption } from '../common/YRSelect';
 import { supabase } from '../../lib/supabase';
+import { getMyBusinessPage, BusinessPageRecord } from '../../services/businessPageService';
+import { VerifiedBadge, BadgeType } from '../common/VerifiedBadge';
 
 // القوائم المعتمدة الموحدة
 const GENERAL_CATEGORY_OPTIONS: YRSelectOption[] = [
@@ -63,8 +65,11 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
   const [sellerName, setSellerName] = useState('');
   const [sellerPhone, setSellerPhone] = useState('');
   const [sellerEmail, setSellerEmail] = useState('');
+  const [sellerAvatar, setSellerAvatar] = useState('');
+  const [sellerUsername, setSellerUsername] = useState('');
+  const [myBusinessPage, setMyBusinessPage] = useState<BusinessPageRecord | null>(null);
 
-  // جلب اسم ورقم صاحب المزاد تلقائياً من حسابه المسجل
+  // الربط التلقائي بحساب المنشأة (أو الحساب الشخصي كاحتياطي)
   useEffect(() => {
     if (!isOpen) return;
     const fetchSellerData = async () => {
@@ -74,22 +79,37 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
           let name = user.user_metadata?.full_name || user.user_metadata?.name || "";
           let phone = user.phone || user.user_metadata?.phone || "";
           let email = user.email || "";
+          let avatar = "";
+          let username = email ? email.split("@")[0] : "account";
 
-          try {
-            const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
-            if (prof) {
-              if (prof.email) email = prof.email;
-              if (prof.full_name && !name) name = prof.full_name;
-              if (prof.phone && !phone) phone = prof.phone;
-            }
-          } catch {}
+          const [{ data: prof }, biz] = await Promise.all([
+            supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+            getMyBusinessPage(user.id),
+          ]);
+
+          if (prof) {
+            if (prof.email) email = prof.email;
+            if (prof.full_name && !name) name = prof.full_name;
+            if (prof.phone && !phone) phone = prof.phone;
+            if (prof.avatar_url) avatar = prof.avatar_url;
+          }
+
+          if (biz) {
+            setMyBusinessPage(biz);
+            name = biz.name || name;
+            if (biz.phone) phone = biz.phone;
+            if (biz.avatarUrl) avatar = biz.avatarUrl;
+            if (biz.username) username = biz.username;
+            if (biz.city) setSelectedCity(biz.city);
+          } else {
+            setMyBusinessPage(null);
+          }
 
           if (name) setSellerName(name);
-          if (phone) {
-            const cleanPhone = phone.replace(/\D/g, "").slice(-9);
-            setSellerPhone(cleanPhone);
-          }
+          if (phone) setSellerPhone(phone.replace(/\D/g, "").slice(-9));
           if (email) setSellerEmail(email);
+          setSellerAvatar(avatar);
+          setSellerUsername(username);
         }
       } catch (e) {
         console.error("Error auto-filling user info:", e);
@@ -368,47 +388,78 @@ export const AuctionCreateModal: React.FC<AuctionCreateModalProps> = ({ isOpen, 
             />
           </div>
 
-          {/* بيانات صاحب المعروض الموثقة بالحساب - مقفلة بالكامل */}
-          <div className="p-3 rounded-xl bg-black border border-[#2F3336] space-y-2.5">
-            <div className="flex items-center justify-between pb-1.5 border-b border-[#2F3336]/80">
-              <span className="text-[11px] font-bold text-slate-300">بيانات صاحب المعروض (موثقة بالحساب):</span>
-              <span className="flex items-center justify-center p-1 rounded-md bg-black text-slate-400 border border-[#2F3336]" title="موثق ومقفل بالحساب"><Lock size={12} className="text-slate-400" /></span>
-            </div>
+          {/* ربط تلقائي بحساب الصفحة (المنشأة / الحساب) */}
+          {(myBusinessPage || sellerName) ? (
+            <div className="space-y-2.5">
+              <div className="p-2.5 rounded-xl bg-zinc-950 border border-[#2F3336] flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0 text-white font-bold">
+                  {sellerAvatar ? (
+                    <img src={sellerAvatar} alt={sellerName} className="w-full h-full object-cover" />
+                  ) : (
+                    <span>{sellerName?.[0] || 'م'}</span>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-white text-xs truncate">{sellerName}</span>
+                    <VerifiedBadge
+                      type={
+                        myBusinessPage
+                          ? ((myBusinessPage.verificationType as BadgeType) || (myBusinessPage.isVerified ? 'gold' : 'none'))
+                          : 'none'
+                      }
+                      size={13}
+                    />
+                  </div>
+                  <div className="text-[11px] text-[#71767B] truncate" dir="ltr">
+                    @{sellerUsername || 'account'}
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-white/10 text-white text-[10px] font-bold shrink-0">
+                  {myBusinessPage ? 'صفحة المنشأة' : 'حسابك'}
+                </span>
+              </div>
 
+              {!sellerPhone && (
+                <div>
+                  <label className="block text-slate-400 text-[11px] mb-1 font-bold">رقم الهاتف للتواصل (واتساب / اتصال) *</label>
+                  <input
+                    required
+                    type="tel"
+                    placeholder="77XXXXXXX"
+                    value={sellerPhone}
+                    onChange={(e) => setSellerPhone(e.target.value)}
+                    className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white font-mono text-xs outline-none"
+                  />
+                </div>
+              )}
+            </div>
+          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div>
-                <label className="block text-slate-400 text-[11px] mb-1 font-bold">اسم صاحب المعروض (البائع)</label>
+                <label className="block text-slate-400 text-[11px] mb-1 font-bold">اسم صاحب المعروض</label>
                 <input
-                  readOnly
+                  required
                   type="text"
                   value={sellerName}
-                  placeholder="جاري الجلب من الحساب..."
-                  className="w-full bg-black border border-[#2F3336] rounded-xl p-2.5 text-white/90 text-xs outline-none cursor-not-allowed select-none"
+                  onChange={(e) => setSellerName(e.target.value)}
+                  placeholder="اسمك أو اسم المحل"
+                  className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white text-xs outline-none"
                 />
               </div>
               <div>
                 <label className="block text-slate-400 text-[11px] mb-1 font-bold">رقم هاتف التواصل</label>
                 <input
-                  readOnly
-                  type="text"
+                  required
+                  type="tel"
                   value={sellerPhone}
-                  placeholder="جاري الجلب من الحساب..."
-                  className="w-full bg-black border border-[#2F3336] rounded-xl p-2.5 text-white/90 font-mono text-xs outline-none cursor-not-allowed select-none text-left dir-ltr"
+                  onChange={(e) => setSellerPhone(e.target.value)}
+                  placeholder="77XXXXXXX"
+                  className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white font-mono text-xs outline-none"
                 />
               </div>
             </div>
-
-            <div>
-              <label className="block text-slate-400 text-[11px] mb-1 font-bold">البريد الإلكتروني المعتمد</label>
-              <input
-                readOnly
-                type="email"
-                value={sellerEmail}
-                placeholder="جاري الجلب من الحساب..."
-                className="w-full bg-black border border-[#2F3336] rounded-xl p-2.5 text-white/90 font-mono text-xs outline-none cursor-not-allowed select-none text-left dir-ltr"
-              />
-            </div>
-          </div>
+          )}
 
           {/* توقيت بدء وانتهاء المزاد */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

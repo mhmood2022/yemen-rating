@@ -5,9 +5,10 @@ import { supabase } from '../../lib/supabase';
 import { AdBanner } from '../common/AdBanner';
 import { PropertyCard } from '../properties/PropertyCard';
 import { YRSelect } from '../common/YRSelect';
+import { XSearchFilterBar, XFilterModal, YEMEN_GOV_FILTER_OPTIONS } from '../common/XMarketUI';
 
 const YEMEN_GOVERNORATES = [
-  { value: 'all', label: 'كل المدن والمحافظات' },
+  { value: 'all', label: 'جميع المحافظات' },
   { value: 'صنعاء', label: 'صنعاء' },
   { value: 'عدن', label: 'عدن' },
   { value: 'تعز', label: 'تعز' },
@@ -27,7 +28,7 @@ const YEMEN_GOVERNORATES = [
   { value: 'الضالع', label: 'الضالع' },
   { value: 'ريمة', label: 'ريمة' },
   { value: 'المحويت', label: 'المحويت' },
-  { value: 'سقطرى', label: 'أرخبيل سقطرى' },
+  { value: 'سقطرى', label: 'سقطرى' },
   { value: 'الجوف', label: 'الجوف' }
 ];
 
@@ -54,6 +55,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
   const [dealTypeFilter, setDealTypeFilter] = useState<'all' | 'بيع' | 'إيجار'>('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [cityFilter, setCityFilter] = useState('all');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   // نافذة أضف عقار
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -256,56 +258,10 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
         </div>
       )}
 
-      {/* الرأس الموحد: بحث + إعلان راعي + فلتر */}
+      {/* الرأس الموحد: بحث + أيقونة الفلتر يساراً مثل سوق الهواتف */}
       <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "bg-[#000000] p-3 rounded-2xl border border-[#2F3336] space-y-2.5"}>
-        <div className="flex items-center bg-black border border-[#2F3336] focus-within:border-white rounded-full px-3.5 py-1.5 transition-colors">
-          <Search size={15} className="text-[#71767B] ml-2 shrink-0" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ابحث عن عقار، حي، أو مدينة..."
-            className="flex-1 bg-transparent text-[13px] text-white placeholder-[#71767B] outline-none caret-white"
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="text-[#71767B] hover:text-white">
-              <X size={13} />
-            </button>
-          )}
-        </div>
-
+        <XSearchFilterBar searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="ابحث عن عقار، حي، أو مدينة..." activeFiltersCount={(dealTypeFilter !== 'all' ? 1 : 0) + (typeFilter !== 'all' ? 1 : 0) + (cityFilter !== 'all' ? 1 : 0)} onOpenFilter={() => setIsFilterModalOpen(true)} />
         {embedded && <AdBanner placementId="5" className="py-0.5" />}
-
-        <div className="flex items-center gap-1.5">
-          {(['all', 'بيع', 'إيجار'] as const).map((dt) => (
-            <button
-              key={dt}
-              onClick={() => setDealTypeFilter(dt)}
-              className={`flex-1 py-1 text-xs font-bold rounded-full border transition-all ${
-                dealTypeFilter === dt
-                  ? 'bg-white text-black border-white'
-                  : 'bg-black text-[#71767B] border-[#2F3336] hover:text-white'
-              }`}
-            >
-              {dt === 'all' ? 'الكل' : dt === 'بيع' ? 'للبيع' : 'للإيجار'}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <YRSelect
-            value={typeFilter}
-            options={PROPERTY_TYPES}
-            onChange={(val) => setTypeFilter(val)}
-            placeholder="كافة الأنواع"
-          />
-          <YRSelect
-            value={cityFilter}
-            options={YEMEN_GOVERNORATES}
-            onChange={(val) => setCityFilter(val)}
-            placeholder="كل المحافظات"
-          />
-        </div>
       </div>
 
       {/* المحتوى بأسلوب تغريدات X */}
@@ -614,6 +570,11 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
           </div>
         </div>
       )}
+      <XFilterModal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} title="تصفية العقارات" activeFiltersCount={(dealTypeFilter !== 'all' ? 1 : 0) + (typeFilter !== 'all' ? 1 : 0) + (cityFilter !== 'all' ? 1 : 0)} onReset={() => { setDealTypeFilter('all'); setTypeFilter('all'); setCityFilter('all'); }} resultsCount={filteredProperties.length} fields={[
+        { label: 'نوع المعاملة', value: dealTypeFilter, onChange: (v) => setDealTypeFilter(v as any), options: [{ value: 'all', label: 'الكل (بيع وإيجار)' }, { value: 'بيع', label: 'للبيع' }, { value: 'إيجار', label: 'للإيجار' }] },
+        { label: 'نوع العقار', value: typeFilter, onChange: setTypeFilter, options: PROPERTY_TYPES },
+        { label: 'المحافظة', value: cityFilter, onChange: setCityFilter, options: YEMEN_GOV_FILTER_OPTIONS },
+      ]} />
     </div>
   );
 };

@@ -3,6 +3,10 @@ import {
   X, Briefcase, MapPin, DollarSign, Plus, Trash2, CheckCircle2, ChevronDown, Check, Loader2, Building2, Phone, Mail, Lock, ShieldCheck
 } from "lucide-react";
 import { JobFormData } from "../../pages/admin/jobs/AddJobModal";
+import { supabase } from "../../lib/supabase";
+import { getMyBusinessPage, BusinessPageRecord } from "../../services/businessPageService";
+import { BadgeType } from "../common/VerifiedBadge";
+import { XLinkedAccountCard } from "../common/XMarketUI";
 
 const YEMEN_GOVS = [
   "صنعاء", "عدن", "تعز", "حضرموت", "الحديدة", "إب", "ذمار",
@@ -134,6 +138,42 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
   const [employerPhone, setEmployerPhone] = useState("");
   const [employerEmail, setEmployerEmail] = useState("");
   const [agreedToEmployerPolicy, setAgreedToEmployerPolicy] = useState(false);
+  const [myBusinessPage, setMyBusinessPage] = useState<BusinessPageRecord | null>(null);
+  const [linkedAvatar, setLinkedAvatar] = useState("");
+  const [linkedUsername, setLinkedUsername] = useState("");
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let active = true;
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const uid = session?.user?.id;
+        if (!uid || !active) return;
+        const [{ data: prof }, biz] = await Promise.all([
+          supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
+          getMyBusinessPage(uid),
+        ]);
+        if (!active) return;
+        if (biz) {
+          setMyBusinessPage(biz);
+          setCompanyName(biz.name || "");
+          if (biz.phone) setEmployerPhone(biz.phone.replace(/\D/g, "").slice(-9));
+          if (biz.city) setGovernorate(biz.city);
+          setLinkedAvatar(biz.avatarUrl || "");
+          setLinkedUsername(biz.username || "");
+        } else if (prof) {
+          setMyBusinessPage(null);
+          if (prof.full_name) setCompanyName(prof.full_name);
+          if (prof.phone) setEmployerPhone(prof.phone.replace(/\D/g, "").slice(-9));
+          if (prof.email) setEmployerEmail(prof.email);
+          setLinkedAvatar(prof.avatar_url || "");
+          setLinkedUsername(prof.email ? prof.email.split("@")[0] : "account");
+        }
+      } catch {}
+    })();
+    return () => { active = false; };
+  }, [isOpen]);
 
   const getJobCommissionText = () => {
     try {
@@ -198,9 +238,10 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
         workType,
         experienceLevel,
         vacanciesCount: Number(vacanciesCount) || 1,
-        companyName: companyName.trim(),
+        companyId: myBusinessPage?.id || undefined,
+        companyName: (myBusinessPage?.name || companyName).trim(),
         governorate,
-        district: "أمانة العاصمة",
+        district: governorate,
         area: "",
         isRemote,
         description: description.trim() + contactSection,
@@ -478,19 +519,30 @@ export const PublicAddJobModal: React.FC<PublicAddJobModalProps> = ({
                 </span>
               </div>
 
+              {(myBusinessPage || linkedUsername) && (
+                <XLinkedAccountCard
+                  name={myBusinessPage?.name || companyName || "حسابك"}
+                  username={myBusinessPage?.username || linkedUsername || "account"}
+                  avatarUrl={myBusinessPage?.avatarUrl || linkedAvatar}
+                  badgeType={myBusinessPage ? ((myBusinessPage.verificationType as BadgeType) || (myBusinessPage.isVerified ? "gold" : "none")) : "none"}
+                  label={myBusinessPage ? "صفحة المنشأة" : "حسابك"}
+                />
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div>
-                  <label className="block text-slate-300 font-bold mb-1">
-                    اسم الشركة / جهة العمل <span className="text-rose-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={companyName}
-                    onChange={e => setCompanyName(e.target.value)}
-                    placeholder="مثال: مجموعة هائل سعيد، شركة يمن تيك..."
-                    className="w-full bg-[#111111] border border-[#2F3336] focus:border-[#FFC500] rounded-xl p-2.5 text-white outline-none"
-                  />
-                </div>
+                {!(myBusinessPage || linkedUsername) && (
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">
+                      اسم الشركة / جهة العمل <span className="text-rose-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={companyName}
+                      onChange={e => setCompanyName(e.target.value)}
+                      placeholder="مثال: مجموعة هائل سعيد، شركة يمن تيك..."
+                      className="w-full bg-[#111111] border border-[#2F3336] focus:border-white rounded-xl p-2.5 text-white outline-none"
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-slate-300 font-bold mb-1">
