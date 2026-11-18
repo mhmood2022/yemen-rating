@@ -46,6 +46,7 @@ export interface XMarketItem {
   detailPath: string;
   actionLabel: string;
   actionIcon?: React.ReactNode;
+  onAction?: () => void;
   authorName: string;
   authorUsername: string;
   authorAvatar?: string;
@@ -132,11 +133,11 @@ export const XFilterModal: React.FC<{
             إعادة ضبط
           </button>
         </div>
-        <div className="p-4 space-y-3.5">
+        <div className="p-3.5 space-y-2.5">
           {fields.map((f) => (
             <div key={f.label}>
               <label className="text-xs font-bold text-[#71767B] block mb-1.5">{f.label}</label>
-              <YRSelect value={f.value} onChange={f.onChange} options={f.options} />
+              <YRSelect compact value={f.value} onChange={f.onChange} options={f.options} />
             </div>
           ))}
         </div>
@@ -228,10 +229,17 @@ export const XMarketTweetCard: React.FC<{
             </div>
           )}
           <div className="flex items-center justify-between text-[#71767B] w-full mt-2.5 px-0 select-none leading-none" dir="rtl" onClick={(e) => e.stopPropagation()}>
-            <Link to={item.detailPath} className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition-colors py-1">
-              {item.actionIcon || <ArrowRight size={14} className="rtl:rotate-180" />}
-              <span className="text-[11.5px] font-medium">{item.actionLabel}</span>
-            </Link>
+            {item.onAction ? (
+              <button type="button" onClick={item.onAction} className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition-colors py-1 cursor-pointer">
+                {item.actionIcon || <ArrowRight size={14} className="rtl:rotate-180" />}
+                <span className="text-[11.5px] font-medium">{item.actionLabel}</span>
+              </button>
+            ) : (
+              <Link to={item.detailPath} className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition-colors py-1">
+                {item.actionIcon || <ArrowRight size={14} className="rtl:rotate-180" />}
+                <span className="text-[11.5px] font-medium">{item.actionLabel}</span>
+              </Link>
+            )}
             {waHref ? (
               <a href={waHref} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-[#00BA7C] transition-colors py-1">
                 <MessageCircle size={14.5} /><span className="text-[11.5px] font-medium">واتساب</span>
@@ -321,9 +329,15 @@ export const XMarketDetailView: React.FC<{
           {item.phone && <span className="font-mono text-[12px]" dir="ltr">{item.phone}</span>}
         </div>
         <div className="py-2 border-b border-[#2F3336]/60 flex items-center justify-between text-[#71767B] px-2">
-          <Link to={item.detailPath} className="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#1D9BF0]/10 hover:text-[#1D9BF0] transition text-[12.5px] font-medium">
-            {item.actionIcon || <ArrowRight size={15} className="rtl:rotate-180" />}<span>{item.actionLabel}</span>
-          </Link>
+          {item.onAction ? (
+            <button type="button" onClick={item.onAction} className="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#1D9BF0]/10 hover:text-[#1D9BF0] transition text-[12.5px] font-medium cursor-pointer">
+              {item.actionIcon || <ArrowRight size={15} className="rtl:rotate-180" />}<span>{item.actionLabel}</span>
+            </button>
+          ) : (
+            <Link to={item.detailPath} className="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#1D9BF0]/10 hover:text-[#1D9BF0] transition text-[12.5px] font-medium">
+              {item.actionIcon || <ArrowRight size={15} className="rtl:rotate-180" />}<span>{item.actionLabel}</span>
+            </Link>
+          )}
           {waHref ? <a href={waHref} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#00BA7C]/10 hover:text-[#00BA7C] transition text-[12.5px] font-medium"><MessageCircle size={16} /><span>واتساب</span></a> : <span className="text-[11.5px] opacity-40 px-3">واتساب</span>}
           {item.phone ? <a href={`tel:${item.phone}`} className="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#FFC500]/10 hover:text-[#FFC500] transition text-[12.5px] font-medium"><Phone size={16} /><span>اتصال</span></a> : <span className="text-[11.5px] opacity-40 px-3">اتصال</span>}
           <button type="button" onClick={onShare} className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-full hover:bg-[#1D9BF0]/10 hover:text-[#1D9BF0] transition cursor-pointer"><ShareSvg /></button>

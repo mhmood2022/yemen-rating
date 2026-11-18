@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { AdBanner } from '../components/common/AdBanner';
 import { YRSelect } from '../components/common/YRSelect';
+import { XSearchFilterBar, XFilterModal, YEMEN_GOV_FILTER_OPTIONS } from '../components/common/XMarketUI';
 import { UserProfile } from '../types/auth';
 import { getMyBusinessPage, BusinessPageRecord } from '../services/businessPageService';
 import { uploadSocialImage } from '../services/socialService';
@@ -756,46 +757,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
 
           {/* شريط البحث + الإعلان الراعي + الفلتر */}
           <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "space-y-2 bg-[#0F0F12] p-2.5 rounded-2xl border border-[#222226]"}>
-            {/* 1. شريط البحث + أيقونة الفلتر يساراً بأسلوب X */}
-            <div className="flex items-center gap-2">
-              <div className="flex-1 flex items-center bg-black border border-[#2F3336] focus-within:border-white rounded-full px-3.5 py-2 transition-colors">
-                <Search size={15} className="text-[#71767B] ml-2 shrink-0" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="ابحث في سوق الهواتف..."
-                  className="flex-1 bg-transparent text-[13px] text-white placeholder-[#71767B] outline-none caret-white"
-                />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="text-[#71767B] hover:text-white transition-colors"
-                  >
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsFilterModalOpen(true)}
-                aria-label="فلترة النتائج"
-                className={`relative w-9 h-9 rounded-full border flex items-center justify-center shrink-0 transition-all cursor-pointer ${
-                  activeFiltersCount > 0
-                    ? 'bg-white text-black border-white'
-                    : 'bg-black text-[#E7E9EA] border-[#2F3336] hover:bg-white/10 hover:border-[#71767B]'
-                }`}
-              >
-                <SlidersHorizontal size={16} />
-                {activeFiltersCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#FFC500] text-black text-[10px] font-black flex items-center justify-center leading-none border border-black">
-                    {activeFiltersCount}
-                  </span>
-                )}
-              </button>
-            </div>
+            <XSearchFilterBar searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="ابحث في سوق الهواتف..." activeFiltersCount={activeFiltersCount} onOpenFilter={() => setIsFilterModalOpen(true)} />
 
             {/* 2. إعلان راعي */}
             {embedded && <AdBanner placementId="9" className="py-0.5" />}
@@ -1372,121 +1334,16 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         </div>
       )}
 
-      {/* نافذة الفلترة بقوائم منسدلة YRSelect بأسلوب X */}
-      {isFilterModalOpen && (
-        <div
-          className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center"
-          onClick={() => setIsFilterModalOpen(false)}
-        >
-          <div
-            dir="rtl"
-            onClick={(e) => e.stopPropagation()}
-            className="w-full sm:max-w-md bg-black border-t sm:border border-[#2F3336] rounded-t-3xl sm:rounded-2xl shadow-2xl"
-          >
-            <div className="w-10 h-1 rounded-full bg-[#2F3336] mx-auto mt-2.5 sm:hidden" />
-
-            <div className="px-4 py-3 border-b border-[#2F3336] flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setIsFilterModalOpen(false)}
-                  aria-label="إغلاق"
-                  className="w-8 h-8 rounded-full hover:bg-white/10 text-white flex items-center justify-center transition-colors cursor-pointer"
-                >
-                  <X size={18} />
-                </button>
-                <h3 className="text-[15px] font-black text-white">تصفية النتائج</h3>
-              </div>
-
-              <button
-                type="button"
-                onClick={resetFilters}
-                disabled={activeFiltersCount === 0}
-                className={`text-xs font-bold transition-colors ${
-                  activeFiltersCount > 0
-                    ? 'text-white hover:text-white/80 cursor-pointer'
-                    : 'text-[#71767B]/50 cursor-default'
-                }`}
-              >
-                إعادة ضبط
-              </button>
-            </div>
-
-            <div className="p-4 space-y-3.5">
-              <div>
-                <label className="text-xs font-bold text-[#71767B] block mb-1.5">القسم</label>
-                <YRSelect
-                  value={activeTab}
-                  onChange={(val) => setActiveTab(val as any)}
-                  options={[
-                    { value: 'all', label: 'كل الأقسام' },
-                    { value: 'phones', label: 'الجوالات' },
-                    { value: 'tablets', label: 'الآيبادات والأجهزة اللوحية' },
-                    { value: 'laptops', label: 'الحواسيب واللابتوبات' },
-                    { value: 'accessories', label: 'الإكسسوارات' },
-                    { value: 'maintenance', label: 'الصيانة' },
-                    { value: 'sim_services', label: 'الشرائح وخدمات الاتصال' },
-                  ]}
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[#71767B] block mb-1.5">الماركة / نوع الجهاز</label>
-                <YRSelect
-                  value={selectedBrand}
-                  onChange={(val) => setSelectedBrand(val)}
-                  options={[
-                    { value: 'all', label: 'جميع الماركات والأجهزة' },
-                    ...PHONE_BRANDS.map((b) => ({ value: b.id, label: b.label })),
-                    ...COMPUTER_BRANDS.map((b) => ({ value: b.id, label: b.label })),
-                    { value: 'Other', label: 'أخرى' },
-                  ]}
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[#71767B] block mb-1.5">الحالة</label>
-                <YRSelect
-                  value={selectedCondition}
-                  onChange={(val) => setSelectedCondition(val)}
-                  options={[
-                    { value: 'all', label: 'كل الحالات' },
-                    { value: 'جديد كرت', label: 'جديد كرت' },
-                    { value: 'شبه جديد', label: 'شبه جديد' },
-                    { value: 'مستعمل نظيف', label: 'مستعمل نظيف' },
-                  ]}
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[#71767B] mb-1.5 flex items-center gap-1">
-                  <MapPin size={12} />
-                  <span>المحافظة</span>
-                </label>
-                <YRSelect
-                  value={selectedCity}
-                  onChange={(val) => setSelectedCity(val)}
-                  options={[
-                    { value: 'all', label: 'جميع المحافظات' },
-                    ...YEMEN_GOVERNORATES.map((gov) => ({ value: gov, label: gov })),
-                  ]}
-                />
-              </div>
-            </div>
-
-            <div className="px-4 py-3 border-t border-[#2F3336] bg-black rounded-b-2xl">
-              <button
-                type="button"
-                onClick={() => setIsFilterModalOpen(false)}
-                className="w-full py-2.5 rounded-full bg-white hover:bg-white/90 text-black font-black text-sm transition-all cursor-pointer"
-              >
-                عرض النتائج ({filteredPhones.length})
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
+            <XFilterModal
+        isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} title="تصفية النتائج"
+        activeFiltersCount={activeFiltersCount} onReset={resetFilters} resultsCount={filteredPhones.length}
+        fields={[
+          { label: 'القسم', value: activeTab, onChange: (v) => setActiveTab(v as any), options: [{ value: 'all', label: 'كل الأقسام' }, { value: 'phones', label: 'الجوالات' }, { value: 'tablets', label: 'الآيبادات والأجهزة اللوحية' }, { value: 'laptops', label: 'الحواسيب واللابتوبات' }, { value: 'accessories', label: 'الإكسسوارات' }, { value: 'maintenance', label: 'الصيانة' }, { value: 'sim_services', label: 'الشرائح وخدمات الاتصال' }] },
+          { label: 'الماركة / نوع الجهاز', value: selectedBrand, onChange: setSelectedBrand, options: [{ value: 'all', label: 'جميع الماركات والأجهزة' }, ...PHONE_BRANDS.map((b) => ({ value: b.id, label: b.label })), ...COMPUTER_BRANDS.map((b) => ({ value: b.id, label: b.label })), { value: 'Other', label: 'أخرى' }] },
+          { label: 'الحالة', value: selectedCondition, onChange: setSelectedCondition, options: [{ value: 'all', label: 'كل الحالات' }, { value: 'جديد كرت', label: 'جديد كرت' }, { value: 'شبه جديد', label: 'شبه جديد' }, { value: 'مستعمل نظيف', label: 'مستعمل نظيف' }] },
+          { label: 'المحافظة', value: selectedCity, onChange: setSelectedCity, options: YEMEN_GOV_FILTER_OPTIONS },
+        ]}
+      />
     </div>
   );
 };

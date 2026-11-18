@@ -59,6 +59,7 @@ import { AdBanner } from '../common/AdBanner';
 import { AuctionCard } from '../auctions/AuctionCard';
 import { YRSelect } from '../common/YRSelect';
 import { AuctionCreateModal } from '../auctions/AuctionCreateModal';
+import { XAuctionBidModal } from '../auctions/XAuctionBidModal';
 import { BadgeType } from '../common/VerifiedBadge';
 import { mapBusinessToPage, BusinessPageRecord } from '../../services/businessPageService';
 import { XMarketItem, XSearchFilterBar, XFilterModal, XMarketTweetCard, XMarketDetailView, XImageLightbox, YEMEN_GOV_FILTER_OPTIONS } from '../common/XMarketUI';
@@ -235,6 +236,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
   const [selectedItem, setSelectedItem] = useState<XMarketItem | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [biddingAuction, setBiddingAuction] = useState<any | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   // نموذج إضافة المعروض
@@ -482,7 +484,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
     const dir = auc.sale_type === 'fixed_price' || auc.sale_type === 'direct';
     let desc = auc.description || '';
     if (desc.startsWith('{')) { try { const x = JSON.parse(desc); desc = x.notes || x.description || ''; } catch {} }
-    return { id: auc.id, detailPath: `/auctions/${auc.id}`, actionLabel: dir ? 'التفاصيل' : 'المزايدة', actionIcon: <Gavel size={14} />, authorName: biz?.name || auc.seller_name || (dir ? 'بيع مباشر' : 'مزاد علني'), authorUsername: biz?.username || auc.city || 'auction', authorAvatar: biz?.avatarUrl || '', badgeType: biz ? ((biz.verificationType as BadgeType) || (biz.isVerified ? 'gold' : 'none')) : 'none', businessPath: biz ? `/businesses/${biz.username || biz.id}` : undefined, createdAt: auc.created_at, title: auc.title, priceText: `${bid.toLocaleString()} ${auc.currency || 'SAR'}`, description: desc, metaParts: [dir ? 'بيع مباشر' : 'مزاد علني', auc.category, auc.city].filter(Boolean), tagLabel: dir ? 'بيع مباشر' : 'مزاد علني', images: imgs, city: auc.city, phone: auc.seller_phone || biz?.phone || '' };
+    return { id: auc.id, detailPath: `/auctions/${auc.id}`, actionLabel: dir ? 'التفاصيل' : 'المزايدة', actionIcon: <Gavel size={14} />, onAction: () => setBiddingAuction(auc), authorName: biz?.name || auc.seller_name || (dir ? 'بيع مباشر' : 'مزاد علني'), authorUsername: biz?.username || auc.city || 'auction', authorAvatar: biz?.avatarUrl || '', badgeType: biz ? ((biz.verificationType as BadgeType) || (biz.isVerified ? 'gold' : 'none')) : 'none', businessPath: biz ? `/businesses/${biz.username || biz.id}` : undefined, createdAt: auc.created_at, title: auc.title, priceText: `${bid.toLocaleString()} ${auc.currency || 'SAR'}`, description: desc, metaParts: [dir ? 'بيع مباشر' : 'مزاد علني', auc.category, auc.city].filter(Boolean), tagLabel: dir ? 'بيع مباشر' : 'مزاد علني', images: imgs, city: auc.city, phone: auc.seller_phone || biz?.phone || '' };
   };
   const onShareX = (it: XMarketItem) => { navigator.clipboard?.writeText(it.title); setToastMessage('تم نسخ التفاصيل'); setTimeout(() => setToastMessage(null), 2500); };
   return (
@@ -580,6 +582,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
       />
       )}
       <XImageLightbox isOpen={isLightboxOpen} item={selectedItem} activeIndex={activeImageIndex} onChangeIndex={setActiveImageIndex} onClose={() => setIsLightboxOpen(false)} />
+      <XAuctionBidModal auction={biddingAuction} onClose={() => setBiddingAuction(null)} onSuccess={(m) => { setToastMessage(m); setTimeout(() => setToastMessage(null), 3500); fetchAuctions(); }} />
       <XFilterModal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} title="تصفية المزادات" activeFiltersCount={(selectedCat !== 'all' ? 1 : 0) + (statusTab !== 'ACTIVE' ? 1 : 0) + (cityFilter !== 'all' ? 1 : 0)} onReset={() => { setSelectedCat('all'); setStatusTab('ACTIVE'); setCityFilter('all'); }} resultsCount={displayedListings.length} fields={[
         { label: 'القسم', value: selectedCat, onChange: setSelectedCat, options: GENERAL_CATEGORIES.map((x) => ({ value: x.id, label: x.label })) },
         { label: 'الحالة', value: statusTab, onChange: (v) => setStatusTab(v as any), options: [{ value: 'ACTIVE', label: `المزادات النشطة (${activeAuctions.length})` }, { value: 'DIRECT', label: `البيع المباشر (${directSales.length})` }, { value: 'ENDED', label: `المزادات المنتهية (${endedListings.length})` }] },

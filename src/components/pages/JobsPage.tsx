@@ -1,4 +1,5 @@
 import { PublicAddJobModal } from "../jobs/PublicAddJobModal";
+import { XJobApplyModal } from "../jobs/XJobApplyModal";
 import { JobFormData } from "../../pages/admin/jobs/AddJobModal";
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -63,6 +64,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<XMarketItem | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [applyingJob, setApplyingJob] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [cityFilter, setCityFilter] = useState('all');
@@ -250,6 +252,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
       id: job.id,
       detailPath: `/jobs/${job.id}`,
       actionLabel: 'التقديم',
+      onAction: () => setApplyingJob(job),
       actionIcon: <Briefcase size={14} />,
       authorName: biz?.name || extractedName || 'جهة توظيف معتمدة',
       authorUsername: biz?.username || job.city || 'jobs',
@@ -375,6 +378,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
         ]}
       />
 
+      <XJobApplyModal job={applyingJob} commissionText={jobCommText} onClose={() => setApplyingJob(null)} onSuccess={(msg) => { setToastMessage(msg); setTimeout(() => setToastMessage(null), 3500); }} />
       <PublicAddJobModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSubmit={handleSaveJobFromModal} />
     </div>
   );

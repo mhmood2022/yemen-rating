@@ -5,7 +5,11 @@ import { supabase } from '../../lib/supabase';
 import { AdBanner } from '../common/AdBanner';
 import { PropertyCard } from '../properties/PropertyCard';
 import { YRSelect } from '../common/YRSelect';
-import { XSearchFilterBar, XFilterModal, YEMEN_GOV_FILTER_OPTIONS } from '../common/XMarketUI';
+import { BadgeType } from '../common/VerifiedBadge';
+import { getMyBusinessPage, mapBusinessToPage, BusinessPageRecord } from '../../services/businessPageService';
+import { XMarketItem, XSearchFilterBar, XFilterModal, XMarketTweetCard,
+  XMarketDetailView, XImageLightbox, XLinkedAccountCard,
+  YEMEN_GOV_FILTER_OPTIONS, YEMEN_GOV_FORM_OPTIONS } from '../common/XMarketUI';
 
 const YEMEN_GOVERNORATES = [
   { value: 'all', label: 'جميع المحافظات' },
@@ -56,6 +60,14 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
   const [typeFilter, setTypeFilter] = useState('all');
   const [cityFilter, setCityFilter] = useState('all');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [businessesList, setBusinessesList] = useState<BusinessPageRecord[]>([]);
+  const [profilesMap, setProfilesMap] = useState<Record<string, any>>({});
+  const [myBusinessPage, setMyBusinessPage] = useState<BusinessPageRecord | null>(null);
+  const [myProfile, setMyProfile] = useState<any>(null);
+  const [formError, setFormError] = useState('');
+  const [selectedItem, setSelectedItem] = useState<XMarketItem | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   // نافذة أضف عقار
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -79,12 +91,18 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
   const fetchProperties = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('properties')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      const [{ data, error }, { data: bizData }, { data: profData }] = await Promise.all([
+        supabase.from('properties').select('*').order('created_at', { ascending: false }),
+        supabase.from('businesses').select('*').limit(200),
+        supabase.from('profiles').select('id, full_name, avatar_url, phone, email').limit(200),
+      ]);
       if (error) throw error;
+      if (bizData) setBusinessesList(bizData.map(mapBusinessToPage));
+      if (profData) {
+        const pm: Record<string, any> = {};
+        profData.forEach((x: any) => { if (x?.id) pm[x.id] = x; });
+        setProfilesMap(pm);
+      }
       setProperties(data || []);
     } catch (err) {
       console.error('Error fetching properties:', err);
@@ -95,6 +113,21 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
 
   useEffect(() => {
     fetchProperties();
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      const uid = session?.user?.id; if (!uid) return;
+      const [{ data: prof }, biz] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', uid).maybeSingle(),
+        getMyBusinessPage(uid),
+      ]);
+      if (prof) setMyProfile(prof);
+      if (biz) {
+        setMyBusinessPage(biz);
+        if (biz.phone) setOwnerPhone(biz.phone.replace(/\D/g, '').slice(-9));
+        if (biz.city) setNewCity(biz.city);
+      } else if (prof?.phone) {
+        setOwnerPhone(prof.phone.replace(/\D/g, '').slice(-9));
+      }
+    }).catch(() => {});
   }, []);
 
   const handleOpenAddModal = async () => {
@@ -108,25 +141,27 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
   };
 
   const handleImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const remaining = 6 - uploadedImages.length;
-      if (remaining <= 0) {
-        setToastMessage('الحد الأقصى المسموح به هو 6 صور فقط');
-        setTimeout(() => setToastMessage(null), 3000);
-        return;
-      }
-      const taken = Array.from(files).slice(0, remaining);
-      taken.forEach((file) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          if (typeof reader.result === 'string') {
-            setUploadedImages((prev) => (prev.length < 6 ? [...prev, reader.result as string] : prev));
-          }
+    const files = e.target.files; if (!files) return;
+    const rem = 6 - uploadedImages.length;
+    if (rem <= 0) { setFormError('الحد الأقصى 6 صور فقط'); return; }
+    Array.from(files).slice(0, rem).forEach((file) => {
+      const r = new FileReader();
+      r.onloadend = () => {
+        if (typeof r.result !== 'string') return;
+        const img = new Image();
+        img.onload = () => {
+          const cv = document.createElement('canvas');
+          const M = 1000; let w = img.width, h = img.height;
+          if (w > h && w > M) { h = Math.round(h * M / w); w = M; }
+          else if (h > M) { w = Math.round(w * M / h); h = M; }
+          cv.width = w; cv.height = h;
+          cv.getContext('2d')?.drawImage(img, 0, 0, w, h);
+          setUploadedImages((prev) => prev.length < 6 ? [...prev, cv.toDataURL('image/jpeg', 0.72)] : prev);
         };
-        reader.readAsDataURL(file);
-      });
-    }
+        img.src = r.result;
+      };
+      r.readAsDataURL(file);
+    });
   };
 
   const removeImage = (index: number) => {
@@ -139,11 +174,13 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
   };
 
   const handleAddProperty = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle.trim() || !agreedToCommission) return;
+    e.preventDefault(); setFormError('');
+    if (!newTitle.trim()) { setFormError('يرجى كتابة عنوان العقار'); return; }
+    if (!agreedToCommission) { setFormError('يرجى الموافقة على عمولة الوساطة أولاً'); return; }
 
-    if (ownerPhone.length !== 9) {
-      setToastMessage('يرجى إدخال رقم هاتف مكون من 9 أرقام بالضبط (مثال: 77XXXXXXX)');
+    const effPh = ownerPhone.trim() || (myBusinessPage?.phone || myProfile?.phone || '').replace(/\D/g, '').slice(-9);
+    if (effPh.length !== 9) {
+      setFormError('يرجى إدخال رقم هاتف مكون من 9 أرقام بالضبط');
       setTimeout(() => setToastMessage(null), 3500);
       return;
     }
@@ -158,17 +195,18 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
     try {
       setSubmitting(true);
       const payload: any = {
+        owner_user_id: session.user.id,
+        business_id: myBusinessPage?.id || null,
         title: newTitle.trim(),
-        deal_type: newDealType,
+        listing_type: newDealType === 'بيع' ? 'SALE' : 'RENT',
         property_type: newPropertyType,
         city: newCity,
-        location_details: newLocationDetails.trim() || newCity,
+        district: newLocationDetails.trim() || newCity,
         price: parseFloat(newPrice) || 0,
         currency: newCurrency,
-        area_m2: parseFloat(newArea) || 0,
-        rooms: parseInt(newRooms) || 0,
-        owner_id: session.user.id,
-        images: uploadedImages,
+        area_sqm: parseFloat(newArea) || 0,
+        bedrooms: parseInt(newRooms) || 0,
+        image_urls: uploadedImages,
         status: 'ACTIVE',
         created_at: new Date().toISOString()
       };
@@ -189,7 +227,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
       setTimeout(() => setToastMessage(null), 4000);
       fetchProperties();
     } catch (err: any) {
-      setToastMessage(err.message || 'حدث خطأ أثناء إرسال العقار');
+      setFormError(err.message || 'حدث خطأ أثناء إرسال العقار');
       setTimeout(() => setToastMessage(null), 4000);
     } finally {
       setSubmitting(false);
@@ -197,7 +235,8 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
   };
 
   const filteredProperties = properties.filter((prop) => {
-    const dealType = prop.deal_type || prop.dealType;
+    const rawDeal = prop.deal_type || prop.dealType || prop.listing_type;
+    const dealType = rawDeal === 'SALE' ? 'بيع' : rawDeal === 'RENT' ? 'إيجار' : rawDeal;
     const propType = prop.property_type || prop.propertyType;
 
     const matchDeal = dealTypeFilter === 'all' || dealType === dealTypeFilter;
@@ -209,18 +248,50 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
     return matchDeal && matchType && matchCity && matchSearch;
   });
 
+  const toPropX = (prop: any): XMarketItem => {
+    const ownerUid = prop.owner_user_id || prop.owner_id;
+    const biz = businessesList.find((b) =>
+      (prop.business_id && b.id === prop.business_id) ||
+      (ownerUid && b.ownerId === ownerUid)) || null;
+    const prof = ownerUid ? profilesMap[ownerUid] : null;
+    const pt = prop.property_type || prop.propertyType || 'عقار';
+    const rawDt = prop.deal_type || prop.dealType || prop.listing_type;
+    const dt = rawDt === 'SALE' ? 'بيع' : rawDt === 'RENT' ? 'إيجار' : (rawDt || 'متاح');
+    return {
+      id: prop.id, detailPath: `/properties/${prop.id}`, actionLabel: 'التفاصيل',
+      onAction: () => { const it = toPropX(prop); setSelectedItem(it); setActiveImageIndex(0); window.scrollTo({ top: 0, behavior: 'instant' }); },
+      authorName: biz?.name || prof?.full_name || `${pt} (${dt})`,
+      authorUsername: biz?.username || (prof?.email ? prof.email.split('@')[0] : (prop.city || 'realestate')),
+      authorAvatar: biz?.avatarUrl || prof?.avatar_url || '',
+      badgeType: biz ? ((biz.verificationType as BadgeType) || (biz.isVerified ? 'gold' : 'none')) : 'none',
+      businessPath: biz ? `/businesses/${biz.username || biz.id}` : undefined,
+      createdAt: prop.created_at, title: prop.title,
+      priceText: prop.price ? `${Number(prop.price).toLocaleString()} ${prop.currency || 'YER'}` : 'عند المعاينة',
+      description: prop.district || prop.description || prop.location_details || '',
+      metaParts: [`${pt} · ${dt}`, (prop.area_sqm || prop.area_m2 || prop.area) ? `${prop.area_sqm || prop.area_m2 || prop.area} م²` : '',
+        (prop.bedrooms || prop.rooms) ? `${prop.bedrooms || prop.rooms} غرف` : '', prop.city || ''].filter(Boolean),
+      tagLabel: `${pt} · ${dt}`,
+      images: Array.isArray(prop.image_urls) ? prop.image_urls : (Array.isArray(prop.images) ? prop.images : []),
+      city: prop.city, phone: biz?.phone || prof?.phone || '',
+    };
+  };
+  const onShareX = (it: XMarketItem) => {
+    navigator.clipboard?.writeText(it.title);
+    setToastMessage('تم نسخ التفاصيل');
+    setTimeout(() => setToastMessage(null), 2500);
+  };
   return (
     <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Tahoma'] text-white bg-black min-h-screen"}>
-      {!embedded && <AdBanner placementId="5" className="mb-1" />}
+      {!embedded && !selectedItem && <AdBanner placementId="5" className="mb-1" />}
 
       {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#F5C400] text-black px-4 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[99999] bg-[#F5C400] text-black px-4 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2">
           <CheckCircle2 size={16} />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {!embedded && (
+      {!embedded && !selectedItem && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2F3336] pb-3">
           <div className="flex items-center gap-2.5">
             {onBack && (
@@ -258,6 +329,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
         </div>
       )}
 
+      {selectedItem ? <XMarketDetailView item={selectedItem} activeImageIndex={activeImageIndex} onChangeImageIndex={setActiveImageIndex} onBack={() => setSelectedItem(null)} onOpenLightbox={() => setIsLightboxOpen(true)} onShare={() => onShareX(selectedItem)} /> : (<>
       {/* الرأس الموحد: بحث + أيقونة الفلتر يساراً مثل سوق الهواتف */}
       <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "bg-[#000000] p-3 rounded-2xl border border-[#2F3336] space-y-2.5"}>
         <XSearchFilterBar searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="ابحث عن عقار، حي، أو مدينة..." activeFiltersCount={(dealTypeFilter !== 'all' ? 1 : 0) + (typeFilter !== 'all' ? 1 : 0) + (cityFilter !== 'all' ? 1 : 0)} onOpenFilter={() => setIsFilterModalOpen(true)} />
@@ -277,62 +349,17 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
           <p className="text-xs">اضغط على زر + لإضافة عقار جديد.</p>
         </div>
       ) : embedded ? (
-        <div className="divide-y divide-[#2F3336]/40">
-          {filteredProperties.map((prop) => {
-            const mainImage = prop.images && prop.images.length > 0 ? prop.images[0] : null;
-            const dealType = prop.deal_type || prop.dealType || 'متاح';
-            const propType = prop.property_type || prop.propertyType || 'عقار';
-            return (
-              <Link
-                key={prop.id}
-                to={`/properties/${prop.id}`}
-                className="p-3 bg-black hover:bg-white/[0.03] transition flex gap-3"
-              >
-                <div className="w-11 h-11 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 text-[#FFC500]">
-                  <Building size={18} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap text-[13px]">
-                    <span className="font-bold text-white">{propType} ({dealType})</span>
-                    <ShieldCheck size={14} className="text-[#FFC500] shrink-0" />
-                    <span className="text-[#71767B] text-[12px]">@{prop.city || 'اليمن'}</span>
-                  </div>
-                  <div className="mt-1 text-[14.5px] font-bold text-[#E7E9EA] leading-snug">
-                    {prop.title}
-                  </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-3 text-[12px] text-[#71767B]">
-                    {(prop.area_m2 || prop.area) ? (
-                      <span className="flex items-center gap-1"><Maximize2 size={12} /> {prop.area_m2 || prop.area} م²</span>
-                    ) : null}
-                    {prop.rooms ? (
-                      <span className="flex items-center gap-1"><BedDouble size={12} /> {prop.rooms} غرف</span>
-                    ) : null}
-                    <span className="text-[#FFC500] font-bold">
-                      {prop.price ? `${Number(prop.price).toLocaleString()} ${prop.currency || 'YER'}` : 'عند المعاينة'}
-                    </span>
-                  </div>
-                  {mainImage && (
-                    <div className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336]/50 max-h-80 bg-zinc-950">
-                      <img src={mainImage} alt={prop.title} className="w-full max-h-80 object-cover" loading="lazy" />
-                    </div>
-                  )}
-                  <div className="mt-2 flex items-center justify-end text-[12px] text-white/80 font-bold">
-                    <span>عرض التفاصيل ←</span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <div className="divide-y divide-[#2F3336]/60">{filteredProperties.map((prop) => { const item = toPropX(prop); return <XMarketTweetCard key={prop.id} item={item} onOpenDetail={() => { setSelectedItem(item); setActiveImageIndex(0); window.scrollTo({ top: 0, behavior: "instant" }); }} onOpenImage={(idx) => { setSelectedItem(item); setActiveImageIndex(idx); setIsLightboxOpen(true); }} onShare={() => onShareX(item)} />; })}</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredProperties.map((prop) => (
-            <PropertyCard key={prop.id} property={prop} />
+            <PropertyCard key={prop.id} property={{ ...prop, deal_type: prop.deal_type || (prop.listing_type === 'SALE' ? 'بيع' : prop.listing_type === 'RENT' ? 'إيجار' : prop.listing_type), area_m2: prop.area_m2 ?? prop.area_sqm, rooms: prop.rooms ?? prop.bedrooms, images: prop.images ?? prop.image_urls }} />
           ))}
         </div>
       )}
 
-      {embedded && !isAddModalOpen && (
+      </>)}
+      {embedded && !selectedItem && !isAddModalOpen && (
         <button
           onClick={handleOpenAddModal}
           className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-black flex items-center justify-center shadow-lg shadow-black/60 transition"
@@ -355,6 +382,8 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
             </div>
 
             <form onSubmit={handleAddProperty} className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
+              {(myBusinessPage || myProfile) && <XLinkedAccountCard name={myBusinessPage?.name || myProfile?.full_name || "حسابك"} username={myBusinessPage?.username || (myProfile?.email ? myProfile.email.split("@")[0] : "account")} avatarUrl={myBusinessPage?.avatarUrl || myProfile?.avatar_url} badgeType={myBusinessPage ? ((myBusinessPage.verificationType as BadgeType) || (myBusinessPage.isVerified ? "gold" : "none")) : "none"} label={myBusinessPage ? "صفحة المنشأة" : "حسابك"} />}
+              {formError && <div className="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 font-bold text-xs">{formError}</div>}
               <div>
                 <label className="text-[11px] text-[#F5C400] block mb-1 font-bold">نوع المعاملة *</label>
                 <div className="grid grid-cols-2 gap-2">
@@ -550,6 +579,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
                 </label>
               </div>
 
+              {formError && <div className="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 font-bold text-xs">{formError}</div>}
               <div className="flex justify-end gap-2 pt-1 border-t border-[#2F3336]">
                 <button
                   type="button"
@@ -570,6 +600,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
           </div>
         </div>
       )}
+      <XImageLightbox isOpen={isLightboxOpen} item={selectedItem} activeIndex={activeImageIndex} onChangeIndex={setActiveImageIndex} onClose={() => setIsLightboxOpen(false)} />
       <XFilterModal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} title="تصفية العقارات" activeFiltersCount={(dealTypeFilter !== 'all' ? 1 : 0) + (typeFilter !== 'all' ? 1 : 0) + (cityFilter !== 'all' ? 1 : 0)} onReset={() => { setDealTypeFilter('all'); setTypeFilter('all'); setCityFilter('all'); }} resultsCount={filteredProperties.length} fields={[
         { label: 'نوع المعاملة', value: dealTypeFilter, onChange: (v) => setDealTypeFilter(v as any), options: [{ value: 'all', label: 'الكل (بيع وإيجار)' }, { value: 'بيع', label: 'للبيع' }, { value: 'إيجار', label: 'للإيجار' }] },
         { label: 'نوع العقار', value: typeFilter, onChange: setTypeFilter, options: PROPERTY_TYPES },
