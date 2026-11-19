@@ -253,6 +253,7 @@ export const CommunityFeedPage: React.FC = () => {
     validUrlTabs.includes(initialUrlTab as any) ? (initialUrlTab as any) : 'forYou'
   );
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     setSwipeProgress(activeTab === 'forYou' ? 0 : 1);
     const currentParam = searchParams.get('tab') || 'forYou';
     if (currentParam !== activeTab) {

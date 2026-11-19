@@ -2,65 +2,84 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, Sparkles, MessageCircle, Phone, Award, Flame, Clock, ShieldCheck, Star, QrCode, ExternalLink, Info } from 'lucide-react';
 import { PublishedAd } from '../../pages/admin/ads/AdGeneratorStudio';
 import { adsDatabaseService } from '../../services/adsDatabaseService';
+import {
+  AdSlotKey,
+  LEGACY_PLACEMENT_TO_SECTION,
+  MarketSectionId,
+} from '../../utils/adGeneratorEngine';
 
 interface AdBannerProps {
   placementId?: string;
+  section?: MarketSectionId;
+  slot?: AdSlotKey;
+  excludeAdIds?: string[];
+  enabled?: boolean;
+  onAdResolved?: (adId: string | null) => void;
   className?: string;
 }
 
 export const AdBanner: React.FC<AdBannerProps> = ({
   placementId = '1',
-  className = ''
+  section,
+  slot = 'all',
+  excludeAdIds = [],
+  enabled = true,
+  onAdResolved,
+  className = '',
 }) => {
   const [adData, setAdData] = useState<PublishedAd | null>(null);
   const [isDismissed, setIsDismissed] = useState<boolean>(false);
+  const excludeKey = excludeAdIds.join(',');
 
   useEffect(() => {
+    if (!enabled) return;
     let isMounted = true;
 
-    const saved = localStorage.getItem('yr_published_ads');
-    if (saved) {
+    const loadAd = async () => {
       try {
-        const adsList: PublishedAd[] = JSON.parse(saved);
-        const match = adsList.find(a => 
-          a.status === 'active' && 
-          String(a.placementId) === String(placementId) && 
-          !a.mediaUrl?.startsWith('blob:')
-        );
-        if (match && isMounted) setAdData(match);
-      } catch (e) {
-        console.error(e);
-      }
-    }
+        const mappedSec =
+          section || LEGACY_PLACEMENT_TO_SECTION[String(placementId || '')];
 
-    const fetchFromDatabase = async () => {
-      try {
-        const liveAds = await adsDatabaseService.getActiveAds(placementId);
-        const validAds = (liveAds || []).filter(a => 
-          String(a.placementId) === String(placementId) && 
-          a.mediaUrl && 
-          !a.mediaUrl.startsWith('blob:')
-        );
+        let chosen: PublishedAd | null = null;
+        if (mappedSec) {
+          chosen = await adsDatabaseService.getEligibleAdForSlot(
+            mappedSec,
+            slot,
+            'banner',
+            excludeAdIds
+          );
+        } else {
+          const liveAds = await adsDatabaseService.getActiveAds(placementId);
+          const valid = (liveAds || []).filter(
+            (a) =>
+              String(a.placementId) === String(placementId) &&
+              a.mediaUrl &&
+              !a.mediaUrl.startsWith('blob:')
+          );
+          if (valid.length > 0) {
+            const pool = valid.filter((a) => !excludeAdIds.includes(a.id));
+            const arr = pool.length > 0 ? pool : valid;
+            arr.sort((a, b) => (a.views || 0) - (b.views || 0));
+            chosen = arr[0];
+            adsDatabaseService.recordImpression(chosen.id);
+          }
+        }
 
-        if (validAds.length > 0 && isMounted) {
-          setAdData(validAds[0]);
-          try {
-            localStorage.setItem('yr_published_ads', JSON.stringify(validAds));
-          } catch (_) {}
-        } else if (isMounted && !saved) {
-          setAdData(null);
+        if (isMounted) {
+          setAdData(chosen);
+          onAdResolved?.(chosen ? chosen.id : null);
         }
       } catch (err) {
-        console.error("AdBanner database fetch error:", err);
+        console.error('AdBanner fetch error:', err);
+        if (isMounted) onAdResolved?.(null);
       }
     };
 
-    fetchFromDatabase();
-
+    loadAd();
     return () => {
       isMounted = false;
     };
-  }, [placementId]);
+  }, [placementId, section, slot, excludeKey, enabled]);
 
   if (!adData || isDismissed) return null;
 
@@ -84,7 +103,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
         backgroundColor: adData.bgColor || '#0B0F17',
         backgroundImage: adData.bgStyle === 'gradient' ? `linear-gradient(135deg, ${adData.bgColor || '#0B0F17'} 0%, #161D2B 100%)` : 'none',
         boxShadow: adData.hasGlow && adData.hasBorder ? `0 0 20px ${adData.borderColor || '#FFC500'}35` : '0 4px 15px rgba(0,0,0,0.6)',
-        minHeight: isFooterSticky ? '54px' : '82px'
+        minHeight: isFooterSticky ? '54px' : (!adData.showHeadline && !adData.showDescription && !adData.showButton && !adData.showPricing ? '96px' : '82px')
       }}
     >
       <style>{`
@@ -246,7 +265,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
           )}
         </div>
 
-        <div className="pt-1 flex items-center justify-between border-t border-white/10 mt-0.5 flex-wrap gap-2 shrink-0">
+        {(adData.showPricing || adData.showButton) && (<div className="pt-1 flex items-center justify-between border-t border-white/10 mt-0.5 flex-wrap gap-2 shrink-0">
           {adData.showPricing && (
             <div className="flex items-center gap-1 font-mono">
               <span className="text-xs font-black text-[#FFC500] drop-shadow">{adData.currentPrice} {adData.currency || 'YER'}</span>
@@ -277,7 +296,7 @@ export const AdBanner: React.FC<AdBannerProps> = ({
               <ArrowRight size={11} className="rtl:rotate-180" />
             </a>
           )}
-        </div>
+        </div>)}
       </div>
     </div>
   );

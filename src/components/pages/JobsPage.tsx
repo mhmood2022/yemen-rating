@@ -12,6 +12,7 @@ import { Briefcase, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, Shie
 import { supabase } from '../../lib/supabase';
 import { adminAuctionsService } from '../../services/adminService';
 import { AdBanner } from '../common/AdBanner';
+import { MarketSponsorSlot } from '../ads/MarketSponsorSlot';
 import { JobCard } from '../jobs/JobCard';
 import { YRSelect } from '../common/YRSelect';
 import { BadgeType } from '../common/VerifiedBadge';
@@ -67,6 +68,8 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
   const [jobs, setJobs] = useState<any[]>([]);
   const [businessesList, setBusinessesList] = useState<BusinessPageRecord[]>([]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [slot1AdId, setSlot1AdId] = useState<string | null | undefined>(undefined);
+  useEffect(() => { if (!embedded) window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [embedded]);
   const [selectedItem, setSelectedItem] = useState<XMarketItem | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -436,24 +439,26 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
 
   return (
     <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "bg-black min-h-screen max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Tahoma'] text-white"}>
-      {!embedded && !selectedItem && <AdBanner placementId="4" className="mb-1" />}
       {toastMessage && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-[#F5C400] text-black px-4 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2">
           <CheckCircle2 size={16} /><span>{toastMessage}</span>
         </div>
       )}
       {!embedded && !selectedItem && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2F3336] pb-3">
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={() => { window.location.href = '/'; }} title="رجوع للرئيسية" className="p-2 rounded-xl bg-black border border-[#2F3336] text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all cursor-pointer">
-              <ArrowRight size={16} />
-            </button>
-            <div className="flex items-center gap-1.5"><Briefcase className="w-5 h-5 text-[#F5C400]" /><h1 className="text-sm sm:text-base font-black text-white">فرص العمل والوظائف</h1></div>
+        <div className="space-y-2.5 border-b border-[#2F3336] pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={() => { window.location.href = '/'; }} title="رجوع للرئيسية" className="p-2 rounded-xl bg-black border border-[#2F3336] text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all cursor-pointer">
+                <ArrowRight size={16} />
+              </button>
+              <div className="flex items-center gap-1.5"><Briefcase className="w-5 h-5 text-[#F5C400]" /><h1 className="text-sm sm:text-base font-black text-white">فرص العمل والوظائف</h1></div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={handleOpenAddModal} className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs"><Plus size={15} /><span>أضف وظيفة</span></button>
+              <button onClick={fetchJobs} disabled={loading} className="p-2 bg-[#111111] border border-[#2F3336] text-slate-300 hover:text-white rounded-xl"><RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} /></button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={handleOpenAddModal} className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs"><Plus size={15} /><span>أضف وظيفة</span></button>
-            <button onClick={fetchJobs} disabled={loading} className="p-2 bg-[#111111] border border-[#2F3336] text-slate-300 hover:text-white rounded-xl"><RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} /></button>
-          </div>
+          <MarketSponsorSlot section="jobs" />
         </div>
       )}
 
@@ -476,7 +481,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
               activeFiltersCount={activeFiltersCount}
               onOpenFilter={() => setIsFilterModalOpen(true)}
             />
-            {embedded && <AdBanner placementId="4" className="py-0.5" />}
+            {embedded && <MarketSponsorSlot section="jobs" className="pt-0.5" />}
           </div>
 
           {loading ? (
@@ -492,22 +497,49 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
             </div>
           ) : embedded ? (
             <div className="divide-y divide-[#2F3336]/60">
-              {filteredJobs.map((job) => {
+              {filteredJobs.map((job, idx) => {
                 const item = toJobXItem(job);
                 return (
-                  <XMarketTweetCard
-                    key={job.id}
-                    item={item}
-                    onOpenDetail={() => { setSelectedItem(item); window.scrollTo({ top: 0, behavior: 'instant' }); }}
-                    onOpenImage={(idx) => { setSelectedItem(item); setActiveImageIndex(idx); setIsLightboxOpen(true); }}
-                    onShare={() => handleShare(item)}
-                  />
+                  <React.Fragment key={job.id}>
+                    <XMarketTweetCard
+                      item={item}
+                      onOpenDetail={() => { setSelectedItem(item); window.scrollTo({ top: 0, behavior: 'instant' }); }}
+                      onOpenImage={(idx) => { setSelectedItem(item); setActiveImageIndex(idx); setIsLightboxOpen(true); }}
+                      onShare={() => handleShare(item)}
+                    />
+                    {idx === (filteredJobs.length >= 8 ? 2 : filteredJobs.length >= 4 ? 1 : 0) && (
+                      <div className="px-3 py-2 bg-black">
+                        <AdBanner section="jobs" slot="slot_1" onAdResolved={setSlot1AdId} />
+                      </div>
+                    )}
+                    {idx === (filteredJobs.length >= 8 ? 7 : filteredJobs.length >= 2 ? filteredJobs.length - 1 : -1) && (
+                      <div className="px-3 py-2 bg-black">
+                        <AdBanner section="jobs" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} />
+                      </div>
+                    )}
+                  </React.Fragment>
                 );
               })}
+
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredJobs.map((job) => <JobCard key={job.id} job={job} />)}
+              {filteredJobs.map((job, idx) => (
+                <React.Fragment key={job.id}>
+                  <JobCard job={job} />
+                  {idx === (filteredJobs.length >= 6 ? 2 : 0) && (
+                    <div className="col-span-full py-1">
+                      <AdBanner section="jobs" slot="slot_1" onAdResolved={setSlot1AdId} />
+                    </div>
+                  )}
+                  {idx === (filteredJobs.length >= 6 ? 5 : filteredJobs.length >= 2 ? filteredJobs.length - 1 : -1) && (
+                    <div className="col-span-full py-1">
+                      <AdBanner section="jobs" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} />
+                    </div>
+                  )}
+                </React.Fragment>
+              ))}
+
             </div>
           )}
 

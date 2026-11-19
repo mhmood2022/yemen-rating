@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Building, ArrowRight, RefreshCw, AlertCircle, Plus, ShieldCheck, X, ImagePlus, Trash2, MapPin, Video, FileImage } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdBanner } from '../common/AdBanner';
+import { MarketSponsorSlot } from '../ads/MarketSponsorSlot';
 import { PropertyCard } from '../properties/PropertyCard';
 import { YRSelect } from '../common/YRSelect';
 import { BadgeType } from '../common/VerifiedBadge';
@@ -46,6 +47,8 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
     return d ? d.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
   };
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [slot1AdId, setSlot1AdId] = useState<string | null | undefined>(undefined);
+  useEffect(() => { if (!embedded) window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [embedded]);
   const [businessesList, setBusinessesList] = useState<BusinessPageRecord[]>([]);
   const [profilesMap, setProfilesMap] = useState<Record<string, any>>({});
   const [myBusinessPage, setMyBusinessPage] = useState<BusinessPageRecord | null>(null);
@@ -449,38 +452,40 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
 
   return (
     <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Tahoma'] text-white bg-black min-h-screen"}>
-      {!embedded && !selectedItem && <AdBanner placementId="5" className="mb-1" />}
       <XToast toast={toastMessage} />
 
       {!embedded && !selectedItem && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2F3336] pb-3">
-          <div className="flex items-center gap-2.5">
-            {onBack && (
-              <button onClick={onBack} className="p-2 rounded-xl bg-[#000000] border border-[#2F3336] text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all">
-                <ArrowRight size={16} className="rtl:rotate-180" />
-              </button>
-            )}
+        <div className="space-y-2.5 border-b border-[#2F3336] pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              {onBack && (
+                <button onClick={onBack} className="p-2 rounded-xl bg-[#000000] border border-[#2F3336] text-[#F5C400] hover:bg-[#F5C400] hover:text-black transition-all">
+                  <ArrowRight size={16} className="rtl:rotate-180" />
+                </button>
+              )}
+              <div className="flex items-center gap-2">
+                <Building className="w-6 h-6 text-[#F5C400]" />
+                <h1 className="text-lg sm:text-xl font-black text-white">سوق العقارات المعتمد</h1>
+              </div>
+            </div>
+
             <div className="flex items-center gap-2">
-              <Building className="w-6 h-6 text-[#F5C400]" />
-              <h1 className="text-lg sm:text-xl font-black text-white">سوق العقارات المعتمد</h1>
+              <button onClick={handleOpenAddModal} className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs transition-colors shadow-md">
+                <Plus size={15} /><span>أضف عقار</span>
+              </button>
+              <button onClick={fetchProperties} disabled={loading} className="p-2 bg-[#000000] border border-[#2F3336] text-slate-300 hover:text-white rounded-xl transition-colors" title="تحديث">
+                <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
+              </button>
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <button onClick={handleOpenAddModal} className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs transition-colors shadow-md">
-              <Plus size={15} /><span>أضف عقار</span>
-            </button>
-            <button onClick={fetchProperties} disabled={loading} className="p-2 bg-[#000000] border border-[#2F3336] text-slate-300 hover:text-white rounded-xl transition-colors" title="تحديث">
-              <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
-            </button>
-          </div>
+          <MarketSponsorSlot section="realestate" />
         </div>
       )}
 
       {selectedItem ? <XMarketDetailView item={selectedItem} activeImageIndex={activeImageIndex} onChangeImageIndex={setActiveImageIndex} onBack={() => setSelectedItem(null)} onOpenLightbox={() => setIsLightboxOpen(true)} onShare={() => onShareX(selectedItem)} /> : (<>
         <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "bg-[#000000] p-3 rounded-2xl border border-[#2F3336] space-y-2.5"}>
           <XSearchFilterBar searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="ابحث عن عقار، حي، أو مدينة..." activeFiltersCount={activeFiltersCount} onOpenFilter={() => setIsFilterModalOpen(true)} />
-          {embedded && <AdBanner placementId="5" className="py-0.5" />}
+          {embedded && <MarketSponsorSlot section="realestate" className="pt-0.5" />}
         </div>
 
         {loading ? (
@@ -495,12 +500,50 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
             <p className="text-xs">اضغط على زر + لإضافة عقار جديد.</p>
           </div>
         ) : embedded ? (
-          <div className="divide-y divide-[#2F3336]/60">{filteredProperties.map((prop) => { const item = toPropX(prop); return <XMarketTweetCard key={prop.id} item={item} onOpenDetail={() => { setSelectedItem(item); setActiveImageIndex(0); window.scrollTo({ top: 0, behavior: "instant" }); }} onOpenImage={(idx) => { setSelectedItem(item); setActiveImageIndex(idx); setIsLightboxOpen(true); }} onShare={() => onShareX(item)} />; })}</div>
+          <div className="divide-y divide-[#2F3336]/60">
+            {filteredProperties.map((prop, idx) => {
+              const item = toPropX(prop);
+              return (
+                <React.Fragment key={prop.id}>
+                  <XMarketTweetCard
+                    item={item}
+                    onOpenDetail={() => { setSelectedItem(item); setActiveImageIndex(0); window.scrollTo({ top: 0, behavior: "instant" }); }}
+                    onOpenImage={(idx) => { setSelectedItem(item); setActiveImageIndex(idx); setIsLightboxOpen(true); }}
+                    onShare={() => onShareX(item)}
+                  />
+                  {idx === (filteredProperties.length >= 8 ? 2 : filteredProperties.length >= 4 ? 1 : 0) && (
+                    <div className="px-3 py-2 bg-black">
+                      <AdBanner section="realestate" slot="slot_1" onAdResolved={setSlot1AdId} />
+                    </div>
+                  )}
+                  {idx === (filteredProperties.length >= 8 ? 7 : filteredProperties.length >= 2 ? filteredProperties.length - 1 : -1) && (
+                    <div className="px-3 py-2 bg-black">
+                      <AdBanner section="realestate" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} />
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
+
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredProperties.map((prop) => (
-              <PropertyCard key={prop.id} property={{ ...prop, deal_type: prop.deal_type || (prop.listing_type === 'SALE' ? 'بيع' : prop.listing_type === 'RENT' ? 'إيجار' : prop.listing_type), area_m2: prop.area_m2 ?? prop.area_sqm, rooms: prop.rooms ?? prop.bedrooms, images: prop.images ?? prop.image_urls }} />
+            {filteredProperties.map((prop, idx) => (
+              <React.Fragment key={prop.id}>
+                <PropertyCard property={{ ...prop, deal_type: prop.deal_type || (prop.listing_type === 'SALE' ? 'بيع' : prop.listing_type === 'RENT' ? 'إيجار' : prop.listing_type), area_m2: prop.area_m2 ?? prop.area_sqm, rooms: prop.rooms ?? prop.bedrooms, images: prop.images ?? prop.image_urls }} />
+                {idx === (filteredProperties.length >= 6 ? 2 : 0) && (
+                  <div className="col-span-full py-1">
+                    <AdBanner section="realestate" slot="slot_1" onAdResolved={setSlot1AdId} />
+                  </div>
+                )}
+                {idx === (filteredProperties.length >= 6 ? 5 : filteredProperties.length >= 2 ? filteredProperties.length - 1 : -1) && (
+                  <div className="col-span-full py-1">
+                    <AdBanner section="realestate" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} />
+                  </div>
+                )}
+              </React.Fragment>
             ))}
+
           </div>
         )}
       </>)}

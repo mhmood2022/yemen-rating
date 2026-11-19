@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Gavel, ArrowRight, RefreshCw, AlertCircle, Plus, X, ImagePlus, Trash2, MapPin, Video, FileImage } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdBanner } from '../common/AdBanner';
+import { MarketSponsorSlot } from '../ads/MarketSponsorSlot';
 import { YRSelect } from '../common/YRSelect';
 import { XAuctionBidModal } from '../auctions/XAuctionBidModal';
 import { BadgeType } from '../common/VerifiedBadge';
@@ -39,6 +40,8 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
   const [cityFilter, setCityFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [slot1AdId, setSlot1AdId] = useState<string | null | undefined>(undefined);
+  useEffect(() => { if (!embedded) window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [embedded]);
   const [businessesList, setBusinessesList] = useState<BusinessPageRecord[]>([]);
   const [selectedItem, setSelectedItem] = useState<XMarketItem | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -380,29 +383,31 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
 
   return (
     <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-7xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white bg-black min-h-screen"}>
-      {!embedded && !selectedItem && <AdBanner placementId="6" className="mb-1" />}
       <XToast toast={toastMessage} />
 
       {!embedded && !selectedItem && (
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-black border border-[#2F3336] p-4 rounded-2xl">
-          <div className="flex items-center gap-3">
-            {onBack && <button onClick={onBack} className="p-2 rounded-xl bg-[#111111] border border-[#2F3336] text-[#F5C400]"><ArrowRight size={16} className="rtl:rotate-180" /></button>}
-            <div>
-              <h1 className="text-lg font-black text-white">المزادات والبيع المباشر</h1>
-              <p className="text-[11px] text-[#71767B]">منصة المزايدات الموثقة والصفقات المباشرة</p>
+        <div className="space-y-2.5 bg-black border border-[#2F3336] p-4 rounded-2xl">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              {onBack && <button onClick={onBack} className="p-2 rounded-xl bg-[#111111] border border-[#2F3336] text-[#F5C400]"><ArrowRight size={16} className="rtl:rotate-180" /></button>}
+              <div>
+                <h1 className="text-lg font-black text-white">المزادات والبيع المباشر</h1>
+                <p className="text-[11px] text-[#71767B]">منصة المزايدات الموثقة والصفقات المباشرة</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setIsCreateAuctionOpen(true)} className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FFC500] text-black font-black rounded-xl text-xs"><Plus size={15} /><span>أضف معروض</span></button>
+              <button onClick={fetchAuctions} disabled={loading} className="p-2 bg-black border border-[#2F3336] text-slate-300 rounded-xl"><RefreshCw size={15} className={loading ? 'animate-spin text-[#FFC500]' : ''} /></button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setIsCreateAuctionOpen(true)} className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FFC500] text-black font-black rounded-xl text-xs"><Plus size={15} /><span>أضف معروض</span></button>
-            <button onClick={fetchAuctions} disabled={loading} className="p-2 bg-black border border-[#2F3336] text-slate-300 rounded-xl"><RefreshCw size={15} className={loading ? 'animate-spin text-[#FFC500]' : ''} /></button>
-          </div>
+          <MarketSponsorSlot section="auctions" />
         </div>
       )}
 
       {selectedItem ? <XMarketDetailView item={selectedItem} activeImageIndex={activeImageIndex} onChangeImageIndex={setActiveImageIndex} onBack={() => setSelectedItem(null)} onOpenLightbox={() => setIsLightboxOpen(true)} onShare={() => onShareX(selectedItem)} /> : (<>
         <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "bg-[#000000] p-3 rounded-2xl border border-[#2F3336] space-y-2.5"}>
           <XSearchFilterBar searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="ابحث في المزادات والبيع المباشر..." activeFiltersCount={activeFiltersCount} onOpenFilter={() => setIsFilterModalOpen(true)} />
-          {embedded && <AdBanner placementId="6" className="py-0.5" />}
+          {embedded && <MarketSponsorSlot section="auctions" className="pt-0.5" />}
         </div>
 
         {loading ? (
@@ -418,10 +423,30 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
           </div>
         ) : (
           <div className="divide-y divide-[#2F3336]/60">
-            {displayedListings.map((auc) => {
+            {displayedListings.map((auc, idx) => {
               const item = toAucX(auc);
-              return <XMarketTweetCard key={auc.id} item={item} onOpenDetail={() => { setSelectedItem(item); setActiveImageIndex(0); window.scrollTo({ top: 0, behavior: 'instant' }); }} onOpenImage={(idx) => { setSelectedItem(item); setActiveImageIndex(idx); setIsLightboxOpen(true); }} onShare={() => onShareX(item)} />;
+              return (
+                <React.Fragment key={auc.id}>
+                  <XMarketTweetCard
+                    item={item}
+                    onOpenDetail={() => { setSelectedItem(item); setActiveImageIndex(0); window.scrollTo({ top: 0, behavior: 'instant' }); }}
+                    onOpenImage={(idx) => { setSelectedItem(item); setActiveImageIndex(idx); setIsLightboxOpen(true); }}
+                    onShare={() => onShareX(item)}
+                  />
+                  {idx === (displayedListings.length >= 8 ? 2 : displayedListings.length >= 4 ? 1 : 0) && (
+                    <div className={embedded ? "px-3 py-2 bg-black" : "py-2 bg-black"}>
+                      <AdBanner section="auctions" slot="slot_1" onAdResolved={setSlot1AdId} />
+                    </div>
+                  )}
+                  {idx === (displayedListings.length >= 8 ? 7 : displayedListings.length >= 2 ? displayedListings.length - 1 : -1) && (
+                    <div className={embedded ? "px-3 py-2 bg-black" : "py-2 bg-black"}>
+                      <AdBanner section="auctions" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} />
+                    </div>
+                  )}
+                </React.Fragment>
+              );
             })}
+
           </div>
         )}
       </>)}

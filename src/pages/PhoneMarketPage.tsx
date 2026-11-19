@@ -4,6 +4,7 @@ import {
   Upload, Trash2, User, Camera
 } from 'lucide-react';
 import { AdBanner } from '../components/common/AdBanner';
+import { MarketSponsorSlot } from '../components/ads/MarketSponsorSlot';
 import { YRSelect, YRSelectOption } from '../components/common/YRSelect';
 import {
   XSearchFilterBar, XFilterModal, YEMEN_GOV_FILTER_OPTIONS,
@@ -445,6 +446,8 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
   };
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [slot1AdId, setSlot1AdId] = useState<string | null | undefined>(undefined);
+  useEffect(() => { if (!embedded) window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [embedded]);
 
   const activeFiltersCount =
     (activeTab !== 'all' ? 1 : 0) +
@@ -744,10 +747,9 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
 
   return (
     <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Cairo',sans-serif] text-white"}>
-      {!embedded && <AdBanner placementId="9" className="mb-1" />}
-
       {(!embedded && !selectedPhone) && (
-        <div className="flex items-center justify-between border-b border-[#2F3336] pb-2.5">
+        <div className="space-y-2.5 border-b border-[#2F3336] pb-3">
+          <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
               <Smartphone size={16} className="stroke-[2.5]" />
@@ -773,6 +775,8 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
               <ArrowRight size={13} className="rtl:rotate-180" />
             </button>
           </div>
+          </div>
+          <MarketSponsorSlot section="phones" />
         </div>
       )}
 
@@ -928,13 +932,13 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         <div className={embedded ? "divide-y divide-[#2F3336]/40" : "space-y-3"}>
           <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "space-y-2 bg-[#0F0F12] p-2.5 rounded-2xl border border-[#222226]"}>
             <XSearchFilterBar searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="ابحث في سوق الهواتف والأجهزة..." activeFiltersCount={activeFiltersCount} onOpenFilter={() => setIsFilterModalOpen(true)} />
-            {embedded && <AdBanner placementId="9" className="py-0.5" />}
+            {embedded && <MarketSponsorSlot section="phones" className="pt-0.5" />}
           </div>
 
           <div className="divide-y divide-[#2F3336]/60">
-            {filteredPhones.map((phone) => (
+            {filteredPhones.map((phone, idx) => (
+              <React.Fragment key={phone.id}>
               <article
-                key={phone.id}
                 onClick={(e) => {
                   const target = e.target as HTMLElement;
                   if (!target.closest('button') && !target.closest('a')) handleOpenPhone(phone);
@@ -1046,7 +1050,19 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                   </div>
                 </div>
               </article>
+              {idx === (filteredPhones.length >= 8 ? 2 : filteredPhones.length >= 4 ? 1 : 0) && (
+                <div className={embedded ? "px-3 py-2 bg-black" : "py-2 bg-black"}>
+                  <AdBanner section="phones" slot="slot_1" onAdResolved={setSlot1AdId} />
+                </div>
+              )}
+              {idx === (filteredPhones.length >= 8 ? 7 : filteredPhones.length >= 2 ? filteredPhones.length - 1 : -1) && (
+                <div className={embedded ? "px-3 py-2 bg-black" : "py-2 bg-black"}>
+                  <AdBanner section="phones" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} />
+                </div>
+              )}
+              </React.Fragment>
             ))}
+
           </div>
 
           {embedded && !selectedPhone && !isAddModalOpen && (
