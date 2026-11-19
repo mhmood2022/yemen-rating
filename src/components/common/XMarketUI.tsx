@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Camera, MessageCircle, Phone, Search, SlidersHorizontal, X } from 'lucide-react';
+import { ArrowRight, Camera, MapPin, MessageCircle, Phone, Search, SlidersHorizontal, X } from 'lucide-react';
 import { YRSelect, YRSelectOption } from './YRSelect';
 import { VerifiedBadge, BadgeType } from './VerifiedBadge';
 
@@ -57,6 +57,10 @@ export interface XMarketItem {
   priceText?: string;
   description?: string;
   metaParts: string[];
+  specPairs?: { label: string; value: string }[];
+  mapUrl?: string;
+  blueprintImage?: string;
+  videoUrl?: string;
   tagLabel?: string;
   images: string[];
   city?: string;
@@ -187,6 +191,7 @@ export const XMarketTweetCard: React.FC<{
   onShare: () => void;
 }> = ({ item, onOpenDetail, onOpenImage, onShare }) => {
   const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(false);
   const waHref = toWaLink(item.phone, item.whatsappText || `مرحباً، أرغب بالاستفسار عن ${item.title}`);
   return (
     <article
@@ -219,8 +224,40 @@ export const XMarketTweetCard: React.FC<{
               <span>{item.title}</span>
               {item.priceText && <><span className="text-[#71767B] font-normal">·</span><span className="text-[#FFC500] font-mono text-[13px]">{item.priceText}</span></>}
             </div>
-            {item.description && <p className="text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap break-words select-text">{item.description}</p>}
-            {item.metaParts.length > 0 && <div className="text-[12px] text-[#71767B] flex flex-wrap items-center gap-1.5">{item.metaParts.join(' · ')}</div>}
+            {(() => {
+              const cleanSpecs = (item.specPairs || []).filter((sp) => sp.value && !['غير موجود', 'غير محدد', 'لا ينطبق'].includes(sp.value.trim()));
+              const isLongSpecs = cleanSpecs.length > 6;
+              const isLongDesc = Boolean(item.description && item.description.length > 130);
+              const visibleSpecs = expanded || !isLongSpecs ? cleanSpecs : cleanSpecs.slice(0, 6);
+              const descText = item.description && isLongDesc && !expanded ? `${item.description.slice(0, 130)}...` : item.description;
+              return (
+                <>
+                  {descText && <p className="text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap break-words select-text">{descText}</p>}
+                  {cleanSpecs.length > 0 ? (
+                    <div className="text-[12.5px] leading-[20px] flex flex-wrap items-center gap-x-2 gap-y-1">
+                      {visibleSpecs.map((sp, idx) => (
+                        <React.Fragment key={`${sp.label}-${idx}`}>
+                          {idx > 0 && <span className="text-[#536471]">·</span>}
+                          <span className="inline-flex items-center gap-1">
+                            <span className="text-[#8B98A5]">{sp.label}:</span>
+                            <span className="text-white font-semibold">{sp.value}</span>
+                          </span>
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  ) : item.metaParts.length > 0 ? <div className="text-[12px] text-[#71767B] flex flex-wrap items-center gap-1.5">{item.metaParts.join(' · ')}</div> : null}
+                  {(isLongSpecs || isLongDesc) && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setExpanded((p) => !p); }}
+                      className="text-[#FFC500] text-[12px] font-bold hover:underline cursor-pointer inline-block pt-0.5"
+                    >
+                      {expanded ? 'عرض أقل' : 'عرض المزيد'}
+                    </button>
+                  )}
+                </>
+              );
+            })()}
           </div>
           {item.images[0] && (
             <div onClick={(e) => { e.stopPropagation(); onOpenImage(0); }} className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336]/50 max-h-80 bg-zinc-950 relative cursor-pointer">
@@ -293,13 +330,57 @@ export const XMarketDetailView: React.FC<{
           </div>
           {item.tagLabel && <span className="shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-bold border border-[#2F3336] text-[#E7E9EA]">{item.tagLabel}</span>}
         </div>
-        <div className="mt-3 space-y-2">
-          <div className="flex items-baseline justify-between gap-2 flex-wrap">
-            <h1 className="text-[16.5px] font-bold text-white leading-snug">{item.title}</h1>
-            {item.priceText && <span className="text-[15px] font-bold text-[#FFC500] font-mono">{item.priceText}</span>}
-          </div>
-          {item.description && <p className="text-[15px] leading-[22px] text-[#E7E9EA] whitespace-pre-wrap break-words">{item.description}</p>}
-          {item.metaParts.length > 0 && <div className="text-[13px] text-[#71767B]">{item.metaParts.join(' · ')}</div>}
+          <div className="mt-3 space-y-3">
+            <div className="p-3.5 rounded-2xl border border-[#2F3336]/70 bg-zinc-950/60 space-y-1.5">
+              <div className="flex items-baseline justify-between gap-2 flex-wrap">
+                <h1 className="text-[16.5px] font-black text-white leading-snug">{item.title}</h1>
+                {item.priceText && <span className="text-[15.5px] font-black text-[#FFC500] font-mono">{item.priceText}</span>}
+              </div>
+              <div className="text-[12px] text-[#71767B] flex items-center gap-1.5">
+                <span>{formatXTimeAgo(item.createdAt)}</span>
+                {item.city && <><span>·</span><span>{item.city}</span></>}
+              </div>
+            </div>
+            {item.description && (
+              <div className="p-3.5 rounded-2xl border border-[#2F3336]/60 bg-black space-y-1">
+                <div className="text-[11px] font-bold text-[#71767B]">الوصف والتفاصيل</div>
+                <p className="text-[14px] leading-[22px] text-[#E7E9EA] whitespace-pre-wrap break-words">{item.description}</p>
+              </div>
+            )}
+            {item.specPairs && item.specPairs.length > 0 ? (
+              <div className="space-y-1.5">
+                <div className="text-[11px] font-bold text-[#71767B] px-1">المواصفات والبيانات</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 rounded-2xl border border-[#2F3336]/70 bg-zinc-950/60 text-[12.5px]">
+                  {item.specPairs.filter((sp) => sp.value && !['غير موجود', 'غير محدد', 'لا ينطبق'].includes(sp.value.trim())).map((sp, idx) => (
+                    <div key={`${sp.label}-${idx}`} className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-black/80 border border-[#2F3336]/50 min-w-0">
+                      <span className="text-[#8B98A5] shrink-0">{sp.label}</span>
+                      <span className="text-white font-semibold text-left break-words">{sp.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : item.metaParts.length > 0 ? <div className="text-[13px] text-[#71767B]">{item.metaParts.join(' · ')}</div> : null}
+          {(item.mapUrl || item.blueprintImage || item.videoUrl) && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {item.mapUrl && (
+                <a href={item.mapUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-950 border border-[#2F3336] hover:border-white text-xs text-white font-bold">
+                  <MapPin size={13} className="text-[#FFC500]" />
+                  <span>موقع العقار على الخريطة</span>
+                </a>
+              )}
+              {item.videoUrl && (
+                <a href={item.videoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-950 border border-[#2F3336] hover:border-white text-xs text-white font-bold">
+                  <span>عرض الفيديو المرفق</span>
+                </a>
+              )}
+            </div>
+          )}
+          {item.blueprintImage && (
+            <div className="mt-2 rounded-2xl overflow-hidden border border-[#2F3336]/70 bg-zinc-950 p-2 space-y-1.5">
+              <span className="text-[11px] text-[#8B98A5] font-bold block">المخطط الهندسي</span>
+              <img src={item.blueprintImage} alt="المخطط الهندسي" className="w-full max-h-64 object-contain rounded-xl bg-black" />
+            </div>
+          )}
         </div>
         {item.images.length > 0 && (
           <>
@@ -326,7 +407,7 @@ export const XMarketDetailView: React.FC<{
         )}
         <div className="mt-3 py-3 border-b border-[#2F3336]/60 text-[13px] text-[#71767B] flex items-center justify-between">
           <span>{formatXTimeAgo(item.createdAt)} · {item.city || 'اليمن'}</span>
-          {item.phone && <span className="font-mono text-[12px]" dir="ltr">{item.phone}</span>}
+
         </div>
         <div className="py-2 border-b border-[#2F3336]/60 flex items-center justify-between text-[#71767B] px-2">
           {item.onAction ? (

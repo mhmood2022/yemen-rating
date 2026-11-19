@@ -1,6 +1,11 @@
-import { PublicAddJobModal } from "../jobs/PublicAddJobModal";
+import {
+  JOB_TYPE_OPTIONS, JOB_SECTOR_OPTIONS, JOB_EXPERIENCE_OPTIONS, JOB_GENDER_OPTIONS
+} from '../../constants/marketOptions';
+import { PublicAddJobModal, JobFormData } from "../jobs/PublicAddJobModal";
 import { XJobApplyModal } from "../jobs/XJobApplyModal";
-import { JobFormData } from "../../pages/admin/jobs/AddJobModal";
+import {
+  NOT_AVAILABLE, buildPropertyFeatures, parsePropertyFeatures
+} from "../../constants/realEstateOptions";
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X, Building2, MapPin, Coins, PhoneCall, FileText, Lock, Sparkles, Search } from 'lucide-react';
@@ -13,7 +18,7 @@ import { BadgeType } from '../common/VerifiedBadge';
 import { mapBusinessToPage, BusinessPageRecord } from '../../services/businessPageService';
 import {
   XMarketItem, XSearchFilterBar, XFilterModal, XMarketTweetCard,
-  XMarketDetailView, YEMEN_GOV_FILTER_OPTIONS
+  XMarketDetailView, XImageLightbox, YEMEN_GOV_FILTER_OPTIONS
 } from '../common/XMarketUI';
 
 const YEMEN_GOVERNORATES = [
@@ -64,11 +69,15 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<XMarketItem | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [applyingJob, setApplyingJob] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [cityFilter, setCityFilter] = useState('all');
   const [workTypeFilter, setWorkTypeFilter] = useState('all');
+  const [sectorFilter, setSectorFilter] = useState('all');
+  const [expFilter, setExpFilter] = useState('all');
+  const [genderFilter, setGenderFilter] = useState('all');
 
   const [commissionSettings, setCommissionSettings] = useState<any>(null);
 
@@ -127,40 +136,133 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
   };
 
   
-  const handleSaveJobFromModal = async (newJob: JobFormData): Promise<{ success: boolean; error?: string }> => {
+  const handleSaveJobFromModal = async (
+    newJob: JobFormData
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
+      const sMin = (newJob.salaryMin || "").trim();
+      const sMax = (newJob.salaryMax || "").trim();
       let salaryText = "";
-      if (newJob.salaryMin || newJob.salaryMax) {
-        salaryText = `${newJob.salaryMin || "0"} - ${newJob.salaryMax || ""} ${newJob.currency || "YER"}`;
+      if (sMin || sMax) {
+        const curr = newJob.currency || "YER";
+        salaryText = sMin && sMax
+          ? `${sMin} - ${sMax} ${curr}`
+          : `${sMin || sMax} ${curr}`;
         if (newJob.isSalaryNegotiable) salaryText += " (قابل للتفاوض)";
       }
+
+      const isRemote =
+        newJob.workType === "عمل عن بُعد" ||
+        newJob.workplaceType === "عن بُعد";
+      const isNoExp =
+        newJob.workType === "تدريب" ||
+        newJob.workType === "تدريب مع إمكانية التوظيف" ||
+        newJob.canWorkNoExp === "نعم";
+      const currLbl =
+        newJob.currency === "USD" ? "دولار ($)"
+        : newJob.currency === "SAR" ? "ريال سعودي (ر.س)"
+        : "ريال يمني (ر.ي)";
+      const benTxt = Array.isArray(newJob.benefits)
+        ? newJob.benefits.join("، ") : "";
+      const docTxt = Array.isArray(newJob.requiredDocs)
+        ? newJob.requiredDocs.join("، ") : "";
+
+      const entries: Array<[string, string | undefined | null]> = [
+        ["المجال الوظيفي", newJob.sector],
+        ["القسم", newJob.department],
+        ["نوع الوظيفة", newJob.workType],
+        ["طبيعة مكان العمل", newJob.workplaceType],
+        ["عدد الشواغر", newJob.vacancies],
+        ...(!isRemote ? [
+          ["المحافظة", newJob.governorate],
+          ["المدينة", newJob.subCity],
+          ["المديرية", newJob.district],
+        ] as Array<[string, string | undefined | null]> : []),
+        ["المستوى التعليمي", newJob.education],
+        ["التخصص الدراسي", newJob.major],
+        ["العمل دون خبرة", newJob.canWorkNoExp],
+        ["سنوات الخبرة", isNoExp ? "" : newJob.experienceLevel],
+        ["مستوى اللغة", newJob.languageLevel],
+        ["الجنس", newJob.gender],
+        ["الفئة العمرية", newJob.ageRange],
+        ["المهارة المطلوبة", newJob.skillPick],
+        ["العملة", salaryText ? currLbl : ""],
+        ["قابل للتفاوض", newJob.isSalaryNegotiable ? "نعم" : "لا"],
+        ["ساعات العمل", newJob.workHours],
+        ["أيام العمل", newJob.workDays],
+        ["الإجازة الأسبوعية", newJob.offDay],
+        ["المزايا", benTxt],
+        ["طريقة التقديم", newJob.applyMethod],
+        ["حالة الوظيفة", newJob.jobStatus],
+        ["آخر موعد للتقديم", newJob.deadline],
+        ["المستندات المطلوبة", docTxt],
+      ];
+
+      const reqArr = buildPropertyFeatures([
+        ...entries,
+        ...(Array.isArray(newJob.requirements)
+          ? newJob.requirements.map((r): [string, string] => ["شرط إضافي", r])
+          : []),
+      ]);
+
+      const skillsArr = Array.from(new Set([
+        ...(newJob.skillPick && newJob.skillPick !== NOT_AVAILABLE
+          && newJob.skillPick !== "غير محدد" ? [newJob.skillPick] : []),
+        ...(Array.isArray(newJob.responsibilities)
+          ? newJob.responsibilities : []),
+      ]));
+
+      const descParts: string[] = [];
+      if ((newJob.description || "").trim()) {
+        descParts.push(newJob.description.trim());
+      }
+      if ((newJob.companyName || "").trim() && !newJob.companyId) {
+        descParts.push(
+          `[معلومات جهة العمل والتواصل]\nاسم المنشأة: ${newJob.companyName.trim()}`
+        );
+      }
+      if ((newJob.docUrl || "").trim()) {
+        descParts.push(`[ملف الوصف الوظيفي PDF]: ${newJob.docUrl.trim()}`);
+      }
+      if ((newJob.imageData || "").trim()) {
+        descParts.push(`[مرفقات الصور]:\n${newJob.imageData.trim()}`);
+      }
+
+      const cityVal = isRemote
+        ? "عن بُعد"
+        : (newJob.governorate || newJob.companyCity || "صنعاء").trim();
+      const expVal = isNoExp
+        ? "لا يشترط خبرة"
+        : (newJob.experienceLevel || "غير محدد");
 
       const payload: any = {
         title: (newJob.title || "").trim(),
         company_id: newJob.companyId || null,
-        city: (newJob.governorate || newJob.companyCity || "صنعاء").trim(),
+        city: cityVal,
         salary: salaryText || null,
         type: newJob.workType || "دوام كامل",
-        experience: newJob.experienceLevel || "متوسط (2-4 سنوات)",
-        description: (newJob.description || "").trim(),
-        requirements: Array.isArray(newJob.requirements) ? newJob.requirements : [],
-        skills: Array.isArray(newJob.responsibilities) ? newJob.responsibilities : [],
+        experience: expVal,
+        description: descParts.join("\n\n"),
+        requirements: reqArr,
+        skills: skillsArr,
         status: "PUBLISHED",
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
 
-      const { data, error } = await supabase.from("jobs").insert([payload]).select();
+      const { data, error } = await supabase
+        .from("jobs").insert([payload]).select();
       if (error) throw error;
 
-      if (data && data[0]) {
-        setJobs(prev => [data[0], ...prev]);
-      }
+      if (data && data[0]) setJobs(prev => [data[0], ...prev]);
       setIsAddModalOpen(false);
       return { success: true };
     } catch (err: any) {
       console.error("Save job error:", err);
-      return { success: false, error: err.message || "حدث خطأ أثناء حفظ الشاغر الوظيفي" };
+      return {
+        success: false,
+        error: err.message || "حدث خطأ أثناء حفظ الشاغر الوظيفي",
+      };
     }
   };
 
@@ -216,12 +318,23 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
   };
 
   const filteredJobs = jobs.filter((job) => {
-    const workType = job.work_type || job.workType;
+    const workType = job.type || job.work_type || job.workType || '';
+    const parsed = parsePropertyFeatures(job.requirements);
+    const secVal = parsed.pairs.find((x) => x.label === 'المجال الوظيفي')?.value || job.sector || '';
+    const expVal = parsed.pairs.find((x) => x.label === 'سنوات الخبرة')?.value || job.experience || job.experience_level || '';
+    const genVal = parsed.pairs.find((x) => x.label === 'الجنس')?.value || job.gender || '';
     const matchCity = cityFilter === 'all' || (job.city && job.city.includes(cityFilter));
     const matchType = workTypeFilter === 'all' || workType === workTypeFilter;
+    const matchSec = sectorFilter === 'all' || secVal === sectorFilter;
+    const matchExp = expFilter === 'all' || expVal === expFilter;
+    const matchGen = genderFilter === 'all' || genVal === genderFilter;
     const q = searchQuery.trim().toLowerCase();
-    const matchSearch = !q || (job.title || '').toLowerCase().includes(q) || (job.description || '').toLowerCase().includes(q) || (job.city || '').toLowerCase().includes(q);
-    return matchCity && matchType && matchSearch;
+    const matchSearch = !q
+      || (job.title || '').toLowerCase().includes(q)
+      || (job.description || '').toLowerCase().includes(q)
+      || (job.city || '').toLowerCase().includes(q)
+      || parsed.pairs.some((x) => x.value.toLowerCase().includes(q));
+    return matchCity && matchType && matchSec && matchExp && matchGen && matchSearch;
   });
 
   const jobCommissionAmount = commissionSettings?.default_fixed_commission_amount || 20000;
@@ -234,19 +347,52 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
       .split('--- [بيانات جهة النشر والوساطة] ---')[0]
       .split('[معلومات جهة العمل والتواصل]')[0]
       .split('[ملف الوصف الوظيفي PDF]')[0]
+      .split('[وثائق وشهادات المتقدم]')[0]
+      .split('[مرفقات الصور]')[0]
       .trim();
     const companyMatch = rawDesc.match(/اسم المنشأة:\s*(.+)/);
     const phoneMatch = rawDesc.match(/هاتف مسؤول التوظيف:\s*(\d+)/);
+    const imgMatch = rawDesc.match(/\[مرفقات الصور\]:\s*([^\s]+)/);
+    const docMatch = rawDesc.match(/\[ملف الوصف الوظيفي PDF\]:\s*([^\n\r\s]+)/);
     const extractedName = companyMatch ? companyMatch[1].trim() : '';
 
     const biz =
-      businessesList.find((b) => (job.company_id || job.business_id) && b.id === (job.company_id || job.business_id)) ||
-      (extractedName ? businessesList.find((b) => b.name.trim() === extractedName) : undefined) ||
-      null;
+      businessesList.find((b) =>
+        (job.company_id || job.business_id)
+        && b.id === (job.company_id || job.business_id)
+      )
+      || (extractedName
+        ? businessesList.find((b) => b.name.trim() === extractedName)
+        : undefined)
+      || null;
 
     const jobType = job.type || job.work_type || 'دوام كامل';
     const salary = job.salary || job.salary_range || 'عند المقابلة';
     const phone = biz?.phone || (phoneMatch ? phoneMatch[1] : '') || '';
+
+    const jobImages: string[] = [];
+    if (job.image_url) jobImages.push(job.image_url);
+    if (Array.isArray(job.image_urls)) {
+      jobImages.push(...job.image_urls.filter(Boolean));
+    }
+    if (imgMatch?.[1]) jobImages.push(imgMatch[1].trim());
+
+    const parsedReqs = parsePropertyFeatures(job.requirements);
+    const fallbackPairs: { label: string; value: string }[] = [
+      ...(jobType ? [{ label: 'نوع الوظيفة', value: jobType }] : []),
+      ...((job.experience || job.experience_level)
+        ? [{ label: 'الخبرة', value: job.experience || job.experience_level }]
+        : []),
+      ...(job.city ? [{ label: 'المحافظة', value: job.city }] : []),
+      ...(job.gender ? [{ label: 'الجنس', value: job.gender }] : []),
+      ...(job.sector ? [{ label: 'المجال الوظيفي', value: job.sector }] : []),
+    ];
+    const specPairs = [
+      ...(parsedReqs.pairs.length > 0 ? parsedReqs.pairs : fallbackPairs),
+      ...(docMatch?.[1]
+        ? [{ label: 'ملف الوصف', value: 'مرفق (عرض في صفحة الوظيفة)' }]
+        : []),
+    ].filter((sp) => sp.value && !['غير موجود', 'غير محدد', 'لا ينطبق'].includes(sp.value.trim()));
 
     return {
       id: job.id,
@@ -257,23 +403,31 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
       authorName: biz?.name || extractedName || 'جهة توظيف معتمدة',
       authorUsername: biz?.username || job.city || 'jobs',
       authorAvatar: biz?.avatarUrl || '',
-      badgeType: biz ? ((biz.verificationType as BadgeType) || (biz.isVerified ? 'gold' : 'none')) : 'none',
+      badgeType: biz
+        ? ((biz.verificationType as BadgeType)
+          || (biz.isVerified ? 'gold' : 'none'))
+        : 'none',
       businessPath: biz ? `/businesses/${biz.username || biz.id}` : undefined,
       createdAt: job.created_at,
       title: job.title,
       priceText: salary,
       description: cleanDesc,
-      metaParts: [jobType, job.experience || job.experience_level, job.city].filter(Boolean),
+      metaParts: [
+        jobType,
+        job.experience || job.experience_level,
+        job.city,
+      ].filter(Boolean),
+      specPairs,
       tagLabel: jobType,
-      images: [],
+      images: jobImages,
       city: job.city,
       phone,
       whatsappText: `مرحباً، أرغب بالتقديم على وظيفة: ${job.title}`,
     };
   };
 
-  const activeFiltersCount = (cityFilter !== 'all' ? 1 : 0) + (workTypeFilter !== 'all' ? 1 : 0);
-  const resetFilters = () => { setCityFilter('all'); setWorkTypeFilter('all'); };
+  const activeFiltersCount = (cityFilter !== 'all' ? 1 : 0) + (workTypeFilter !== 'all' ? 1 : 0) + (sectorFilter !== 'all' ? 1 : 0) + (expFilter !== 'all' ? 1 : 0) + (genderFilter !== 'all' ? 1 : 0);
+  const resetFilters = () => { setCityFilter('all'); setWorkTypeFilter('all'); setSectorFilter('all'); setExpFilter('all'); setGenderFilter('all'); };
   const handleShare = (it: XMarketItem) => {
     navigator.clipboard?.writeText(`${it.title}${it.priceText ? ` - ${it.priceText}` : ''}`);
     setToastMessage('تم نسخ تفاصيل الوظيفة');
@@ -309,7 +463,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
           activeImageIndex={activeImageIndex}
           onChangeImageIndex={setActiveImageIndex}
           onBack={() => setSelectedItem(null)}
-          onOpenLightbox={() => {}}
+          onOpenLightbox={() => setIsLightboxOpen(true)}
           onShare={() => handleShare(selectedItem)}
         />
       ) : (
@@ -345,7 +499,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
                     key={job.id}
                     item={item}
                     onOpenDetail={() => { setSelectedItem(item); window.scrollTo({ top: 0, behavior: 'instant' }); }}
-                    onOpenImage={() => {}}
+                    onOpenImage={(idx) => { setSelectedItem(item); setActiveImageIndex(idx); setIsLightboxOpen(true); }}
                     onShare={() => handleShare(item)}
                   />
                 );
@@ -373,12 +527,16 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
         onReset={resetFilters}
         resultsCount={filteredJobs.length}
         fields={[
-          { label: 'نوع الدوام', value: workTypeFilter, onChange: setWorkTypeFilter, options: WORK_TYPES },
+          { label: 'المجال الوظيفي', value: sectorFilter, onChange: setSectorFilter, options: [{ value: 'all', label: 'كل المجالات' }, ...JOB_SECTOR_OPTIONS] },
+          { label: 'نوع الوظيفة', value: workTypeFilter, onChange: setWorkTypeFilter, options: [{ value: 'all', label: 'كل الأنواع' }, ...JOB_TYPE_OPTIONS] },
+          { label: 'سنوات الخبرة', value: expFilter, onChange: setExpFilter, options: [{ value: 'all', label: 'الكل' }, ...JOB_EXPERIENCE_OPTIONS.filter((o) => !['غير موجود', 'غير محدد'].includes(o.value))] },
+          { label: 'الجنس', value: genderFilter, onChange: setGenderFilter, options: [{ value: 'all', label: 'الكل' }, ...JOB_GENDER_OPTIONS.filter((o) => !['غير موجود', 'غير محدد'].includes(o.value))] },
           { label: 'المحافظة', value: cityFilter, onChange: setCityFilter, options: YEMEN_GOV_FILTER_OPTIONS },
         ]}
       />
 
       <XJobApplyModal job={applyingJob} commissionText={jobCommText} onClose={() => setApplyingJob(null)} onSuccess={(msg) => { setToastMessage(msg); setTimeout(() => setToastMessage(null), 3500); }} />
+      <XImageLightbox isOpen={isLightboxOpen} item={selectedItem} activeIndex={activeImageIndex} onChangeIndex={setActiveImageIndex} onClose={() => setIsLightboxOpen(false)} />
       <PublicAddJobModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSubmit={handleSaveJobFromModal} />
     </div>
   );

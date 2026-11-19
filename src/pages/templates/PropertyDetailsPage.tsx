@@ -4,6 +4,7 @@ import { AlertCircle, Camera } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { mapBusinessToPage, BusinessPageRecord } from '../../services/businessPageService';
 import { XMarketItem, XMarketDetailView, XImageLightbox } from '../../components/common/XMarketUI';
+import { parsePropertyFeatures, NOT_AVAILABLE } from '../../constants/realEstateOptions';
 import { BadgeType } from '../../components/common/VerifiedBadge';
 
 export const PropertyDetailsPage: React.FC = () => {
@@ -88,6 +89,17 @@ export const PropertyDetailsPage: React.FC = () => {
     ? property.image_urls
     : (Array.isArray(property.images) ? property.images : []);
 
+  const parsed = parsePropertyFeatures(property.features);
+  const fallbackPairs = [
+    { label: 'النوع', value: pt },
+    { label: 'العرض', value: dt === 'بيع' ? 'للبيع' : dt === 'إيجار' ? 'للإيجار' : dt },
+    ...(area ? [{ label: 'المساحة', value: `${area} م²` }] : []),
+    ...(rooms ? [{ label: 'الغرف', value: String(rooms) }] : []),
+    ...(property.city ? [{ label: 'المحافظة', value: property.city }] : []),
+  ];
+  const specPairs = (parsed.pairs.length > 0 ? parsed.pairs : fallbackPairs)
+    .filter((sp) => sp.value && sp.value !== NOT_AVAILABLE);
+
   const xItem: XMarketItem = {
     id: property.id,
     detailPath: `/properties/${property.id}`,
@@ -109,6 +121,10 @@ export const PropertyDetailsPage: React.FC = () => {
       rooms ? `${rooms} غرف` : '',
       property.city || '',
     ].filter(Boolean),
+    specPairs,
+    mapUrl: parsed.mapUrl,
+    blueprintImage: parsed.blueprintImage,
+    videoUrl: parsed.videoUrl,
     tagLabel: `${pt} · ${dt}`,
     images,
     city: property.city,

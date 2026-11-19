@@ -1,111 +1,140 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, ArrowLeft, Building2, ShieldCheck, Sparkles, Briefcase } from 'lucide-react';
+import { ArrowLeft, Briefcase } from 'lucide-react';
+import {
+  NOT_AVAILABLE, parsePropertyFeatures
+} from '../../constants/realEstateOptions';
+import { formatXTimeAgo } from '../common/XMarketUI';
 
 interface JobCardProps {
   job: any;
   onApply?: (job: any) => void;
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
+export const JobCard: React.FC<JobCardProps> = ({ job }) => {
+  const [expanded, setExpanded] = useState(false);
 
-  // دالة تنظيف الوصف من نصوص الوساطة السرية
-  const cleanExcerpt = (raw: string = '') => {
-    if (!raw) return '';
-    let c = raw.split('--- [بيانات جهة النشر والوساطة] ---')[0];
-    c = c.split('[معلومات جهة العمل والتواصل]')[0];
-    c = c.split('[ملف الوصف الوظيفي PDF]')[0];
-    return c.trim();
-  };
+  const rawDesc = job.description || '';
+  const cleanExcerpt = rawDesc
+    .split('--- [بيانات جهة النشر والوساطة] ---')[0]
+    .split('[معلومات جهة العمل والتواصل]')[0]
+    .split('[ملف الوصف الوظيفي PDF]')[0]
+    .split('[وثائق وشهادات المتقدم]')[0]
+    .split('[مرفقات الصور]')[0]
+    .trim();
 
-  // دالة تنظيف وتنسيق الراتب
+  const imgMatch = rawDesc.match(/\[مرفقات الصور\]:\s*([^\s]+)/);
+  const jobImg =
+    job.image_url ||
+    (Array.isArray(job.image_urls) ? job.image_urls[0] : null) ||
+    (imgMatch ? imgMatch[1].trim() : null);
+
   const formatSalary = (raw: string = '') => {
     if (!raw) return 'عند المقابلة';
-    let s = raw.trim();
+    const s = raw.trim();
     if (s.includes('عند المقابلة') || s.includes('بحسب المقابلة')) {
       return 'عند المقابلة';
     }
-    s = s.replace(/\s*\(قابل للتفاوض\)/g, '').trim();
     return s;
   };
 
   const jobType = job.type || job.work_type || 'دوام كامل';
   const salary = job.salary || job.salary_range;
+  const parsed = parsePropertyFeatures(job.requirements);
+  const fallbackPairs: { label: string; value: string }[] = [
+    ...(job.city ? [{ label: 'المحافظة', value: job.city }] : []),
+    { label: 'نوع الوظيفة', value: jobType },
+    ...(job.experience ? [{ label: 'الخبرة', value: job.experience }] : []),
+    ...(job.gender ? [{ label: 'الجنس', value: job.gender }] : []),
+  ];
+  const specPairs = (
+    parsed.pairs.length > 0 ? parsed.pairs : fallbackPairs
+  ).filter((sp) => sp.value && sp.value !== NOT_AVAILABLE);
+
+  const isLongSpecs = specPairs.length > 6;
+  const isLongDesc = cleanExcerpt.length > 130;
+  const visibleSpecs =
+    expanded || !isLongSpecs ? specPairs : specPairs.slice(0, 6);
+  const descText =
+    isLongDesc && !expanded
+      ? `${cleanExcerpt.slice(0, 130)}...`
+      : cleanExcerpt;
 
   return (
-    <div className="flex flex-col justify-between bg-black border border-[#2F3336] hover:border-[#FFC500]/50 rounded-2xl p-3.5 sm:p-4 shadow-xl transition-all duration-300 font-['Cairo',sans-serif] group relative overflow-hidden">
-      
-      {/* توهج خفيف على الزاوية عند التحويم */}
-      <div className="absolute top-0 right-0 w-24 h-24 bg-[#FFC500]/5 rounded-bl-full pointer-events-none group-hover:bg-[#FFC500]/10 transition-colors" />
-
-      <div>
-        {/* الرأس: وساطة معتمدة + حالة التقديم */}
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#FFC500]/10 border border-[#FFC500]/30 text-[#FFC500] text-[11px] font-bold shadow-sm">
+    <div className="flex flex-col justify-between bg-black border border-[#2F3336] hover:border-white/30 rounded-2xl p-4 transition font-['Tahoma',sans-serif]">
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between gap-2">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-[#2F3336] text-[#E7E9EA] text-[11px] font-bold">
             <Briefcase size={12} className="text-[#FFC500]" />
-            <span>وظيفة</span>
+            <span>{jobType}</span>
           </span>
-          <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-            متاحة للتقديم
+          <span className="text-[11px] text-[#71767B]">
+            {formatXTimeAgo(job.created_at)}
           </span>
         </div>
 
-        {/* مسمى الوظيفة */}
-        <h3 className="text-base font-black text-white group-hover:text-[#FFC500] transition-colors line-clamp-1 mb-2">
-          {job.title}
-        </h3>
-
-        {/* سرية المنشأة */}
-        {job.description ? (
-          <p className="text-xs text-slate-300 leading-relaxed line-clamp-2 mb-3.5 min-h-[2rem]">
-            {cleanExcerpt(job.description)}
-          </p>
-        ) : (
-          <div className="h-4 mb-3.5" />
-        )}
-
-        {/* البادجات: المدينة، نوع العمل، الخبرة */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 text-xs">
-          {job.city && (
-            <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#111111] border border-[#2F3336] text-slate-300 font-medium">
-              <MapPin size={12} className="text-[#FFC500]" />
-              <span>{job.city}</span>
-            </span>
-          )}
-          <span className="px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 font-bold">
-            {jobType}
-          </span>
-          {job.gender && (
-            <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[11px] font-bold">
-              {job.gender}
-            </span>
-          )}
-          {job.experience && (
-            <span className="px-2.5 py-1 rounded-lg bg-[#111111] border border-[#2F3336] text-slate-300">
-              {job.experience}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* أسفل الكرت: الراتب وزر التقديم */}
-      <div className="pt-3.5 border-t border-[#2F3336]/80 flex items-center justify-between text-xs gap-2 mt-auto">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-bold text-slate-400 shrink-0">الراتب:</span>
-          <span className="text-xs font-black text-[#FFC500] whitespace-nowrap">
+        <div className="text-[14.5px] leading-[21px] font-bold text-white flex items-center gap-1.5 flex-wrap">
+          <span>{job.title}</span>
+          <span className="text-[#71767B] font-normal">·</span>
+          <span className="text-[#FFC500] font-mono text-[13px]">
             {formatSalary(salary)}
           </span>
         </div>
 
-        <Link
-          to={`/jobs/${job.id}`}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FFC500] hover:bg-amber-400 text-black text-xs font-black rounded-xl transition-all shadow-md group-hover:shadow-[#FFC500]/20 cursor-pointer"
-        >
-          <span>عرض الوظيفة</span>
-          <ArrowLeft size={13} className="rtl:rotate-0" />
-        </Link>
+        {descText && (
+          <p className="text-[13px] leading-[19px] text-[#D6D9DB] whitespace-pre-wrap break-words">
+            {descText}
+          </p>
+        )}
+
+        {visibleSpecs.length > 0 && (
+          <div className="text-[12px] leading-[19px] flex flex-wrap items-center gap-x-2 gap-y-1">
+            {visibleSpecs.map((sp, idx) => (
+              <React.Fragment key={`${sp.label}-${idx}`}>
+                {idx > 0 && <span className="text-[#536471]">·</span>}
+                <span className="inline-flex items-center gap-1">
+                  <span className="text-[#8B98A5]">{sp.label}:</span>
+                  <span className="text-white font-semibold">{sp.value}</span>
+                </span>
+              </React.Fragment>
+            ))}
+          </div>
+        )}
+
+        {(isLongSpecs || isLongDesc) && (
+          <button
+            type="button"
+            onClick={() => setExpanded((p) => !p)}
+            className="text-[#FFC500] text-[12px] font-bold hover:underline cursor-pointer"
+          >
+            {expanded ? 'عرض أقل' : 'عرض المزيد'}
+          </button>
+        )}
+
+        {jobImg && (
+          <div className="rounded-xl overflow-hidden border border-[#2F3336]/60 max-h-52 bg-zinc-950">
+            <img
+              src={jobImg}
+              alt={job.title}
+              className="w-full max-h-52 object-cover"
+              loading="lazy"
+            />
+          </div>
+        )}
       </div>
 
+      <div className="pt-3 mt-3 border-t border-[#2F3336]/60 flex items-center justify-between text-xs">
+        <span className="text-[11px] text-[#71767B]">
+          {job.city || 'اليمن'}
+        </span>
+        <Link
+          to={`/jobs/${job.id}`}
+          className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[#FFC500] hover:bg-amber-400 text-black text-xs font-black rounded-full transition"
+        >
+          <span>عرض الوظيفة</span>
+          <ArrowLeft size={13} />
+        </Link>
+      </div>
     </div>
   );
 };

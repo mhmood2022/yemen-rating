@@ -16,18 +16,23 @@ export const XAuctionBidModal: React.FC<Props> = ({ auction, onClose, onSuccess 
   const [liveTop, setLiveTop] = useState(0);
   const [timer, setTimer] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, isEnded: false });
 
+  const fmtAmt = (v: string) => {
+    const d = v.replace(/[^\d]/g, '').replace(/^0+(?=\d)/, '');
+    return d ? d.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
+  };
+
   useEffect(() => {
     if (!auction) return;
     setMsg('');
     const base = Number(auction.current_bid || auction.starting_price || 0);
     const inc = Number(auction.min_increment || 1000);
-    setBidAmount(String(base + inc));
+    setBidAmount(fmtAmt(String(base + inc)));
     supabase.from('auction_bids').select('*').eq('auction_id', auction.id).order('amount', { ascending: false }).limit(5)
       .then(({ data }) => {
         if (data) {
           setBids(data);
           const top = data.length > 0 ? Math.max(base, Number(data[0].amount)) : base;
-          setBidAmount(String(top + inc));
+          setBidAmount(fmtAmt(String(top + inc)));
         }
       });
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -75,7 +80,7 @@ export const XAuctionBidModal: React.FC<Props> = ({ auction, onClose, onSuccess 
   const handleBid = async (e: React.FormEvent) => {
     e.preventDefault(); setMsg('');
     if (!bidderName.trim() || bidderPhone.replace(/\D/g, '').length < 9) { setMsg('يرجى إدخال اسمك ورقم هاتفك (9 أرقام)'); return; }
-    const val = parseFloat(bidAmount);
+    const val = parseFloat(bidAmount.replace(/,/g, ''));
     if (isNaN(val) || val < topBid + minInc) { setMsg(`أقل مبلغ مسموح به: ${(topBid + minInc).toLocaleString()} ${curr}`); return; }
     try {
       setSubmitting(true);
@@ -123,8 +128,8 @@ export const XAuctionBidModal: React.FC<Props> = ({ auction, onClose, onSuccess 
                 <input type="text" required value={bidderName} onChange={(e) => setBidderName(e.target.value)} placeholder="الاسم..." className="bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2 text-white outline-none" />
                 <input type="tel" required value={bidderPhone} onChange={(e) => setBidderPhone(e.target.value)} placeholder="رقم الهاتف (9 أرقام)" className="bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2 text-white font-mono outline-none" />
               </div>
-              <div className="flex gap-1.5">{[1, 2, 5].map((m) => <button key={m} type="button" onClick={() => setBidAmount(String(topBid + minInc * m))} className="flex-1 py-1.5 rounded-full border border-[#2F3336] hover:border-white text-white font-mono text-[11px] font-bold cursor-pointer">+{(minInc * m).toLocaleString()}</button>)}</div>
-              <input type="number" required value={bidAmount} onChange={(e) => setBidAmount(e.target.value)} className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white font-mono text-sm font-black outline-none" />
+              <div className="flex gap-1.5">{[1, 2, 5].map((m) => <button key={m} type="button" onClick={() => setBidAmount(fmtAmt(String(topBid + minInc * m)))} className="flex-1 py-1.5 rounded-full border border-[#2F3336] hover:border-white text-white font-mono text-[11px] font-bold cursor-pointer">+{(minInc * m).toLocaleString()}</button>)}</div>
+              <input type="text" inputMode="numeric" required value={bidAmount} onChange={(e) => setBidAmount(fmtAmt(e.target.value))} className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white font-mono text-sm font-black outline-none" />
               <button type="submit" disabled={submitting} className="w-full py-2.5 rounded-full bg-[#FFC500] hover:bg-[#e6b100] text-black font-black text-sm flex items-center justify-center gap-1.5 cursor-pointer"><Gavel size={15} /><span>{submitting ? 'جاري التوثيق...' : 'تأكيد المزايدة'}</span></button>
             </form>
           )}

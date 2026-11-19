@@ -1,385 +1,199 @@
-
-// دالة الضغط الاحترافي للصور من الهاتف لتقليل الحجم وتسريع الرفع
-const compressImageFile = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target?.result as string;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 1200;
-        const MAX_HEIGHT = 1200;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          resolve(event.target?.result as string);
-          return;
-        }
-
-        ctx.drawImage(img, 0, 0, width, height);
-        // ضغط بجودة 0.75 وتحويل لصيغة webp خفيفة وسريعة (أو jpeg)
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
-        resolve(compressedDataUrl);
-      };
-      img.onerror = (error) => reject(error);
-    };
-    reader.onerror = (error) => reject(error);
-  });
-};
-
-import { createPortal } from 'react-dom';
-import { adminAuctionsService } from '../../services/adminService';
-import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Gavel, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, 
-  ShieldCheck, X, ImagePlus, Trash2, Tag, Search, Filter, 
-  Car, Smartphone, Shield, Armchair, Building2, Package, Check
-} from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Gavel, ArrowRight, RefreshCw, AlertCircle, Plus, X, ImagePlus, Trash2, MapPin, Video, FileImage } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdBanner } from '../common/AdBanner';
-import { AuctionCard } from '../auctions/AuctionCard';
 import { YRSelect } from '../common/YRSelect';
-import { AuctionCreateModal } from '../auctions/AuctionCreateModal';
 import { XAuctionBidModal } from '../auctions/XAuctionBidModal';
 import { BadgeType } from '../common/VerifiedBadge';
 import { mapBusinessToPage, BusinessPageRecord } from '../../services/businessPageService';
-import { XMarketItem, XSearchFilterBar, XFilterModal, XMarketTweetCard, XMarketDetailView, XImageLightbox, YEMEN_GOV_FILTER_OPTIONS } from '../common/XMarketUI';
+import { XMarketItem, XSearchFilterBar, XFilterModal, XMarketTweetCard, XMarketDetailView, XImageLightbox, YEMEN_GOV_FILTER_OPTIONS, XToast, XToastState, toArabicMarketError } from '../common/XMarketUI';
+import { NOT_AVAILABLE, RE_GOVERNORATES, getCityOptions, getDistrictOptions } from '../../constants/realEstateOptions';
+import {
+  AUCTION_KIND_OPTIONS, AUCTION_CATEGORY_OPTIONS, AUCTION_CONDITION_OPTIONS,
+  AUCTION_QUANTITY_OPTIONS, AUCTION_DURATION_OPTIONS, AUCTION_MIN_INCREMENT_OPTIONS,
+  AUCTION_AUTO_EXTEND_OPTIONS, AUCTION_YES_NO_OPTIONS, AUCTION_PARTICIPATION_OPTIONS,
+  AUCTION_BID_RULES_OPTIONS, AUCTION_WITHDRAW_POLICY_OPTIONS,
+  AUCTION_DELIVERY_METHOD_OPTIONS, AUCTION_DELIVERY_FEE_OPTIONS,
+  getAuctionBrandOptions, getAuctionModelOptions, parseAuctionMeta
+} from '../../constants/marketOptions';
 
-// إعدادات نسب العمولة المعتمدة للمنصة
 const sellerRate = 5;
-const buyerRate = 1;
 
-
-const GENERAL_CATEGORY_OPTIONS = [
-  { value: 'هواتف وأجهزة ذكية', label: 'هواتف وأجهزة ذكية (سامسونج، آيفون...)' },
-  { value: 'سيارات ومركبات', label: 'سيارات ومركبات' },
-  { value: 'أسلحة ومقتنيات شخصية', label: 'أسلحة ومقتنيات شخصية وتقليدية' },
-  { value: 'عفش وأثاث', label: 'عفش وأثاث منزلي ومكتبي' },
-  { value: 'عقارات وأراضي', label: 'عقارات وأراضي' },
-  { value: 'أغراض وسلع عامة', label: 'أغراض وسلع عامة ومعدات' }
-];
-
-const PUBLIC_CURRENCY_OPTIONS = [
-  { value: 'SAR', label: 'ريال سعودي (SAR)' },
+const AUCTION_CURRENCIES = [
   { value: 'YER', label: 'ريال يمني (YER)' },
-  { value: 'USD', label: 'دولار أمريكي (USD)' }
+  { value: 'SAR', label: 'ريال سعودي (SAR)' },
+  { value: 'USD', label: 'دولار أمريكي (USD)' },
 ];
-
-const GENERAL_CATEGORIES = [
-  { id: 'all', label: 'كافة المعروضات' },
-  { id: 'سيارات ومركبات', label: 'سيارات ومركبات', icon: Car },
-  { id: 'هواتف وأجهزة ذكية', label: 'هواتف وأجهزة ذكية', icon: Smartphone },
-  { id: 'أسلحة ومقتنيات شخصية', label: 'أسلحة ومقتنيات شخصية', icon: Shield },
-  { id: 'عفش وأثاث', label: 'عفش وأثاث', icon: Armchair },
-  { id: 'عقارات وأراضي', label: 'عقارات وأراضي', icon: Building2 },
-  { id: 'أغراض وسلع عامة', label: 'أغراض وسلع عامة', icon: Package }
-];
-
-const YEMEN_GOVERNORATES = [
-  { value: 'all', label: 'كل المدن والمحافظات' },
-  { value: 'صنعاء', label: 'صنعاء' },
-  { value: 'عدن', label: 'عدن' },
-  { value: 'تعز', label: 'تعز' },
-  { value: 'حضرموت', label: 'حضرموت' },
-  { value: 'الحديدة', label: 'الحديدة' },
-  { value: 'مأرب', label: 'مأرب' },
-  { value: 'إب', label: 'إب' },
-  { value: 'ذمار', label: 'ذمار' }
-];
-
-
-  // إعداد التاريخ والوقت التلقائي لحظة النشر الحالية
-  const formatForDateTimeInput = (d: Date): string => {
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  };
-
-  const getInitialStartDate = () => formatForDateTimeInput(new Date());
-  const getInitialEndDate = () => formatForDateTimeInput(new Date(Date.now() + 5 * 24 * 60 * 60 * 1000));
-
-
-  const getFormattedStartDate = () => "2026 / 10 / 11   11 : 58 م";
-  const getFormattedEndDate = () => "2026 / 10 / 16   11 : 58 م";
 
 export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = ({ onBack, embedded = false }) => {
-  const [listings, setListings] = useState<any[]>([]);
-  const [isCreateAuctionOpen, setIsCreateAuctionOpen] = useState<boolean>(false);
-
-  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
-  const [editingAuction, setEditingAuction] = useState<any>(null);
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [currentAuction, setCurrentAuction] = useState<any>(null);
-
-
-  // إدارة صور المزاد من 1 إلى 6 صور مع الضغط
-  const [auctionImages, setAuctionImages] = useState<string[]>([]);
-  
-
-  // دالة إرسال ونشر المعروض المتوافقة مع النموذج
-  const handleCreateOrUpdateListing = async (e?: React.FormEvent) => {
-    if (e && typeof e.preventDefault === 'function') e.preventDefault();
-    if (!agreedToTerms) {
-      alert("يرجى الموافقة على الشروط والسياسات للمتابعة");
-      return;
-    }
-    if (isCompressing) {
-      alert("يرجى الانتظار حتى اكتمال ضغط وتجهيز الصور");
-      return;
-    }
-    setIsSubmitting(true);
-    try {
-      setPublishSuccessMessage("تم حفظ ونشر المعروض بنجاح في المنصة وفق السياسات المعتمدة!");
-      setTimeout(() => {
-        setIsCreateAuctionOpen(false);
-        if (typeof (window as any).setIsCreateAuctionOpen === 'function') (window as any).setIsCreateAuctionOpen(false);
-        const xBtn = document.querySelector('button[aria-label="close"], button.close');
-        if (xBtn) (xBtn as HTMLElement).click();
-      }, 1600);
-    } catch (err) {
-      console.error("خطأ أثناء النشر:", err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    if (typeof (window as any).setFormData === 'function') {
-      (window as any).setFormData((prev: any) => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const resetForm = () => {
-    setAuctionImages([]);
-    setAgreedToTerms(false);
-    setPublishSuccessMessage("");
-  };
-
-  const [auctionTitle, setAuctionTitle] = useState("");
-  const [minIncrement, setMinIncrement] = useState("1000");
-  const [maxIncrement, setMaxIncrement] = useState("");
-
-  const [selectedCategory, setSelectedCategory] = useState("سيارات ومركبات");
-  const [isCatOpen, setIsCatOpen] = useState(false);
-  const [selectedCity, setSelectedCity] = useState("صنعاء");
-  const [isCityOpen, setIsCityOpen] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState("ريال سعودي (SAR)");
-  const [isCurrOpen, setIsCurrOpen] = useState(false);
-
-  const [auctionStartDate, setAuctionStartDate] = useState<string>(getInitialStartDate());
-  const [auctionEndDate, setAuctionEndDate] = useState<string>(getInitialEndDate());
-
-  const [startingPrice, setStartingPrice] = useState<string>("");
-  const [sellerName, setSellerName] = useState<string>("");
-  const [sellerPhone, setSellerPhone] = useState<string>("");
-  const [itemDescription, setItemDescription] = useState<string>("");
-  const [agreedToTerms, setAgreedToTerms] = useState<boolean>(false);
-  const [publishSuccessMessage, setPublishSuccessMessage] = useState<string>("");
-
-  const [isCompressing, setIsCompressing] = useState<boolean>(false);
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    if (auctionImages.length + files.length > 6) {
-      alert('الحد الأقصى للصور هو 6 صور للمزاد الواحد');
-      return;
-    }
-
-    setIsCompressing(true);
-    try {
-      const newImages: string[] = [];
-      for (let i = 0; i < files.length; i++) {
-        if (auctionImages.length + newImages.length >= 6) break;
-        const compressed = await compressImageFile(files[i]);
-        newImages.push(compressed);
-      }
-      setAuctionImages((prev) => [...prev, ...newImages]);
-    } catch (err) {
-      console.error('خطأ في معالجة وضغط الصور:', err);
-    } finally {
-      setIsCompressing(false);
-      e.target.value = '';
-    }
-  };
-
-  const removeAuctionImage = (indexToRemove: number) => {
-    setAuctionImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
-  };
-
+  const [auctions, setAuctions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [statusTab, setStatusTab] = useState<'ACTIVE' | 'ENDED' | 'DIRECT'>('ACTIVE');
   const [selectedCat, setSelectedCat] = useState('all');
+  const [statusTab, setStatusTab] = useState<'ALL' | 'ACTIVE' | 'ENDED' | 'DIRECT'>('ALL');
+  const [currencyFilter, setCurrencyFilter] = useState('all');
+  const [conditionFilter, setConditionFilter] = useState('all');
+  const fmtAmt = (v: string) => {
+    const d = v.replace(/[^\d]/g, '').replace(/^0+(?=\d)/, '');
+    return d ? d.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
+  };
   const [cityFilter, setCityFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [businessesList, setBusinessesList] = useState<BusinessPageRecord[]>([]);
   const [selectedItem, setSelectedItem] = useState<XMarketItem | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [biddingAuction, setBiddingAuction] = useState<any | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
 
-  // نموذج إضافة المعروض
-    // تجميد تمرير الصفحة بنسبة 100% ومنع حركة اللمس خلف الصورة
-  useEffect(() => {
-    if (isCreateAuctionOpen) {
-      document.body.classList.add('modal-freeze-lock');
-      document.documentElement.classList.add('modal-freeze-lock');
-      return () => {
-        document.body.classList.remove('modal-freeze-lock');
-        document.documentElement.classList.remove('modal-freeze-lock');
-        };
-    }
-  }, [isCreateAuctionOpen]);
-
-  
-;
+  // نافذة العرض / المزاد (قوائم منسدلة + ديناميكية)
+  const [isCreateAuctionOpen, setIsCreateAuctionOpen] = useState(false);
+  const [auctionKind, setAuctionKind] = useState('مزاد إلكتروني');
   const [saleType, setSaleType] = useState<'auction' | 'fixed_price'>('auction');
-  const [formCategory, setFormCategory] = useState('هواتف وأجهزة ذكية');
   const [formTitle, setFormTitle] = useState('');
   const [formSellerName, setFormSellerName] = useState('');
+  const [formCategory, setFormCategory] = useState('vehicles');
+  const [formCondition, setFormCondition] = useState('مستعمل');
+  const [formBrand, setFormBrand] = useState('تويوتا (Toyota)');
+  const [formModel, setFormModel] = useState('لاندكروزر');
+  const [formQuantity, setFormQuantity] = useState('1');
   const [formCity, setFormCity] = useState('صنعاء');
+  const [formSubCity, setFormSubCity] = useState('أمانة العاصمة');
+  const [formDistrict, setFormDistrict] = useState('السبعين');
+
+  const [formCurrency, setFormCurrency] = useState('YER');
   const [formPrice, setFormPrice] = useState('');
-  const [formStartTime, setFormStartTime] = useState(() => new Date().toISOString().slice(0, 16));
-  const [formEndDate, setFormEndDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 5);
-    return d.toISOString().slice(0, 16);
-  });
+  const [formBuyNowPrice, setFormBuyNowPrice] = useState('');
+  const [formDuration, setFormDuration] = useState('3 أيام');
+  const [formStartTime, setFormStartTime] = useState('');
+  const [formEndDate, setFormEndDate] = useState('');
   const [formMinIncrement, setFormMinIncrement] = useState('1000');
-  const [formMaxIncrement, setFormMaxIncrement] = useState('');
-  const [sellerCommissionRate, setSellerCommissionRate] = useState(10);
-  const [formCurrency, setFormCurrency] = useState('SAR');
-  const [formPhone, setFormPhone] = useState('');
+  const [formAutoExtend, setFormAutoExtend] = useState('مفعل');
+  const [formShowBidsCount, setFormShowBidsCount] = useState('نعم');
+  const [formShowTopBid, setFormShowTopBid] = useState('نعم');
+
+  const [formParticipation, setFormParticipation] = useState('متاحة للجميع');
+  const [formBidRules, setFormBidRules] = useState('الالتزام التام بسعر المزايدة عند الترسية');
+  const [formWithdrawPolicy, setFormWithdrawPolicy] = useState('غير مسموح بالتراجع بعد تأكيد المزايدة');
+  const [formDeliveryMethod, setFormDeliveryMethod] = useState('استلام مباشر');
+  const [formDeliveryFee, setFormDeliveryFee] = useState('حسب الاتفاق');
+
   const [formDescription, setFormDescription] = useState('');
+  const [formPhone, setFormPhone] = useState('');
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [docImage, setDocImage] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const [compressing, setCompressing] = useState(false);
   const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [publishMsg, setPublishMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<XToastState | null>(null);
+  const showToast = (text: string, type: 'success' | 'error' = 'success', ms = 3500) => {
+    setToastMessage({ type, text });
+    setTimeout(() => setToastMessage(null), ms);
+  };
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const docInputRef = useRef<HTMLInputElement | null>(null);
+
+  const brandOptions = useMemo(() => getAuctionBrandOptions(formCategory), [formCategory]);
+  const modelOptions = useMemo(() => getAuctionModelOptions(formCategory, formBrand), [formCategory, formBrand]);
+  const subCityOptions = useMemo(() => getCityOptions(formCity), [formCity]);
+  const districtOptions = useMemo(() => getDistrictOptions(formCity), [formCity]);
+
+  const isDirectKind = auctionKind === 'مزاد مباشر' || auctionKind === 'مزاد بسعر محدد';
+
+  const handleKindChange = (val: string) => {
+    setAuctionKind(val);
+    setSaleType(val === 'مزاد مباشر' || val === 'مزاد بسعر محدد' ? 'fixed_price' : 'auction');
+  };
+
+  const handleCategoryChange = (cat: string) => {
+    setFormCategory(cat);
+    const bs = getAuctionBrandOptions(cat);
+    const nb = bs[0]?.value || NOT_AVAILABLE;
+    setFormBrand(nb);
+    const ms = getAuctionModelOptions(cat, nb);
+    setFormModel(ms[0]?.value || NOT_AVAILABLE);
+  };
+
+  const handleBrandChange = (brand: string) => {
+    setFormBrand(brand);
+    const ms = getAuctionModelOptions(formCategory, brand);
+    setFormModel(ms[0]?.value || NOT_AVAILABLE);
+  };
+
+  const handleGovChange = (gov: string) => {
+    setFormCity(gov);
+    setFormSubCity(getCityOptions(gov)[0]?.value || gov);
+    setFormDistrict(getDistrictOptions(gov)[0]?.value || NOT_AVAILABLE);
+  };
 
   const fetchAuctions = async () => {
     try {
       setLoading(true);
-      await supabase.from('auctions').delete().ilike('title', '%لاندكروزر%');
-      const [{ data, error }, { data: bizData }] = await Promise.all([supabase.from('auctions').select('*').order('created_at', { ascending: false }), supabase.from('businesses').select('*').limit(200)]);
-      if (bizData) setBusinessesList(bizData.map(mapBusinessToPage));
+      const [{ data, error }, { data: bizData }] = await Promise.all([
+        supabase.from('auctions').select('*').order('created_at', { ascending: false }),
+        supabase.from('businesses').select('*').limit(200),
+      ]);
       if (error) throw error;
-      setListings(data || []);
+      if (bizData) setBusinessesList(bizData.map(mapBusinessToPage));
+      setAuctions(data || []);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching auctions:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  
-  useEffect(() => {
-    const fetchSellerData = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const name = user.user_metadata?.full_name || user.user_metadata?.name || '';
-          if (name) setFormSellerName(name);
-          let phone = user.phone || user.user_metadata?.phone || '';
-          try {
-            const { data: prof } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
-            if (prof) {
-              if (prof.full_name && !name) setFormSellerName(prof.full_name);
-              if (prof.phone && !phone) phone = prof.phone;
-            }
-          } catch {}
-          if (phone) setFormPhone(phone.replace(/\D/g, '').slice(-9));
-        }
-      } catch (e) {}
-    };
-    fetchSellerData();
-  }, []);
-
   useEffect(() => {
     fetchAuctions();
-    adminAuctionsService.getPlatformCommissionSettings().then((res) => {
-      if (res?.data?.seller_commission_rate) {
-        setSellerCommissionRate(res.data.seller_commission_rate);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      const uid = session?.user?.id;
+      if (!uid) return;
+      const [{ data: prof }, biz] = await Promise.all([
+        supabase.from('profiles').select('full_name, phone').eq('id', uid).maybeSingle(),
+        supabase.from('businesses').select('*').eq('owner_user_id', uid).limit(1).maybeSingle(),
+      ]);
+      if (biz?.data) {
+        const b = mapBusinessToPage(biz.data);
+        setFormSellerName((p) => p || b.name || '');
+        if (b.phone) setFormPhone((p) => p || b.phone.replace(/\D/g, '').slice(-9));
+        if (b.city) handleGovChange(b.city);
+      } else if (prof) {
+        if (prof.full_name) setFormSellerName((p) => p || prof.full_name);
+        if (prof.phone) setFormPhone((p) => p || prof.phone.replace(/\D/g, '').slice(-9));
       }
-    });
+    }).catch(() => {});
   }, []);
 
-  // دالة ضغط الصور التلقائي العالي الجودة باستخدام المتصفح لمنع تجاوز قاعدة البيانات
-  const compressImage = (file: File): Promise<string> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new window.Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const maxDim = 1000;
-          let width = img.width;
-          let height = img.height;
-          if (width > height && width > maxDim) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          } else if (height > maxDim) {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
-          }
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.72));
-        };
-        img.src = e.target?.result as string;
+  const compressImage = (file: File): Promise<string> => new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 900;
+        let { width, height } = img;
+        if (width > height && width > maxDim) { height = Math.round((height * maxDim) / width); width = maxDim; }
+        else if (height > maxDim) { width = Math.round((width * maxDim) / height); height = maxDim; }
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d')?.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.72));
       };
-      reader.readAsDataURL(file);
-    });
-  };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
 
   const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-
     const remaining = 6 - uploadedImages.length;
-    if (remaining <= 0) {
-      setToastMessage('الحد الأقصى المسموح به هو 6 صور فقط');
-      setTimeout(() => setToastMessage(null), 3000);
-      return;
-    }
-
+    if (remaining <= 0) { showToast('الحد الأقصى المسموح به هو 6 صور فقط', 'error', 3000); return; }
     try {
       setCompressing(true);
-      const toProcess = Array.from(files).slice(0, remaining);
-      const compressedList: string[] = [];
-
-      for (const file of toProcess) {
-        const compressedBase64 = await compressImage(file);
-        compressedList.push(compressedBase64);
-      }
-
-      setUploadedImages((prev) => [...prev, ...compressedList]);
+      const list = await Promise.all(Array.from(files).slice(0, remaining).map(compressImage));
+      setUploadedImages((prev) => [...prev, ...list]);
     } catch (err) {
       console.error('Error compressing images:', err);
     } finally {
@@ -387,205 +201,350 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
     }
   };
 
+  const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const compressed = await compressImage(file);
+    setDocImage(compressed);
+  };
+
+  const removeImage = (idx: number) => setUploadedImages((prev) => prev.filter((_, i) => i !== idx));
+
   const handleCreateListing = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formTitle.trim() || !consent || formPhone.length !== 9) {
-      setPublishMsg({ type: 'error', text: 'يرجى إكمال عنوان المعروض ورقم الهاتف (9 أرقام) والموافقة على الشروط' });
-      setTimeout(() => setToastMessage(null), 3500);
+      const m = 'يرجى إكمال عنوان المعروض ورقم الهاتف (9 أرقام) والموافقة على الشروط';
+      setPublishMsg({ type: 'error', text: m });
+      showToast(m, 'error', 3500);
       return;
     }
 
     try {
       setSubmitting(true);
-      const priceNum = parseFloat(formPrice) || 0;
+      const priceNum = parseFloat(formPrice.replace(/,/g, '')) || 0;
+      const startIso = formStartTime ? new Date(formStartTime).toISOString() : new Date().toISOString();
+      const durObj = AUCTION_DURATION_OPTIONS.find((d) => d.value === formDuration);
+      const computedEnd = formEndDate
+        ? new Date(formEndDate).toISOString()
+        : (!isDirectKind && durObj ? new Date(new Date(startIso).getTime() + durObj.days * 86400000).toISOString() : null);
 
-      const payload = {
+      const catLabel = AUCTION_CATEGORY_OPTIONS.find((x) => x.id === formCategory)?.label || formCategory;
+      const rawPairs: [string, string][] = [
+        ['نوع المزاد', auctionKind],
+        ['التصنيف', catLabel],
+        ['الحالة', formCondition],
+        ['الشركة', formBrand],
+        ['الموديل', formModel],
+        ['الكمية', formQuantity],
+        ['المحافظة', formCity],
+        ['المدينة', formSubCity],
+        ['المديرية', formDistrict],
+        ...(!isDirectKind ? [
+          ['الحد الأدنى للزيادة', `${Number(formMinIncrement).toLocaleString()} ${formCurrency}`] as [string, string],
+          ['الشراء الفوري', formBuyNowPrice ? `${Number(formBuyNowPrice.replace(/,/g, '')).toLocaleString()} ${formCurrency}` : NOT_AVAILABLE] as [string, string],
+          ['مدة المزاد', formDuration] as [string, string],
+          ['التمديد التلقائي', formAutoExtend] as [string, string],
+          ['إظهار عدد المزايدات', formShowBidsCount] as [string, string],
+          ['إظهار أعلى مزايدة', formShowTopBid] as [string, string],
+        ] : []),
+        ['المشاركة', formParticipation],
+        ['شروط المزايدة', formBidRules],
+        ['التراجع عن المزايدة', formWithdrawPolicy],
+        ['الاستلام', formDeliveryMethod],
+        ...(formDeliveryMethod === 'توصيل' ? [['رسوم التوصيل', formDeliveryFee] as [string, string]] : []),
+      ];
+
+      const specs = rawPairs
+        .filter(([, v]) => v && !['غير موجود', 'غير محدد', 'لا ينطبق'].includes(v.trim()))
+        .map(([label, value]) => ({ label, value }));
+
+      const metaJson = JSON.stringify({
+        notes: formDescription.trim(),
+        specs,
+        videoUrl: videoUrl.trim() || undefined,
+        docImage: docImage || undefined,
+      });
+
+      const payload: any = {
         title: formTitle.trim(),
         seller_name: formSellerName.trim() || 'صاحب المعروض المعتمد',
         sale_type: saleType,
         category: formCategory,
         city: formCity,
         currency: formCurrency,
-        description: formDescription.trim(),
+        description: metaJson,
         seller_phone: formPhone,
         images: uploadedImages,
         status: 'active',
         starting_price: priceNum,
         current_bid: priceNum,
         final_price: priceNum,
-        start_time: formStartTime ? new Date(formStartTime).toISOString() : new Date().toISOString(),
-        end_date: formEndDate ? new Date(formEndDate).toISOString() : null,
+        start_time: startIso,
+        end_date: computedEnd,
         min_increment: parseFloat(formMinIncrement) || 1000,
-        max_increment: formMaxIncrement ? parseFloat(formMaxIncrement) : null,
         deposit_required: false,
         deposit_amount: 0,
-        seller_commission_rate_snapshot: sellerCommissionRate,
+        seller_commission_rate_snapshot: sellerRate,
         created_at: new Date().toISOString()
       };
 
       const { error } = await supabase.from('auctions').insert([payload]);
       if (error) throw error;
 
-      setIsCreateAuctionOpen(false);
       setUploadedImages([]);
+      setDocImage('');
+      setVideoUrl('');
       setFormTitle('');
       setFormPrice('');
+      setFormBuyNowPrice('');
       setFormDescription('');
-      setFormPhone('');
       setPublishMsg({ type: 'success', text: 'تم نشر المعروض بنجاح وإدراجه في المنصة' });
-      setTimeout(() => { setIsCreateAuctionOpen(false); setPublishMsg(null); }, 1500);
-      setTimeout(() => setToastMessage(null), 4000);
+      showToast('تم نشر المعروض بنجاح وإدراجه في المنصة', 'success', 4000);
+      setTimeout(() => { setIsCreateAuctionOpen(false); setPublishMsg(null); }, 1000);
       fetchAuctions();
     } catch (err: any) {
-      console.error(" SUPABASE_REAL_ERROR in src/components/pages/AuctionsPage.tsx:", err?.message || err);
-      setPublishMsg({ type: 'error', text: err.message || 'حدث خطأ أثناء الاتصال بالنظام، يرجى إعادة المحاولة' });
+      const arMsg = toArabicMarketError(err, 'حدث خطأ أثناء الاتصال بالنظام، يرجى إعادة المحاولة');
+      setPublishMsg({ type: 'error', text: arMsg });
+      showToast(arMsg, 'error', 4000);
     } finally {
       setSubmitting(false);
     }
   };
 
-  // دالة الفحص الذكي لانتهاء المزاد سواء بالحالة أو بانتهاء التاريخ والوقت
   const isAuctionEnded = (item: any) => {
     const status = (item.status || '').toLowerCase();
     if (['completed', 'ended', 'sold', 'closed'].includes(status)) return true;
-    
-    const endStr = item.end_date || item.end_time;
-    if (endStr) {
-      const endTime = new Date(endStr).getTime();
-      if (!isNaN(endTime) && endTime <= Date.now()) {
-        return true;
-      }
-    }
+    if (item.end_date) return new Date(item.end_date).getTime() <= Date.now();
     return false;
   };
 
-  const endedListings = listings.filter(l => isAuctionEnded(l));
-  const activeAuctions = listings.filter(l => !isAuctionEnded(l) && (l.status === 'active' || !l.status) && l.sale_type !== 'fixed_price');
-  const directSales = listings.filter(l => !isAuctionEnded(l) && (l.status === 'active' || !l.status) && l.sale_type === 'fixed_price');
+  const activeAuctions = auctions.filter(a => a.sale_type !== 'fixed_price' && a.sale_type !== 'direct' && !isAuctionEnded(a));
+  const directSales = auctions.filter(a => a.sale_type === 'fixed_price' || a.sale_type === 'direct');
+  const endedListings = auctions.filter(a => a.sale_type !== 'fixed_price' && a.sale_type !== 'direct' && isAuctionEnded(a));
 
-  const displayedListings = (
-    statusTab === 'ACTIVE' ? activeAuctions :
-    statusTab === 'DIRECT' ? directSales :
-    endedListings
-  ).filter((item) => {
-    if (selectedCat !== 'all' && item.category !== selectedCat) return false;
-    if (cityFilter !== 'all' && (!item.city || !item.city.includes(cityFilter))) return false;
-    if (searchTerm.trim() && !item.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-    return true;
+  let currentList = auctions;
+  if (statusTab === 'ACTIVE') currentList = activeAuctions;
+  else if (statusTab === 'DIRECT') currentList = directSales;
+  else if (statusTab === 'ENDED') currentList = endedListings;
+
+  const displayedListings = currentList.filter(a => {
+    const matchCat = selectedCat === 'all' || a.category === selectedCat;
+    const matchCity = cityFilter === 'all' || (a.city && a.city.includes(cityFilter));
+    const matchCurr = currencyFilter === 'all' || (a.currency || 'YER') === currencyFilter;
+    const meta = parseAuctionMeta(a.description);
+    const condVal = meta.pairs.find((x) => x.label === 'الحالة')?.value || a.condition || '';
+    const matchCond = conditionFilter === 'all' || condVal === conditionFilter;
+    const q = searchQuery.trim().toLowerCase();
+    const matchSearch = !q || (a.title || '').toLowerCase().includes(q)
+      || (a.city || '').toLowerCase().includes(q)
+      || (a.category || '').toLowerCase().includes(q)
+      || (meta.notes || '').toLowerCase().includes(q);
+    return matchCat && matchCity && matchCurr && matchCond && matchSearch;
   });
 
+  const activeFiltersCount =
+    (selectedCat !== 'all' ? 1 : 0) + (statusTab !== 'ALL' ? 1 : 0) +
+    (currencyFilter !== 'all' ? 1 : 0) + (conditionFilter !== 'all' ? 1 : 0) +
+    (cityFilter !== 'all' ? 1 : 0);
+
   const toAucX = (auc: any): XMarketItem => {
-    const cl = (s?: string) => (s || '').replace(/\D/g, '').slice(-9);
-    const biz = businessesList.find((b) => (auc.business_id && b.id === auc.business_id) || (auc.owner_id && b.ownerId === auc.owner_id) || (auc.seller_name && b.name.trim() === auc.seller_name.trim()) || (cl(auc.seller_phone) && cl(b.phone) === cl(auc.seller_phone))) || null;
-    let imgs: string[] = Array.isArray(auc.images) ? auc.images : [];
-    if (!imgs.length && typeof auc.images === 'string') { try { const x = JSON.parse(auc.images); if (Array.isArray(x)) imgs = x; } catch {} }
-    if (!imgs.length && auc.image_url) imgs = [auc.image_url];
-    const bid = Number(auc.current_bid || auc.starting_price || auc.final_price || 0);
+    const biz = businessesList.find((b) => auc.business_id && b.id === auc.business_id) || null;
     const dir = auc.sale_type === 'fixed_price' || auc.sale_type === 'direct';
-    let desc = auc.description || '';
-    if (desc.startsWith('{')) { try { const x = JSON.parse(desc); desc = x.notes || x.description || ''; } catch {} }
-    return { id: auc.id, detailPath: `/auctions/${auc.id}`, actionLabel: dir ? 'التفاصيل' : 'المزايدة', actionIcon: <Gavel size={14} />, onAction: () => setBiddingAuction(auc), authorName: biz?.name || auc.seller_name || (dir ? 'بيع مباشر' : 'مزاد علني'), authorUsername: biz?.username || auc.city || 'auction', authorAvatar: biz?.avatarUrl || '', badgeType: biz ? ((biz.verificationType as BadgeType) || (biz.isVerified ? 'gold' : 'none')) : 'none', businessPath: biz ? `/businesses/${biz.username || biz.id}` : undefined, createdAt: auc.created_at, title: auc.title, priceText: `${bid.toLocaleString()} ${auc.currency || 'SAR'}`, description: desc, metaParts: [dir ? 'بيع مباشر' : 'مزاد علني', auc.category, auc.city].filter(Boolean), tagLabel: dir ? 'بيع مباشر' : 'مزاد علني', images: imgs, city: auc.city, phone: auc.seller_phone || biz?.phone || '' };
+    const bid = Number(auc.current_bid || auc.starting_price || auc.final_price || 0);
+    const imgs = Array.isArray(auc.images) && auc.images.length > 0 ? auc.images : (Array.isArray(auc.image_urls) ? auc.image_urls : []);
+    const parsed = parseAuctionMeta(auc.description);
+    const catLabel = AUCTION_CATEGORY_OPTIONS.find((x) => x.id === auc.category)?.label || auc.category;
+    const fallbackPairs = [
+      { label: 'النوع', value: dir ? 'بيع مباشر' : 'مزاد علني' },
+      ...(catLabel ? [{ label: 'التصنيف', value: catLabel }] : []),
+      ...(auc.city ? [{ label: 'المحافظة', value: auc.city }] : []),
+    ];
+    return {
+      id: auc.id, detailPath: `/auctions/${auc.id}`, actionLabel: dir ? 'التفاصيل' : 'المزايدة',
+      actionIcon: <Gavel size={14} />, onAction: () => setBiddingAuction(auc),
+      authorName: biz?.name || auc.seller_name || (dir ? 'بيع مباشر' : 'مزاد علني'),
+      authorUsername: biz?.username || auc.city || 'auction', authorAvatar: biz?.avatarUrl || '',
+      badgeType: biz ? ((biz.verificationType as BadgeType) || (biz.isVerified ? 'gold' : 'none')) : 'none',
+      businessPath: biz ? `/businesses/${biz.username || biz.id}` : undefined,
+      createdAt: auc.created_at, title: auc.title, priceText: `${bid.toLocaleString()} ${auc.currency || 'YER'}`,
+      description: parsed.notes,
+      metaParts: [dir ? 'بيع مباشر' : 'مزاد علني', catLabel, auc.city].filter(Boolean),
+      specPairs: (parsed.pairs.length > 0 ? parsed.pairs : fallbackPairs).filter((x) => x.value && !['غير موجود', 'غير محدد', 'لا ينطبق'].includes(x.value.trim())),
+      videoUrl: parsed.videoUrl,
+      blueprintImage: parsed.docImage,
+      tagLabel: dir ? 'بيع مباشر' : 'مزاد علني', images: imgs, city: auc.city, phone: auc.seller_phone || biz?.phone || ''
+    };
   };
-  const onShareX = (it: XMarketItem) => { navigator.clipboard?.writeText(it.title); setToastMessage('تم نسخ التفاصيل'); setTimeout(() => setToastMessage(null), 2500); };
+
+  const onShareX = (it: XMarketItem) => { navigator.clipboard?.writeText(it.title); showToast('تم نسخ التفاصيل', 'success', 2500); };
+
   return (
     <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-7xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white bg-black min-h-screen"}>
       {!embedded && !selectedItem && <AdBanner placementId="6" className="mb-1" />}
-
-      {toastMessage && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#F5C400] text-black px-5 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2 border border-black/10 animate-bounce">
-          <CheckCircle2 size={16} />
-          <span>{toastMessage}</span>
-        </div>
-      )}
+      <XToast toast={toastMessage} />
 
       {!embedded && !selectedItem && (
         <div className="flex flex-wrap items-center justify-between gap-3 bg-black border border-[#2F3336] p-4 rounded-2xl">
           <div className="flex items-center gap-3">
-            {onBack && (
-              <button onClick={onBack} className="p-2 rounded-xl bg-[#111111] border border-[#2F3336] text-[#F5C400]">
-                <ArrowRight size={16} />
-              </button>
-            )}
+            {onBack && <button onClick={onBack} className="p-2 rounded-xl bg-[#111111] border border-[#2F3336] text-[#F5C400]"><ArrowRight size={16} className="rtl:rotate-180" /></button>}
             <div>
-              <h1 className="text-xl font-black text-white flex items-center gap-2">
-                <Gavel size={22} className="text-[#F5C400]" />
-                <span>منصة المزادات والعروض</span>
-              </h1>
-              <p className="text-xs text-slate-400 mt-0.5">مزادات علنية حية وصفقات بيع مباشر بمواصفات حقيقية موثقة</p>
+              <h1 className="text-lg font-black text-white">المزادات والبيع المباشر</h1>
+              <p className="text-[11px] text-[#71767B]">منصة المزايدات الموثقة والصفقات المباشرة</p>
             </div>
           </div>
-
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsCreateAuctionOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#F5C400] hover:bg-[#DDAF00] text-black font-black rounded-xl text-xs sm:text-sm shadow-md cursor-pointer"
-            >
-              <Plus size={16} />
-              <span>إضافة مزاد جديد</span>
-            </button>
-            <button onClick={fetchAuctions} className="p-2.5 bg-[#111111] border border-[#2F3336] rounded-xl text-slate-300">
-              <RefreshCw size={15} className={loading ? 'animate-spin text-[#F5C400]' : ''} />
-            </button>
+            <button onClick={() => setIsCreateAuctionOpen(true)} className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#FFC500] text-black font-black rounded-xl text-xs"><Plus size={15} /><span>أضف معروض</span></button>
+            <button onClick={fetchAuctions} disabled={loading} className="p-2 bg-black border border-[#2F3336] text-slate-300 rounded-xl"><RefreshCw size={15} className={loading ? 'animate-spin text-[#FFC500]' : ''} /></button>
           </div>
         </div>
       )}
 
       {selectedItem ? <XMarketDetailView item={selectedItem} activeImageIndex={activeImageIndex} onChangeImageIndex={setActiveImageIndex} onBack={() => setSelectedItem(null)} onOpenLightbox={() => setIsLightboxOpen(true)} onShare={() => onShareX(selectedItem)} /> : (<>
-      {/* الرأس الموحد: بحث + أيقونة الفلتر يساراً مثل سوق الهواتف */}
-      <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "space-y-3"}>
-        <XSearchFilterBar searchQuery={searchTerm} onSearchChange={setSearchTerm} placeholder="ابحث باسم السلعة أو المزاد..." activeFiltersCount={(selectedCat !== 'all' ? 1 : 0) + (statusTab !== 'ACTIVE' ? 1 : 0) + (cityFilter !== 'all' ? 1 : 0)} onOpenFilter={() => setIsFilterModalOpen(true)} />
-        {embedded && <AdBanner placementId="6" className="py-0.5" />}
-      </div>
+        <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "bg-[#000000] p-3 rounded-2xl border border-[#2F3336] space-y-2.5"}>
+          <XSearchFilterBar searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="ابحث في المزادات والبيع المباشر..." activeFiltersCount={activeFiltersCount} onOpenFilter={() => setIsFilterModalOpen(true)} />
+          {embedded && <AdBanner placementId="6" className="py-0.5" />}
+        </div>
 
-      {/* المحتوى بأسلوب تغريدات X */}
-      {loading ? (
-        <div className="py-20 flex flex-col items-center justify-center text-[#71767B] gap-3">
-          <div className="w-7 h-7 rounded-full border-2 border-[#FFC500] border-t-transparent animate-spin" />
-          <span className="text-xs font-bold text-white">جاري مزامنة المزادات...</span>
-        </div>
-      ) : displayedListings.length === 0 ? (
-        <div className="py-16 text-center text-[#71767B] p-6 space-y-2">
-          <AlertCircle size={36} className="text-[#FFC500] mx-auto opacity-75" />
-          <h3 className="text-sm font-bold text-white">لا توجد مزادات مسجلة حالياً</h3>
-          <p className="text-xs">اضغط على زر + لإضافة مزاد أو عرض جديد.</p>
-        </div>
-      ) : embedded ? (
-        <div className="divide-y divide-[#2F3336]/60">{displayedListings.map((auc) => { const item = toAucX(auc); return <XMarketTweetCard key={auc.id} item={item} onOpenDetail={() => { setSelectedItem(item); setActiveImageIndex(0); window.scrollTo({ top: 0, behavior: "instant" }); }} onOpenImage={(idx) => { setSelectedItem(item); setActiveImageIndex(idx); setIsLightboxOpen(true); }} onShare={() => onShareX(item)} />; })}</div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {displayedListings.map((auc) => (
-            <AuctionCard key={auc.id} auction={auc} />
-          ))}
-        </div>
-      )}
-
+        {loading ? (
+          <div className="py-20 flex flex-col items-center justify-center text-[#71767B] gap-3">
+            <div className="w-7 h-7 rounded-full border-2 border-[#FFC500] border-t-transparent animate-spin" />
+            <span className="text-xs font-bold text-white">جاري تحميل المزادات...</span>
+          </div>
+        ) : displayedListings.length === 0 ? (
+          <div className="py-16 text-center text-[#71767B] p-6 space-y-2">
+            <AlertCircle className="w-9 h-9 text-[#FFC500] mx-auto opacity-75" />
+            <h3 className="text-sm font-bold text-white">لا توجد معروضات مطابقة حالياً</h3>
+            <p className="text-xs">اضغط على زر + لإضافة مزاد أو معروض جديد.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-[#2F3336]/60">
+            {displayedListings.map((auc) => {
+              const item = toAucX(auc);
+              return <XMarketTweetCard key={auc.id} item={item} onOpenDetail={() => { setSelectedItem(item); setActiveImageIndex(0); window.scrollTo({ top: 0, behavior: 'instant' }); }} onOpenImage={(idx) => { setSelectedItem(item); setActiveImageIndex(idx); setIsLightboxOpen(true); }} onShare={() => onShareX(item)} />;
+            })}
+          </div>
+        )}
       </>)}
+
       {embedded && !selectedItem && !isCreateAuctionOpen && (
-        <button
-          onClick={() => setIsCreateAuctionOpen(true)}
-          className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-black flex items-center justify-center shadow-lg shadow-black/60 transition"
-          title="إضافة مزاد جديد"
-        >
-          <Plus size={24} className="stroke-[2.2]" />
-        </button>
+        <button onClick={() => setIsCreateAuctionOpen(true)} className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-black flex items-center justify-center shadow-lg shadow-black/60 transition" title="أضف مزاد"><Plus size={24} className="stroke-[2.2]" /></button>
       )}
 
-      {/* نافذة إضافة معروض جديد بنظام الثيم الداكن المخصص بدون افتراضيات أندرويد */}
       {isCreateAuctionOpen && (
-        <AuctionCreateModal
-        isOpen={isCreateAuctionOpen}
-        onClose={() => setIsCreateAuctionOpen(false)}
-        onSuccess={() => {
-          setIsCreateAuctionOpen(false);
-          fetchAuctions();
-        }}
-      />
+        <div className="fixed inset-0 z-[150] bg-black sm:bg-black/80 flex items-center justify-center sm:p-4" onClick={() => setIsCreateAuctionOpen(false)}>
+          <div className="bg-black sm:border sm:border-[#2F3336] sm:rounded-2xl w-full sm:max-w-md h-full sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden font-['Tahoma',sans-serif] text-white" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center px-4 py-3 border-b border-[#2F3336]/60 shrink-0"><button type="button" onClick={() => setIsCreateAuctionOpen(false)} className="p-1.5 rounded-full hover:bg-white/10 text-white"><X size={18} /></button><span className="text-[13px] font-bold text-[#71767B]">إضافة معروض أو مزاد</span><span className="w-7" /></div>
+
+            <form onSubmit={handleCreateListing} className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
+              {publishMsg && <div className={`p-2.5 rounded-xl font-bold text-xs ${publishMsg.type === 'success' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/15 text-rose-300 border border-rose-500/40'}`}>{publishMsg.text}</div>}
+
+              {/* 1. نوع المزاد والتصنيف */}
+              <div className="grid grid-cols-2 gap-2">
+                <div><label className="text-[10.5px] text-[#71767B] block mb-1">نوع المزاد *</label><YRSelect compact value={auctionKind} onChange={handleKindChange} options={AUCTION_KIND_OPTIONS} /></div>
+                <div><label className="text-[10.5px] text-[#71767B] block mb-1">تصنيف المعروض *</label><YRSelect compact value={formCategory} onChange={handleCategoryChange} options={AUCTION_CATEGORY_OPTIONS.map((x) => ({ value: x.id, label: x.label }))} /></div>
+              </div>
+
+              <input required type="text" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} placeholder="اسم المنتج أو المعروض..." className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white outline-none" />
+
+              {/* 3. معلومات المعروض (قوائم منسدلة ديناميكية) */}
+              <div className="p-3 rounded-2xl border border-[#2F3336]/70 bg-zinc-950/50 space-y-2.5">
+                <div className="text-[11px] font-bold text-[#FFC500]">معلومات المعروض</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><label className="text-[10.5px] text-[#71767B] block mb-1">الحالة</label><YRSelect compact value={formCondition} onChange={setFormCondition} options={AUCTION_CONDITION_OPTIONS} /></div>
+                  <div><label className="text-[10.5px] text-[#71767B] block mb-1">الكمية</label><YRSelect compact value={formQuantity} onChange={setFormQuantity} options={AUCTION_QUANTITY_OPTIONS} /></div>
+                  <div><label className="text-[10.5px] text-[#71767B] block mb-1">الشركة المصنعة</label><YRSelect compact value={formBrand} onChange={handleBrandChange} options={brandOptions} /></div>
+                  <div><label className="text-[10.5px] text-[#71767B] block mb-1">الموديل</label><YRSelect compact value={formModel} onChange={setFormModel} options={modelOptions} /></div>
+                  <div><label className="text-[10.5px] text-[#71767B] block mb-1">المحافظة</label><YRSelect compact value={formCity} onChange={handleGovChange} options={RE_GOVERNORATES.map((g) => ({ value: g, label: g }))} /></div>
+                  <div><label className="text-[10.5px] text-[#71767B] block mb-1">المدينة</label><YRSelect compact value={formSubCity} onChange={setFormSubCity} options={subCityOptions} /></div>
+                  <div className="col-span-2"><label className="text-[10.5px] text-[#71767B] block mb-1">المديرية</label><YRSelect compact value={formDistrict} onChange={setFormDistrict} options={districtOptions} /></div>
+                </div>
+              </div>
+
+              {/* 4. معلومات المزايدة (تتكيف ديناميكياً مع نوع المزاد) */}
+              <div className="p-3 rounded-2xl border border-[#2F3336]/70 bg-zinc-950/50 space-y-2.5">
+                <div className="text-[11px] font-bold text-[#FFC500]">{isDirectKind ? 'تفاصيل السعر' : 'معلومات المزايدة'}</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10.5px] text-[#FFC500] font-bold block mb-1">{isDirectKind ? 'السعر المحدد *' : 'السعر الافتتاحي *'}</label>
+                    <input required type="text" inputMode="numeric" value={formPrice} onChange={(e) => setFormPrice(fmtAmt(e.target.value))} placeholder="0" className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2 text-white font-mono outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-[10.5px] text-[#71767B] block mb-1">العملة</label>
+                    <YRSelect compact value={formCurrency} onChange={setFormCurrency} options={AUCTION_CURRENCIES} />
+                  </div>
+                  {!isDirectKind && (
+                    <>
+                      <div><label className="text-[10.5px] text-[#71767B] block mb-1">الحد الأدنى للزيادة</label><YRSelect compact value={formMinIncrement} onChange={setFormMinIncrement} options={AUCTION_MIN_INCREMENT_OPTIONS} /></div>
+                      <div><label className="text-[10.5px] text-[#71767B] block mb-1">الشراء الفوري (اختياري)</label><input type="text" inputMode="numeric" value={formBuyNowPrice} onChange={(e) => setFormBuyNowPrice(fmtAmt(e.target.value))} placeholder="اختياري" className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2 text-white font-mono outline-none" /></div>
+                      <div><label className="text-[10.5px] text-[#71767B] block mb-1">مدة المزاد</label><YRSelect compact value={formDuration} onChange={setFormDuration} options={AUCTION_DURATION_OPTIONS.map((d) => ({ value: d.value, label: d.label }))} /></div>
+                      <div><label className="text-[10.5px] text-[#71767B] block mb-1">تمديد اللحظات الأخيرة</label><YRSelect compact value={formAutoExtend} onChange={setFormAutoExtend} options={AUCTION_AUTO_EXTEND_OPTIONS} /></div>
+                      <div><label className="text-[10.5px] text-[#71767B] block mb-1">بداية المزاد (اختياري)</label><input type="datetime-local" value={formStartTime} onChange={(e) => setFormStartTime(e.target.value)} className="w-full bg-black border border-[#2F3336] rounded-xl p-2 text-[11px] text-white outline-none" /></div>
+                      <div><label className="text-[10.5px] text-[#71767B] block mb-1">انتهاء المزاد (اختياري)</label><input type="datetime-local" value={formEndDate} onChange={(e) => setFormEndDate(e.target.value)} className="w-full bg-black border border-[#2F3336] rounded-xl p-2 text-[11px] text-white outline-none" /></div>
+                      <div><label className="text-[10.5px] text-[#71767B] block mb-1">إظهار عدد المزايدات</label><YRSelect compact value={formShowBidsCount} onChange={setFormShowBidsCount} options={AUCTION_YES_NO_OPTIONS} /></div>
+                      <div><label className="text-[10.5px] text-[#71767B] block mb-1">إظهار أعلى مزايدة</label><YRSelect compact value={formShowTopBid} onChange={setFormShowTopBid} options={AUCTION_YES_NO_OPTIONS} /></div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* 5. شروط المشاركة والاستلام */}
+              <div className="p-3 rounded-2xl border border-[#2F3336]/70 bg-zinc-950/50 space-y-2.5">
+                <div className="text-[11px] font-bold text-[#FFC500]">شروط المشاركة والاستلام</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div><label className="text-[10.5px] text-[#71767B] block mb-1">المشاركة متاحة</label><YRSelect compact value={formParticipation} onChange={setFormParticipation} options={AUCTION_PARTICIPATION_OPTIONS} /></div>
+                  <div><label className="text-[10.5px] text-[#71767B] block mb-1">طريقة الاستلام</label><YRSelect compact value={formDeliveryMethod} onChange={setFormDeliveryMethod} options={AUCTION_DELIVERY_METHOD_OPTIONS} /></div>
+                  {formDeliveryMethod === 'توصيل' && (
+                    <div className="col-span-2"><label className="text-[10.5px] text-[#71767B] block mb-1">رسوم التوصيل</label><YRSelect compact value={formDeliveryFee} onChange={setFormDeliveryFee} options={AUCTION_DELIVERY_FEE_OPTIONS} /></div>
+                  )}
+                  <div className="col-span-2"><label className="text-[10.5px] text-[#71767B] block mb-1">شروط المزايدة</label><YRSelect compact value={formBidRules} onChange={setFormBidRules} options={AUCTION_BID_RULES_OPTIONS} /></div>
+                  <div className="col-span-2"><label className="text-[10.5px] text-[#71767B] block mb-1">سياسة التراجع</label><YRSelect compact value={formWithdrawPolicy} onChange={setFormWithdrawPolicy} options={AUCTION_WITHDRAW_POLICY_OPTIONS} /></div>
+                </div>
+              </div>
+
+              {/* 6. الصور والمرفقات */}
+              <div className="space-y-2">
+                <input type="file" accept="image/*" multiple ref={fileInputRef} onChange={handleImagesUpload} className="hidden" />
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={compressing} className="w-full py-2.5 border border-dashed border-[#2F3336] hover:border-white rounded-xl bg-black text-white flex items-center justify-center gap-2 font-bold">
+                  <ImagePlus size={15} className="text-[#FFC500]" />
+                  <span>{compressing ? 'جاري المعالجة...' : `إضافة صور المعروض (${uploadedImages.length}/6)`}</span>
+                </button>
+                {uploadedImages.length > 0 && <div className="grid grid-cols-3 gap-2">{uploadedImages.map((img, i) => <div key={i} className="relative h-16 rounded-lg overflow-hidden border border-[#2F3336]"><img src={img} alt="" className="w-full h-full object-cover" /><button type="button" onClick={() => removeImage(i)} className="absolute top-1 left-1 p-1 rounded-full bg-black/80 text-white"><Trash2 size={11} /></button></div>)}</div>}
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <input type="file" accept="image/*" ref={docInputRef} onChange={handleDocUpload} className="hidden" />
+                    <button type="button" onClick={() => docInputRef.current?.click()} className={`w-full py-2 px-2 rounded-xl border text-[11px] font-bold flex items-center justify-center gap-1.5 ${docImage ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300' : 'border-[#2F3336] bg-black text-white'}`}>
+                      <FileImage size={14} className="text-[#FFC500]" /><span>{docImage ? 'تم إرفاق المستند' : 'مستندات (اختياري)'}</span>
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-black border border-[#2F3336] rounded-xl px-2">
+                    <Video size={13} className="text-[#FFC500] shrink-0" />
+                    <input type="url" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="رابط فيديو اختياري" className="w-full bg-transparent text-[11px] text-white outline-none caret-white py-2" />
+                  </div>
+                </div>
+              </div>
+
+              <input required type="tel" maxLength={9} value={formPhone} onChange={(e) => setFormPhone(e.target.value.replace(/\D/g, '').slice(0, 9))} placeholder="رقم الهاتف (9 أرقام)..." className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white font-mono outline-none" />
+              <textarea rows={2} value={formDescription} onChange={(e) => setFormDescription(e.target.value)} placeholder="وصف المعروض (اختياري)..." className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white outline-none resize-none" />
+              <label className="flex items-center gap-2 text-[11px] text-[#71767B] cursor-pointer"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="accent-[#16A34A]" /><span>أوافق على شروط وسياسة وساطة يمن ريتغ</span></label>
+              <button type="submit" disabled={submitting || !consent || formPhone.length !== 9} className="w-full py-2.5 rounded-full bg-[#FFC500] disabled:opacity-40 text-black font-black text-xs">{submitting ? 'جاري النشر...' : 'نشر الآن'}</button>
+            </form>
+          </div>
+        </div>
       )}
+
       <XImageLightbox isOpen={isLightboxOpen} item={selectedItem} activeIndex={activeImageIndex} onChangeIndex={setActiveImageIndex} onClose={() => setIsLightboxOpen(false)} />
-      <XAuctionBidModal auction={biddingAuction} onClose={() => setBiddingAuction(null)} onSuccess={(m) => { setToastMessage(m); setTimeout(() => setToastMessage(null), 3500); fetchAuctions(); }} />
-      <XFilterModal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} title="تصفية المزادات" activeFiltersCount={(selectedCat !== 'all' ? 1 : 0) + (statusTab !== 'ACTIVE' ? 1 : 0) + (cityFilter !== 'all' ? 1 : 0)} onReset={() => { setSelectedCat('all'); setStatusTab('ACTIVE'); setCityFilter('all'); }} resultsCount={displayedListings.length} fields={[
-        { label: 'القسم', value: selectedCat, onChange: setSelectedCat, options: GENERAL_CATEGORIES.map((x) => ({ value: x.id, label: x.label })) },
-        { label: 'الحالة', value: statusTab, onChange: (v) => setStatusTab(v as any), options: [{ value: 'ACTIVE', label: `المزادات النشطة (${activeAuctions.length})` }, { value: 'DIRECT', label: `البيع المباشر (${directSales.length})` }, { value: 'ENDED', label: `المزادات المنتهية (${endedListings.length})` }] },
+      <XAuctionBidModal auction={biddingAuction} onClose={() => setBiddingAuction(null)} onSuccess={(m) => { showToast(m, 'success', 3500); fetchAuctions(); }} />
+      <XFilterModal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} title="تصفية المزادات" activeFiltersCount={activeFiltersCount} onReset={() => { setSelectedCat('all'); setStatusTab('ALL'); setCurrencyFilter('all'); setConditionFilter('all'); setCityFilter('all'); }} resultsCount={displayedListings.length} fields={[
+        { label: 'التصنيف', value: selectedCat, onChange: setSelectedCat, options: [{ value: 'all', label: 'كل التصنيفات' }, ...AUCTION_CATEGORY_OPTIONS.map((x) => ({ value: x.id, label: x.label }))] },
+        { label: 'نوع المزاد والحالة', value: statusTab, onChange: (v) => setStatusTab(v as any), options: [
+          { value: 'ALL', label: `الكل (${auctions.length})` },
+          { value: 'ACTIVE', label: `المزادات النشطة (${activeAuctions.length})` },
+          { value: 'DIRECT', label: `البيع المباشر (${directSales.length})` },
+          { value: 'ENDED', label: `المزادات المنتهية (${endedListings.length})` },
+        ] },
+        { label: 'حالة المعروض', value: conditionFilter, onChange: setConditionFilter, options: [{ value: 'all', label: 'كل الحالات' }, ...AUCTION_CONDITION_OPTIONS.filter((o) => o.value !== NOT_AVAILABLE)] },
+        { label: 'العملة', value: currencyFilter, onChange: setCurrencyFilter, options: [{ value: 'all', label: 'كل العملات' }, ...AUCTION_CURRENCIES] },
         { label: 'المحافظة', value: cityFilter, onChange: setCityFilter, options: YEMEN_GOV_FILTER_OPTIONS },
       ]} />
     </div>

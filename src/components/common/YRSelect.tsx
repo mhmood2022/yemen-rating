@@ -1,75 +1,108 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, Search } from 'lucide-react';
 
-export interface YRSelectOption { value: string; label: string; }
-export interface YRSelectProps {
-  value?: string; options: YRSelectOption[]; onChange: (value: string) => void;
-  placeholder?: string; className?: string; disabled?: boolean; compact?: boolean;
+export interface YRSelectOption {
+  value: string;
+  label: string;
+}
+
+interface YRSelectProps {
+  value: string;
+  options: YRSelectOption[];
+  onChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+  compact?: boolean;
+  searchable?: boolean;
 }
 
 export const YRSelect: React.FC<YRSelectProps> = ({
-  value, options, onChange, placeholder = 'اختر من القائمة...',
-  className = '', disabled = false, compact = false,
+  value,
+  options,
+  onChange,
+  placeholder = 'اختر...',
+  className = '',
+  compact = false,
+  searchable,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [openUp, setOpenUp] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const selectedOption = options.find((opt) => opt.value === value);
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const close = (e: Event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setIsOpen(false);
+    const handleOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setQuery('');
+      }
     };
-    document.addEventListener('mousedown', close);
-    document.addEventListener('touchstart', close);
-    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('touchstart', close); };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
   }, []);
 
-  const toggleOpen = () => {
-    if (disabled) return;
-    if (!isOpen && dropdownRef.current) {
-      const rect = dropdownRef.current.getBoundingClientRect();
-      const below = window.innerHeight - rect.bottom;
-      setOpenUp(below < 210 && rect.top > below);
-    }
-    setIsOpen((p) => !p);
-  };
+  const showSearch = searchable ?? options.length >= 10;
+  const q = query.trim().toLowerCase();
+  const filteredOptions = showSearch && q
+    ? options.filter((opt) => opt.label.toLowerCase().includes(q) || opt.value.toLowerCase().includes(q))
+    : options;
+
+  const selectedOption = options.find((opt) => opt.value === value);
+  const displayLabel = selectedOption ? selectedOption.label : (value || placeholder);
 
   return (
-    <div ref={dropdownRef} className={`relative w-full font-['Cairo'] text-right select-none ${className}`}>
+    <div ref={containerRef} className={`relative w-full ${className}`} dir="rtl">
       <button
-        type="button" disabled={disabled} onClick={toggleOpen}
-        className={`w-full bg-black text-white border border-[#2F3336] hover:border-white/50 rounded-xl flex items-center justify-between gap-2 transition-all cursor-pointer ${
-          compact ? 'px-2.5 py-2 text-[11.5px]' : 'px-3 py-2 text-xs'
-        } ${isOpen ? 'border-white' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        type="button"
+        onClick={() => { setOpen((prev) => !prev); setQuery(''); }}
+        className={`w-full flex items-center justify-between gap-2 bg-black border text-right font-bold transition-all cursor-pointer ${
+          open ? 'border-white ring-1 ring-white/20' : 'border-[#2F3336] hover:border-white/50'
+        } ${compact ? 'px-2.5 py-2 text-[11.5px] rounded-xl' : 'px-3 py-2.5 text-xs rounded-xl'} text-white`}
       >
-        <span className={`truncate font-bold ${selectedOption ? 'text-white' : 'text-[#71767B]'}`}>
-          {selectedOption ? selectedOption.label : placeholder}
-        </span>
-        <ChevronDown size={14} className={`shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-white' : 'text-[#71767B]'}`} />
+        <span className="truncate">{displayLabel}</span>
+        <ChevronDown
+          size={15}
+          className={`shrink-0 text-[#71767B] transition-transform duration-200 ${open ? 'rotate-180 text-white' : ''}`}
+        />
       </button>
 
-      {isOpen && (
-        <div className={`absolute z-[9999] w-full bg-black border border-[#2F3336] rounded-xl shadow-2xl overflow-y-auto py-1 max-h-48 ${
-          openUp ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
-        }`}>
-          {options.length === 0 ? (
-            <div className="px-3 py-2 text-[11.5px] text-[#71767B] text-center font-bold">لا توجد خيارات متاحة</div>
-          ) : options.map((option) => {
-            const isSelected = option.value === value;
-            return (
-              <div
-                key={option.value}
-                onClick={() => { onChange(option.value); setIsOpen(false); }}
-                className={`px-3 py-2 text-[11.5px] font-bold flex items-center justify-between transition-colors cursor-pointer ${
-                  isSelected ? 'bg-white text-black font-black' : 'text-[#E7E9EA] hover:bg-white/10'
-                }`}
-              >
-                <span className="truncate">{option.label}</span>
-                {isSelected && <Check size={13} className="text-black shrink-0" />}
-              </div>
-            );
-          })}
+      {open && (
+        <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-[99999] bg-black border border-[#2F3336] rounded-xl shadow-[0_12px_35px_rgba(0,0,0,0.95)] overflow-hidden">
+          {showSearch && (
+            <div className="p-1.5 border-b border-[#2F3336] flex items-center gap-1.5 bg-zinc-950" onClick={(e) => e.stopPropagation()}>
+              <Search size={13} className="text-[#71767B] shrink-0 mr-1" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="ابحث داخل القائمة..."
+                className="w-full bg-transparent text-[11.5px] text-white placeholder-[#71767B] outline-none caret-white py-1"
+              />
+            </div>
+          )}
+          <div className="py-1 max-h-56 overflow-y-auto">
+            {filteredOptions.length === 0 ? (
+              <div className="px-3 py-2.5 text-[11px] text-[#71767B] text-center">لا توجد نتائج مطابقة</div>
+            ) : filteredOptions.map((opt) => {
+              const isSelected = opt.value === value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value);
+                    setOpen(false);
+                    setQuery('');
+                  }}
+                  className={`w-full px-3 py-2 text-right text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
+                    isSelected ? 'bg-white text-black' : 'text-white hover:bg-[#111111]'
+                  }`}
+                >
+                  <span className="truncate">{opt.label}</span>
+                  {isSelected && <Check size={14} className="shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

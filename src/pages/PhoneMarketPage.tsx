@@ -1,18 +1,21 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { 
-  Smartphone, Tag, Wrench, Radio, Sparkles, Search, 
-  MapPin, Phone, MessageCircle, ArrowRight, Plus, X, 
-  Upload, Trash2, CheckCircle2, ShieldCheck, User, Camera,
-  Zap, Check, SlidersHorizontal, Cpu
+import {
+  Smartphone, Phone, MessageCircle, ArrowRight, Plus, X,
+  Upload, Trash2, User, Camera
 } from 'lucide-react';
 import { AdBanner } from '../components/common/AdBanner';
-import { YRSelect } from '../components/common/YRSelect';
-import { XSearchFilterBar, XFilterModal, YEMEN_GOV_FILTER_OPTIONS } from '../components/common/XMarketUI';
+import { YRSelect, YRSelectOption } from '../components/common/YRSelect';
+import {
+  XSearchFilterBar, XFilterModal, YEMEN_GOV_FILTER_OPTIONS,
+  XToast, XToastState, toArabicMarketError
+} from '../components/common/XMarketUI';
 import { UserProfile } from '../types/auth';
 import { getMyBusinessPage, BusinessPageRecord } from '../services/businessPageService';
 import { uploadSocialImage } from '../services/socialService';
 import { VerifiedBadge, BadgeType } from '../components/common/VerifiedBadge';
 import { supabase } from '../lib/supabase';
+
+export type PhoneCategory = 'phones' | 'tablets' | 'laptops' | 'accessories' | 'maintenance' | 'sim_services';
 
 export interface PhoneDeviceItem {
   id: string;
@@ -21,16 +24,20 @@ export interface PhoneDeviceItem {
   modelDetails?: string;
   price: number;
   currency: string;
-  condition: 'جديد كرت' | 'شبه جديد' | 'مستعمل نظيف';
+  condition: string;
   storage: string;
   ram?: string;
+  processor?: string;
+  simSupport?: string;
+  delivery?: string;
+  negotiable?: string;
   color?: string;
   city: string;
   sellerName: string;
   sellerPhone: string;
   isVerified: boolean;
   images: string[];
-  category: 'phones' | 'tablets' | 'laptops' | 'accessories' | 'maintenance' | 'sim_services';
+  category: PhoneCategory;
   description?: string;
   createdAt: string;
   sellerUsername?: string;
@@ -40,7 +47,16 @@ export interface PhoneDeviceItem {
   authorId?: string;
 }
 
-const PHONES_STORAGE_KEY = 'yr_phone_market_items_v1';
+const PHONES_STORAGE_KEY = 'yr_phone_market_items_v2';
+
+const CATEGORY_LABEL_MAP: Record<PhoneCategory, string> = {
+  phones: 'هاتف',
+  tablets: 'آيباد',
+  laptops: 'لابتوب',
+  accessories: 'إكسسوار',
+  maintenance: 'صيانة',
+  sim_services: 'شريحة وخدمة',
+};
 
 const YEMEN_GOVERNORATES = [
   'صنعاء', 'عدن', 'تعز', 'حضرموت', 'إب', 'الحديدة', 'ذمار', 'مأرب',
@@ -49,10 +65,10 @@ const YEMEN_GOVERNORATES = [
 ];
 
 const PHONE_BRANDS = [
-  { id: 'Apple', label: 'آبل · آيفون / آيباد (Apple)' },
-  { id: 'Samsung', label: 'سامسونج · جالكسي / تاب (Samsung)' },
-  { id: 'Xiaomi', label: 'شاومي · ريدمي / بوكو (Xiaomi)' },
-  { id: 'Huawei', label: 'هواوي · ميت باد (Huawei)' },
+  { id: 'Apple', label: 'آبل (Apple)' },
+  { id: 'Samsung', label: 'سامسونج (Samsung)' },
+  { id: 'Xiaomi', label: 'شاومي (Xiaomi)' },
+  { id: 'Huawei', label: 'هواوي (Huawei)' },
   { id: 'Honor', label: 'هونر (Honor)' },
   { id: 'Oppo', label: 'أوبو (Oppo)' },
   { id: 'Realme', label: 'ريلمي (Realme)' },
@@ -63,10 +79,7 @@ const PHONE_BRANDS = [
   { id: 'Infinix', label: 'إنفنكس (Infinix)' },
   { id: 'Nokia', label: 'نوكيا (Nokia)' },
   { id: 'Motorola', label: 'موتورولا (Motorola)' },
-  { id: 'Sony', label: 'سوني (Sony)' },
   { id: 'Nothing', label: 'ناثينج (Nothing)' },
-  { id: 'itel', label: 'آيتل (itel)' },
-  { id: 'ZTE', label: 'زد تي إي (ZTE)' },
 ];
 
 const COMPUTER_BRANDS = [
@@ -78,9 +91,155 @@ const COMPUTER_BRANDS = [
   { id: 'Acer', label: 'أيسر (Acer)' },
   { id: 'MSI', label: 'إم إس آي (MSI)' },
   { id: 'Microsoft', label: 'مايكروسوفت سيرفس (Surface)' },
-  { id: 'Toshiba', label: 'توشيبا (Toshiba)' },
-  { id: 'Razer', label: 'ريزر (Razer)' },
-  { id: 'LG', label: 'إل جي (LG)' },
+];
+
+const EXTRA_BRANDS = [
+  { id: 'Anker', label: 'أنكر (Anker)' },
+  { id: 'JBL', label: 'جي بي إل (JBL)' },
+  { id: 'YemenMobile', label: 'يمن موبايل (Yemen Mobile)' },
+  { id: 'Sabafon', label: 'سبأفون (Sabafon)' },
+  { id: 'YOU', label: 'يو (YOU)' },
+  { id: 'Other', label: 'متنوع / عام' },
+];
+
+const MODELS_BY_CATEGORY_BRAND: Record<string, Record<string, string[]>> = {
+  phones: {
+    Apple: ['iPhone 16 Pro Max', 'iPhone 16 Pro', 'iPhone 16 Plus', 'iPhone 16', 'iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 15', 'iPhone 14 Pro Max', 'iPhone 14 Pro', 'iPhone 14', 'iPhone 13 Pro Max', 'iPhone 13 Pro', 'iPhone 13', 'iPhone 12 Pro Max', 'iPhone 12', 'iPhone 11 Pro Max', 'iPhone 11'],
+    Samsung: ['Galaxy S25 Ultra', 'Galaxy S24 Ultra', 'Galaxy S24+', 'Galaxy S24', 'Galaxy S23 Ultra', 'Galaxy S23', 'Galaxy S22 Ultra', 'Galaxy Z Fold 6', 'Galaxy Z Flip 6', 'Galaxy A55 5G', 'Galaxy A35 5G', 'Galaxy A25', 'Galaxy A15'],
+    Xiaomi: ['Xiaomi 14 Ultra', 'Xiaomi 14 Pro', 'Xiaomi 14', 'Xiaomi 13T Pro', 'Redmi Note 14 Pro+', 'Redmi Note 13 Pro+', 'Redmi Note 13 Pro', 'Redmi Note 13', 'Poco X6 Pro', 'Poco F6 Pro'],
+    Huawei: ['Pura 70 Ultra', 'Pura 70 Pro', 'Mate 60 Pro', 'Nova 12s', 'Nova 11 Pro'],
+    Honor: ['Honor Magic 6 Pro', 'Honor 200 Pro', 'Honor 90', 'Honor X9b', 'Honor X8b'],
+    Oppo: ['Oppo Find X7 Ultra', 'Oppo Reno 12 Pro', 'Oppo Reno 11', 'Oppo A79'],
+    Realme: ['Realme GT 6', 'Realme 12 Pro+', 'Realme C67'],
+    Vivo: ['Vivo X100 Pro', 'Vivo V30 Pro', 'Vivo Y36'],
+    OnePlus: ['OnePlus 13', 'OnePlus 12', 'OnePlus 11', 'OnePlus Nord 4'],
+    Google: ['Pixel 9 Pro XL', 'Pixel 9 Pro', 'Pixel 8 Pro', 'Pixel 8', 'Pixel 7 Pro'],
+    Tecno: ['Tecno Camon 30 Pro', 'Tecno Spark 20 Pro+', 'Tecno Pova 6 Pro'],
+    Infinix: ['Infinix Note 40 Pro', 'Infinix Zero 30', 'Infinix Hot 40 Pro'],
+    Nokia: ['Nokia XR21', 'Nokia G42', 'Nokia C32'],
+    Motorola: ['Motorola Edge 50 Ultra', 'Motorola Razr 50 Ultra'],
+    Nothing: ['Nothing Phone (2)', 'Nothing Phone (2a)'],
+  },
+  tablets: {
+    Apple: ['iPad Pro M4 (13 بوصة)', 'iPad Pro M4 (11 بوصة)', 'iPad Pro M2', 'iPad Air M2', 'iPad Air M1', 'iPad 10th Gen', 'iPad mini 6'],
+    Samsung: ['Galaxy Tab S9 Ultra', 'Galaxy Tab S9+', 'Galaxy Tab S9', 'Galaxy Tab S9 FE', 'Galaxy Tab A9+'],
+    Xiaomi: ['Xiaomi Pad 6S Pro', 'Xiaomi Pad 6', 'Redmi Pad Pro', 'Redmi Pad SE'],
+    Huawei: ['MatePad Pro 13.2', 'MatePad 11.5S', 'MatePad SE'],
+    Honor: ['Honor Pad 9', 'Honor Pad X9'],
+  },
+  laptops: {
+    MacBook: ['MacBook Pro M4', 'MacBook Pro M3 Max', 'MacBook Pro M2', 'MacBook Air M3', 'MacBook Air M2', 'MacBook Air M1', 'iMac M3'],
+    HP: ['HP Spectre x360', 'HP Envy 16', 'HP Victus Gaming', 'HP Pavilion 15', 'HP EliteBook 840', 'HP ProBook 450'],
+    Dell: ['Dell XPS 15', 'Dell XPS 13', 'Dell Inspiron 15', 'Dell Latitude 7440', 'Dell G15 Gaming'],
+    Lenovo: ['ThinkPad X1 Carbon', 'ThinkPad T14', 'Lenovo Legion 5 Pro', 'Lenovo IdeaPad Slim 5', 'Lenovo Yoga 7'],
+    Asus: ['ASUS ROG Strix G16', 'ASUS TUF Gaming A15', 'ASUS Zenbook 14', 'ASUS Vivobook 16'],
+    Acer: ['Acer Nitro 5', 'Acer Predator Helios', 'Acer Aspire 5'],
+    MSI: ['MSI Raider GE78', 'MSI Katana 15', 'MSI Modern 15'],
+    Microsoft: ['Surface Pro 11', 'Surface Laptop 6', 'Surface Pro 9'],
+  },
+  accessories: {
+    Apple: ['سماعة AirPods Pro 2', 'ساعة Apple Watch Ultra 2', 'ساعة Apple Watch Series 10', 'شاحن Apple الأصلي 20W', 'قلم Apple Pencil Pro', 'غطاء MagSafe الأصلي'],
+    Samsung: ['سماعة Galaxy Buds 3 Pro', 'ساعة Galaxy Watch Ultra', 'ساعة Galaxy Watch 7', 'شاحن سامسونج الأصلي 45W', 'شاحن سامسونج 25W'],
+    Anker: ['شاحن أنكر 65W GaN سريع', 'باور بانك أنكر 20000mAh', 'باور بانك أنكر MagGo لاسلكي', 'كيبل أنكر أصلي PowerLine', 'سماعة Soundcore Liberty 4'],
+    JBL: ['سماعة JBL Charge 5', 'سماعة JBL Flip 6', 'سماعة JBL Tune 770NC'],
+    Other: ['شاحن سريع أصلي', 'باور بانك 10000/20000mAh', 'سماعة بلوتوث لاسلكية', 'كفر حماية ضد الصدمات', 'لاصق حماية شاشة نانو', 'حامل هاتف للسيارة'],
+  },
+  maintenance: {
+    Apple: ['تغيير شاشة أصلية آيفون', 'تغيير بطارية أصلية آيفون', 'برمجة وفك آيكلاود / شبكات', 'صيانة بورد وآيسيات آيفون', 'تبديل قاعدة شحن آيفون'],
+    Samsung: ['تغيير شاشة أصلية سامسونج', 'تغيير بطارية أصلية سامسونج', 'فك شفرات وتفعيل CDMA / 4G', 'تحديث سوفتوير وإصلاح النظام', 'صيانة بورد سامسونج'],
+    Other: ['صيانة شاشات أصلية', 'صيانة بورد وآيسيات شاملة', 'برمجة وفك شفرات جميع الأجهزة', 'تغيير بطاريات أصلية بالضمان', 'تنظيف وإصلاح مداخل الشحن'],
+  },
+  sim_services: {
+    YemenMobile: ['شريحة يمن موبايل 4G (جديدة)', 'تفعيل شريحة eSIM يمن موبايل', 'برمجة أرقام يمن موبايل CDMA', 'باقة إنترنت وتفعيل 4G'],
+    Sabafon: ['شريحة سبأفون 4G (جديدة)', 'شريحة eSIM سبأفون', 'رقم مميز سبأفون'],
+    YOU: ['شريحة YOU 4G (جديدة)', 'شريحة eSIM YOU', 'رقم مميز YOU'],
+    Other: ['تفعيل شريحة eSIM لجميع الشبكات', 'فك شفرات وتفعيل شرائح دولية', 'خدمات نقل وتبديل الشرائح'],
+  },
+};
+
+const STORAGE_OPTIONS: YRSelectOption[] = [
+  { value: '16 GB', label: '16 GB' },
+  { value: '32 GB', label: '32 GB' },
+  { value: '64 GB', label: '64 GB' },
+  { value: '128 GB', label: '128 GB' },
+  { value: '256 GB', label: '256 GB' },
+  { value: '512 GB', label: '512 GB' },
+  { value: '1 TB', label: '1 TB' },
+  { value: 'لا ينطبق', label: 'لا ينطبق (إكسسوار / خدمة)' },
+];
+
+const RAM_OPTIONS: YRSelectOption[] = [
+  { value: '2 GB', label: '2 GB' },
+  { value: '3 GB', label: '3 GB' },
+  { value: '4 GB', label: '4 GB' },
+  { value: '6 GB', label: '6 GB' },
+  { value: '8 GB', label: '8 GB' },
+  { value: '12 GB', label: '12 GB' },
+  { value: '16 GB', label: '16 GB' },
+  { value: '24 GB', label: '24 GB' },
+  { value: '32 GB', label: '32 GB' },
+  { value: 'لا ينطبق', label: 'لا ينطبق' },
+];
+
+const PROCESSOR_OPTIONS: YRSelectOption[] = [
+  { value: 'Apple A18 Pro', label: 'Apple A18 Pro' },
+  { value: 'Apple A17 Pro', label: 'Apple A17 Pro' },
+  { value: 'Apple A16 Bionic', label: 'Apple A16 Bionic' },
+  { value: 'Apple A15 Bionic', label: 'Apple A15 Bionic' },
+  { value: 'Apple M4 / M3 / M2', label: 'Apple M4 / M3 / M2' },
+  { value: 'Snapdragon 8 Elite', label: 'Snapdragon 8 Elite' },
+  { value: 'Snapdragon 8 Gen 3', label: 'Snapdragon 8 Gen 3' },
+  { value: 'Snapdragon 8 Gen 2', label: 'Snapdragon 8 Gen 2' },
+  { value: 'Snapdragon 7 / 6 Series', label: 'Snapdragon 7 / 6 Series' },
+  { value: 'MediaTek Dimensity', label: 'MediaTek Dimensity' },
+  { value: 'MediaTek Helio', label: 'MediaTek Helio' },
+  { value: 'Samsung Exynos', label: 'Samsung Exynos' },
+  { value: 'Google Tensor', label: 'Google Tensor' },
+  { value: 'Huawei Kirin', label: 'Huawei Kirin' },
+  { value: 'Intel Core i7 / i5', label: 'Intel Core i7 / i5' },
+  { value: 'AMD Ryzen', label: 'AMD Ryzen' },
+  { value: 'غير محدد', label: 'غير محدد / لا ينطبق' },
+];
+
+const SIM_OPTIONS: YRSelectOption[] = [
+  { value: 'شريحة واحدة', label: 'شريحة واحدة (GSM)' },
+  { value: 'شريحتان', label: 'شريحتان (Dual SIM)' },
+  { value: 'eSIM', label: 'eSIM (شريحة إلكترونية)' },
+  { value: 'شريحة + eSIM', label: 'شريحة + eSIM' },
+  { value: 'CDMA (يمن موبايل)', label: 'CDMA (يمن موبايل)' },
+  { value: 'شريحتان + CDMA (يمن موبايل)', label: 'شريحتان + CDMA (يمن موبايل)' },
+  { value: 'جميع الشبكات (CDMA + GSM)', label: 'جميع الشبكات (CDMA + GSM)' },
+  { value: 'Wi-Fi فقط', label: 'Wi-Fi فقط / لا يدعم شريحة' },
+];
+
+const CONDITION_OPTIONS: YRSelectOption[] = [
+  { value: 'جديد', label: 'جديد' },
+  { value: 'مستعمل', label: 'مستعمل' },
+  { value: 'مجدد', label: 'مجدد' },
+];
+
+const COLOR_OPTIONS: YRSelectOption[] = [
+  { value: 'تيتانيوم طبيعي', label: 'تيتانيوم طبيعي' },
+  { value: 'أسود', label: 'أسود' },
+  { value: 'أبيض', label: 'أبيض' },
+  { value: 'فضي', label: 'فضي' },
+  { value: 'رمادي', label: 'رمادي' },
+  { value: 'ذهبي', label: 'ذهبي' },
+  { value: 'أزرق', label: 'أزرق' },
+  { value: 'أخضر', label: 'أخضر' },
+  { value: 'بنفسجي', label: 'بنفسجي' },
+  { value: 'أحمر', label: 'أحمر' },
+  { value: 'برونزي', label: 'برونزي' },
+];
+
+const DELIVERY_OPTIONS: YRSelectOption[] = [
+  { value: 'متوفر', label: 'متوفر' },
+  { value: 'غير متوفر', label: 'غير متوفر' },
+];
+
+const NEGOTIABLE_OPTIONS: YRSelectOption[] = [
+  { value: 'نعم', label: 'نعم (قابل للتفاوض)' },
+  { value: 'لا', label: 'لا (سعر نهائي)' },
 ];
 
 function formatPhoneTimeAgo(dateStr: string): string {
@@ -111,19 +270,61 @@ function getDefaultHandle(phone: PhoneDeviceItem): string {
   return map[phone.id] || phone.brand.toLowerCase();
 }
 
+function getBrandsForCategory(cat: PhoneCategory): YRSelectOption[] {
+  if (cat === 'phones') return PHONE_BRANDS.map((b) => ({ value: b.id, label: b.label }));
+  if (cat === 'tablets') {
+    return [
+      ...PHONE_BRANDS.filter((b) => ['Apple', 'Samsung', 'Xiaomi', 'Huawei', 'Honor', 'Lenovo'].includes(b.id)).map((b) => ({ value: b.id, label: b.label })),
+      { value: 'Other', label: 'أخرى' },
+    ];
+  }
+  if (cat === 'laptops') return COMPUTER_BRANDS.map((b) => ({ value: b.id, label: b.label }));
+  if (cat === 'accessories') {
+    return [
+      { value: 'Apple', label: 'آبل (Apple)' },
+      { value: 'Samsung', label: 'سامسونج (Samsung)' },
+      { value: 'Anker', label: 'أنكر (Anker)' },
+      { value: 'JBL', label: 'جي بي إل (JBL)' },
+      { value: 'Other', label: 'متنوع / عام' },
+    ];
+  }
+  if (cat === 'maintenance') {
+    return [
+      { value: 'Apple', label: 'آبل (Apple)' },
+      { value: 'Samsung', label: 'سامسونج (Samsung)' },
+      { value: 'Other', label: 'جميع الأجهزة والشركات' },
+    ];
+  }
+  return [
+    { value: 'YemenMobile', label: 'يمن موبايل (Yemen Mobile)' },
+    { value: 'Sabafon', label: 'سبأفون (Sabafon)' },
+    { value: 'YOU', label: 'يو (YOU)' },
+    { value: 'Other', label: 'خدمات شرائح عامة' },
+  ];
+}
+
+function getModelsFor(cat: PhoneCategory, brand: string): YRSelectOption[] {
+  const catMap = MODELS_BY_CATEGORY_BRAND[cat] || {};
+  const list = catMap[brand] || catMap['Other'] || Object.values(catMap)[0] || ['موديل قياسي'];
+  return list.map((m) => ({ value: m, label: m }));
+}
+
 const INITIAL_PHONES: PhoneDeviceItem[] = [
   {
     id: 'ph-1',
     name: 'iPhone 15 Pro Max',
     brand: 'Apple',
-    modelDetails: 'نسخة الشرق الأوسط شريحتين',
     price: 620000,
     currency: 'YER',
-    condition: 'جديد كرت',
-    storage: '256GB',
-    ram: '8GB',
+    condition: 'جديد',
+    storage: '256 GB',
+    ram: '8 GB',
+    processor: 'Apple A17 Pro',
+    simSupport: 'شريحتان + CDMA (يمن موبايل)',
+    delivery: 'متوفر',
+    negotiable: 'لا',
     color: 'تيتانيوم طبيعي',
-    city: 'صنعاء — حدة',
+    city: 'صنعاء',
     sellerName: 'مركز الخليج الذكي',
     sellerPhone: '967777123456',
     isVerified: true,
@@ -132,21 +333,23 @@ const INITIAL_PHONES: PhoneDeviceItem[] = [
       'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=900&auto=format&fit=crop&q=85'
     ],
     category: 'phones',
-    description: 'جهاز أصلي جديد كرت بالضمان وجميع الملحقات الأصلية متوفرة.',
     createdAt: 'اليوم'
   },
   {
     id: 'ph-2',
     name: 'Samsung Galaxy S24 Ultra',
     brand: 'Samsung',
-    modelDetails: 'النسخة العالمية سناب دراجون',
     price: 580000,
     currency: 'YER',
-    condition: 'جديد كرت',
-    storage: '512GB',
-    ram: '12GB',
-    color: 'رمادي تيتانيوم',
-    city: 'عدن — المنصورة',
+    condition: 'جديد',
+    storage: '512 GB',
+    ram: '12 GB',
+    processor: 'Snapdragon 8 Gen 3',
+    simSupport: 'جميع الشبكات (CDMA + GSM)',
+    delivery: 'متوفر',
+    negotiable: 'نعم',
+    color: 'رمادي',
+    city: 'عدن',
     sellerName: 'سامسونج ستور عدن',
     sellerPhone: '967733987654',
     isVerified: true,
@@ -155,43 +358,47 @@ const INITIAL_PHONES: PhoneDeviceItem[] = [
       'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=900&auto=format&fit=crop&q=85'
     ],
     category: 'phones',
-    description: 'جهاز وكالة مع قلم S-Pen وضمان سنة كاملة ضد العيوب المصنعية.',
     createdAt: 'أمس'
   },
   {
     id: 'ph-3',
-    name: 'Xiaomi 14 Pro Leica',
-    brand: 'Xiaomi',
-    modelDetails: 'كاميرات لايكا الاحترافية',
-    price: 390000,
+    name: 'iPad Pro M4 (13 بوصة)',
+    brand: 'Apple',
+    price: 495000,
     currency: 'YER',
-    condition: 'شبه جديد',
-    storage: '256GB',
-    ram: '12GB',
-    color: 'أسود مطفي',
-    city: 'تعز — جمال',
+    condition: 'جديد',
+    storage: '256 GB',
+    ram: '8 GB',
+    processor: 'Apple M4 / M3 / M2',
+    simSupport: 'eSIM',
+    delivery: 'متوفر',
+    negotiable: 'نعم',
+    color: 'فضي',
+    city: 'تعز',
     sellerName: 'فون زون تعز',
     sellerPhone: '967711223344',
     isVerified: true,
     images: [
-      'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=900&auto=format&fit=crop&q=85'
+      'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=900&auto=format&fit=crop&q=85'
     ],
-    category: 'phones',
-    description: 'استخدام أسبوعين فقط بحالة الوكالة بدون أي خدش مع الشاحن السريع 120W.',
+    category: 'tablets',
     createdAt: 'منذ يومين'
   },
   {
     id: 'ph-4',
     name: 'iPhone 13 Pro',
     brand: 'Apple',
-    modelDetails: 'بطارية 92%',
     price: 315000,
     currency: 'YER',
-    condition: 'مستعمل نظيف',
-    storage: '128GB',
-    ram: '6GB',
-    color: 'أزرق سييرا',
-    city: 'حضرموت — المكلا',
+    condition: 'مستعمل',
+    storage: '128 GB',
+    ram: '6 GB',
+    processor: 'Apple A15 Bionic',
+    simSupport: 'شريحتان',
+    delivery: 'غير متوفر',
+    negotiable: 'نعم',
+    color: 'أزرق',
+    city: 'حضرموت',
     sellerName: 'المكلا فون',
     sellerPhone: '967770112233',
     isVerified: false,
@@ -199,18 +406,21 @@ const INITIAL_PHONES: PhoneDeviceItem[] = [
       'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=900&auto=format&fit=crop&q=85'
     ],
     category: 'phones',
-    description: 'جهاز نظيف جداً كرت مجمرك شغال شريحتين بطارية ممتازة.',
     createdAt: 'منذ 3 أيام'
   },
   {
     id: 'ph-5',
-    name: 'شاحن أنكر الأصلي 65W GaN سريع',
-    brand: 'Other',
+    name: 'شاحن أنكر 65W GaN سريع',
+    brand: 'Anker',
     price: 19000,
     currency: 'YER',
-    condition: 'جديد كرت',
-    storage: 'شحن فائق 3 منافذ',
-    city: 'صنعاء — الصافية',
+    condition: 'جديد',
+    storage: 'لا ينطبق',
+    ram: 'لا ينطبق',
+    delivery: 'متوفر',
+    negotiable: 'لا',
+    color: 'أسود',
+    city: 'صنعاء',
     sellerName: 'العصرية للإكسسوارات',
     sellerPhone: '967777000111',
     isVerified: true,
@@ -218,17 +428,21 @@ const INITIAL_PHONES: PhoneDeviceItem[] = [
       'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=900&auto=format&fit=crop&q=85'
     ],
     category: 'accessories',
-    description: 'شاحن أصلي يدعم الشحن فائق السرعة لجميع الجوالات واللابتوبات.',
     createdAt: 'أمس'
   }
 ];
 
 export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; embedded?: boolean }> = ({ onNavigate, embedded = false }) => {
-  const [activeTab, setActiveTab] = useState<'all' | 'phones' | 'tablets' | 'laptops' | 'accessories' | 'maintenance' | 'sim_services'>('all');
-  const [phoneCategory, setPhoneCategory] = useState<PhoneDeviceItem['category']>('phones');
+  const [activeTab, setActiveTab] = useState<'all' | PhoneCategory>('all');
   const [selectedBrand, setSelectedBrand] = useState<string>('all');
   const [selectedCondition, setSelectedCondition] = useState<string>('all');
   const [selectedCity, setSelectedCity] = useState<string>('all');
+  const [selectedStorage, setSelectedStorage] = useState<string>('all');
+  const [selectedNegotiable, setSelectedNegotiable] = useState<string>('all');
+  const fmtAmt = (v: string) => {
+    const d = v.replace(/[^\d]/g, '').replace(/^0+(?=\d)/, '');
+    return d ? d.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : '';
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
@@ -236,15 +450,19 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
     (activeTab !== 'all' ? 1 : 0) +
     (selectedBrand !== 'all' ? 1 : 0) +
     (selectedCondition !== 'all' ? 1 : 0) +
+    (selectedStorage !== 'all' ? 1 : 0) +
+    (selectedNegotiable !== 'all' ? 1 : 0) +
     (selectedCity !== 'all' ? 1 : 0);
 
   const resetFilters = () => {
     setActiveTab('all');
     setSelectedBrand('all');
     setSelectedCondition('all');
+    setSelectedStorage('all');
+    setSelectedNegotiable('all');
     setSelectedCity('all');
   };
-  
+
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [myBusinessPage, setMyBusinessPage] = useState<BusinessPageRecord | null>(null);
@@ -260,6 +478,37 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
     } catch {}
     return INITIAL_PHONES;
   });
+
+  const [selectedPhone, setSelectedPhone] = useState<PhoneDeviceItem | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<XToastState | null>(null);
+  const showToast = (text: string, type: 'success' | 'error' = 'success', ms = 3500) => {
+    setToastMessage({ type, text });
+    setTimeout(() => setToastMessage(null), ms);
+  };
+
+  // نافذة إضافة إعلان: جميع الحقول قوائم منسدلة باستثناء السعر بالريال اليمني
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [sellerName, setSellerName] = useState('');
+  const [sellerPhone, setSellerPhone] = useState('');
+  const [phoneCategory, setPhoneCategory] = useState<PhoneCategory>('phones');
+  const [phoneBrand, setPhoneBrand] = useState<string>('Apple');
+  const [phoneModel, setPhoneModel] = useState<string>('iPhone 15 Pro Max');
+  const [phoneStorage, setPhoneStorage] = useState<string>('256 GB');
+  const [phoneRam, setPhoneRam] = useState<string>('8 GB');
+  const [phoneProcessor, setPhoneProcessor] = useState<string>('Apple A17 Pro');
+  const [phoneSim, setPhoneSim] = useState<string>('شريحتان + CDMA (يمن موبايل)');
+  const [phoneCondition, setPhoneCondition] = useState<string>('جديد');
+  const [phoneColor, setPhoneColor] = useState<string>('تيتانيوم طبيعي');
+  const [phoneDelivery, setPhoneDelivery] = useState<string>('متوفر');
+  const [phonePrice, setPhonePrice] = useState<string>('250,000');
+  const [phoneNegotiable, setPhoneNegotiable] = useState<string>('نعم');
+  const [phoneCity, setPhoneCity] = useState<string>('صنعاء');
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -299,45 +548,39 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
       }
     };
     loadIdentity();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      loadIdentity();
-    });
-    return () => {
-      active = false;
-      subscription.unsubscribe();
-    };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => { loadIdentity(); });
+    return () => { active = false; subscription.unsubscribe(); };
   }, []);
-  const [selectedPhone, setSelectedPhone] = useState<PhoneDeviceItem | null>(null);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // نافذة إضافة هاتف للبيع
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [sellerName, setSellerName] = useState('');
-  const [sellerPhone, setSellerPhone] = useState('');
-  const [phoneBrand, setPhoneBrand] = useState<PhoneDeviceItem['brand']>('Apple');
-  const [phoneModel, setPhoneModel] = useState('');
-  const [phoneStorage, setPhoneStorage] = useState('256GB');
-  const [phoneRam, setPhoneRam] = useState('8GB');
-  const [phoneCondition, setPhoneCondition] = useState<PhoneDeviceItem['condition']>('جديد كرت');
-  const [phonePrice, setPhonePrice] = useState<number>(300000);
-  const [phoneCurrency, setPhoneCurrency] = useState('YER');
-  const [phoneCity, setPhoneCity] = useState('صنعاء');
-  const [phoneColor, setPhoneColor] = useState('');
-  const [phoneDesc, setPhoneDesc] = useState('');
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const touchStartX = useRef<number | null>(null);
+  const handleCategoryChange = (cat: PhoneCategory) => {
+    setPhoneCategory(cat);
+    const brands = getBrandsForCategory(cat);
+    const nextBrand = brands[0]?.value || 'Other';
+    setPhoneBrand(nextBrand);
+    const models = getModelsFor(cat, nextBrand);
+    setPhoneModel(models[0]?.value || '');
+    if (cat === 'accessories' || cat === 'maintenance' || cat === 'sim_services') {
+      setPhoneStorage('لا ينطبق');
+      setPhoneRam('لا ينطبق');
+      setPhoneProcessor('غير محدد');
+    } else {
+      setPhoneStorage('256 GB');
+      setPhoneRam('8 GB');
+      setPhoneProcessor(nextBrand === 'Apple' ? 'Apple A17 Pro' : 'Snapdragon 8 Gen 3');
+    }
+  };
+
+  const handleBrandChange = (brand: string) => {
+    setPhoneBrand(brand);
+    const models = getModelsFor(phoneCategory, brand);
+    setPhoneModel(models[0]?.value || '');
+  };
 
   const handleOpenPhone = (phone: PhoneDeviceItem) => {
     setSelectedPhone(phone);
     setActiveImageIndex(0);
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
-
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const handleImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -362,29 +605,31 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (!touchStartX.current || !selectedPhone) return;
-    const touchEndX = e.changedTouches[0].clientX;
-    const diff = touchStartX.current - touchEndX;
-
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 35) {
-      if (diff > 0) {
-        setActiveImageIndex(prev => (prev + 1) % selectedPhone.images.length);
-      } else {
-        setActiveImageIndex(prev => (prev - 1 + selectedPhone.images.length) % selectedPhone.images.length);
-      }
+      setActiveImageIndex(prev => diff > 0
+        ? (prev + 1) % selectedPhone.images.length
+        : (prev - 1 + selectedPhone.images.length) % selectedPhone.images.length);
     }
     touchStartX.current = null;
   };
 
   const handleSubmitPhone = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmittingPhone) return;
     const effectivePhone = myBusinessPage?.phone || sellerPhone.trim() || profile?.phone || '';
-    if (!phoneModel.trim() || !effectivePhone || isSubmittingPhone) return;
+    const numericPrice = Number(String(phonePrice).replace(/,/g, ''));
+    if (!numericPrice || numericPrice <= 0) {
+      showToast('يرجى كتابة السعر بالريال اليمني', 'error', 3500);
+      return;
+    }
+    if (!effectivePhone) {
+      showToast('يرجى التأكد من رقم الهاتف للتواصل في حسابك', 'error', 3500);
+      return;
+    }
 
     setIsSubmittingPhone(true);
     try {
@@ -414,15 +659,19 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
 
       const newEntry: PhoneDeviceItem = {
         id: `ph-${Date.now()}`,
-        name: `${phoneBrand} ${phoneModel}`,
+        name: phoneModel || `${phoneBrand}`,
         brand: phoneBrand,
-        price: Number(phonePrice),
-        currency: phoneCurrency,
+        price: numericPrice,
+        currency: 'YER',
         condition: phoneCondition,
         storage: phoneStorage,
         ram: phoneRam,
-        color: phoneColor || 'أصلي',
-        city: myBusinessPage?.city || phoneCity,
+        processor: phoneProcessor,
+        simSupport: phoneSim,
+        delivery: phoneDelivery,
+        negotiable: phoneNegotiable,
+        color: phoneColor,
+        city: phoneCity,
         sellerName: activeName,
         sellerUsername: activeUsername,
         sellerAvatar: activeAvatar,
@@ -433,28 +682,20 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         authorId: currentUserId || undefined,
         images: finalImages,
         category: phoneCategory,
-        description: phoneDesc,
         createdAt: new Date().toISOString(),
       };
 
       setPhonesList(prev => {
         const updated = [newEntry, ...prev];
-        try {
-          localStorage.setItem(PHONES_STORAGE_KEY, JSON.stringify(updated));
-        } catch {}
+        try { localStorage.setItem(PHONES_STORAGE_KEY, JSON.stringify(updated)); } catch {}
         return updated;
       });
       setIsAddModalOpen(false);
-      setPhoneModel('');
-      if (!myBusinessPage) {
-        setSellerName('');
-        setSellerPhone('');
-      }
-      setPhoneDesc('');
       setUploadedImages([]);
       setUploadedFiles([]);
-      setToastMessage('تم نشر إعلان الهاتف بنجاح');
-      setTimeout(() => setToastMessage(null), 3500);
+      showToast('تم نشر الإعلان بنجاح', 'success', 3500);
+    } catch (err: any) {
+      showToast(toArabicMarketError(err, 'تعذر نشر الإعلان حالياً، يرجى المحاولة لاحقاً'), 'error', 4000);
     } finally {
       setIsSubmittingPhone(false);
     }
@@ -465,108 +706,80 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
       const matchCategory = activeTab === 'all' || item.category === activeTab;
       const matchBrand = selectedBrand === 'all' || item.brand === selectedBrand;
       const matchCondition = selectedCondition === 'all' || item.condition === selectedCondition;
+      const matchStorage = selectedStorage === 'all' || item.storage === selectedStorage;
+      const matchNeg = selectedNegotiable === 'all' || item.negotiable === selectedNegotiable;
       const matchCity = selectedCity === 'all' || item.city.includes(selectedCity);
       const q = searchQuery.trim().toLowerCase();
-      const brandArMap: Record<string, string> = {
-        Apple: 'ايفون آيفون ايباد آيباد أبل ابل apple iphone ipad',
-        Samsung: 'سامسونج جالكسي تاب samsung galaxy tab',
-        Xiaomi: 'شاومي ريدمي بوكو xiaomi redmi poco pad',
-        Huawei: 'هواوي ميت باد huawei matepad',
-        Honor: 'هونر honor',
-        Oppo: 'اوبو أوبو oppo',
-        Realme: 'ريلمي realme',
-        Vivo: 'فيفو vivo',
-        OnePlus: 'ون بلس oneplus',
-        Google: 'جوجل بكسل google pixel',
-        Tecno: 'تكنو tecno',
-        Infinix: 'انفنكس إنفنكس infinix',
-        Nokia: 'نوكيا nokia',
-        Motorola: 'موتورولا motorola',
-        Sony: 'سوني sony',
-        Nothing: 'ناثينج nothing',
-        itel: 'ايتل آيتل itel',
-        ZTE: 'زد تي اي zte',
-        MacBook: 'ماك بوك اي ماك macbook imac لابتوب حاسوب كمبيوتر',
-        HP: 'اتش بي إتش بي hp لابتوب حاسوب كمبيوتر',
-        Dell: 'ديل dell لابتوب حاسوب كمبيوتر',
-        Lenovo: 'لينوفو ثينك باد lenovo thinkpad لابتوب حاسوب',
-        Asus: 'اسوس أسوس asus لابتوب حاسوب',
-        Acer: 'ايسر أيسر acer لابتوب حاسوب',
-        MSI: 'ام اس اي msi لابتوب حاسوب',
-        Microsoft: 'مايكروسوفت سيرفس microsoft surface لابتوب تابلت',
-        Toshiba: 'توشيبا toshiba لابتوب حاسوب',
-        Razer: 'ريزر razer لابتوب حاسوب',
-        LG: 'ال جي lg لابتوب',
-        Other: 'اخرى أخرى',
-      };
       const matchSearch = !q ||
         item.name.toLowerCase().includes(q) ||
         item.sellerName.toLowerCase().includes(q) ||
-        (item.sellerUsername || '').toLowerCase().includes(q) ||
         item.brand.toLowerCase().includes(q) ||
-        (brandArMap[item.brand] || '').includes(q);
-      return matchCategory && matchBrand && matchCondition && matchCity && matchSearch;
+        (item.storage || '').toLowerCase().includes(q) ||
+        (item.description || '').toLowerCase().includes(q) ||
+        (item.city || '').toLowerCase().includes(q) ||
+        (CATEGORY_LABEL_MAP[item.category] || '').includes(q);
+      return matchCategory && matchBrand && matchCondition && matchStorage && matchNeg && matchCity && matchSearch;
     });
-  }, [phonesList, activeTab, selectedBrand, selectedCondition, selectedCity, searchQuery]);
+  }, [phonesList, activeTab, selectedBrand, selectedCondition, selectedStorage, selectedNegotiable, selectedCity, searchQuery]);
+
+  const activeBrandOptions = useMemo(() => getBrandsForCategory(phoneCategory), [phoneCategory]);
+  const activeModelOptions = useMemo(() => getModelsFor(phoneCategory, phoneBrand), [phoneCategory, phoneBrand]);
+  const isDeviceCat = phoneCategory === 'phones' || phoneCategory === 'tablets' || phoneCategory === 'laptops';
+
+  const renderSpecBadges = (item: PhoneDeviceItem) => {
+    const rows: { k: string; v: string }[] = [];
+    if (item.category === 'phones' || item.category === 'tablets' || item.category === 'laptops') {
+      if (item.storage && item.storage !== 'لا ينطبق') rows.push({ k: 'التخزين', v: item.storage });
+      if (item.ram && item.ram !== 'لا ينطبق') rows.push({ k: 'الرام', v: item.ram });
+      if (item.processor && item.processor !== 'غير محدد') rows.push({ k: 'المعالج', v: item.processor });
+      if (item.simSupport) rows.push({ k: 'الشريحة', v: item.simSupport });
+    }
+    if (item.condition) rows.push({ k: 'الحالة', v: item.condition });
+    if (item.color) rows.push({ k: 'اللون', v: item.color });
+    if (item.delivery) rows.push({ k: 'التوصيل', v: item.delivery });
+    if (item.negotiable) rows.push({ k: 'التفاوض', v: item.negotiable });
+    if (item.city) rows.push({ k: 'المحافظة', v: item.city });
+    return rows.filter((r) => r.v && !['غير موجود', 'غير محدد', 'لا ينطبق'].includes(r.v.trim()));
+  };
 
   return (
     <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Cairo',sans-serif] text-white"}>
-
       {!embedded && <AdBanner placementId="9" className="mb-1" />}
 
       {(!embedded && !selectedPhone) && (
-      <div className={`flex items-center justify-between border-b border-[#2F3336] ${embedded ? 'px-3 py-2.5' : 'pb-2.5'}`}>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
-            <Smartphone size={16} className="stroke-[2.5]" />
+        <div className="flex items-center justify-between border-b border-[#2F3336] pb-2.5">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-[#FFC500] text-black flex items-center justify-center font-black shadow-md shadow-[#FFC500]/20">
+              <Smartphone size={16} className="stroke-[2.5]" />
+            </div>
+            <div>
+              <h1 className="text-sm sm:text-base font-black text-white leading-none">سوق الهواتف والأجهزة</h1>
+              <span className="text-[9.5px] text-[#9CA3AF] mt-0.5 block">أحدث الجوالات والآيبادات والإكسسوارات ومراكز الصيانة</span>
+            </div>
           </div>
-          <div>
-            <h1 className="text-sm sm:text-base font-black text-white leading-none">
-              سوق الهواتف والأجهزة
-            </h1>
-            <span className="text-[9.5px] text-[#9CA3AF] mt-0.5 block">
-              أحدث الجوالات والإكسسوارات ومراكز الصيانة المعتمدة
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {!embedded && (
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setIsAddModalOpen(true)}
               className="px-3 py-1.5 rounded-xl bg-[#FFC500] text-black font-black text-[11px] hover:bg-[#FFC500]/90 transition-all flex items-center gap-1 cursor-pointer shadow-sm"
             >
               <Plus size={13} />
-              <span>عرض هاتف للبيع</span>
+              <span>إعلان جديد</span>
             </button>
-          )}
-
-          {(selectedPhone || !embedded) && (
             <button
-              onClick={selectedPhone ? () => setSelectedPhone(null) : () => onNavigate('home')}
+              onClick={() => onNavigate('home')}
               className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] hover:bg-[#FFC500] hover:text-black transition-all flex items-center gap-1 cursor-pointer"
             >
-              <span>{selectedPhone ? 'رجوع' : 'الرئيسية'}</span>
+              <span>الرئيسية</span>
               <ArrowRight size={13} className="rtl:rotate-180" />
             </button>
-          )}
-        </div>
-      </div>
-      )}
-
-      {toastMessage && (
-        <div className="p-2.5 rounded-xl bg-[#16A34A]/20 border border-[#16A34A] text-white text-xs font-bold flex items-center gap-2">
-          <CheckCircle2 size={15} className="text-[#16A34A] shrink-0" />
-          <span>{toastMessage}</span>
+          </div>
         </div>
       )}
 
-      {/* ============================================================
-          عرض تفاصيل الهاتف المحدد
-          ============================================================ */}
+      <XToast toast={toastMessage} />
+
       {selectedPhone ? (
         <div data-no-tab-swipe="true" className="bg-black min-h-screen pb-24">
-          {/* شريط X العلوي: زر الرجوع في اليمين */}
           <div className="sticky top-0 z-30 bg-black/90 backdrop-blur-md border-b border-[#2F3336]/70 px-3 py-2.5 flex items-center gap-3">
             <button
               type="button"
@@ -576,208 +789,159 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
             >
               <ArrowRight size={20} />
             </button>
-            <h2 className="text-[16px] font-bold text-white">المنشور</h2>
+            <h2 className="text-[16px] font-bold text-white">تفاصيل الإعلان</h2>
           </div>
 
-          {/* تغريدة المنشأة بالتفصيل */}
           <article className="px-3.5 pt-3">
-            {/* رأس التغريدة: أفاتار + اسم المنشأة + شارة التوثيق + المعرف */}
             <div className="flex items-center justify-between gap-2">
               <div
-                onClick={() => {
-                  if (selectedPhone.businessId) onNavigate(`/businesses/${selectedPhone.businessId}`);
-                }}
+                onClick={() => { if (selectedPhone.businessId) onNavigate(`/businesses/${selectedPhone.businessId}`); }}
                 className={`flex items-center gap-2.5 min-w-0 ${selectedPhone.businessId ? 'cursor-pointer' : ''}`}
               >
                 <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0 text-white font-bold text-base">
-                  {selectedPhone.sellerAvatar ? (
-                    <img src={selectedPhone.sellerAvatar} alt={selectedPhone.sellerName} className="w-full h-full object-cover" />
-                  ) : (
-                    <span>{selectedPhone.sellerName?.[0] || 'م'}</span>
-                  )}
+                  {selectedPhone.sellerAvatar ? <img src={selectedPhone.sellerAvatar} alt={selectedPhone.sellerName} className="w-full h-full object-cover" /> : <span>{selectedPhone.sellerName?.[0] || 'م'}</span>}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1">
-                    <span className="font-bold text-[#E7E9EA] text-[15px] hover:underline truncate">
-                      {selectedPhone.sellerName}
-                    </span>
-                    <VerifiedBadge
-                      type={selectedPhone.badgeType || (selectedPhone.isVerified ? 'gold' : 'none')}
-                      size={15}
-                      className="shrink-0"
-                    />
+                    <span className="font-bold text-[#E7E9EA] text-[15px] hover:underline truncate">{selectedPhone.sellerName}</span>
+                    <VerifiedBadge type={selectedPhone.badgeType || (selectedPhone.isVerified ? 'gold' : 'none')} size={15} className="shrink-0" />
                   </div>
-                  <div className="text-[13px] text-[#71767B] truncate" dir="ltr">
-                    @{getDefaultHandle(selectedPhone)}
-                  </div>
+                  <div className="text-[13px] text-[#71767B] truncate" dir="ltr">@{getDefaultHandle(selectedPhone)}</div>
                 </div>
               </div>
-
-              <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${
-                selectedPhone.condition === 'جديد كرت'
-                  ? 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10'
-                  : 'border-[#2F3336] text-[#E7E9EA] bg-black'
-              }`}>
-                {selectedPhone.condition}
+              <span className="shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-bold border border-[#2F3336] text-[#E7E9EA]">
+                {CATEGORY_LABEL_MAP[selectedPhone.category]} · {selectedPhone.condition}
               </span>
             </div>
 
-            {/* نص التغريدة المرتب */}
-            <div className="mt-3 space-y-2">
-              <div className="flex items-baseline justify-between gap-2 flex-wrap">
-                <h1 className="text-[16.5px] font-bold text-white leading-snug">{selectedPhone.name}</h1>
-                <span className="text-[15px] font-bold text-[#FFC500] font-mono">
-                  {selectedPhone.price.toLocaleString()} {selectedPhone.currency}
-                </span>
+            <div className="mt-3 space-y-3">
+              <div className="p-3.5 rounded-2xl border border-[#2F3336]/70 bg-zinc-950/60 space-y-1.5">
+                <div className="flex items-baseline justify-between gap-2 flex-wrap">
+                  <h1 className="text-[16.5px] font-black text-white leading-snug">
+                    {CATEGORY_LABEL_MAP[selectedPhone.category]} · {selectedPhone.name}
+                  </h1>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[15.5px] font-black text-[#FFC500] font-mono">
+                      {selectedPhone.price.toLocaleString()} ر.ي
+                    </span>
+                    {selectedPhone.negotiable && (
+                      <span className="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-white/10 text-white">
+                        {selectedPhone.negotiable === 'نعم' ? 'قابل للتفاوض' : 'سعر نهائي'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-[12px] text-[#71767B] flex items-center gap-1.5">
+                  <span>{formatPhoneTimeAgo(selectedPhone.createdAt)}</span>
+                  {selectedPhone.city && <><span>·</span><span>{selectedPhone.city}</span></>}
+                </div>
               </div>
 
               {selectedPhone.description && (
-                <p className="text-[15px] leading-[22px] text-[#E7E9EA] whitespace-pre-wrap break-words">
-                  {selectedPhone.description}
-                </p>
+                <div className="p-3.5 rounded-2xl border border-[#2F3336]/60 bg-black space-y-1">
+                  <div className="text-[11px] font-bold text-[#71767B]">الوصف والتفاصيل</div>
+                  <p className="text-[14px] leading-[22px] text-[#E7E9EA] whitespace-pre-wrap break-words">
+                    {selectedPhone.description}
+                  </p>
+                </div>
               )}
 
-              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-[#71767B]">
-                <span>السعة: <strong className="text-[#E7E9EA] font-normal">{selectedPhone.storage}</strong></span>
-                {selectedPhone.ram && (
-                  <>
-                    <span>·</span>
-                    <span>الذاكرة: <strong className="text-[#E7E9EA] font-normal">{selectedPhone.ram}</strong></span>
-                  </>
-                )}
-                {selectedPhone.color && (
-                  <>
-                    <span>·</span>
-                    <span>اللون: <strong className="text-[#E7E9EA] font-normal">{selectedPhone.color}</strong></span>
-                  </>
-                )}
-                <span>·</span>
-                <span>{selectedPhone.city}</span>
+              <div className="space-y-1.5">
+                <div className="text-[11px] font-bold text-[#71767B] px-1">المواصفات والبيانات</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 rounded-2xl border border-[#2F3336]/70 bg-zinc-950/60 text-[12.5px]">
+                  {renderSpecBadges(selectedPhone).map((r) => (
+                    <div key={r.k} className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-black/80 border border-[#2F3336]/50 min-w-0">
+                      <span className="text-[#8B98A5] shrink-0">{r.k}</span>
+                      <span className="text-white font-semibold text-left break-words">{r.v}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-
-            {/* صور التغريدة (تفتح مثل منصة X وتمرر باللمس) */}
-            <div
-              className="mt-3 relative rounded-2xl overflow-hidden border border-[#2F3336]/80 bg-black cursor-pointer select-none"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-              onClick={() => setIsLightboxOpen(true)}
-            >
-              <img
-                src={selectedPhone.images[activeImageIndex]}
-                alt={selectedPhone.name}
-                className="w-full max-h-[420px] object-cover"
-              />
-              {selectedPhone.images.length > 1 && (
-                <span className="absolute bottom-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-black/80 text-white text-[11px] font-bold border border-white/10 flex items-center gap-1">
-                  <Camera size={11} /> {activeImageIndex + 1} / {selectedPhone.images.length}
-                </span>
-              )}
-            </div>
-
-            {selectedPhone.images.length > 1 && (
-              <div className="flex justify-center items-center gap-1.5 pt-2.5">
-                {selectedPhone.images.map((_, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setActiveImageIndex(idx)}
-                    aria-label={`صورة ${idx + 1}`}
-                    className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                      activeImageIndex === idx ? 'w-5 bg-white' : 'w-1.5 bg-[#2F3336]'
-                    }`}
-                  />
-                ))}
-              </div>
+            {selectedPhone.images.length > 0 && (
+              <>
+                <div
+                  className="mt-3 relative rounded-2xl overflow-hidden border border-[#2F3336]/80 bg-black cursor-pointer select-none"
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                  onClick={() => setIsLightboxOpen(true)}
+                >
+                  <img src={selectedPhone.images[activeImageIndex]} alt={selectedPhone.name} className="w-full max-h-[420px] object-cover" />
+                  {selectedPhone.images.length > 1 && (
+                    <span className="absolute bottom-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-black/80 text-white text-[11px] font-bold border border-white/10 flex items-center gap-1">
+                      <Camera size={11} /> {activeImageIndex + 1} / {selectedPhone.images.length}
+                    </span>
+                  )}
+                </div>
+                {selectedPhone.images.length > 1 && (
+                  <div className="flex justify-center items-center gap-1.5 pt-2.5">
+                    {selectedPhone.images.map((_, idx) => (
+                      <button key={idx} type="button" onClick={() => setActiveImageIndex(idx)} className={`h-1.5 rounded-full transition-all cursor-pointer ${activeImageIndex === idx ? 'w-5 bg-white' : 'w-1.5 bg-[#2F3336]'}`} />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
 
-            {/* سطر الوقت مثل X */}
             <div className="mt-3 py-3 border-b border-[#2F3336]/60 text-[13px] text-[#71767B] flex items-center justify-between">
               <span>{formatPhoneTimeAgo(selectedPhone.createdAt)} · {selectedPhone.city}</span>
-              <span className="font-mono text-[12px]" dir="ltr">{selectedPhone.sellerPhone}</span>
             </div>
 
-            {/* فوتر التغريدة: التفاصيل + واتساب (بدل الرتويت) + اتصال + مشاركة */}
             <div className="py-2 border-b border-[#2F3336]/60 flex items-center justify-between text-[#71767B] px-2">
               <button
                 type="button"
-                onClick={() => {
-                  if (selectedPhone.businessId) onNavigate(`/businesses/${selectedPhone.businessId}`);
-                }}
+                onClick={() => { if (selectedPhone.businessId) onNavigate(`/businesses/${selectedPhone.businessId}`); }}
                 className="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#1D9BF0]/10 hover:text-[#1D9BF0] transition text-[12.5px] font-medium cursor-pointer"
               >
-                <User size={16} />
-                <span>المنشأة</span>
+                <User size={16} /><span>المنشأة</span>
               </button>
-
               <a
-                href={`https://wa.me/${selectedPhone.sellerPhone}?text=${encodeURIComponent(`مرحباً، أرغب بالاستفسار عن جهاز ${selectedPhone.name} المعروض في يمن ريتنغ بسعر ${selectedPhone.price} ${selectedPhone.currency}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`https://wa.me/${selectedPhone.sellerPhone}?text=${encodeURIComponent(`مرحباً، أرغب بالاستفسار عن ${CATEGORY_LABEL_MAP[selectedPhone.category]} ${selectedPhone.name} المعروض بسعر ${selectedPhone.price.toLocaleString()} ر.ي`)}`}
+                target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#00BA7C]/10 hover:text-[#00BA7C] transition text-[12.5px] font-medium"
               >
-                <MessageCircle size={16} />
-                <span>واتساب</span>
+                <MessageCircle size={16} /><span>واتساب</span>
               </a>
-
               <a
                 href={`tel:${selectedPhone.sellerPhone}`}
                 className="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#FFC500]/10 hover:text-[#FFC500] transition text-[12.5px] font-medium"
               >
-                <Phone size={16} />
-                <span>اتصال</span>
+                <Phone size={16} /><span>اتصال</span>
               </a>
-
               <button
                 type="button"
                 onClick={() => {
-                  navigator.clipboard?.writeText(`${selectedPhone.name} - ${selectedPhone.price.toLocaleString()} ${selectedPhone.currency} - ${selectedPhone.sellerPhone}`);
-                  setToastMessage('تم نسخ تفاصيل الإعلان');
-                  setTimeout(() => setToastMessage(null), 2500);
+                  navigator.clipboard?.writeText(`${CATEGORY_LABEL_MAP[selectedPhone.category]} ${selectedPhone.name} - ${selectedPhone.price.toLocaleString()} ر.ي`);
+                  showToast('تم نسخ تفاصيل الإعلان', 'success', 2500);
                 }}
                 className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-full hover:bg-[#1D9BF0]/10 hover:text-[#1D9BF0] transition text-[12.5px] cursor-pointer"
-                title="مشاركة"
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="18" cy="5" r="2.5" />
-                  <circle cx="6" cy="12" r="2.5" />
-                  <circle cx="18" cy="19" r="2.5" />
-                  <line x1="8.5" y1="13.5" x2="15.5" y2="17.5" />
-                  <line x1="15.5" y1="6.5" x2="8.5" y2="10.5" />
+                  <circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" />
+                  <line x1="8.5" y1="13.5" x2="15.5" y2="17.5" /><line x1="15.5" y1="6.5" x2="8.5" y2="10.5" />
                 </svg>
               </button>
             </div>
           </article>
         </div>
       ) : (
-        /* ============================================================
-           عرض قائمة سوق الهواتف
-           ============================================================ */
         <div className={embedded ? "divide-y divide-[#2F3336]/40" : "space-y-3"}>
-
-          {/* شريط البحث + الإعلان الراعي + الفلتر */}
           <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "space-y-2 bg-[#0F0F12] p-2.5 rounded-2xl border border-[#222226]"}>
-            <XSearchFilterBar searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="ابحث في سوق الهواتف..." activeFiltersCount={activeFiltersCount} onOpenFilter={() => setIsFilterModalOpen(true)} />
-
-            {/* 2. إعلان راعي */}
+            <XSearchFilterBar searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="ابحث في سوق الهواتف والأجهزة..." activeFiltersCount={activeFiltersCount} onOpenFilter={() => setIsFilterModalOpen(true)} />
             {embedded && <AdBanner placementId="9" className="py-0.5" />}
           </div>
 
-          {/* قائمة المنشورات بأسلوب تغريدات المنشأة في X */}
           <div className="divide-y divide-[#2F3336]/60">
             {filteredPhones.map((phone) => (
               <article
                 key={phone.id}
                 onClick={(e) => {
                   const target = e.target as HTMLElement;
-                  if (!target.closest('button') && !target.closest('a')) {
-                    handleOpenPhone(phone);
-                  }
+                  if (!target.closest('button') && !target.closest('a')) handleOpenPhone(phone);
                 }}
                 className="p-3.5 bg-black hover:bg-white/[0.02] transition cursor-pointer select-none"
               >
                 <div className="flex gap-3">
-                  {/* أفاتار المنشأة */}
                   <button
                     type="button"
                     onClick={(e) => {
@@ -787,69 +951,57 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                     }}
                     className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0 text-white font-bold text-base cursor-pointer hover:opacity-85 transition"
                   >
-                    {phone.sellerAvatar ? (
-                      <img src={phone.sellerAvatar} alt={phone.sellerName} className="w-full h-full object-cover" />
-                    ) : (
-                      <span>{phone.sellerName?.[0] || 'م'}</span>
-                    )}
+                    {phone.sellerAvatar ? <img src={phone.sellerAvatar} alt={phone.sellerName} className="w-full h-full object-cover" /> : <span>{phone.sellerName?.[0] || 'م'}</span>}
                   </button>
 
                   <div className="flex-1 min-w-0">
-                    {/* صف الاسم + شارة التوثيق + المعرّف + الوقت (مطابق لـ CommunityFeedPage) */}
-                    <div className="flex items-center justify-between gap-1">
-                      <div className="flex items-center flex-nowrap min-w-0 w-full gap-1">
-                        <span
-                          onClick={(e) => {
-                            if (phone.businessId) {
-                              e.stopPropagation();
-                              onNavigate(`/businesses/${phone.businessId}`);
-                            }
-                          }}
-                          className="font-bold text-[#E7E9EA] text-[13px] hover:underline cursor-pointer truncate shrink max-w-[135px] sm:max-w-[185px]"
-                        >
-                          {phone.sellerName}
-                        </span>
-                        <VerifiedBadge
-                          type={phone.badgeType || (phone.isVerified ? 'gold' : 'none')}
-                          size={14.5}
-                          className="shrink-0"
-                        />
-                        <span className="text-[11.5px] text-[#71767B] truncate shrink max-w-[90px] sm:max-w-[125px]" dir="ltr">
-                          @{getDefaultHandle(phone)}
-                        </span>
-                        <span className="text-[#71767B] text-[10.5px] mx-0.5 shrink-0">·</span>
-                        <span className="text-[#71767B] text-[11px] whitespace-nowrap shrink-0">
-                          {formatPhoneTimeAgo(phone.createdAt)}
-                        </span>
+                    <div className="flex items-center flex-nowrap min-w-0 w-full gap-1">
+                      <span
+                        onClick={(e) => {
+                          if (phone.businessId) { e.stopPropagation(); onNavigate(`/businesses/${phone.businessId}`); }
+                        }}
+                        className="font-bold text-[#E7E9EA] text-[13px] hover:underline cursor-pointer truncate shrink max-w-[135px] sm:max-w-[185px]"
+                      >
+                        {phone.sellerName}
+                      </span>
+                      <VerifiedBadge type={phone.badgeType || (phone.isVerified ? 'gold' : 'none')} size={14.5} className="shrink-0" />
+                      <span className="text-[11.5px] text-[#71767B] truncate shrink max-w-[90px] sm:max-w-[125px]" dir="ltr">@{getDefaultHandle(phone)}</span>
+                      <span className="text-[#71767B] text-[10.5px] mx-0.5 shrink-0">·</span>
+                      <span className="text-[#71767B] text-[11px] whitespace-nowrap shrink-0">{formatPhoneTimeAgo(phone.createdAt)}</span>
+                    </div>
+
+                    {/* عرض إعلاني منسق بنكهة X: اسم الخاصية بلون فضي والقيمة بلون أبيض */}
+                    <div className="mt-1 space-y-1.5">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="text-[14.5px] leading-[20px] font-bold text-white flex items-center gap-1.5 flex-wrap">
+                          <span className="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-white/10 text-[#8B98A5]">
+                            {CATEGORY_LABEL_MAP[phone.category]}
+                          </span>
+                          <span className="text-white">{phone.name}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[#FFC500] font-mono font-bold text-[13.5px]">
+                            {phone.price.toLocaleString()} ر.ي
+                          </span>
+                          {phone.negotiable === 'نعم' && (
+                            <span className="text-[10px] text-emerald-400 font-bold border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">قابل للتفاوض</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="text-[12.5px] leading-[20px] flex flex-wrap items-center gap-x-2 gap-y-1">
+                        {renderSpecBadges(phone).map((part, idx) => (
+                          <React.Fragment key={part.k}>
+                            {idx > 0 && <span className="text-[#536471]">·</span>}
+                            <span className="inline-flex items-center gap-1">
+                              <span className="text-[#8B98A5]">{part.k}:</span>
+                              <span className="text-white font-semibold">{part.v}</span>
+                            </span>
+                          </React.Fragment>
+                        ))}
                       </div>
                     </div>
 
-                    {/* ترتيب النص مثل تغريدات المنشأة */}
-                    <div className="mt-0.5 space-y-1">
-                      <div className="text-[14px] leading-[20px] font-bold text-white flex items-center gap-1.5 flex-wrap">
-                        <span>{phone.name}</span>
-                        <span className="text-[#71767B] font-normal">·</span>
-                        <span className="text-[#FFC500] font-mono text-[13px]">
-                          {phone.price.toLocaleString()} {phone.currency}
-                        </span>
-                      </div>
-
-                      {phone.description && (
-                        <p className="text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap break-words font-normal select-text">
-                          {phone.description}
-                        </p>
-                      )}
-
-                      <div className="text-[12px] text-[#71767B] flex flex-wrap items-center gap-1.5">
-                        <span>{phone.condition}</span>
-                        <span>·</span>
-                        <span>{phone.storage}{phone.ram ? ` / ${phone.ram}` : ''}</span>
-                        <span>·</span>
-                        <span>{phone.city}</span>
-                      </div>
-                    </div>
-
-                    {/* صورة المنشور (تفتح عارض X مباشرة عند النقر) */}
                     {phone.images?.[0] && (
                       <div
                         onClick={(e) => {
@@ -862,65 +1014,32 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                       >
                         <img src={phone.images[0]} alt={phone.name} className="w-full max-h-80 object-cover" loading="lazy" />
                         {phone.images.length > 1 && (
-                          <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/75 text-white text-[10.5px] font-bold border border-white/10">
-                            1 / {phone.images.length}
-                          </span>
+                          <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/75 text-white text-[10.5px] font-bold border border-white/10">1 / {phone.images.length}</span>
                         )}
                       </div>
                     )}
 
-                    {/* فوتر التغريدة بأسلوب XActionBar: تفاصيل + واتساب (بدل الرتويت) + اتصال + مشاركة */}
-                    <div
-                      className="flex items-center justify-between text-[#71767B] w-full mt-2.5 mb-0 pb-0.5 px-0 select-none leading-none"
-                      dir="rtl"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => handleOpenPhone(phone)}
-                        className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition-colors cursor-pointer py-1"
-                        title="التفاصيل"
-                      >
-                        <ArrowRight size={14} className="rtl:rotate-180" />
-                        <span className="text-[11.5px] font-medium">التفاصيل</span>
+                    <div className="flex items-center justify-between text-[#71767B] w-full mt-2.5 mb-0 pb-0.5 px-0 select-none leading-none" dir="rtl" onClick={(e) => e.stopPropagation()}>
+                      <button type="button" onClick={() => handleOpenPhone(phone)} className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition-colors cursor-pointer py-1">
+                        <ArrowRight size={14} className="rtl:rotate-180" /><span className="text-[11.5px] font-medium">التفاصيل</span>
                       </button>
-
-                      <a
-                        href={`https://wa.me/${phone.sellerPhone}?text=${encodeURIComponent(`مرحباً، أرغب بالاستفسار عن ${phone.name}`)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 hover:text-[#00BA7C] transition-colors py-1"
-                        title="واتساب"
-                      >
-                        <MessageCircle size={14.5} />
-                        <span className="text-[11.5px] font-medium">واتساب</span>
+                      <a href={`https://wa.me/${phone.sellerPhone}?text=${encodeURIComponent(`مرحباً، أرغب بالاستفسار عن ${CATEGORY_LABEL_MAP[phone.category]} ${phone.name}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-[#00BA7C] transition-colors py-1">
+                        <MessageCircle size={14.5} /><span className="text-[11.5px] font-medium">واتساب</span>
                       </a>
-
-                      <a
-                        href={`tel:${phone.sellerPhone}`}
-                        className="flex items-center gap-1.5 hover:text-[#FFC500] transition-colors py-1"
-                        title="اتصال"
-                      >
-                        <Phone size={14} />
-                        <span className="text-[11.5px] font-medium">اتصال</span>
+                      <a href={`tel:${phone.sellerPhone}`} className="flex items-center gap-1.5 hover:text-[#FFC500] transition-colors py-1">
+                        <Phone size={14} /><span className="text-[11.5px] font-medium">اتصال</span>
                       </a>
-
                       <button
                         type="button"
                         onClick={() => {
-                          navigator.clipboard?.writeText(`${phone.name} - ${phone.price.toLocaleString()} ${phone.currency} - ${phone.sellerPhone}`);
-                          setToastMessage('تم نسخ تفاصيل الإعلان');
-                          setTimeout(() => setToastMessage(null), 2500);
+                          navigator.clipboard?.writeText(`${CATEGORY_LABEL_MAP[phone.category]} ${phone.name} - ${phone.price.toLocaleString()} ر.ي`);
+                          showToast('تم نسخ تفاصيل الإعلان', 'success', 2500);
                         }}
                         className="hover:text-[#1D9BF0] transition-colors cursor-pointer py-1"
-                        title="مشاركة"
                       >
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="18" cy="5" r="2.5" />
-                          <circle cx="6" cy="12" r="2.5" />
-                          <circle cx="18" cy="19" r="2.5" />
-                          <line x1="8.5" y1="13.5" x2="15.5" y2="17.5" />
-                          <line x1="15.5" y1="6.5" x2="8.5" y2="10.5" />
+                          <circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" />
+                          <line x1="8.5" y1="13.5" x2="15.5" y2="17.5" /><line x1="15.5" y1="6.5" x2="8.5" y2="10.5" />
                         </svg>
                       </button>
                     </div>
@@ -934,7 +1053,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
             <button
               onClick={() => setIsAddModalOpen(true)}
               className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-black flex items-center justify-center shadow-lg shadow-black/60 transition"
-              title="عرض هاتف للبيع"
+              title="إعلان جديد"
             >
               <Plus size={24} className="stroke-[2.2]" />
             </button>
@@ -942,112 +1061,49 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         </div>
       )}
 
-      {/* ============================================================
-          عارض الصور باللمس (Touch Swipe Lightbox)
-          ============================================================ */}
       {isLightboxOpen && selectedPhone && (
         <div
+          data-no-tab-swipe="true"
           dir="rtl"
           className="fixed inset-0 z-[99999] bg-black flex flex-col justify-between select-none overflow-hidden"
           onClick={() => setIsLightboxOpen(false)}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          {/* الشريط العلوي بأسلوب X: زر الرجوع في اليمين */}
-          <div
-            className="w-full pt-4 pb-2 px-4 flex items-center justify-between z-50"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setIsLightboxOpen(false)}
-              aria-label="رجوع"
-              className="w-11 h-11 rounded-full bg-[#192227] hover:bg-[#202b32] active:scale-95 transition flex items-center justify-center text-white border border-white/5 shadow-md cursor-pointer"
-            >
+          <div className="w-full pt-4 pb-2 px-4 flex items-center justify-between z-50" onClick={(e) => e.stopPropagation()}>
+            <button type="button" onClick={() => setIsLightboxOpen(false)} aria-label="رجوع" className="w-11 h-11 rounded-full bg-[#192227] hover:bg-[#202b32] active:scale-95 transition flex items-center justify-center text-white border border-white/5 shadow-md cursor-pointer">
               <ArrowRight size={20} />
             </button>
-
-            {selectedPhone.images.length > 1 && (
-              <span className="px-3 py-1.5 rounded-full bg-[#192227] text-white text-xs font-mono border border-white/5">
-                {activeImageIndex + 1} / {selectedPhone.images.length}
-              </span>
-            )}
+            {selectedPhone.images.length > 1 && <span className="px-3 py-1.5 rounded-full bg-[#192227] text-white text-xs font-mono border border-white/5">{activeImageIndex + 1} / {selectedPhone.images.length}</span>}
           </div>
-
-          {/* الصورة الوسطية (تمرر باللمس) */}
-          <div
-            className="flex-1 flex items-center justify-center px-2 py-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={selectedPhone.images[activeImageIndex]}
-              alt={selectedPhone.name}
-              className="w-full max-h-[78vh] object-contain"
-            />
+          <div className="flex-1 flex items-center justify-center px-2 py-2" onClick={(e) => e.stopPropagation()}>
+            <img src={selectedPhone.images[activeImageIndex]} alt={selectedPhone.name} className="w-full max-h-[78vh] object-contain" />
           </div>
-
-          {/* الشريط السفلي بأسلوب XImagePlayer */}
-          <div
-            className="w-full px-4 pt-6 pb-5 flex flex-col gap-3 z-50"
-            style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 70%, rgba(0,0,0,0) 100%)' }}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="w-full px-4 pt-6 pb-5 flex flex-col gap-3 z-50" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 70%, rgba(0,0,0,0) 100%)' }} onClick={(e) => e.stopPropagation()}>
             {selectedPhone.images.length > 1 && (
               <div className="flex justify-center items-center gap-1.5">
-                {selectedPhone.images.map((_, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setActiveImageIndex(idx)}
-                    aria-label={`صورة ${idx + 1}`}
-                    className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                      activeImageIndex === idx ? 'w-5 bg-white' : 'w-1.5 bg-white/30'
-                    }`}
-                  />
-                ))}
+                {selectedPhone.images.map((_, idx) => <button key={idx} type="button" onClick={() => setActiveImageIndex(idx)} className={`h-1.5 rounded-full transition-all cursor-pointer ${activeImageIndex === idx ? 'w-5 bg-white' : 'w-1.5 bg-white/30'}`} />)}
               </div>
             )}
-
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 overflow-hidden flex items-center justify-center shrink-0 text-white font-bold text-sm">
-                  {selectedPhone.sellerAvatar ? (
-                    <img src={selectedPhone.sellerAvatar} alt={selectedPhone.sellerName} className="w-full h-full object-cover" />
-                  ) : (
-                    <span>{selectedPhone.sellerName?.[0] || 'م'}</span>
-                  )}
+                  {selectedPhone.sellerAvatar ? <img src={selectedPhone.sellerAvatar} alt={selectedPhone.sellerName} className="w-full h-full object-cover" /> : <span>{selectedPhone.sellerName?.[0] || 'م'}</span>}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1">
                     <span className="text-white font-bold text-[14px] truncate">{selectedPhone.sellerName}</span>
-                    <VerifiedBadge
-                      type={selectedPhone.badgeType || (selectedPhone.isVerified ? 'gold' : 'none')}
-                      size={13.5}
-                      className="shrink-0"
-                    />
+                    <VerifiedBadge type={selectedPhone.badgeType || (selectedPhone.isVerified ? 'gold' : 'none')} size={13.5} className="shrink-0" />
                   </div>
-                  <div className="text-[#71767B] text-[12px] truncate">
-                    {selectedPhone.name} · {selectedPhone.price.toLocaleString()} {selectedPhone.currency}
-                  </div>
+                  <div className="text-[#71767B] text-[12px] truncate">{selectedPhone.name} · {selectedPhone.price.toLocaleString()} ر.ي</div>
                 </div>
               </div>
-
               <div className="flex items-center gap-2 shrink-0">
-                <a
-                  href={`https://wa.me/${selectedPhone.sellerPhone}?text=${encodeURIComponent(`مرحباً، أرغب بالاستفسار عن ${selectedPhone.name}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3.5 py-2 rounded-full bg-[#192227] hover:bg-[#202b32] text-white border border-white/10 text-xs font-bold flex items-center gap-1.5 transition"
-                >
-                  <MessageCircle size={14} />
-                  <span>واتساب</span>
+                <a href={`https://wa.me/${selectedPhone.sellerPhone}?text=${encodeURIComponent(`مرحباً، أرغب بالاستفسار عن ${selectedPhone.name}`)}`} target="_blank" rel="noopener noreferrer" className="px-3.5 py-2 rounded-full bg-[#192227] hover:bg-[#202b32] text-white border border-white/10 text-xs font-bold flex items-center gap-1.5">
+                  <MessageCircle size={14} /><span>واتساب</span>
                 </a>
-                <a
-                  href={`tel:${selectedPhone.sellerPhone}`}
-                  className="px-3.5 py-2 rounded-full bg-[#192227] hover:bg-[#202b32] text-white border border-white/10 text-xs font-bold flex items-center gap-1.5 transition"
-                >
-                  <Phone size={14} />
-                  <span>اتصال</span>
+                <a href={`tel:${selectedPhone.sellerPhone}`} className="px-3.5 py-2 rounded-full bg-[#192227] hover:bg-[#202b32] text-white border border-white/10 text-xs font-bold flex items-center gap-1.5">
+                  <Phone size={14} /><span>اتصال</span>
                 </a>
               </div>
             </div>
@@ -1055,293 +1111,213 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         </div>
       )}
 
-      {/* ============================================================
-          نافذة إضافة هاتف للبيع (رفع من 1 إلى 6 صور)
-          ============================================================ */}
+      {/* نافذة إضافة إعلان: جميع الحقول قوائم منسدلة باستثناء السعر بالريال اليمني */}
       {isAddModalOpen && (
-        <div
-          className="fixed inset-0 z-[150] bg-black sm:bg-black/80 flex items-center justify-center sm:p-4"
-          onClick={() => setIsAddModalOpen(false)}
-        >
+        <div className="fixed inset-0 z-[150] bg-black sm:bg-black/80 flex items-center justify-center sm:p-4" onClick={() => setIsAddModalOpen(false)}>
           <form
             onSubmit={handleSubmitPhone}
             className="bg-black sm:border sm:border-[#2F3336] sm:rounded-2xl w-full sm:max-w-md h-full sm:h-auto sm:max-h-[90vh] flex flex-col overflow-hidden text-white"
             dir="rtl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* شريط X العلوي: إلغاء + زر نشر */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-[#2F3336]/60 shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsAddModalOpen(false)}
-                className="p-1.5 rounded-full hover:bg-white/10 text-white transition cursor-pointer"
-                aria-label="إغلاق"
-              >
+              <button type="button" onClick={() => setIsAddModalOpen(false)} className="p-1.5 rounded-full hover:bg-white/10 text-white transition cursor-pointer" aria-label="إغلاق">
                 <X size={18} />
               </button>
-              <span className="text-[13px] font-bold text-[#71767B]">عرض هاتف للبيع</span>
-              <button
-                type="submit"
-                className="px-5 py-1.5 rounded-full bg-[#FFC500] hover:bg-[#e6b100] text-black font-bold text-[13px] transition cursor-pointer"
-              >
-                نشر
+              <span className="text-[13px] font-bold text-[#71767B]">إعلان جديد في سوق الأجهزة</span>
+              <button type="submit" disabled={isSubmittingPhone} className="px-5 py-1.5 rounded-full bg-[#FFC500] hover:bg-[#e6b100] disabled:opacity-50 text-black font-bold text-[13px] transition cursor-pointer">
+                {isSubmittingPhone ? 'جاري النشر...' : 'نشر'}
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
-              {(myBusinessPage || profile) ? (
-                <div className="space-y-2.5">
-                  <div className="p-2.5 rounded-xl bg-zinc-950 border border-[#2F3336] flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0 text-white font-bold">
-                      {(myBusinessPage?.avatarUrl || profile?.avatar_url) ? (
-                        <img
-                          src={myBusinessPage?.avatarUrl || profile?.avatar_url}
-                          alt={myBusinessPage?.name || profile?.full_name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span>{(myBusinessPage?.name || profile?.full_name)?.[0] || 'م'}</span>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1">
-                        <span className="font-bold text-white text-xs truncate">
-                          {myBusinessPage?.name || profile?.full_name}
-                        </span>
-                        <VerifiedBadge
-                          type={
-                            myBusinessPage
-                              ? ((myBusinessPage.verificationType as BadgeType) || (myBusinessPage.isVerified ? 'gold' : 'none'))
-                              : 'none'
-                          }
-                          size={13}
-                        />
-                      </div>
-                      <div className="text-[11px] text-[#71767B] truncate" dir="ltr">
-                        @{myBusinessPage?.username || (profile?.email ? profile.email.split('@')[0] : 'account')}
-                      </div>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-full bg-white/10 text-white text-[10px] font-bold shrink-0">
-                      {myBusinessPage ? 'صفحة المنشأة' : 'حسابك'}
-                    </span>
+              {(myBusinessPage || profile) && (
+                <div className="p-2.5 rounded-xl bg-zinc-950 border border-[#2F3336] flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0 text-white font-bold">
+                    {(myBusinessPage?.avatarUrl || profile?.avatar_url) ? <img src={myBusinessPage?.avatarUrl || profile?.avatar_url} alt="" className="w-full h-full object-cover" /> : <span>{(myBusinessPage?.name || profile?.full_name)?.[0] || 'م'}</span>}
                   </div>
-
-                  {!(myBusinessPage?.phone || profile?.phone) && (
-                    <div>
-                      <label className="text-[11px] text-[#71767B] block mb-1">رقم الهاتف للتواصل (واتساب / اتصال)</label>
-                      <input
-                        type="tel"
-                        required
-                        placeholder="967777..."
-                        value={sellerPhone}
-                        onChange={(e) => setSellerPhone(e.target.value)}
-                        className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2.5 text-xs text-white font-mono outline-none caret-white"
-                      />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1">
+                      <span className="font-bold text-white text-xs truncate">{myBusinessPage?.name || profile?.full_name}</span>
+                      <VerifiedBadge type={myBusinessPage ? ((myBusinessPage.verificationType as BadgeType) || (myBusinessPage.isVerified ? 'gold' : 'none')) : 'none'} size={13} />
                     </div>
-                  )}
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div>
-                    <label className="text-[11px] text-[#71767B] block mb-1">اسم البائع / المحل</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="اسمك أو اسم المحل..."
-                      value={sellerName}
-                      onChange={(e) => setSellerName(e.target.value)}
-                      className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2.5 text-xs text-white outline-none caret-white"
-                    />
+                    <div className="text-[11px] text-[#71767B] truncate" dir="ltr">@{myBusinessPage?.username || (profile?.email ? profile.email.split('@')[0] : 'account')}</div>
                   </div>
-                  <div>
-                    <label className="text-[11px] text-[#71767B] block mb-1">رقم الهاتف</label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="967777..."
-                      value={sellerPhone}
-                      onChange={(e) => setSellerPhone(e.target.value)}
-                      className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2.5 text-xs text-white font-mono outline-none caret-white"
-                    />
-                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-white/10 text-white text-[10px] font-bold shrink-0">{myBusinessPage ? 'صفحة المنشأة' : 'حسابك'}</span>
                 </div>
               )}
 
               <div>
-                <label className="text-[11px] text-[#71767B] block mb-1">القسم</label>
+                <label className="text-[11px] text-[#71767B] block mb-1">القسم *</label>
                 <YRSelect
                   value={phoneCategory}
-                  onChange={(val) => setPhoneCategory(val as PhoneDeviceItem['category'])}
+                  onChange={(val) => handleCategoryChange(val as PhoneCategory)}
                   options={[
-                    { value: 'phones', label: 'الجوالات' },
+                    { value: 'phones', label: 'الهواتف' },
                     { value: 'tablets', label: 'الآيبادات والأجهزة اللوحية' },
                     { value: 'laptops', label: 'الحواسيب واللابتوبات' },
                     { value: 'accessories', label: 'الإكسسوارات' },
-                    { value: 'maintenance', label: 'الصيانة' },
-                    { value: 'sim_services', label: 'الشرائح' },
+                    { value: 'maintenance', label: 'الصيانة والبرمجة' },
+                    { value: 'sim_services', label: 'الشرائح وخدمات الاتصال' },
                   ]}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-[11px] text-[#71767B] block mb-1">الماركة</label>
-                  <YRSelect
-                    value={phoneBrand}
-                    onChange={(val) => setPhoneBrand(val)}
-                    options={[
-                      ...PHONE_BRANDS.map((b) => ({ value: b.id, label: b.label })),
-                      ...COMPUTER_BRANDS.map((b) => ({ value: b.id, label: b.label })),
-                      { value: 'Other', label: 'أخرى' },
-                    ]}
-                  />
+                  <label className="text-[11px] text-[#71767B] block mb-1">الشركة *</label>
+                  <YRSelect value={phoneBrand} onChange={handleBrandChange} options={activeBrandOptions} />
                 </div>
                 <div>
-                  <label className="text-[11px] text-[#71767B] block mb-1">موديل الجهاز</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="iPhone 15 Pro Max..."
-                    value={phoneModel}
-                    onChange={(e) => setPhoneModel(e.target.value)}
-                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2.5 text-xs text-white outline-none caret-white"
-                  />
+                  <label className="text-[11px] text-[#71767B] block mb-1">الموديل / النوع *</label>
+                  <YRSelect value={phoneModel} onChange={setPhoneModel} options={activeModelOptions} />
                 </div>
               </div>
 
-              {/* رفع الصور */}
               <div>
-                <label className="text-[11px] text-[#71767B] block mb-1">صور الهاتف (1 إلى 6 صور)</label>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImagesUpload}
-                  className="hidden"
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full py-2.5 rounded-xl border border-dashed border-[#2F3336] hover:border-white text-white/80 flex items-center justify-center gap-2 text-xs font-bold transition cursor-pointer"
-                >
-                  <Upload size={14} className="text-[#FFC500]" />
-                  <span>اختر صور الجهاز ({uploadedImages.length}/6)</span>
+                <label className="text-[11px] text-[#71767B] block mb-1">الصور (1 إلى 6 صور)</label>
+                <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImagesUpload} className="hidden" />
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="w-full py-2.5 rounded-xl border border-dashed border-[#2F3336] hover:border-white text-white/80 flex items-center justify-center gap-2 text-xs font-bold transition cursor-pointer">
+                  <Upload size={14} className="text-[#FFC500]" /><span>اختر الصور ({uploadedImages.length}/6)</span>
                 </button>
                 {uploadedImages.length > 0 && (
                   <div className="grid grid-cols-3 gap-2 mt-2">
                     {uploadedImages.map((img, i) => (
                       <div key={i} className="relative h-16 rounded-xl overflow-hidden border border-[#2F3336]">
                         <img src={img} alt="" className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removeUploadedImage(i)}
-                          className="absolute top-1 left-1 w-5 h-5 rounded-full bg-black/80 text-white flex items-center justify-center"
-                        >
-                          <Trash2 size={11} />
-                        </button>
+                        <button type="button" onClick={() => removeUploadedImage(i)} className="absolute top-1 left-1 w-5 h-5 rounded-full bg-black/80 text-white flex items-center justify-center"><Trash2 size={11} /></button>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
 
+              {isDeviceCat && (
+                <>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="text-[11px] text-[#71767B] block mb-1">مساحة التخزين *</label>
+                      <YRSelect compact value={phoneStorage} onChange={setPhoneStorage} options={STORAGE_OPTIONS} />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-[#71767B] block mb-1">الرام (GB) *</label>
+                      <YRSelect compact value={phoneRam} onChange={setPhoneRam} options={RAM_OPTIONS} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="text-[11px] text-[#71767B] block mb-1">المعالج</label>
+                      <YRSelect compact value={phoneProcessor} onChange={setPhoneProcessor} options={PROCESSOR_OPTIONS} />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-[#71767B] block mb-1">دعم الشريحة *</label>
+                      <YRSelect compact value={phoneSim} onChange={setPhoneSim} options={SIM_OPTIONS} />
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="text-[11px] text-[#71767B] block mb-1">الحالة</label>
-                  <YRSelect
-                    compact
-                    value={phoneCondition}
-                    onChange={(val) => setPhoneCondition(val as any)}
-                    options={[
-                      { value: 'جديد كرت', label: 'جديد كرت' },
-                      { value: 'شبه جديد', label: 'شبه جديد' },
-                      { value: 'مستعمل نظيف', label: 'مستعمل نظيف' },
-                    ]}
-                  />
+                  <label className="text-[11px] text-[#71767B] block mb-1">الحالة *</label>
+                  <YRSelect compact value={phoneCondition} onChange={setPhoneCondition} options={CONDITION_OPTIONS} />
                 </div>
                 <div>
-                  <label className="text-[11px] text-[#71767B] block mb-1">السعة</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="256GB"
-                    value={phoneStorage}
-                    onChange={(e) => setPhoneStorage(e.target.value)}
-                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white font-mono outline-none caret-white"
-                  />
+                  <label className="text-[11px] text-[#71767B] block mb-1">اللون *</label>
+                  <YRSelect compact value={phoneColor} onChange={setPhoneColor} options={COLOR_OPTIONS} />
                 </div>
                 <div>
-                  <label className="text-[11px] text-[#71767B] block mb-1">الرام</label>
-                  <input
-                    type="text"
-                    placeholder="8GB"
-                    value={phoneRam}
-                    onChange={(e) => setPhoneRam(e.target.value)}
-                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white font-mono outline-none caret-white"
-                  />
+                  <label className="text-[11px] text-[#71767B] block mb-1">التوصيل *</label>
+                  <YRSelect compact value={phoneDelivery} onChange={setPhoneDelivery} options={DELIVERY_OPTIONS} />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="text-[11px] text-[#71767B] block mb-1">السعر</label>
+                  <label className="text-[11px] text-[#FFC500] font-bold block mb-1">السعر (ر.ي) *</label>
                   <input
-                    type="number"
+                    type="text" inputMode="numeric"
                     required
-                    placeholder="250000"
+                                        placeholder="250,000"
                     value={phonePrice}
-                    onChange={(e) => setPhonePrice(Number(e.target.value))}
+                    onChange={(e) => setPhonePrice(fmtAmt(e.target.value))}
                     className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white font-mono outline-none caret-white"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-[#71767B] block mb-1">العملة</label>
-                  <YRSelect
-                    compact
-                    value={phoneCurrency}
-                    onChange={(val) => setPhoneCurrency(val)}
-                    options={[
-                      { value: 'YER', label: 'ر.ي (YER)' },
-                      { value: 'SAR', label: 'ر.س (SAR)' },
-                      { value: 'USD', label: 'دولار ($)' },
-                    ]}
-                  />
+                  <label className="text-[11px] text-[#71767B] block mb-1">قابل للتفاوض *</label>
+                  <YRSelect compact value={phoneNegotiable} onChange={setPhoneNegotiable} options={NEGOTIABLE_OPTIONS} />
                 </div>
                 <div>
-                  <label className="text-[11px] text-[#71767B] block mb-1">المحافظة</label>
-                  <YRSelect
-                    compact
-                    value={phoneCity}
-                    onChange={(val) => setPhoneCity(val)}
-                    options={YEMEN_GOVERNORATES.map((gov) => ({ value: gov, label: gov }))}
-                  />
+                  <label className="text-[11px] text-[#71767B] block mb-1">المحافظة *</label>
+                  <YRSelect compact value={phoneCity} onChange={setPhoneCity} options={YEMEN_GOVERNORATES.map((g) => ({ value: g, label: g }))} />
                 </div>
-              </div>
-
-              <div>
-                <label className="text-[11px] text-[#71767B] block mb-1">ملاحظات ومواصفات</label>
-                <textarea
-                  rows={3}
-                  placeholder="اكتب مواصفات الجهاز وحالة البطارية والملحقات..."
-                  value={phoneDesc}
-                  onChange={(e) => setPhoneDesc(e.target.value)}
-                  className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2.5 text-xs text-white outline-none resize-none caret-white"
-                />
               </div>
             </div>
           </form>
         </div>
       )}
 
-            <XFilterModal
-        isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} title="تصفية النتائج"
-        activeFiltersCount={activeFiltersCount} onReset={resetFilters} resultsCount={filteredPhones.length}
+      <XFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        title="تصفية النتائج"
+        activeFiltersCount={activeFiltersCount}
+        onReset={resetFilters}
+        resultsCount={filteredPhones.length}
         fields={[
-          { label: 'القسم', value: activeTab, onChange: (v) => setActiveTab(v as any), options: [{ value: 'all', label: 'كل الأقسام' }, { value: 'phones', label: 'الجوالات' }, { value: 'tablets', label: 'الآيبادات والأجهزة اللوحية' }, { value: 'laptops', label: 'الحواسيب واللابتوبات' }, { value: 'accessories', label: 'الإكسسوارات' }, { value: 'maintenance', label: 'الصيانة' }, { value: 'sim_services', label: 'الشرائح وخدمات الاتصال' }] },
-          { label: 'الماركة / نوع الجهاز', value: selectedBrand, onChange: setSelectedBrand, options: [{ value: 'all', label: 'جميع الماركات والأجهزة' }, ...PHONE_BRANDS.map((b) => ({ value: b.id, label: b.label })), ...COMPUTER_BRANDS.map((b) => ({ value: b.id, label: b.label })), { value: 'Other', label: 'أخرى' }] },
-          { label: 'الحالة', value: selectedCondition, onChange: setSelectedCondition, options: [{ value: 'all', label: 'كل الحالات' }, { value: 'جديد كرت', label: 'جديد كرت' }, { value: 'شبه جديد', label: 'شبه جديد' }, { value: 'مستعمل نظيف', label: 'مستعمل نظيف' }] },
-          { label: 'المحافظة', value: selectedCity, onChange: setSelectedCity, options: YEMEN_GOV_FILTER_OPTIONS },
+          {
+            label: 'القسم',
+            value: activeTab,
+            onChange: (v) => { setActiveTab(v as any); setSelectedBrand('all'); },
+            options: [
+              { value: 'all', label: 'كل الأقسام' },
+              { value: 'phones', label: 'الهواتف' },
+              { value: 'tablets', label: 'الآيبادات والأجهزة اللوحية' },
+              { value: 'laptops', label: 'الحواسيب واللابتوبات' },
+              { value: 'accessories', label: 'الإكسسوارات' },
+              { value: 'maintenance', label: 'الصيانة والبرمجة' },
+              { value: 'sim_services', label: 'الشرائح وخدمات الاتصال' },
+            ],
+          },
+          {
+            label: 'الشركة',
+            value: selectedBrand,
+            onChange: setSelectedBrand,
+            options: [
+              { value: 'all', label: 'جميع الشركات' },
+              ...(activeTab === 'phones' || activeTab === 'tablets'
+                ? PHONE_BRANDS
+                : activeTab === 'laptops'
+                ? COMPUTER_BRANDS
+                : [...PHONE_BRANDS, ...COMPUTER_BRANDS, ...EXTRA_BRANDS]
+              ).map((b) => ({ value: b.id, label: b.label })),
+            ],
+          },
+          {
+            label: 'الحالة',
+            value: selectedCondition,
+            onChange: setSelectedCondition,
+            options: [{ value: 'all', label: 'كل الحالات' }, ...CONDITION_OPTIONS],
+          },
+          {
+            label: 'السعة التخزينية',
+            value: selectedStorage,
+            onChange: setSelectedStorage,
+            options: [{ value: 'all', label: 'الكل' }, ...STORAGE_OPTIONS.filter((o) => o.value !== 'لا ينطبق')],
+          },
+          {
+            label: 'التفاوض',
+            value: selectedNegotiable,
+            onChange: setSelectedNegotiable,
+            options: [{ value: 'all', label: 'الكل' }, { value: 'نعم', label: 'قابل للتفاوض' }, { value: 'لا', label: 'سعر نهائي' }],
+          },
+          {
+            label: 'المحافظة',
+            value: selectedCity,
+            onChange: setSelectedCity,
+            options: YEMEN_GOV_FILTER_OPTIONS,
+          },
         ]}
       />
     </div>
