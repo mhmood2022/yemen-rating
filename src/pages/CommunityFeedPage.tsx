@@ -244,6 +244,9 @@ export const CommunityFeedPage: React.FC = () => {
   const reloadFeedRef = useRef<(() => void) | null>(null);
   const [hasActiveSpace, setHasActiveSpace] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [visibleTweetsCount, setVisibleTweetsCount] = useState(12);
+  const [isLoadingMoreTweets, setIsLoadingMoreTweets] = useState(false);
+  const feedBottomRef = useRef<HTMLDivElement | null>(null);
   const [swipeProgress, setSwipeProgress] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -254,6 +257,7 @@ export const CommunityFeedPage: React.FC = () => {
   );
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    setVisibleTweetsCount(12);
     setSwipeProgress(activeTab === 'forYou' ? 0 : 1);
     const currentParam = searchParams.get('tab') || 'forYou';
     if (currentParam !== activeTab) {
@@ -1564,6 +1568,26 @@ const handleAddComment = (e?: React.FormEvent) => {
   });
   
   
+  useEffect(() => {
+    if (['phones', 'jobs', 'properties', 'auctions'].includes(activeTab)) return;
+    const el = feedBottomRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && visibleTweetsCount < displayedTweets.length && !isLoadingMoreTweets) {
+          setIsLoadingMoreTweets(true);
+          setTimeout(() => {
+            setVisibleTweetsCount((prev) => prev + 12);
+            setIsLoadingMoreTweets(false);
+          }, 380);
+        }
+      },
+      { rootMargin: '120px' }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [activeTab, visibleTweetsCount, displayedTweets.length, isLoadingMoreTweets]);
+
   // 🔴 DEBUG حاسم: إظهار الأرقام على الشاشة
   if (typeof window !== 'undefined') {
     (window as any).__debugFinal = {
@@ -1609,7 +1633,7 @@ const handleAddComment = (e?: React.FormEvent) => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#FFC500] selection:text-white pb-32" dir="rtl">
+    <div className="min-h-screen bg-black text-[#E7E9EA] font-['Tahoma',sans-serif] selection:bg-[#FFC500] selection:text-white pb-16" dir="rtl">
       {/* DEBUG */}
       
 
@@ -1795,19 +1819,19 @@ const handleAddComment = (e?: React.FormEvent) => {
       {/* حائط التغريدات والأقسام */}
       <div key={activeTab} className="animate-[fadeIn_0.3s_ease-in-out]">
         {activeTab === 'phones' ? (
-          <div className="pb-24">
+          <div className="pb-4">
             <PhoneMarketPage onNavigate={(path) => navigate(path)} embedded />
           </div>
         ) : activeTab === 'jobs' ? (
-          <div className="pb-24">
+          <div className="pb-4">
             <JobsPage embedded />
           </div>
         ) : activeTab === 'properties' ? (
-          <div className="pb-24">
+          <div className="pb-4">
             <RealEstatePage embedded />
           </div>
         ) : activeTab === 'auctions' ? (
-          <div className="pb-24">
+          <div className="pb-4">
             <AuctionsPage embedded />
           </div>
         ) : displayedTweets.length === 0 ? (
@@ -1817,7 +1841,7 @@ const handleAddComment = (e?: React.FormEvent) => {
           : 'أنت لا تتابع أحداً بعد. ابدأ بمتابعة الأشخاص لتظهر تغريداتهم هنا.'}
           </div>
         ) : (
-displayedTweets.map(tweet => {
+displayedTweets.slice(0, visibleTweetsCount).map(tweet => {
             
             const hasUserReposted = tweet.repostedBy?.includes(currentUserId);
             const hasUserLiked = tweet.likedBy?.includes(currentUserId);
@@ -1981,6 +2005,31 @@ displayedTweets.map(tweet => {
               </article>
             );
           })
+        )}
+        {!['phones', 'jobs', 'properties', 'auctions'].includes(activeTab) && displayedTweets.length > 0 && (
+          <div
+            ref={feedBottomRef}
+            className="py-3.5 flex items-center justify-center border-t border-[#2F3336]/40"
+          >
+            {isLoadingMoreTweets || visibleTweetsCount < displayedTweets.length ? (
+              <div
+                aria-label="جاري تحميل المزيد"
+                className="w-6 h-6 rounded-full border-[2.5px] border-[#1D9BF0]/25 border-t-[#1D9BF0] animate-spin"
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLoadingMoreTweets(true);
+                  reloadFeedRef.current?.();
+                  setTimeout(() => setIsLoadingMoreTweets(false), 600);
+                }}
+                className="text-[11px] text-[#71767B] hover:text-[#1D9BF0] transition-colors cursor-pointer"
+              >
+                تم عرض كل المنشورات · تحديث
+              </button>
+            )}
+          </div>
         )}
       </div>
 
