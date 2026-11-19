@@ -275,7 +275,10 @@ export const CommunityFeedPage: React.FC = () => {
 
     const handleTouchStart = (e: TouchEvent) => {
       const targetEl = e.target as HTMLElement | null;
-      ignoreSwipe = Boolean(targetEl?.closest('.no-scrollbar, .overflow-x-auto'));
+      const hasOpenOverlay = Boolean(
+        document.querySelector('[data-no-tab-swipe="true"], .fixed.inset-0, [role="dialog"], [aria-modal="true"]')
+      );
+      ignoreSwipe = hasOpenOverlay || Boolean(targetEl?.closest('.no-scrollbar, .overflow-x-auto, input, textarea, select'));
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
       setIsSwiping(!ignoreSwipe);

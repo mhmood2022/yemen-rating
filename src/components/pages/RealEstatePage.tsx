@@ -9,7 +9,7 @@ import { BadgeType } from '../common/VerifiedBadge';
 import { getMyBusinessPage, mapBusinessToPage, BusinessPageRecord } from '../../services/businessPageService';
 import { XMarketItem, XSearchFilterBar, XFilterModal, XMarketTweetCard,
   XMarketDetailView, XImageLightbox, XLinkedAccountCard,
-  YEMEN_GOV_FILTER_OPTIONS, YEMEN_GOV_FORM_OPTIONS } from '../common/XMarketUI';
+  YEMEN_GOV_FILTER_OPTIONS, YEMEN_GOV_FORM_OPTIONS, XToast, XToastState, toArabicMarketError } from '../common/XMarketUI';
 
 const YEMEN_GOVERNORATES = [
   { value: 'all', label: 'جميع المحافظات' },
@@ -84,7 +84,11 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [agreedToCommission, setAgreedToCommission] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<XToastState | null>(null);
+  const showToast = (text: string, type: 'success' | 'error' = 'success', ms = 3500) => {
+    setToastMessage({ type, text });
+    setTimeout(() => setToastMessage(null), ms);
+  };
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -133,8 +137,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
   const handleOpenAddModal = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
-      setToastMessage('يجب تسجيل الدخول إلى حسابك أولاً لتتمكن من إضافة عقار جديد');
-      setTimeout(() => setToastMessage(null), 4000);
+      showToast('يجب تسجيل الدخول إلى حسابك أولاً لتتمكن من إضافة عقار جديد', 'error', 4000);
       return;
     }
     setIsAddModalOpen(true);
@@ -143,7 +146,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
   const handleImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files; if (!files) return;
     const rem = 6 - uploadedImages.length;
-    if (rem <= 0) { setFormError('الحد الأقصى 6 صور فقط'); return; }
+    if (rem <= 0) { setFormError('الحد الأقصى 6 صور فقط'); showToast('الحد الأقصى 6 صور فقط', 'error', 3000); return; }
     Array.from(files).slice(0, rem).forEach((file) => {
       const r = new FileReader();
       r.onloadend = () => {
@@ -175,20 +178,19 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
 
   const handleAddProperty = async (e: React.FormEvent) => {
     e.preventDefault(); setFormError('');
-    if (!newTitle.trim()) { setFormError('يرجى كتابة عنوان العقار'); return; }
-    if (!agreedToCommission) { setFormError('يرجى الموافقة على عمولة الوساطة أولاً'); return; }
+    if (!newTitle.trim()) { setFormError('يرجى كتابة عنوان العقار'); showToast('يرجى كتابة عنوان العقار', 'error', 3500); return; }
+    if (!agreedToCommission) { setFormError('يرجى الموافقة على عمولة الوساطة أولاً'); showToast('يرجى الموافقة على عمولة الوساطة أولاً', 'error', 3500); return; }
 
     const effPh = ownerPhone.trim() || (myBusinessPage?.phone || myProfile?.phone || '').replace(/\D/g, '').slice(-9);
     if (effPh.length !== 9) {
       setFormError('يرجى إدخال رقم هاتف مكون من 9 أرقام بالضبط');
-      setTimeout(() => setToastMessage(null), 3500);
+      showToast('يرجى إدخال رقم هاتف مكون من 9 أرقام بالضبط', 'error', 3500);
       return;
     }
 
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
-      setToastMessage('يجب تسجيل الدخول أولاً لإرسال العقار');
-      setTimeout(() => setToastMessage(null), 3500);
+      showToast('يجب تسجيل الدخول أولاً لإرسال العقار', 'error', 3500);
       return;
     }
 
@@ -223,12 +225,12 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
       setOwnerPhone('');
       setUploadedImages([]);
       setAgreedToCommission(false);
-      setToastMessage('تم إرسال العقار بنجاح وتوثيق الصور');
-      setTimeout(() => setToastMessage(null), 4000);
+      showToast('تم إرسال العقار بنجاح وتوثيق الصور', 'success', 4000);
       fetchProperties();
     } catch (err: any) {
-      setFormError(err.message || 'حدث خطأ أثناء إرسال العقار');
-      setTimeout(() => setToastMessage(null), 4000);
+      const arMsg = toArabicMarketError(err, 'حدث خطأ أثناء إرسال العقار');
+      setFormError(arMsg);
+      showToast(arMsg, 'error', 4000);
     } finally {
       setSubmitting(false);
     }
@@ -277,19 +279,13 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
   };
   const onShareX = (it: XMarketItem) => {
     navigator.clipboard?.writeText(it.title);
-    setToastMessage('تم نسخ التفاصيل');
-    setTimeout(() => setToastMessage(null), 2500);
+    showToast('تم نسخ التفاصيل', 'success', 2500);
   };
   return (
     <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Tahoma'] text-white bg-black min-h-screen"}>
       {!embedded && !selectedItem && <AdBanner placementId="5" className="mb-1" />}
 
-      {toastMessage && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[99999] bg-[#F5C400] text-black px-4 py-2.5 rounded-xl font-black text-xs shadow-2xl flex items-center gap-2">
-          <CheckCircle2 size={16} />
-          <span>{toastMessage}</span>
-        </div>
-      )}
+      <XToast toast={toastMessage} />
 
       {!embedded && !selectedItem && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#2F3336] pb-3">

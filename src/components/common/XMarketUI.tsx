@@ -119,7 +119,7 @@ export const XFilterModal: React.FC<{
 }> = ({ isOpen, onClose, title, activeFiltersCount, onReset, resultsCount, fields }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center" onClick={onClose}>
+    <div data-no-tab-swipe="true" className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center" onClick={onClose}>
       <div dir="rtl" onClick={(e) => e.stopPropagation()} className="w-full sm:max-w-md bg-black border-t sm:border border-[#2F3336] rounded-t-3xl sm:rounded-2xl shadow-2xl">
         <div className="w-10 h-1 rounded-full bg-[#2F3336] mx-auto mt-2.5 sm:hidden" />
         <div className="px-4 py-3 border-b border-[#2F3336] flex items-center justify-between">
@@ -270,7 +270,7 @@ export const XMarketDetailView: React.FC<{
   const touchX = useRef<number | null>(null);
   const waHref = toWaLink(item.phone, item.whatsappText || `مرحباً، أرغب بالاستفسار عن ${item.title}`);
   return (
-    <div className="bg-black min-h-screen pb-24">
+    <div data-no-tab-swipe="true" className="bg-black min-h-screen pb-24">
       <div className="sticky top-0 z-30 bg-black/90 backdrop-blur-md border-b border-[#2F3336]/70 px-3 py-2.5 flex items-center gap-3">
         <button type="button" onClick={onBack} aria-label="رجوع" className="w-9 h-9 rounded-full hover:bg-white/10 active:scale-95 text-white flex items-center justify-center cursor-pointer">
           <ArrowRight size={20} />
@@ -360,6 +360,7 @@ export const XImageLightbox: React.FC<{
   return (
     <div
       dir="rtl"
+      data-no-tab-swipe="true"
       className="fixed inset-0 z-[99999] bg-black flex flex-col justify-between select-none overflow-hidden"
       onClick={onClose}
       onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }}
@@ -406,6 +407,65 @@ export const XImageLightbox: React.FC<{
           )}
         </div>
       </div>
+    </div>
+  );
+};
+
+
+export interface XToastState {
+  type: 'success' | 'error';
+  text: string;
+}
+
+export function toArabicMarketError(err: any, fallback = 'حدث خطأ غير متوقع، يرجى المحاولة لاحقاً'): string {
+  const raw = typeof err === 'string' ? err : (err?.message || err?.error_description || '');
+  const msg = String(raw || '').trim();
+  if (!msg) return fallback;
+  if (/[\u0600-\u06FF]/.test(msg)) return msg;
+  const low = msg.toLowerCase();
+  if (low.includes('failed to fetch') || low.includes('network') || low.includes('load failed'))
+    return 'تعذر الاتصال بالخادم، تحقق من اتصال الإنترنت';
+  if (low.includes('jwt') || low.includes('not authenticated') || low.includes('auth') || low.includes('session'))
+    return 'انتهت جلسة الدخول، يرجى تسجيل الدخول مجدداً';
+  if (low.includes('row-level security') || low.includes('permission denied') || low.includes('42501'))
+    return 'لا تملك صلاحية تنفيذ هذا الإجراء، تأكد من تسجيل الدخول';
+  if (low.includes('not-null constraint') || low.includes('null value in column'))
+    return 'يرجى تعبئة كافة الحقول الإلزامية المطلوبة';
+  if (low.includes('schema cache') || low.includes('could not find the') || low.includes('does not exist'))
+    return 'حدث عدم تطابق في بيانات الحقول، يرجى تحديث الصفحة والمحاولة';
+  if (low.includes('duplicate key') || low.includes('already exists') || low.includes('23505'))
+    return 'هذا السجل مسجل مسبقاً';
+  if (low.includes('check constraint'))
+    return 'بعض القيم المدخلة غير صالحة، يرجى مراجعة البيانات';
+  if (low.includes('invalid input syntax'))
+    return 'صيغة أحد الحقول غير صحيحة، يرجى التأكد من الأرقام والبيانات';
+  return fallback;
+}
+
+export const XToast: React.FC<{ toast: XToastState | null }> = ({ toast }) => {
+  if (!toast) return null;
+  const cleanText = toast.text.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27BF]/g, '').trim();
+  return (
+    <div
+      className="fixed top-[52px] left-1/2 -translate-x-1/2 z-[999999] bg-[#242D34] text-white px-4 py-2 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.85)] border border-white/20 flex items-center gap-2 select-none max-w-[92vw]"
+      style={{ direction: 'rtl' }}
+    >
+      {toast.type === 'success' ? (
+        <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+          </svg>
+        </div>
+      ) : (
+        <div className="w-5 h-5 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+          </svg>
+        </div>
+      )}
+      <span className="text-[12.5px] font-bold text-white font-['Tahoma',sans-serif] truncate max-w-[76vw] sm:max-w-[340px]">
+        {cleanText}
+      </span>
     </div>
   );
 };

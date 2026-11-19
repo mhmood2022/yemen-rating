@@ -565,7 +565,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
           عرض تفاصيل الهاتف المحدد
           ============================================================ */}
       {selectedPhone ? (
-        <div className="bg-black min-h-screen pb-24">
+        <div data-no-tab-swipe="true" className="bg-black min-h-screen pb-24">
           {/* شريط X العلوي: زر الرجوع في اليمين */}
           <div className="sticky top-0 z-30 bg-black/90 backdrop-blur-md border-b border-[#2F3336]/70 px-3 py-2.5 flex items-center gap-3">
             <button
