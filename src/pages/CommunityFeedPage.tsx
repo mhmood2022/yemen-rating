@@ -2014,7 +2014,7 @@ displayedTweets.slice(0, visibleTweetsCount).map(tweet => {
             {isLoadingMoreTweets || visibleTweetsCount < displayedTweets.length ? (
               <div
                 aria-label="جاري تحميل المزيد"
-                className="w-6 h-6 rounded-full border-[2.5px] border-[#1D9BF0]/25 border-t-[#1D9BF0] animate-spin"
+                className="w-6 h-6 rounded-full border-[2.5px] border-[#FFC500]/25 border-t-[#FFC500] animate-spin"
               />
             ) : (
               <button
@@ -2024,7 +2024,7 @@ displayedTweets.slice(0, visibleTweetsCount).map(tweet => {
                   reloadFeedRef.current?.();
                   setTimeout(() => setIsLoadingMoreTweets(false), 600);
                 }}
-                className="text-[11px] text-[#71767B] hover:text-[#1D9BF0] transition-colors cursor-pointer"
+                className="text-[11px] text-[#71767B] hover:text-[#FFC500] transition-colors cursor-pointer"
               >
                 تم عرض كل المنشورات · تحديث
               </button>

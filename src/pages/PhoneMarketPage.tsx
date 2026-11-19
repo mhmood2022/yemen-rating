@@ -447,6 +447,9 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [slot1AdId, setSlot1AdId] = useState<string | null | undefined>(undefined);
+  const [visibleCount, setVisibleCount] = useState(12);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const bottomSentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => { if (!embedded) window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [embedded]);
 
   const activeFiltersCount =
@@ -745,6 +748,25 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
     return rows.filter((r) => r.v && !['غير موجود', 'غير محدد', 'لا ينطبق'].includes(r.v.trim()));
   };
 
+  useEffect(() => {
+    const el = bottomSentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && visibleCount < filteredPhones.length && !isLoadingMore) {
+          setIsLoadingMore(true);
+          setTimeout(() => {
+            setVisibleCount((prev) => prev + 12);
+            setIsLoadingMore(false);
+          }, 360);
+        }
+      },
+      { rootMargin: '120px' }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [visibleCount, filteredPhones.length, isLoadingMore]);
+
   return (
     <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-6xl mx-auto px-3 sm:px-4 py-2 space-y-3 font-['Cairo',sans-serif] text-white"}>
       {(!embedded && !selectedPhone) && (
@@ -936,7 +958,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
             </div>
 
           <div className="divide-y divide-[#2F3336]/60">
-            {filteredPhones.map((phone, idx) => (
+            {filteredPhones.slice(0, visibleCount).map((phone, idx) => (
               <React.Fragment key={phone.id}>
               <article
                 onClick={(e) => {
@@ -1065,6 +1087,19 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
 
           </div>
 
+
+          {filteredPhones.length > 0 && (
+            <div ref={bottomSentinelRef} className="py-3 flex items-center justify-center">
+              {isLoadingMore || visibleCount < filteredPhones.length ? (
+                <div
+                  aria-label="جاري تحميل المزيد"
+                  className="w-6 h-6 rounded-full border-[2.5px] border-[#FFC500]/25 border-t-[#FFC500] animate-spin"
+                />
+              ) : (
+                <span className="text-[11px] text-[#71767B]">تم عرض كل النتائج</span>
+              )}
+            </div>
+          )}
           {embedded && !selectedPhone && !isAddModalOpen && (
             <button
               onClick={() => setIsAddModalOpen(true)}

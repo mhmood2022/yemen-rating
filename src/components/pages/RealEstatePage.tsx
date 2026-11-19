@@ -48,6 +48,9 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
   };
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [slot1AdId, setSlot1AdId] = useState<string | null | undefined>(undefined);
+  const [visibleCount, setVisibleCount] = useState(12);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const bottomSentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => { if (!embedded) window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [embedded]);
   const [businessesList, setBusinessesList] = useState<BusinessPageRecord[]>([]);
   const [profilesMap, setProfilesMap] = useState<Record<string, any>>({});
@@ -450,6 +453,25 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
     showToast('تم نسخ التفاصيل', 'success', 2500);
   };
 
+  useEffect(() => {
+    const el = bottomSentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && visibleCount < filteredProperties.length && !isLoadingMore) {
+          setIsLoadingMore(true);
+          setTimeout(() => {
+            setVisibleCount((prev) => prev + 12);
+            setIsLoadingMore(false);
+          }, 360);
+        }
+      },
+      { rootMargin: '120px' }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [visibleCount, filteredProperties.length, isLoadingMore]);
+
   return (
     <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Tahoma'] text-white bg-black min-h-screen"}>
       <XToast toast={toastMessage} />
@@ -501,7 +523,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
           </div>
         ) : embedded ? (
           <div className="divide-y divide-[#2F3336]/60">
-            {filteredProperties.map((prop, idx) => {
+            {filteredProperties.slice(0, visibleCount).map((prop, idx) => {
               const item = toPropX(prop);
               return (
                 <React.Fragment key={prop.id}>
@@ -528,7 +550,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredProperties.map((prop, idx) => (
+            {filteredProperties.slice(0, visibleCount).map((prop, idx) => (
               <React.Fragment key={prop.id}>
                 <PropertyCard property={{ ...prop, deal_type: prop.deal_type || (prop.listing_type === 'SALE' ? 'بيع' : prop.listing_type === 'RENT' ? 'إيجار' : prop.listing_type), area_m2: prop.area_m2 ?? prop.area_sqm, rooms: prop.rooms ?? prop.bedrooms, images: prop.images ?? prop.image_urls }} />
                 {idx === (filteredProperties.length >= 6 ? 2 : 0) && (
@@ -546,6 +568,19 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
 
           </div>
         )}
+
+          {filteredProperties.length > 0 && (
+            <div ref={bottomSentinelRef} className="py-3 flex items-center justify-center">
+              {isLoadingMore || visibleCount < filteredProperties.length ? (
+                <div
+                  aria-label="جاري تحميل المزيد"
+                  className="w-6 h-6 rounded-full border-[2.5px] border-[#FFC500]/25 border-t-[#FFC500] animate-spin"
+                />
+              ) : (
+                <span className="text-[11px] text-[#71767B]">تم عرض كل النتائج</span>
+              )}
+            </div>
+          )}
       </>)}
 
       {embedded && !selectedItem && !isAddModalOpen && (

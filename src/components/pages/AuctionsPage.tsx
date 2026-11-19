@@ -41,6 +41,9 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [slot1AdId, setSlot1AdId] = useState<string | null | undefined>(undefined);
+  const [visibleCount, setVisibleCount] = useState(12);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const bottomSentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => { if (!embedded) window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [embedded]);
   const [businessesList, setBusinessesList] = useState<BusinessPageRecord[]>([]);
   const [selectedItem, setSelectedItem] = useState<XMarketItem | null>(null);
@@ -381,6 +384,25 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
 
   const onShareX = (it: XMarketItem) => { navigator.clipboard?.writeText(it.title); showToast('تم نسخ التفاصيل', 'success', 2500); };
 
+  useEffect(() => {
+    const el = bottomSentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && visibleCount < displayedListings.length && !isLoadingMore) {
+          setIsLoadingMore(true);
+          setTimeout(() => {
+            setVisibleCount((prev) => prev + 12);
+            setIsLoadingMore(false);
+          }, 360);
+        }
+      },
+      { rootMargin: '120px' }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [visibleCount, displayedListings.length, isLoadingMore]);
+
   return (
     <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "max-w-7xl mx-auto px-3 sm:px-4 py-4 space-y-4 font-['Cairo'] text-white bg-black min-h-screen"}>
       <XToast toast={toastMessage} />
@@ -423,7 +445,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
           </div>
         ) : (
           <div className="divide-y divide-[#2F3336]/60">
-            {displayedListings.map((auc, idx) => {
+            {displayedListings.slice(0, visibleCount).map((auc, idx) => {
               const item = toAucX(auc);
               return (
                 <React.Fragment key={auc.id}>
@@ -449,6 +471,19 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
 
           </div>
         )}
+
+          {displayedListings.length > 0 && (
+            <div ref={bottomSentinelRef} className="py-3 flex items-center justify-center">
+              {isLoadingMore || visibleCount < displayedListings.length ? (
+                <div
+                  aria-label="جاري تحميل المزيد"
+                  className="w-6 h-6 rounded-full border-[2.5px] border-[#FFC500]/25 border-t-[#FFC500] animate-spin"
+                />
+              ) : (
+                <span className="text-[11px] text-[#71767B]">تم عرض كل النتائج</span>
+              )}
+            </div>
+          )}
       </>)}
 
       {embedded && !selectedItem && !isCreateAuctionOpen && (

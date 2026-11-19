@@ -6,7 +6,7 @@ import { XJobApplyModal } from "../jobs/XJobApplyModal";
 import {
   NOT_AVAILABLE, buildPropertyFeatures, parsePropertyFeatures
 } from "../../constants/realEstateOptions";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, ArrowRight, RefreshCw, AlertCircle, Plus, CheckCircle2, ShieldCheck, X, Building2, MapPin, Coins, PhoneCall, FileText, Lock, Sparkles, Search } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -69,6 +69,9 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
   const [businessesList, setBusinessesList] = useState<BusinessPageRecord[]>([]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [slot1AdId, setSlot1AdId] = useState<string | null | undefined>(undefined);
+  const [visibleCount, setVisibleCount] = useState(12);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const bottomSentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => { if (!embedded) window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [embedded]);
   const [selectedItem, setSelectedItem] = useState<XMarketItem | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -437,6 +440,25 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
     setTimeout(() => setToastMessage(null), 2500);
   };
 
+  useEffect(() => {
+    const el = bottomSentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && visibleCount < filteredJobs.length && !isLoadingMore) {
+          setIsLoadingMore(true);
+          setTimeout(() => {
+            setVisibleCount((prev) => prev + 12);
+            setIsLoadingMore(false);
+          }, 360);
+        }
+      },
+      { rootMargin: '120px' }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [visibleCount, filteredJobs.length, isLoadingMore]);
+
   return (
     <div dir="rtl" className={embedded ? "bg-black min-h-screen text-white font-['Tahoma',sans-serif]" : "bg-black min-h-screen max-w-6xl mx-auto px-3 sm:px-4 py-4 space-y-3 font-['Tahoma'] text-white"}>
       {toastMessage && (
@@ -497,7 +519,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
             </div>
           ) : embedded ? (
             <div className="divide-y divide-[#2F3336]/60">
-              {filteredJobs.map((job, idx) => {
+              {filteredJobs.slice(0, visibleCount).map((job, idx) => {
                 const item = toJobXItem(job);
                 return (
                   <React.Fragment key={job.id}>
@@ -524,7 +546,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredJobs.map((job, idx) => (
+              {filteredJobs.slice(0, visibleCount).map((job, idx) => (
                 <React.Fragment key={job.id}>
                   <JobCard job={job} />
                   {idx === (filteredJobs.length >= 6 ? 2 : 0) && (
@@ -543,6 +565,19 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
             </div>
           )}
 
+
+          {filteredJobs.length > 0 && (
+            <div ref={bottomSentinelRef} className="py-3 flex items-center justify-center">
+              {isLoadingMore || visibleCount < filteredJobs.length ? (
+                <div
+                  aria-label="جاري تحميل المزيد"
+                  className="w-6 h-6 rounded-full border-[2.5px] border-[#FFC500]/25 border-t-[#FFC500] animate-spin"
+                />
+              ) : (
+                <span className="text-[11px] text-[#71767B]">تم عرض كل النتائج</span>
+              )}
+            </div>
+          )}
           {embedded && !isAddModalOpen && (
             <button onClick={handleOpenAddModal} className="fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-black flex items-center justify-center shadow-lg shadow-black/60 transition" title="أضف وظيفة">
               <Plus size={24} className="stroke-[2.2]" />
