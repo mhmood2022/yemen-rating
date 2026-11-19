@@ -512,13 +512,13 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
                     onShare={() => onShareX(item)}
                   />
                   {idx === (filteredProperties.length >= 8 ? 2 : filteredProperties.length >= 4 ? 1 : 0) && (
-                    <div className="px-3 py-2 bg-black">
-                      <AdBanner section="realestate" slot="slot_1" onAdResolved={setSlot1AdId} />
+                    <div className="bg-black">
+                      <AdBanner section="realestate" slot="slot_1" onAdResolved={setSlot1AdId} className="!my-0 border-x-0" />
                     </div>
                   )}
                   {idx === (filteredProperties.length >= 8 ? 7 : filteredProperties.length >= 2 ? filteredProperties.length - 1 : -1) && (
-                    <div className="px-3 py-2 bg-black">
-                      <AdBanner section="realestate" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} />
+                    <div className="bg-black">
+                      <AdBanner section="realestate" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} className="!my-0 border-x-0" />
                     </div>
                   )}
                 </React.Fragment>
@@ -532,13 +532,13 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
               <React.Fragment key={prop.id}>
                 <PropertyCard property={{ ...prop, deal_type: prop.deal_type || (prop.listing_type === 'SALE' ? 'بيع' : prop.listing_type === 'RENT' ? 'إيجار' : prop.listing_type), area_m2: prop.area_m2 ?? prop.area_sqm, rooms: prop.rooms ?? prop.bedrooms, images: prop.images ?? prop.image_urls }} />
                 {idx === (filteredProperties.length >= 6 ? 2 : 0) && (
-                  <div className="col-span-full py-1">
-                    <AdBanner section="realestate" slot="slot_1" onAdResolved={setSlot1AdId} />
+                  <div className="col-span-full">
+                    <AdBanner section="realestate" slot="slot_1" onAdResolved={setSlot1AdId} className="!my-0 border-x-0" />
                   </div>
                 )}
                 {idx === (filteredProperties.length >= 6 ? 5 : filteredProperties.length >= 2 ? filteredProperties.length - 1 : -1) && (
-                  <div className="col-span-full py-1">
-                    <AdBanner section="realestate" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} />
+                  <div className="col-span-full">
+                    <AdBanner section="realestate" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} className="!my-0 border-x-0" />
                   </div>
                 )}
               </React.Fragment>

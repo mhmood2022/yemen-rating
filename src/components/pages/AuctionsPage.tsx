@@ -434,13 +434,13 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
                     onShare={() => onShareX(item)}
                   />
                   {idx === (displayedListings.length >= 8 ? 2 : displayedListings.length >= 4 ? 1 : 0) && (
-                    <div className={embedded ? "px-3 py-2 bg-black" : "py-2 bg-black"}>
-                      <AdBanner section="auctions" slot="slot_1" onAdResolved={setSlot1AdId} />
+                    <div className="bg-black">
+                      <AdBanner section="auctions" slot="slot_1" onAdResolved={setSlot1AdId} className="!my-0 border-x-0" />
                     </div>
                   )}
                   {idx === (displayedListings.length >= 8 ? 7 : displayedListings.length >= 2 ? displayedListings.length - 1 : -1) && (
-                    <div className={embedded ? "px-3 py-2 bg-black" : "py-2 bg-black"}>
-                      <AdBanner section="auctions" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} />
+                    <div className="bg-black">
+                      <AdBanner section="auctions" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} className="!my-0 border-x-0" />
                     </div>
                   )}
                 </React.Fragment>

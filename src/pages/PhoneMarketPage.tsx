@@ -1051,13 +1051,13 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                 </div>
               </article>
               {idx === (filteredPhones.length >= 8 ? 2 : filteredPhones.length >= 4 ? 1 : 0) && (
-                <div className={embedded ? "px-3 py-2 bg-black" : "py-2 bg-black"}>
-                  <AdBanner section="phones" slot="slot_1" onAdResolved={setSlot1AdId} />
+                <div className="bg-black">
+                  <AdBanner section="phones" slot="slot_1" onAdResolved={setSlot1AdId} className="!my-0 border-x-0" />
                 </div>
               )}
               {idx === (filteredPhones.length >= 8 ? 7 : filteredPhones.length >= 2 ? filteredPhones.length - 1 : -1) && (
-                <div className={embedded ? "px-3 py-2 bg-black" : "py-2 bg-black"}>
-                  <AdBanner section="phones" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} />
+                <div className="bg-black">
+                  <AdBanner section="phones" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} className="!my-0 border-x-0" />
                 </div>
               )}
               </React.Fragment>

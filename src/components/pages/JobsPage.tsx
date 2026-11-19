@@ -508,13 +508,13 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
                       onShare={() => handleShare(item)}
                     />
                     {idx === (filteredJobs.length >= 8 ? 2 : filteredJobs.length >= 4 ? 1 : 0) && (
-                      <div className="px-3 py-2 bg-black">
-                        <AdBanner section="jobs" slot="slot_1" onAdResolved={setSlot1AdId} />
+                      <div className="bg-black">
+                        <AdBanner section="jobs" slot="slot_1" onAdResolved={setSlot1AdId} className="!my-0 border-x-0" />
                       </div>
                     )}
                     {idx === (filteredJobs.length >= 8 ? 7 : filteredJobs.length >= 2 ? filteredJobs.length - 1 : -1) && (
-                      <div className="px-3 py-2 bg-black">
-                        <AdBanner section="jobs" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} />
+                      <div className="bg-black">
+                        <AdBanner section="jobs" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} className="!my-0 border-x-0" />
                       </div>
                     )}
                   </React.Fragment>
@@ -528,13 +528,13 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
                 <React.Fragment key={job.id}>
                   <JobCard job={job} />
                   {idx === (filteredJobs.length >= 6 ? 2 : 0) && (
-                    <div className="col-span-full py-1">
-                      <AdBanner section="jobs" slot="slot_1" onAdResolved={setSlot1AdId} />
+                    <div className="col-span-full">
+                      <AdBanner section="jobs" slot="slot_1" onAdResolved={setSlot1AdId} className="!my-0 border-x-0" />
                     </div>
                   )}
                   {idx === (filteredJobs.length >= 6 ? 5 : filteredJobs.length >= 2 ? filteredJobs.length - 1 : -1) && (
-                    <div className="col-span-full py-1">
-                      <AdBanner section="jobs" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} />
+                    <div className="col-span-full">
+                      <AdBanner section="jobs" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} className="!my-0 border-x-0" />
                     </div>
                   )}
                 </React.Fragment>
