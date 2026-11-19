@@ -932,8 +932,8 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         <div className={embedded ? "divide-y divide-[#2F3336]/40" : "space-y-3"}>
           <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "space-y-2 bg-[#0F0F12] p-2.5 rounded-2xl border border-[#222226]"}>
             <XSearchFilterBar searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="ابحث في سوق الهواتف والأجهزة..." activeFiltersCount={activeFiltersCount} onOpenFilter={() => setIsFilterModalOpen(true)} />
-            {embedded && <MarketSponsorSlot section="phones" className="pt-0.5" />}
-          </div>
+            </div>
+          {embedded && <MarketSponsorSlot section="phones" />}
 
           <div className="divide-y divide-[#2F3336]/60">
             {filteredPhones.map((phone, idx) => (

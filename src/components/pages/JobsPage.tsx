@@ -481,8 +481,8 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
               activeFiltersCount={activeFiltersCount}
               onOpenFilter={() => setIsFilterModalOpen(true)}
             />
-            {embedded && <MarketSponsorSlot section="jobs" className="pt-0.5" />}
-          </div>
+            </div>
+          {embedded && <MarketSponsorSlot section="jobs" />}
 
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center text-[#71767B] gap-3">
