@@ -473,6 +473,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
         />
       ) : (
         <>
+          {embedded && <MarketSponsorSlot section="jobs" />}
           <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "bg-[#111111] p-3 rounded-2xl border border-[#2F3336] space-y-2.5"}>
             <XSearchFilterBar
               searchQuery={searchQuery}
@@ -482,7 +483,6 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
               onOpenFilter={() => setIsFilterModalOpen(true)}
             />
             </div>
-          {embedded && <MarketSponsorSlot section="jobs" />}
 
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center text-[#71767B] gap-3">
