@@ -2,8 +2,9 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { XSpinner } from '../components/ui/LoadingSpinner';
 import {
   Smartphone, Phone, MessageCircle, ArrowRight, Plus, X,
-  Upload, Trash2, User, Camera
+  Upload, Trash2, User, Camera, MoreHorizontal
 } from 'lucide-react';
+import { XActionBar } from '../components/feed/XActionBar';
 import { AdBanner } from '../components/common/AdBanner';
 import { MarketSponsorSlot } from '../components/ads/MarketSponsorSlot';
 import { YRSelect, YRSelectOption } from '../components/common/YRSelect';
@@ -16,6 +17,12 @@ import { getMyBusinessPage, BusinessPageRecord } from '../services/businessPageS
 import { uploadSocialImage } from '../services/socialService';
 import { VerifiedBadge, BadgeType } from '../components/common/VerifiedBadge';
 import { supabase } from '../lib/supabase';
+import {
+  PhonePostTier,
+  PhoneVipBanner,
+  PhoneProAdCard,
+  PhoneBasicAdCard,
+} from '../components/phones/PhoneTierCards';
 
 export type PhoneCategory = 'phones' | 'tablets' | 'laptops' | 'accessories' | 'maintenance' | 'sim_services';
 
@@ -47,6 +54,17 @@ export interface PhoneDeviceItem {
   badgeType?: BadgeType;
   businessId?: string;
   authorId?: string;
+  adTier?: PhonePostTier;
+  headline?: string;
+  highlights?: string[];
+  ctaLabel?: string;
+  viewsCount?: number;
+  expiresAt?: string;
+  likesCount?: number;
+  repostsCount?: number;
+  repliesCount?: number;
+  likedBy?: string[];
+  repostedBy?: string[];
 }
 
 const PHONES_STORAGE_KEY = 'yr_phone_market_items_v2';
@@ -335,7 +353,12 @@ const INITIAL_PHONES: PhoneDeviceItem[] = [
       'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=900&auto=format&fit=crop&q=85'
     ],
     category: 'phones',
-    createdAt: 'اليوم'
+    createdAt: 'اليوم',
+    adTier: 'vip',
+    headline: 'أقوى عروض آيفون 15 برو ماكس — ضمان حقيقي وشحن فوري',
+    highlights: ['ضمان حقيقي معتمد', 'شحن سريع لجميع المحافظات', 'دعم فني متواصل'],
+    ctaLabel: 'تسوق الآن',
+    viewsCount: 125000
   },
   {
     id: 'ph-2',
@@ -360,7 +383,12 @@ const INITIAL_PHONES: PhoneDeviceItem[] = [
       'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=900&auto=format&fit=crop&q=85'
     ],
     category: 'phones',
-    createdAt: 'أمس'
+    createdAt: 'أمس',
+    adTier: 'pro',
+    headline: 'أداء فائق .. كاميرا احترافية .. بسعر لا يُقاوم',
+    highlights: ['512GB سعة تخزين', '12GB رام فائق السرعة', 'بطارية قوية طوال اليوم', 'توصيل مجاني داخل عدن'],
+    ctaLabel: 'تواصل معنا',
+    viewsCount: 78000
   },
   {
     id: 'ph-3',
@@ -384,7 +412,12 @@ const INITIAL_PHONES: PhoneDeviceItem[] = [
       'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=900&auto=format&fit=crop&q=85'
     ],
     category: 'tablets',
-    createdAt: 'منذ يومين'
+    createdAt: 'منذ يومين',
+    adTier: 'basic',
+    headline: 'تصميم أقوى .. أداء أسرع لأعمالك ودراستك',
+    highlights: ['256GB مساحة داخلية', 'شاشة مميزة M4', 'ضمان معتمد سنة'],
+    ctaLabel: 'احصل عليه الآن',
+    viewsCount: 62000
   },
   {
     id: 'ph-4',
@@ -480,7 +513,16 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
       const saved = localStorage.getItem(PHONES_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const defaultsById = new Map(INITIAL_PHONES.map((x) => [x.id, x]));
+          return parsed.map((item: PhoneDeviceItem) => {
+            const def = defaultsById.get(item.id);
+            if (def && !item.adTier) {
+              return { ...def, ...item, adTier: def.adTier, headline: def.headline, highlights: def.highlights, ctaLabel: def.ctaLabel, viewsCount: def.viewsCount };
+            }
+            return item;
+          });
+        }
       }
     } catch {}
     return INITIAL_PHONES;
@@ -497,6 +539,19 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
 
   // نافذة إضافة إعلان: جميع الحقول قوائم منسدلة باستثناء السعر بالريال اليمني
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [composeKind, setComposeKind] = useState<'free' | 'paid'>('free');
+  const [selectedAdTier, setSelectedAdTier] = useState<PhonePostTier>('basic');
+  const [freeTweetText, setFreeTweetText] = useState('');
+  const [freeOptionalPrice, setFreeOptionalPrice] = useState('');
+  const [freeShowOptionalSpecs, setFreeShowOptionalSpecs] = useState(false);
+  const [adHeadline, setAdHeadline] = useState('');
+  const [adHighlightsText, setAdHighlightsText] = useState('');
+  const [adCtaLabel, setAdCtaLabel] = useState('تواصل معنا');
+  const [accountPlanKey, setAccountPlanKey] = useState<'regular' | 'vip' | 'vip_pro'>('regular');
+  const [activeVipIdx, setActiveVipIdx] = useState(0);
+  const [isSubscriptionExpired, setIsSubscriptionExpired] = useState(false);
+  const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null);
+  const [activeTweetMenuId, setActiveTweetMenuId] = useState<string | null>(null);
   const [sellerName, setSellerName] = useState('');
   const [sellerPhone, setSellerPhone] = useState('');
   const [phoneCategory, setPhoneCategory] = useState<PhoneCategory>('phones');
@@ -529,12 +584,23 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         if (!uid) {
           setProfile(null);
           setMyBusinessPage(null);
+          setAccountPlanKey('regular');
+          setIsSubscriptionExpired(false);
+          setSubscriptionEndDate(null);
           return;
         }
 
-        const [{ data: profData }, biz] = await Promise.all([
+        const [{ data: profData }, biz, { data: latestSub }] = await Promise.all([
           supabase.from('profiles').select('*').eq('id', uid).maybeSingle(),
           getMyBusinessPage(uid),
+          supabase
+            .from('subscriptions')
+            .select('id, status, end_date, plan:subscription_plans(name, badge_type)')
+            .eq('user_id', uid)
+            .in('status', ['ACTIVE', 'EXPIRED'])
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
         ]);
 
         if (!active) return;
@@ -549,6 +615,30 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
           setSellerName(biz.name || '');
           setSellerPhone((prev) => prev || biz.phone || '');
           if (biz.city) setPhoneCity(biz.city);
+        }
+
+        const subRow: any = latestSub;
+        const endDateStr: string | null = subRow?.end_date || null;
+        const isExpiredByDate = Boolean(endDateStr && !Number.isNaN(new Date(endDateStr).getTime()) && new Date(endDateStr).getTime() < Date.now());
+        const subExpired = Boolean(subRow && (subRow.status === 'EXPIRED' || isExpiredByDate));
+        const hasValidSub = Boolean(subRow && subRow.status === 'ACTIVE' && !isExpiredByDate);
+
+        setIsSubscriptionExpired(subExpired);
+        setSubscriptionEndDate(endDateStr);
+
+        const subPlan: any = hasValidSub ? subRow?.plan : null;
+        const planBadge = String(
+          subPlan?.badge_type ||
+          (!subExpired ? ((profData as any)?.verification_type || biz?.verificationType) : '') ||
+          ''
+        ).toLowerCase();
+        const planName = String(subPlan?.name || '');
+        if (planBadge === 'gold' || planName.includes('احترافي') || planName.toLowerCase().includes('pro') || (!subExpired && biz?.isVerified)) {
+          setAccountPlanKey('vip_pro');
+        } else if (planBadge === 'blue' || planBadge === 'vip' || hasValidSub) {
+          setAccountPlanKey('vip');
+        } else {
+          setAccountPlanKey('regular');
         }
       } catch (err) {
         console.warn('PhoneMarketPage identity load fallback:', err);
@@ -624,18 +714,132 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
     touchStartX.current = null;
   };
 
+  const tierLimits = useMemo(() => {
+    if (accountPlanKey === 'vip_pro') {
+      return { label: 'مشترك VIP احترافي', dailyFree: 20, monthlyFeatured: 8, canBasic: true, canPro: true, canVip: true };
+    }
+    if (accountPlanKey === 'vip') {
+      return { label: 'مشترك VIP', dailyFree: 10, monthlyFeatured: 4, canBasic: true, canPro: true, canVip: false };
+    }
+    return { label: 'مستخدم عادي', dailyFree: 3, monthlyFeatured: 0, canBasic: false, canPro: false, canVip: false };
+  }, [accountPlanKey]);
+
+  const activeAuthorKey = currentUserId || 'guest_local';
+
+  const usageStats = useMemo(() => {
+    const now = Date.now();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const thirtyDaysMs = 30 * oneDayMs;
+    const mine = phonesList.filter((item) => item.authorId === activeAuthorKey);
+    const todayFreeCount = mine.filter((item) => {
+      const t = new Date(item.createdAt).getTime();
+      return (!item.adTier || item.adTier === 'free') && !Number.isNaN(t) && (now - t) < oneDayMs;
+    }).length;
+    const monthFeaturedCount = mine.filter((item) => {
+      const t = new Date(item.createdAt).getTime();
+      return item.adTier && item.adTier !== 'free' && !Number.isNaN(t) && (now - t) < thirtyDaysMs;
+    }).length;
+    return { todayFreeCount, monthFeaturedCount };
+  }, [phonesList, activeAuthorKey]);
+
+  const limitBlockReason = useMemo(() => {
+    if (composeKind === 'free') {
+      if (usageStats.todayFreeCount >= tierLimits.dailyFree) {
+        return `انتهى الحد اليومي للنشر المجاني (${usageStats.todayFreeCount}/${tierLimits.dailyFree} تغريدات يومياً لباقة ${tierLimits.label}). حاول غداً أو رقِّ باقتك لزيادة الحد.`;
+      }
+      return null;
+    }
+    if (isSubscriptionExpired) {
+      const dateTxt = subscriptionEndDate ? ` (${new Date(subscriptionEndDate).toLocaleDateString('ar-YE')})` : '';
+      return `انتهت صلاحية اشتراكك المدفوع${dateTxt}. جدّد الاشتراك للاستمرار في نشر التغريدات المميزة.`;
+    }
+    if (tierLimits.monthlyFeatured === 0) {
+      return 'باقة المستخدم العادي (3 تغريدات مجانية يومياً) لا تشمل التغريدات المميزة. اشترك في VIP (4 شهرياً) أو VIP احترافي (8 شهرياً).';
+    }
+    if (selectedAdTier === 'vip' && !tierLimits.canVip) {
+      return 'باقة VIP المثبتة متاحة لمشتركي باقة VIP احترافي فقط (8 تغريدات مميزة شهرياً).';
+    }
+    if (usageStats.monthFeaturedCount >= tierLimits.monthlyFeatured) {
+      return `انتهى رصيدك الشهري من التغريدات المميزة (${usageStats.monthFeaturedCount}/${tierLimits.monthlyFeatured} لباقة ${tierLimits.label}). يتجدد الشهر القادم أو عند الترقية.`;
+    }
+    return null;
+  }, [composeKind, usageStats, tierLimits, isSubscriptionExpired, subscriptionEndDate, selectedAdTier]);
+
+  const togglePhoneLike = (phoneId: string) => {
+    setPhonesList((prev) => {
+      const updated = prev.map((item) => {
+        if (item.id !== phoneId) return item;
+        const likedBy = Array.isArray(item.likedBy) ? item.likedBy : [];
+        const hasLiked = likedBy.includes(activeAuthorKey);
+        const nextLikedBy = hasLiked ? likedBy.filter((id) => id !== activeAuthorKey) : [...likedBy, activeAuthorKey];
+        const baseLikes = Number(item.likesCount ?? 0);
+        return {
+          ...item,
+          likedBy: nextLikedBy,
+          likesCount: Math.max(0, baseLikes + (hasLiked ? -1 : 1)),
+        };
+      });
+      try { localStorage.setItem(PHONES_STORAGE_KEY, JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  };
+
+  const togglePhoneRepost = (phoneId: string) => {
+    setPhonesList((prev) => {
+      const updated = prev.map((item) => {
+        if (item.id !== phoneId) return item;
+        const repostedBy = Array.isArray(item.repostedBy) ? item.repostedBy : [];
+        const hasReposted = repostedBy.includes(activeAuthorKey);
+        const nextRepostedBy = hasReposted ? repostedBy.filter((id) => id !== activeAuthorKey) : [...repostedBy, activeAuthorKey];
+        const baseReposts = Number(item.repostsCount ?? 0);
+        return {
+          ...item,
+          repostedBy: nextRepostedBy,
+          repostsCount: Math.max(0, baseReposts + (hasReposted ? -1 : 1)),
+        };
+      });
+      try { localStorage.setItem(PHONES_STORAGE_KEY, JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  };
+
+  const deleteOwnPhonePost = (phoneId: string) => {
+    setPhonesList((prev) => {
+      const updated = prev.filter((item) => item.id !== phoneId);
+      try { localStorage.setItem(PHONES_STORAGE_KEY, JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+    setActiveTweetMenuId(null);
+    showToast('تم حذف المنشور', 'success', 2500);
+  };
+
   const handleSubmitPhone = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmittingPhone) return;
-    const effectivePhone = myBusinessPage?.phone || sellerPhone.trim() || profile?.phone || '';
-    const numericPrice = Number(String(phonePrice).replace(/,/g, ''));
-    if (!numericPrice || numericPrice <= 0) {
-      showToast('يرجى كتابة السعر بالريال اليمني', 'error', 3500);
+    if (limitBlockReason) {
+      showToast(limitBlockReason, 'error', 4500);
       return;
     }
-    if (!effectivePhone) {
-      showToast('يرجى التأكد من رقم الهاتف للتواصل في حسابك', 'error', 3500);
-      return;
+
+    const effectivePhone = myBusinessPage?.phone || sellerPhone.trim() || profile?.phone || '';
+    const numericPrice = composeKind === 'free'
+      ? (Number(String(freeOptionalPrice).replace(/,/g, '')) || 0)
+      : (Number(String(phonePrice).replace(/,/g, '')) || 0);
+
+    if (composeKind === 'free') {
+      if (!freeTweetText.trim() && uploadedImages.length === 0 && !freeShowOptionalSpecs) {
+        showToast('اكتب نص التغريدة أو أرفق صوراً أولاً', 'error', 3500);
+        return;
+      }
+    } else {
+      if (!numericPrice || numericPrice <= 0) {
+        showToast('يرجى كتابة السعر بالريال اليمني', 'error', 3500);
+        return;
+      }
+      if (!effectivePhone) {
+        showToast('يرجى التأكد من رقم الهاتف للتواصل في حسابك', 'error', 3500);
+        return;
+      }
     }
 
     setIsSubmittingPhone(true);
@@ -664,9 +868,21 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         ? ((myBusinessPage.verificationType as BadgeType) || (myBusinessPage.isVerified ? 'gold' : 'none'))
         : ((profile as any)?.badge_type || ((profile as any)?.is_verified ? 'blue' : 'none'));
 
+      const parsedHighlights = adHighlightsText
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .slice(0, 4);
+
+      const resolvedTier: PhonePostTier = composeKind === 'free' ? 'free' : selectedAdTier;
+      const resolvedImages =
+        composeKind === 'free' && uploadedImages.length === 0 && uploadedFiles.length === 0
+          ? []
+          : finalImages;
+
       const newEntry: PhoneDeviceItem = {
         id: `ph-${Date.now()}`,
-        name: phoneModel || `${phoneBrand}`,
+        name: composeKind === 'free' && !freeShowOptionalSpecs ? (freeTweetText.trim().slice(0, 42) || 'تغريدة') : (phoneModel || `${phoneBrand}`),
         brand: phoneBrand,
         price: numericPrice,
         currency: 'YER',
@@ -686,9 +902,16 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         isVerified: Boolean(myBusinessPage?.isVerified || (activeBadge && activeBadge !== 'none')),
         badgeType: activeBadge,
         businessId: myBusinessPage?.id,
-        authorId: currentUserId || undefined,
-        images: finalImages,
+        authorId: activeAuthorKey,
+        expiresAt: composeKind === 'paid' ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : undefined,
+        images: resolvedImages,
         category: phoneCategory,
+        description: composeKind === 'free' ? freeTweetText.trim() : adHeadline.trim() || undefined,
+        adTier: resolvedTier,
+        headline: composeKind === 'paid' ? (adHeadline.trim() || `${CATEGORY_LABEL_MAP[phoneCategory]} ${phoneModel}`) : undefined,
+        highlights: composeKind === 'paid' && parsedHighlights.length > 0 ? parsedHighlights : undefined,
+        ctaLabel: composeKind === 'paid' ? adCtaLabel : undefined,
+        viewsCount: composeKind === 'paid' ? 1 : undefined,
         createdAt: new Date().toISOString(),
       };
 
@@ -700,7 +923,12 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
       setIsAddModalOpen(false);
       setUploadedImages([]);
       setUploadedFiles([]);
-      showToast('تم نشر الإعلان بنجاح', 'success', 3500);
+      setFreeTweetText('');
+      setFreeOptionalPrice('');
+      setFreeShowOptionalSpecs(false);
+      setAdHeadline('');
+      setAdHighlightsText('');
+      showToast(composeKind === 'free' ? 'تم نشر التغريدة المجانية بنجاح' : 'تم نشر الإعلان المدفوع بنجاح', 'success', 3500);
     } catch (err: any) {
       showToast(toArabicMarketError(err, 'تعذر نشر الإعلان حالياً، يرجى المحاولة لاحقاً'), 'error', 4000);
     } finally {
@@ -725,9 +953,54 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         (item.description || '').toLowerCase().includes(q) ||
         (item.city || '').toLowerCase().includes(q) ||
         (CATEGORY_LABEL_MAP[item.category] || '').includes(q);
-      return matchCategory && matchBrand && matchCondition && matchStorage && matchNeg && matchCity && matchSearch;
+      const isExpiredAd = Boolean(
+        item.adTier &&
+        item.adTier !== 'free' &&
+        item.expiresAt &&
+        !Number.isNaN(new Date(item.expiresAt).getTime()) &&
+        new Date(item.expiresAt).getTime() < Date.now()
+      );
+      return !isExpiredAd && matchCategory && matchBrand && matchCondition && matchStorage && matchNeg && matchCity && matchSearch;
     });
   }, [phonesList, activeTab, selectedBrand, selectedCondition, selectedStorage, selectedNegotiable, selectedCity, searchQuery]);
+
+  const vipPhones = useMemo(
+    () => filteredPhones.filter((item) => item.adTier === 'vip'),
+    [filteredPhones]
+  );
+
+  const feedPhones = useMemo(() => {
+    const rest = filteredPhones.filter((item) => item.adTier !== 'vip');
+    const frees = rest.filter((item) => !item.adTier || item.adTier === 'free');
+    const paids = rest
+      .filter((item) => item.adTier === 'pro' || item.adTier === 'basic')
+      .sort((a, b) => (a.adTier === 'pro' && b.adTier !== 'pro' ? -1 : b.adTier === 'pro' && a.adTier !== 'pro' ? 1 : 0));
+
+    if (frees.length === 0) return paids;
+    const merged: PhoneDeviceItem[] = [];
+    let pIdx = 0;
+    let fIdx = 0;
+    while (fIdx < frees.length || pIdx < paids.length) {
+      if (fIdx < frees.length) merged.push(frees[fIdx++]);
+      if (pIdx < paids.length && (merged.length % 2 === 1 || fIdx >= frees.length)) {
+        merged.push(paids[pIdx++]);
+      }
+    }
+    return merged;
+  }, [filteredPhones]);
+
+  useEffect(() => {
+    if (vipPhones.length <= 1) {
+      setActiveVipIdx(0);
+      return;
+    }
+    const timer = setInterval(() => {
+      setActiveVipIdx((prev) => (prev + 1) % vipPhones.length);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, [vipPhones.length]);
+
+  const currentVipPhone = vipPhones.length > 0 ? vipPhones[activeVipIdx % vipPhones.length] : null;
 
   const activeBrandOptions = useMemo(() => getBrandsForCategory(phoneCategory), [phoneCategory]);
   const activeModelOptions = useMemo(() => getModelsFor(phoneCategory, phoneBrand), [phoneCategory, phoneBrand]);
@@ -958,76 +1231,159 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
             <XSearchFilterBar searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="ابحث في سوق الهواتف والأجهزة..." activeFiltersCount={activeFiltersCount} onOpenFilter={() => setIsFilterModalOpen(true)} />
             </div>
 
+          {currentVipPhone && (
+            <PhoneVipBanner
+              item={currentVipPhone}
+              categoryLabel={CATEGORY_LABEL_MAP[currentVipPhone.category]}
+              timeAgo={formatPhoneTimeAgo(currentVipPhone.createdAt)}
+              specs={renderSpecBadges(currentVipPhone)}
+              onOpenDetail={(it) => handleOpenPhone(it as PhoneDeviceItem)}
+              onOpenImage={(it) => {
+                setSelectedPhone(it as PhoneDeviceItem);
+                setActiveImageIndex(0);
+                setIsLightboxOpen(true);
+              }}
+              onOpenBusiness={(bizId) => onNavigate(`/businesses/${bizId}`)}
+              onShare={(it) => {
+                navigator.clipboard?.writeText(`${CATEGORY_LABEL_MAP[(it as PhoneDeviceItem).category]} ${it.name} - ${it.price.toLocaleString()} ر.ي`);
+                showToast('تم نسخ تفاصيل الإعلان', 'success', 2500);
+              }}
+              totalVipCount={vipPhones.length}
+              activeVipIndex={activeVipIdx % vipPhones.length}
+              onSelectVipIndex={(idx) => setActiveVipIdx(idx)}
+            />
+          )}
+
           <div className="divide-y divide-[#2F3336]/60">
-            {filteredPhones.slice(0, visibleCount).map((phone, idx) => (
+            {feedPhones.slice(0, visibleCount).map((phone, idx) => (
               <React.Fragment key={phone.id}>
+              {phone.adTier === 'pro' ? (
+                <PhoneProAdCard
+                  item={phone}
+                  categoryLabel={CATEGORY_LABEL_MAP[phone.category]}
+                  timeAgo={formatPhoneTimeAgo(phone.createdAt)}
+                  specs={renderSpecBadges(phone)}
+                  onOpenDetail={(it) => handleOpenPhone(it as PhoneDeviceItem)}
+                  onOpenImage={(it) => {
+                    setSelectedPhone(it as PhoneDeviceItem);
+                    setActiveImageIndex(0);
+                    setIsLightboxOpen(true);
+                  }}
+                  onOpenBusiness={(bizId) => onNavigate(`/businesses/${bizId}`)}
+                  onShare={(it) => {
+                    navigator.clipboard?.writeText(`${CATEGORY_LABEL_MAP[(it as PhoneDeviceItem).category]} ${it.name} - ${it.price.toLocaleString()} ر.ي`);
+                    showToast('تم نسخ تفاصيل الإعلان', 'success', 2500);
+                  }}
+                />
+              ) : phone.adTier === 'basic' ? (
+                <PhoneBasicAdCard
+                  item={phone}
+                  categoryLabel={CATEGORY_LABEL_MAP[phone.category]}
+                  timeAgo={formatPhoneTimeAgo(phone.createdAt)}
+                  specs={renderSpecBadges(phone)}
+                  onOpenDetail={(it) => handleOpenPhone(it as PhoneDeviceItem)}
+                  onOpenImage={(it) => {
+                    setSelectedPhone(it as PhoneDeviceItem);
+                    setActiveImageIndex(0);
+                    setIsLightboxOpen(true);
+                  }}
+                  onOpenBusiness={(bizId) => onNavigate(`/businesses/${bizId}`)}
+                  onShare={(it) => {
+                    navigator.clipboard?.writeText(`${CATEGORY_LABEL_MAP[(it as PhoneDeviceItem).category]} ${it.name} - ${it.price.toLocaleString()} ر.ي`);
+                    showToast('تم نسخ تفاصيل الإعلان', 'success', 2500);
+                  }}
+                />
+              ) : (
               <article
                 onClick={(e) => {
                   const target = e.target as HTMLElement;
                   if (!target.closest('button') && !target.closest('a')) handleOpenPhone(phone);
                 }}
-                className="p-3.5 bg-black hover:bg-white/[0.02] transition cursor-pointer select-none"
+                className="p-3 border-b border-[#2F3336]/40 bg-black hover:bg-white/[0.03] transition cursor-pointer"
               >
                 <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (phone.businessId) onNavigate(`/businesses/${phone.businessId}`);
-                      else handleOpenPhone(phone);
-                    }}
-                    className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0 text-white font-bold text-base cursor-pointer hover:opacity-85 transition"
-                  >
-                    {phone.sellerAvatar ? <img src={phone.sellerAvatar} alt={phone.sellerName} className="w-full h-full object-cover" /> : <span>{phone.sellerName?.[0] || 'م'}</span>}
-                  </button>
+                  <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] flex items-center justify-center shrink-0 overflow-hidden font-bold text-white text-lg">
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (phone.businessId) onNavigate(`/businesses/${phone.businessId}`);
+                        else handleOpenPhone(phone);
+                      }}
+                      className="w-full h-full cursor-pointer hover:opacity-80 transition flex items-center justify-center"
+                    >
+                      {phone.sellerAvatar ? (
+                        <img src={phone.sellerAvatar} alt={phone.sellerName} className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{phone.sellerName?.[0] || 'م'}</span>
+                      )}
+                    </div>
+                  </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center flex-nowrap min-w-0 w-full gap-1">
-                      <span
-                        onClick={(e) => {
-                          if (phone.businessId) { e.stopPropagation(); onNavigate(`/businesses/${phone.businessId}`); }
-                        }}
-                        className="font-bold text-[#E7E9EA] text-[13px] hover:underline cursor-pointer truncate shrink max-w-[135px] sm:max-w-[185px]"
-                      >
-                        {phone.sellerName}
-                      </span>
-                      <VerifiedBadge type={phone.badgeType || (phone.isVerified ? 'gold' : 'none')} size={14.5} className="shrink-0" />
-                      <span className="text-[11.5px] text-[#71767B] truncate shrink max-w-[90px] sm:max-w-[125px]" dir="ltr">@{getDefaultHandle(phone)}</span>
-                      <span className="text-[#71767B] text-[10.5px] mx-0.5 shrink-0">·</span>
-                      <span className="text-[#71767B] text-[11px] whitespace-nowrap shrink-0">{formatPhoneTimeAgo(phone.createdAt)}</span>
-                    </div>
+                    <div className="flex items-center justify-between relative">
+                      <div className="flex items-center flex-nowrap min-w-0 w-full gap-1">
+                        <span
+                          onClick={(e) => {
+                            if (phone.businessId) { e.stopPropagation(); onNavigate(`/businesses/${phone.businessId}`); }
+                          }}
+                          className="font-bold text-[#E7E9EA] text-[12.5px] hover:underline cursor-pointer truncate shrink max-w-[130px] sm:max-w-[180px]"
+                        >
+                          {phone.sellerName}
+                        </span>
+                        <VerifiedBadge type={phone.badgeType || (phone.isVerified ? 'gold' : 'none')} size={14.5} className="shrink-0" />
+                        <span className="text-[11.5px] text-[#71767B] truncate shrink max-w-[90px] sm:max-w-[120px]" dir="ltr">@{getDefaultHandle(phone)}</span>
+                        <span className="text-[#71767B] text-[10.5px] mx-0.5 shrink-0">·</span>
+                        <span className="text-[#71767B] text-[10.5px] whitespace-nowrap shrink-0">{formatPhoneTimeAgo(phone.createdAt)}</span>
+                      </div>
 
-                    {/* عرض إعلاني منسق بنكهة X: اسم الخاصية بلون فضي والقيمة بلون أبيض */}
-                    <div className="mt-1 space-y-1.5">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className="text-[14.5px] leading-[20px] font-bold text-white flex items-center gap-1.5 flex-wrap">
-                          <span className="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-white/10 text-[#8B98A5]">
-                            {CATEGORY_LABEL_MAP[phone.category]}
-                          </span>
-                          <span className="text-white">{phone.name}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[#FFC500] font-mono font-bold text-[13.5px]">
-                            {phone.price.toLocaleString()} ر.ي
-                          </span>
-                          {phone.negotiable === 'نعم' && (
-                            <span className="text-[10px] text-emerald-400 font-bold border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">قابل للتفاوض</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveTweetMenuId((prev) => (prev === phone.id ? null : phone.id));
+                        }}
+                        className="text-[#71767B] hover:text-[#FFC500] p-1.5 rounded-full hover:bg-[#FFC500]/10 transition shrink-0 cursor-pointer"
+                        title="المزيد"
+                      >
+                        <MoreHorizontal size={14} className="rotate-90 text-[#71767B] hover:text-[#FFC500] transition" />
+                      </button>
+
+                      {activeTweetMenuId === phone.id && (
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute left-0 top-7 z-30 min-w-[140px] rounded-xl bg-[#09090B] border border-[#2F3336] shadow-xl py-1 text-xs"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard?.writeText(`${phone.description || phone.name}${phone.price > 0 ? ` - ${phone.price.toLocaleString()} ر.ي` : ''}`);
+                              setActiveTweetMenuId(null);
+                              showToast('تم نسخ نص التغريدة', 'success', 2000);
+                            }}
+                            className="w-full text-right px-3 py-2 text-white hover:bg-white/10 transition cursor-pointer"
+                          >
+                            نسخ النص
+                          </button>
+                          {phone.authorId === activeAuthorKey && (
+                            <button
+                              type="button"
+                              onClick={() => deleteOwnPhonePost(phone.id)}
+                              className="w-full text-right px-3 py-2 text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                            >
+                              حذف التغريدة
+                            </button>
                           )}
                         </div>
-                      </div>
-
-                      <div className="text-[12.5px] leading-[20px] flex flex-wrap items-center gap-x-2 gap-y-1">
-                        {renderSpecBadges(phone).map((part, idx) => (
-                          <React.Fragment key={part.k}>
-                            {idx > 0 && <span className="text-[#536471]">·</span>}
-                            <span className="inline-flex items-center gap-1">
-                              <span className="text-[#8B98A5]">{part.k}:</span>
-                              <span className="text-white font-semibold">{part.v}</span>
-                            </span>
-                          </React.Fragment>
-                        ))}
-                      </div>
+                      )}
                     </div>
+
+                    {/* التغريدة المجانية: نص اجتماعي طبيعي */}
+                    <p className="-mt-1 text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap pr-0 -ml-8 pl-3 break-words font-normal select-text">
+                      {phone.description
+                        ? `${phone.description}${phone.price > 0 ? `
+السعر: ${phone.price.toLocaleString()} ر.ي` : ''}`
+                        : `${phone.name}${phone.storage && phone.storage !== 'لا ينطبق' ? ` · ${phone.storage}` : ''}${phone.condition ? ` · ${phone.condition}` : ''}${phone.price > 0 ? ` — ${phone.price.toLocaleString()} ر.ي` : ''}${phone.city ? ` (${phone.city})` : ''}`}
+                    </p>
 
                     {phone.images?.[0] && (
                       <div
@@ -1037,48 +1393,45 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                           setActiveImageIndex(0);
                           setIsLightboxOpen(true);
                         }}
-                        className="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336]/50 max-h-80 bg-zinc-950 relative cursor-pointer"
+                        className="mt-3 rounded-2xl overflow-hidden border-0 max-h-96 bg-zinc-950 relative cursor-pointer"
                       >
-                        <img src={phone.images[0]} alt={phone.name} className="w-full max-h-80 object-cover" loading="lazy" />
+                        <img src={phone.images[0]} alt={phone.name} className="w-full h-full object-cover max-h-96" loading="lazy" />
                         {phone.images.length > 1 && (
                           <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/75 text-white text-[10.5px] font-bold border border-white/10">1 / {phone.images.length}</span>
                         )}
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between text-[#71767B] w-full mt-2.5 mb-0 pb-0.5 px-0 select-none leading-none" dir="rtl" onClick={(e) => e.stopPropagation()}>
-                      <button type="button" onClick={() => handleOpenPhone(phone)} className="flex items-center gap-1.5 hover:text-[#1D9BF0] transition-colors cursor-pointer py-1">
-                        <ArrowRight size={14} className="rtl:rotate-180" /><span className="text-[11.5px] font-medium">التفاصيل</span>
-                      </button>
-                      <a href={`https://wa.me/${phone.sellerPhone}?text=${encodeURIComponent(`مرحباً، أرغب بالاستفسار عن ${CATEGORY_LABEL_MAP[phone.category]} ${phone.name}`)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-[#00BA7C] transition-colors py-1">
-                        <MessageCircle size={14.5} /><span className="text-[11.5px] font-medium">واتساب</span>
-                      </a>
-                      <a href={`tel:${phone.sellerPhone}`} className="flex items-center gap-1.5 hover:text-[#FFC500] transition-colors py-1">
-                        <Phone size={14} /><span className="text-[11.5px] font-medium">اتصال</span>
-                      </a>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigator.clipboard?.writeText(`${CATEGORY_LABEL_MAP[phone.category]} ${phone.name} - ${phone.price.toLocaleString()} ر.ي`);
-                          showToast('تم نسخ تفاصيل الإعلان', 'success', 2500);
-                        }}
-                        className="hover:text-[#1D9BF0] transition-colors cursor-pointer py-1"
-                      >
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" />
-                          <line x1="8.5" y1="13.5" x2="15.5" y2="17.5" /><line x1="15.5" y1="6.5" x2="8.5" y2="10.5" />
-                        </svg>
-                      </button>
-                    </div>
+                    <XActionBar
+                      tweet={{
+                        id: phone.id,
+                        likes: phone.likesCount ?? 0,
+                        likedBy: phone.likedBy ?? [],
+                        reposts: phone.repostsCount ?? 0,
+                        repostedBy: phone.repostedBy ?? [],
+                        replies: phone.repliesCount ?? 0,
+                        views: phone.viewsCount ?? 1,
+                      }}
+                      currentUserId={activeAuthorKey}
+                      onReply={() => handleOpenPhone(phone)}
+                      onRepost={() => togglePhoneRepost(phone.id)}
+                      onLike={() => togglePhoneLike(phone.id)}
+                      onBookmark={() => showToast('تم الحفظ في العلامات المرجعية', 'success', 2000)}
+                      onShare={() => {
+                        navigator.clipboard?.writeText(`${phone.description || phone.name}${phone.price > 0 ? ` - ${phone.price.toLocaleString()} ر.ي` : ''}`);
+                        showToast('تم نسخ التغريدة للمشاركة', 'success', 2000);
+                      }}
+                    />
                   </div>
                 </div>
               </article>
-              {idx === (filteredPhones.length >= 8 ? 2 : filteredPhones.length >= 4 ? 1 : 0) && (
+              )}
+              {idx === (feedPhones.length >= 8 ? 2 : feedPhones.length >= 4 ? 1 : 0) && (
                 <div className="bg-black">
                   <AdBanner section="phones" slot="slot_1" onAdResolved={setSlot1AdId} className="!my-0 border-x-0" />
                 </div>
               )}
-              {idx === (filteredPhones.length >= 8 ? 7 : filteredPhones.length >= 2 ? filteredPhones.length - 1 : -1) && (
+              {idx === (feedPhones.length >= 8 ? 7 : feedPhones.length >= 2 ? feedPhones.length - 1 : -1) && (
                 <div className="bg-black">
                   <AdBanner section="phones" slot="slot_2" enabled={slot1AdId !== undefined} excludeAdIds={slot1AdId ? [slot1AdId] : []} className="!my-0 border-x-0" />
                 </div>
@@ -1089,9 +1442,9 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
           </div>
 
 
-          {filteredPhones.length > 0 && (
+          {feedPhones.length > 0 && (
             <div ref={bottomSentinelRef} className="py-3 flex items-center justify-center">
-              {isLoadingMore || visibleCount < filteredPhones.length ? (
+              {isLoadingMore || visibleCount < feedPhones.length ? (
                 <XSpinner ariaLabel="جاري تحميل المزيد" />
               ) : (
                 <span className="text-[11px] text-[#71767B]">تم عرض كل النتائج</span>
@@ -1170,14 +1523,106 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-[#2F3336]/60 shrink-0">
-              <button type="button" onClick={() => setIsAddModalOpen(false)} className="p-1.5 rounded-full hover:bg-white/10 text-white transition cursor-pointer" aria-label="إغلاق">
-                <X size={18} />
-              </button>
-              <span className="text-[13px] font-bold text-[#71767B]">إعلان جديد في سوق الأجهزة</span>
-              <button type="submit" disabled={isSubmittingPhone} className="px-5 py-1.5 rounded-full bg-[#FFC500] hover:bg-[#e6b100] disabled:opacity-50 text-black font-bold text-[13px] transition cursor-pointer">
-                {isSubmittingPhone ? 'جاري النشر...' : 'نشر'}
-              </button>
-            </div>
+                <button type="button" onClick={() => setIsAddModalOpen(false)} className="p-1.5 rounded-full hover:bg-white/10 text-white transition cursor-pointer" aria-label="إغلاق">
+                  <X size={18} />
+                </button>
+                <span className="text-[13px] font-bold text-white">نشر في سوق الهواتف</span>
+                <button type="submit" disabled={isSubmittingPhone} className="px-5 py-1.5 rounded-full bg-[#FFC500] hover:bg-[#e6b100] disabled:opacity-50 text-black font-bold text-[13px] transition cursor-pointer">
+                  {isSubmittingPhone ? 'جاري النشر...' : 'نشر'}
+                </button>
+              </div>
+
+              <div className="px-4 pt-3 pb-2 border-b border-[#2F3336]/40 space-y-2 shrink-0 bg-black">
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setComposeKind('free')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition cursor-pointer ${
+                      composeKind === 'free'
+                        ? 'bg-white text-black border-white'
+                        : 'bg-zinc-950 text-zinc-300 border-[#2F3336] hover:border-white/40'
+                    }`}
+                  >
+                    تغريدة عادية (مجانية)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setComposeKind('paid')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition cursor-pointer ${
+                      composeKind === 'paid'
+                        ? 'bg-[#FFC500] text-black border-[#FFC500]'
+                        : 'bg-zinc-950 text-[#FFC500] border-[#FFC500]/40 hover:border-[#FFC500]'
+                    }`}
+                  >
+                    إعلان تجاري مدفوع
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-[#71767B] px-0.5">
+                  <span>باقتك: <strong className="text-white">{tierLimits.label}</strong></span>
+                  <span>
+                    {composeKind === 'free'
+                      ? `المجاني اليوم: ${usageStats.todayFreeCount} / ${tierLimits.dailyFree}`
+                      : `المميزة هذا الشهر: ${usageStats.monthFeaturedCount} / ${tierLimits.monthlyFeatured}`}
+                  </span>
+                </div>
+
+                {composeKind === 'paid' && (
+                  <div className="space-y-2 pt-1">
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { id: 'basic' as PhonePostTier, label: 'الأساسية', sub: 'إعلان ممول', locked: !tierLimits.canBasic },
+                        { id: 'pro' as PhonePostTier, label: 'الاحترافية', sub: 'إطار ذهبي', locked: !tierLimits.canPro },
+                        { id: 'vip' as PhonePostTier, label: 'VIP مثبت', sub: 'رأس السوق', locked: !tierLimits.canVip },
+                      ].map((pkg) => (
+                        <button
+                          key={pkg.id}
+                          type="button"
+                          onClick={() => {
+                            if (pkg.locked) {
+                              showToast(
+                                pkg.id === 'vip'
+                                  ? 'باقة VIP المثبتة متاحة لمشتركي VIP احترافي'
+                                  : 'الإعلانات الممولة متاحة لمشتركي VIP و VIP احترافي',
+                                'error',
+                                3500
+                              );
+                            }
+                            setSelectedAdTier(pkg.id);
+                          }}
+                          className={`p-2 rounded-xl border text-center transition cursor-pointer ${
+                            selectedAdTier === pkg.id
+                              ? 'border-[#FFC500] bg-[#FFC500]/15 text-white'
+                              : 'border-[#2F3336] bg-zinc-950 text-zinc-400 hover:border-white/30'
+                          }`}
+                        >
+                          <div className="text-[11.5px] font-black text-white">
+                            {pkg.label} {pkg.locked ? '🔒' : ''}
+                          </div>
+                          <div className="text-[9.5px] text-[#FFC500]">{pkg.sub}</div>
+                        </button>
+                      ))}
+                    </div>
+
+                  </div>
+                )}
+
+                {limitBlockReason && (
+                  <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/40 flex items-center justify-between gap-2 text-[11px]">
+                    <span className="text-rose-200 leading-relaxed">{limitBlockReason}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsAddModalOpen(false);
+                        onNavigate('/premium');
+                      }}
+                      className="px-3 py-1 rounded-full bg-[#FFC500] text-black font-black shrink-0 cursor-pointer"
+                    >
+                      {isSubscriptionExpired ? 'تجديد الاشتراك' : 'ترقية الباقة'}
+                    </button>
+                  </div>
+                )}
+              </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
               {(myBusinessPage || profile) && (
@@ -1196,8 +1641,80 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                 </div>
               )}
 
-              <div>
-                <label className="text-[11px] text-[#71767B] block mb-1">القسم *</label>
+              {composeKind === 'free' ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-[11px] text-[#71767B] block mb-1">نص التغريدة *</label>
+                      <textarea
+                        rows={4}
+                        value={freeTweetText}
+                        onChange={(e) => setFreeTweetText(e.target.value)}
+                        placeholder="شارك تغريدتك عن هاتف أو عرض بحرية (مثال: للبيع آيفون 15 استخدام بسيط ومع كامل الملحقات...)"
+                        className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-3 text-xs text-white outline-none caret-white resize-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-[#71767B] block mb-1">السعر (اختياري - ر.ي)</label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="اتركه فارغاً إذا لم ترغب بذكر السعر"
+                        value={freeOptionalPrice}
+                        onChange={(e) => setFreeOptionalPrice(fmtAmt(e.target.value))}
+                        className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white font-mono outline-none caret-white"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFreeShowOptionalSpecs((prev) => !prev)}
+                      className="text-[11px] text-[#FFC500] font-bold hover:underline cursor-pointer"
+                    >
+                      {freeShowOptionalSpecs ? '− إخفاء تفاصيل الهاتف الاختيارية' : '+ إضافة اسم الهاتف والموديل والحالة (اختياري)'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2.5 p-2.5 rounded-xl border border-[#FFC500]/30 bg-[#FFC500]/[0.03]">
+                    <div>
+                      <label className="text-[11px] text-[#FFC500] font-bold block mb-1">العنوان التسويقي للإعلان</label>
+                      <input
+                        type="text"
+                        value={adHeadline}
+                        onChange={(e) => setAdHeadline(e.target.value)}
+                        placeholder="مثال: أحدث هواتف آيفون بأسعار مميزة وضمان معتمد"
+                        className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white outline-none caret-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-[#71767B] block mb-1">أبرز المميزات (كل ميزة في سطر)</label>
+                      <textarea
+                        rows={3}
+                        value={adHighlightsText}
+                        onChange={(e) => setAdHighlightsText(e.target.value)}
+                        placeholder="اكتب كل ميزة في سطر (مثال: ضمان حقيقي سنة)"
+                        className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white outline-none caret-white resize-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-[#71767B] block mb-1">نص زر الإجراء</label>
+                      <YRSelect
+                        compact
+                        value={adCtaLabel}
+                        onChange={setAdCtaLabel}
+                        options={[
+                          { value: 'تواصل معنا', label: 'تواصل معنا' },
+                          { value: 'تسوق الآن', label: 'تسوق الآن' },
+                          { value: 'احصل عليه الآن', label: 'احصل عليه الآن' },
+                          { value: 'اطلب عبر واتساب', label: 'اطلب عبر واتساب' },
+                        ]}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {(composeKind === 'paid' || freeShowOptionalSpecs) && (
+                <>
+                <div>
+                  <label className="text-[11px] text-[#71767B] block mb-1">القسم *</label>
                 <YRSelect
                   value={phoneCategory}
                   onChange={(val) => handleCategoryChange(val as PhoneCategory)}
@@ -1223,8 +1740,11 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                 </div>
               </div>
 
-              <div>
-                <label className="text-[11px] text-[#71767B] block mb-1">الصور (1 إلى 6 صور)</label>
+              </>
+                )}
+
+                <div>
+                  <label className="text-[11px] text-[#71767B] block mb-1">الصور ({composeKind === 'free' ? 'اختياري حتى 4 صور' : '1 إلى 6 صور'})</label>
                 <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImagesUpload} className="hidden" />
                 <button type="button" onClick={() => fileInputRef.current?.click()} className="w-full py-2.5 rounded-xl border border-dashed border-[#2F3336] hover:border-white text-white/80 flex items-center justify-center gap-2 text-xs font-bold transition cursor-pointer">
                   <Upload size={14} className="text-[#FFC500]" /><span>اختر الصور ({uploadedImages.length}/6)</span>
@@ -1241,7 +1761,9 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                 )}
               </div>
 
-              {isDeviceCat && (
+              {(composeKind === 'paid' || freeShowOptionalSpecs) && (
+                <>
+                {isDeviceCat && (
                 <>
                   <div className="grid grid-cols-2 gap-2.5">
                     <div>
@@ -1286,7 +1808,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                   <label className="text-[11px] text-[#FFC500] font-bold block mb-1">السعر (ر.ي) *</label>
                   <input
                     type="text" inputMode="numeric"
-                    required
+                    required={composeKind === "paid"}
                                         placeholder="250,000"
                     value={phonePrice}
                     onChange={(e) => setPhonePrice(fmtAmt(e.target.value))}
@@ -1302,6 +1824,8 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                   <YRSelect compact value={phoneCity} onChange={setPhoneCity} options={YEMEN_GOVERNORATES.map((g) => ({ value: g, label: g }))} />
                 </div>
               </div>
+                </>
+                )}
             </div>
           </form>
         </div>
