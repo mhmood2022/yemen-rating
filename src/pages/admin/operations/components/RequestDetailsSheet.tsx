@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { XSpinner } from '../../../../components/ui/LoadingSpinner';
 import {
   X, Clock, FileText, ExternalLink, AlertCircle, Download,
   CheckCircle2, XCircle, Lock, MessageSquare,
@@ -114,7 +115,7 @@ const PdfViewer: React.FC<ViewerState & { onClose: () => void }> = ({ url, kind,
             onLoadError={(e) => setError(e?.message || 'فشل تحميل الملف')}
             loading={
               <div className="flex items-center justify-center py-20">
-                <div className="w-6 h-6 border-2 border-[#FFC500] border-t-transparent rounded-full animate-spin" />
+                <XSpinner />
               </div>
             }
           >

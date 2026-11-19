@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { XSpinner } from '../ui/LoadingSpinner';
 import {
   Star, MapPin, Phone, ArrowRight, Frown, CheckCircle2,
   Bed, Wifi, Car, Stethoscope, Sparkles, Loader2, Award,
@@ -208,7 +209,7 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
       {/* شبكة الكروت الموحدة */}
       {loadingLive ? (
         <div className="py-24 text-center flex flex-col items-center justify-center bg-[#0B0F19] rounded-3xl border border-zinc-800/80">
-          <Loader2 className="w-10 h-10 animate-spin text-[#FFC500] mb-3" />
+          <XSpinner size={32} className="mb-3" />
           <p className="text-sm text-zinc-400 font-bold">جاري التحميل...</p>
         </div>
       ) : filtered.length === 0 ? (

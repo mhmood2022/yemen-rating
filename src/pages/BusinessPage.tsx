@@ -1,4 +1,5 @@
 import { ReplyBar } from '../components/community/ReplyBar';
+import { XSpinner } from '../components/ui/LoadingSpinner';
 import { XActionBar } from '../components/feed/XActionBar';
 import { XVideoPlayer } from '../components/feed/XVideoPlayer';
 import { SupportModal } from '../components/support/SupportModal';
@@ -1464,7 +1465,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
 
   return (
       <div className="min-h-screen bg-black flex items-center justify-center text-white font-['Tahoma',sans-serif]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#FFC500]" />
+        <XSpinner size={30} />
       </div>
     );
   }

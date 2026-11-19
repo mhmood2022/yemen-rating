@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { XSpinner } from '../../components/ui/LoadingSpinner';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AlertCircle, Gavel } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -38,7 +39,7 @@ export const AuctionDetailsPage: React.FC = () => {
   useEffect(() => { load(); }, [slug]);
   const back = () => window.history.length > 1 ? navigate(-1) : navigate('/auctions');
 
-  if (loading) return <div dir="rtl" className="min-h-screen bg-black flex items-center justify-center"><div className="w-6 h-6 rounded-full border-2 border-[#FFC500] border-t-transparent animate-spin" /></div>;
+  if (loading) return <div dir="rtl" className="min-h-screen bg-black flex items-center justify-center"><XSpinner size={28} /></div>;
   if (!auction) return <div dir="rtl" className="min-h-screen bg-black flex flex-col items-center justify-center text-white font-['Tahoma',sans-serif]"><AlertCircle className="w-10 h-10 text-[#FFC500] mb-3" /><p className="text-sm font-bold">لم يتم العثور على المزاد</p><button onClick={back} className="mt-4 px-5 py-2 bg-[#FFC500] text-black font-bold rounded-full text-xs">رجوع</button></div>;
 
   const isDirect = auction.sale_type === 'fixed_price' || auction.sale_type === 'direct';

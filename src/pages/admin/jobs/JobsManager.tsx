@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { XSpinner } from '../../../components/ui/LoadingSpinner';
 import { useSearchParams } from "react-router-dom";
 import { Briefcase, Plus, DollarSign, Settings, MapPin, CheckCircle2, AlertCircle, Loader2, Users, Phone, MessageCircle, Mail, FileText, Trash2, Clock, Edit3, Pause, Play, ExternalLink, X, Check, ShieldCheck, Download, Eye, Image, Share2 } from "lucide-react";
 import { AddJobModal, JobFormData } from "./AddJobModal";
@@ -505,7 +506,7 @@ export const JobsManager: React.FC = () => {
         <>
           {isLoading && jobs.length === 0 ? (
             <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
-              <Loader2 className="w-6 h-6 animate-spin text-[#FFC500]" />
+              <XSpinner />
               <span className="text-xs">جارٍ تحميل الوظائف...</span>
             </div>
           ) : jobs.length === 0 ? (
@@ -688,7 +689,7 @@ export const JobsManager: React.FC = () => {
         <>
           {isLoadingApps && applications.length === 0 ? (
             <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
-              <Loader2 className="w-6 h-6 animate-spin text-[#FFC500]" />
+              <XSpinner />
               <span className="text-xs">جارٍ جلب المتقدمين...</span>
             </div>
           ) : applications.length === 0 ? (

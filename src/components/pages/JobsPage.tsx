@@ -2,6 +2,7 @@ import {
   JOB_TYPE_OPTIONS, JOB_SECTOR_OPTIONS, JOB_EXPERIENCE_OPTIONS, JOB_GENDER_OPTIONS
 } from '../../constants/marketOptions';
 import { PublicAddJobModal, JobFormData } from "../jobs/PublicAddJobModal";
+import { XSpinner } from '../ui/LoadingSpinner';
 import { XJobApplyModal } from "../jobs/XJobApplyModal";
 import {
   NOT_AVAILABLE, buildPropertyFeatures, parsePropertyFeatures
@@ -508,7 +509,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
 
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center text-[#71767B] gap-3">
-              <div className="w-7 h-7 rounded-full border-2 border-[#FFC500] border-t-transparent animate-spin" />
+              <XSpinner size={28} />
               <span className="text-xs font-bold text-white">جاري تحميل الوظائف...</span>
             </div>
           ) : filteredJobs.length === 0 ? (
@@ -569,10 +570,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
           {filteredJobs.length > 0 && (
             <div ref={bottomSentinelRef} className="py-3 flex items-center justify-center">
               {isLoadingMore || visibleCount < filteredJobs.length ? (
-                <div
-                  aria-label="جاري تحميل المزيد"
-                  className="w-6 h-6 rounded-full border-[2.5px] border-[#FFC500]/25 border-t-[#FFC500] animate-spin"
-                />
+                <XSpinner ariaLabel="جاري تحميل المزيد" />
               ) : (
                 <span className="text-[11px] text-[#71767B]">تم عرض كل النتائج</span>
               )}

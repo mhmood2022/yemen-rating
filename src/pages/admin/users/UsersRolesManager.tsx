@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { XSpinner } from '../../../components/ui/LoadingSpinner';
 import { supabase } from '../../../lib/supabase';
 import { UserProfile, UserRole, UserStatus, AccountType } from '../../../types/auth';
 import { getAccess, AccessInfo } from '../../../lib/access';
@@ -578,7 +579,7 @@ export const UsersRolesManager: React.FC = () => {
           <div className="bg-black border border-[#2F3336] rounded-xl overflow-hidden shadow-md">
             {loading ? (
               <div className="p-8 text-center text-slate-400 space-y-2">
-                <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#FFD000]" />
+                <XSpinner className="mx-auto" />
                 <p className="text-xs">جارٍ جلب الحسابات...</p>
               </div>
             ) : filteredUsers.length === 0 ? (

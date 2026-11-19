@@ -1,5 +1,6 @@
 import { XActionBar } from '../components/feed/XActionBar';
 
+import { XSpinner } from '../components/ui/LoadingSpinner';
 import { XVideoPlayer } from '../components/feed/XVideoPlayer';
 import { XImagePlayer } from '../components/feed/XImagePlayer';
 import { VerifiedBadge } from '../components/common/VerifiedBadge';
@@ -2012,10 +2013,7 @@ displayedTweets.slice(0, visibleTweetsCount).map(tweet => {
             className="py-3.5 flex items-center justify-center border-t border-[#2F3336]/40"
           >
             {isLoadingMoreTweets || visibleTweetsCount < displayedTweets.length ? (
-              <div
-                aria-label="جاري تحميل المزيد"
-                className="w-6 h-6 rounded-full border-[2.5px] border-[#FFC500]/25 border-t-[#FFC500] animate-spin"
-              />
+              <XSpinner ariaLabel="جاري تحميل المزيد" />
             ) : (
               <button
                 type="button"

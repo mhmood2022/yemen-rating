@@ -1,5 +1,6 @@
 import { compressImage } from '../../../lib/imageUtils';
 
+import { XSpinner } from '../../../components/ui/LoadingSpinner';
 // دالة آمنة تمنع خطأ React عند محاولة رسم الكائنات مباشرة
 function getSafeOfferString(item: any): string {
   if (!item) return '';
@@ -868,7 +869,7 @@ export const CompaniesManager: React.FC = () => {
       {/* قائمة البطاقات */}
       {loading ? (
         <div className="py-24 text-center text-xs text-gray-400 flex flex-col items-center justify-center gap-2.5">
-          <Loader2 className="w-7 h-7 animate-spin text-[#FFC500]" />
+          <XSpinner size={28} />
           جاري استدعاء المنشآت الحقيقية من قاعدة بيانات Supabase...
         </div>
       ) : filteredBusinesses.length === 0 ? (

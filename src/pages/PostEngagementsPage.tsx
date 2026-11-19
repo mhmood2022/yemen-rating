@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { XSpinner } from '../components/ui/LoadingSpinner';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowRight, Repeat2, Edit3, ArrowUpDown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -218,7 +219,7 @@ export default function PostEngagementsPage() {
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-10"><div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div></div>
+          <div className="flex justify-center py-10"><XSpinner /></div>
         ) : (
           <div 
             ref={containerRef}

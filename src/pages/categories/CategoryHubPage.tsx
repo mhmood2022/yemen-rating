@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { XSpinner } from '../../components/ui/LoadingSpinner';
 import { BusinessItem } from '../../types/business';
 import { BusinessCard } from '../../components/business/BusinessCard';
 import { YrAdBanner } from '../../components/ads/YrAdBanner';
@@ -133,7 +134,7 @@ export const CategoryHubPage: React.FC<CategoryHubPageProps> = ({
         {/* المحتوى */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-3">
-            <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+            <XSpinner size={30} />
             <p className="text-xs text-zinc-400">جاري تحميل المنشآت النشطة...</p>
           </div>
         ) : displayedBusinesses.length === 0 ? (

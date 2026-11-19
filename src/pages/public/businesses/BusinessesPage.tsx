@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { XSpinner } from '../../../components/ui/LoadingSpinner';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Search, MapPin, ChevronDown, Check, ArrowRight,
@@ -262,7 +263,7 @@ export const BusinessesPage: React.FC = () => {
 
       {loading ? (
         <div className="py-16 text-center flex flex-col items-center justify-center">
-          <Loader2 className="w-7 h-7 animate-spin text-[#EAB308] mb-2" />
+          <XSpinner size={28} className="mb-2" />
           <p className="text-xs text-zinc-400 font-bold">جاري تحميل المنشآت الحقيقية...</p>
         </div>
       ) : filtered.length === 0 ? (

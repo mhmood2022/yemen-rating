@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { XSpinner } from '../components/ui/LoadingSpinner';
 import {
   Smartphone, Phone, MessageCircle, ArrowRight, Plus, X,
   Upload, Trash2, User, Camera
@@ -1091,10 +1092,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
           {filteredPhones.length > 0 && (
             <div ref={bottomSentinelRef} className="py-3 flex items-center justify-center">
               {isLoadingMore || visibleCount < filteredPhones.length ? (
-                <div
-                  aria-label="جاري تحميل المزيد"
-                  className="w-6 h-6 rounded-full border-[2.5px] border-[#FFC500]/25 border-t-[#FFC500] animate-spin"
-                />
+                <XSpinner ariaLabel="جاري تحميل المزيد" />
               ) : (
                 <span className="text-[11px] text-[#71767B]">تم عرض كل النتائج</span>
               )}

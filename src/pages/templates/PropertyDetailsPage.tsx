@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { XSpinner } from '../../components/ui/LoadingSpinner';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AlertCircle, Camera } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -63,7 +64,7 @@ export const PropertyDetailsPage: React.FC = () => {
     return (
       <div dir="rtl" className="min-h-screen bg-black flex items-center justify-center font-['Tahoma',sans-serif]">
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-full border-2 border-[#FFC500] border-t-transparent animate-spin" />
+          <XSpinner size={24} />
           <span className="text-xs font-bold text-white">جاري تحميل العقار...</span>
         </div>
       </div>

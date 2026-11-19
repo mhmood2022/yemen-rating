@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { XSpinner } from '../ui/LoadingSpinner';
 import { 
   Star, 
   Send, 
@@ -103,7 +104,7 @@ export const YRReviewSystem: React.FC<YRReviewSystemProps> = ({ entityType, enti
   if (loading) {
     return (
       <div dir="rtl" className="bg-[#070B13] rounded-2xl border border-[#1B253A] p-8 text-center flex flex-col items-center justify-center font-['Cairo',sans-serif]">
-        <Loader2 className="w-7 h-7 animate-spin text-[#FFC500] mb-2.5" />
+        <XSpinner size={28} className="mb-2.5" />
         <p className="text-xs font-bold text-slate-400">جاري تحميل مراجعات المنشأة...</p>
       </div>
     );

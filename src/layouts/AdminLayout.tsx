@@ -11,7 +11,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="flex flex-col items-center gap-3">
-          <LoadingSpinner size={32} className="text-[#F5C400]" />
+          <LoadingSpinner size={32} className="text-white" />
           <p className="text-sm font-bold text-white">جارٍ التحقق من الصلاحيات الإدارية...</p>
         </div>
       </div>

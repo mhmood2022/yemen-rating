@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { XSpinner } from '../../components/ui/LoadingSpinner';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Briefcase, MapPin, ArrowRight, ShieldCheck, CheckCircle2, FileText, Upload, Trash2, AlertCircle, X, Award, Building2, Sparkles, Send, Loader2, Image } from "lucide-react";
 import { supabase } from '../../lib/supabase';
@@ -413,7 +414,7 @@ export const JobDetailsPage: React.FC = () => {
   if (loading) {
     return (
       <div dir="rtl" className="bg-black min-h-screen min-h-[60vh] flex flex-col items-center justify-center font-['Cairo',sans-serif] text-slate-300 gap-3">
-        <Loader2 className="w-8 h-8 text-[#FFC500] animate-spin" />
+        <XSpinner size={30} />
         <span className="text-xs font-bold">جارٍ تحميل بيانات الشاغر والوساطة...</span>
       </div>
     );

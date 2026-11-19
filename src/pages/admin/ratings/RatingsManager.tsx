@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { XSpinner } from '../../../components/ui/LoadingSpinner';
 import {
   Star,
   RotateCcw,
@@ -365,7 +366,7 @@ export const RatingsManager: React.FC = () => {
         <>
           {loading ? (
             <div className="py-20 text-center flex flex-col items-center justify-center bg-[#0B101D] rounded-2xl border border-[#1B253A]">
-              <Loader2 className="w-8 h-8 animate-spin text-[#FFC500] mb-2.5" />
+              <XSpinner size={30} className="mb-2.5" />
               <p className="text-xs font-bold text-slate-400">جاري تحميل قائمة المنشآت...</p>
             </div>
           ) : filteredBusinesses.length === 0 ? (

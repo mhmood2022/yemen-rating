@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { XSpinner } from '../ui/LoadingSpinner';
 import { ArrowRight, Repeat2, MessageCircle, BadgeCheck, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
@@ -88,7 +89,7 @@ export default function PostEngagementsModal({ post, onClose }: { post: any, onC
       {/* القائمة */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="flex justify-center py-10"><div className="w-6 h-6 border-2 border-[#FFC500] border-t-transparent rounded-full animate-spin"></div></div>
+          <div className="flex justify-center py-10"><XSpinner /></div>
         ) : currentList.length === 0 ? (
           <div className="flex flex-col items-center justify-center mt-20 px-8 text-center">
             <div className="w-16 h-16 rounded-full border-2 border-[#71767B] flex items-center justify-center mb-4">

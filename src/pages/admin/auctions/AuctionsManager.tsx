@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { XSpinner } from '../../../components/ui/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
 import {
   Gavel, AlertCircle, CheckCircle2, Search, RefreshCw, Calendar,
@@ -1156,7 +1157,7 @@ export const AuctionsManager: React.FC = () => {
           <div className="bg-[#0A0F1D] border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
             {loadingListings ? (
               <div className="p-16 text-center text-slate-400 space-y-2">
-                <RefreshCw size={24} className="animate-spin text-[#F5C400] mx-auto" />
+                <XSpinner className="mx-auto" />
                 <p className="text-xs">جاري تحميل المزادات من قاعدة البيانات...</p>
               </div>
             ) : filteredListings.length === 0 ? (

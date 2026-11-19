@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { XSpinner } from '../ui/LoadingSpinner';
 import { Gavel, ArrowRight, RefreshCw, AlertCircle, Plus, X, ImagePlus, Trash2, MapPin, Video, FileImage } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { AdBanner } from '../common/AdBanner';
@@ -434,7 +435,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
 
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center text-[#71767B] gap-3">
-            <div className="w-7 h-7 rounded-full border-2 border-[#FFC500] border-t-transparent animate-spin" />
+            <XSpinner size={28} />
             <span className="text-xs font-bold text-white">جاري تحميل المزادات...</span>
           </div>
         ) : displayedListings.length === 0 ? (
@@ -475,10 +476,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
           {displayedListings.length > 0 && (
             <div ref={bottomSentinelRef} className="py-3 flex items-center justify-center">
               {isLoadingMore || visibleCount < displayedListings.length ? (
-                <div
-                  aria-label="جاري تحميل المزيد"
-                  className="w-6 h-6 rounded-full border-[2.5px] border-[#FFC500]/25 border-t-[#FFC500] animate-spin"
-                />
+                <XSpinner ariaLabel="جاري تحميل المزيد" />
               ) : (
                 <span className="text-[11px] text-[#71767B]">تم عرض كل النتائج</span>
               )}

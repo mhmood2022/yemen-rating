@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { XSpinner } from '../components/ui/LoadingSpinner';
 import { Briefcase, MapPin, ShieldCheck, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -63,7 +64,7 @@ export const JobsPage: React.FC<Props> = ({ onNavigate, onBack }) => {
       {/* قائمة الوظائف المنشورة */}
       {loading ? (
         <div className="py-16 flex flex-col items-center justify-center gap-3 text-slate-400">
-          <Loader2 className="w-7 h-7 animate-spin text-[#FFC500]" />
+          <XSpinner size={28} />
           <span className="text-xs">جارٍ جلب أحدث الشواغر المعتمدة...</span>
         </div>
       ) : jobs.length === 0 ? (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { XSpinner } from '../../../components/ui/LoadingSpinner';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Gavel, Clock, ArrowRight, ShieldCheck, 
@@ -74,7 +75,7 @@ export const AuctionLiveMonitor: React.FC = () => {
   if (loading) {
     return (
       <div dir="rtl" className="min-h-[60vh] flex items-center justify-center font-['Cairo'] text-white">
-        <div className="w-10 h-10 rounded-full border-2 border-[#F5C400] border-t-transparent animate-spin" />
+        <XSpinner size={32} />
       </div>
     );
   }
