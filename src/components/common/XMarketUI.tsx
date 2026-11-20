@@ -42,6 +42,7 @@ export function toWaLink(phone?: string, text?: string): string {
 }
 
 export function buildDetailedWaText(item: XMarketItem): string {
+  if (item.whatsappText && item.whatsappText.includes('\n')) return item.whatsappText;
   const lines: string[] = [];
   lines.push(`مرحباً، أرغب بالاستفسار عن: ${item.title}`);
   if (item.tagLabel) lines.push(`القسم: ${item.tagLabel}`);
@@ -627,8 +628,8 @@ export function toArabicMarketError(err: any, fallback = 'حدث خطأ غير �
     return 'تعذر الاتصال بالخادم، تحقق من اتصال الإنترنت';
   if (low.includes('jwt') || low.includes('not authenticated') || low.includes('auth') || low.includes('session'))
     return 'انتهت جلسة الدخول، يرجى تسجيل الدخول مجدداً';
-  if (low.includes('row-level security') || low.includes('permission denied') || low.includes('42501'))
-    return 'لا تملك صلاحية تنفيذ هذا الإجراء، تأكد من تسجيل الدخول';
+  if (low.includes('row-level security') || low.includes('permission denied') || low.includes('42501') || low.includes('admin_requests'))
+    return 'لا تملك صلاحية تنفيذ هذا الإجراء حالياً، تأكد من تسجيل الدخول أو تواصل مع الإدارة';
   if (low.includes('not-null constraint') || low.includes('null value in column'))
     return 'يرجى تعبئة كافة الحقول الإلزامية المطلوبة';
   if (low.includes('schema cache') || low.includes('could not find the') || low.includes('does not exist'))

@@ -182,13 +182,20 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
         supabase.from('profiles').select('*').eq('id', uid).maybeSingle(),
         getMyBusinessPage(uid),
       ]);
-      if (prof) setMyProfile(prof);
+      const meta: any = session.user.user_metadata || {};
+      const mergedProf = {
+        ...(prof || { id: uid }),
+        full_name: prof?.full_name || meta.full_name || meta.name || '',
+        phone: prof?.phone || meta.phone || '',
+      };
+      setMyProfile(mergedProf);
       if (biz) {
         setMyBusinessPage(biz);
-        if (biz.phone) setOwnerPhone(biz.phone.replace(/\D/g, '').slice(-9));
+        const bPh = (biz.phone || mergedProf.phone || '').replace(/\D/g, '').slice(-9);
+        if (bPh) setOwnerPhone(bPh);
         if (biz.city) handleGovChange(biz.city);
-      } else if (prof?.phone) {
-        setOwnerPhone(prof.phone.replace(/\D/g, '').slice(-9));
+      } else if (mergedProf.phone) {
+        setOwnerPhone(mergedProf.phone.replace(/\D/g, '').slice(-9));
       }
     }).catch(() => {});
   }, []);
@@ -325,6 +332,8 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
       ['__MAP_URL__', mapUrl],
       ['__BLUEPRINT__', blueprintImage],
       ['__VIDEO_URL__', videoUrl.trim()],
+      ['__OWNER_NAME__', (myBusinessPage?.name || myProfile?.full_name || (session.user.user_metadata as any)?.full_name || '').trim()],
+      ['__OWNER_PHONE__', effPh],
     ]);
 
     const districtParts = [newCity, newDistrict, newNeighborhood].filter((x) => x && x !== NOT_AVAILABLE);
@@ -423,20 +432,29 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
       ...(prop.city ? [{ label: 'المحافظة', value: prop.city }] : []),
     ];
 
-    const specPairs = (parsed.pairs.length > 0 ? parsed.pairs : fallbackPairs)
+    const ownerNamePair = parsed.pairs.find((sp) => sp.label === '__OWNER_NAME__');
+    const ownerPhonePair = parsed.pairs.find((sp) => sp.label === '__OWNER_PHONE__');
+    const visiblePairs = parsed.pairs.filter((sp) => !sp.label.startsWith('__'));
+    const specPairs = (visiblePairs.length > 0 ? visiblePairs : fallbackPairs)
       .filter((sp) => sp.value && !['غير موجود', 'غير محدد', 'لا ينطبق'].includes(sp.value.trim()));
+    const pubName = biz?.name || prof?.full_name || ownerNamePair?.value || `${pt} (${dt})`;
+    const pubPhone = biz?.phone || prof?.phone || ownerPhonePair?.value || '';
+    const appName = myBusinessPage?.name || myProfile?.full_name || '';
+    const appPhone = String(myBusinessPage?.phone || myProfile?.phone || '').replace(/\D/g, '').slice(-9);
+    const priceLabel = prop.price ? `${Number(prop.price).toLocaleString()} ${prop.currency || 'YER'}` : 'عند المعاينة';
+    const descLabel = prop.district || prop.description || prop.location_details || '';
 
     return {
       id: prop.id, detailPath: `/properties/${prop.id}`, actionLabel: 'التفاصيل',
       onAction: () => { const it = toPropX(prop); setSelectedItem(it); setActiveImageIndex(0); window.scrollTo({ top: 0, behavior: 'instant' }); },
-      authorName: biz?.name || prof?.full_name || `${pt} (${dt})`,
+      authorName: pubName,
       authorUsername: biz?.username || (prof?.email ? prof.email.split('@')[0] : (prop.city || 'realestate')),
       authorAvatar: biz?.avatarUrl || prof?.avatar_url || '',
       badgeType: biz ? ((biz.verificationType as BadgeType) || (biz.isVerified ? 'gold' : 'none')) : 'none',
       businessPath: biz ? `/businesses/${biz.username || biz.id}` : undefined,
       createdAt: prop.created_at, title: prop.title,
-      priceText: prop.price ? `${Number(prop.price).toLocaleString()} ${prop.currency || 'YER'}` : 'عند المعاينة',
-      description: prop.district || prop.description || prop.location_details || '',
+      priceText: priceLabel,
+      description: descLabel,
       metaParts: [`${pt} · ${dt}`, (prop.area_sqm || prop.area_m2 || prop.area) ? `${prop.area_sqm || prop.area_m2 || prop.area} م²` : '',
         (prop.bedrooms || prop.rooms) ? `${prop.bedrooms || prop.rooms} غرف` : '', prop.city || ''].filter(Boolean),
       specPairs,
@@ -445,7 +463,18 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
       videoUrl: parsed.videoUrl,
       tagLabel: `${pt} · ${dt}`,
       images: Array.isArray(prop.image_urls) ? prop.image_urls : (Array.isArray(prop.images) ? prop.images : []),
-      city: prop.city, phone: biz?.phone || prof?.phone || '',
+      city: prop.city, phone: pubPhone,
+      whatsappText: [
+        `مرحباً، أرغب بالاستفسار عن العقار: ${prop.title}`,
+        `اسم الناشر: ${pubName}`,
+        pubPhone ? `هاتف الناشر: ${pubPhone}` : '',
+        appName ? `اسم المتقدم: ${appName}` : '',
+        appPhone ? `هاتف المتقدم: ${appPhone}` : '',
+        `السعر: ${priceLabel}`,
+        prop.city ? `المحافظة: ${prop.city}` : '',
+        ...specPairs.map((sp) => `• ${sp.label}: ${sp.value}`),
+        descLabel ? `الوصف: ${descLabel.slice(0, 200)}` : '',
+      ].filter(Boolean).join('\n'),
     };
   };
 

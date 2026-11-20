@@ -17,10 +17,10 @@ import { MarketSponsorSlot } from '../ads/MarketSponsorSlot';
 import { JobCard } from '../jobs/JobCard';
 import { YRSelect } from '../common/YRSelect';
 import { BadgeType } from '../common/VerifiedBadge';
-import { mapBusinessToPage, BusinessPageRecord } from '../../services/businessPageService';
+import { mapBusinessToPage, getMyBusinessPage, BusinessPageRecord } from '../../services/businessPageService';
 import {
   XMarketItem, XSearchFilterBar, XFilterModal, XMarketTweetCard,
-  XMarketDetailView, XImageLightbox, YEMEN_GOV_FILTER_OPTIONS
+  XMarketDetailView, XImageLightbox, YEMEN_GOV_FILTER_OPTIONS, toArabicMarketError
 } from '../common/XMarketUI';
 
 const YEMEN_GOVERNORATES = [
@@ -87,6 +87,8 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
   const [genderFilter, setGenderFilter] = useState('all');
 
   const [commissionSettings, setCommissionSettings] = useState<any>(null);
+  const [myProfile, setMyProfile] = useState<any>(null);
+  const [myBusinessPage, setMyBusinessPage] = useState<BusinessPageRecord | null>(null);
 
   // نافذة أضف وظيفة
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -124,6 +126,24 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
     fetchJobs();
     adminAuctionsService.getPlatformCommissionSettings?.().then((res: any) => {
       if (res?.data) setCommissionSettings(res.data);
+    }).catch(() => {});
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      const uid = session?.user?.id;
+      if (!uid) return;
+      const meta: any = session.user.user_metadata || {};
+      const [{ data: prof }, biz] = await Promise.all([
+        supabase.from('profiles').select('id, full_name, phone').eq('id', uid).maybeSingle(),
+        getMyBusinessPage(uid),
+      ]);
+      const resolvedProf = {
+        id: uid,
+        full_name: prof?.full_name || meta.full_name || meta.name || '',
+        phone: prof?.phone || meta.phone || '',
+      };
+      setMyProfile(resolvedProf);
+      if (biz) setMyBusinessPage(biz);
+      const autoPh = String(biz?.phone || resolvedProf.phone || '').replace(/\D/g, '').slice(-9);
+      if (autoPh) setEmployerPhone((prev) => prev || autoPh);
     }).catch(() => {});
   }, []);
 
@@ -223,10 +243,15 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
       if ((newJob.description || "").trim()) {
         descParts.push(newJob.description.trim());
       }
-      if ((newJob.companyName || "").trim() && !newJob.companyId) {
-        descParts.push(
-          `[معلومات جهة العمل والتواصل]\nاسم المنشأة: ${newJob.companyName.trim()}`
-        );
+      const { data: { session: pubSession } } = await supabase.auth.getSession();
+      const pubMeta: any = pubSession?.user?.user_metadata || {};
+      const autoPubName = (newJob.companyName || "").trim() || myBusinessPage?.name || myProfile?.full_name || pubMeta.full_name || "";
+      const autoPubPhone = String((newJob as any).phone || (newJob as any).publisherPhone || myBusinessPage?.phone || myProfile?.phone || pubMeta.phone || "").replace(/\D/g, "").slice(-9);
+      const contactLines: string[] = [];
+      if (autoPubName && !newJob.companyId) contactLines.push(`اسم الناشر: ${autoPubName}`);
+      if (autoPubPhone) contactLines.push(`هاتف مسؤول التوظيف: ${autoPubPhone}`);
+      if (contactLines.length > 0) {
+        descParts.push(`[معلومات جهة العمل والتواصل]\n${contactLines.join("\n")}`);
       }
       if ((newJob.docUrl || "").trim()) {
         descParts.push(`[ملف الوصف الوظيفي PDF]: ${newJob.docUrl.trim()}`);
@@ -268,7 +293,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
       console.error("Save job error:", err);
       return {
         success: false,
-        error: err.message || "حدث خطأ أثناء حفظ الشاغر الوظيفي",
+        error: toArabicMarketError(err, "حدث خطأ أثناء حفظ الشاغر الوظيفي"),
       };
     }
   };
@@ -317,7 +342,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
       setTimeout(() => setToastMessage(null), 4000);
       fetchJobs();
     } catch (err: any) {
-      setToastMessage(err.message || 'حدث خطأ أثناء إرسال الوظيفة');
+      setToastMessage(toArabicMarketError(err, 'حدث خطأ أثناء إرسال الوظيفة'));
       setTimeout(() => setToastMessage(null), 4000);
     } finally {
       setSubmitting(false);
@@ -357,7 +382,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
       .split('[وثائق وشهادات المتقدم]')[0]
       .split('[مرفقات الصور]')[0]
       .trim();
-    const companyMatch = rawDesc.match(/اسم المنشأة:\s*(.+)/);
+    const companyMatch = rawDesc.match(/(?:اسم المنشأة|اسم الناشر):\s*(.+)/);
     const phoneMatch = rawDesc.match(/هاتف مسؤول التوظيف:\s*(\d+)/);
     const imgMatch = rawDesc.match(/\[مرفقات الصور\]:\s*([^\s]+)/);
     const docMatch = rawDesc.match(/\[ملف الوصف الوظيفي PDF\]:\s*([^\n\r\s]+)/);
@@ -429,7 +454,17 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
       images: jobImages,
       city: job.city,
       phone,
-      whatsappText: `مرحباً، أرغب بالتقديم على وظيفة: ${job.title}`,
+      whatsappText: [
+        `مرحباً، أرغب بالتقديم على وظيفة: ${job.title}`,
+        `اسم الناشر: ${biz?.name || extractedName || 'جهة توظيف معتمدة'}`,
+        phone ? `هاتف الناشر: ${phone}` : '',
+        (myBusinessPage?.name || myProfile?.full_name) ? `اسم المتقدم: ${myBusinessPage?.name || myProfile?.full_name}` : '',
+        (myBusinessPage?.phone || myProfile?.phone) ? `هاتف المتقدم: ${String(myBusinessPage?.phone || myProfile?.phone).replace(/\D/g, '').slice(-9)}` : '',
+        job.city ? `المحافظة: ${job.city}` : '',
+        salary ? `الراتب: ${salary}` : '',
+        ...specPairs.map((sp) => `• ${sp.label}: ${sp.value}`),
+        cleanDesc ? `الوصف: ${cleanDesc.slice(0, 200)}` : '',
+      ].filter(Boolean).join('\n'),
     };
   };
 

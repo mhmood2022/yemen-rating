@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { X, Upload, CheckCircle2, Briefcase } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { YRSelect } from '../common/YRSelect';
-import { YEMEN_GOV_FORM_OPTIONS, XMarketItem, toWaLink } from '../common/XMarketUI';
+import { YEMEN_GOV_FORM_OPTIONS, XMarketItem, toWaLink, toArabicMarketError } from '../common/XMarketUI';
+import { getMyBusinessPage } from '../../services/businessPageService';
 
 interface Props { job: any | null; jobItem?: XMarketItem | null; commissionText: string; onClose: () => void; onSuccess: (msg: string) => void; }
 
@@ -22,9 +23,17 @@ export const XJobApplyModal: React.FC<Props> = ({ job, jobItem, commissionText, 
     setErrMsg('');
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session?.user) return;
-      const { data: p } = await supabase.from('profiles').select('full_name, phone').eq('id', session.user.id).maybeSingle();
-      if (p?.full_name) setName((prev) => prev || p.full_name);
-      if (p?.phone) setPhone((prev) => prev || p.phone.replace(/\D/g, '').slice(-9));
+      const uid = session.user.id;
+      const meta: any = session.user.user_metadata || {};
+      const [{ data: p }, biz] = await Promise.all([
+        supabase.from('profiles').select('full_name, phone').eq('id', uid).maybeSingle(),
+        getMyBusinessPage(uid),
+      ]);
+      const autoName = (p?.full_name || biz?.name || meta.full_name || meta.name || '').trim();
+      const autoPhone = String(p?.phone || biz?.phone || meta.phone || '').replace(/\D/g, '').slice(-9);
+      if (autoName) setName((prev) => prev || autoName);
+      if (autoPhone) setPhone((prev) => prev || autoPhone);
+      if (biz?.city) setCity(biz.city);
     }).catch(() => {});
   }, [job?.id]);
 
@@ -50,7 +59,10 @@ export const XJobApplyModal: React.FC<Props> = ({ job, jobItem, commissionText, 
       if (employerPhone) {
         const waLines: string[] = [
           `مرحباً، أرغب بالتقديم على وظيفة: ${jobItem?.title || job.title}`,
-          jobItem?.authorName ? `الجهة: ${jobItem.authorName}` : '',
+          jobItem?.authorName ? `اسم الناشر: ${jobItem.authorName}` : '',
+          `هاتف الناشر: ${employerPhone}`,
+          `اسم المتقدم: ${name.trim()}`,
+          `هاتف المتقدم: ${cleanPhone}`,
           jobItem?.city || job.city ? `المحافظة: ${jobItem?.city || job.city}` : '',
           jobItem?.priceText ? `الراتب: ${jobItem.priceText}` : '',
           ...(jobItem?.specPairs || [])
@@ -72,7 +84,7 @@ export const XJobApplyModal: React.FC<Props> = ({ job, jobItem, commissionText, 
         }
       }
       onSuccess('تم إرسال طلب التقديم وسيرتك الذاتية بنجاح!'); onClose();
-    } catch (err: any) { setErrMsg(err?.message || 'تعذر إرسال الطلب'); } finally { setSubmitting(false); }
+    } catch (err: any) { setErrMsg(toArabicMarketError(err, 'تعذر إرسال الطلب')); } finally { setSubmitting(false); }
   };
 
   return (
