@@ -5,8 +5,8 @@ import {
   Check,
   MessageCircle,
   Phone,
-  ArrowLeft,
-  Eye,
+  Globe,
+  Send,
   Megaphone,
   ShieldCheck,
   Zap,
@@ -18,8 +18,10 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { VerifiedBadge, BadgeType } from '../common/VerifiedBadge';
+import { XActionBar } from '../feed/XActionBar';
 
 export type PhonePostTier = 'free' | 'basic' | 'pro' | 'vip';
+export type PhoneContactType = 'whatsapp' | 'call' | 'website' | 'message';
 
 export interface PhoneCardSpec {
   k: string;
@@ -57,8 +59,15 @@ export interface PhoneCardData {
   headline?: string;
   highlights?: string[];
   ctaLabel?: string;
+  contactType?: PhoneContactType;
+  contactUrl?: string;
   viewsCount?: number;
   expiresAt?: string;
+  likesCount?: number;
+  repostsCount?: number;
+  repliesCount?: number;
+  likedBy?: string[];
+  repostedBy?: string[];
 }
 
 interface CommonCardProps {
@@ -66,10 +75,15 @@ interface CommonCardProps {
   categoryLabel: string;
   timeAgo: string;
   specs: PhoneCardSpec[];
+  currentUserId?: string;
   onOpenDetail: (item: PhoneCardData) => void;
   onOpenImage: (item: PhoneCardData) => void;
   onOpenBusiness?: (businessId: string) => void;
+  onLike?: (item: PhoneCardData) => void;
+  onRepost?: (item: PhoneCardData) => void;
+  onBookmark?: (item: PhoneCardData) => void;
   onShare: (item: PhoneCardData) => void;
+  onSendMessage?: (item: PhoneCardData) => void;
 }
 
 const buildWaUrl = (item: PhoneCardData, categoryLabel: string) =>
@@ -79,7 +93,6 @@ const buildWaUrl = (item: PhoneCardData, categoryLabel: string) =>
 
 const getHandle = (item: PhoneCardData) =>
   item.sellerUsername || (item.brand ? item.brand.toLowerCase().replace(/\s+/g, '') : 'user');
-
 
 const AdAutoImageSlider: React.FC<{
   images?: string[];
@@ -116,7 +129,7 @@ const AdAutoImageSlider: React.FC<{
         e.stopPropagation();
         onOpenImage();
       }}
-      className={`mt-2 rounded-2xl overflow-hidden border ${borderClass} max-h-80 bg-zinc-950 relative cursor-pointer`}
+      className={`mt-2.5 rounded-2xl overflow-hidden border ${borderClass} max-h-80 bg-zinc-950 relative cursor-pointer`}
     >
       <img
         src={validImages[safeIdx]}
@@ -143,14 +156,129 @@ const AdAutoImageSlider: React.FC<{
   );
 };
 
-const formatCompact = (n?: number, fallback = 120) => {
-  const num = Number(n || fallback);
-  if (num >= 1000) return `${(num / 1000).toFixed(1).replace(/\.0$/, '')}K`;
-  return String(num);
+export const AdContactButton: React.FC<{
+  item: PhoneCardData;
+  categoryLabel: string;
+  buttonClass: string;
+  onSendMessage?: (item: PhoneCardData) => void;
+}> = ({ item, categoryLabel, buttonClass, onSendMessage }) => {
+  const mode: PhoneContactType = item.contactType || 'whatsapp';
+
+  if (mode === 'call') {
+    return (
+      <a
+        href={`tel:${item.sellerPhone}`}
+        onClick={(e) => e.stopPropagation()}
+        className={`h-6 inline-flex items-center gap-1 px-2.5 rounded-full font-bold text-[10px] leading-none transition shrink-0 ${buttonClass}`}
+      >
+        <Phone size={10.5} className="shrink-0" />
+        <span>{item.ctaLabel || 'اتصال'}</span>
+      </a>
+    );
+  }
+
+  if (mode === 'website') {
+    const rawUrl = (item.contactUrl || '').trim();
+    const safeUrl = rawUrl
+      ? /^https?:\/\//i.test(rawUrl)
+        ? rawUrl
+        : `https://${rawUrl}`
+      : buildWaUrl(item, categoryLabel);
+    return (
+      <a
+        href={safeUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        className={`h-6 inline-flex items-center gap-1 px-2.5 rounded-full font-bold text-[10px] leading-none transition shrink-0 ${buttonClass}`}
+      >
+        <Globe size={10.5} className="shrink-0" />
+        <span>{item.ctaLabel || 'الموقع'}</span>
+      </a>
+    );
+  }
+
+  if (mode === 'message') {
+    return (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onSendMessage?.(item);
+        }}
+        className={`h-6 inline-flex items-center gap-1 px-2.5 rounded-full font-bold text-[10px] leading-none transition shrink-0 cursor-pointer ${buttonClass}`}
+      >
+        <Send size={10.5} className="shrink-0" />
+        <span>{item.ctaLabel || 'إرسال رسالة'}</span>
+      </button>
+    );
+  }
+
+  return (
+    <a
+      href={buildWaUrl(item, categoryLabel)}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => e.stopPropagation()}
+      className={`h-6 inline-flex items-center gap-1 px-2.5 rounded-full font-bold text-[10px] leading-none transition shrink-0 ${buttonClass}`}
+    >
+      <MessageCircle size={10.5} className="shrink-0" />
+      <span>{item.ctaLabel || 'واتساب'}</span>
+    </a>
+  );
+};
+
+const renderTweetLikeFooter = (
+  props: CommonCardProps,
+  buttonClass: string
+) => {
+  const {
+    item,
+    categoryLabel,
+    currentUserId,
+    onOpenDetail,
+    onLike,
+    onRepost,
+    onBookmark,
+    onShare,
+    onSendMessage,
+  } = props;
+
+  return (
+    <div className="mt-1 flex items-center gap-2 min-w-0" onClick={(e) => e.stopPropagation()}>
+      <div className="flex-1 min-w-0">
+        <XActionBar
+          tweet={{
+            id: item.id,
+            likes: item.likesCount ?? 0,
+            likedBy: item.likedBy ?? [],
+            reposts: item.repostsCount ?? 0,
+            repostedBy: item.repostedBy ?? [],
+            replies: item.repliesCount ?? 0,
+            views: item.viewsCount ?? 1,
+          }}
+          currentUserId={currentUserId}
+          onReply={() => onOpenDetail(item)}
+          onRepost={() => onRepost?.(item)}
+          onLike={() => onLike?.(item)}
+          onBookmark={() => onBookmark?.(item)}
+          onShare={() => onShare(item)}
+        />
+      </div>
+      <div className="pt-2 shrink-0">
+        <AdContactButton
+          item={item}
+          categoryLabel={categoryLabel}
+          buttonClass={buttonClass}
+          onSendMessage={onSendMessage}
+        />
+      </div>
+    </div>
+  );
 };
 
 /* ============================================================================
- * 1) باقة VIP — خلفية سوداء نقية + رموز وألوان بنفسجية
+ * 1) باقة VIP — خلفية سوداء + هيدر وفوتر التغريدة + أيقونات وشارة بنفسجية
  * ========================================================================== */
 export const PhoneVipBanner: React.FC<
   CommonCardProps & {
@@ -158,19 +286,20 @@ export const PhoneVipBanner: React.FC<
     activeVipIndex?: number;
     onSelectVipIndex?: (idx: number) => void;
   }
-> = ({
-  item,
-  categoryLabel,
-  timeAgo,
-  specs,
-  onOpenDetail,
-  onOpenImage,
-  onOpenBusiness,
-  onShare,
-  totalVipCount = 1,
-  activeVipIndex = 0,
-  onSelectVipIndex,
-}) => {
+> = (props) => {
+  const {
+    item,
+    categoryLabel,
+    timeAgo,
+    specs,
+    onOpenDetail,
+    onOpenImage,
+    onOpenBusiness,
+    totalVipCount = 1,
+    activeVipIndex = 0,
+    onSelectVipIndex,
+  } = props;
+
   const [expanded, setExpanded] = useState(false);
 
   const highlights =
@@ -225,12 +354,12 @@ export const PhoneVipBanner: React.FC<
               >
                 {item.sellerName}
               </span>
-              <VerifiedBadge type={item.badgeType || (item.isVerified ? 'gold' : 'none')} size={14} className="shrink-0" />
-              <span className="text-[11px] text-[#71767B] truncate max-w-[65px] sm:max-w-[105px]" dir="ltr">
+              <VerifiedBadge type={item.badgeType || (item.isVerified ? 'gold' : 'none')} size={14.5} className="shrink-0" />
+              <span className="text-[11.5px] text-[#71767B] truncate max-w-[70px] sm:max-w-[110px]" dir="ltr">
                 @{getHandle(item)}
               </span>
-              <span className="text-[#71767B] text-[10px] shrink-0">·</span>
-              <span className="text-[#71767B] text-[10px] whitespace-nowrap shrink-0">{timeAgo}</span>
+              <span className="text-[#71767B] text-[10.5px] mx-0.5 shrink-0">·</span>
+              <span className="text-[#71767B] text-[10.5px] whitespace-nowrap shrink-0">{timeAgo}</span>
             </div>
 
             <div className="flex items-center gap-1 shrink-0">
@@ -273,9 +402,11 @@ export const PhoneVipBanner: React.FC<
               <h3 className="text-[12.5px] font-bold text-[#E9D5FF] leading-[18px] break-words min-w-0">
                 {item.headline || item.name}
               </h3>
-              <span className="text-[10.5px] font-semibold font-mono text-[#C084FC] shrink-0">
-                {item.price.toLocaleString()} ر.ي
-              </span>
+              {item.price > 0 && (
+                <span className="text-[10.5px] font-semibold font-mono text-[#C084FC] shrink-0">
+                  {item.price.toLocaleString()} ر.ي
+                </span>
+              )}
             </div>
 
             {fullText && (
@@ -320,43 +451,7 @@ export const PhoneVipBanner: React.FC<
             onOpenImage={() => onOpenImage(item)}
           />
 
-          <div
-            className="mt-2 pt-1 flex items-center justify-between gap-2 flex-wrap text-[11px] text-[#8B98A5] leading-none min-w-0"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span className="inline-flex items-center gap-1 leading-none shrink-0">
-                <Eye size={12.5} className="text-[#C084FC] shrink-0" />
-                <span>{formatCompact(item.viewsCount, 125000)}</span>
-              </span>
-              <a href={`tel:${item.sellerPhone}`} className="inline-flex items-center gap-1 hover:text-[#C084FC] transition leading-none shrink-0">
-                <Phone size={12.5} className="shrink-0" />
-                <span>اتصال</span>
-              </a>
-              <button type="button" onClick={() => onOpenDetail(item)} className="hover:text-[#C084FC] transition cursor-pointer leading-none shrink-0">
-                التفاصيل
-              </button>
-              <button type="button" onClick={() => onShare(item)} className="hover:text-[#C084FC] transition cursor-pointer inline-flex items-center shrink-0" aria-label="مشاركة">
-                <svg viewBox="0 0 24 24" width="12.5" height="12.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="18" cy="5" r="2.5" />
-                  <circle cx="6" cy="12" r="2.5" />
-                  <circle cx="18" cy="19" r="2.5" />
-                  <line x1="8.5" y1="13.5" x2="15.5" y2="17.5" />
-                  <line x1="15.5" y1="6.5" x2="8.5" y2="10.5" />
-                </svg>
-              </button>
-            </div>
-
-            <a
-              href={buildWaUrl(item, categoryLabel)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-6 inline-flex items-center gap-1 px-2.5 rounded-full bg-[#9333EA] hover:bg-[#7E22CE] text-white font-bold text-[10px] leading-none transition shrink-0"
-            >
-              <span>{item.ctaLabel || 'تسوق الآن'}</span>
-              <ArrowLeft size={10.5} className="shrink-0" />
-            </a>
-          </div>
+          {renderTweetLikeFooter(props, 'bg-[#9333EA] hover:bg-[#7E22CE] text-white')}
         </div>
       </div>
     </article>
@@ -364,18 +459,10 @@ export const PhoneVipBanner: React.FC<
 };
 
 /* ============================================================================
- * 2) الباقة الاحترافية (الفضي) — خلفية سوداء نقية + ألوان فضية
+ * 2) الباقة الاحترافية (الفضي) — خلفية سوداء + هيدر وفوتر التغريدة + ألوان فضية
  * ========================================================================== */
-export const PhoneProAdCard: React.FC<CommonCardProps> = ({
-  item,
-  categoryLabel,
-  timeAgo,
-  specs,
-  onOpenDetail,
-  onOpenImage,
-  onOpenBusiness,
-  onShare,
-}) => {
+export const PhoneProAdCard: React.FC<CommonCardProps> = (props) => {
+  const { item, timeAgo, specs, onOpenDetail, onOpenImage, onOpenBusiness } = props;
   const [expanded, setExpanded] = useState(false);
 
   const highlights =
@@ -428,12 +515,12 @@ export const PhoneProAdCard: React.FC<CommonCardProps> = ({
               >
                 {item.sellerName}
               </span>
-              <VerifiedBadge type={item.badgeType || (item.isVerified ? 'silver' : 'none')} size={14} className="shrink-0" />
-              <span className="text-[11px] text-[#71767B] truncate max-w-[65px] sm:max-w-[105px]" dir="ltr">
+              <VerifiedBadge type={item.badgeType || (item.isVerified ? 'silver' : 'none')} size={14.5} className="shrink-0" />
+              <span className="text-[11.5px] text-[#71767B] truncate max-w-[70px] sm:max-w-[110px]" dir="ltr">
                 @{getHandle(item)}
               </span>
-              <span className="text-[#71767B] text-[10px] shrink-0">·</span>
-              <span className="text-[#71767B] text-[10px] whitespace-nowrap shrink-0">{timeAgo}</span>
+              <span className="text-[#71767B] text-[10.5px] mx-0.5 shrink-0">·</span>
+              <span className="text-[#71767B] text-[10.5px] whitespace-nowrap shrink-0">{timeAgo}</span>
             </div>
 
             <span className="h-5 inline-flex items-center gap-1 px-2 rounded-full bg-[#CBD5E1] text-black text-[9.5px] font-black leading-none shrink-0">
@@ -447,9 +534,11 @@ export const PhoneProAdCard: React.FC<CommonCardProps> = ({
               <h3 className="text-[12.5px] font-bold text-white leading-[18px] break-words min-w-0">
                 {item.name}
               </h3>
-              <span className="text-[10.5px] font-semibold font-mono text-[#CBD5E1] shrink-0">
-                {item.price.toLocaleString()} ر.ي
-              </span>
+              {item.price > 0 && (
+                <span className="text-[10.5px] font-semibold font-mono text-[#CBD5E1] shrink-0">
+                  {item.price.toLocaleString()} ر.ي
+                </span>
+              )}
             </div>
 
             {bodyText && (
@@ -494,43 +583,7 @@ export const PhoneProAdCard: React.FC<CommonCardProps> = ({
             onOpenImage={() => onOpenImage(item)}
           />
 
-          <div
-            className="mt-2 pt-1 flex items-center justify-between gap-2 flex-wrap text-[11px] text-[#8B98A5] leading-none min-w-0"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span className="inline-flex items-center gap-1 leading-none shrink-0">
-                <Eye size={12.5} className="text-[#CBD5E1] shrink-0" />
-                <span>{formatCompact(item.viewsCount, 78000)}</span>
-              </span>
-              <a href={`tel:${item.sellerPhone}`} className="inline-flex items-center gap-1 hover:text-[#E2E8F0] transition leading-none shrink-0">
-                <Phone size={12.5} className="shrink-0" />
-                <span>اتصال</span>
-              </a>
-              <button type="button" onClick={() => onOpenDetail(item)} className="hover:text-[#E2E8F0] transition cursor-pointer leading-none shrink-0">
-                التفاصيل
-              </button>
-              <button type="button" onClick={() => onShare(item)} className="hover:text-[#E2E8F0] transition cursor-pointer inline-flex items-center shrink-0" aria-label="مشاركة">
-                <svg viewBox="0 0 24 24" width="12.5" height="12.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="18" cy="5" r="2.5" />
-                  <circle cx="6" cy="12" r="2.5" />
-                  <circle cx="18" cy="19" r="2.5" />
-                  <line x1="8.5" y1="13.5" x2="15.5" y2="17.5" />
-                  <line x1="15.5" y1="6.5" x2="8.5" y2="10.5" />
-                </svg>
-              </button>
-            </div>
-
-            <a
-              href={buildWaUrl(item, categoryLabel)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-6 inline-flex items-center gap-1 px-2.5 rounded-full bg-[#CBD5E1] hover:bg-white text-black font-bold text-[10px] leading-none transition shrink-0"
-            >
-              <MessageCircle size={10.5} className="shrink-0" />
-              <span>{item.ctaLabel || 'تواصل معنا'}</span>
-            </a>
-          </div>
+          {renderTweetLikeFooter(props, 'bg-[#CBD5E1] hover:bg-white text-black')}
         </div>
       </div>
     </article>
@@ -538,18 +591,10 @@ export const PhoneProAdCard: React.FC<CommonCardProps> = ({
 };
 
 /* ============================================================================
- * 3) الباقة الأساسية (الأزرق) — خلفية سوداء نقية + ألوان زرقاء
+ * 3) الباقة الأساسية (الأزرق) — خلفية سوداء + هيدر وفوتر التغريدة + ألوان زرقاء
  * ========================================================================== */
-export const PhoneBasicAdCard: React.FC<CommonCardProps> = ({
-  item,
-  categoryLabel,
-  timeAgo,
-  specs,
-  onOpenDetail,
-  onOpenImage,
-  onOpenBusiness,
-  onShare,
-}) => {
+export const PhoneBasicAdCard: React.FC<CommonCardProps> = (props) => {
+  const { item, timeAgo, specs, onOpenDetail, onOpenImage, onOpenBusiness } = props;
   const [expanded, setExpanded] = useState(false);
 
   const highlights =
@@ -601,12 +646,12 @@ export const PhoneBasicAdCard: React.FC<CommonCardProps> = ({
               >
                 {item.sellerName}
               </span>
-              <VerifiedBadge type={item.badgeType || (item.isVerified ? 'blue' : 'none')} size={14} className="shrink-0" />
-              <span className="text-[11px] text-[#71767B] truncate max-w-[65px] sm:max-w-[105px]" dir="ltr">
+              <VerifiedBadge type={item.badgeType || (item.isVerified ? 'blue' : 'none')} size={14.5} className="shrink-0" />
+              <span className="text-[11.5px] text-[#71767B] truncate max-w-[70px] sm:max-w-[110px]" dir="ltr">
                 @{getHandle(item)}
               </span>
-              <span className="text-[#71767B] text-[10px] shrink-0">·</span>
-              <span className="text-[#71767B] text-[10px] whitespace-nowrap shrink-0">{timeAgo}</span>
+              <span className="text-[#71767B] text-[10.5px] mx-0.5 shrink-0">·</span>
+              <span className="text-[#71767B] text-[10.5px] whitespace-nowrap shrink-0">{timeAgo}</span>
             </div>
 
             <span className="h-5 inline-flex items-center gap-1 px-2 rounded-full bg-[#0077E6] text-white text-[9.5px] font-black leading-none shrink-0">
@@ -620,9 +665,11 @@ export const PhoneBasicAdCard: React.FC<CommonCardProps> = ({
               <h3 className="text-[12.5px] font-bold text-white leading-[18px] break-words min-w-0">
                 {item.name}
               </h3>
-              <span className="text-[10.5px] font-semibold font-mono text-[#38BDF8] shrink-0">
-                {item.price.toLocaleString()} ر.ي
-              </span>
+              {item.price > 0 && (
+                <span className="text-[10.5px] font-semibold font-mono text-[#38BDF8] shrink-0">
+                  {item.price.toLocaleString()} ر.ي
+                </span>
+              )}
             </div>
 
             {bodyText && (
@@ -666,43 +713,7 @@ export const PhoneBasicAdCard: React.FC<CommonCardProps> = ({
             onOpenImage={() => onOpenImage(item)}
           />
 
-          <div
-            className="mt-2 pt-1 flex items-center justify-between gap-2 flex-wrap text-[11px] text-[#8B98A5] leading-none min-w-0"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <span className="inline-flex items-center gap-1 leading-none shrink-0">
-                <Eye size={12.5} className="text-[#38BDF8] shrink-0" />
-                <span>{formatCompact(item.viewsCount, 62000)}</span>
-              </span>
-              <a href={`tel:${item.sellerPhone}`} className="inline-flex items-center gap-1 hover:text-[#38BDF8] transition leading-none shrink-0">
-                <Phone size={12.5} className="shrink-0" />
-                <span>اتصال</span>
-              </a>
-              <button type="button" onClick={() => onOpenDetail(item)} className="hover:text-[#38BDF8] transition cursor-pointer leading-none shrink-0">
-                التفاصيل
-              </button>
-              <button type="button" onClick={() => onShare(item)} className="hover:text-[#38BDF8] transition cursor-pointer inline-flex items-center shrink-0" aria-label="مشاركة">
-                <svg viewBox="0 0 24 24" width="12.5" height="12.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="18" cy="5" r="2.5" />
-                  <circle cx="6" cy="12" r="2.5" />
-                  <circle cx="18" cy="19" r="2.5" />
-                  <line x1="8.5" y1="13.5" x2="15.5" y2="17.5" />
-                  <line x1="15.5" y1="6.5" x2="8.5" y2="10.5" />
-                </svg>
-              </button>
-            </div>
-
-            <a
-              href={buildWaUrl(item, categoryLabel)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-6 inline-flex items-center gap-1 px-2.5 rounded-full bg-[#0077E6] hover:bg-[#0066CC] text-white font-bold text-[10px] leading-none transition shrink-0"
-            >
-              <span>{item.ctaLabel || 'احصل عليه الآن'}</span>
-              <ArrowLeft size={10.5} className="shrink-0" />
-            </a>
-          </div>
+          {renderTweetLikeFooter(props, 'bg-[#0077E6] hover:bg-[#0066CC] text-white')}
         </div>
       </div>
     </article>

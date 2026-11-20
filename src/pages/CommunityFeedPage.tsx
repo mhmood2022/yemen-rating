@@ -117,8 +117,12 @@ interface Tweet {
 
 // دالة حفظ آمنة تحمي من QuotaExceededError وتضمن عدم امتلاء الذاكرة
 const safeSetStorage = (key: string, data: any) => {
-  // ⏸️ معطل: نعتمد على Supabase فقط لتجنب فقدان البيانات
-  console.log('safeSetStorage disabled');
+  try {
+    const payload = Array.isArray(data) ? data.slice(0, 20) : data;
+    localStorage.setItem(key, JSON.stringify(payload));
+  } catch {
+    try { localStorage.removeItem(key); } catch {}
+  }
 };
 
 const GLOBAL_FEED_KEY = 'yr_community_global_posts';
@@ -454,6 +458,14 @@ export const CommunityFeedPage: React.FC = () => {
       return cached ? JSON.parse(cached) : [];
     } catch { return []; }
   });
+  const [isInitialFeedLoading, setIsInitialFeedLoading] = useState<boolean>(() => {
+    try {
+      const cached = localStorage.getItem(GLOBAL_FEED_KEY);
+      return !(cached && JSON.parse(cached).length > 0);
+    } catch {
+      return true;
+    }
+  });
   // 🌟 قائمة انتظار التغريدات الجديدة (مثل X)
   const [newPostsQueue, setNewPostsQueue] = useState<any[]>([]);
   const [expandedTweets, setExpandedTweets] = useState<Record<string, boolean>>({});
@@ -505,10 +517,31 @@ export const CommunityFeedPage: React.FC = () => {
 
   useEffect(() => {
     const loadData = async () => {
-        try { localStorage.removeItem(GLOBAL_FEED_KEY); } catch(_) {}
       let uid = "";
+
+      // عرض الكاش فوراً (مثل إكس)
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const cached = JSON.parse(localStorage.getItem(GLOBAL_FEED_KEY) || '[]');
+        if (cached.length > 0) setTweets(cached);
+      } catch(_) {}
+
+      try {
+        // الدفعة 1 (متوازية): الجلسة + التغريدات + إعادات النشر
+        const [sessionRes, postsRes, repostsRes] = await Promise.all([
+          supabase.auth.getSession().catch(() => ({ data: { session: null } })),
+          supabase
+            .from('posts')
+            .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
+            .order('created_at', { ascending: false })
+            .limit(30),
+          supabase
+            .from('post_reposts')
+            .select('id, post_id, user_id, quote_text, created_at')
+            .order('created_at', { ascending: false })
+            .limit(50),
+        ]);
+
+        const session = (sessionRes as any)?.data?.session;
         if (session?.user) {
           uid = session.user.id;
           setCurrentUserId(session.user.id);
@@ -527,107 +560,85 @@ export const CommunityFeedPage: React.FC = () => {
             }
           });
         }
-      } catch (_) {}
 
-      
-    // عرض الكاش فوراً (مثل إكس)
-    try {
-      const cached = JSON.parse(localStorage.getItem(GLOBAL_FEED_KEY) || '[]');
-      if (cached.length > 0) setTweets(cached);
-    } catch(_) {}
-
-    try {
-      // 1. جلب جميع التغريدات من السحابة عبر البروكسي النظيف
-    
-                // جلب إعجابات وإعادات نشر المستخدم الحالي لضمان بقاء الألوان ثابتة
-        let myLikedPostIds = new Set();
-        let myRepostedPostIds = new Set();
-        if (uid) {
-          const { data: myLikes } = await supabase.from('post_likes').select('post_id').eq('user_id', uid);
-          // جلب قائمة الأشخاص الذين يتابعهم المستخدم
-          const { data: myFollows } = await supabase.from('follows').select('following_id').eq('follower_id', uid);
-          if (myFollows) {
-            setFollowingIds(myFollows.map((f: any) => f.following_id));
-            console.log('تم جلب المتابعين:', myFollows.length); // للتأكد من عمله
-          }
-        
-          myLikedPostIds = new Set((myLikes || []).map((l: any) => l.post_id));
-
-          const { data: myUserReposts } = await supabase.from('post_reposts').select('post_id').eq('user_id', uid);
-          myRepostedPostIds = new Set((myUserReposts || []).map((r: any) => r.post_id));
-        }
-
-        const { data: dbPosts, error: postsErr } = await supabase
-          .from('posts')
-          .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
-          .order('created_at', { ascending: false })
-          .limit(30);
-        
+        const dbPosts = postsRes.data;
+        const postsErr = postsRes.error;
         if (postsErr) {
-          
           console.error('Posts fetch error:', postsErr);
           return;
         }
-        // جلب إعادة النشر
-        const { data: dbReposts } = await supabase
-          .from('post_reposts')
-          .select('id, post_id, user_id, quote_text, created_at')
-          .order('created_at', { ascending: false })
-          .limit(50);
+        if (!Array.isArray(dbPosts)) return;
 
-        // جلب التغريدات الأصلية للإعادات (لضمان ظهورها حتى لو كانت قديمة)
-        const repostedPostIds = (dbReposts || []).map((r: any) => r.post_id);
-        let originalPostsMap = new Map();
-        if (repostedPostIds.length > 0) {
-          const { data: originals } = await supabase
-            .from('posts')
-            .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
-            .in('id', repostedPostIds);
-          (originals || []).forEach((p: any) => originalPostsMap.set(p.id, p));
+        const dbReposts = repostsRes.data;
+        const dbPostIds = new Set(dbPosts.map((p: any) => p.id));
+        const missingRepostedIds = [...new Set(
+          (dbReposts || []).map((r: any) => r.post_id).filter((id: any) => id && !dbPostIds.has(id))
+        )];
+
+        // الدفعة 2 (متوازية): التغريدات الأصلية الناقصة + تفاعلات ومتابعات المستخدم
+        const [originalsRes, likesRes, followsRes, userRepostsRes] = await Promise.all([
+          missingRepostedIds.length > 0
+            ? supabase
+                .from('posts')
+                .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
+                .in('id', missingRepostedIds)
+            : Promise.resolve({ data: [] as any[] }),
+          uid ? supabase.from('post_likes').select('post_id').eq('user_id', uid) : Promise.resolve({ data: [] as any[] }),
+          uid ? supabase.from('follows').select('following_id').eq('follower_id', uid) : Promise.resolve({ data: [] as any[] }),
+          uid ? supabase.from('post_reposts').select('post_id').eq('user_id', uid) : Promise.resolve({ data: [] as any[] }),
+        ]);
+
+        if (uid && followsRes.data) {
+          setFollowingIds(followsRes.data.map((f: any) => f.following_id));
         }
-        
-        // دمج dbPosts + originals
-        const allPosts = [...(dbPosts || [])];
+        const myLikedPostIds = new Set((likesRes.data || []).map((l: any) => l.post_id));
+        const myRepostedPostIds = new Set((userRepostsRes.data || []).map((r: any) => r.post_id));
+
+        const originalPostsMap = new Map();
+        (originalsRes.data || []).forEach((p: any) => originalPostsMap.set(p.id, p));
+
+        const allPosts = [...dbPosts];
         originalPostsMap.forEach((p: any, id: string) => {
           if (!allPosts.find((dp: any) => dp.id === id)) {
             allPosts.push(p);
           }
         });
-        
-        let localUsers = {};
-        try { localUsers = JSON.parse(localStorage.getItem('yr_users_directory') || '{}'); } catch(_) {}
-        if (!Array.isArray(dbPosts)) return;
 
-        // 2. جلب جميع البروفايلات المرتبطة
+        let localUsers: any = {};
+        try { localUsers = JSON.parse(localStorage.getItem('yr_users_directory') || '{}'); } catch(_) {}
+
+        // الدفعة 3 (متوازية): البروفايلات + المنشآت
         const allUserIds = [...new Set([
           ...allPosts.map((p: any) => p.user_id),
           ...(dbReposts || []).map((r: any) => r.user_id),
-          ...(dbPosts || []).map((p: any) => p.user_id),
         ])].filter((id): id is string => Boolean(id) && typeof id === "string" && id.length > 5);
-        let profileMap = new Map();
-        try {
-          const { data: dbProfiles, error: profErr } = await supabase
-            .from('profiles')
-            .select('id, full_name, username, avatar_url, verification_type, is_verified')
-            .in('id', allUserIds);
-          
-          if (profErr) {
-            console.error('Profiles fetch error:', profErr);
-          } else {
-            (dbProfiles || []).forEach((prof) => profileMap.set(prof.id, prof));
-          }
-        } catch (_) {}
 
-        // 3. بناء قائمة المجتمع وعرض كل التغريدات (لكل المغردين)
         const bizIds = [...new Set(allPosts.map((p: any) => p.business_id).filter(Boolean))];
-        let bizMap = new Map<string, any>();
-        if (bizIds.length > 0) {
-          const { data: dbBusinesses } = await supabase
-            .from('businesses')
-            .select('id, owner_id, name, slug, logo_url, is_verified, badge_type')
-            .in('id', bizIds);
-          (dbBusinesses || []).forEach((b: any) => bizMap.set(b.id, b));
+
+        const [profilesRes, businessesRes] = await Promise.all([
+          allUserIds.length > 0
+            ? supabase
+                .from('profiles')
+                .select('id, full_name, username, avatar_url, verification_type, is_verified')
+                .in('id', allUserIds)
+            : Promise.resolve({ data: [] as any[], error: null }),
+          bizIds.length > 0
+            ? supabase
+                .from('businesses')
+                .select('id, owner_id, name, slug, logo_url, is_verified, badge_type')
+                .in('id', bizIds)
+            : Promise.resolve({ data: [] as any[] }),
+        ]);
+
+        const profileMap = new Map();
+        if ((profilesRes as any).error) {
+          console.error('Profiles fetch error:', (profilesRes as any).error);
+        } else {
+          (profilesRes.data || []).forEach((prof: any) => profileMap.set(prof.id, prof));
         }
+
+        const bizMap = new Map<string, any>();
+        (businessesRes.data || []).forEach((b: any) => bizMap.set(b.id, b));
 
         const cloudTweets = dbPosts.map((p: any) => {
           const author = profileMap.get(p.user_id);
@@ -749,6 +760,9 @@ export const CommunityFeedPage: React.FC = () => {
         }
       } catch (err) {
         console.error("خطأ في جلب تغريدات المجتمع:", err);
+      }
+    finally {
+        setIsInitialFeedLoading(false);
       }
     };
     reloadFeedRef.current = loadData;
@@ -1836,11 +1850,17 @@ const handleAddComment = (e?: React.FormEvent) => {
             <AuctionsPage embedded />
           </div>
         ) : displayedTweets.length === 0 ? (
-          <div className="text-center py-20 text-zinc-500 text-xs px-4">
+          isInitialFeedLoading ? (
+            <div className="py-24 flex items-center justify-center">
+              <XSpinner size={28} />
+            </div>
+          ) : (
+            <div className="text-center py-20 text-zinc-500 text-xs px-4">
             {activeTab === 'forYou' 
           ? 'لا توجد منشورات حتى الآن في المجتمع. كن أول من يغرد!' 
           : 'أنت لا تتابع أحداً بعد. ابدأ بمتابعة الأشخاص لتظهر تغريداتهم هنا.'}
           </div>
+          )
         ) : (
 displayedTweets.slice(0, visibleTweetsCount).map(tweet => {
             
