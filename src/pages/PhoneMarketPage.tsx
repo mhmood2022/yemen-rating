@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { XSpinner } from '../components/ui/LoadingSpinner';
 import {
   Smartphone, Phone, MessageCircle, ArrowRight, Plus, X,
-  Upload, Trash2, User, Camera, MoreHorizontal
+  Upload, Trash2, User, Camera, MoreHorizontal, Globe
 } from 'lucide-react';
 import { XActionBar } from '../components/feed/XActionBar';
 import { AdBanner } from '../components/common/AdBanner';
@@ -42,6 +42,8 @@ export interface PhoneDeviceItem {
   negotiable?: string;
   color?: string;
   city: string;
+  location?: string;
+  contactUrl?: string;
   sellerName: string;
   sellerPhone: string;
   isVerified: boolean;
@@ -557,6 +559,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
   const [sellerPhoneTouched, setSellerPhoneTouched] = useState(false);
   const normalizeYemenPhone = (val: string) =>
     val.replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/\D/g, '').slice(0, 9);
+  const [adLocationOrSite, setAdLocationOrSite] = useState('');
   const isValidYemenPhone = (val: string) => /^(73|71|77|78)\d{7}$/.test(val);
   const [phoneCategory, setPhoneCategory] = useState<PhoneCategory>('phones');
   const [phoneBrand, setPhoneBrand] = useState<string>('Apple');
@@ -612,12 +615,12 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
           const p = profData as UserProfile;
           setProfile(p);
           setSellerName((prev) => prev || p.full_name || '');
-          setSellerPhone((prev) => prev || p.phone || '');
+          if (p.phone) setSellerPhone((prev) => prev || normalizeYemenPhone(p.phone!.replace(/^(\+?967)/, '')));
         }
         if (biz) {
           setMyBusinessPage(biz);
           setSellerName(biz.name || '');
-          setSellerPhone((prev) => prev || biz.phone || '');
+          if (biz.phone) setSellerPhone((prev) => prev || normalizeYemenPhone(biz.phone!.replace(/^(\+?967)/, '')));
           if (biz.city) setPhoneCity(biz.city);
         }
 
@@ -825,9 +828,10 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
       return;
     }
 
-    const accountStoredPhone = (myBusinessPage?.phone || profile?.phone || '').trim();
+    const rawAccountPhone = (myBusinessPage?.phone || profile?.phone || '').trim();
+    const normalizedAccountPhone = rawAccountPhone ? normalizeYemenPhone(rawAccountPhone.replace(/^(\+?967)/, '')) : '';
     const cleanedManualPhone = normalizeYemenPhone(sellerPhone);
-    const effectivePhone = accountStoredPhone || cleanedManualPhone;
+    const effectivePhone = cleanedManualPhone || normalizedAccountPhone;
     const numericPrice = composeKind === 'free'
       ? (Number(String(freeOptionalPrice).replace(/,/g, '')) || 0)
       : (Number(String(phonePrice).replace(/,/g, '')) || 0);
@@ -842,12 +846,10 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         showToast('يرجى كتابة السعر بالريال اليمني', 'error', 3500);
         return;
       }
-      if (!accountStoredPhone) {
-        setSellerPhoneTouched(true);
-        if (!isValidYemenPhone(cleanedManualPhone)) {
-          showToast('الرقم خاطئ', 'error', 3500);
-          return;
-        }
+      setSellerPhoneTouched(true);
+      if (!isValidYemenPhone(effectivePhone)) {
+        showToast('الرقم خاطئ', 'error', 3500);
+        return;
       }
     }
 
@@ -883,9 +885,13 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
 
       const resolvedTier: PhonePostTier = composeKind === 'free' ? 'free' : selectedAdTier;
       const resolvedImages =
-        composeKind === 'free' && uploadedImages.length === 0 && uploadedFiles.length === 0
+        uploadedImages.length === 0 && uploadedFiles.length === 0
           ? []
-          : finalImages;
+          : finalImages.filter((u) => Boolean(u && u.trim() && !u.includes('yr-logo')));
+      const rawLoc = adLocationOrSite.trim();
+      const isLocUrl = Boolean(rawLoc && (/^https?:\/\//i.test(rawLoc) || /^[a-z0-9-]+\.[a-z]{2,}/i.test(rawLoc)));
+      const resolvedContactUrl = isLocUrl ? (/^https?:\/\//i.test(rawLoc) ? rawLoc : `https://${rawLoc}`) : undefined;
+      const resolvedLocationText = rawLoc && !isLocUrl ? rawLoc : undefined;
 
       const isPureFreeTweet = composeKind === 'free' && !freeShowOptionalSpecs;
       const newEntry: PhoneDeviceItem = {
@@ -903,6 +909,8 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         negotiable: isPureFreeTweet ? '' : phoneNegotiable,
         color: isPureFreeTweet ? '' : phoneColor,
         city: phoneCity,
+        location: composeKind === 'paid' ? resolvedLocationText : undefined,
+        contactUrl: composeKind === 'paid' ? resolvedContactUrl : undefined,
         sellerName: activeName,
         sellerUsername: activeUsername,
         sellerAvatar: activeAvatar,
@@ -936,6 +944,8 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
       setFreeShowOptionalSpecs(false);
       setAdHeadline('');
       setAdHighlightsText('');
+      setAdLocationOrSite('');
+      setSellerPhoneTouched(false);
       showToast(composeKind === 'free' ? 'تم نشر التغريدة المجانية بنجاح' : 'تم نشر الإعلان المدفوع بنجاح', 'success', 3500);
     } catch (err: any) {
       showToast(toArabicMarketError(err, 'تعذر نشر الإعلان حالياً، يرجى المحاولة لاحقاً'), 'error', 4000);
@@ -1089,6 +1099,9 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         {selectedPhone ? ((() => {
           const livePhone = phonesList.find((p) => p.id === selectedPhone.id) || selectedPhone;
           const isFreeTweet = !livePhone.adTier || livePhone.adTier === 'free';
+          const cleanImages = (Array.isArray(livePhone.images) ? livePhone.images : [])
+            .map((u) => (u || '').trim())
+            .filter((u) => Boolean(u && !u.includes('yr-logo')));
           const cleanSpecs = isFreeTweet
             ? []
             : renderSpecBadges(livePhone).filter(
@@ -1104,6 +1117,9 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
           const shareSummary = isFreeTweet
             ? `${livePhone.description || livePhone.name}${livePhone.price > 0 ? ` - ${livePhone.price.toLocaleString()} ر.ي` : ''}`
             : `${CATEGORY_LABEL_MAP[livePhone.category]} ${livePhone.name}${livePhone.price > 0 ? ` - ${livePhone.price.toLocaleString()} ر.ي` : ''}`;
+          const isLiked = Boolean(livePhone.likedBy && activeAuthorKey && livePhone.likedBy.includes(activeAuthorKey));
+          const isReposted = Boolean(livePhone.repostedBy && activeAuthorKey && livePhone.repostedBy.includes(activeAuthorKey));
+          const locationDisplay = [livePhone.city, livePhone.location].filter(Boolean).join(' - ');
           return (
             <div data-no-tab-swipe="true" className="bg-black min-h-screen pb-24">
               <div className="sticky top-0 z-30 bg-black/95 backdrop-blur-md border-b border-[#2F3336]/60 px-3 py-1.5 flex items-center gap-2">
@@ -1120,14 +1136,14 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                 </h2>
               </div>
 
-              <article className="px-3.5 pt-2.5">
+              <article className="px-4 pt-2">
                 <div className="bg-black">
-                  <div className="pb-2.5 flex items-center justify-between gap-2 bg-black">
+                  <div className="pb-2 flex items-center justify-between gap-2 bg-black">
                     <div
                       onClick={() => { if (livePhone.businessId) onNavigate(`/businesses/${livePhone.businessId}`); }}
-                      className={`flex items-center gap-2 min-w-0 flex-1 ${livePhone.businessId ? 'cursor-pointer' : ''}`}
+                      className={`flex items-center gap-2.5 min-w-0 flex-1 ${livePhone.businessId ? 'cursor-pointer' : ''}`}
                     >
-                      <div className="w-9 h-9 rounded-full bg-black border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0 text-white font-bold text-xs">
+                      <div className="w-10 h-10 rounded-full bg-black border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0 text-white font-bold text-xs">
                         {livePhone.sellerAvatar ? (
                           <img src={livePhone.sellerAvatar} alt={livePhone.sellerName} className="w-full h-full object-cover" />
                         ) : (
@@ -1136,13 +1152,13 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1 min-w-0">
-                          <span className="font-bold text-[#E7E9EA] text-[13.5px] hover:underline truncate max-w-[165px] sm:max-w-[260px]">
+                          <span className="font-bold text-[#E7E9EA] text-[14px] hover:underline truncate max-w-[180px] sm:max-w-[260px]">
                             {livePhone.sellerName}
                           </span>
-                          <VerifiedBadge type={livePhone.badgeType || (livePhone.isVerified ? 'gold' : 'none')} size={13.5} className="shrink-0" />
+                          <VerifiedBadge type={livePhone.badgeType || (livePhone.isVerified ? 'gold' : 'none')} size={14} className="shrink-0" />
                         </div>
-                        <div className="flex items-center gap-1.5 text-[11px] text-[#71767B] min-w-0">
-                          <span className="truncate max-w-[115px]" dir="ltr">@{getDefaultHandle(livePhone)}</span>
+                        <div className="flex items-center gap-1.5 text-[11.5px] text-[#71767B] min-w-0">
+                          <span className="truncate max-w-[120px]" dir="ltr">@{getDefaultHandle(livePhone)}</span>
                           <span>·</span>
                           <span className="shrink-0">{formatPhoneTimeAgo(livePhone.createdAt)}</span>
                         </div>
@@ -1156,8 +1172,8 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                   </div>
 
                   {isFreeTweet ? (
-                    <div className="bg-black space-y-2.5">
-                      <p className="text-[14.5px] leading-[22px] text-[#E7E9EA] whitespace-pre-wrap break-words select-text">
+                    <div className="bg-black pt-1 space-y-2.5">
+                      <p dir="auto" className="text-[15px] leading-[23px] text-[#E7E9EA] whitespace-pre-wrap break-words select-text">
                         {livePhone.description || livePhone.name}
                       </p>
                       {livePhone.price > 0 && (
@@ -1165,7 +1181,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                           السعر: {livePhone.price.toLocaleString()} ر.ي
                         </div>
                       )}
-                      {livePhone.images.length > 0 && (
+                      {cleanImages.length > 0 && (
                         <div>
                           <div
                             className="relative bg-black cursor-pointer select-none overflow-hidden rounded-none border border-[#2F3336]/80"
@@ -1174,14 +1190,14 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                             onClick={() => setIsLightboxOpen(true)}
                           >
                             <img
-                              src={livePhone.images[activeImageIndex] || livePhone.images[0]}
+                              src={cleanImages[activeImageIndex] || cleanImages[0]}
                               alt={livePhone.name}
                               className="w-full max-h-[380px] object-cover rounded-none block"
                             />
                           </div>
-                          {livePhone.images.length > 1 && (
+                          {cleanImages.length > 1 && (
                             <div className="flex justify-center items-center gap-1.5 pt-2">
-                              {livePhone.images.map((_, idx) => (
+                              {cleanImages.map((_, idx) => (
                                 <button
                                   key={idx}
                                   type="button"
@@ -1196,7 +1212,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                     </div>
                   ) : (
                     <>
-                      {livePhone.images.length > 0 ? (
+                      {cleanImages.length > 0 ? (
                         <div className="bg-black">
                           <div
                             className="relative bg-black cursor-pointer select-none overflow-hidden rounded-none border border-[#2F3336]/80"
@@ -1205,7 +1221,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                             onClick={() => setIsLightboxOpen(true)}
                           >
                             <img
-                              src={livePhone.images[activeImageIndex] || livePhone.images[0]}
+                              src={cleanImages[activeImageIndex] || cleanImages[0]}
                               alt={livePhone.name}
                               className="w-full h-[290px] sm:h-[340px] object-cover rounded-none block"
                             />
@@ -1214,7 +1230,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                             <div className="absolute inset-x-0 bottom-0 px-3 py-2.5 flex items-end justify-between gap-3">
                               <div className="min-w-0 flex-1">
                                 <div className="text-[10.5px] text-[#A1A1AA]">
-                                  {CATEGORY_LABEL_MAP[livePhone.category]}{livePhone.city ? ` · ${livePhone.city}` : ''}
+                                  {CATEGORY_LABEL_MAP[livePhone.category]}{locationDisplay ? ` · ${locationDisplay}` : ''}
                                 </div>
                                 <h1 className="text-[15.5px] font-bold text-white leading-snug truncate">
                                   {livePhone.name}
@@ -1229,9 +1245,9 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                               )}
                             </div>
                           </div>
-                          {livePhone.images.length > 1 && (
+                          {cleanImages.length > 1 && (
                             <div className="flex justify-center items-center gap-1.5 pt-2">
-                              {livePhone.images.map((_, idx) => (
+                              {cleanImages.map((_, idx) => (
                                 <button
                                   key={idx}
                                   type="button"
@@ -1243,10 +1259,10 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                           )}
                         </div>
                       ) : (
-                        <div className="py-2.5 bg-black flex items-center justify-between gap-3">
+                        <div className="py-2 bg-black flex items-center justify-between gap-3">
                           <div className="min-w-0">
                             <div className="text-[10.5px] text-[#71767B]">
-                              {CATEGORY_LABEL_MAP[livePhone.category]}{livePhone.city ? ` · ${livePhone.city}` : ''}
+                              {CATEGORY_LABEL_MAP[livePhone.category]}{locationDisplay ? ` · ${locationDisplay}` : ''}
                             </div>
                             <h1 className="text-[15.5px] font-bold text-white leading-snug truncate">{livePhone.name}</h1>
                           </div>
@@ -1273,12 +1289,12 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                       )}
 
                       {livePhone.description && (
-                        <div className="pt-2 bg-black text-[12px] leading-[18px] text-[#D6D9DB] whitespace-pre-wrap break-words">
+                        <div dir="auto" className="pt-2 bg-black text-[12.5px] leading-[19px] text-[#D6D9DB] whitespace-pre-wrap break-words">
                           {livePhone.description}
                         </div>
                       )}
 
-                      {(hasContactPhone || livePhone.businessId) && (
+                      {(hasContactPhone || livePhone.contactUrl || livePhone.businessId) && (
                         <div className="pt-3 bg-black flex items-center gap-2">
                           {hasContactPhone && (
                             <>
@@ -1300,6 +1316,17 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                               </a>
                             </>
                           )}
+                          {livePhone.contactUrl && (
+                            <a
+                              href={livePhone.contactUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-none border border-[#2F3336]/80 bg-transparent text-[#E7E9EA] hover:border-white/50 transition text-[11.5px] font-medium"
+                            >
+                              <Globe size={13} />
+                              <span>الموقع</span>
+                            </a>
+                          )}
                           {livePhone.businessId && (
                             <button
                               type="button"
@@ -1316,32 +1343,73 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                   )}
                 </div>
 
-                <div className="mt-3 py-2 border-b border-[#2F3336]/60 text-[12px] text-[#71767B] flex items-center justify-between">
-                  <span>{formatPhoneTimeAgo(livePhone.createdAt)}{!isFreeTweet && livePhone.city ? ` · ${livePhone.city}` : ''}</span>
+                <div className="mt-3 py-2.5 border-b border-[#2F3336]/60 text-[12px] text-[#71767B] flex items-center justify-between">
+                  <span>{formatPhoneTimeAgo(livePhone.createdAt)}{!isFreeTweet && locationDisplay ? ` · ${locationDisplay}` : ''}</span>
                   {!isFreeTweet && <span>{CATEGORY_LABEL_MAP[livePhone.category]}</span>}
                 </div>
 
-                <div className="py-1 border-b border-[#2F3336]/60">
-                  <XActionBar
-                    tweet={{
-                      id: livePhone.id,
-                      likes: livePhone.likesCount ?? 0,
-                      likedBy: livePhone.likedBy ?? [],
-                      reposts: livePhone.repostsCount ?? 0,
-                      repostedBy: livePhone.repostedBy ?? [],
-                      replies: livePhone.repliesCount ?? 0,
-                      views: livePhone.viewsCount ?? 1,
-                    }}
-                    currentUserId={activeAuthorKey}
-                    onReply={() => showToast(hasContactPhone ? 'استخدم زر واتساب أو اتصال داخل الإعلان للتواصل المباشر' : 'تم تسجيل تفاعلك', 'success', 2500)}
-                    onRepost={() => togglePhoneRepost(livePhone.id)}
-                    onLike={() => togglePhoneLike(livePhone.id)}
-                    onBookmark={() => showToast('تم الحفظ في العلامات المرجعية', 'success', 2000)}
-                    onShare={() => {
+                <div className="py-2.5 px-2 border-b border-[#2F3336]/60 flex items-center justify-between text-[#71767B] select-none" dir="rtl">
+                  <button
+                    type="button"
+                    onClick={() => showToast(hasContactPhone ? 'استخدم زر واتساب أو اتصال للتواصل المباشر' : 'تم تسجيل تفاعلك', 'success', 2000)}
+                    className="flex items-center gap-1 hover:text-[#1D9BF0] transition cursor-pointer p-1"
+                    title="رد"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M1.751 10c0-4.42 3.584-8 8.001-8h4.496c4.417 0 8.001 3.58 8.001 8 0 3.297-1.988 6.16-4.887 7.382l.534 2.85c.08.43-.16.85-.56 1-.16.06-.33.09-.5.09-.27 0-.54-.11-.74-.31l-3.498-3.504c-.768.164-1.566.252-2.386.252-4.417 0-8.001-3.58-8.001-8zm8.001-6c-3.314 0-6 2.69-6 6 0 3.31 2.686 6 6 6 .802 0 1.58-.158 2.295-.457.406-.17.872-.07 1.176.244l2.039 2.043-.32-1.708c-.066-.352.062-.713.334-.949C17.279 13.568 18.25 11.87 18.25 10c0-3.31-2.69-6-6-6H9.752z" /></svg>
+                    {(livePhone.repliesCount ?? 0) > 0 && <span className="text-[11px]">{livePhone.repliesCount}</span>}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => togglePhoneRepost(livePhone.id)}
+                    className={`flex items-center gap-1 transition cursor-pointer p-1 ${isReposted ? 'text-[#00BA7C]' : 'hover:text-[#00BA7C]'}`}
+                    title="إعادة نشر"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M4.5 3.88l4.432 4.14-1.364 1.46L5.5 7.55V16c0 1.1.896 2 2 2H13v2H7.5c-2.209 0-4-1.79-4-4V7.55L1.432 9.48.068 8.02 4.5 3.88zM16.5 6H11V4h5.5c2.209 0 4 1.79 4 4v8.45l2.068-1.93 1.364 1.46-4.432 4.14-4.432-4.14 1.364-1.46 2.068 1.93V8c0-1.1-.896-2-2-2z" /></svg>
+                    {(livePhone.repostsCount ?? 0) > 0 && <span className="text-[11px]">{livePhone.repostsCount}</span>}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => togglePhoneLike(livePhone.id)}
+                    className={`flex items-center gap-1 transition cursor-pointer p-1 ${isLiked ? 'text-[#F91880]' : 'hover:text-[#F91880]'}`}
+                    title="إعجاب"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                      {isLiked ? (
+                        <path d="M20.884 13.19c-1.351 2.48-4.001 5.12-8.379 7.67l-.505.3-.505-.3c-4.379-2.55-7.029-5.19-8.382-7.67-1.36-2.5-1.41-4.86-.514-6.67.887-1.79 2.647-2.91 4.601-3.01 1.651-.09 3.368.56 4.798 2.01 1.429-1.45 3.146-2.1 4.796-2.01 1.954.1 3.714 1.22 4.601 3.01.896 1.81.846 4.17-.514 6.67z" />
+                      ) : (
+                        <path d="M16.697 5.5c-1.222-.06-2.679.51-3.89 2.16l-.805 1.09-.806-1.09C9.984 6.01 8.526 5.44 7.304 5.5c-2.415.11-4.3 2.11-4.3 4.6 0 2.23 1.25 4.3 3.393 6.08C8.38 17.84 10.74 19.38 12 20c1.26-.62 3.62-2.16 5.603-3.82 2.143-1.78 3.397-3.85 3.397-6.08 0-2.49-1.885-4.49-4.303-4.6zM2 10.1c0-3.53 2.76-6.4 6.27-6.57 1.84-.09 3.69.75 4.73 2.14 1.04-1.39 2.89-2.23 4.73-2.14 3.51.17 6.27 3.04 6.27 6.57 0 3.36-1.89 6.22-4.82 8.65-2.4 1.99-5.18 3.67-6.18 4.25-.33.19-.74.19-1.07 0-.99-.58-3.77-2.26-6.17-4.25C3.89 16.32 2 13.46 2 10.1z" />
+                      )}
+                    </svg>
+                    {(livePhone.likesCount ?? 0) > 0 && <span className="text-[11px]">{livePhone.likesCount}</span>}
+                  </button>
+
+                  <span className="flex items-center gap-1 p-1" title="المشاهدات">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10H6V21H4zm9.248 0v-7H15.25v7h-2.002z" /></svg>
+                    {(livePhone.viewsCount ?? 0) > 0 && <span className="text-[11px]">{livePhone.viewsCount}</span>}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => showToast('تم الحفظ في العلامات المرجعية', 'success', 2000)}
+                    className="hover:text-[#1D9BF0] transition cursor-pointer p-1"
+                    title="حفظ"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M4 4.5C4 3.12 5.119 2 6.5 2h11C18.881 2 20 3.12 20 4.5v18.44l-8-5.71-8 5.71V4.5zM6.5 4c-.276 0-.5.22-.5.5v14.56l6-4.29 6 4.29V4.5c0-.28-.224-.5-.5-.5h-11z" /></svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
                       navigator.clipboard?.writeText(shareSummary);
                       showToast('تم نسخ التفاصيل للمشاركة', 'success', 2500);
                     }}
-                  />
+                    className="hover:text-[#1D9BF0] transition cursor-pointer p-1"
+                    title="مشاركة"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" /><line x1="8.5" y1="13.5" x2="15.5" y2="17.5" /><line x1="15.5" y1="6.5" x2="8.5" y2="10.5" /></svg>
+                  </button>
                 </div>
               </article>
             </div>
@@ -1833,27 +1901,36 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                         ]}
                       />
                     </div>
-                    {!(myBusinessPage?.phone || profile?.phone || '').trim() && (
-                      <div>
-                        <label className="text-[11px] text-[#71767B] block mb-1">رقم الهاتف *</label>
-                        <input
-                          type="tel"
-                          inputMode="numeric"
-                          dir="ltr"
-                          maxLength={9}
-                          value={sellerPhone}
-                          onChange={(e) => {
-                            setSellerPhone(normalizeYemenPhone(e.target.value));
-                            if (!sellerPhoneTouched) setSellerPhoneTouched(true);
-                          }}
-                          onBlur={() => setSellerPhoneTouched(true)}
-                          className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white font-mono outline-none caret-white"
-                        />
-                        {sellerPhoneTouched && !isValidYemenPhone(normalizeYemenPhone(sellerPhone)) && (
-                          <p className="text-[11px] text-rose-400 mt-1">الرقم خاطئ</p>
-                        )}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[11px] text-[#71767B] block mb-1">رقم الهاتف *</label>
+                          <input
+                            type="tel"
+                            inputMode="numeric"
+                            dir="ltr"
+                            maxLength={9}
+                            value={sellerPhone}
+                            onChange={(e) => {
+                              setSellerPhone(normalizeYemenPhone(e.target.value));
+                              if (!sellerPhoneTouched) setSellerPhoneTouched(true);
+                            }}
+                            onBlur={() => setSellerPhoneTouched(true)}
+                            className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white font-mono outline-none caret-white"
+                          />
+                          {sellerPhoneTouched && !isValidYemenPhone(normalizeYemenPhone(sellerPhone)) && (
+                            <p className="text-[11px] text-rose-400 mt-1">الرقم خاطئ</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="text-[11px] text-[#71767B] block mb-1">الموقع</label>
+                          <input
+                            type="text"
+                            value={adLocationOrSite}
+                            onChange={(e) => setAdLocationOrSite(e.target.value)}
+                            className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2 text-xs text-white outline-none caret-white"
+                          />
+                        </div>
                       </div>
-                    )}
                   </div>
                 )}
 
