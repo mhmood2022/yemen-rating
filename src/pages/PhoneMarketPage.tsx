@@ -855,10 +855,8 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
           }
         }
       }
-      if (finalImages.length === 0) {
-        finalImages = uploadedImages.length > 0
-          ? uploadedImages
-          : ['https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=900&auto=format&fit=crop&q=85'];
+      if (finalImages.length === 0 && uploadedImages.length > 0) {
+        finalImages = uploadedImages.filter((u) => Boolean(u && u.trim()));
       }
 
       const activeName = myBusinessPage?.name || sellerName.trim() || profile?.full_name || 'بائع معتمد';

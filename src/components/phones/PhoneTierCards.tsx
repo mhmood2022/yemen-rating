@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Crown,
   Star,
@@ -9,7 +9,7 @@ import {
   Eye,
   Megaphone,
   ShieldCheck,
-  Truck,
+  Zap,
   Headphones,
   Cpu,
   HardDrive,
@@ -78,7 +78,70 @@ const buildWaUrl = (item: PhoneCardData, categoryLabel: string) =>
   )}`;
 
 const getHandle = (item: PhoneCardData) =>
-  item.sellerUsername || item.brand.toLowerCase().replace(/\s+/g, '');
+  item.sellerUsername || (item.brand ? item.brand.toLowerCase().replace(/\s+/g, '') : 'user');
+
+
+const AdAutoImageSlider: React.FC<{
+  images?: string[];
+  alt: string;
+  borderClass: string;
+  dotActiveClass: string;
+  onOpenImage: () => void;
+}> = ({ images, alt, borderClass, dotActiveClass, onOpenImage }) => {
+  const validImages = React.useMemo(
+    () => (Array.isArray(images) ? images.map((s) => (s || '').trim()).filter(Boolean) : []),
+    [images]
+  );
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    setIdx(0);
+  }, [validImages.length]);
+
+  useEffect(() => {
+    if (validImages.length <= 1) return;
+    const t = setInterval(() => {
+      setIdx((prev) => (prev + 1) % validImages.length);
+    }, 3500);
+    return () => clearInterval(t);
+  }, [validImages.length]);
+
+  if (validImages.length === 0) return null;
+
+  const safeIdx = idx % validImages.length;
+
+  return (
+    <div
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpenImage();
+      }}
+      className={`mt-2 rounded-2xl overflow-hidden border ${borderClass} max-h-80 bg-zinc-950 relative cursor-pointer`}
+    >
+      <img
+        src={validImages[safeIdx]}
+        alt={alt}
+        className="w-full max-h-80 object-cover transition-opacity duration-500"
+        loading="lazy"
+      />
+      {validImages.length > 1 && (
+        <>
+          <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/80 text-white text-[10px] font-bold border border-white/10">
+            {safeIdx + 1} / {validImages.length}
+          </span>
+          <div className="absolute bottom-2.5 right-3 flex items-center gap-1">
+            {validImages.map((_, i) => (
+              <span
+                key={i}
+                className={`h-1 rounded-full transition-all ${i === safeIdx ? `w-3.5 ${dotActiveClass}` : 'w-1.5 bg-white/40'}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 const formatCompact = (n?: number, fallback = 120) => {
   const num = Number(n || fallback);
@@ -87,7 +150,7 @@ const formatCompact = (n?: number, fallback = 120) => {
 };
 
 /* ============================================================================
- * 1) باقة VIP — خلفية سوداء بلمعة بنفسجية ملكية وإطار ذهبي وترتيب التغريدة
+ * 1) باقة VIP — خلفية سوداء نقية + رموز وألوان بنفسجية
  * ========================================================================== */
 export const PhoneVipBanner: React.FC<
   CommonCardProps & {
@@ -108,12 +171,19 @@ export const PhoneVipBanner: React.FC<
   activeVipIndex = 0,
   onSelectVipIndex,
 }) => {
+  const [expanded, setExpanded] = useState(false);
+
   const highlights =
     item.highlights && item.highlights.length > 0
-      ? item.highlights.slice(0, 3)
-      : specs.slice(0, 3).map((s) => `${s.k}: ${s.v}`);
+      ? item.highlights.slice(0, 4)
+      : specs.slice(0, 4).map((s) => `${s.k}: ${s.v}`);
 
-  const vipIcons = [ShieldCheck, Truck, Headphones];
+  const fullText = [item.headline ? `${categoryLabel} · ${item.name}` : '', item.description || '']
+    .filter(Boolean)
+    .join(' — ');
+  const hasMoreInfo = fullText.length > 85 || highlights.length > 2;
+  const visibleHighlights = expanded ? highlights : highlights.slice(0, 2);
+  const vipIcons = [ShieldCheck, Zap, Headphones, Check];
 
   return (
     <article
@@ -123,16 +193,16 @@ export const PhoneVipBanner: React.FC<
           onOpenDetail(item);
         }
       }}
-      className="w-full rounded-none bg-black bg-gradient-to-b from-[#2A1154]/45 via-black to-black border-y border-[#FFC500]/80 p-3 hover:from-[#2A1154]/55 transition cursor-pointer select-none"
+      className="w-full overflow-hidden rounded-none bg-black border-y border-[#A855F7]/70 p-3 hover:bg-white/[0.02] transition cursor-pointer select-none"
     >
-      <div className="flex gap-3">
+      <div className="flex gap-3 min-w-0">
         <div
           onClick={(e) => {
             e.stopPropagation();
             if (item.businessId && onOpenBusiness) onOpenBusiness(item.businessId);
             else onOpenDetail(item);
           }}
-          className="w-12 h-12 rounded-full bg-zinc-900 border-[1.5px] border-[#FFC500] flex items-center justify-center shrink-0 overflow-hidden font-bold text-[#FFC500] text-lg cursor-pointer hover:opacity-85 transition"
+          className="w-12 h-12 rounded-full bg-zinc-900 border-[1.5px] border-[#A855F7] flex items-center justify-center shrink-0 overflow-hidden font-bold text-[#C084FC] text-lg cursor-pointer hover:opacity-85 transition"
         >
           {item.sellerAvatar ? (
             <img src={item.sellerAvatar} alt={item.sellerName} className="w-full h-full object-cover" />
@@ -141,9 +211,9 @@ export const PhoneVipBanner: React.FC<
           )}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center flex-nowrap min-w-0 gap-1">
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <div className="flex items-center justify-between gap-1.5 min-w-0">
+            <div className="flex items-center flex-nowrap min-w-0 flex-1 gap-1 overflow-hidden">
               <span
                 onClick={(e) => {
                   if (item.businessId && onOpenBusiness) {
@@ -151,21 +221,21 @@ export const PhoneVipBanner: React.FC<
                     onOpenBusiness(item.businessId);
                   }
                 }}
-                className="font-bold text-[#E7E9EA] text-[12.5px] hover:underline cursor-pointer truncate shrink max-w-[120px] sm:max-w-[175px]"
+                className="font-bold text-[#E7E9EA] text-[12.5px] hover:underline cursor-pointer truncate min-w-0"
               >
                 {item.sellerName}
               </span>
-              <VerifiedBadge type={item.badgeType || (item.isVerified ? 'gold' : 'none')} size={14.5} className="shrink-0" />
-              <span className="text-[11.5px] text-[#71767B] truncate shrink max-w-[75px] sm:max-w-[115px]" dir="ltr">
+              <VerifiedBadge type={item.badgeType || (item.isVerified ? 'gold' : 'none')} size={14} className="shrink-0" />
+              <span className="text-[11px] text-[#71767B] truncate max-w-[65px] sm:max-w-[105px]" dir="ltr">
                 @{getHandle(item)}
               </span>
-              <span className="text-[#71767B] text-[10.5px] mx-0.5 shrink-0">·</span>
-              <span className="text-[#71767B] text-[10.5px] whitespace-nowrap shrink-0">{timeAgo}</span>
+              <span className="text-[#71767B] text-[10px] shrink-0">·</span>
+              <span className="text-[#71767B] text-[10px] whitespace-nowrap shrink-0">{timeAgo}</span>
             </div>
 
             <div className="flex items-center gap-1 shrink-0">
               {totalVipCount > 1 && onSelectVipIndex && (
-                <div className="flex items-center gap-0.5 text-[10px] text-[#FFC500] font-bold">
+                <div className="flex items-center gap-0.5 text-[10px] text-[#C084FC] font-bold">
                   <button
                     type="button"
                     onClick={(e) => {
@@ -175,7 +245,7 @@ export const PhoneVipBanner: React.FC<
                     className="p-0.5 hover:text-white cursor-pointer"
                     aria-label="السابق"
                   >
-                    <ChevronRight size={12} />
+                    <ChevronRight size={11} />
                   </button>
                   <span>{activeVipIndex + 1}/{totalVipCount}</span>
                   <button
@@ -187,89 +257,87 @@ export const PhoneVipBanner: React.FC<
                     className="p-0.5 hover:text-white cursor-pointer"
                     aria-label="التالي"
                   >
-                    <ChevronLeft size={12} />
+                    <ChevronLeft size={11} />
                   </button>
                 </div>
               )}
-              <span className="h-[22px] inline-flex items-center gap-1 px-2.5 rounded-full bg-gradient-to-r from-[#F5B727] to-[#FCE068] text-black text-[10.5px] font-black leading-none">
-                <Crown size={11} className="stroke-[2.5] shrink-0" />
-                <span>إعلان VIP مثبت</span>
+              <span className="h-5 inline-flex items-center gap-1 px-2 rounded-full bg-[#9333EA] text-white text-[9.5px] font-black leading-none shrink-0">
+                <Crown size={10} className="stroke-[2.5] shrink-0" />
+                <span>VIP مثبت</span>
               </span>
             </div>
           </div>
 
-          <div className="mt-1 space-y-1.5">
-            <div className="flex items-baseline justify-between gap-2 flex-wrap">
-              <h3 className="text-[14.5px] font-black text-[#FFD748] leading-[20px]">
+          <div className="mt-1 space-y-1 min-w-0">
+            <div className="flex items-baseline justify-between gap-2 flex-wrap min-w-0">
+              <h3 className="text-[12.5px] font-bold text-[#E9D5FF] leading-[18px] break-words min-w-0">
                 {item.headline || item.name}
               </h3>
-              <span className="text-[14px] font-black font-mono text-[#FFC500] shrink-0">
+              <span className="text-[10.5px] font-semibold font-mono text-[#C084FC] shrink-0">
                 {item.price.toLocaleString()} ر.ي
               </span>
             </div>
 
-            {item.headline && (
-              <p className="text-[12.5px] font-bold text-white leading-[18px]">
-                {categoryLabel} · {item.name}
+            {fullText && (
+              <p className={`text-[12.5px] leading-[19px] text-[#D6D9DB] whitespace-pre-wrap break-words ${!expanded ? 'line-clamp-2' : ''}`}>
+                {fullText}
               </p>
             )}
 
-            {item.description && (
-              <p className="text-[13px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap break-words">
-                {item.description}
-              </p>
-            )}
-
-            {highlights.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 pt-0.5 text-[11.5px] leading-[18px] text-[#E7E9EA]">
-                {highlights.map((h, i) => {
+            {visibleHighlights.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 pt-0.5 text-[11px] leading-[17px] text-[#E7E9EA]">
+                {visibleHighlights.map((h, i) => {
                   const IconComp = vipIcons[i % vipIcons.length];
                   return (
-                    <span key={i} className="inline-flex items-center gap-1">
-                      <IconComp size={12.5} className="text-[#FFD748] shrink-0" />
-                      <span>{h}</span>
+                    <span key={i} className="inline-flex items-center gap-1 min-w-0 max-w-full">
+                      <IconComp size={11.5} className="text-[#C084FC] shrink-0" />
+                      <span className="truncate">{h}</span>
                     </span>
                   );
                 })}
               </div>
             )}
+
+            {hasMoreInfo && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpanded((v) => !v);
+                }}
+                className="text-[11px] font-bold text-[#C084FC] hover:underline cursor-pointer pt-0.5"
+              >
+                {expanded ? 'عرض أقل' : 'عرض المزيد'}
+              </button>
+            )}
           </div>
 
-          {item.images?.[0] && (
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenImage(item);
-              }}
-              className="mt-2.5 rounded-2xl overflow-hidden border border-[#FFC500]/35 max-h-80 bg-zinc-950 relative cursor-pointer"
-            >
-              <img src={item.images[0]} alt={item.name} className="w-full max-h-80 object-cover" loading="lazy" />
-              {item.images.length > 1 && (
-                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/80 text-white text-[10.5px] font-bold border border-white/10">
-                  1 / {item.images.length}
-                </span>
-              )}
-            </div>
-          )}
+          <AdAutoImageSlider
+            images={item.images}
+            alt={item.name}
+            borderClass="border-[#A855F7]/35"
+            dotActiveClass="bg-[#C084FC]"
+            onOpenImage={() => onOpenImage(item)}
+          />
 
           <div
-            className="mt-2.5 pt-1 flex items-center justify-between gap-2 text-[11.5px] text-[#8B98A5] leading-none"
+            className="mt-2 pt-1 flex items-center justify-between gap-2 flex-wrap text-[11px] text-[#8B98A5] leading-none min-w-0"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3.5">
-              <span className="inline-flex items-center gap-1 leading-none">
-                <Eye size={13.5} className="text-[#FFD748] shrink-0" />
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="inline-flex items-center gap-1 leading-none shrink-0">
+                <Eye size={12.5} className="text-[#C084FC] shrink-0" />
                 <span>{formatCompact(item.viewsCount, 125000)}</span>
               </span>
-              <a href={`tel:${item.sellerPhone}`} className="inline-flex items-center gap-1 hover:text-[#FFD748] transition leading-none">
-                <Phone size={13.5} className="shrink-0" />
+              <a href={`tel:${item.sellerPhone}`} className="inline-flex items-center gap-1 hover:text-[#C084FC] transition leading-none shrink-0">
+                <Phone size={12.5} className="shrink-0" />
                 <span>اتصال</span>
               </a>
-              <button type="button" onClick={() => onOpenDetail(item)} className="hover:text-[#FFD748] transition cursor-pointer leading-none">
+              <button type="button" onClick={() => onOpenDetail(item)} className="hover:text-[#C084FC] transition cursor-pointer leading-none shrink-0">
                 التفاصيل
               </button>
-              <button type="button" onClick={() => onShare(item)} className="hover:text-[#FFD748] transition cursor-pointer inline-flex items-center" aria-label="مشاركة">
-                <svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <button type="button" onClick={() => onShare(item)} className="hover:text-[#C084FC] transition cursor-pointer inline-flex items-center shrink-0" aria-label="مشاركة">
+                <svg viewBox="0 0 24 24" width="12.5" height="12.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="18" cy="5" r="2.5" />
                   <circle cx="6" cy="12" r="2.5" />
                   <circle cx="18" cy="19" r="2.5" />
@@ -283,10 +351,10 @@ export const PhoneVipBanner: React.FC<
               href={buildWaUrl(item, categoryLabel)}
               target="_blank"
               rel="noopener noreferrer"
-              className="h-7 inline-flex items-center gap-1.5 px-3.5 rounded-full bg-[#FFC500] hover:bg-[#e5b200] text-black font-black text-[11px] leading-none transition shrink-0"
+              className="h-6 inline-flex items-center gap-1 px-2.5 rounded-full bg-[#9333EA] hover:bg-[#7E22CE] text-white font-bold text-[10px] leading-none transition shrink-0"
             >
               <span>{item.ctaLabel || 'تسوق الآن'}</span>
-              <ArrowLeft size={12.5} className="shrink-0" />
+              <ArrowLeft size={10.5} className="shrink-0" />
             </a>
           </div>
         </div>
@@ -296,7 +364,7 @@ export const PhoneVipBanner: React.FC<
 };
 
 /* ============================================================================
- * 2) الباقة الاحترافية (الذهبي) — خلفية سوداء + ألوان ذهبية خالصة + ترتيب التغريدة
+ * 2) الباقة الاحترافية (الفضي) — خلفية سوداء نقية + ألوان فضية
  * ========================================================================== */
 export const PhoneProAdCard: React.FC<CommonCardProps> = ({
   item,
@@ -308,11 +376,16 @@ export const PhoneProAdCard: React.FC<CommonCardProps> = ({
   onOpenBusiness,
   onShare,
 }) => {
+  const [expanded, setExpanded] = useState(false);
+
   const highlights =
     item.highlights && item.highlights.length > 0
       ? item.highlights.slice(0, 4)
       : specs.slice(0, 4).map((s) => `${s.k}: ${s.v}`);
 
+  const bodyText = item.headline || item.description || '';
+  const hasMoreInfo = bodyText.length > 85 || highlights.length > 2;
+  const visibleHighlights = expanded ? highlights : highlights.slice(0, 2);
   const proIcons = [HardDrive, Cpu, BatteryCharging, Check];
 
   return (
@@ -323,16 +396,16 @@ export const PhoneProAdCard: React.FC<CommonCardProps> = ({
           onOpenDetail(item);
         }
       }}
-      className="w-full rounded-none bg-black bg-gradient-to-b from-[#FFC500]/[0.08] via-black to-black border-y border-[#FFC500]/70 p-3 hover:from-[#FFC500]/[0.12] transition cursor-pointer select-none"
+      className="w-full overflow-hidden rounded-none bg-black border-y border-[#CBD5E1]/55 p-3 hover:bg-white/[0.02] transition cursor-pointer select-none"
     >
-      <div className="flex gap-3">
+      <div className="flex gap-3 min-w-0">
         <div
           onClick={(e) => {
             e.stopPropagation();
             if (item.businessId && onOpenBusiness) onOpenBusiness(item.businessId);
             else onOpenDetail(item);
           }}
-          className="w-12 h-12 rounded-full bg-zinc-900 border-[1.5px] border-[#FFC500]/80 flex items-center justify-center shrink-0 overflow-hidden font-bold text-[#FFC500] text-lg cursor-pointer hover:opacity-85 transition"
+          className="w-12 h-12 rounded-full bg-zinc-900 border-[1.5px] border-[#CBD5E1]/80 flex items-center justify-center shrink-0 overflow-hidden font-bold text-[#E2E8F0] text-lg cursor-pointer hover:opacity-85 transition"
         >
           {item.sellerAvatar ? (
             <img src={item.sellerAvatar} alt={item.sellerName} className="w-full h-full object-cover" />
@@ -341,9 +414,9 @@ export const PhoneProAdCard: React.FC<CommonCardProps> = ({
           )}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center flex-nowrap min-w-0 gap-1">
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <div className="flex items-center justify-between gap-1.5 min-w-0">
+            <div className="flex items-center flex-nowrap min-w-0 flex-1 gap-1 overflow-hidden">
               <span
                 onClick={(e) => {
                   if (item.businessId && onOpenBusiness) {
@@ -351,97 +424,94 @@ export const PhoneProAdCard: React.FC<CommonCardProps> = ({
                     onOpenBusiness(item.businessId);
                   }
                 }}
-                className="font-bold text-[#E7E9EA] text-[12.5px] hover:underline cursor-pointer truncate shrink max-w-[125px] sm:max-w-[175px]"
+                className="font-bold text-[#E7E9EA] text-[12.5px] hover:underline cursor-pointer truncate min-w-0"
               >
                 {item.sellerName}
               </span>
-              <VerifiedBadge type={item.badgeType || (item.isVerified ? 'gold' : 'none')} size={14.5} className="shrink-0" />
-              <span className="text-[11.5px] text-[#71767B] truncate shrink max-w-[80px] sm:max-w-[115px]" dir="ltr">
+              <VerifiedBadge type={item.badgeType || (item.isVerified ? 'silver' : 'none')} size={14} className="shrink-0" />
+              <span className="text-[11px] text-[#71767B] truncate max-w-[65px] sm:max-w-[105px]" dir="ltr">
                 @{getHandle(item)}
               </span>
-              <span className="text-[#71767B] text-[10.5px] mx-0.5 shrink-0">·</span>
-              <span className="text-[#71767B] text-[10.5px] whitespace-nowrap shrink-0">{timeAgo}</span>
+              <span className="text-[#71767B] text-[10px] shrink-0">·</span>
+              <span className="text-[#71767B] text-[10px] whitespace-nowrap shrink-0">{timeAgo}</span>
             </div>
 
-            <span className="h-[22px] inline-flex items-center gap-1 px-2.5 rounded-full bg-[#FFC500] text-black text-[10.5px] font-black leading-none shrink-0">
-              <Star size={11} className="fill-black stroke-black shrink-0" />
+            <span className="h-5 inline-flex items-center gap-1 px-2 rounded-full bg-[#CBD5E1] text-black text-[9.5px] font-black leading-none shrink-0">
+              <Star size={10} className="fill-black stroke-black shrink-0" />
               <span>إعلان مميز</span>
             </span>
           </div>
 
-          <div className="mt-1 space-y-1.5">
-            <div className="flex items-baseline justify-between gap-2 flex-wrap">
-              <h3 className="text-[14.5px] font-black text-white leading-[20px]">
+          <div className="mt-1 space-y-1 min-w-0">
+            <div className="flex items-baseline justify-between gap-2 flex-wrap min-w-0">
+              <h3 className="text-[12.5px] font-bold text-white leading-[18px] break-words min-w-0">
                 {item.name}
               </h3>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <span className="text-[14px] font-black font-mono text-[#FFC500]">
-                  {item.price.toLocaleString()} ر.ي
-                </span>
-                {item.negotiable === 'نعم' && (
-                  <span className="text-[10px] text-[#FFC500] font-bold border border-[#FFC500]/40 bg-[#FFC500]/10 px-1.5 py-0.5 rounded-full">
-                    قابل للتفاوض
-                  </span>
-                )}
-              </div>
+              <span className="text-[10.5px] font-semibold font-mono text-[#CBD5E1] shrink-0">
+                {item.price.toLocaleString()} ر.ي
+              </span>
             </div>
 
-            {(item.headline || item.description) && (
-              <p className="text-[13px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap break-words">
-                {item.headline || item.description}
+            {bodyText && (
+              <p className={`text-[12.5px] leading-[19px] text-[#D6D9DB] whitespace-pre-wrap break-words ${!expanded ? 'line-clamp-2' : ''}`}>
+                {bodyText}
               </p>
             )}
 
-            {highlights.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 pt-0.5 text-[11.5px] leading-[18px] text-zinc-200">
-                {highlights.map((h, i) => {
+            {visibleHighlights.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 pt-0.5 text-[11px] leading-[17px] text-zinc-300">
+                {visibleHighlights.map((h, i) => {
                   const IconComp = proIcons[i % proIcons.length];
                   return (
-                    <span key={i} className="inline-flex items-center gap-1">
-                      <IconComp size={12.5} className="text-[#FFC500] shrink-0" />
-                      <span>{h}</span>
+                    <span key={i} className="inline-flex items-center gap-1 min-w-0 max-w-full">
+                      <IconComp size={11.5} className="text-[#CBD5E1] shrink-0" />
+                      <span className="truncate">{h}</span>
                     </span>
                   );
                 })}
               </div>
             )}
+
+            {hasMoreInfo && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpanded((v) => !v);
+                }}
+                className="text-[11px] font-bold text-[#CBD5E1] hover:underline cursor-pointer pt-0.5"
+              >
+                {expanded ? 'عرض أقل' : 'عرض المزيد'}
+              </button>
+            )}
           </div>
 
-          {item.images?.[0] && (
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenImage(item);
-              }}
-              className="mt-2.5 rounded-2xl overflow-hidden border border-[#FFC500]/30 max-h-80 bg-zinc-950 relative cursor-pointer"
-            >
-              <img src={item.images[0]} alt={item.name} className="w-full max-h-80 object-cover" loading="lazy" />
-              {item.images.length > 1 && (
-                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/80 text-white text-[10.5px] font-bold border border-white/10">
-                  1 / {item.images.length}
-                </span>
-              )}
-            </div>
-          )}
+          <AdAutoImageSlider
+            images={item.images}
+            alt={item.name}
+            borderClass="border-[#CBD5E1]/30"
+            dotActiveClass="bg-[#CBD5E1]"
+            onOpenImage={() => onOpenImage(item)}
+          />
 
           <div
-            className="mt-2.5 pt-1 flex items-center justify-between gap-2 text-[11.5px] text-[#8B98A5] leading-none"
+            className="mt-2 pt-1 flex items-center justify-between gap-2 flex-wrap text-[11px] text-[#8B98A5] leading-none min-w-0"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3.5">
-              <span className="inline-flex items-center gap-1 leading-none">
-                <Eye size={13.5} className="text-[#FFC500] shrink-0" />
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="inline-flex items-center gap-1 leading-none shrink-0">
+                <Eye size={12.5} className="text-[#CBD5E1] shrink-0" />
                 <span>{formatCompact(item.viewsCount, 78000)}</span>
               </span>
-              <a href={`tel:${item.sellerPhone}`} className="inline-flex items-center gap-1 hover:text-[#FFC500] transition leading-none">
-                <Phone size={13.5} className="shrink-0" />
+              <a href={`tel:${item.sellerPhone}`} className="inline-flex items-center gap-1 hover:text-[#E2E8F0] transition leading-none shrink-0">
+                <Phone size={12.5} className="shrink-0" />
                 <span>اتصال</span>
               </a>
-              <button type="button" onClick={() => onOpenDetail(item)} className="hover:text-[#FFC500] transition cursor-pointer leading-none">
+              <button type="button" onClick={() => onOpenDetail(item)} className="hover:text-[#E2E8F0] transition cursor-pointer leading-none shrink-0">
                 التفاصيل
               </button>
-              <button type="button" onClick={() => onShare(item)} className="hover:text-[#FFC500] transition cursor-pointer inline-flex items-center" aria-label="مشاركة">
-                <svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <button type="button" onClick={() => onShare(item)} className="hover:text-[#E2E8F0] transition cursor-pointer inline-flex items-center shrink-0" aria-label="مشاركة">
+                <svg viewBox="0 0 24 24" width="12.5" height="12.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="18" cy="5" r="2.5" />
                   <circle cx="6" cy="12" r="2.5" />
                   <circle cx="18" cy="19" r="2.5" />
@@ -455,9 +525,9 @@ export const PhoneProAdCard: React.FC<CommonCardProps> = ({
               href={buildWaUrl(item, categoryLabel)}
               target="_blank"
               rel="noopener noreferrer"
-              className="h-7 inline-flex items-center gap-1.5 px-3.5 rounded-full bg-[#FFC500] hover:bg-[#e5b200] text-black font-black text-[11px] leading-none transition shrink-0"
+              className="h-6 inline-flex items-center gap-1 px-2.5 rounded-full bg-[#CBD5E1] hover:bg-white text-black font-bold text-[10px] leading-none transition shrink-0"
             >
-              <MessageCircle size={12.5} className="shrink-0" />
+              <MessageCircle size={10.5} className="shrink-0" />
               <span>{item.ctaLabel || 'تواصل معنا'}</span>
             </a>
           </div>
@@ -468,7 +538,7 @@ export const PhoneProAdCard: React.FC<CommonCardProps> = ({
 };
 
 /* ============================================================================
- * 3) الباقة الأساسية (الأزرق) — خلفية سوداء + ألوان زرقاء خالصة + ترتيب التغريدة
+ * 3) الباقة الأساسية (الأزرق) — خلفية سوداء نقية + ألوان زرقاء
  * ========================================================================== */
 export const PhoneBasicAdCard: React.FC<CommonCardProps> = ({
   item,
@@ -480,10 +550,16 @@ export const PhoneBasicAdCard: React.FC<CommonCardProps> = ({
   onOpenBusiness,
   onShare,
 }) => {
+  const [expanded, setExpanded] = useState(false);
+
   const highlights =
     item.highlights && item.highlights.length > 0
-      ? item.highlights.slice(0, 3)
-      : specs.slice(0, 3).map((s) => `${s.k}: ${s.v}`);
+      ? item.highlights.slice(0, 4)
+      : specs.slice(0, 4).map((s) => `${s.k}: ${s.v}`);
+
+  const bodyText = item.headline || item.description || '';
+  const hasMoreInfo = bodyText.length > 85 || highlights.length > 2;
+  const visibleHighlights = expanded ? highlights : highlights.slice(0, 2);
 
   return (
     <article
@@ -493,9 +569,9 @@ export const PhoneBasicAdCard: React.FC<CommonCardProps> = ({
           onOpenDetail(item);
         }
       }}
-      className="w-full rounded-none bg-black bg-gradient-to-b from-[#1D9BF0]/[0.08] via-black to-black border-y border-[#1D9BF0]/55 p-3 hover:from-[#1D9BF0]/[0.12] transition cursor-pointer select-none"
+      className="w-full overflow-hidden rounded-none bg-black border-y border-[#1D9BF0]/55 p-3 hover:bg-white/[0.02] transition cursor-pointer select-none"
     >
-      <div className="flex gap-3">
+      <div className="flex gap-3 min-w-0">
         <div
           onClick={(e) => {
             e.stopPropagation();
@@ -511,9 +587,9 @@ export const PhoneBasicAdCard: React.FC<CommonCardProps> = ({
           )}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center flex-nowrap min-w-0 gap-1">
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <div className="flex items-center justify-between gap-1.5 min-w-0">
+            <div className="flex items-center flex-nowrap min-w-0 flex-1 gap-1 overflow-hidden">
               <span
                 onClick={(e) => {
                   if (item.businessId && onOpenBusiness) {
@@ -521,89 +597,93 @@ export const PhoneBasicAdCard: React.FC<CommonCardProps> = ({
                     onOpenBusiness(item.businessId);
                   }
                 }}
-                className="font-bold text-[#E7E9EA] text-[12.5px] hover:underline cursor-pointer truncate shrink max-w-[125px] sm:max-w-[175px]"
+                className="font-bold text-[#E7E9EA] text-[12.5px] hover:underline cursor-pointer truncate min-w-0"
               >
                 {item.sellerName}
               </span>
-              <VerifiedBadge type={item.badgeType || (item.isVerified ? 'blue' : 'none')} size={14.5} className="shrink-0" />
-              <span className="text-[11.5px] text-[#71767B] truncate shrink max-w-[80px] sm:max-w-[115px]" dir="ltr">
+              <VerifiedBadge type={item.badgeType || (item.isVerified ? 'blue' : 'none')} size={14} className="shrink-0" />
+              <span className="text-[11px] text-[#71767B] truncate max-w-[65px] sm:max-w-[105px]" dir="ltr">
                 @{getHandle(item)}
               </span>
-              <span className="text-[#71767B] text-[10.5px] mx-0.5 shrink-0">·</span>
-              <span className="text-[#71767B] text-[10.5px] whitespace-nowrap shrink-0">{timeAgo}</span>
+              <span className="text-[#71767B] text-[10px] shrink-0">·</span>
+              <span className="text-[#71767B] text-[10px] whitespace-nowrap shrink-0">{timeAgo}</span>
             </div>
 
-            <span className="h-[22px] inline-flex items-center gap-1 px-2.5 rounded-full bg-[#0077E6] text-white text-[10.5px] font-black leading-none shrink-0">
-              <Megaphone size={11} className="shrink-0" />
+            <span className="h-5 inline-flex items-center gap-1 px-2 rounded-full bg-[#0077E6] text-white text-[9.5px] font-black leading-none shrink-0">
+              <Megaphone size={10} className="shrink-0" />
               <span>إعلان ممول</span>
             </span>
           </div>
 
-          <div className="mt-1 space-y-1.5">
-            <div className="flex items-baseline justify-between gap-2 flex-wrap">
-              <h3 className="text-[14.5px] font-black text-white leading-[20px]">
+          <div className="mt-1 space-y-1 min-w-0">
+            <div className="flex items-baseline justify-between gap-2 flex-wrap min-w-0">
+              <h3 className="text-[12.5px] font-bold text-white leading-[18px] break-words min-w-0">
                 {item.name}
               </h3>
-              <span className="text-[14px] font-black font-mono text-[#38BDF8] shrink-0">
+              <span className="text-[10.5px] font-semibold font-mono text-[#38BDF8] shrink-0">
                 {item.price.toLocaleString()} ر.ي
               </span>
             </div>
 
-            {(item.headline || item.description) && (
-              <p className="text-[13px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap break-words">
-                {item.headline || item.description}
+            {bodyText && (
+              <p className={`text-[12.5px] leading-[19px] text-[#D6D9DB] whitespace-pre-wrap break-words ${!expanded ? 'line-clamp-2' : ''}`}>
+                {bodyText}
               </p>
             )}
 
-            {highlights.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1 pt-0.5 text-[11.5px] leading-[18px] text-zinc-200">
-                {highlights.map((h, i) => (
-                  <span key={i} className="inline-flex items-center gap-1">
+            {visibleHighlights.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 pt-0.5 text-[11px] leading-[17px] text-zinc-300">
+                {visibleHighlights.map((h, i) => (
+                  <span key={i} className="inline-flex items-center gap-1 min-w-0 max-w-full">
                     <span className="w-3.5 h-3.5 rounded-full bg-[#1D9BF0]/20 text-[#38BDF8] flex items-center justify-center shrink-0">
-                      <Check size={9.5} className="stroke-[3]" />
+                      <Check size={9} className="stroke-[3]" />
                     </span>
-                    <span>{h}</span>
+                    <span className="truncate">{h}</span>
                   </span>
                 ))}
               </div>
             )}
+
+            {hasMoreInfo && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpanded((v) => !v);
+                }}
+                className="text-[11px] font-bold text-[#38BDF8] hover:underline cursor-pointer pt-0.5"
+              >
+                {expanded ? 'عرض أقل' : 'عرض المزيد'}
+              </button>
+            )}
           </div>
 
-          {item.images?.[0] && (
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenImage(item);
-              }}
-              className="mt-2.5 rounded-2xl overflow-hidden border border-[#1D9BF0]/30 max-h-80 bg-zinc-950 relative cursor-pointer"
-            >
-              <img src={item.images[0]} alt={item.name} className="w-full max-h-80 object-cover" loading="lazy" />
-              {item.images.length > 1 && (
-                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-black/80 text-white text-[10.5px] font-bold border border-white/10">
-                  1 / {item.images.length}
-                </span>
-              )}
-            </div>
-          )}
+          <AdAutoImageSlider
+            images={item.images}
+            alt={item.name}
+            borderClass="border-[#1D9BF0]/30"
+            dotActiveClass="bg-[#38BDF8]"
+            onOpenImage={() => onOpenImage(item)}
+          />
 
           <div
-            className="mt-2.5 pt-1 flex items-center justify-between gap-2 text-[11.5px] text-[#8B98A5] leading-none"
+            className="mt-2 pt-1 flex items-center justify-between gap-2 flex-wrap text-[11px] text-[#8B98A5] leading-none min-w-0"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3.5">
-              <span className="inline-flex items-center gap-1 leading-none">
-                <Eye size={13.5} className="text-[#38BDF8] shrink-0" />
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="inline-flex items-center gap-1 leading-none shrink-0">
+                <Eye size={12.5} className="text-[#38BDF8] shrink-0" />
                 <span>{formatCompact(item.viewsCount, 62000)}</span>
               </span>
-              <a href={`tel:${item.sellerPhone}`} className="inline-flex items-center gap-1 hover:text-[#38BDF8] transition leading-none">
-                <Phone size={13.5} className="shrink-0" />
+              <a href={`tel:${item.sellerPhone}`} className="inline-flex items-center gap-1 hover:text-[#38BDF8] transition leading-none shrink-0">
+                <Phone size={12.5} className="shrink-0" />
                 <span>اتصال</span>
               </a>
-              <button type="button" onClick={() => onOpenDetail(item)} className="hover:text-[#38BDF8] transition cursor-pointer leading-none">
+              <button type="button" onClick={() => onOpenDetail(item)} className="hover:text-[#38BDF8] transition cursor-pointer leading-none shrink-0">
                 التفاصيل
               </button>
-              <button type="button" onClick={() => onShare(item)} className="hover:text-[#38BDF8] transition cursor-pointer inline-flex items-center" aria-label="مشاركة">
-                <svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <button type="button" onClick={() => onShare(item)} className="hover:text-[#38BDF8] transition cursor-pointer inline-flex items-center shrink-0" aria-label="مشاركة">
+                <svg viewBox="0 0 24 24" width="12.5" height="12.5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="18" cy="5" r="2.5" />
                   <circle cx="6" cy="12" r="2.5" />
                   <circle cx="18" cy="19" r="2.5" />
@@ -617,10 +697,10 @@ export const PhoneBasicAdCard: React.FC<CommonCardProps> = ({
               href={buildWaUrl(item, categoryLabel)}
               target="_blank"
               rel="noopener noreferrer"
-              className="h-7 inline-flex items-center gap-1.5 px-3.5 rounded-full bg-[#0077E6] hover:bg-[#0066CC] text-white font-black text-[11px] leading-none transition shrink-0"
+              className="h-6 inline-flex items-center gap-1 px-2.5 rounded-full bg-[#0077E6] hover:bg-[#0066CC] text-white font-bold text-[10px] leading-none transition shrink-0"
             >
               <span>{item.ctaLabel || 'احصل عليه الآن'}</span>
-              <ArrowLeft size={12.5} className="shrink-0" />
+              <ArrowLeft size={10.5} className="shrink-0" />
             </a>
           </div>
         </div>
