@@ -22,6 +22,7 @@ import {
   PhoneVipBanner,
   PhoneProAdCard,
   PhoneBasicAdCard,
+  buildPhoneWaText,
 } from '../components/phones/PhoneTierCards';
 
 export type PhoneCategory = 'phones' | 'tablets' | 'laptops' | 'accessories' | 'maintenance' | 'sim_services';
@@ -937,6 +938,17 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         return updated;
       });
       setIsAddModalOpen(false);
+      if (composeKind === 'paid') {
+        setActiveTab('all');
+        setSearchQuery('');
+        setSelectedBrand('all');
+        setSelectedCondition('all');
+        setSelectedStorage('all');
+        setSelectedNegotiable('all');
+        setSelectedCity('all');
+        if (resolvedTier === 'vip') setActiveVipIdx(0);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
       setUploadedImages([]);
       setUploadedFiles([]);
       setFreeTweetText('');
@@ -989,20 +1001,26 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
 
   const feedPhones = useMemo(() => {
     const rest = filteredPhones.filter((item) => item.adTier !== 'vip');
+    const toTime = (d?: string) => {
+      const t = d ? new Date(d).getTime() : 0;
+      return Number.isNaN(t) ? 0 : t;
+    };
     const frees = rest.filter((item) => !item.adTier || item.adTier === 'free');
     const paids = rest
       .filter((item) => item.adTier === 'pro' || item.adTier === 'basic')
-      .sort((a, b) => (a.adTier === 'pro' && b.adTier !== 'pro' ? -1 : b.adTier === 'pro' && a.adTier !== 'pro' ? 1 : 0));
+      .sort((a, b) => toTime(b.createdAt) - toTime(a.createdAt));
 
     if (frees.length === 0) return paids;
+    if (paids.length === 0) return frees;
+
     const merged: PhoneDeviceItem[] = [];
     let pIdx = 0;
     let fIdx = 0;
+    const paidFirst = toTime(paids[0]?.createdAt) >= toTime(frees[0]?.createdAt);
+    if (paidFirst) merged.push(paids[pIdx++]);
     while (fIdx < frees.length || pIdx < paids.length) {
       if (fIdx < frees.length) merged.push(frees[fIdx++]);
-      if (pIdx < paids.length && (merged.length % 2 === 1 || fIdx >= frees.length)) {
-        merged.push(paids[pIdx++]);
-      }
+      if (pIdx < paids.length) merged.push(paids[pIdx++]);
     }
     return merged;
   }, [filteredPhones]);
@@ -1111,7 +1129,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
           const waHref = hasContactPhone
             ? toWaLink(
                 livePhone.sellerPhone,
-                `مرحباً، أرغب بالاستفسار عن ${CATEGORY_LABEL_MAP[livePhone.category]} ${livePhone.name}${livePhone.price > 0 ? ` المعروض بسعر ${livePhone.price.toLocaleString()} ر.ي` : ''}`
+                buildPhoneWaText(livePhone, CATEGORY_LABEL_MAP[livePhone.category])
               )
             : '';
           const shareSummary = isFreeTweet
@@ -1693,7 +1711,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
               </div>
                 {selectedPhone.adTier && selectedPhone.adTier !== 'free' && selectedPhone.sellerPhone && (
                   <div className="flex items-center gap-2 shrink-0">
-                    <a href={toWaLink(selectedPhone.sellerPhone, `مرحباً، أرغب بالاستفسار عن ${selectedPhone.name}`)} target="_blank" rel="noopener noreferrer" className="px-3.5 py-2 rounded-full bg-[#192227] hover:bg-[#202b32] text-white border border-white/10 text-xs font-bold flex items-center gap-1.5">
+                    <a href={toWaLink(selectedPhone.sellerPhone, buildPhoneWaText(selectedPhone, CATEGORY_LABEL_MAP[selectedPhone.category]))} target="_blank" rel="noopener noreferrer" className="px-3.5 py-2 rounded-full bg-[#192227] hover:bg-[#202b32] text-white border border-white/10 text-xs font-bold flex items-center gap-1.5">
                       <MessageCircle size={14} /><span>واتساب</span>
                     </a>
                     <a href={`tel:${selectedPhone.sellerPhone}`} className="px-3.5 py-2 rounded-full bg-[#192227] hover:bg-[#202b32] text-white border border-white/10 text-xs font-bold flex items-center gap-1.5">

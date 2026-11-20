@@ -43,6 +43,7 @@ export interface PhoneCardData {
   negotiable?: string;
   color?: string;
   city: string;
+  location?: string;
   sellerName: string;
   sellerPhone: string;
   isVerified: boolean;
@@ -86,10 +87,39 @@ interface CommonCardProps {
   onSendMessage?: (item: PhoneCardData) => void;
 }
 
-const buildWaUrl = (item: PhoneCardData, categoryLabel: string) =>
-  `https://wa.me/${item.sellerPhone}?text=${encodeURIComponent(
-    `مرحباً، أرغب بالاستفسار عن ${categoryLabel} ${item.name} المعروض بسعر ${item.price.toLocaleString()} ر.ي`
-  )}`;
+export const buildPhoneWaText = (item: PhoneCardData, categoryLabel: string): string => {
+  const lines: string[] = [];
+  lines.push(`مرحباً، أرغب بالاستفسار عن ${categoryLabel}: ${item.name}`);
+  if (item.price > 0) lines.push(`السعر: ${item.price.toLocaleString()} ر.ي`);
+  const loc = [item.city, item.location].filter(Boolean).join(' - ');
+  if (loc) lines.push(`الموقع: ${loc}`);
+  const specRows: [string, string | undefined][] = [
+    ['الشركة', item.brand],
+    ['الحالة', item.condition],
+    ['التخزين', item.storage],
+    ['الرام', item.ram],
+    ['المعالج', item.processor],
+    ['الشريحة', item.simSupport],
+    ['اللون', item.color],
+    ['التوصيل', item.delivery],
+    ['التفاوض', item.negotiable],
+  ];
+  const validSpecs = specRows.filter(([, v]) => v && !['لا ينطبق', 'غير محدد', 'غير موجود', '-'].includes(v.trim()));
+  if (validSpecs.length > 0) {
+    lines.push('المواصفات:');
+    validSpecs.forEach(([k, v]) => lines.push(`• ${k}: ${v}`));
+  }
+  if (item.description && item.description.trim()) {
+    lines.push(`الوصف: ${item.description.trim().slice(0, 220)}`);
+  }
+  return lines.join('\n');
+};
+
+const buildWaUrl = (item: PhoneCardData, categoryLabel: string) => {
+  const digits = String(item.sellerPhone || '').replace(/\D/g, '');
+  const intl = digits.startsWith('967') ? digits : `967${digits.slice(-9)}`;
+  return `https://wa.me/${intl}?text=${encodeURIComponent(buildPhoneWaText(item, categoryLabel))}`;
+};
 
 const getHandle = (item: PhoneCardData) =>
   item.sellerUsername || (item.brand ? item.brand.toLowerCase().replace(/\s+/g, '') : 'user');
@@ -614,7 +644,7 @@ export const PhoneBasicAdCard: React.FC<CommonCardProps> = (props) => {
           onOpenDetail(item);
         }
       }}
-      className="w-full overflow-hidden rounded-none bg-black border-y border-[#1D9BF0]/55 p-3 hover:bg-white/[0.02] transition cursor-pointer select-none"
+      className="w-full overflow-hidden rounded-none bg-black border-b border-[#2F3336]/60 p-3 hover:bg-white/[0.02] transition cursor-pointer select-none"
     >
       <div className="flex gap-3 min-w-0">
         <div
@@ -708,7 +738,7 @@ export const PhoneBasicAdCard: React.FC<CommonCardProps> = (props) => {
           <AdAutoImageSlider
             images={item.images}
             alt={item.name}
-            borderClass="border-[#1D9BF0]/30"
+            borderClass="border-[#2F3336]/60"
             dotActiveClass="bg-[#38BDF8]"
             onOpenImage={() => onOpenImage(item)}
           />

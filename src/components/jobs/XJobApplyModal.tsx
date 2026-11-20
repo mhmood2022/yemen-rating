@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { X, Upload, CheckCircle2, Briefcase } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { YRSelect } from '../common/YRSelect';
-import { YEMEN_GOV_FORM_OPTIONS } from '../common/XMarketUI';
+import { YEMEN_GOV_FORM_OPTIONS, XMarketItem, toWaLink } from '../common/XMarketUI';
 
-interface Props { job: any | null; commissionText: string; onClose: () => void; onSuccess: (msg: string) => void; }
+interface Props { job: any | null; jobItem?: XMarketItem | null; commissionText: string; onClose: () => void; onSuccess: (msg: string) => void; }
 
-export const XJobApplyModal: React.FC<Props> = ({ job, commissionText, onClose, onSuccess }) => {
+export const XJobApplyModal: React.FC<Props> = ({ job, jobItem, commissionText, onClose, onSuccess }) => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('صنعاء');
@@ -31,7 +31,9 @@ export const XJobApplyModal: React.FC<Props> = ({ job, commissionText, onClose, 
   if (!job) return null;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setErrMsg('');
-    if (!name.trim() || phone.replace(/\D/g, '').length < 9) { setErrMsg('يرجى إدخال الاسم ورقم الهاتف (9 أرقام)'); return; }
+    const cleanPhone = phone.replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/\D/g, '');
+    if (!name.trim()) { setErrMsg('يرجى إدخال الاسم الكامل'); return; }
+    if (!/^(73|71|77|78)\d{7}$/.test(cleanPhone)) { setErrMsg('الرقم خاطئ'); return; }
     if (!agreed) { setErrMsg('يرجى الموافقة على شروط الوساطة للمتابعة'); return; }
     try {
       setSubmitting(true); let cvUrl = '';
@@ -41,8 +43,34 @@ export const XJobApplyModal: React.FC<Props> = ({ job, commissionText, onClose, 
         if (!ue) cvUrl = supabase.storage.from('cvs').getPublicUrl(fn).data?.publicUrl || '';
       }
       const { data: { session } } = await supabase.auth.getSession();
-      const { error } = await supabase.from('job_applications').insert([{ job_id: job.id, applicant_id: session?.user?.id || null, applicant_name: name.trim(), applicant_phone: phone.trim(), applicant_city: city, qualifications: qualifications.trim(), experience_years: Number(expYears) || 0, cv_file_url: cvUrl || null, status: 'NEW', created_at: new Date().toISOString() }]);
+      const combinedCoverLetter = `المحافظة: ${city}\nسنوات الخبرة: ${Number(expYears) || 0}\n\nالمؤهلات والخبرات:\n${qualifications.trim()}${cvUrl ? `\n\n[السيرة الذاتية]: ${cvUrl}` : ''}`;
+      const { error } = await supabase.from('job_applications').insert([{ job_id: job.id, name: name.trim(), phone: cleanPhone, cv_url: cvUrl || null, cv_file_name: cvFile ? cvFile.name : null, cover_letter: combinedCoverLetter, status: 'PENDING', created_at: new Date().toISOString() }]);
       if (error) throw error;
+      const employerPhone = (jobItem?.phone || job?.contact_phone || job?.phone || '').trim();
+      if (employerPhone) {
+        const waLines: string[] = [
+          `مرحباً، أرغب بالتقديم على وظيفة: ${jobItem?.title || job.title}`,
+          jobItem?.authorName ? `الجهة: ${jobItem.authorName}` : '',
+          jobItem?.city || job.city ? `المحافظة: ${jobItem?.city || job.city}` : '',
+          jobItem?.priceText ? `الراتب: ${jobItem.priceText}` : '',
+          ...(jobItem?.specPairs || [])
+            .filter((sp) => sp.value && !['غير موجود', 'غير محدد', 'لا ينطبق', '-'].includes(sp.value.trim()))
+            .map((sp) => `• ${sp.label}: ${sp.value}`),
+          '',
+          'بيانات المتقدم:',
+          `• الاسم: ${name.trim()}`,
+          `• الهاتف: ${cleanPhone}`,
+          `• المحافظة: ${city}`,
+          `• سنوات الخبرة: ${Number(expYears) || 0}`,
+          `• المؤهلات والخبرات: ${qualifications.trim()}`,
+          cvUrl ? `• السيرة الذاتية: ${cvUrl}` : '',
+        ].filter(Boolean);
+        const waUrl = toWaLink(employerPhone, waLines.join('\n'));
+        if (waUrl) {
+          const opened = window.open(waUrl, '_blank', 'noopener,noreferrer');
+          if (!opened) window.location.href = waUrl;
+        }
+      }
       onSuccess('تم إرسال طلب التقديم وسيرتك الذاتية بنجاح!'); onClose();
     } catch (err: any) { setErrMsg(err?.message || 'تعذر إرسال الطلب'); } finally { setSubmitting(false); }
   };
@@ -59,7 +87,7 @@ export const XJobApplyModal: React.FC<Props> = ({ job, commissionText, onClose, 
           {errMsg && <div className="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 font-bold">{errMsg}</div>}
           <div><label className="text-[11px] text-[#71767B] font-bold block mb-1">الاسم الكامل *</label><input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white outline-none" /></div>
           <div className="grid grid-cols-3 gap-2">
-            <div className="col-span-2"><label className="text-[11px] text-[#71767B] font-bold block mb-1">رقم الهاتف *</label><input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="77XXXXXXX" className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white font-mono outline-none" /></div>
+            <div className="col-span-2"><label className="text-[11px] text-[#71767B] font-bold block mb-1">رقم الهاتف *</label><input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white font-mono outline-none" /></div>
             <div><label className="text-[11px] text-[#71767B] font-bold block mb-1">الخبرة (سنوات)</label><input type="number" min="0" value={expYears} onChange={(e) => setExpYears(Number(e.target.value))} className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white font-mono outline-none" /></div>
           </div>
           <div><label className="text-[11px] text-[#71767B] font-bold block mb-1">المحافظة</label><YRSelect compact value={city} onChange={setCity} options={YEMEN_GOV_FORM_OPTIONS} /></div>

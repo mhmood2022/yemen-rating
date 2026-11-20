@@ -41,6 +41,25 @@ export function toWaLink(phone?: string, text?: string): string {
   return `https://wa.me/${intl}${text ? `?text=${encodeURIComponent(text)}` : ''}`;
 }
 
+export function buildDetailedWaText(item: XMarketItem): string {
+  const lines: string[] = [];
+  lines.push(`مرحباً، أرغب بالاستفسار عن: ${item.title}`);
+  if (item.tagLabel) lines.push(`القسم: ${item.tagLabel}`);
+  if (item.priceText) lines.push(`السعر: ${item.priceText}`);
+  if (item.city) lines.push(`المحافظة: ${item.city}`);
+  const specs = (item.specPairs || []).filter(
+    (sp) => sp.value && !['غير موجود', 'غير محدد', 'لا ينطبق', '-'].includes(sp.value.trim())
+  );
+  if (specs.length > 0) {
+    lines.push('التفاصيل:');
+    specs.forEach((sp) => lines.push(`• ${sp.label}: ${sp.value}`));
+  }
+  if (item.description && item.description.trim()) {
+    lines.push(`الوصف: ${item.description.trim().slice(0, 220)}`);
+  }
+  return lines.join('\n');
+}
+
 export interface XMarketItem {
   id: string;
   detailPath: string;
@@ -192,7 +211,7 @@ export const XMarketTweetCard: React.FC<{
 }> = ({ item, onOpenDetail, onOpenImage, onShare }) => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
-  const waHref = toWaLink(item.phone, item.whatsappText || `مرحباً، أرغب بالاستفسار عن ${item.title}`);
+  const waHref = toWaLink(item.phone, buildDetailedWaText(item));
   return (
     <article
       onClick={(e) => { if (!(e.target as HTMLElement).closest('button,a')) onOpenDetail(); }}
@@ -305,123 +324,223 @@ export const XMarketDetailView: React.FC<{
 }> = ({ item, activeImageIndex, onChangeImageIndex, onBack, onOpenLightbox, onShare }) => {
   const navigate = useNavigate();
   const touchX = useRef<number | null>(null);
-  const waHref = toWaLink(item.phone, item.whatsappText || `مرحباً، أرغب بالاستفسار عن ${item.title}`);
+  const cleanImages = (Array.isArray(item.images) ? item.images : [])
+    .map((u) => (u || '').trim())
+    .filter((u) => Boolean(u && !u.includes('yr-logo')));
+  const cleanSpecs = (item.specPairs || []).filter(
+    (sp) => sp.value && !['غير موجود', 'غير محدد', 'لا ينطبق', '-'].includes(sp.value.trim())
+  );
+  const hasPhone = Boolean(item.phone && item.phone.trim());
+  const waHref = hasPhone ? toWaLink(item.phone, buildDetailedWaText(item)) : '';
+
   return (
     <div data-no-tab-swipe="true" className="bg-black min-h-screen pb-24">
-      <div className="sticky top-0 z-30 bg-black/90 backdrop-blur-md border-b border-[#2F3336]/70 px-3 py-2.5 flex items-center gap-3">
-        <button type="button" onClick={onBack} aria-label="رجوع" className="w-9 h-9 rounded-full hover:bg-white/10 active:scale-95 text-white flex items-center justify-center cursor-pointer">
-          <ArrowRight size={20} />
+      <div className="sticky top-0 z-30 bg-black/95 backdrop-blur-md border-b border-[#2F3336]/60 px-3 py-1.5 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="رجوع"
+          className="w-8 h-8 rounded-full hover:bg-white/10 active:scale-95 text-white flex items-center justify-center transition cursor-pointer"
+        >
+          <ArrowRight size={17} />
         </button>
-        <h2 className="text-[16px] font-bold text-white">المنشور</h2>
+        <h2 className="text-[13.5px] font-bold text-white">تفاصيل الإعلان</h2>
       </div>
-      <article className="px-3.5 pt-3">
-        <div className="flex items-center justify-between gap-2">
-          <div onClick={() => { if (item.businessPath) navigate(item.businessPath); }} className={`flex items-center gap-2.5 min-w-0 ${item.businessPath ? 'cursor-pointer' : ''}`}>
-            <div className="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0 text-white font-bold text-base">
-              {item.authorAvatar ? <img src={item.authorAvatar} alt={item.authorName} className="w-full h-full object-cover" /> : <span>{item.authorName?.[0] || 'م'}</span>}
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1">
-                <span className="font-bold text-[#E7E9EA] text-[15px] hover:underline truncate">{item.authorName}</span>
-                <VerifiedBadge type={item.badgeType || 'none'} size={15} className="shrink-0" />
+
+      <article className="px-4 pt-2">
+        <div className="bg-black">
+          <div className="pb-2 flex items-center justify-between gap-2 bg-black">
+            <div
+              onClick={() => { if (item.businessPath) navigate(item.businessPath); }}
+              className={`flex items-center gap-2.5 min-w-0 flex-1 ${item.businessPath ? 'cursor-pointer' : ''}`}
+            >
+              <div className="w-10 h-10 rounded-full bg-black border border-[#2F3336] overflow-hidden flex items-center justify-center shrink-0 text-white font-bold text-xs">
+                {item.authorAvatar ? (
+                  <img src={item.authorAvatar} alt={item.authorName} className="w-full h-full object-cover" />
+                ) : (
+                  <span>{item.authorName?.[0] || 'م'}</span>
+                )}
               </div>
-              <div className="text-[13px] text-[#71767B] truncate" dir="ltr">@{item.authorUsername}</div>
-            </div>
-          </div>
-          {item.tagLabel && <span className="shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-bold border border-[#2F3336] text-[#E7E9EA]">{item.tagLabel}</span>}
-        </div>
-          <div className="mt-3 space-y-3">
-            <div className="p-3.5 rounded-2xl border border-[#2F3336]/70 bg-zinc-950/60 space-y-1.5">
-              <div className="flex items-baseline justify-between gap-2 flex-wrap">
-                <h1 className="text-[16.5px] font-black text-white leading-snug">{item.title}</h1>
-                {item.priceText && <span className="text-[15.5px] font-black text-[#FFC500] font-mono">{item.priceText}</span>}
-              </div>
-              <div className="text-[12px] text-[#71767B] flex items-center gap-1.5">
-                <span>{formatXTimeAgo(item.createdAt)}</span>
-                {item.city && <><span>·</span><span>{item.city}</span></>}
-              </div>
-            </div>
-            {item.description && (
-              <div className="p-3.5 rounded-2xl border border-[#2F3336]/60 bg-black space-y-1">
-                <div className="text-[11px] font-bold text-[#71767B]">الوصف والتفاصيل</div>
-                <p className="text-[14px] leading-[22px] text-[#E7E9EA] whitespace-pre-wrap break-words">{item.description}</p>
-              </div>
-            )}
-            {item.specPairs && item.specPairs.length > 0 ? (
-              <div className="space-y-1.5">
-                <div className="text-[11px] font-bold text-[#71767B] px-1">المواصفات والبيانات</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 rounded-2xl border border-[#2F3336]/70 bg-zinc-950/60 text-[12.5px]">
-                  {item.specPairs.filter((sp) => sp.value && !['غير موجود', 'غير محدد', 'لا ينطبق'].includes(sp.value.trim())).map((sp, idx) => (
-                    <div key={`${sp.label}-${idx}`} className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-black/80 border border-[#2F3336]/50 min-w-0">
-                      <span className="text-[#8B98A5] shrink-0">{sp.label}</span>
-                      <span className="text-white font-semibold text-left break-words">{sp.value}</span>
-                    </div>
-                  ))}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1 min-w-0">
+                  <span className="font-bold text-[#E7E9EA] text-[14px] hover:underline truncate max-w-[180px] sm:max-w-[260px]">
+                    {item.authorName}
+                  </span>
+                  <VerifiedBadge type={item.badgeType || 'none'} size={14} className="shrink-0" />
+                </div>
+                <div className="flex items-center gap-1.5 text-[11.5px] text-[#71767B] min-w-0">
+                  <span className="truncate max-w-[120px]" dir="ltr">@{item.authorUsername}</span>
+                  <span>·</span>
+                  <span className="shrink-0">{formatXTimeAgo(item.createdAt)}</span>
                 </div>
               </div>
-            ) : item.metaParts.length > 0 ? <div className="text-[13px] text-[#71767B]">{item.metaParts.join(' · ')}</div> : null}
-          {(item.mapUrl || item.blueprintImage || item.videoUrl) && (
-            <div className="flex flex-wrap gap-2 pt-1">
+            </div>
+            {item.tagLabel && (
+              <span className="shrink-0 text-[11px] font-medium text-[#71767B]">{item.tagLabel}</span>
+            )}
+          </div>
+
+          {cleanImages.length > 0 ? (
+            <div className="bg-black">
+              <div
+                className="relative bg-black cursor-pointer select-none overflow-hidden rounded-none border border-[#2F3336]/80"
+                onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }}
+                onTouchEnd={(e) => {
+                  if (touchX.current === null || cleanImages.length <= 1) return;
+                  const diff = touchX.current - e.changedTouches[0].clientX;
+                  if (Math.abs(diff) > 35) {
+                    onChangeImageIndex((p) => diff > 0 ? (p + 1) % cleanImages.length : (p - 1 + cleanImages.length) % cleanImages.length);
+                  }
+                  touchX.current = null;
+                }}
+                onClick={onOpenLightbox}
+              >
+                <img
+                  src={cleanImages[activeImageIndex] || cleanImages[0]}
+                  alt={item.title}
+                  className="w-full h-[290px] sm:h-[340px] object-cover rounded-none block"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent pointer-events-none" />
+                <div className="absolute inset-x-0 bottom-0 px-3 py-2.5 flex items-end justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    {item.city && (
+                      <div className="text-[10.5px] text-[#A1A1AA]">{item.city}</div>
+                    )}
+                    <h1 className="text-[15.5px] font-bold text-white leading-snug truncate">{item.title}</h1>
+                  </div>
+                  {item.priceText && (
+                    <span className="shrink-0 text-[13px] font-bold text-[#FFC500] font-mono whitespace-nowrap">
+                      {item.priceText}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {cleanImages.length > 1 && (
+                <div className="flex justify-center items-center gap-1.5 pt-2">
+                  {cleanImages.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => onChangeImageIndex(idx)}
+                      className={`h-1 rounded-none transition-all cursor-pointer ${activeImageIndex === idx ? 'w-5 bg-[#FFC500]' : 'w-1.5 bg-[#2F3336]'}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="py-2 bg-black flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                {item.city && <div className="text-[10.5px] text-[#71767B]">{item.city}</div>}
+                <h1 className="text-[15.5px] font-bold text-white leading-snug truncate">{item.title}</h1>
+              </div>
+              {item.priceText && (
+                <span className="shrink-0 text-[13px] font-bold text-[#FFC500] font-mono whitespace-nowrap">
+                  {item.priceText}
+                </span>
+              )}
+            </div>
+          )}
+
+          {cleanSpecs.length > 0 ? (
+            <div className="pt-2.5 bg-black grid grid-cols-2 gap-x-3 gap-y-1">
+              {cleanSpecs.map((sp, idx) => (
+                <div key={`${sp.label}-${idx}`} className="flex items-center gap-1 py-0.5 text-[11px] min-w-0">
+                  <span className="text-[#71767B] shrink-0">{sp.label}:</span>
+                  <span className="text-[#E7E9EA] font-medium truncate">{sp.value}</span>
+                </div>
+              ))}
+            </div>
+          ) : item.metaParts.length > 0 ? (
+            <div className="pt-2 text-[12px] text-[#71767B]">{item.metaParts.join(' · ')}</div>
+          ) : null}
+
+          {item.description && (
+            <p dir="auto" className="pt-2 bg-black text-[13px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap break-words select-text">
+              {item.description}
+            </p>
+          )}
+
+          {(item.mapUrl || item.videoUrl) && (
+            <div className="flex flex-wrap gap-2 pt-2.5">
               {item.mapUrl && (
-                <a href={item.mapUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-950 border border-[#2F3336] hover:border-white text-xs text-white font-bold">
-                  <MapPin size={13} className="text-[#FFC500]" />
-                  <span>موقع العقار على الخريطة</span>
+                <a
+                  href={item.mapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none border border-[#2F3336]/80 bg-transparent text-[11.5px] text-[#E7E9EA] hover:border-white/50 transition"
+                >
+                  <MapPin size={12.5} className="text-[#FFC500]" />
+                  <span>الموقع على الخريطة</span>
                 </a>
               )}
               {item.videoUrl && (
-                <a href={item.videoUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-950 border border-[#2F3336] hover:border-white text-xs text-white font-bold">
+                <a
+                  href={item.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none border border-[#2F3336]/80 bg-transparent text-[11.5px] text-[#E7E9EA] hover:border-white/50 transition"
+                >
                   <span>عرض الفيديو المرفق</span>
                 </a>
               )}
             </div>
           )}
-          {item.blueprintImage && (
-            <div className="mt-2 rounded-2xl overflow-hidden border border-[#2F3336]/70 bg-zinc-950 p-2 space-y-1.5">
-              <span className="text-[11px] text-[#8B98A5] font-bold block">المخطط الهندسي</span>
-              <img src={item.blueprintImage} alt="المخطط الهندسي" className="w-full max-h-64 object-contain rounded-xl bg-black" />
-            </div>
-          )}
-        </div>
-        {item.images.length > 0 && (
-          <>
-            <div
-              className="mt-3 relative rounded-2xl overflow-hidden border border-[#2F3336]/80 bg-black cursor-pointer select-none"
-              onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }}
-              onTouchEnd={(e) => {
-                if (touchX.current === null || item.images.length <= 1) return;
-                const diff = touchX.current - e.changedTouches[0].clientX;
-                if (Math.abs(diff) > 35) onChangeImageIndex((p) => diff > 0 ? (p + 1) % item.images.length : (p - 1 + item.images.length) % item.images.length);
-                touchX.current = null;
-              }}
-              onClick={onOpenLightbox}
-            >
-              <img src={item.images[activeImageIndex] || item.images[0]} alt={item.title} className="w-full max-h-[420px] object-cover" />
-              {item.images.length > 1 && <span className="absolute bottom-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-black/80 text-white text-[11px] font-bold border border-white/10 flex items-center gap-1"><Camera size={11} /> {activeImageIndex + 1} / {item.images.length}</span>}
-            </div>
-            {item.images.length > 1 && (
-              <div className="flex justify-center items-center gap-1.5 pt-2.5">
-                {item.images.map((_, idx) => <button key={idx} type="button" onClick={() => onChangeImageIndex(idx)} className={`h-1.5 rounded-full transition-all cursor-pointer ${activeImageIndex === idx ? 'w-5 bg-white' : 'w-1.5 bg-[#2F3336]'}`} />)}
-              </div>
-            )}
-          </>
-        )}
-        <div className="mt-3 py-3 border-b border-[#2F3336]/60 text-[13px] text-[#71767B] flex items-center justify-between">
-          <span>{formatXTimeAgo(item.createdAt)} · {item.city || 'اليمن'}</span>
 
-        </div>
-        <div className="py-2 border-b border-[#2F3336]/60 flex items-center justify-between text-[#71767B] px-2">
-          {item.onAction ? (
-            <button type="button" onClick={item.onAction} className="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#1D9BF0]/10 hover:text-[#1D9BF0] transition text-[12.5px] font-medium cursor-pointer">
-              {item.actionIcon || <ArrowRight size={15} className="rtl:rotate-180" />}<span>{item.actionLabel}</span>
-            </button>
-          ) : (
-            <Link to={item.detailPath} className="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#1D9BF0]/10 hover:text-[#1D9BF0] transition text-[12.5px] font-medium">
-              {item.actionIcon || <ArrowRight size={15} className="rtl:rotate-180" />}<span>{item.actionLabel}</span>
-            </Link>
+          {item.blueprintImage && (
+            <div className="mt-2.5 border border-[#2F3336]/80 bg-black p-2 space-y-1">
+              <span className="text-[11px] text-[#71767B] block">المخطط الهندسي</span>
+              <img src={item.blueprintImage} alt="المخطط الهندسي" className="w-full max-h-64 object-contain bg-black" />
+            </div>
           )}
-          {waHref ? <a href={waHref} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#00BA7C]/10 hover:text-[#00BA7C] transition text-[12.5px] font-medium"><MessageCircle size={16} /><span>واتساب</span></a> : <span className="text-[11.5px] opacity-40 px-3">واتساب</span>}
-          {item.phone ? <a href={`tel:${item.phone}`} className="flex items-center gap-1.5 py-1.5 px-3 rounded-full hover:bg-[#FFC500]/10 hover:text-[#FFC500] transition text-[12.5px] font-medium"><Phone size={16} /><span>اتصال</span></a> : <span className="text-[11.5px] opacity-40 px-3">اتصال</span>}
-          <button type="button" onClick={onShare} className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-full hover:bg-[#1D9BF0]/10 hover:text-[#1D9BF0] transition cursor-pointer"><ShareSvg /></button>
+
+          <div className="pt-3 bg-black flex items-center gap-2">
+            {waHref && (
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-none border border-[#2F3336]/80 bg-transparent text-[#E7E9EA] hover:border-white/50 transition text-[11.5px] font-medium"
+              >
+                <MessageCircle size={13} />
+                <span>واتساب</span>
+              </a>
+            )}
+            {hasPhone && (
+              <a
+                href={`tel:${item.phone}`}
+                className="flex-1 flex items-center justify-center gap-1 py-1.5 px-2 rounded-none border border-[#2F3336]/80 bg-transparent text-[#E7E9EA] hover:border-white/50 transition text-[11.5px] font-medium"
+              >
+                <Phone size={13} />
+                <span>اتصال</span>
+              </a>
+            )}
+            {item.onAction ? (
+              <button
+                type="button"
+                onClick={item.onAction}
+                className="flex items-center justify-center gap-1 py-1.5 px-2.5 rounded-none border border-[#2F3336]/80 bg-transparent text-[#E7E9EA] hover:border-white/50 transition text-[11.5px] font-medium cursor-pointer"
+              >
+                {item.actionIcon || <ArrowRight size={13} className="rtl:rotate-180" />}
+                <span>{item.actionLabel}</span>
+              </button>
+            ) : (
+              <Link
+                to={item.detailPath}
+                className="flex items-center justify-center gap-1 py-1.5 px-2.5 rounded-none border border-[#2F3336]/80 bg-transparent text-[#E7E9EA] hover:border-white/50 transition text-[11.5px] font-medium"
+              >
+                {item.actionIcon || <ArrowRight size={13} className="rtl:rotate-180" />}
+                <span>{item.actionLabel}</span>
+              </Link>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-3 py-2.5 border-b border-[#2F3336]/60 text-[12px] text-[#71767B] flex items-center justify-between">
+          <span>{formatXTimeAgo(item.createdAt)} · {item.city || 'اليمن'}</span>
+          <button type="button" onClick={onShare} className="hover:text-[#1D9BF0] transition cursor-pointer p-1" title="مشاركة">
+            <ShareSvg />
+          </button>
         </div>
       </article>
     </div>
@@ -437,7 +556,7 @@ export const XImageLightbox: React.FC<{
 }> = ({ isOpen, item, activeIndex, onChangeIndex, onClose }) => {
   const touchX = useRef<number | null>(null);
   if (!isOpen || !item || item.images.length === 0) return null;
-  const waHref = toWaLink(item.phone, item.whatsappText || `مرحباً، أرغب بالاستفسار عن ${item.title}`);
+  const waHref = toWaLink(item.phone, buildDetailedWaText(item));
   return (
     <div
       dir="rtl"

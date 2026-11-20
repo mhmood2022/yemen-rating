@@ -600,7 +600,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
         ]}
       />
 
-      <XJobApplyModal job={applyingJob} commissionText={jobCommText} onClose={() => setApplyingJob(null)} onSuccess={(msg) => { setToastMessage(msg); setTimeout(() => setToastMessage(null), 3500); }} />
+      <XJobApplyModal job={applyingJob} jobItem={applyingJob ? toJobXItem(applyingJob) : null} commissionText={jobCommText} onClose={() => setApplyingJob(null)} onSuccess={(msg) => { setToastMessage(msg); setTimeout(() => setToastMessage(null), 3500); }} />
       <XImageLightbox isOpen={isLightboxOpen} item={selectedItem} activeIndex={activeImageIndex} onChangeIndex={setActiveImageIndex} onClose={() => setIsLightboxOpen(false)} />
       <PublicAddJobModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSubmit={handleSaveJobFromModal} />
     </div>
