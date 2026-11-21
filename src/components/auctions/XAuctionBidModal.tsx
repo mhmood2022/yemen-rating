@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Gavel, ShieldCheck, Phone, MessageCircle, Clock, Trophy } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getMyBusinessPage } from '../../services/businessPageService';
-import { toWaLink, formatXTimeAgo } from '../common/XMarketUI';
+import { toWaLink, formatXTimeAgo, toArabicMarketError, XLinkedAccountCard } from '../common/XMarketUI';
 
 interface Props { auction: any | null; onClose: () => void; onSuccess: (msg: string) => void; }
 
@@ -11,6 +11,12 @@ export const XAuctionBidModal: React.FC<Props> = ({ auction, onClose, onSuccess 
   const [bidAmount, setBidAmount] = useState('');
   const [bidderName, setBidderName] = useState('');
   const [bidderPhone, setBidderPhone] = useState('');
+  const [bidderAvatar, setBidderAvatar] = useState('');
+  const [bidderUsername, setBidderUsername] = useState('');
+  const [hasBidderPhone, setHasBidderPhone] = useState(false);
+  const [bidderPhoneTouched, setBidderPhoneTouched] = useState(false);
+  const normalizeYemenPhone = (v: string) => v.replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/\D/g, '').slice(0, 9);
+  const isValidYemenPhone = (v: string) => /^(73|71|77|78)\d{7}$/.test(v);
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState('');
   const [liveTop, setLiveTop] = useState(0);
@@ -38,11 +44,17 @@ export const XAuctionBidModal: React.FC<Props> = ({ auction, onClose, onSuccess 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       const uid = session?.user?.id;
       if (!uid) return;
-      const [{ data: prof }, biz] = await Promise.all([supabase.from('profiles').select('full_name, phone').eq('id', uid).maybeSingle(), getMyBusinessPage(uid)]);
-      const name = biz?.name || prof?.full_name || '';
-      const ph = (biz?.phone || prof?.phone || '').replace(/\D/g, '').slice(-9);
-      if (name) setBidderName((prev) => prev || name);
-      if (ph) setBidderPhone((prev) => prev || ph);
+      const meta: any = session.user.user_metadata || {};
+      const [{ data: prof }, biz] = await Promise.all([supabase.from('profiles').select('*').eq('id', uid).maybeSingle(), getMyBusinessPage(uid)]);
+      const emailH = session.user.email ? session.user.email.split('@')[0] : '';
+      const name = (biz?.name || prof?.full_name || meta.full_name || meta.name || prof?.username || emailH || '').trim();
+      const avatar = (biz?.avatarUrl || prof?.avatar_url || meta.avatar_url || '').trim();
+      const username = (biz?.username || prof?.username || meta.username || meta.user_name || emailH || '').trim();
+      const ph = normalizeYemenPhone(String(biz?.phone || prof?.phone || meta.phone || '').replace(/^(\+?967)/, ''));
+      if (name) setBidderName(name);
+      if (avatar) setBidderAvatar(avatar);
+      if (username) setBidderUsername(username);
+      if (isValidYemenPhone(ph)) { setBidderPhone(ph); setHasBidderPhone(true); } else { setHasBidderPhone(false); }
     }).catch(() => {});
   }, [auction?.id]);
 
@@ -79,16 +91,19 @@ export const XAuctionBidModal: React.FC<Props> = ({ auction, onClose, onSuccess 
 
   const handleBid = async (e: React.FormEvent) => {
     e.preventDefault(); setMsg('');
-    if (!bidderName.trim() || bidderPhone.replace(/\D/g, '').length < 9) { setMsg('يرجى إدخال اسمك ورقم هاتفك (9 أرقام)'); return; }
+    const cleanBidderPhone = normalizeYemenPhone(bidderPhone);
+    setBidderPhoneTouched(true);
+    if (!bidderName.trim()) { setMsg('يرجى إدخال الاسم'); return; }
+    if (!isValidYemenPhone(cleanBidderPhone)) { setMsg('الرقم خاطئ'); return; }
     const val = parseFloat(bidAmount.replace(/,/g, ''));
     if (isNaN(val) || val < topBid + minInc) { setMsg(`أقل مبلغ مسموح به: ${(topBid + minInc).toLocaleString()} ${curr}`); return; }
     try {
       setSubmitting(true);
-      const { error } = await supabase.from('auction_bids').insert([{ auction_id: auction.id, bidder_name: bidderName.trim(), bidder_phone: bidderPhone.trim(), amount: val, created_at: new Date().toISOString() }]);
+      const { error } = await supabase.from('auction_bids').insert([{ auction_id: auction.id, bidder_name: bidderName.trim(), bidder_phone: cleanBidderPhone, amount: val, created_at: new Date().toISOString() }]);
       if (error) throw error;
       await supabase.from('auctions').update({ current_bid: val }).eq('id', auction.id);
       onSuccess(`تم تسجيل مزايدتك بمبلغ ${val.toLocaleString()} ${curr}`); onClose();
-    } catch (err: any) { setMsg(err?.message || 'تعذر تسجيل المزايدة'); } finally { setSubmitting(false); }
+    } catch (err: any) { setMsg(toArabicMarketError(err, 'تعذر تسجيل المزايدة')); } finally { setSubmitting(false); }
   };
   return (
     <div dir="rtl" className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center" onClick={onClose}>
@@ -124,10 +139,15 @@ export const XAuctionBidModal: React.FC<Props> = ({ auction, onClose, onSuccess 
             </div>
           ) : (
             <form onSubmit={handleBid} className="space-y-2.5">
-              <div className="grid grid-cols-2 gap-2">
-                <input type="text" required value={bidderName} onChange={(e) => setBidderName(e.target.value)} placeholder="الاسم..." className="bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2 text-white outline-none" />
-                <input type="tel" required value={bidderPhone} onChange={(e) => setBidderPhone(e.target.value)} placeholder="رقم الهاتف (9 أرقام)" className="bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2 text-white font-mono outline-none" />
-              </div>
+              {bidderName && <XLinkedAccountCard name={bidderName} username={bidderUsername || 'account'} avatarUrl={bidderAvatar} label="حسابك" />}
+              {!bidderName && <input type="text" required value={bidderName} onChange={(e) => setBidderName(e.target.value)} placeholder="الاسم الكامل *" className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2 text-white outline-none" />}
+              {!hasBidderPhone && (
+                <div>
+                  <label className="text-[11px] text-[#71767B] block mb-1">رقم الهاتف *</label>
+                  <input type="tel" inputMode="numeric" dir="ltr" maxLength={9} required value={bidderPhone} onChange={(e) => { setBidderPhone(normalizeYemenPhone(e.target.value)); if (!bidderPhoneTouched) setBidderPhoneTouched(true); }} onBlur={() => setBidderPhoneTouched(true)} className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2 text-white font-mono outline-none" />
+                  {bidderPhoneTouched && !isValidYemenPhone(normalizeYemenPhone(bidderPhone)) && <p className="text-[11px] text-rose-400 mt-1">الرقم خاطئ</p>}
+                </div>
+              )}
               <div className="flex gap-1.5">{[1, 2, 5].map((m) => <button key={m} type="button" onClick={() => setBidAmount(fmtAmt(String(topBid + minInc * m)))} className="flex-1 py-1.5 rounded-full border border-[#2F3336] hover:border-white text-white font-mono text-[11px] font-bold cursor-pointer">+{(minInc * m).toLocaleString()}</button>)}</div>
               <input type="text" inputMode="numeric" required value={bidAmount} onChange={(e) => setBidAmount(fmtAmt(e.target.value))} className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white font-mono text-sm font-black outline-none" />
               <button type="submit" disabled={submitting} className="w-full py-2.5 rounded-full bg-[#FFC500] hover:bg-[#e6b100] text-black font-black text-sm flex items-center justify-center gap-1.5 cursor-pointer"><Gavel size={15} /><span>{submitting ? 'جاري التوثيق...' : 'تأكيد المزايدة'}</span></button>

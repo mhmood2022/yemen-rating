@@ -7,8 +7,8 @@ import { MarketSponsorSlot } from '../ads/MarketSponsorSlot';
 import { YRSelect } from '../common/YRSelect';
 import { XAuctionBidModal } from '../auctions/XAuctionBidModal';
 import { BadgeType } from '../common/VerifiedBadge';
-import { mapBusinessToPage, BusinessPageRecord } from '../../services/businessPageService';
-import { XMarketItem, XSearchFilterBar, XFilterModal, XMarketTweetCard, XMarketDetailView, XImageLightbox, YEMEN_GOV_FILTER_OPTIONS, XToast, XToastState, toArabicMarketError } from '../common/XMarketUI';
+import { mapBusinessToPage, getMyBusinessPage, BusinessPageRecord } from '../../services/businessPageService';
+import { XMarketItem, XSearchFilterBar, XFilterModal, XMarketTweetCard, XMarketDetailView, XImageLightbox, XLinkedAccountCard, YEMEN_GOV_FILTER_OPTIONS, XToast, XToastState, toArabicMarketError } from '../common/XMarketUI';
 import { NOT_AVAILABLE, RE_GOVERNORATES, getCityOptions, getDistrictOptions } from '../../constants/realEstateOptions';
 import {
   AUCTION_KIND_OPTIONS, AUCTION_CATEGORY_OPTIONS, AUCTION_CONDITION_OPTIONS,
@@ -58,6 +58,17 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
   const [saleType, setSaleType] = useState<'auction' | 'fixed_price'>('auction');
   const [formTitle, setFormTitle] = useState('');
   const [formSellerName, setFormSellerName] = useState('');
+  const [myProfile, setMyProfile] = useState<any>(null);
+  const [myBusinessPage, setMyBusinessPage] = useState<BusinessPageRecord | null>(null);
+  const [publisherAvatar, setPublisherAvatar] = useState('');
+  const [publisherUsername, setPublisherUsername] = useState('');
+  const [publisherUserId, setPublisherUserId] = useState('');
+  const [hasAccountPhone, setHasAccountPhone] = useState(false);
+  const [formPhoneTouched, setFormPhoneTouched] = useState(false);
+  const [profilesMap, setProfilesMap] = useState<Record<string, any>>({});
+  const normalizeYemenPhone = (v: string) =>
+    v.replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/\D/g, '').slice(0, 9);
+  const isValidYemenPhone = (v: string) => /^(73|71|77|78)\d{7}$/.test(v);
   const [formCategory, setFormCategory] = useState('vehicles');
   const [formCondition, setFormCondition] = useState('مستعمل');
   const [formBrand, setFormBrand] = useState('تويوتا (Toyota)');
@@ -138,12 +149,22 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
   const fetchAuctions = async () => {
     try {
       setLoading(true);
-      const [{ data, error }, { data: bizData }] = await Promise.all([
+      const [{ data, error }, { data: bizData }, { data: profData }] = await Promise.all([
         supabase.from('auctions').select('*').order('created_at', { ascending: false }),
         supabase.from('businesses').select('*').limit(200),
+        supabase.from('profiles').select('*').limit(200),
       ]);
       if (error) throw error;
       if (bizData) setBusinessesList(bizData.map(mapBusinessToPage));
+      if (profData) {
+        const pm: Record<string, any> = {};
+        profData.forEach((pr: any) => {
+          if (pr.id) pm[pr.id] = pr;
+          if (pr.full_name) pm[String(pr.full_name).trim()] = pr;
+          if (pr.username) pm[String(pr.username).trim()] = pr;
+        });
+        setProfilesMap(pm);
+      }
       setAuctions(data || []);
     } catch (err) {
       console.error('Error fetching auctions:', err);
@@ -154,23 +175,43 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
 
   useEffect(() => {
     fetchAuctions();
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      const uid = session?.user?.id;
-      if (!uid) return;
-      const [{ data: prof }, biz] = await Promise.all([
-        supabase.from('profiles').select('full_name, phone').eq('id', uid).maybeSingle(),
-        supabase.from('businesses').select('*').eq('owner_user_id', uid).limit(1).maybeSingle(),
-      ]);
-      if (biz?.data) {
-        const b = mapBusinessToPage(biz.data);
-        setFormSellerName((p) => p || b.name || '');
-        if (b.phone) setFormPhone((p) => p || b.phone.replace(/\D/g, '').slice(-9));
-        if (b.city) handleGovChange(b.city);
-      } else if (prof) {
-        if (prof.full_name) setFormSellerName((p) => p || prof.full_name);
-        if (prof.phone) setFormPhone((p) => p || prof.phone.replace(/\D/g, '').slice(-9));
-      }
-    }).catch(() => {});
+    const loadId = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const uid = session?.user?.id;
+        if (!uid) return;
+        const meta: any = session.user.user_metadata || {};
+        const [{ data: prof }, biz] = await Promise.all([
+          supabase.from('profiles').select('*').eq('id', uid).maybeSingle(),
+          getMyBusinessPage(uid),
+        ]);
+        const emailH = session.user.email ? session.user.email.split('@')[0] : '';
+        const mp = {
+          ...(prof || { id: uid }),
+          full_name: prof?.full_name || meta.full_name || meta.name || '',
+          username: prof?.username || meta.username || meta.user_name || emailH || '',
+          avatar_url: prof?.avatar_url || meta.avatar_url || '',
+          phone: prof?.phone || meta.phone || '',
+        };
+        setMyProfile(mp);
+        if (biz) setMyBusinessPage(biz);
+        const rn = (biz?.name || mp.full_name || mp.username || emailH || '').trim();
+        const ra = (biz?.avatarUrl || mp.avatar_url || '').trim();
+        const ru = (biz?.username || mp.username || emailH || '').trim();
+        const rawPh = String(biz?.phone || mp.phone || '').replace(/^(\+?967)/, '');
+        const cp = normalizeYemenPhone(rawPh);
+        setPublisherUserId(uid);
+        if (rn) setFormSellerName(rn);
+        if (ra) setPublisherAvatar(ra);
+        if (ru) setPublisherUsername(ru);
+        if (isValidYemenPhone(cp)) { setFormPhone(cp); setHasAccountPhone(true); }
+        else { setHasAccountPhone(false); }
+        if (biz?.city) handleGovChange(biz.city);
+      } catch {}
+    };
+    loadId();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => { loadId(); });
+    return () => { subscription.unsubscribe(); };
   }, []);
 
   const compressImage = (file: File): Promise<string> => new Promise((resolve) => {
@@ -219,8 +260,15 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
 
   const handleCreateListing = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formTitle.trim() || !consent || formPhone.length !== 9) {
-      const m = 'يرجى إكمال عنوان المعروض ورقم الهاتف (9 أرقام) والموافقة على الشروط';
+    const cleanFormPhone = normalizeYemenPhone(formPhone);
+    setFormPhoneTouched(true);
+    if (!isValidYemenPhone(cleanFormPhone)) {
+      setPublishMsg({ type: 'error', text: 'الرقم خاطئ' });
+      showToast('الرقم خاطئ', 'error', 3500);
+      return;
+    }
+    if (!formTitle.trim() || !consent) {
+      const m = 'يرجى إكمال عنوان المعروض والموافقة على الشروط';
       setPublishMsg({ type: 'error', text: m });
       showToast(m, 'error', 3500);
       return;
@@ -270,6 +318,9 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
         specs,
         videoUrl: videoUrl.trim() || undefined,
         docImage: docImage || undefined,
+        sellerAvatar: publisherAvatar || undefined,
+        sellerUsername: publisherUsername || undefined,
+        ownerUserId: publisherUserId || undefined,
       });
 
       const payload: any = {
@@ -280,7 +331,7 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
         city: formCity,
         currency: formCurrency,
         description: metaJson,
-        seller_phone: formPhone,
+        seller_phone: cleanFormPhone,
         images: uploadedImages,
         status: 'active',
         starting_price: priceNum,
@@ -355,22 +406,40 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
     (cityFilter !== 'all' ? 1 : 0);
 
   const toAucX = (auc: any): XMarketItem => {
-    const biz = businessesList.find((b) => auc.business_id && b.id === auc.business_id) || null;
+    const biz = businessesList.find((b) =>
+      (auc.business_id && b.id === auc.business_id) ||
+      (auc.seller_name && b.name.trim() === String(auc.seller_name).trim())
+    ) || null;
+    let rm: any = {};
+    try {
+      if (typeof auc.description === 'string' && auc.description.trim().startsWith('{')) {
+        rm = JSON.parse(auc.description);
+      }
+    } catch {}
+    const pm = profilesMap[rm.ownerUserId || auc.owner_user_id || '']
+      || profilesMap[rm.sellerUsername || '']
+      || profilesMap[String(auc.seller_name || '').trim()]
+      || null;
     const dir = auc.sale_type === 'fixed_price' || auc.sale_type === 'direct';
     const bid = Number(auc.current_bid || auc.starting_price || auc.final_price || 0);
-    const imgs = Array.isArray(auc.images) && auc.images.length > 0 ? auc.images : (Array.isArray(auc.image_urls) ? auc.image_urls : []);
+    const imgs = Array.isArray(auc.images) && auc.images.length > 0
+      ? auc.images
+      : (Array.isArray(auc.image_urls) ? auc.image_urls : []);
     const parsed = parseAuctionMeta(auc.description);
-    const catLabel = AUCTION_CATEGORY_OPTIONS.find((x) => x.id === auc.category)?.label || auc.category;
+    const catLabel =
+      AUCTION_CATEGORY_OPTIONS.find((x) => x.id === auc.category)?.label || auc.category;
     const fallbackPairs = [
       { label: 'النوع', value: dir ? 'بيع مباشر' : 'مزاد علني' },
       ...(catLabel ? [{ label: 'التصنيف', value: catLabel }] : []),
       ...(auc.city ? [{ label: 'المحافظة', value: auc.city }] : []),
     ];
     return {
-      id: auc.id, detailPath: `/auctions/${auc.id}`, actionLabel: dir ? 'التفاصيل' : 'المزايدة',
+      id: auc.id, detailPath: `/auctions/${auc.id}`,
+      actionLabel: dir ? 'التفاصيل' : 'المزايدة',
       actionIcon: <Gavel size={14} />, onAction: () => setBiddingAuction(auc),
-      authorName: biz?.name || auc.seller_name || (dir ? 'بيع مباشر' : 'مزاد علني'),
-      authorUsername: biz?.username || auc.city || 'auction', authorAvatar: biz?.avatarUrl || '',
+      authorName: biz?.name || auc.seller_name || pm?.full_name || (dir ? 'بيع مباشر' : 'مزاد علني'),
+      authorUsername: biz?.username || rm.sellerUsername || pm?.username || auc.city || 'auction',
+      authorAvatar: biz?.avatarUrl || rm.sellerAvatar || pm?.avatar_url || '',
       badgeType: biz ? ((biz.verificationType as BadgeType) || (biz.isVerified ? 'gold' : 'none')) : 'none',
       businessPath: biz ? `/businesses/${biz.username || biz.id}` : undefined,
       createdAt: auc.created_at, title: auc.title, priceText: `${bid.toLocaleString()} ${auc.currency || 'YER'}`,
@@ -494,6 +563,15 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
             <div className="flex justify-between items-center px-4 py-3 border-b border-[#2F3336]/60 shrink-0"><button type="button" onClick={() => setIsCreateAuctionOpen(false)} className="p-1.5 rounded-full hover:bg-white/10 text-white"><X size={18} /></button><span className="text-[13px] font-bold text-[#71767B]">إضافة معروض أو مزاد</span><span className="w-7" /></div>
 
             <form onSubmit={handleCreateListing} className="flex-1 overflow-y-auto p-4 space-y-3 text-xs">
+              {(myBusinessPage || myProfile || formSellerName) && (
+                <XLinkedAccountCard
+                  name={myBusinessPage?.name || myProfile?.full_name || formSellerName || 'حسابك'}
+                  username={myBusinessPage?.username || publisherUsername || myProfile?.username || 'account'}
+                  avatarUrl={myBusinessPage?.avatarUrl || publisherAvatar || myProfile?.avatar_url}
+                  badgeType={myBusinessPage ? ((myBusinessPage.verificationType as BadgeType) || (myBusinessPage.isVerified ? 'gold' : 'none')) : 'none'}
+                  label={myBusinessPage ? 'صفحة المنشأة' : 'حسابك'}
+                />
+              )}
               {publishMsg && <div className={`p-2.5 rounded-xl font-bold text-xs ${publishMsg.type === 'success' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/40' : 'bg-rose-500/15 text-rose-300 border border-rose-500/40'}`}>{publishMsg.text}</div>}
 
               {/* 1. نوع المزاد والتصنيف */}
@@ -582,10 +660,33 @@ export const AuctionsPage: React.FC<{ onBack?: () => void; embedded?: boolean }>
                 </div>
               </div>
 
-              <input required type="tel" maxLength={9} value={formPhone} onChange={(e) => setFormPhone(e.target.value.replace(/\D/g, '').slice(0, 9))} placeholder="رقم الهاتف (9 أرقام)..." className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white font-mono outline-none" />
+              {!hasAccountPhone && (
+                <div>
+                  <label className="text-[11px] text-[#71767B] block mb-1">رقم الهاتف *</label>
+                  <input
+                    required type="tel" inputMode="numeric" dir="ltr" maxLength={9}
+                    value={formPhone}
+                    onChange={(e) => {
+                      setFormPhone(normalizeYemenPhone(e.target.value));
+                      if (!formPhoneTouched) setFormPhoneTouched(true);
+                    }}
+                    onBlur={() => setFormPhoneTouched(true)}
+                    className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white font-mono outline-none"
+                  />
+                  {formPhoneTouched && !isValidYemenPhone(normalizeYemenPhone(formPhone)) && (
+                    <p className="text-[11px] text-rose-400 mt-1">الرقم خاطئ</p>
+                  )}
+                </div>
+              )}
               <textarea rows={2} value={formDescription} onChange={(e) => setFormDescription(e.target.value)} placeholder="وصف المعروض (اختياري)..." className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-white outline-none resize-none" />
               <label className="flex items-center gap-2 text-[11px] text-[#71767B] cursor-pointer"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="accent-[#16A34A]" /><span>أوافق على شروط وسياسة وساطة يمن ريتغ</span></label>
-              <button type="submit" disabled={submitting || !consent || formPhone.length !== 9} className="w-full py-2.5 rounded-full bg-[#FFC500] disabled:opacity-40 text-black font-black text-xs">{submitting ? 'جاري النشر...' : 'نشر الآن'}</button>
+              <button
+                type="submit"
+                disabled={submitting || !consent || (!hasAccountPhone && !isValidYemenPhone(normalizeYemenPhone(formPhone)))}
+                className="w-full py-2.5 rounded-full bg-[#FFC500] disabled:opacity-40 text-black font-black text-xs"
+              >
+                {submitting ? 'جاري النشر...' : 'نشر الآن'}
+              </button>
             </form>
           </div>
         </div>
