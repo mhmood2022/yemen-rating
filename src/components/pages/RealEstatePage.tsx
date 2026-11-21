@@ -157,7 +157,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
       const [{ data, error }, { data: bizData }, { data: profData }] = await Promise.all([
         supabase.from('properties').select('*').order('created_at', { ascending: false }),
         supabase.from('businesses').select('*').limit(200),
-        supabase.from('profiles').select('id, full_name, avatar_url, phone, email').limit(200),
+        supabase.from('profiles').select('id, full_name, username, avatar_url, phone, email').limit(200),
       ]);
       if (error) throw error;
       if (bizData) setBusinessesList(bizData.map(mapBusinessToPage));
@@ -186,6 +186,8 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
       const mergedProf = {
         ...(prof || { id: uid }),
         full_name: prof?.full_name || meta.full_name || meta.name || '',
+        username: prof?.username || meta.username || meta.user_name || (session.user.email ? session.user.email.split('@')[0] : ''),
+        avatar_url: prof?.avatar_url || meta.avatar_url || '',
         phone: prof?.phone || meta.phone || '',
       };
       setMyProfile(mergedProf);
@@ -448,7 +450,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
       id: prop.id, detailPath: `/properties/${prop.id}`, actionLabel: 'التفاصيل',
       onAction: () => { const it = toPropX(prop); setSelectedItem(it); setActiveImageIndex(0); window.scrollTo({ top: 0, behavior: 'instant' }); },
       authorName: pubName,
-      authorUsername: biz?.username || (prof?.email ? prof.email.split('@')[0] : (prop.city || 'realestate')),
+      authorUsername: biz?.username || prof?.username || (prof?.email ? prof.email.split('@')[0] : (prop.city || 'realestate')),
       authorAvatar: biz?.avatarUrl || prof?.avatar_url || '',
       badgeType: biz ? ((biz.verificationType as BadgeType) || (biz.isVerified ? 'gold' : 'none')) : 'none',
       businessPath: biz ? `/businesses/${biz.username || biz.id}` : undefined,
@@ -626,7 +628,7 @@ export const RealEstatePage: React.FC<{ onBack?: () => void; embedded?: boolean 
             </div>
 
             <form onSubmit={handleAddProperty} className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
-              {(myBusinessPage || myProfile) && <XLinkedAccountCard name={myBusinessPage?.name || myProfile?.full_name || "حسابك"} username={myBusinessPage?.username || (myProfile?.email ? myProfile.email.split("@")[0] : "account")} avatarUrl={myBusinessPage?.avatarUrl || myProfile?.avatar_url} badgeType={myBusinessPage ? ((myBusinessPage.verificationType as BadgeType) || (myBusinessPage.isVerified ? "gold" : "none")) : "none"} label={myBusinessPage ? "صفحة المنشأة" : "حسابك"} />}
+              {(myBusinessPage || myProfile) && <XLinkedAccountCard name={myBusinessPage?.name || myProfile?.full_name || "حسابك"} username={myBusinessPage?.username || myProfile?.username || (myProfile?.email ? myProfile.email.split("@")[0] : "account")} avatarUrl={myBusinessPage?.avatarUrl || myProfile?.avatar_url} badgeType={myBusinessPage ? ((myBusinessPage.verificationType as BadgeType) || (myBusinessPage.isVerified ? "gold" : "none")) : "none"} label={myBusinessPage ? "صفحة المنشأة" : "حسابك"} />}
               {formError && <div className="p-2.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 font-bold text-xs">{formError}</div>}
 
               {/* أولاً: نوع العرض ونوع العقار */}

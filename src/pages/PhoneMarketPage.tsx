@@ -872,7 +872,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
       }
 
       const activeName = myBusinessPage?.name || sellerName.trim() || profile?.full_name || 'بائع معتمد';
-      const activeUsername = myBusinessPage?.username || (profile?.email ? profile.email.split('@')[0] : 'seller');
+      const activeUsername = myBusinessPage?.username || (profile as any)?.username || (profile?.email ? profile.email.split('@')[0] : 'seller');
       const activeAvatar = myBusinessPage?.avatarUrl || profile?.avatar_url || '';
       const activeBadge: BadgeType = myBusinessPage
         ? ((myBusinessPage.verificationType as BadgeType) || (myBusinessPage.isVerified ? 'gold' : 'none'))
@@ -1846,7 +1846,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                       <span className="font-bold text-white text-xs truncate">{myBusinessPage?.name || profile?.full_name}</span>
                       <VerifiedBadge type={myBusinessPage ? ((myBusinessPage.verificationType as BadgeType) || (myBusinessPage.isVerified ? 'gold' : 'none')) : 'none'} size={13} />
                     </div>
-                    <div className="text-[11px] text-[#71767B] truncate" dir="ltr">@{myBusinessPage?.username || (profile?.email ? profile.email.split('@')[0] : 'account')}</div>
+                    <div className="text-[11px] text-[#71767B] truncate" dir="ltr">@{myBusinessPage?.username || (profile as any)?.username || (profile?.email ? profile.email.split('@')[0] : 'account')}</div>
                   </div>
                   <span className="px-2 py-0.5 rounded-full bg-white/10 text-white text-[10px] font-bold shrink-0">{myBusinessPage ? 'صفحة المنشأة' : 'حسابك'}</span>
                 </div>

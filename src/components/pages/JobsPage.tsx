@@ -89,6 +89,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
   const [commissionSettings, setCommissionSettings] = useState<any>(null);
   const [myProfile, setMyProfile] = useState<any>(null);
   const [myBusinessPage, setMyBusinessPage] = useState<BusinessPageRecord | null>(null);
+  const [profilesMap, setProfilesMap] = useState<Record<string, any>>({});
 
   // نافذة أضف وظيفة
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -107,13 +108,23 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const [{ data, error }, { data: bizData }] = await Promise.all([
+      const [{ data, error }, { data: bizData }, { data: profData }] = await Promise.all([
         supabase.from('jobs').select('*').order('created_at', { ascending: false }),
         supabase.from('businesses').select('*').limit(200),
+        supabase.from('profiles').select('*').limit(200),
       ]);
 
       if (error) throw error;
       if (bizData) setBusinessesList(bizData.map(mapBusinessToPage));
+      if (profData) {
+        const pm: Record<string, any> = {};
+        profData.forEach((pr: any) => {
+          if (pr.id) pm[pr.id] = pr;
+          if (pr.full_name) pm[String(pr.full_name).trim()] = pr;
+          if (pr.username) pm[String(pr.username).trim()] = pr;
+        });
+        setProfilesMap(pm);
+      }
       setJobs(data || []);
     } catch (err) {
       console.error('Error fetching jobs:', err);
@@ -132,12 +143,15 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
       if (!uid) return;
       const meta: any = session.user.user_metadata || {};
       const [{ data: prof }, biz] = await Promise.all([
-        supabase.from('profiles').select('id, full_name, phone').eq('id', uid).maybeSingle(),
+        supabase.from('profiles').select('*').eq('id', uid).maybeSingle(),
         getMyBusinessPage(uid),
       ]);
+      const emailH = session.user.email ? session.user.email.split('@')[0] : '';
       const resolvedProf = {
         id: uid,
         full_name: prof?.full_name || meta.full_name || meta.name || '',
+        username: prof?.username || meta.username || meta.user_name || emailH || '',
+        avatar_url: prof?.avatar_url || meta.avatar_url || '',
         phone: prof?.phone || meta.phone || '',
       };
       setMyProfile(resolvedProf);
@@ -248,7 +262,11 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
       const autoPubName = (newJob.companyName || "").trim() || myBusinessPage?.name || myProfile?.full_name || pubMeta.full_name || "";
       const autoPubPhone = String((newJob as any).phone || (newJob as any).publisherPhone || myBusinessPage?.phone || myProfile?.phone || pubMeta.phone || "").replace(/\D/g, "").slice(-9);
       const contactLines: string[] = [];
+      const autoPubUser = (myBusinessPage?.username || myProfile?.username || pubMeta.username || '').trim();
+      const autoPubAv = (myBusinessPage?.avatarUrl || myProfile?.avatar_url || pubMeta.avatar_url || '').trim();
       if (autoPubName && !newJob.companyId) contactLines.push(`اسم الناشر: ${autoPubName}`);
+      if (autoPubUser) contactLines.push(`معرف الناشر: ${autoPubUser}`);
+      if (autoPubAv) contactLines.push(`أفاتار الناشر: ${autoPubAv}`);
       if (autoPubPhone) contactLines.push(`هاتف مسؤول التوظيف: ${autoPubPhone}`);
       if (contactLines.length > 0) {
         descParts.push(`[معلومات جهة العمل والتواصل]\n${contactLines.join("\n")}`);
@@ -386,7 +404,11 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
     const phoneMatch = rawDesc.match(/هاتف مسؤول التوظيف:\s*(\d+)/);
     const imgMatch = rawDesc.match(/\[مرفقات الصور\]:\s*([^\s]+)/);
     const docMatch = rawDesc.match(/\[ملف الوصف الوظيفي PDF\]:\s*([^\n\r\s]+)/);
+    const userMatch = rawDesc.match(/معرف الناشر:\s*([^\s\n]+)/);
+    const avMatch = rawDesc.match(/أفاتار الناشر:\s*([^\s\n]+)/);
     const extractedName = companyMatch ? companyMatch[1].trim() : '';
+    const extractedUser = userMatch ? userMatch[1].trim() : '';
+    const extractedAv = avMatch ? avMatch[1].trim() : '';
 
     const biz =
       businessesList.find((b) =>
@@ -396,6 +418,11 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
       || (extractedName
         ? businessesList.find((b) => b.name.trim() === extractedName)
         : undefined)
+      || null;
+
+    const pm = profilesMap[job.owner_user_id || job.user_id || '']
+      || profilesMap[extractedUser]
+      || profilesMap[extractedName]
       || null;
 
     const jobType = job.type || job.work_type || 'دوام كامل';
@@ -432,9 +459,9 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
       actionLabel: 'التقديم',
       onAction: () => setApplyingJob(job),
       actionIcon: <Briefcase size={14} />,
-      authorName: biz?.name || extractedName || 'جهة توظيف معتمدة',
-      authorUsername: biz?.username || job.city || 'jobs',
-      authorAvatar: biz?.avatarUrl || '',
+      authorName: biz?.name || extractedName || pm?.full_name || 'جهة توظيف معتمدة',
+      authorUsername: biz?.username || extractedUser || pm?.username || job.city || 'jobs',
+      authorAvatar: biz?.avatarUrl || extractedAv || pm?.avatar_url || '',
       badgeType: biz
         ? ((biz.verificationType as BadgeType)
           || (biz.isVerified ? 'gold' : 'none'))
