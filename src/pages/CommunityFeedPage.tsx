@@ -22,6 +22,8 @@ import { PhoneMarketPage } from './PhoneMarketPage';
 import { JobsPage } from '../components/pages/JobsPage';
 import { RealEstatePage } from '../components/pages/RealEstatePage';
 import { AuctionsPage } from '../components/pages/AuctionsPage';
+import { CommunitySection, SECTIONS_UPDATED_EVENT, fetchCommunitySections, getCachedCommunitySections, getSectionIcon } from '../services/sectionsService';
+import { CustomSectionView } from '../components/common/CustomSectionView';
 import { 
   ArrowRight,
   Image as ImageIcon,
@@ -256,10 +258,47 @@ export const CommunityFeedPage: React.FC = () => {
   const [isSwiping, setIsSwiping] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const initialUrlTab = searchParams.get('tab');
-  const validUrlTabs = ['forYou', 'latest', 'trending', 'phones', 'jobs', 'properties', 'auctions'] as const;
-  const [activeTab, setActiveTab] = useState<'forYou' | 'latest' | 'trending' | 'phones' | 'jobs' | 'properties' | 'auctions'>(
-    validUrlTabs.includes(initialUrlTab as any) ? (initialUrlTab as any) : 'forYou'
+  const [communitySections, setCommunitySections] = useState<CommunitySection[]>(() => getCachedCommunitySections());
+  const openCommunitySections = communitySections.filter((s) => s.isOpen).sort((a, b) => a.sortOrder - b.sortOrder);
+  const validDynamicSectionIds = openCommunitySections.map((s) => s.id);
+  const validUrlTabs = ['forYou', 'latest', 'trending', ...validDynamicSectionIds];
+  const [activeTab, setActiveTab] = useState<string>(
+    initialUrlTab && validUrlTabs.includes(initialUrlTab) ? initialUrlTab : 'forYou'
   );
+  const isSectionTab = !['forYou', 'latest', 'trending'].includes(activeTab);
+
+  useEffect(() => {
+    let alive = true;
+    fetchCommunitySections().then((data) => {
+      if (alive) setCommunitySections(data);
+    });
+    const onUpdated = (e: Event) => {
+      const detail = (e as CustomEvent<CommunitySection[]>).detail;
+      if (Array.isArray(detail)) {
+        setCommunitySections(detail);
+      } else {
+        setCommunitySections(getCachedCommunitySections());
+      }
+    };
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'yr_community_sections') {
+        setCommunitySections(getCachedCommunitySections());
+      }
+    };
+    window.addEventListener(SECTIONS_UPDATED_EVENT, onUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      alive = false;
+      window.removeEventListener(SECTIONS_UPDATED_EVENT, onUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!['forYou', 'latest', 'trending'].includes(activeTab) && !openCommunitySections.some((s) => s.id === activeTab)) {
+      setActiveTab('forYou');
+    }
+  }, [activeTab, communitySections]);
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     setVisibleTweetsCount(12);
@@ -279,8 +318,8 @@ export const CommunityFeedPage: React.FC = () => {
     let touchStartX = 0;
     let touchStartY = 0;
     let ignoreSwipe = false;
-    const tabOrder: Array<'forYou' | 'latest' | 'phones' | 'jobs' | 'properties' | 'auctions'> = [
-      'forYou', 'latest', 'phones', 'jobs', 'properties', 'auctions'
+    const tabOrder: string[] = [
+      'forYou', 'latest', ...openCommunitySections.map((s) => s.id)
     ];
 
     const handleTouchStart = (e: TouchEvent) => {
@@ -338,7 +377,7 @@ export const CommunityFeedPage: React.FC = () => {
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [activeTab]);
+  }, [activeTab, openCommunitySections.map((s) => s.id).join(',')]);
   // ------------------------------
 
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -1584,7 +1623,7 @@ const handleAddComment = (e?: React.FormEvent) => {
   
   
   useEffect(() => {
-    if (['phones', 'jobs', 'properties', 'auctions'].includes(activeTab)) return;
+    if (isSectionTab) return;
     const el = feedBottomRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(
@@ -1745,7 +1784,7 @@ const handleAddComment = (e?: React.FormEvent) => {
       {/* الهيدر العلوي بنمط منصة X الأصلي */}
       <header className="sticky top-0 z-40 bg-black/95 backdrop-blur-md">
         {/* الشريط العلوي */}
-        <div className={`px-4 flex items-center justify-between relative transition-all duration-300 overflow-hidden ${(isScrolled || ['phones', 'jobs', 'properties', 'auctions'].includes(activeTab)) ? 'h-0 py-0 opacity-0 pointer-events-none' : 'h-[58px] py-2.5 opacity-100'}`}>
+        <div className={`px-4 flex items-center justify-between relative transition-all duration-300 overflow-hidden ${(isScrolled || isSectionTab) ? 'h-0 py-0 opacity-0 pointer-events-none' : 'h-[58px] py-2.5 opacity-100'}`}>
           {(() => {
             const isBizHeader = Boolean(publishAsBusiness && myBusinessPage);
             const headerAvatar = isBizHeader ? (myBusinessPage?.avatarUrl || '') : myAvatar;
@@ -1795,14 +1834,15 @@ const handleAddComment = (e?: React.FormEvent) => {
         </div>
 
         {/* التبويبات بتصميم صفحة المنشأة */}
-        <div className="bg-black border-b border-[#2F3336]/40 flex items-center justify-around text-[14px]">
+        <div className="bg-black border-b border-[#2F3336]/40 flex items-center justify-around text-[14px] overflow-x-auto no-scrollbar">
           {[
             { id: 'forYou', label: 'لك', icon: Sparkles },
             { id: 'latest', label: 'متابعة', icon: Users },
-            { id: 'phones', label: 'سوق الهواتف', icon: Smartphone },
-            { id: 'jobs', label: 'الوظائف', icon: Briefcase },
-            { id: 'properties', label: 'العقارات', icon: Building },
-            { id: 'auctions', label: 'المزادات', icon: Gavel },
+            ...openCommunitySections.map((sec) => ({
+              id: sec.id,
+              label: sec.label,
+              icon: getSectionIcon(sec.iconName),
+            })),
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -1849,6 +1889,12 @@ const handleAddComment = (e?: React.FormEvent) => {
           <div className="pb-4">
             <AuctionsPage embedded />
           </div>
+        ) : isSectionTab ? (
+          <CustomSectionView
+            section={openCommunitySections.find((s) => s.id === activeTab)}
+            tweets={tweets}
+            onOpenRoute={(path) => navigate(path)}
+          />
         ) : displayedTweets.length === 0 ? (
           isInitialFeedLoading ? (
             <div className="py-24 flex items-center justify-center">
@@ -2027,7 +2073,7 @@ displayedTweets.slice(0, visibleTweetsCount).map(tweet => {
             );
           })
         )}
-        {!['phones', 'jobs', 'properties', 'auctions'].includes(activeTab) && displayedTweets.length > 0 && (
+        {!isSectionTab && displayedTweets.length > 0 && (
           <div
             ref={feedBottomRef}
             className="py-3.5 flex items-center justify-center border-t border-[#2F3336]/40"
@@ -2531,7 +2577,7 @@ displayedTweets.slice(0, visibleTweetsCount).map(tweet => {
       
 
       {/* زر + (FAB) — يفتح نافذة التغريد المنبثقة */}
-      {!['phones', 'jobs', 'properties', 'auctions'].includes(activeTab) && (
+      {!isSectionTab && (
       <button
         onClick={() => setIsPostModalOpen(true)}
         className="yr-fab transition-transform duration-300 fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-black/60 transition"

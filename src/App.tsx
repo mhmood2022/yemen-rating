@@ -61,6 +61,7 @@ import { MarketsManager } from './pages/admin/markets/MarketsManager';
 import { PhonesManager } from './pages/admin/phones/PhonesManager';
 import { CleaningManager } from './pages/admin/cleaning/CleaningManager';
 import { AnalyticsFinanceManager } from './pages/admin/analytics/AnalyticsFinanceManager';
+import { SectionsManager } from './pages/admin/sections/SectionsManager';
 import FollowersPage from './pages/social/FollowersPage';
 
 
@@ -147,6 +148,7 @@ export function App() {
           <Route path="analytics" element={<AnalyticsFinanceManager />} />
           <Route path="gold-currency" element={<GoldCurrencyManager />} />
           <Route path="matching" element={<MatchingAIManager />} />
+          <Route path="sections" element={<SectionsManager />} />
           <Route path="settings" element={<SettingsAuditManager />} />
         </Route>
 
