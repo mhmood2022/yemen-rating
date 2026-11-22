@@ -7,6 +7,10 @@ import {
   LEGACY_PLACEMENT_TO_SECTION,
   MarketSectionId,
 } from '../../utils/adGeneratorEngine';
+import {
+  getSectionConfigById,
+  SECTIONS_UPDATED_EVENT,
+} from '../../services/sectionsService';
 
 interface AdBannerProps {
   placementId?: string;
@@ -29,9 +33,29 @@ export const AdBanner: React.FC<AdBannerProps> = ({
 }) => {
   const [adData, setAdData] = useState<PublishedAd | null>(null);
   const [isDismissed, setIsDismissed] = useState<boolean>(false);
+  const [sectionRev, setSectionRev] = useState(0);
   const excludeKey = excludeAdIds.join(',');
 
   useEffect(() => {
+    const onSecUpdate = () => setSectionRev((v) => v + 1);
+    window.addEventListener(SECTIONS_UPDATED_EVENT, onSecUpdate);
+    return () => window.removeEventListener(SECTIONS_UPDATED_EVENT, onSecUpdate);
+  }, []);
+
+  const resolvedSection = section || LEGACY_PLACEMENT_TO_SECTION[String(placementId || '')];
+  const secCfg = resolvedSection ? getSectionConfigById(resolvedSection) : undefined;
+  const isBannerAllowedBySection =
+    !secCfg ||
+    (secCfg.allowSponsorAndBanners !== false &&
+      (slot !== 'slot_1' || secCfg.allowSlot1Banner !== false) &&
+      (slot !== 'slot_2' || secCfg.allowSlot2Banner !== false));
+
+  useEffect(() => {
+    if (!isBannerAllowedBySection) {
+      setAdData(null);
+      onAdResolved?.(null);
+      return;
+    }
     if (!enabled) return;
     let isMounted = true;
 
@@ -79,9 +103,9 @@ export const AdBanner: React.FC<AdBannerProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [placementId, section, slot, excludeKey, enabled]);
+  }, [placementId, section, slot, excludeKey, enabled, isBannerAllowedBySection, sectionRev]);
 
-  if (!adData || isDismissed) return null;
+  if (!isBannerAllowedBySection || !adData || isDismissed) return null;
 
   const isFooterSticky = placementId === '10';
 

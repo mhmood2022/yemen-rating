@@ -31,7 +31,7 @@ const ADMIN_OPERATIONS = [
   { id: 'operations', label: 'مركز العمليات والإدارة', icon: Inbox, path: '/admin/operations' },
   { id: 'payments', label: 'إدارة المدفوعات والمالية', icon: Wallet, path: '/admin/payments' },
   { id: 'community', label: 'المجتمع والتغريدات (X)', icon: MessageSquare, path: '/admin/community' },
-  { id: 'sections', label: 'إدارة الأقسام', icon: LayoutGrid, path: '/admin/sections' },
+  { id: 'sections', label: 'إدارة الأقسام والتبويبات', icon: LayoutGrid, path: '/admin/sections' },
   { id: 'real-estate', label: 'العقارات والاستثمار', icon: Home, path: '/admin/real-estate' },
   { id: 'jobs', label: 'الوظائف الشاغرة', icon: Briefcase, path: '/admin/jobs' },
   { id: 'ratings', label: 'التحكم بالتقييمات والنسب', icon: Star, path: '/admin/ratings' },

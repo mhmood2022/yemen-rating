@@ -26,9 +26,15 @@ import {
   ExtendedAdRecord,
 } from '../../../services/adsDatabaseService';
 import {
-  MARKET_SECTIONS,
-  SECTION_LABEL_MAP,
+  getDynamicMarketSections,
+  getDynamicSectionLabel,
+  normalizeAdTargetSection,
 } from '../../../utils/adGeneratorEngine';
+import {
+  fetchCommunitySections,
+  getCachedCommunitySections,
+  type CommunitySection,
+} from '../../../services/sectionsService';
 
 interface ToastState {
   type: 'success' | 'error' | 'warning';
@@ -67,6 +73,12 @@ export const SponsorManager: React.FC = () => {
 
   const [sponsorsList, setSponsorsList] = useState<ExtendedAdRecord[]>([]);
   const [filterSection, setFilterSection] = useState<string>('all_filter');
+  const [dynamicSections, setDynamicSections] = useState<CommunitySection[]>(() => getCachedCommunitySections());
+  const marketSectionOptions = getDynamicMarketSections(dynamicSections);
+
+  useEffect(() => {
+    fetchCommunitySections().then(setDynamicSections).catch(() => {});
+  }, []);
 
   const [sponsorRecordId, setSponsorRecordId] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(true);
@@ -392,13 +404,14 @@ export const SponsorManager: React.FC = () => {
       };
 
       const targetUrl = getFinalTargetUrl();
-      const firstSec = targetSections[0] || 'all';
-      const secObj = MARKET_SECTIONS.find((m) => m.id === firstSec);
+      const normalizedTargets = targetSections.map(normalizeAdTargetSection);
+      const firstSec = normalizedTargets[0] || 'all';
+      const secObj = marketSectionOptions.find((m) => m.id === firstSec);
 
       const record: any = {
         id,
         placementId: secObj?.legacyPlacementId || 'home_sponsor',
-        placementName: `راعي: ${targetSections.map((s) => SECTION_LABEL_MAP[s] || s).join('، ')}`,
+        placementName: `راعي: ${normalizedTargets.map((s) => getDynamicSectionLabel(s, dynamicSections)).join('، ')}`,
         status: statusToSave ? 'active' : 'paused',
         adKind: 'sponsor',
         isSponsor: true,
@@ -478,8 +491,9 @@ export const SponsorManager: React.FC = () => {
 
   const filteredSponsors = sponsorsList.filter((sp) => {
     if (filterSection === 'all_filter') return true;
-    const secs = sp.targetSections || ['all'];
-    return secs.includes(filterSection) || secs.includes('all');
+    const normFilter = normalizeAdTargetSection(filterSection);
+    const secs = (sp.targetSections || ['all']).map(normalizeAdTargetSection);
+    return secs.includes(normFilter) || secs.includes('all');
   });
 
   const bannerHeight = Math.min(Math.max(customHeight, 88), 160);
@@ -567,7 +581,7 @@ export const SponsorManager: React.FC = () => {
             >
               الكل
             </button>
-            {MARKET_SECTIONS.map((sec) => (
+            {marketSectionOptions.map((sec) => (
               <button
                 key={sec.id}
                 type="button"
@@ -594,7 +608,7 @@ export const SponsorManager: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {filteredSponsors.map((sp) => {
               const isSelected = sp.id === sponsorRecordId;
-              const secs = (sp.targetSections || ['all']).map((s) => SECTION_LABEL_MAP[s] || s).join('، ');
+              const secs = (sp.targetSections || ['all']).map((s) => getDynamicSectionLabel(s, dynamicSections)).join('، ');
               return (
                 <div
                   key={sp.id}
@@ -792,7 +806,7 @@ export const SponsorManager: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap gap-1.5">
-            {MARKET_SECTIONS.map((sec) => {
+            {marketSectionOptions.map((sec) => {
               const selected = targetSections.includes(sec.id);
               return (
                 <button

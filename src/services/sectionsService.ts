@@ -32,6 +32,8 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
+export type SpecializedCardStyle = 'phone' | 'property' | 'job' | 'auction' | 'custom';
+
 export interface CommunitySection {
   id: string;
   label: string;
@@ -42,11 +44,30 @@ export interface CommunitySection {
   parentId?: string | null;
   description?: string;
   targetRoute?: string;
+  // الإعدادات المتطورة المستقلة لكل تبويب
+  isVisiblePublic?: boolean;
+  allowPosting?: boolean;
+  allowFreeTweets?: boolean;
+  allowSpecializedAds?: boolean;
+  allowSponsorAndBanners?: boolean;
+  allowHeaderSponsor?: boolean;
+  allowSlot1Banner?: boolean;
+  allowSlot2Banner?: boolean;
+  specializedCardStyle?: SpecializedCardStyle;
+  requireApproval?: boolean;
+  isArchived?: boolean;
 }
 
 export const SECTIONS_SETTING_KEY = 'community_sections';
 export const SECTIONS_STORAGE_KEY = 'yr_community_sections';
 export const SECTIONS_UPDATED_EVENT = 'yr-sections-updated';
+
+const DEFAULT_CARD_STYLE_MAP: Record<string, SpecializedCardStyle> = {
+  phones: 'phone',
+  jobs: 'job',
+  properties: 'property',
+  auctions: 'auction',
+};
 
 export const DEFAULT_COMMUNITY_SECTIONS: CommunitySection[] = [
   {
@@ -58,6 +79,15 @@ export const DEFAULT_COMMUNITY_SECTIONS: CommunitySection[] = [
     sortOrder: 1,
     parentId: null,
     description: 'عروض الهواتف والأجهزة الذكية في اليمن',
+    isVisiblePublic: true,
+    allowPosting: true,
+    allowFreeTweets: true,
+    allowSpecializedAds: true,
+    allowSponsorAndBanners: true,
+    allowHeaderSponsor: true,
+    allowSlot1Banner: true,
+    allowSlot2Banner: true,
+    specializedCardStyle: 'phone',
   },
   {
     id: 'jobs',
@@ -68,6 +98,15 @@ export const DEFAULT_COMMUNITY_SECTIONS: CommunitySection[] = [
     sortOrder: 2,
     parentId: null,
     description: 'فرص العمل والتوظيف في الشركات والمنشآت',
+    isVisiblePublic: true,
+    allowPosting: true,
+    allowFreeTweets: true,
+    allowSpecializedAds: true,
+    allowSponsorAndBanners: true,
+    allowHeaderSponsor: true,
+    allowSlot1Banner: true,
+    allowSlot2Banner: true,
+    specializedCardStyle: 'job',
   },
   {
     id: 'properties',
@@ -78,6 +117,15 @@ export const DEFAULT_COMMUNITY_SECTIONS: CommunitySection[] = [
     sortOrder: 3,
     parentId: null,
     description: 'عقارات للبيع والإيجار والاستثمار العقاري',
+    isVisiblePublic: true,
+    allowPosting: true,
+    allowFreeTweets: true,
+    allowSpecializedAds: true,
+    allowSponsorAndBanners: true,
+    allowHeaderSponsor: true,
+    allowSlot1Banner: true,
+    allowSlot2Banner: true,
+    specializedCardStyle: 'property',
   },
   {
     id: 'auctions',
@@ -88,6 +136,15 @@ export const DEFAULT_COMMUNITY_SECTIONS: CommunitySection[] = [
     sortOrder: 4,
     parentId: null,
     description: 'المزادات العلنية والصفقات المباشرة',
+    isVisiblePublic: true,
+    allowPosting: true,
+    allowFreeTweets: true,
+    allowSpecializedAds: true,
+    allowSponsorAndBanners: true,
+    allowHeaderSponsor: true,
+    allowSlot1Banner: true,
+    allowSlot2Banner: true,
+    specializedCardStyle: 'auction',
   },
 ];
 
@@ -169,17 +226,33 @@ export function normalizeSections(raw: unknown): CommunitySection[] {
     .filter((item): item is Partial<CommunitySection> =>
       Boolean(item && typeof item === 'object' && typeof (item as any).id === 'string' && typeof (item as any).label === 'string')
     )
-    .map((item, idx) => ({
-      id: String(item.id).trim(),
-      label: String(item.label).trim(),
-      iconName: typeof item.iconName === 'string' && SECTION_ICON_MAP[item.iconName] ? item.iconName : 'Layers',
-      isOpen: typeof item.isOpen === 'boolean' ? item.isOpen : true,
-      isBuiltIn: Boolean(item.isBuiltIn),
-      sortOrder: typeof item.sortOrder === 'number' ? item.sortOrder : idx + 1,
-      parentId: typeof item.parentId === 'string' && item.parentId.trim() ? item.parentId.trim() : null,
-      description: typeof item.description === 'string' ? item.description : '',
-      targetRoute: typeof item.targetRoute === 'string' ? item.targetRoute : '',
-    }));
+    .map((item, idx) => {
+      const id = String(item.id).trim();
+      const isOpen = typeof item.isOpen === 'boolean' ? item.isOpen : true;
+      const isVisiblePublic = typeof item.isVisiblePublic === 'boolean' ? item.isVisiblePublic : isOpen;
+      return {
+        id,
+        label: String(item.label).trim(),
+        iconName: typeof item.iconName === 'string' && SECTION_ICON_MAP[item.iconName] ? item.iconName : 'Layers',
+        isOpen,
+        isBuiltIn: Boolean(item.isBuiltIn),
+        sortOrder: typeof item.sortOrder === 'number' ? item.sortOrder : idx + 1,
+        parentId: typeof item.parentId === 'string' && item.parentId.trim() ? item.parentId.trim() : null,
+        description: typeof item.description === 'string' ? item.description : '',
+        targetRoute: typeof item.targetRoute === 'string' ? item.targetRoute : '',
+        isVisiblePublic,
+        allowPosting: typeof item.allowPosting === 'boolean' ? item.allowPosting : true,
+        allowFreeTweets: typeof item.allowFreeTweets === 'boolean' ? item.allowFreeTweets : true,
+        allowSpecializedAds: typeof item.allowSpecializedAds === 'boolean' ? item.allowSpecializedAds : true,
+        allowSponsorAndBanners: typeof item.allowSponsorAndBanners === 'boolean' ? item.allowSponsorAndBanners : true,
+        allowHeaderSponsor: typeof item.allowHeaderSponsor === 'boolean' ? item.allowHeaderSponsor : true,
+        allowSlot1Banner: typeof item.allowSlot1Banner === 'boolean' ? item.allowSlot1Banner : true,
+        allowSlot2Banner: typeof item.allowSlot2Banner === 'boolean' ? item.allowSlot2Banner : true,
+        specializedCardStyle: item.specializedCardStyle || DEFAULT_CARD_STYLE_MAP[id] || 'custom',
+        requireApproval: Boolean(item.requireApproval),
+        isArchived: Boolean(item.isArchived),
+      };
+    });
 
   if (valid.length === 0) {
     return DEFAULT_COMMUNITY_SECTIONS.map((s) => ({ ...s }));
@@ -205,6 +278,17 @@ export function getCachedCommunitySections(): CommunitySection[] {
   }
 }
 
+export function getSectionConfigById(sectionId: string, list?: CommunitySection[]): CommunitySection | undefined {
+  const sections = list || getCachedCommunitySections();
+  const normalizedId = sectionId === 'realestate' ? 'properties' : sectionId;
+  return sections.find((s) => s.id === normalizedId || s.id === sectionId);
+}
+
+export function resolveAdSectionId(sectionId: string): string {
+  if (sectionId === 'properties') return 'realestate';
+  return sectionId;
+}
+
 export async function fetchCommunitySections(): Promise<CommunitySection[]> {
   try {
     const { data, error } = await supabase
@@ -217,6 +301,7 @@ export async function fetchCommunitySections(): Promise<CommunitySection[]> {
       const parsed = normalizeSections(JSON.parse(data.value));
       try {
         localStorage.setItem(SECTIONS_STORAGE_KEY, JSON.stringify(parsed));
+        window.dispatchEvent(new CustomEvent(SECTIONS_UPDATED_EVENT, { detail: parsed }));
       } catch {}
       return parsed;
     }
@@ -230,6 +315,7 @@ export async function saveCommunitySections(
   const reordered = sections.map((s, idx) => ({
     ...s,
     sortOrder: idx + 1,
+    isVisiblePublic: typeof s.isVisiblePublic === 'boolean' ? s.isVisiblePublic : s.isOpen,
   }));
   const normalized = normalizeSections(reordered);
 
@@ -245,7 +331,7 @@ export async function saveCommunitySections(
         {
           key: SECTIONS_SETTING_KEY,
           value: JSON.stringify(normalized),
-          description: 'أقسام المجتمع الظاهرة بعد تبويبي لك ومتابعة وحالة فتحها وإغلاقها',
+          description: 'أقسام المجتمع وإعداداتها المستقلة ومفاتيح النشر والإعلانات',
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'key' }

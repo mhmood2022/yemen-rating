@@ -9,6 +9,10 @@ import {
   MarketSectionId,
   MAX_ACTIVE_SPONSORS_PER_SECTION,
 } from '../../utils/adGeneratorEngine';
+import {
+  getSectionConfigById,
+  SECTIONS_UPDATED_EVENT,
+} from '../../services/sectionsService';
 
 interface MarketSponsorSlotProps {
   section: MarketSectionId;
@@ -22,8 +26,23 @@ export const MarketSponsorSlot: React.FC<MarketSponsorSlotProps> = ({
   const [sponsors, setSponsors] = useState<ExtendedAdRecord[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
   const recordedIdsRef = useRef<Set<string>>(new Set());
+  const [sectionRev, setSectionRev] = useState(0);
 
   useEffect(() => {
+    const onSecUpdate = () => setSectionRev((v) => v + 1);
+    window.addEventListener(SECTIONS_UPDATED_EVENT, onSecUpdate);
+    return () => window.removeEventListener(SECTIONS_UPDATED_EVENT, onSecUpdate);
+  }, []);
+
+  const secCfg = getSectionConfigById(section);
+  const isSponsorAllowed =
+    !secCfg || (secCfg.allowSponsorAndBanners !== false && secCfg.allowHeaderSponsor !== false);
+
+  useEffect(() => {
+    if (!isSponsorAllowed) {
+      setSponsors([]);
+      return;
+    }
     let mounted = true;
     setActiveIdx(0);
     adsDatabaseService
@@ -41,7 +60,7 @@ export const MarketSponsorSlot: React.FC<MarketSponsorSlotProps> = ({
     return () => {
       mounted = false;
     };
-  }, [section]);
+  }, [section, isSponsorAllowed, sectionRev]);
 
   useEffect(() => {
     if (sponsors.length <= 1) return;
@@ -60,7 +79,7 @@ export const MarketSponsorSlot: React.FC<MarketSponsorSlotProps> = ({
     adsDatabaseService.recordImpression(current.id);
   }, [current?.id]);
 
-  if (!current) return null;
+  if (!isSponsorAllowed || !current) return null;
 
   const d: any = current;
   const styles = d.styles || {};

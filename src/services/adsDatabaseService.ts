@@ -93,8 +93,9 @@ const matchesSectionAndSlot = (
   adKind: 'banner' | 'sponsor'
 ): boolean => {
   if ((ad.adKind || 'banner') !== adKind) return false;
-  const sections = ad.targetSections || ['all'];
-  const sectionOk = sections.includes('all') || sections.includes(section);
+  const sections = (ad.targetSections || ['all']).map((s) => (s === 'properties' ? 'realestate' : s));
+  const normSec = section === 'properties' ? 'realestate' : section;
+  const sectionOk = sections.includes('all') || sections.includes(normSec) || sections.includes(section);
   if (!sectionOk) return false;
   const adSlot = ad.slotKey || 'all';
   return slot === 'all' || adSlot === 'all' || adSlot === slot;

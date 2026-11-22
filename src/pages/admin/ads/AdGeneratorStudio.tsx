@@ -9,7 +9,18 @@ import {
   Link as LinkIcon, Calendar, Flame, Award, Clock, Type, Palette as PaletteIcon,
   Tag, QrCode, Star, ShieldCheck, DollarSign, Layout, Play, RefreshCw, Sliders, Shield
 } from 'lucide-react';
-import { YR_AD_PLACEMENTS } from '../../../utils/adGeneratorEngine';
+import {
+  YR_AD_PLACEMENTS,
+  AD_SLOT_OPTIONS,
+  getDynamicMarketSections,
+  normalizeAdTargetSection,
+  type AdSlotKey,
+} from '../../../utils/adGeneratorEngine';
+import {
+  fetchCommunitySections,
+  getCachedCommunitySections,
+  type CommunitySection,
+} from '../../../services/sectionsService';
 import { adminAuditService } from '../../../services/adminService';
 
 export interface PublishedAd {
@@ -111,6 +122,11 @@ export interface PublishedAd {
   contrast: number;
   imgOverlay: number;
   
+  targetSections?: string[];
+  slotKey?: AdSlotKey | string;
+  startDate?: string;
+  advertiserName?: string;
+  priority?: number;
   status: 'active' | 'paused' | 'archived';
   views: number;
   clicks: number;
@@ -207,7 +223,17 @@ export const AdGeneratorStudio: React.FC = () => {
 
             if (targetAd.targetCity) setTargetCity(targetAd.targetCity);
             if (targetAd.targetCategory) setTargetCategory(targetAd.targetCategory);
+            if (Array.isArray((targetAd as any).targetSections) && (targetAd as any).targetSections.length > 0) {
+              setTargetSections((targetAd as any).targetSections.map(normalizeAdTargetSection));
+            }
+            if ((targetAd as any).slotKey) setSlotKey((targetAd as any).slotKey as AdSlotKey);
+            if ((targetAd as any).advertiserName !== undefined) setAdvertiserName((targetAd as any).advertiserName || '');
+            if ((targetAd as any).startDate !== undefined) setStartDate((targetAd as any).startDate || '');
             if (targetAd.endDate) setEndDate(targetAd.endDate);
+            if ((targetAd as any).priority !== undefined) setAdPriority(Number((targetAd as any).priority) || 1);
+            if (targetAd.status === 'paused' || targetAd.status === 'active') setAdStatus(targetAd.status);
+            if (typeof targetAd.views === 'number') setEditViews(targetAd.views);
+            if (typeof targetAd.clicks === 'number') setEditClicks(targetAd.clicks);
           }
         } catch (err) {
           console.error("Error loading ad for edit:", err);
@@ -291,10 +317,40 @@ export const AdGeneratorStudio: React.FC = () => {
   const [whatsappMessage, setWhatsappMessage] = useState('');
   const [callPhone, setCallPhone] = useState('');
 
-  // الاستهداف
+  // الاستهداف وإعدادات الحملة للتبويبات
+  const [dynamicSections, setDynamicSections] = useState<CommunitySection[]>(() => getCachedCommunitySections());
+  const [targetSections, setTargetSections] = useState<string[]>(['all']);
+  const [slotKey, setSlotKey] = useState<AdSlotKey>('all');
+  const [advertiserName, setAdvertiserName] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [adStatus, setAdStatus] = useState<'active' | 'paused'>('active');
+  const [adPriority, setAdPriority] = useState<number>(1);
+  const [editViews, setEditViews] = useState<number>(1);
+  const [editClicks, setEditClicks] = useState<number>(0);
   const [targetCity, setTargetCity] = useState('كل المحافظات');
   const [targetCategory, setTargetCategory] = useState('الجميع');
   const [endDate, setEndDate] = useState('2026-12-31');
+
+  useEffect(() => {
+    fetchCommunitySections().then(setDynamicSections).catch(() => {});
+  }, []);
+
+  const marketSectionOptions = getDynamicMarketSections(dynamicSections);
+
+  const toggleTargetSection = (secId: string) => {
+    if (secId === 'all') {
+      setTargetSections(['all']);
+      return;
+    }
+    setTargetSections((prev) => {
+      const clean = prev.filter((x) => x !== 'all');
+      if (clean.includes(secId)) {
+        const next = clean.filter((x) => x !== secId);
+        return next.length > 0 ? next : ['all'];
+      }
+      return [...clean, secId];
+    });
+  };
 
   // الحركات والتحكم بها
   const [motionPreset, setMotionPreset] = useState<PublishedAd['motionPreset']>('balanced');
@@ -499,9 +555,14 @@ export const AdGeneratorStudio: React.FC = () => {
       brightness,
       contrast,
       imgOverlay,
-      status: 'active',
-      views: 1,
-      clicks: 0,
+      targetSections: targetSections.length > 0 ? targetSections.map(normalizeAdTargetSection) : ['all'],
+      slotKey,
+      startDate,
+      advertiserName: advertiserName.trim(),
+      priority: Math.max(1, adPriority),
+      status: adStatus,
+      views: editId ? editViews : 1,
+      clicks: editId ? editClicks : 0,
       createdAt: new Date().toLocaleDateString('ar-YE')
     };
 
@@ -1341,31 +1402,93 @@ export const AdGeneratorStudio: React.FC = () => {
           </div>
         )}
 
-        {/* تبويب 9: الاستهداف */}
+        {/* تبويب 9: الاستهداف والربط بالتبويبات */}
         {activeTab === 'target' && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="space-y-4">
             <div>
-              <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">المدينة المستهدفة</label>
-              <select value={targetCity} onChange={(e) => setTargetCity(e.target.value)} className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white">
-                <option value="كل المحافظات">كل المحافظات</option>
-                <option value="صنعاء">صنعاء</option>
-                <option value="عدن">عدن</option>
-                <option value="حضرموت">حضرموت - المكلا</option>
-                <option value="تعز">تعز</option>
-              </select>
+              <label className="text-xs text-[#9CA3AF] block mb-1.5 font-bold">التبويبات المستهدفة (يدعم التبويبات الحالية والمستقبلية):</label>
+              <div className="flex flex-wrap gap-1.5">
+                {marketSectionOptions.map((sec) => {
+                  const selected = targetSections.includes(sec.id);
+                  return (
+                    <button
+                      key={sec.id}
+                      type="button"
+                      onClick={() => toggleTargetSection(sec.id)}
+                      className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition cursor-pointer ${
+                        selected
+                          ? 'bg-[#FFC500] text-black border-[#FFC500]'
+                          : 'bg-[#161D2B] text-gray-300 border-[#2F3336] hover:border-white/40'
+                      }`}
+                    >
+                      {sec.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <div>
-              <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">القسم المستهدف</label>
-              <select value={targetCategory} onChange={(e) => setTargetCategory(e.target.value)} className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white">
-                <option value="الجميع">جميع الأقسام</option>
-                <option value="عقارات">عقارات</option>
-                <option value="مزادات">مزادات</option>
-                <option value="وظائف">وظائف</option>
-              </select>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">موضع البانر داخل التبويب</label>
+                <select
+                  value={slotKey}
+                  onChange={(e) => setSlotKey(e.target.value as AdSlotKey)}
+                  className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white"
+                >
+                  {AD_SLOT_OPTIONS.map((opt) => (
+                    <option key={opt.id} value={opt.id}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">اسم المعلن / الجهة</label>
+                <input
+                  type="text"
+                  value={advertiserName}
+                  onChange={(e) => setAdvertiserName(e.target.value)}
+                  placeholder="مثال: شركة اليمن للاتصالات"
+                  className="w-full bg-[#161D2B] border border-[#2F3336] focus:border-white caret-white rounded-xl p-2.5 text-xs text-white outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">حالة الإعلان</label>
+                <select
+                  value={adStatus}
+                  onChange={(e) => setAdStatus(e.target.value as 'active' | 'paused')}
+                  className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white"
+                >
+                  <option value="active">نشط (يعرض الآن)</option>
+                  <option value="paused">متوقف مؤقتاً</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">تاريخ الانتهاء</label>
-              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white font-mono" />
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <div>
+                <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">تاريخ البداية</label>
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white font-mono" />
+              </div>
+              <div>
+                <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">تاريخ الانتهاء</label>
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white font-mono" />
+              </div>
+              <div>
+                <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">المدينة المستهدفة</label>
+                <select value={targetCity} onChange={(e) => setTargetCity(e.target.value)} className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white">
+                  <option value="كل المحافظات">كل المحافظات</option>
+                  <option value="صنعاء">صنعاء</option>
+                  <option value="عدن">عدن</option>
+                  <option value="حضرموت">حضرموت - المكلا</option>
+                  <option value="تعز">تعز</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs text-[#9CA3AF] block mb-1 font-bold">أولوية الظهور (1 - 10)</label>
+                <input type="number" min={1} max={10} value={adPriority} onChange={(e) => setAdPriority(Math.max(1, Number(e.target.value) || 1))} className="w-full bg-[#161D2B] border border-[#2F3336] rounded-xl p-2.5 text-xs text-white font-mono" />
+              </div>
             </div>
           </div>
         )}

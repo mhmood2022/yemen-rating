@@ -20,9 +20,15 @@ import {
   isAdCurrentlyValid,
 } from '../../../services/adsDatabaseService';
 import {
-  MARKET_SECTIONS,
-  SECTION_LABEL_MAP,
+  getDynamicMarketSections,
+  getDynamicSectionLabel,
+  normalizeAdTargetSection,
 } from '../../../utils/adGeneratorEngine';
+import {
+  fetchCommunitySections,
+  getCachedCommunitySections,
+  type CommunitySection,
+} from '../../../services/sectionsService';
 
 const SLOT_LABEL: Record<string, string> = {
   all: 'تدوير تلقائي',
@@ -38,10 +44,14 @@ export const AdsManager: React.FC = () => {
   const [viewFormat, setViewFormat] = useState<'grid' | 'table'>('grid');
   const [sectionFilter, setSectionFilter] = useState<string>('all_filter');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'paused'>('all');
+  const [slotFilter, setSlotFilter] = useState<string>('all_slots');
+  const [dynamicSections, setDynamicSections] = useState<CommunitySection[]>(() => getCachedCommunitySections());
+  const marketSectionOptions = getDynamicMarketSections(dynamicSections);
 
   const loadAllAds = async () => {
     try {
       setLoading(true);
+      fetchCommunitySections().then(setDynamicSections).catch(() => {});
       const cloudAds = await adsDatabaseService.getAllAds('banner');
       if (cloudAds && cloudAds.length > 0) {
         setAds(cloudAds);
@@ -97,9 +107,11 @@ export const AdsManager: React.FC = () => {
 
   const filteredAds = ads.filter((ad) => {
     if (statusFilter !== 'all' && ad.status !== statusFilter) return false;
+    if (slotFilter !== 'all_slots' && (ad.slotKey || 'all') !== slotFilter) return false;
     if (sectionFilter === 'all_filter') return true;
-    const secs = ad.targetSections || ['all'];
-    return secs.includes(sectionFilter) || secs.includes('all');
+    const normFilter = normalizeAdTargetSection(sectionFilter);
+    const secs = (ad.targetSections || ['all']).map(normalizeAdTargetSection);
+    return secs.includes(normFilter) || secs.includes(sectionFilter) || secs.includes('all');
   });
 
   return (
@@ -186,7 +198,7 @@ export const AdsManager: React.FC = () => {
             >
               كل الأقسام
             </button>
-            {MARKET_SECTIONS.map((sec) => (
+            {marketSectionOptions.map((sec) => (
               <button
                 key={sec.id}
                 type="button"
@@ -202,7 +214,27 @@ export const AdsManager: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex items-center gap-1 bg-[#161D2B] p-0.5 rounded-lg border border-[#2F3336] text-[10.5px] font-bold">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1 bg-[#161D2B] p-0.5 rounded-lg border border-[#2F3336] text-[10.5px] font-bold">
+              {[
+                { id: 'all_slots', label: 'كل المواضع' },
+                { id: 'slot_1', label: 'الوحدة 1' },
+                { id: 'slot_2', label: 'الوحدة 2' },
+                { id: 'all', label: 'تدوير' },
+              ].map((sl) => (
+                <button
+                  key={sl.id}
+                  type="button"
+                  onClick={() => setSlotFilter(sl.id)}
+                  className={`px-2 py-1 rounded-md ${
+                    slotFilter === sl.id ? 'bg-[#FFC500] text-black' : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  {sl.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 bg-[#161D2B] p-0.5 rounded-lg border border-[#2F3336] text-[10.5px] font-bold">
             {[
               { id: 'all', label: 'الكل' },
               { id: 'active', label: 'نشط' },
@@ -219,6 +251,7 @@ export const AdsManager: React.FC = () => {
                 {st.label}
               </button>
             ))}
+            </div>
           </div>
         </div>
       </div>
@@ -237,7 +270,7 @@ export const AdsManager: React.FC = () => {
           ) : (
             filteredAds.map((ad) => {
               const sectionsLabel = (ad.targetSections || ['all'])
-                .map((s) => SECTION_LABEL_MAP[s] || s)
+                .map((s) => getDynamicSectionLabel(s, dynamicSections))
                 .join('، ');
               const slotLabel = SLOT_LABEL[ad.slotKey || 'all'] || 'تدوير تلقائي';
               const dateValid = isAdCurrentlyValid(ad);
@@ -252,8 +285,8 @@ export const AdsManager: React.FC = () => {
                       <div className="text-xs font-bold text-white truncate">
                         {sectionsLabel}
                       </div>
-                      <div className="text-[10px] text-[#FFC500] font-bold">
-                        {slotLabel} • أولوية {ad.priority || 1}x
+                      <div className="text-[10px] text-[#FFC500] font-bold truncate">
+                        {slotLabel} • أولوية {ad.priority || 1}x{(ad as any).advertiserName ? ` • ${(ad as any).advertiserName}` : ''}
                       </div>
                     </div>
 
@@ -413,7 +446,7 @@ export const AdsManager: React.FC = () => {
             <tbody className="divide-y divide-[#2F3336] text-white text-[11px]">
               {filteredAds.map((ad) => {
                 const sectionsLabel = (ad.targetSections || ['all'])
-                  .map((s) => SECTION_LABEL_MAP[s] || s)
+                  .map((s) => getDynamicSectionLabel(s, dynamicSections))
                   .join('، ');
                 return (
                   <tr key={ad.id} className="hover:bg-[#161D2B]/50">

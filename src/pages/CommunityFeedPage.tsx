@@ -27,6 +27,7 @@ import { CommunitySection, SECTIONS_UPDATED_EVENT, fetchCommunitySections, getCa
 import { XSearchFilterBar, XFilterModal, YEMEN_GOV_FILTER_OPTIONS } from '../components/common/XMarketUI';
 import { AdBanner } from '../components/common/AdBanner';
 import { MarketSponsorSlot } from '../components/ads/MarketSponsorSlot';
+import { CustomSectionSpecializedFeed } from '../components/community/CustomSectionSpecializedFeed';
 import { 
   ArrowRight,
   Image as ImageIcon,
@@ -82,6 +83,9 @@ interface Comment {
 
 interface Tweet {
   id: string;
+  section_id?: string | null;
+  post_kind?: string | null;
+  is_pinned?: boolean;
   user_id?: string;
   createdAtDisplay?: string;
   authorId: string;
@@ -262,7 +266,9 @@ export const CommunityFeedPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialUrlTab = searchParams.get('tab');
   const [communitySections, setCommunitySections] = useState<CommunitySection[]>(() => getCachedCommunitySections());
-  const openCommunitySections = communitySections.filter((s) => s.isOpen).sort((a, b) => a.sortOrder - b.sortOrder);
+  const openCommunitySections = communitySections
+    .filter((s) => s.isOpen && !s.isArchived && s.isVisiblePublic !== false)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
   const topLevelOpenSections = openCommunitySections.filter((s) => !s.parentId);
   const validDynamicSectionIds = openCommunitySections.map((s) => s.id);
   const validUrlTabs = ['forYou', 'latest', 'trending', ...validDynamicSectionIds];
@@ -278,11 +284,15 @@ export const CommunityFeedPage: React.FC = () => {
   const [customSortBy, setCustomSortBy] = useState('newest');
   const [showCustomFilterModal, setShowCustomFilterModal] = useState(false);
   const [customSlot1AdId, setCustomSlot1AdId] = useState<string | null | undefined>(undefined);
+  const [specializedComposerTick, setSpecializedComposerTick] = useState(0);
 
   const isSectionTab = !['forYou', 'latest', 'trending'].includes(activeTab);
   const isBuiltInMarketTab = ['phones', 'jobs', 'properties', 'auctions'].includes(activeTab);
   const isCustomSectionTab = isSectionTab && !isBuiltInMarketTab;
   const currentCustomSection = isCustomSectionTab
+    ? openCommunitySections.find((s) => s.id === activeTab)
+    : undefined;
+  const currentActiveSectionConfig = isSectionTab
     ? openCommunitySections.find((s) => s.id === activeTab)
     : undefined;
   const activeSubSections = activeParentSectionId
@@ -605,7 +615,7 @@ export const CommunityFeedPage: React.FC = () => {
           supabase.auth.getSession().catch(() => ({ data: { session: null } })),
           supabase
             .from('posts')
-            .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
+            .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count, section_id, post_kind, is_pinned')
             .or('is_hidden.is.null,is_hidden.eq.false')
             .order('created_at', { ascending: false })
             .limit(30),
@@ -655,7 +665,7 @@ export const CommunityFeedPage: React.FC = () => {
           missingRepostedIds.length > 0
             ? supabase
                 .from('posts')
-                .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
+                .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count, section_id, post_kind, is_pinned')
                 .in('id', missingRepostedIds)
                 .or('is_hidden.is.null,is_hidden.eq.false')
             : Promise.resolve({ data: [] as any[] }),
@@ -722,6 +732,9 @@ export const CommunityFeedPage: React.FC = () => {
           const bizBadge = biz ? (biz.badge_type && biz.badge_type !== 'none' ? biz.badge_type : (biz.is_verified ? 'gold' : 'none')) : null;
           return {
             id: p.id,
+            section_id: (p as any).section_id || null,
+            post_kind: (p as any).post_kind || 'free',
+            is_pinned: Boolean((p as any).is_pinned),
             parent_id: (p as any).parent_id,
             authorId: p.user_id,
             businessId: p.business_id || undefined,
@@ -1144,6 +1157,10 @@ export const CommunityFeedPage: React.FC = () => {
       return;
     }
 
+    if (currentActiveSectionConfig && (currentActiveSectionConfig.allowPosting === false || currentActiveSectionConfig.allowFreeTweets === false)) {
+      showToast('النشر بالتغريدات العادية مغلق حالياً في هذا القسم ⚠️');
+      return;
+    }
     const perm = await checkUserActionAllowed(activeUser.id, 'post');
     if (!perm.allowed) {
       showToast(perm.reason || 'تم تقييد صلاحية النشر لهذا الحساب ⚠️');
@@ -1216,7 +1233,9 @@ export const CommunityFeedPage: React.FC = () => {
             business_id: isBizIdentity && myBusinessPage ? myBusinessPage.id : null,
             content: textToSend,
             image_url: finalImageUrl || null,
-            video_url: finalVideoUrl || null
+            video_url: finalVideoUrl || null,
+            section_id: currentActiveSectionConfig ? currentActiveSectionConfig.id : null,
+            post_kind: 'free'
           })
           .select()
           .single();
@@ -1234,6 +1253,8 @@ export const CommunityFeedPage: React.FC = () => {
       const useBiz = Boolean(publishAsBusiness && myBusinessPage && !quoteOriginal);
       const newTweet: Tweet = {
         id: quoteOriginal ? `repost-${insertedPost?.id || Date.now()}` : (insertedPost?.id || Date.now().toString()),
+        section_id: currentActiveSectionConfig ? currentActiveSectionConfig.id : null,
+        post_kind: 'free',
         authorId: activeUser.id,
         businessId: useBiz && myBusinessPage ? myBusinessPage.id : undefined,
         isBusinessPost: useBiz,
@@ -1666,12 +1687,14 @@ const handleAddComment = async (e?: React.FormEvent) => {
       .filter(t => !hiddenTweetIds.includes(t.id))
       .filter(t => {
         if (isCustomSectionTab && currentCustomSection) {
+          if (currentCustomSection.allowFreeTweets === false) return false;
           const text = String(t.text || '').toLowerCase();
           const author = String(t.authorName || '').toLowerCase();
           const labelLower = currentCustomSection.label.toLowerCase();
           const cleanTag = labelLower.replace(/\s+/g, '_');
           const idLower = currentCustomSection.id.toLowerCase();
           const inSection =
+            t.section_id === currentCustomSection.id ||
             text.includes(`#${labelLower}`) ||
             text.includes(`#${cleanTag}`) ||
             text.includes(`#${idLower}`);
@@ -1691,6 +1714,7 @@ const handleAddComment = async (e?: React.FormEvent) => {
       })
       .sort((a, b) => {
     if (isCustomSectionTab) {
+      if (Boolean(a.is_pinned || a.isPinned) !== Boolean(b.is_pinned || b.isPinned)) return (a.is_pinned || a.isPinned) ? -1 : 1;
       if (customSortBy === 'popular') return (b.likes || 0) - (a.likes || 0);
       const dateA = new Date(a.createdAt || 0).getTime();
       const dateB = new Date(b.createdAt || 0).getTime();
@@ -1999,7 +2023,7 @@ const handleAddComment = async (e?: React.FormEvent) => {
             (customCityFilter !== 'all' ? 1 : 0) + (customSortBy !== 'newest' ? 1 : 0);
           return (
             <>
-              <MarketSponsorSlot section="community" />
+              <MarketSponsorSlot section={currentCustomSection.id} />
               <div className="px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40">
                 {(currentCustomSection.description || currentCustomSection.targetRoute) && (
                   <div className="flex items-center justify-between gap-2 pb-1">
@@ -2026,19 +2050,20 @@ const handleAddComment = async (e?: React.FormEvent) => {
                   sectionIcon={<SecIcon size={18} className="text-[#FFC500]" />}
                 />
               </div>
-              <AdBanner
-                section="community"
-                slot="slot_1"
-                onAdResolved={setCustomSlot1AdId}
-                className="!my-0 border-x-0"
-              />
-              <AdBanner
-                section="community"
-                slot="slot_2"
-                enabled={customSlot1AdId !== undefined}
-                excludeAdIds={customSlot1AdId ? [customSlot1AdId] : []}
-                className="!my-0 border-x-0"
-              />
+              {currentCustomSection.allowPosting === false && (
+                <div className="px-3 py-2 bg-amber-500/10 border-b border-amber-500/20 text-[11px] font-bold text-amber-300 text-center">
+                  النشر مغلق مؤقتاً داخل هذا التبويب من الإدارة
+                </div>
+              )}
+              {currentCustomSection.allowSpecializedAds !== false && (
+                <CustomSectionSpecializedFeed
+                  section={currentCustomSection}
+                  searchQuery={customSearchQuery}
+                  cityFilter={customCityFilter}
+                  sortBy={customSortBy}
+                  externalOpenComposerSignal={specializedComposerTick}
+                />
+              )}
               <XFilterModal
                 isOpen={showCustomFilterModal}
                 onClose={() => setShowCustomFilterModal(false)}
@@ -2073,19 +2098,67 @@ const handleAddComment = async (e?: React.FormEvent) => {
         })()}
         {activeTab === 'phones' ? (
           <div className="pb-4">
-            <PhoneMarketPage onNavigate={(path) => navigate(path)} embedded />
+            {currentActiveSectionConfig?.allowPosting === false && (
+              <div className="px-3 py-2 bg-amber-500/10 border-b border-amber-500/20 text-[11px] font-bold text-amber-300 text-center">
+                النشر مغلق مؤقتاً في سوق الهواتف من الإدارة
+              </div>
+            )}
+            {currentActiveSectionConfig?.allowSpecializedAds !== false ? (
+              <PhoneMarketPage onNavigate={(path) => navigate(path)} embedded />
+            ) : (
+              <div className="py-12 px-4 text-center text-xs text-[#71767B]">
+                <MarketSponsorSlot section="phones" />
+                <p className="mt-6 font-bold text-white">الإعلانات المتخصصة موقوفة مؤقتاً في هذا القسم</p>
+              </div>
+            )}
           </div>
         ) : activeTab === 'jobs' ? (
           <div className="pb-4">
-            <JobsPage embedded />
+            {currentActiveSectionConfig?.allowPosting === false && (
+              <div className="px-3 py-2 bg-amber-500/10 border-b border-amber-500/20 text-[11px] font-bold text-amber-300 text-center">
+                النشر مغلق مؤقتاً في قسم الوظائف من الإدارة
+              </div>
+            )}
+            {currentActiveSectionConfig?.allowSpecializedAds !== false ? (
+              <JobsPage embedded />
+            ) : (
+              <div className="py-12 px-4 text-center text-xs text-[#71767B]">
+                <MarketSponsorSlot section="jobs" />
+                <p className="mt-6 font-bold text-white">الإعلانات المتخصصة موقوفة مؤقتاً في هذا القسم</p>
+              </div>
+            )}
           </div>
         ) : activeTab === 'properties' ? (
           <div className="pb-4">
-            <RealEstatePage embedded />
+            {currentActiveSectionConfig?.allowPosting === false && (
+              <div className="px-3 py-2 bg-amber-500/10 border-b border-amber-500/20 text-[11px] font-bold text-amber-300 text-center">
+                النشر مغلق مؤقتاً في قسم العقارات من الإدارة
+              </div>
+            )}
+            {currentActiveSectionConfig?.allowSpecializedAds !== false ? (
+              <RealEstatePage embedded />
+            ) : (
+              <div className="py-12 px-4 text-center text-xs text-[#71767B]">
+                <MarketSponsorSlot section="realestate" />
+                <p className="mt-6 font-bold text-white">الإعلانات المتخصصة موقوفة مؤقتاً في هذا القسم</p>
+              </div>
+            )}
           </div>
         ) : activeTab === 'auctions' ? (
           <div className="pb-4">
-            <AuctionsPage embedded />
+            {currentActiveSectionConfig?.allowPosting === false && (
+              <div className="px-3 py-2 bg-amber-500/10 border-b border-amber-500/20 text-[11px] font-bold text-amber-300 text-center">
+                النشر مغلق مؤقتاً في قسم المزادات من الإدارة
+              </div>
+            )}
+            {currentActiveSectionConfig?.allowSpecializedAds !== false ? (
+              <AuctionsPage embedded />
+            ) : (
+              <div className="py-12 px-4 text-center text-xs text-[#71767B]">
+                <MarketSponsorSlot section="auctions" />
+                <p className="mt-6 font-bold text-white">الإعلانات المتخصصة موقوفة مؤقتاً في هذا القسم</p>
+              </div>
+            )}
           </div>
         ) : displayedTweets.length === 0 ? (
           isInitialFeedLoading ? (
@@ -2094,10 +2167,18 @@ const handleAddComment = async (e?: React.FormEvent) => {
             </div>
           ) : (
             <div className="text-center py-20 text-zinc-500 text-xs px-4">
-            {isCustomSectionTab ? (
-              <div className="space-y-1.5">
-                <p className="font-bold text-white text-sm">لا توجد منشورات حديثة</p>
-                <p className="text-[#71767B] text-xs">اضغط (+) لنشر أول إعلان أو تغريدة</p>
+            {isCustomSectionTab && currentCustomSection ? (
+              <div className="space-y-4">
+                <AdBanner section={currentCustomSection.id} slot="slot_1" onAdResolved={setCustomSlot1AdId} className="!my-0 border-x-0" />
+                {currentCustomSection.allowFreeTweets !== false ? (
+                  <div className="space-y-1.5 py-6">
+                    <p className="font-bold text-white text-sm">لا توجد تغريدات عادية حديثة</p>
+                    <p className="text-[#71767B] text-xs">اضغط (+) لنشر أول تغريدة أو إعلان</p>
+                  </div>
+                ) : (
+                  <p className="text-[#71767B] text-xs py-2">التغريدات العادية غير مفعلة في هذا القسم</p>
+                )}
+                <AdBanner section={currentCustomSection.id} slot="slot_2" enabled={customSlot1AdId !== undefined} excludeAdIds={customSlot1AdId ? [customSlot1AdId] : []} className="!my-0 border-x-0" />
               </div>
             ) : activeTab === 'forYou' 
           ? 'لا توجد منشورات حتى الآن في المجتمع. كن أول من يغرد!' 
@@ -2105,14 +2186,22 @@ const handleAddComment = async (e?: React.FormEvent) => {
           </div>
           )
         ) : (
-displayedTweets.slice(0, visibleTweetsCount).map(tweet => {
+displayedTweets.slice(0, visibleTweetsCount).map((tweet, tweetIdx, visibleList) => {
+            const showCustomSlot1After =
+              isCustomSectionTab &&
+              currentCustomSection &&
+              (tweetIdx === 1 || (visibleList.length < 2 && tweetIdx === visibleList.length - 1));
+            const showCustomSlot2After =
+              isCustomSectionTab &&
+              currentCustomSection &&
+              (tweetIdx === 5 || (visibleList.length >= 2 && visibleList.length <= 5 && tweetIdx === visibleList.length - 1));
             
             const hasUserReposted = tweet.repostedBy?.includes(currentUserId);
             const hasUserLiked = tweet.likedBy?.includes(currentUserId);
 
             return (
+              <React.Fragment key={tweet.id}>
               <article
-                key={tweet.id}
                 className="p-3 border-b border-[#2F3336]/40 hover:bg-white/[0.03] transition cursor-pointer"
                 onClick={(e) => {
                   const target = e.target as HTMLElement;
@@ -2267,6 +2356,24 @@ displayedTweets.slice(0, visibleTweetsCount).map(tweet => {
                   </div>
                 </div>
               </article>
+              {showCustomSlot1After && currentCustomSection && (
+                <AdBanner
+                  section={currentCustomSection.id}
+                  slot="slot_1"
+                  onAdResolved={setCustomSlot1AdId}
+                  className="!my-0 border-x-0"
+                />
+              )}
+              {showCustomSlot2After && currentCustomSection && (
+                <AdBanner
+                  section={currentCustomSection.id}
+                  slot="slot_2"
+                  enabled={customSlot1AdId !== undefined}
+                  excludeAdIds={customSlot1AdId ? [customSlot1AdId] : []}
+                  className="!my-0 border-x-0"
+                />
+              )}
+              </React.Fragment>
             );
           })
         )}
@@ -2779,10 +2886,17 @@ displayedTweets.slice(0, visibleTweetsCount).map(tweet => {
       
 
       {/* زر + (FAB) — يفتح نافذة التغريد المنبثقة في المجتمع والأقسام المضافة */}
-      {!isBuiltInMarketTab && (
+      {!isBuiltInMarketTab &&
+       (!currentCustomSection ||
+        (currentCustomSection.allowPosting !== false &&
+         (currentCustomSection.allowFreeTweets !== false || currentCustomSection.allowSpecializedAds !== false))) && (
       <button
         onClick={() => {
           if (isCustomSectionTab && currentCustomSection) {
+            if (currentCustomSection.allowFreeTweets === false && currentCustomSection.allowSpecializedAds !== false) {
+              setSpecializedComposerTick((n) => n + 1);
+              return;
+            }
             const tag = `#${currentCustomSection.label.replace(/\s+/g, '_')}`;
             if (!tweetText.includes(tag)) {
               setTweetText((prev) => (prev.trim() ? `${prev.trim()} ${tag} ` : `${tag} `));
