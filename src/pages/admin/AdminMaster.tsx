@@ -38,7 +38,22 @@ export const AdminMaster: React.FC = () => {
   useEffect(() => {
     let alive = true;
     const load = async () => {
-      // فحص جلسة المشرف العام الحصرية
+      // 1. فحص جلسة Supabase الحقيقية أولاً
+      const a = await getAccess();
+      if (!alive) return;
+      setAccess(a);
+      const isSupabaseAdmin =
+        a?.email?.toLowerCase() === 'info.yemenrating@gmail.com' ||
+        a?.email?.toLowerCase() === 'mhmood7015@gmail.com' ||
+        a.isStaff;
+
+      if (isSupabaseAdmin) {
+        setIsAuthenticated(true);
+        setChecking(false);
+        return;
+      }
+
+      // 2. فحص جلسة المشرف المحلية الاحتياطية (قراءة وفحص فقط)
       const s = localStorage.getItem('yr_admin_session');
       if (s) {
         try {
@@ -52,11 +67,7 @@ export const AdminMaster: React.FC = () => {
         } catch {}
       }
 
-      const a = await getAccess();
-      if (!alive) return;
-      setAccess(a);
-      const isMahmoud = a?.email?.toLowerCase() === 'info.yemenrating@gmail.com';
-      setIsAuthenticated(isMahmoud || a.isStaff);
+      setIsAuthenticated(false);
       setChecking(false);
     };
     load();
@@ -151,6 +162,7 @@ export const AdminMaster: React.FC = () => {
 
   const handleLogout = async () => {
     localStorage.removeItem("yr_admin_session");
+    await supabase.auth.signOut();
     setIsAuthenticated(false);
     window.location.reload();
   };

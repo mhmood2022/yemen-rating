@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, AlertCircle, LogOut, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
-import type { AccessInfo } from '../../../lib/access';
+import { getAccess, type AccessInfo } from '../../../lib/access';
 
 interface AdminLoginProps {
   access?: AccessInfo | null;
@@ -21,7 +21,37 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ access }) => {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // فحص الحسابين المصرح لهما بإدارة المنظومة بكلمة مرور الإدارة
+    // 1. تسجيل الدخول الحقيقي عبر Supabase Auth أولاً لتفعيل كافة الصلاحيات والإجراءات
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      });
+
+      if (!signInError && data?.session) {
+        const acc = await getAccess();
+        const isAllowedAdmin =
+          acc.email?.toLowerCase() === "info.yemenrating@gmail.com" ||
+          acc.email?.toLowerCase() === "mhmood7015@gmail.com" ||
+          acc.isStaff;
+
+        if (!isAllowedAdmin) {
+          await supabase.auth.signOut();
+          setError("هذا الحساب لا يملك صلاحية دخول الإدارة.");
+          setLoading(false);
+          return;
+        }
+
+        localStorage.removeItem("yr_admin_session");
+        setLoading(false);
+        window.location.reload();
+        return;
+      }
+    } catch {
+      // المتابعة للفحص المحلي الاحتياطي
+    }
+
+    // 2. الجلسة المحلية الاحتياطية للفحص والقراءة فقط
     const isYemenRating = cleanEmail === "info.yemenrating@gmail.com" && password === "Yemen123456";
     const isMahmoud = cleanEmail === "mhmood7015@gmail.com" && password === "Yemen123456";
 
