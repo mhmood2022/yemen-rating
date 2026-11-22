@@ -31,7 +31,7 @@ import { createPortal } from 'react-dom';
 import { XImagePlayer } from '../components/feed/XImagePlayer';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { supabase } from "../lib/supabase";
-import { getUserProfile, updateUserProfile, getUserPosts, createPost, deletePost, togglePostLike, toggleFollow, checkIsFollowing, toggleBlockUser, checkIsBlocked, uploadSocialImage, Profile, PostItem } from "../services/socialService";
+import { getUserProfile, updateUserProfile, getUserPosts, createPost, deletePost, togglePostLike, toggleFollow, checkIsFollowing, toggleBlockUser, checkIsBlocked, uploadSocialImage, checkUserActionAllowed, Profile, PostItem } from "../services/socialService";
 import { Bookmark, ArrowRight, BarChart2,
   RotateCw,
   MoreHorizontal,
@@ -973,6 +973,11 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
     const myId = sessionUser.id;
     const targetId = profileId;
     if (!targetId || myId === targetId) return;
+    const perm = await checkUserActionAllowed(sessionUser.id, 'interact');
+    if (!perm.allowed) {
+      showToast(perm.reason || 'تم تقييد صلاحية التفاعل لهذا الحساب');
+      return;
+    }
     
     try {
       const nowFollowing = await toggleFollow(myId, targetId);
@@ -1096,6 +1101,11 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
     if (!sessionUser || !profileId || profileId === "guest") {
       showToast("يرجى تسجيل الدخول أولاً لتتمكن من النشر");
       setAuthModalOpen(true);
+      return;
+    }
+    const perm = await checkUserActionAllowed(sessionUser.id, 'post');
+    if (!perm.allowed) {
+      showToast(perm.reason || 'تم تقييد صلاحية النشر لهذا الحساب');
       return;
     }
 
@@ -1265,6 +1275,11 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       if (!newCommentText.trim() || !sessionUser?.id || !targetPost) {
         return;
       }
+      const perm = await checkUserActionAllowed(sessionUser.id, 'interact');
+      if (!perm.allowed) {
+        showToast(perm.reason || 'تم تقييد صلاحية التفاعل لهذا الحساب');
+        return;
+      }
 
     try {
       const postIdToUse = targetPost.id.startsWith('repost-') && targetPost.original?.id
@@ -1328,6 +1343,11 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       showToast('يرجى تسجيل الدخول');
       return;
     }
+    const perm = await checkUserActionAllowed(sessionUser.id, 'interact');
+    if (!perm.allowed) {
+      showToast(perm.reason || 'تم تقييد صلاحية التفاعل لهذا الحساب');
+      return;
+    }
     
     try {
       // تحقق من وجود إعادة تغريد
@@ -1367,8 +1387,15 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
     }
   };
 
-  const handleToggleLike = (postId: string) => {
+  const handleToggleLike = async (postId: string) => {
     const myId = sessionUser?.id || 'guest';
+    if (sessionUser?.id) {
+      const perm = await checkUserActionAllowed(sessionUser.id, 'interact');
+      if (!perm.allowed) {
+        showToast(perm.reason || 'تم تقييد صلاحية التفاعل لهذا الحساب');
+        return;
+      }
+    }
     const updated = userPosts.map(p => {
       if (p.id === postId) {
         const likedBy = p.likedBy || [];
@@ -2963,6 +2990,11 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
             <button
               onClick={async () => {
                 if (!sessionUser?.id || !quoteText.trim()) return;
+                const perm = await checkUserActionAllowed(sessionUser.id, 'post');
+                if (!perm.allowed) {
+                  showToast(perm.reason || 'تم تقييد صلاحية النشر لهذا الحساب');
+                  return;
+                }
                 try {
                   const cleanPostId = (quoteOriginal.originalId || quoteOriginal.id || '').toString().replace(/^repost-/, '');
                   const { data: existingQuote } = await supabase

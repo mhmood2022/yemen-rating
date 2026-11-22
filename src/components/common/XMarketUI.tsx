@@ -95,20 +95,26 @@ export const XSearchFilterBar: React.FC<{
   placeholder: string;
   activeFiltersCount: number;
   onOpenFilter: () => void;
-}> = ({ searchQuery, onSearchChange, placeholder, activeFiltersCount, onOpenFilter }) => (
-  <div className="flex items-center gap-2">
-    <div className="flex-1 flex items-center bg-black border border-[#2F3336] focus-within:border-white rounded-full px-3.5 py-2 transition-colors">
-      <Search size={15} className="text-[#71767B] ml-2 shrink-0" />
+  sectionIcon?: React.ReactNode;
+}> = ({ searchQuery, onSearchChange, placeholder, activeFiltersCount, onOpenFilter, sectionIcon }) => (
+  <div className="flex items-center justify-between gap-2.5">
+    {sectionIcon && (
+      <div className="shrink-0 flex items-center justify-center">
+        {sectionIcon}
+      </div>
+    )}
+    <div className="flex-1 max-w-[82%] mx-auto flex items-center bg-black border border-[#2F3336] focus-within:border-white rounded-full px-3 py-1.5 transition-colors">
+      <Search size={14} className="text-[#71767B] ml-2 shrink-0" />
       <input
         type="text"
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
         placeholder={placeholder}
-        className="flex-1 bg-transparent text-[13px] text-white placeholder-[#71767B] outline-none caret-white"
+        className="flex-1 min-w-0 bg-transparent text-[12.5px] text-white placeholder-[#71767B] outline-none caret-white"
       />
       {searchQuery && (
-        <button type="button" onClick={() => onSearchChange('')} className="text-[#71767B] hover:text-white">
-          <X size={14} />
+        <button type="button" onClick={() => onSearchChange('')} className="text-[#71767B] hover:text-white cursor-pointer">
+          <X size={13} />
         </button>
       )}
     </div>
@@ -116,15 +122,15 @@ export const XSearchFilterBar: React.FC<{
       type="button"
       onClick={onOpenFilter}
       aria-label="فلترة النتائج"
-      className={`relative w-9 h-9 rounded-full border flex items-center justify-center shrink-0 transition-all cursor-pointer ${
+      className={`relative p-1.5 flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
         activeFiltersCount > 0
-          ? 'bg-white text-black border-white'
-          : 'bg-black text-[#E7E9EA] border-[#2F3336] hover:bg-white/10 hover:border-[#71767B]'
+          ? 'text-[#FFC500]'
+          : 'text-[#E7E9EA] hover:text-white'
       }`}
     >
-      <SlidersHorizontal size={16} />
+      <SlidersHorizontal size={18} />
       {activeFiltersCount > 0 && (
-        <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#FFC500] text-black text-[10px] font-black flex items-center justify-center leading-none border border-black">
+        <span className="absolute -top-0.5 -right-0.5 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FFC500] text-black text-[9px] font-black flex items-center justify-center leading-none">
           {activeFiltersCount}
         </span>
       )}

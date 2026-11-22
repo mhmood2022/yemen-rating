@@ -15,7 +15,7 @@ import { createPortal } from 'react-dom';
 import { XImagePlayer } from '../components/feed/XImagePlayer';
 import { useNavigate, useSearchParams, useLocation, useParams } from 'react-router-dom';
 import { supabase } from "../lib/supabase";
-import { getUserProfile, updateUserProfile, getUserPosts, createPost, deletePost, togglePostLike, toggleFollow, checkIsFollowing, toggleBlockUser, checkIsBlocked, uploadSocialImage, Profile, PostItem } from "../services/socialService";
+import { getUserProfile, updateUserProfile, getUserPosts, createPost, deletePost, togglePostLike, toggleFollow, checkIsFollowing, toggleBlockUser, checkIsBlocked, uploadSocialImage, checkUserActionAllowed, Profile, PostItem } from "../services/socialService";
 import { Star, ArrowRight, ArrowLeft, BarChart2,
   RotateCw,
   MoreHorizontal,
@@ -908,6 +908,11 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
     }
     const activeBizId = businessPage?.id || routeBusinessId;
     if (!activeBizId) return;
+    const perm = await checkUserActionAllowed(sessionUser.id, 'interact');
+    if (!perm.allowed) {
+      showToast(perm.reason || 'تم تقييد صلاحية التفاعل لهذا الحساب');
+      return;
+    }
     try {
       const nowFollowing = await toggleBusinessFollow(sessionUser.id, activeBizId);
       setIsFollowing(nowFollowing);
@@ -1023,6 +1028,11 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
     if (!sessionUser || !profileId || profileId === "guest") {
       showToast("يرجى تسجيل الدخول أولاً لتتمكن من النشر");
       setAuthModalOpen(true);
+      return;
+    }
+    const perm = await checkUserActionAllowed(sessionUser.id, 'post');
+    if (!perm.allowed) {
+      showToast(perm.reason || 'تم تقييد صلاحية النشر لهذا الحساب');
       return;
     }
 
@@ -1198,6 +1208,11 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       if (!newCommentText.trim() || !sessionUser?.id || !targetPost) {
         return;
       }
+      const perm = await checkUserActionAllowed(sessionUser.id, 'interact');
+      if (!perm.allowed) {
+        showToast(perm.reason || 'تم تقييد صلاحية التفاعل لهذا الحساب');
+        return;
+      }
 
     try {
       const postIdToUse = targetPost.id.startsWith('repost-') && targetPost.original?.id
@@ -1295,6 +1310,11 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
       showToast('يرجى تسجيل الدخول');
       return;
     }
+    const perm = await checkUserActionAllowed(sessionUser.id, 'interact');
+    if (!perm.allowed) {
+      showToast(perm.reason || 'تم تقييد صلاحية التفاعل لهذا الحساب');
+      return;
+    }
     const activeBizId = businessPage?.id || (routeBusinessId && !routeBusinessId.startsWith('biz-') ? routeBusinessId : null);
     const cleanId = postId.replace(/^repost-/, '');
 
@@ -1335,8 +1355,15 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
     }
   };
 
-  const handleToggleLike = (postId: string) => {
+  const handleToggleLike = async (postId: string) => {
     const myId = sessionUser?.id || 'guest';
+    if (sessionUser?.id) {
+      const perm = await checkUserActionAllowed(sessionUser.id, 'interact');
+      if (!perm.allowed) {
+        showToast(perm.reason || 'تم تقييد صلاحية التفاعل لهذا الحساب');
+        return;
+      }
+    }
     const updated = userPosts.map(p => {
       if (p.id === postId) {
         const likedBy = p.likedBy || [];
@@ -2990,6 +3017,11 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
             <button
               onClick={async () => {
                 if (!sessionUser?.id || !quoteText.trim()) return;
+                const perm = await checkUserActionAllowed(sessionUser.id, 'post');
+                if (!perm.allowed) {
+                  showToast(perm.reason || 'تم تقييد صلاحية النشر لهذا الحساب');
+                  return;
+                }
                 try {
                   const activeBizId = businessPage?.id || (routeBusinessId && !routeBusinessId.startsWith('biz-') ? routeBusinessId : null);
                   const { error } = await supabase.from('post_reposts').insert({

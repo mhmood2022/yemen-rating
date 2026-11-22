@@ -566,6 +566,7 @@ export const JobsPage: React.FC<{ onBack?: () => void; embedded?: boolean }> = (
               placeholder="ابحث عن وظيفة أو مدينة..."
               activeFiltersCount={activeFiltersCount}
               onOpenFilter={() => setIsFilterModalOpen(true)}
+              sectionIcon={<Briefcase size={18} className="text-[#FFC500]" />}
             />
             </div>
 

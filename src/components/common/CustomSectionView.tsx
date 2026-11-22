@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { CommunitySection, getSectionIcon } from '../../services/sectionsService';
+import { AdBanner } from './AdBanner';
+import { MarketSponsorSlot } from '../ads/MarketSponsorSlot';
 import {
   XSearchFilterBar,
   XFilterModal,
@@ -35,8 +37,10 @@ export const CustomSectionView: React.FC<CustomSectionViewProps> = ({
   const [selectedItem, setSelectedItem] = useState<XMarketItem | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [slot1AdId, setSlot1AdId] = useState<string | null | undefined>(undefined);
 
   const label = section?.label || 'قسم';
+  const sectionKey = section?.id || 'custom';
   const SecIcon = getSectionIcon(section?.iconName);
 
   const activeFiltersCount =
@@ -45,7 +49,7 @@ export const CustomSectionView: React.FC<CustomSectionViewProps> = ({
   const sectionItems = useMemo(() => {
     const cleanTag = label.replace(/\s+/g, '_').toLowerCase();
     const labelLower = label.toLowerCase();
-    const idLower = (section?.id || '').toLowerCase();
+    const idLower = sectionKey.toLowerCase();
 
     const matched = tweets.filter((t) => {
       const text = String(t?.text || '').toLowerCase();
@@ -76,7 +80,7 @@ export const CustomSectionView: React.FC<CustomSectionViewProps> = ({
     });
 
     return filtered;
-  }, [tweets, label, section?.id, searchQuery, cityFilter, sortBy]);
+  }, [tweets, label, sectionKey, searchQuery, cityFilter, sortBy]);
 
   const toMarketItem = (t: any): XMarketItem => {
     const imgs: string[] = [];
@@ -138,15 +142,14 @@ export const CustomSectionView: React.FC<CustomSectionViewProps> = ({
 
   return (
     <div dir="rtl" className="min-h-screen bg-black text-white">
+      <MarketSponsorSlot section="community" />
+
       <div className="px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40">
         {(section?.description || section?.targetRoute) && (
           <div className="flex items-center justify-between gap-2 pb-1">
-            <div className="flex items-center gap-2 min-w-0">
-              <SecIcon size={15} className="text-[#FFC500] shrink-0" />
-              <p className="text-[11px] text-[#71767B] truncate">
-                {section?.description || label}
-              </p>
-            </div>
+            <p className="text-[11px] text-[#71767B] truncate">
+              {section?.description || label}
+            </p>
             {section?.targetRoute && (
               <button
                 type="button"
@@ -166,45 +169,55 @@ export const CustomSectionView: React.FC<CustomSectionViewProps> = ({
           placeholder={`ابحث في ${label}...`}
           activeFiltersCount={activeFiltersCount}
           onOpenFilter={() => setShowFilterModal(true)}
+          sectionIcon={<SecIcon size={18} className="text-[#FFC500]" />}
         />
       </div>
 
-      <div className="max-w-3xl mx-auto px-0 pb-24">
+      <div className="max-w-3xl mx-auto px-0 pb-24 divide-y divide-[#2F3336]/40">
+        <div className="bg-black">
+          <AdBanner section="community" slot="slot_1" onAdResolved={setSlot1AdId} className="!my-0 border-x-0" />
+        </div>
+        <div className="bg-black">
+          <AdBanner
+            section="community"
+            slot="slot_2"
+            enabled={slot1AdId !== undefined}
+            excludeAdIds={slot1AdId ? [slot1AdId] : []}
+            className="!my-0 border-x-0"
+          />
+        </div>
+
         {sectionItems.length === 0 ? (
-          <div className="text-center py-16 px-4 text-[#71767B] text-xs space-y-2">
+          <div className="text-center py-16 px-4 text-[#71767B] text-xs space-y-1.5">
             <p className="font-bold text-white text-sm">
-              {searchQuery || activeFiltersCount > 0
-                ? 'لا توجد نتائج مطابقة'
-                : `لا توجد منشورات في قسم ${label} حالياً`}
+              {searchQuery || activeFiltersCount > 0 ? 'لا توجد نتائج مطابقة' : 'لا توجد منشورات حديثة'}
             </p>
             <p>
               {searchQuery || activeFiltersCount > 0
                 ? 'جرّب البحث بكلمة أخرى أو تصفير الفلاتر.'
-                : `استخدم الوسم #${label.replace(/\s+/g, '_')} عند التغريد ليظهر منشورك هنا.`}
+                : 'اضغط (+) لنشر أول إعلان أو تغريدة'}
             </p>
           </div>
         ) : (
-          <div>
-            {sectionItems.map((t) => {
-              const item = toMarketItem(t);
-              return (
-                <XMarketTweetCard
-                  key={item.id}
-                  item={item}
-                  onOpenDetail={() => {
-                    setActiveImageIndex(0);
-                    setSelectedItem(item);
-                  }}
-                  onOpenImage={(idx) => {
-                    setActiveImageIndex(idx);
-                    setSelectedItem(item);
-                    setIsLightboxOpen(true);
-                  }}
-                  onShare={() => handleShare(item)}
-                />
-              );
-            })}
-          </div>
+          sectionItems.map((t) => {
+            const item = toMarketItem(t);
+            return (
+              <XMarketTweetCard
+                key={item.id}
+                item={item}
+                onOpenDetail={() => {
+                  setActiveImageIndex(0);
+                  setSelectedItem(item);
+                }}
+                onOpenImage={(idx) => {
+                  setActiveImageIndex(idx);
+                  setSelectedItem(item);
+                  setIsLightboxOpen(true);
+                }}
+                onShare={() => handleShare(item)}
+              />
+            );
+          })
         )}
       </div>
 

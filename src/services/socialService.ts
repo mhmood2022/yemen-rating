@@ -512,7 +512,51 @@ export async function getUserPosts(targetUserId: string, currentUserId?: string)
   return getFeedPosts(targetUserId, currentUserId);
 }
 
+export async function checkUserActionAllowed(
+  userId: string,
+  action: 'post' | 'interact' = 'interact'
+): Promise<{ allowed: boolean; reason?: string }> {
+  if (!userId) return { allowed: false, reason: 'يرجى تسجيل الدخول أولاً' };
+  const { data: prof } = await supabase
+    .from('profiles')
+    .select('moderation_status, can_post, can_interact, suspended_until, restriction_reason, status, is_blocked')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (!prof) return { allowed: true };
+
+  const modStatus = String(prof.moderation_status || '').toLowerCase();
+  const legacyStatus = String(prof.status || '').toLowerCase();
+  const reasonNote = prof.restriction_reason ? ` (${prof.restriction_reason})` : '';
+
+  if (modStatus === 'banned' || legacyStatus === 'banned' || prof.is_blocked) {
+    return { allowed: false, reason: `هذا الحساب محظور من استخدام المنصة${reasonNote}` };
+  }
+
+  if (modStatus === 'suspended' || legacyStatus === 'suspended') {
+    const stillSuspended = !prof.suspended_until || new Date(prof.suspended_until).getTime() > Date.now();
+    if (stillSuspended) {
+      return { allowed: false, reason: `هذا الحساب موقوف مؤقتاً${reasonNote}` };
+    }
+  }
+
+  if (action === 'post' && prof.can_post === false) {
+    return { allowed: false, reason: `تم تقييد صلاحية النشر لهذا الحساب${reasonNote}` };
+  }
+
+  if (action === 'interact' && prof.can_interact === false) {
+    return { allowed: false, reason: `تم تقييد صلاحية التفاعل لهذا الحساب${reasonNote}` };
+  }
+
+  return { allowed: true };
+}
+
 export async function createPost(userId: string, content: string, imageUrl?: string): Promise<PostItem | null> {
+  const perm = await checkUserActionAllowed(userId, 'post');
+  if (!perm.allowed) {
+    console.warn(perm.reason);
+    return null;
+  }
   const { data, error } = await supabase
     .from('posts')
     .insert({
@@ -543,6 +587,8 @@ export async function deletePost(postId: string, userId: string): Promise<boolea
 
 // 7. التفاعل بالإعجاب (Like / Unlike)
 export async function togglePostLike(postId: string, userId: string): Promise<boolean> {
+  const perm = await checkUserActionAllowed(userId, 'interact');
+  if (!perm.allowed) return false;
   const { data: existing } = await supabase
     .from('post_likes')
     .select('id')
@@ -562,6 +608,8 @@ export async function togglePostLike(postId: string, userId: string): Promise<bo
 // 8. المتابعة وإلغاء المتابعة (Follow / Unfollow)
 export async function toggleFollow(followerId: string, followingId: string): Promise<boolean> {
   if (followerId === followingId) return false;
+  const perm = await checkUserActionAllowed(followerId, 'interact');
+  if (!perm.allowed) return false;
 
   const { data: existing } = await supabase
     .from('follows')
@@ -603,6 +651,8 @@ export async function getPostComments(postId: string): Promise<CommentItem[]> {
 }
 
 export async function addPostComment(postId: string, userId: string, content: string): Promise<CommentItem | null> {
+  const perm = await checkUserActionAllowed(userId, 'interact');
+  if (!perm.allowed) return null;
   const { data, error } = await supabase
     .from('post_comments')
     .insert({

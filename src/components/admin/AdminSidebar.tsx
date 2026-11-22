@@ -24,6 +24,8 @@ import {
 
 const ADMIN_OPERATIONS = [
   { id: 'dashboard', label: 'لوحة التحكم الرئيسية', icon: LayoutDashboard, path: '/admin' },
+  { id: 'accounts_mgmt', label: 'إدارة الحسابات', icon: Users, path: '/admin/accounts' },
+  { id: 'pages_mgmt', label: 'إدارة الصفحات (X)', icon: Building2, path: '/admin/pages' },
   { id: 'all_companies', label: 'كافة المنشآت والأنشطة', icon: Building2, path: '/admin/companies' },
   { id: 'subscriptions', label: 'إدارة التوثيق والاشتراكات', icon: CreditCard, path: '/admin/subscriptions' },
   { id: 'operations', label: 'مركز العمليات والإدارة', icon: Inbox, path: '/admin/operations' },

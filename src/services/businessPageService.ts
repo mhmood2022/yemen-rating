@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { uploadSocialImage } from './socialService';
+import { checkUserActionAllowed, uploadSocialImage } from './socialService';
 
 export interface BusinessPageRecord {
   id: string;
@@ -136,6 +136,7 @@ export async function createBusinessPage(
       cover_url: uploadedCover || null,
       is_verified: false,
       badge_type: 'none',
+    is_x_page: true,
       rating: 0,
       review_count: 0,
       followers_count: 0,
@@ -398,6 +399,7 @@ export async function getBusinessReviews(businessId: string): Promise<BusinessRe
     .from('reviews')
     .select('*')
     .eq('entity_id', businessId)
+    .neq('is_hidden', true)
     .order('created_at', { ascending: false });
 
   if (error || !data) return [];
@@ -426,6 +428,11 @@ export async function submitBusinessReview(params: {
   const user = session?.user;
   if (!user) {
     return { avgRating: 0, count: 0, error: 'يرجى تسجيل الدخول أولاً لإضافة تقييم' };
+  }
+
+  const perm = await checkUserActionAllowed(user.id, 'interact');
+  if (!perm.allowed) {
+    return { avgRating: 0, count: 0, error: perm.reason || 'تم تقييد التفاعل لهذا الحساب' };
   }
 
   const { data: prof } = await supabase
@@ -480,7 +487,8 @@ export async function submitBusinessReview(params: {
     const { data: allRevs } = await supabase
       .from('reviews')
       .select('stars')
-      .eq('entity_id', params.businessId);
+      .eq('entity_id', params.businessId)
+      .neq('is_hidden', true);
     const list = allRevs || [];
     count = list.length;
     avgRating = count > 0

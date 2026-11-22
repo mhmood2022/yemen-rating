@@ -53,6 +53,8 @@ import { AdGeneratorStudio } from './pages/admin/ads/AdGeneratorStudio';
 import { RealEstateManager } from './pages/admin/real-estate/RealEstateManager';
 import { CategoriesManager } from './pages/admin/categories/CategoriesManager';
 import { UsersRolesManager } from './pages/admin/users/UsersRolesManager';
+import { AccountsManager } from './pages/admin/accounts/AccountsManager';
+import { PagesManager } from './pages/admin/pages/PagesManager';
 import { GoldCurrencyManager } from './pages/admin/gold-currency/GoldCurrencyManager';
 import { JobsManager } from './pages/admin/jobs/JobsManager';
 import { MatchingAIManager } from './pages/admin/matching/MatchingAIManager';
@@ -144,6 +146,8 @@ export function App() {
           <Route path="real-estate" element={<RealEstateManager />} />
           <Route path="phones" element={<PhonesManager />} />
           <Route path="cleaning" element={<CleaningManager />} />
+          <Route path="accounts" element={<AccountsManager />} />
+          <Route path="pages" element={<PagesManager />} />
           <Route path="users" element={<UsersRolesManager />} />
           <Route path="analytics" element={<AnalyticsFinanceManager />} />
           <Route path="gold-currency" element={<GoldCurrencyManager />} />

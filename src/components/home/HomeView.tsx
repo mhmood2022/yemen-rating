@@ -56,7 +56,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           supabase.from('jobs').select('*').order('created_at', { ascending: false }).limit(6),
           supabase.from('properties').select('*').order('created_at', { ascending: false }).limit(6),
           supabase.from('auctions').select('*').order('created_at', { ascending: false }).limit(6),
-          supabase.from('reviews').select('entity_id, stars')
+          supabase.from('reviews').select('entity_id, stars').neq('is_hidden', true)
         ]);
 
         if (!isMounted) return;

@@ -16,6 +16,19 @@ import {
   Globe,
   HeartHandshake,
   Wrench,
+  Truck,
+  Bus,
+  Package,
+  Wifi,
+  Utensils,
+  Hospital,
+  Pill,
+  School,
+  GraduationCap,
+  Waves,
+  Scissors,
+  Hotel,
+  Award,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -26,6 +39,7 @@ export interface CommunitySection {
   isOpen: boolean;
   isBuiltIn: boolean;
   sortOrder: number;
+  parentId?: string | null;
   description?: string;
   targetRoute?: string;
 }
@@ -42,6 +56,7 @@ export const DEFAULT_COMMUNITY_SECTIONS: CommunitySection[] = [
     isOpen: true,
     isBuiltIn: true,
     sortOrder: 1,
+    parentId: null,
     description: 'عروض الهواتف والأجهزة الذكية في اليمن',
   },
   {
@@ -51,6 +66,7 @@ export const DEFAULT_COMMUNITY_SECTIONS: CommunitySection[] = [
     isOpen: true,
     isBuiltIn: true,
     sortOrder: 2,
+    parentId: null,
     description: 'فرص العمل والتوظيف في الشركات والمنشآت',
   },
   {
@@ -60,6 +76,7 @@ export const DEFAULT_COMMUNITY_SECTIONS: CommunitySection[] = [
     isOpen: true,
     isBuiltIn: true,
     sortOrder: 3,
+    parentId: null,
     description: 'عقارات للبيع والإيجار والاستثمار العقاري',
   },
   {
@@ -69,6 +86,7 @@ export const DEFAULT_COMMUNITY_SECTIONS: CommunitySection[] = [
     isOpen: true,
     isBuiltIn: true,
     sortOrder: 4,
+    parentId: null,
     description: 'المزادات العلنية والصفقات المباشرة',
   },
 ];
@@ -90,6 +108,19 @@ export const SECTION_ICON_MAP: Record<string, LucideIcon> = {
   Globe,
   HeartHandshake,
   Wrench,
+  Truck,
+  Bus,
+  Package,
+  Wifi,
+  Utensils,
+  Hospital,
+  Pill,
+  School,
+  GraduationCap,
+  Waves,
+  Scissors,
+  Hotel,
+  Award,
 };
 
 export const SECTION_ICON_OPTIONS: Array<{ name: string; label: string }> = [
@@ -97,18 +128,31 @@ export const SECTION_ICON_OPTIONS: Array<{ name: string; label: string }> = [
   { name: 'Briefcase', label: 'وظائف' },
   { name: 'Building', label: 'عقارات' },
   { name: 'Gavel', label: 'مزادات' },
-  { name: 'Store', label: 'متاجر' },
   { name: 'Car', label: 'سيارات' },
+  { name: 'Bus', label: 'نقل' },
+  { name: 'Truck', label: 'نقل ثقيل' },
+  { name: 'Package', label: 'شحن' },
+  { name: 'Wifi', label: 'اتصالات' },
+  { name: 'Utensils', label: 'مطاعم' },
+  { name: 'Hospital', label: 'مستشفيات' },
+  { name: 'Pill', label: 'صيدليات' },
+  { name: 'School', label: 'مدارس' },
+  { name: 'GraduationCap', label: 'جامعات' },
+  { name: 'Waves', label: 'حمام بخار' },
+  { name: 'Sparkles', label: 'كوافير' },
+  { name: 'Scissors', label: 'حلاقة' },
+  { name: 'Hotel', label: 'فنادق' },
+  { name: 'Award', label: 'أعلى تقييم' },
+  { name: 'Store', label: 'متاجر' },
   { name: 'Coins', label: 'ذهب وصرف' },
   { name: 'ShoppingBag', label: 'تسوق' },
   { name: 'Tag', label: 'عروض' },
-  { name: 'Sparkles', label: 'مميز' },
-  { name: 'Compass', label: 'استكشاف' },
-  { name: 'Layers', label: 'أقسام' },
-  { name: 'Megaphone', label: 'إعلانات' },
-  { name: 'Globe', label: 'عام' },
   { name: 'HeartHandshake', label: 'خدمات' },
   { name: 'Wrench', label: 'صيانة' },
+  { name: 'Megaphone', label: 'إعلانات' },
+  { name: 'Compass', label: 'استكشاف' },
+  { name: 'Globe', label: 'عام' },
+  { name: 'Layers', label: 'أقسام' },
 ];
 
 export function getSectionIcon(iconName?: string): LucideIcon {
@@ -122,7 +166,9 @@ export function normalizeSections(raw: unknown): CommunitySection[] {
   }
 
   const valid: CommunitySection[] = raw
-    .filter((item): item is Partial<CommunitySection> => Boolean(item && typeof item === 'object' && typeof (item as any).id === 'string' && typeof (item as any).label === 'string'))
+    .filter((item): item is Partial<CommunitySection> =>
+      Boolean(item && typeof item === 'object' && typeof (item as any).id === 'string' && typeof (item as any).label === 'string')
+    )
     .map((item, idx) => ({
       id: String(item.id).trim(),
       label: String(item.label).trim(),
@@ -130,6 +176,7 @@ export function normalizeSections(raw: unknown): CommunitySection[] {
       isOpen: typeof item.isOpen === 'boolean' ? item.isOpen : true,
       isBuiltIn: Boolean(item.isBuiltIn),
       sortOrder: typeof item.sortOrder === 'number' ? item.sortOrder : idx + 1,
+      parentId: typeof item.parentId === 'string' && item.parentId.trim() ? item.parentId.trim() : null,
       description: typeof item.description === 'string' ? item.description : '',
       targetRoute: typeof item.targetRoute === 'string' ? item.targetRoute : '',
     }));

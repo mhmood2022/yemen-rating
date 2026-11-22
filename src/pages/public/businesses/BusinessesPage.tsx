@@ -97,7 +97,7 @@ export const BusinessesPage: React.FC = () => {
 
         const [bizRes, revRes] = await Promise.all([
           query.order('created_at', { ascending: false }),
-          supabase.from('reviews').select('entity_id, stars')
+          supabase.from('reviews').select('entity_id, stars').neq('is_hidden', true)
         ]);
 
         if (bizRes.data) {

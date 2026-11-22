@@ -13,6 +13,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { checkUserActionAllowed } from '../services/socialService';
 import { ActiveUsersBar } from '../components/community/ActiveUsersBar';
 import { ReplyBar } from '../components/community/ReplyBar';
 import { ReportPage } from '../components/community/ReportPage';
@@ -23,7 +24,9 @@ import { JobsPage } from '../components/pages/JobsPage';
 import { RealEstatePage } from '../components/pages/RealEstatePage';
 import { AuctionsPage } from '../components/pages/AuctionsPage';
 import { CommunitySection, SECTIONS_UPDATED_EVENT, fetchCommunitySections, getCachedCommunitySections, getSectionIcon } from '../services/sectionsService';
-import { CustomSectionView } from '../components/common/CustomSectionView';
+import { XSearchFilterBar, XFilterModal, YEMEN_GOV_FILTER_OPTIONS } from '../components/common/XMarketUI';
+import { AdBanner } from '../components/common/AdBanner';
+import { MarketSponsorSlot } from '../components/ads/MarketSponsorSlot';
 import { 
   ArrowRight,
   Image as ImageIcon,
@@ -260,12 +263,38 @@ export const CommunityFeedPage: React.FC = () => {
   const initialUrlTab = searchParams.get('tab');
   const [communitySections, setCommunitySections] = useState<CommunitySection[]>(() => getCachedCommunitySections());
   const openCommunitySections = communitySections.filter((s) => s.isOpen).sort((a, b) => a.sortOrder - b.sortOrder);
+  const topLevelOpenSections = openCommunitySections.filter((s) => !s.parentId);
   const validDynamicSectionIds = openCommunitySections.map((s) => s.id);
   const validUrlTabs = ['forYou', 'latest', 'trending', ...validDynamicSectionIds];
   const [activeTab, setActiveTab] = useState<string>(
     initialUrlTab && validUrlTabs.includes(initialUrlTab) ? initialUrlTab : 'forYou'
   );
+  const [activeParentSectionId, setActiveParentSectionId] = useState<string | null>(() => {
+    const found = getCachedCommunitySections().find((s) => s.id === initialUrlTab);
+    return found?.parentId || null;
+  });
+  const [customSearchQuery, setCustomSearchQuery] = useState('');
+  const [customCityFilter, setCustomCityFilter] = useState('all');
+  const [customSortBy, setCustomSortBy] = useState('newest');
+  const [showCustomFilterModal, setShowCustomFilterModal] = useState(false);
+  const [customSlot1AdId, setCustomSlot1AdId] = useState<string | null | undefined>(undefined);
+
   const isSectionTab = !['forYou', 'latest', 'trending'].includes(activeTab);
+  const isBuiltInMarketTab = ['phones', 'jobs', 'properties', 'auctions'].includes(activeTab);
+  const isCustomSectionTab = isSectionTab && !isBuiltInMarketTab;
+  const currentCustomSection = isCustomSectionTab
+    ? openCommunitySections.find((s) => s.id === activeTab)
+    : undefined;
+  const activeSubSections = activeParentSectionId
+    ? openCommunitySections.filter((s) => s.parentId === activeParentSectionId)
+    : [];
+  const inSubSectionsMode = Boolean(activeParentSectionId && activeSubSections.length > 0);
+
+  useEffect(() => {
+    setCustomSearchQuery('');
+    setCustomCityFilter('all');
+    setCustomSortBy('newest');
+  }, [activeTab]);
 
   useEffect(() => {
     let alive = true;
@@ -295,8 +324,14 @@ export const CommunityFeedPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!['forYou', 'latest', 'trending'].includes(activeTab) && !openCommunitySections.some((s) => s.id === activeTab)) {
-      setActiveTab('forYou');
+    if (!['forYou', 'latest', 'trending'].includes(activeTab)) {
+      const current = openCommunitySections.find((s) => s.id === activeTab);
+      if (!current) {
+        setActiveParentSectionId(null);
+        setActiveTab('forYou');
+      } else if (current.parentId && activeParentSectionId !== current.parentId) {
+        setActiveParentSectionId(current.parentId);
+      }
     }
   }, [activeTab, communitySections]);
   useEffect(() => {
@@ -319,7 +354,7 @@ export const CommunityFeedPage: React.FC = () => {
     let touchStartY = 0;
     let ignoreSwipe = false;
     const tabOrder: string[] = [
-      'forYou', 'latest', ...openCommunitySections.map((s) => s.id)
+      ...(inSubSectionsMode ? activeSubSections.map((s) => s.id) : ['forYou', 'latest', ...topLevelOpenSections.map((s) => s.id)])
     ];
 
     const handleTouchStart = (e: TouchEvent) => {
@@ -377,7 +412,7 @@ export const CommunityFeedPage: React.FC = () => {
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [activeTab, openCommunitySections.map((s) => s.id).join(',')]);
+  }, [activeTab, activeParentSectionId, openCommunitySections.map((s) => s.id).join(',')]);
   // ------------------------------
 
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -1106,6 +1141,12 @@ export const CommunityFeedPage: React.FC = () => {
       return;
     }
 
+    const perm = await checkUserActionAllowed(activeUser.id, 'post');
+    if (!perm.allowed) {
+      showToast(perm.reason || 'تم تقييد صلاحية النشر لهذا الحساب ⚠️');
+      return;
+    }
+
     setIsPosting(true);
     let finalImageUrl: string | null = null;
     let finalVideoUrl: string | null = null;
@@ -1239,6 +1280,12 @@ export const CommunityFeedPage: React.FC = () => {
       return;
     }
 
+    const perm = await checkUserActionAllowed(currentUserId, 'interact');
+    if (!perm.allowed) {
+      showToast(perm.reason || 'تم تقييد صلاحية التفاعل لهذا الحساب');
+      return;
+    }
+
     // 1. حساب الحالة الجديدة من الحالة الحالية (قبل setTweets)
     const tweet = tweets.find(t => t.id === id);
     if (!tweet) return;
@@ -1293,6 +1340,12 @@ export const CommunityFeedPage: React.FC = () => {
   const handleRepost = async (id: string) => {
     if (!currentUserId) {
       showToast('يرجى تسجيل الدخول');
+      return;
+    }
+
+    const perm = await checkUserActionAllowed(currentUserId, 'interact');
+    if (!perm.allowed) {
+      showToast(perm.reason || 'تم تقييد صلاحية التفاعل لهذا الحساب');
       return;
     }
 
@@ -1434,7 +1487,7 @@ export const CommunityFeedPage: React.FC = () => {
       setSubmittingReport(false);
     }
   };
-const handleAddComment = (e?: React.FormEvent) => {
+const handleAddComment = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const targetPost = viewingDetailTweet || activeCommentTweet;
     const textToSend = newCommentText.trim();
@@ -1443,6 +1496,14 @@ const handleAddComment = (e?: React.FormEvent) => {
     if (textToSend.length > 280) {
       showToast('التعليق يجب أن لا يتجاوز 280 حرفاً');
       return;
+    }
+
+    if (currentUserId && currentUserId !== 'guest') {
+      const perm = await checkUserActionAllowed(currentUserId, 'interact');
+      if (!perm.allowed) {
+        showToast(perm.reason || 'تم تقييد صلاحية التفاعل لهذا الحساب');
+        return;
+      }
     }
 
     const useBizComment = Boolean(publishAsBusiness && myBusinessPage);
@@ -1601,12 +1662,37 @@ const handleAddComment = (e?: React.FormEvent) => {
   const displayedTweets = [...tweets]
       .filter(t => !hiddenTweetIds.includes(t.id))
       .filter(t => {
+        if (isCustomSectionTab && currentCustomSection) {
+          const text = String(t.text || '').toLowerCase();
+          const author = String(t.authorName || '').toLowerCase();
+          const labelLower = currentCustomSection.label.toLowerCase();
+          const cleanTag = labelLower.replace(/\s+/g, '_');
+          const idLower = currentCustomSection.id.toLowerCase();
+          const inSection =
+            text.includes(`#${labelLower}`) ||
+            text.includes(`#${cleanTag}`) ||
+            text.includes(`#${idLower}`);
+          if (!inSection) return false;
+          const q = customSearchQuery.trim().toLowerCase();
+          const matchSearch = !q || text.includes(q) || author.includes(q);
+          const matchCity =
+            customCityFilter === 'all' ||
+            text.includes(customCityFilter.toLowerCase()) ||
+            String((t as any).city || '').includes(customCityFilter);
+          return matchSearch && matchCity;
+        }
         if (activeTab === 'forYou') return true;
         const authorId = t.authorId || t.user_id;
         // عرض تغريدات المتابعين فقط (بدون تغريداتك الشخصية) للتأكد من عمل التبويب
         return followingIds.includes(authorId);
       })
       .sort((a, b) => {
+    if (isCustomSectionTab) {
+      if (customSortBy === 'popular') return (b.likes || 0) - (a.likes || 0);
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      return customSortBy === 'oldest' ? dateA - dateB : dateB - dateA;
+    }
     // الترتيب حسب التبويب
     if (activeTab === 'trending') return b.likes - a.likes;
     if (activeTab === 'forYou') {
@@ -1623,7 +1709,7 @@ const handleAddComment = (e?: React.FormEvent) => {
   
   
   useEffect(() => {
-    if (isSectionTab) return;
+    if (isBuiltInMarketTab) return;
     const el = feedBottomRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(
@@ -1835,21 +1921,52 @@ const handleAddComment = (e?: React.FormEvent) => {
 
         {/* التبويبات بتصميم صفحة المنشأة */}
         <div className="bg-black border-b border-[#2F3336]/40 flex items-center justify-around text-[14px] overflow-x-auto no-scrollbar">
-          {[
-            { id: 'forYou', label: 'لك', icon: Sparkles },
-            { id: 'latest', label: 'متابعة', icon: Users },
-            ...openCommunitySections.map((sec) => ({
-              id: sec.id,
-              label: sec.label,
-              icon: getSectionIcon(sec.iconName),
-            })),
-          ].map((tab) => {
+          {inSubSectionsMode && (
+            <button
+              type="button"
+              onClick={() => {
+                setActiveParentSectionId(null);
+                setActiveTab('forYou');
+              }}
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+              className="px-3 py-3.5 flex items-center justify-center text-[#FFC500] hover:text-white transition shrink-0 cursor-pointer"
+              title="العودة للأقسام الرئيسية"
+              aria-label="العودة للأقسام الرئيسية"
+            >
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
+          {(inSubSectionsMode
+            ? activeSubSections.map((sec) => ({
+                id: sec.id,
+                label: sec.label,
+                icon: getSectionIcon(sec.iconName),
+              }))
+            : [
+                { id: 'forYou', label: 'لك', icon: Sparkles },
+                { id: 'latest', label: 'متابعة', icon: Users },
+                ...topLevelOpenSections.map((sec) => ({
+                  id: sec.id,
+                  label: sec.label,
+                  icon: getSectionIcon(sec.iconName),
+                })),
+              ]
+          ).map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => {
+                  const subChildren = openCommunitySections.filter((s) => s.parentId === tab.id);
+                  if (subChildren.length > 0) {
+                    setActiveParentSectionId(tab.id);
+                    setActiveTab(subChildren[0].id);
+                  } else {
+                    if (!inSubSectionsMode) setActiveParentSectionId(null);
+                    setActiveTab(tab.id);
+                  }
+                }}
                 style={{ WebkitTapHighlightColor: 'transparent' }}
                 className={`flex-1 py-3.5 flex items-center justify-center relative transition ${
                   isActive ? 'text-white font-bold' : 'text-[#71767B]'
@@ -1873,6 +1990,84 @@ const handleAddComment = (e?: React.FormEvent) => {
 
       {/* حائط التغريدات والأقسام */}
       <div key={activeTab} className="animate-[fadeIn_0.3s_ease-in-out]">
+        {isCustomSectionTab && currentCustomSection && (() => {
+          const SecIcon = getSectionIcon(currentCustomSection.iconName);
+          const customActiveFiltersCount =
+            (customCityFilter !== 'all' ? 1 : 0) + (customSortBy !== 'newest' ? 1 : 0);
+          return (
+            <>
+              <MarketSponsorSlot section="community" />
+              <div className="px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40">
+                {(currentCustomSection.description || currentCustomSection.targetRoute) && (
+                  <div className="flex items-center justify-between gap-2 pb-1">
+                    <p className="text-[11px] text-[#71767B] truncate">
+                      {currentCustomSection.description || currentCustomSection.label}
+                    </p>
+                    {currentCustomSection.targetRoute && (
+                      <button
+                        type="button"
+                        onClick={() => navigate(currentCustomSection.targetRoute!)}
+                        className="px-3 py-1 rounded-full bg-[#FFC500] hover:bg-[#e6b100] text-black text-[11px] font-black shrink-0 transition cursor-pointer"
+                      >
+                        فتح
+                      </button>
+                    )}
+                  </div>
+                )}
+                <XSearchFilterBar
+                  searchQuery={customSearchQuery}
+                  onSearchChange={setCustomSearchQuery}
+                  placeholder={`ابحث في ${currentCustomSection.label}...`}
+                  activeFiltersCount={customActiveFiltersCount}
+                  onOpenFilter={() => setShowCustomFilterModal(true)}
+                  sectionIcon={<SecIcon size={18} className="text-[#FFC500]" />}
+                />
+              </div>
+              <AdBanner
+                section="community"
+                slot="slot_1"
+                onAdResolved={setCustomSlot1AdId}
+                className="!my-0 border-x-0"
+              />
+              <AdBanner
+                section="community"
+                slot="slot_2"
+                enabled={customSlot1AdId !== undefined}
+                excludeAdIds={customSlot1AdId ? [customSlot1AdId] : []}
+                className="!my-0 border-x-0"
+              />
+              <XFilterModal
+                isOpen={showCustomFilterModal}
+                onClose={() => setShowCustomFilterModal(false)}
+                title={`فلترة ${currentCustomSection.label}`}
+                activeFiltersCount={customActiveFiltersCount}
+                onReset={() => {
+                  setCustomCityFilter('all');
+                  setCustomSortBy('newest');
+                }}
+                resultsCount={displayedTweets.length}
+                fields={[
+                  {
+                    label: 'المحافظة / المدينة',
+                    value: customCityFilter,
+                    options: YEMEN_GOV_FILTER_OPTIONS,
+                    onChange: setCustomCityFilter,
+                  },
+                  {
+                    label: 'ترتيب العرض',
+                    value: customSortBy,
+                    options: [
+                      { value: 'newest', label: 'الأحدث أولاً' },
+                      { value: 'oldest', label: 'الأقدم أولاً' },
+                      { value: 'popular', label: 'الأكثر تفاعلاً' },
+                    ],
+                    onChange: setCustomSortBy,
+                  },
+                ]}
+              />
+            </>
+          );
+        })()}
         {activeTab === 'phones' ? (
           <div className="pb-4">
             <PhoneMarketPage onNavigate={(path) => navigate(path)} embedded />
@@ -1889,12 +2084,6 @@ const handleAddComment = (e?: React.FormEvent) => {
           <div className="pb-4">
             <AuctionsPage embedded />
           </div>
-        ) : isSectionTab ? (
-          <CustomSectionView
-            section={openCommunitySections.find((s) => s.id === activeTab)}
-            tweets={tweets}
-            onOpenRoute={(path) => navigate(path)}
-          />
         ) : displayedTweets.length === 0 ? (
           isInitialFeedLoading ? (
             <div className="py-24 flex items-center justify-center">
@@ -1902,7 +2091,12 @@ const handleAddComment = (e?: React.FormEvent) => {
             </div>
           ) : (
             <div className="text-center py-20 text-zinc-500 text-xs px-4">
-            {activeTab === 'forYou' 
+            {isCustomSectionTab ? (
+              <div className="space-y-1.5">
+                <p className="font-bold text-white text-sm">لا توجد منشورات حديثة</p>
+                <p className="text-[#71767B] text-xs">اضغط (+) لنشر أول إعلان أو تغريدة</p>
+              </div>
+            ) : activeTab === 'forYou' 
           ? 'لا توجد منشورات حتى الآن في المجتمع. كن أول من يغرد!' 
           : 'أنت لا تتابع أحداً بعد. ابدأ بمتابعة الأشخاص لتظهر تغريداتهم هنا.'}
           </div>
@@ -2073,7 +2267,7 @@ displayedTweets.slice(0, visibleTweetsCount).map(tweet => {
             );
           })
         )}
-        {!isSectionTab && displayedTweets.length > 0 && (
+        {!isBuiltInMarketTab && displayedTweets.length > 0 && (
           <div
             ref={feedBottomRef}
             className="py-3.5 flex items-center justify-center border-t border-[#2F3336]/40"
@@ -2175,6 +2369,11 @@ displayedTweets.slice(0, visibleTweetsCount).map(tweet => {
             <button
               onClick={async () => {
                 if (!currentUserId || !quoteText.trim()) return;
+                const perm = await checkUserActionAllowed(currentUserId, 'post');
+                if (!perm.allowed) {
+                  showToast(perm.reason || 'تم تقييد صلاحية النشر لهذا الحساب');
+                  return;
+                }
                 try {
                   const cleanPostId = (quoteOriginal.originalId || quoteOriginal.id || '').toString().replace('repost-', '');
                   const { error } = await supabase.from('post_reposts').upsert({
@@ -2576,10 +2775,18 @@ displayedTweets.slice(0, visibleTweetsCount).map(tweet => {
       {/* نافذة الإبلاغ المنبثقة */}
       
 
-      {/* زر + (FAB) — يفتح نافذة التغريد المنبثقة */}
-      {!isSectionTab && (
+      {/* زر + (FAB) — يفتح نافذة التغريد المنبثقة في المجتمع والأقسام المضافة */}
+      {!isBuiltInMarketTab && (
       <button
-        onClick={() => setIsPostModalOpen(true)}
+        onClick={() => {
+          if (isCustomSectionTab && currentCustomSection) {
+            const tag = `#${currentCustomSection.label.replace(/\s+/g, '_')}`;
+            if (!tweetText.includes(tag)) {
+              setTweetText((prev) => (prev.trim() ? `${prev.trim()} ${tag} ` : `${tag} `));
+            }
+          }
+          setIsPostModalOpen(true);
+        }}
         className="yr-fab transition-transform duration-300 fixed bottom-20 left-4 z-40 w-14 h-14 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-black/60 transition"
         title="تغريدة جديدة"
       >
