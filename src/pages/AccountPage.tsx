@@ -338,7 +338,8 @@ export const AccountPage: React.FC = () => {
           const { data: parents, error } = await supabase
             .from('posts')
             .select('*')
-            .in('id', parentIds);
+            .in('id', parentIds)
+            .or('is_hidden.is.null,is_hidden.eq.false');
           if (error || !parents || parents.length === 0) return;
 
           const authorIds = [...new Set(parents.map((p: any) => p.user_id).filter(Boolean))];
@@ -1041,6 +1042,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
         .from('posts')
         .select('*')
         .eq('id', cleanId)
+        .or('is_hidden.is.null,is_hidden.eq.false')
         .maybeSingle();
       if (error || !postData) return;
 

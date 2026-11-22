@@ -143,6 +143,7 @@ export async function getGlobalFeed(currentUserId?: string): Promise<PostItem[]>
       *,
       profile:profiles(*)
     `)
+    .or('is_hidden.is.null,is_hidden.eq.false')
     .order('created_at', { ascending: false })
     .limit(50);
 
@@ -241,6 +242,7 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
   let postsQuery = supabase
     .from('posts')
     .select('*')
+    .or('is_hidden.is.null,is_hidden.eq.false')
     .order('created_at', { ascending: false });
   
   if (userId) {
@@ -277,7 +279,8 @@ export async function getFeedPosts(userId?: string, currentUserId?: string): Pro
     const { data: originals } = await supabase
       .from('posts')
       .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, views_count, created_at')
-      .in('id', postIds);
+      .in('id', postIds)
+      .or('is_hidden.is.null,is_hidden.eq.false');
     originalPosts = originals || [];
   }
 

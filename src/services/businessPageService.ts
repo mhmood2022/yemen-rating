@@ -212,6 +212,7 @@ export async function getBusinessPosts(businessId: string, currentUserId?: strin
       .from('posts')
       .select('*')
       .eq('business_id', businessId)
+      .or('is_hidden.is.null,is_hidden.eq.false')
       .order('created_at', { ascending: false })
       .limit(50),
     supabase
@@ -231,7 +232,8 @@ export async function getBusinessPosts(businessId: string, currentUserId?: strin
       const { data: originals } = await supabase
         .from('posts')
         .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, views_count, created_at')
-        .in('id', origIds);
+        .in('id', origIds)
+        .or('is_hidden.is.null,is_hidden.eq.false');
       originalPosts = originals || [];
     }
   }

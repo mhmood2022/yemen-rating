@@ -606,6 +606,7 @@ export const CommunityFeedPage: React.FC = () => {
           supabase
             .from('posts')
             .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
+            .or('is_hidden.is.null,is_hidden.eq.false')
             .order('created_at', { ascending: false })
             .limit(30),
           supabase
@@ -656,6 +657,7 @@ export const CommunityFeedPage: React.FC = () => {
                 .from('posts')
                 .select('id, user_id, business_id, content, image_url, video_url, likes_count, comments_count, reposts_count, created_at, views_count')
                 .in('id', missingRepostedIds)
+                .or('is_hidden.is.null,is_hidden.eq.false')
             : Promise.resolve({ data: [] as any[] }),
           uid ? supabase.from('post_likes').select('post_id').eq('user_id', uid) : Promise.resolve({ data: [] as any[] }),
           uid ? supabase.from('follows').select('following_id').eq('follower_id', uid) : Promise.resolve({ data: [] as any[] }),
@@ -1070,6 +1072,7 @@ export const CommunityFeedPage: React.FC = () => {
         .from('posts')
         .select('*')
         .eq('id', cleanId)
+        .or('is_hidden.is.null,is_hidden.eq.false')
         .maybeSingle();
       if (error || !postData) return;
 
