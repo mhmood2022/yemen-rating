@@ -820,3 +820,149 @@ export function exportPagesToCsv(rows: PageSummaryRow[]) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+export interface PagePickerItem {
+  id: string;
+  name: string;
+  slug: string;
+  page_kind: PageKind;
+  status: PageStatusKind;
+  owner_id: string | null;
+  logo_url: string | null;
+}
+
+export async function fetchPagesPickerList(): Promise<PagePickerItem[]> {
+  const { data, error } = await supabase
+    .from('businesses')
+    .select('id, name, slug, page_kind, business_type, status, is_active, is_hidden, owner_id, logo_url, is_x_page')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []).map((b: any) => ({
+    id: b.id,
+    name: b.name || 'صفحة بدون اسم',
+    slug: b.slug || '',
+    page_kind: normalizePageKind(b),
+    status: normalizePageStatus(b),
+    owner_id: b.owner_id || null,
+    logo_url: b.logo_url || null,
+  }));
+}
+
+export async function createAdminBusinessPage(params: {
+  name: string;
+  slug?: string;
+  pageKind: PageKind;
+  city?: string;
+  phone?: string;
+  description?: string;
+  ownerId?: string | null;
+}): Promise<any> {
+  const cleanName = params.name.trim();
+  if (!cleanName) throw new Error('يرجى إدخال اسم الصفحة');
+
+  const rawSlug = (params.slug || '').trim().replace(/^@+/, '').replace(/\s+/g, '_').toLowerCase();
+  const cleanSlug = rawSlug || `page_${Date.now().toString(36)}`;
+
+  const payload: Record<string, any> = {
+    name: cleanName,
+    slug: cleanSlug,
+    page_kind: params.pageKind,
+    business_type: params.pageKind === 'company' ? 'COMPANY' : 'SHOP',
+    city: params.city?.trim() || 'صنعاء',
+    phone: params.phone?.trim() || null,
+    description: params.description?.trim() || null,
+    owner_id: params.ownerId || null,
+    is_x_page: true,
+    is_active: true,
+    is_hidden: false,
+    is_verified: false,
+    badge_type: 'none',
+    rating: 0,
+    review_count: 0,
+    followers_count: 0,
+    status: 'active',
+  };
+
+  const { data, error } = await supabase
+    .from('businesses')
+    .insert(payload)
+    .select()
+    .single();
+  if (error) throw error;
+
+  const { data: userData } = await supabase.auth.getUser();
+  if (params.ownerId) {
+    await supabase
+      .from('profiles')
+      .update({ account_type: 'owner', updated_at: new Date().toISOString() })
+      .eq('id', params.ownerId);
+
+    await supabase.from('page_ownership_history').insert({
+      business_id: data.id,
+      previous_owner_id: null,
+      new_owner_id: params.ownerId,
+      action_type: 'initial',
+      reason: 'إنشاء الصفحة وربطها بالحساب من لوحة الإدارة',
+      performed_by: userData?.user?.id || null,
+      performed_by_email: userData?.user?.email || null,
+    });
+  }
+
+  await supabase.from('admin_moderation_logs').insert({
+    actor_id: userData?.user?.id || null,
+    actor_name: userData?.user?.email || 'مشرف',
+    actor_email: userData?.user?.email || null,
+    target_type: 'page',
+    target_id: data.id,
+    target_name: cleanName,
+    action_type: 'create_page',
+    reason: 'إنشاء صفحة جديدة من لوحة الإدارة',
+    new_value: { name: cleanName, slug: cleanSlug, page_kind: params.pageKind, owner_id: params.ownerId || null },
+  });
+
+  return data;
+}
+
+export async function unlinkPageOwner(params: { businessId: string; reason: string }) {
+  const cleanReason = params.reason.trim() || 'إلغاء ربط المالك من لوحة الإدارة';
+  const { data: current, error: readErr } = await supabase
+    .from('businesses')
+    .select('id, name, owner_id')
+    .eq('id', params.businessId)
+    .single();
+  if (readErr) throw readErr;
+  if (!current?.owner_id) {
+    throw new Error('هذه الصفحة غير مرتبطة بحساب مالك حالياً.');
+  }
+
+  const prevOwnerId = current.owner_id;
+  const { error: updErr } = await supabase
+    .from('businesses')
+    .update({ owner_id: null, updated_at: new Date().toISOString() })
+    .eq('id', params.businessId);
+  if (updErr) throw updErr;
+
+  const { data: userData } = await supabase.auth.getUser();
+  await supabase.from('page_ownership_history').insert({
+    business_id: params.businessId,
+    previous_owner_id: prevOwnerId,
+    new_owner_id: null,
+    action_type: 'unlink_owner',
+    reason: cleanReason,
+    performed_by: userData?.user?.id || null,
+    performed_by_email: userData?.user?.email || null,
+  });
+
+  await supabase.from('admin_moderation_logs').insert({
+    actor_id: userData?.user?.id || null,
+    actor_name: userData?.user?.email || 'مشرف',
+    actor_email: userData?.user?.email || null,
+    target_type: 'page',
+    target_id: params.businessId,
+    target_name: current.name || 'صفحة',
+    action_type: 'unlink_page_owner',
+    reason: cleanReason,
+    old_value: { owner_id: prevOwnerId },
+    new_value: { owner_id: null },
+  });
+}

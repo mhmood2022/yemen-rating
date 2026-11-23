@@ -5,13 +5,14 @@ import {
   formatDateAr,
   formatDateTimeAr,
   PageKindPill,
-  ReasonConfirmModal,
 } from '../../../components/admin/accounts-pages/SharedAdminUI';
+import { AdminButton, AdminConfirmDialog, AdminSelect, toArabicErrorMessage } from '../../../components/admin/accounts-pages/AndroidAdminKit';
 import {
   managePageAdminRpc,
   moderatePageRpc,
   resolvePageTransferRequest,
   transferPageOwnershipRpc,
+  unlinkPageOwner,
   updatePageAdminPermissions,
 } from '../../../services/pagesAdminService';
 import { maskEmail, maskPhone, moderatePostRpc } from '../../../services/accountsAdminService';
@@ -58,13 +59,13 @@ export const PageTabsInfoAndTeam: React.FC<Props> = ({
 
   const runAction = async (fn: () => Promise<void>, okMsg: string) => {
     try { await fn(); onToast(okMsg, 'success'); await onRefresh(); }
-    catch (e: any) { onToast(e?.message || 'فشل تنفيذ الإجراء', 'error'); }
+    catch (e: any) { onToast(toArabicErrorMessage(e, 'تعذر تنفيذ الإجراء، يرجى المحاولة مرة أخرى.'), 'error'); }
   };
 
   if (tab === 'info') {
     return (
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#181B20] border border-[#2A2E35] rounded p-4 text-xs">
           <div className="space-y-2">
             <div className="flex justify-between"><span className="text-[#71767B]">التصنيف / النشاط:</span><span>{page.category_name || page.business_type}</span></div>
             <div className="flex justify-between items-center"><span className="text-[#71767B]">نوع الصفحة:</span><PageKindPill kind={page.page_kind} /></div>
@@ -85,15 +86,23 @@ export const PageTabsInfoAndTeam: React.FC<Props> = ({
           <div className="space-y-2.5">
             <h4 className="font-black text-[#FFC500]">تعديل بيانات الصفحة إدارياً</h4>
             <div className="grid grid-cols-2 gap-2">
-              <input value={name} onChange={(e) => setName(e.target.value)} disabled={!canEdit} placeholder="اسم الصفحة" className="bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-2 text-white outline-none caret-white" />
-              <input value={slug} onChange={(e) => setSlug(e.target.value)} disabled={!canEdit} placeholder="المعرف slug" dir="ltr" className="bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-2 text-white outline-none caret-white" />
-              <input value={city} onChange={(e) => setCity(e.target.value)} disabled={!canEdit} placeholder="المدينة" className="bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-2 text-white outline-none caret-white" />
-              <select value={pageKind} onChange={(e) => setPageKind(e.target.value as PageKind)} disabled={!canEdit} className="bg-black border border-[#2F3336] rounded-xl px-3 py-2 text-white outline-none">
-                <option value="business">منشأة</option><option value="company">شركة</option><option value="businessman">رجل أعمال</option>
-              </select>
+              <input value={name} onChange={(e) => setName(e.target.value)} disabled={!canEdit} placeholder="اسم الصفحة" className="bg-[#14171C] border border-[#2F343D] focus:border-white rounded px-3 py-2 text-white outline-none caret-white" />
+              <input value={slug} onChange={(e) => setSlug(e.target.value)} disabled={!canEdit} placeholder="المعرف slug" dir="ltr" className="bg-[#14171C] border border-[#2F343D] focus:border-white rounded px-3 py-2 text-white outline-none caret-white" />
+              <input value={city} onChange={(e) => setCity(e.target.value)} disabled={!canEdit} placeholder="المدينة" className="bg-[#14171C] border border-[#2F343D] focus:border-white rounded px-3 py-2 text-white outline-none caret-white" />
+              <AdminSelect
+                title="نوع الصفحة"
+                disabled={!canEdit}
+                value={pageKind}
+                onChange={(v) => setPageKind(v as PageKind)}
+                options={[
+                  { value: 'business', label: 'منشأة' },
+                  { value: 'company', label: 'شركة' },
+                  { value: 'businessman', label: 'رجل أعمال' },
+                ]}
+              />
             </div>
-            <input value={canViewPrivate ? phone : maskPhone(phone, false)} onChange={(e) => setPhone(e.target.value)} disabled={!canEdit || !canViewPrivate} placeholder="الهاتف" dir="ltr" className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-2 text-white outline-none caret-white" />
-            <textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} disabled={!canEdit} placeholder="النبذة والوصف" className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2.5 text-white outline-none caret-white resize-none" />
+            <input value={canViewPrivate ? phone : maskPhone(phone, false)} onChange={(e) => setPhone(e.target.value)} disabled={!canEdit || !canViewPrivate} placeholder="الهاتف" dir="ltr" className="w-full bg-[#14171C] border border-[#2F343D] focus:border-white rounded px-3 py-2 text-white outline-none caret-white" />
+            <textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} disabled={!canEdit} placeholder="النبذة والوصف" className="w-full bg-[#14171C] border border-[#2F343D] focus:border-white rounded p-2.5 text-white outline-none caret-white resize-none" />
             {canEdit && (
               <button type="button" onClick={() => setConfirmState({
                 open: true, title: 'حفظ تعديلات الصفحة', desc: 'سيتم تحديث بيانات الصفحة وتوثيق التعديل في سجل الإدارة.',
@@ -101,11 +110,11 @@ export const PageTabsInfoAndTeam: React.FC<Props> = ({
                   await moderatePageRpc({ businessId: page.id, action: 'edit_info', reason, name, slug, city, phone: canViewPrivate ? phone : undefined, description, pageKind });
                   setConfirmState(null);
                 }, 'تم تحديث بيانات الصفحة'),
-              })} className="px-4 py-2 rounded-xl bg-[#FFC500] text-black font-black cursor-pointer">حفظ التعديلات</button>
+              })} className="px-4 py-2 rounded bg-[#FFC500] text-black font-black cursor-pointer">حفظ التعديلات</button>
             )}
           </div>
         </div>
-        {confirmState && <ReasonConfirmModal open={confirmState.open} title={confirmState.title} description={confirmState.desc} danger={confirmState.danger} onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />}
+        {confirmState && <AdminConfirmDialog open={confirmState.open} title={confirmState.title} description={confirmState.desc} variant={confirmState.danger ? 'danger' : 'warning'} requireReason onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />}
       </div>
     );
   }
@@ -113,44 +122,78 @@ export const PageTabsInfoAndTeam: React.FC<Props> = ({
   if (tab === 'ownership') {
     return (
       <div className="space-y-4 text-xs">
-        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2">
+        <div className="bg-[#181B20] border border-[#2A2E35] rounded p-4 space-y-2">
           <h4 className="font-black text-[#FFC500]">الحساب الشخصي المالك</h4>
           {ownerProfile ? (
-            <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-black border border-[#2F3336]">
+            <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded bg-[#14171C] border border-[#2A2E35]">
               <div>
                 <div className="font-bold text-white">{ownerProfile.full_name} <span className="text-[#71767B]" dir="ltr">@{ownerProfile.username}</span></div>
                 <div className="text-[11px] text-[#71767B]">{maskEmail(ownerProfile.email, canViewPrivate)} • {maskPhone(ownerProfile.phone, canViewPrivate)}</div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {page.owner_status && <AccountStatusPill status={page.owner_status} />}
-                <span className="text-[10px] text-[#71767B]">(إيقاف حساب المالك لا يحذف الصفحة)</span>
+                {canEdit && (
+                  <AdminButton
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setConfirmState({
+                      open: true,
+                      title: 'إلغاء ربط المالك بالصفحة',
+                      desc: `سيتم إلغاء ارتباط ${ownerProfile.full_name} بملكية هذه الصفحة وتوثيق الإجراء في السجل.`,
+                      danger: true,
+                      action: async (reason) => runAction(async () => {
+                        await unlinkPageOwner({ businessId: page.id, reason });
+                        setConfirmState(null);
+                      }, 'تم إلغاء ربط المالك بالصفحة بنجاح'),
+                    })}
+                  >
+                    إلغاء الربط
+                  </AdminButton>
+                )}
               </div>
             </div>
           ) : (
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 flex items-center gap-2">
+            <div className="p-3 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 flex items-center gap-2">
               <ShieldAlert size={16} /><span>تنبيه: هذه الصفحة بلا مالك حالي أو تعذر الوصول للمالك؛ يمكنك تعيين مالك معتمد أدناه.</span>
             </div>
           )}
         </div>
 
-        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-3">
+        <div className="bg-[#181B20] border border-[#2A2E35] rounded p-4 space-y-3">
           <h4 className="font-black text-white">المسؤولون والمشرفون المفوضون ({admins.length})</h4>
           {canEdit && (
             <div className="flex flex-wrap gap-2">
-              <select value={newAdminUserId} onChange={(e) => setNewAdminUserId(e.target.value)} className="flex-1 min-w-[180px] bg-black border border-[#2F3336] rounded-xl px-3 py-2 text-white outline-none">
-                <option value="">اختر حساباً لتفويضه...</option>
-                {candidateUsers.map((u) => <option key={u.id} value={u.id}>{u.full_name} (@{u.username})</option>)}
-              </select>
-              <select value={newAdminRole} onChange={(e) => setNewAdminRole(e.target.value as any)} className="bg-black border border-[#2F3336] rounded-xl px-3 py-2 text-white outline-none">
-                <option value="admin">مسؤول</option><option value="editor">محرر</option><option value="moderator">مشرف</option>
-              </select>
+              <div className="flex-1 min-w-[200px]">
+                <AdminSelect
+                  searchable
+                  title="اختر حساباً لتفويضه"
+                  value={newAdminUserId}
+                  onChange={setNewAdminUserId}
+                  options={[
+                    { value: '', label: 'اختر حساباً لتفويضه...' },
+                    ...candidateUsers.map((u) => ({ value: u.id, label: u.full_name, hint: `@${u.username}` })),
+                  ]}
+                />
+              </div>
+              <div className="w-36">
+                <AdminSelect
+                  title="الدور الإداري"
+                  value={newAdminRole}
+                  onChange={(v) => setNewAdminRole(v as any)}
+                  options={[
+                    { value: 'admin', label: 'مسؤول' },
+                    { value: 'editor', label: 'محرر' },
+                    { value: 'moderator', label: 'مشرف' },
+                  ]}
+                />
+              </div>
               <button type="button" disabled={!newAdminUserId} onClick={() => setConfirmState({
                 open: true, title: 'تعيين مسؤول مفوض', desc: 'سيتم منح المستخدم صلاحية إدارة الصفحة وتوثيق الإجراء.',
                 action: async (reason) => runAction(async () => {
                   await managePageAdminRpc({ businessId: page.id, userId: newAdminUserId, operation: 'upsert', role: newAdminRole, reason });
                   setNewAdminUserId(''); setConfirmState(null);
                 }, 'تم تعيين المسؤول المفوض'),
-              })} className="px-3 py-2 rounded-xl bg-[#FFC500] text-black font-black flex items-center gap-1 disabled:opacity-40 cursor-pointer"><UserPlus size={14} /><span>تعيين</span></button>
+              })} className="px-3 py-2 rounded bg-[#FFC500] text-black font-black flex items-center gap-1 disabled:opacity-40 cursor-pointer"><UserPlus size={14} /><span>تعيين</span></button>
             </div>
           )}
           {admins.length === 0 ? <p className="text-[#71767B]">لا يوجد مسؤولون مفوضون حالياً.</p> : admins.map((a) => {
@@ -162,19 +205,19 @@ export const PageTabsInfoAndTeam: React.FC<Props> = ({
               ['can_manage_ads', 'إدارة الإعلانات'],
             ];
             return (
-              <div key={a.id} className="p-3 rounded-xl bg-black border border-[#2F3336] space-y-2">
+              <div key={a.id} className="p-3 rounded bg-[#14171C] border border-[#2A2E35] space-y-2">
                 <div className="flex items-center justify-between">
                   <span>{a.full_name} (@{a.username}) — <strong className="text-[#FFC500]">{a.role}</strong></span>
                   {canEdit && (
                     <button type="button" onClick={() => setConfirmState({
                       open: true, title: 'إزالة مسؤول الصفحة', desc: `سيتم سحب تفويض الإدارة من ${a.full_name}.`, danger: true,
                       action: async (reason) => runAction(async () => { await managePageAdminRpc({ businessId: page.id, userId: a.user_id, operation: 'remove', reason }); setConfirmState(null); }, 'تمت إزالة المسؤول'),
-                    })} className="p-1.5 rounded-lg bg-rose-500/15 text-rose-400 cursor-pointer"><Trash2 size={13} /></button>
+                    })} className="p-1.5 rounded bg-rose-500/15 text-rose-400 cursor-pointer"><Trash2 size={13} /></button>
                   )}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#2F3336]/50">
                   {permLabels.map(([k, lbl]) => (
-                    <label key={k} className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#0B0B0B] border border-[#2F3336] text-[11px] cursor-pointer">
+                    <label key={k} className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-[#14171C] border border-[#2A2E35] text-[11px] cursor-pointer">
                       <input
                         type="checkbox"
                         disabled={!canEdit}
@@ -197,7 +240,7 @@ export const PageTabsInfoAndTeam: React.FC<Props> = ({
                           setConfirmState(null);
                         }, 'تم تحديث صلاحيات المسؤول'),
                       })}
-                      className="px-2.5 py-1 rounded-lg bg-[#FFC500] text-black font-bold text-[11px] cursor-pointer"
+                      className="px-2.5 py-1 rounded bg-[#FFC500] text-black font-bold text-[11px] cursor-pointer"
                     >
                       حفظ الصلاحيات
                     </button>
@@ -209,37 +252,52 @@ export const PageTabsInfoAndTeam: React.FC<Props> = ({
         </div>
 
         {canEdit && (
-          <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-3">
+          <div className="bg-[#181B20] border border-[#2A2E35] rounded p-4 space-y-3">
             <h4 className="font-black text-white flex items-center gap-1.5"><ArrowLeftRight size={14} className="text-[#FFC500]" /> نقل الملكية / معالجة فقدان المالك (اعتماد إداري حصري)</h4>
             <div className="flex flex-wrap gap-2">
-              <select value={newOwnerId} onChange={(e) => setNewOwnerId(e.target.value)} className="flex-1 min-w-[180px] bg-black border border-[#2F3336] rounded-xl px-3 py-2 text-white outline-none">
-                <option value="">اختر الحساب الشخصي للمالك الجديد...</option>
-                {candidateUsers.map((u) => <option key={u.id} value={u.id}>{u.full_name} (@{u.username})</option>)}
-              </select>
-              <select value={transferActionType} onChange={(e) => setTransferActionType(e.target.value as any)} className="bg-black border border-[#2F3336] rounded-xl px-3 py-2 text-white outline-none">
-                <option value="transfer">نقل ملكية معتمد</option>
-                <option value="owner_lost_recovery">استعادة صفحة فقدت مالكها</option>
-                <option value="admin_assign">تعيين مالك إدارياً</option>
-              </select>
+              <div className="flex-1 min-w-[200px]">
+                <AdminSelect
+                  searchable
+                  title="اختر الحساب الشخصي للمالك"
+                  value={newOwnerId}
+                  onChange={setNewOwnerId}
+                  options={[
+                    { value: '', label: 'اختر الحساب الشخصي للمالك الجديد...' },
+                    ...candidateUsers.map((u) => ({ value: u.id, label: u.full_name, hint: `@${u.username}` })),
+                  ]}
+                />
+              </div>
+              <div className="w-56">
+                <AdminSelect
+                  title="نوع عملية الربط"
+                  value={transferActionType}
+                  onChange={(v) => setTransferActionType(v as any)}
+                  options={[
+                    { value: 'transfer', label: 'نقل ملكية معتمد' },
+                    { value: 'owner_lost_recovery', label: 'استعادة صفحة فقدت مالكها' },
+                    { value: 'admin_assign', label: 'تعيين مالك إدارياً' },
+                  ]}
+                />
+              </div>
               <button type="button" disabled={!newOwnerId} onClick={() => setConfirmState({
                 open: true, title: 'تأكيد تغيير ملكية الصفحة', desc: 'سيتم نقل ملكية الصفحة وتوثيق المالك السابق والجديد في سجل الملكية غير القابل للتعديل.', danger: true,
                 action: async (reason) => runAction(async () => {
                   await transferPageOwnershipRpc({ businessId: page.id, newOwnerId, actionType: transferActionType, reason });
                   setNewOwnerId(''); setConfirmState(null);
                 }, 'تم تحديث ملكية الصفحة وتوثيق السجل'),
-              })} className="px-4 py-2 rounded-xl bg-[#FFC500] text-black font-black disabled:opacity-40 cursor-pointer">اعتماد النقل</button>
+              })} className="px-4 py-2 rounded bg-[#FFC500] text-black font-black disabled:opacity-40 cursor-pointer">اعتماد النقل</button>
             </div>
           </div>
         )}
 
         {transferRequests.length > 0 && (
-          <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2">
+          <div className="bg-[#181B20] border border-[#2A2E35] rounded p-4 space-y-2">
             <h4 className="font-black text-[#FFC500]">طلبات نقل واستعادة الملكية ({transferRequests.length})</h4>
             {transferRequests.map((tr: any) => {
               const fromU = candidateUsers.find((u) => u.id === tr.from_user_id);
               const toU = candidateUsers.find((u) => u.id === tr.to_user_id);
               return (
-                <div key={tr.id} className="p-3 rounded-xl bg-black border border-[#2F3336] space-y-1.5">
+                <div key={tr.id} className="p-3 rounded bg-[#14171C] border border-[#2A2E35] space-y-1.5">
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-white">{tr.request_kind === 'owner_recovery' ? 'استعادة مالك مفقود' : 'طلب نقل ملكية'}</span>
                     <span className="text-[11px] text-[#FFC500] font-bold">{tr.status}</span>
@@ -252,11 +310,11 @@ export const PageTabsInfoAndTeam: React.FC<Props> = ({
                       <button type="button" onClick={() => setConfirmState({
                         open: true, title: 'اعتماد طلب نقل الملكية', desc: 'سيتم نقل ملكية الصفحة للمستخدم المطلوب وتسجيل السجل.', danger: true,
                         action: async (reason) => runAction(async () => { await resolvePageTransferRequest({ request: tr, decision: 'approved', reason }); setConfirmState(null); }, 'تم اعتماد طلب نقل الملكية'),
-                      })} className="px-3 py-1 rounded-lg bg-[#FFC500] text-black font-black cursor-pointer">موافقة وتنفيذ</button>
+                      })} className="px-3 py-1 rounded bg-[#FFC500] text-black font-black cursor-pointer">موافقة وتنفيذ</button>
                       <button type="button" onClick={() => setConfirmState({
                         open: true, title: 'رفض طلب نقل الملكية', desc: 'أدخل سبب رفض الطلب.', danger: true,
                         action: async (reason) => runAction(async () => { await resolvePageTransferRequest({ request: tr, decision: 'rejected', reason }); setConfirmState(null); }, 'تم رفض الطلب'),
-                      })} className="px-3 py-1 rounded-lg bg-rose-500/15 text-rose-400 font-bold cursor-pointer">رفض</button>
+                      })} className="px-3 py-1 rounded bg-rose-500/15 text-rose-400 font-bold cursor-pointer">رفض</button>
                     </div>
                   )}
                 </div>
@@ -265,17 +323,17 @@ export const PageTabsInfoAndTeam: React.FC<Props> = ({
           </div>
         )}
 
-        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2">
+        <div className="bg-[#181B20] border border-[#2A2E35] rounded p-4 space-y-2">
           <h4 className="font-black text-white">سجل تغييرات الملكية ({ownershipHistory.length}) • طلبات النقل ({transferRequests.length})</h4>
           {ownershipHistory.length === 0 ? <p className="text-[#71767B]">لا توجد تغييرات ملكية مسجلة.</p> : ownershipHistory.map((h) => (
-            <div key={h.id} className="p-2.5 rounded-xl bg-black border border-[#2F3336] space-y-1">
+            <div key={h.id} className="p-2.5 rounded bg-[#14171C] border border-[#2A2E35] space-y-1">
               <div className="flex justify-between"><span className="text-[#FFC500] font-bold">{h.action_type}</span><span className="text-[10px] text-[#71767B]">{formatDateTimeAr(h.created_at)}</span></div>
               <div>من: {h.previous_owner_name || '—'} ⬅️ إلى: {h.new_owner_name || '—'}</div>
               <div className="text-[11px] text-[#71767B]">السبب: {h.reason} • المنفذ: {h.performed_by_email || '—'}</div>
             </div>
           ))}
         </div>
-        {confirmState && <ReasonConfirmModal open={confirmState.open} title={confirmState.title} description={confirmState.desc} danger={confirmState.danger} onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />}
+        {confirmState && <AdminConfirmDialog open={confirmState.open} title={confirmState.title} description={confirmState.desc} variant={confirmState.danger ? 'danger' : 'warning'} requireReason onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />}
       </div>
     );
   }
@@ -283,10 +341,10 @@ export const PageTabsInfoAndTeam: React.FC<Props> = ({
   if (tab === 'content') {
     return (
       <div className="space-y-4 text-xs">
-        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2.5">
+        <div className="bg-[#181B20] border border-[#2A2E35] rounded p-4 space-y-2.5">
           <h4 className="font-black text-white">منشورات الصفحة ({posts.length}) • التعليقات ({comments.length})</h4>
           {posts.length === 0 ? <p className="text-[#71767B]">لا توجد منشورات لهذه الصفحة.</p> : posts.map((p) => (
-            <div key={p.id} className={`p-3 rounded-xl border flex items-start justify-between gap-3 ${p.is_hidden ? 'bg-rose-950/20 border-rose-500/30' : 'bg-black border-[#2F3336]'}`}>
+            <div key={p.id} className={`p-3 rounded border flex items-start justify-between gap-3 ${p.is_hidden ? 'bg-rose-950/20 border-rose-500/30' : 'bg-black border-[#2F3336]'}`}>
               <div className="space-y-1 min-w-0">
                 <p className="text-zinc-200 whitespace-pre-wrap">{p.content || '(منشور وسائط)'}</p>
                 <div className="flex flex-wrap gap-3 text-[10px] text-[#71767B]">
@@ -301,14 +359,14 @@ export const PageTabsInfoAndTeam: React.FC<Props> = ({
                 <button type="button" onClick={() => setConfirmState({
                   open: true, title: p.is_hidden ? 'استعادة المنشور' : 'إخفاء منشور مخالف', desc: 'سيتم تحديث ظهور المنشور وتوثيق السبب.', danger: !p.is_hidden,
                   action: async (reason) => runAction(async () => { await moderatePostRpc(p.id, !p.is_hidden, reason); setConfirmState(null); }, 'تم تحديث حالة المنشور'),
-                })} className="px-2.5 py-1 rounded-lg bg-[#111] border border-[#2F3336] text-zinc-200 flex items-center gap-1 cursor-pointer">
+                })} className="px-2.5 py-1 rounded bg-[#1C2026] border border-[#2F343D] text-zinc-200 flex items-center gap-1 cursor-pointer">
                   {p.is_hidden ? <Eye size={13} /> : <EyeOff size={13} />}<span>{p.is_hidden ? 'استعادة' : 'إخفاء'}</span>
                 </button>
               )}
             </div>
           ))}
         </div>
-        {confirmState && <ReasonConfirmModal open={confirmState.open} title={confirmState.title} description={confirmState.desc} danger={confirmState.danger} onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />}
+        {confirmState && <AdminConfirmDialog open={confirmState.open} title={confirmState.title} description={confirmState.desc} variant={confirmState.danger ? 'danger' : 'warning'} requireReason onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />}
       </div>
     );
   }
@@ -317,20 +375,20 @@ export const PageTabsInfoAndTeam: React.FC<Props> = ({
   return (
     <div className="space-y-4 text-xs">
       <div className="grid grid-cols-3 gap-2.5 text-center">
-        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-xl p-3"><div className="text-lg font-black text-white">{page.followers_count}</div><div className="text-[#71767B]">المتابعون</div></div>
-        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-xl p-3"><div className="text-lg font-black text-[#FFC500]">{page.interactions_count}</div><div className="text-[#71767B]">إجمالي التفاعلات</div></div>
-        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-xl p-3"><div className="text-lg font-black text-sky-400">{posts.reduce((s, p) => s + Number(p.views_count || 0), 0)}</div><div className="text-[#71767B]">المشاهدات</div></div>
+        <div className="bg-[#14171C] border border-[#2A2E35] rounded p-3"><div className="text-lg font-black text-white">{page.followers_count}</div><div className="text-[#71767B]">المتابعون</div></div>
+        <div className="bg-[#14171C] border border-[#2A2E35] rounded p-3"><div className="text-lg font-black text-[#FFC500]">{page.interactions_count}</div><div className="text-[#71767B]">إجمالي التفاعلات</div></div>
+        <div className="bg-[#14171C] border border-[#2A2E35] rounded p-3"><div className="text-lg font-black text-sky-400">{posts.reduce((s, p) => s + Number(p.views_count || 0), 0)}</div><div className="text-[#71767B]">المشاهدات</div></div>
       </div>
-      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2">
+      <div className="bg-[#181B20] border border-[#2A2E35] rounded p-4 space-y-2">
         <h4 className="font-black text-white">المنشورات الأعلى أداءً</h4>
         {topPosts.length === 0 ? <p className="text-[#71767B]">لا توجد منشورات.</p> : topPosts.map((p) => (
-          <div key={p.id} className="p-2.5 rounded-xl bg-black border border-[#2F3336] flex justify-between gap-2">
+          <div key={p.id} className="p-2.5 rounded bg-[#14171C] border border-[#2A2E35] flex justify-between gap-2">
             <span className="truncate text-zinc-200">{p.content || '(وسائط)'}</span>
             <span className="shrink-0 text-[#FFC500]">❤️ {p.likes_count || 0} • 🔁 {p.reposts_count || 0}</span>
           </div>
         ))}
       </div>
-      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2 max-h-60 overflow-y-auto">
+      <div className="bg-[#181B20] border border-[#2A2E35] rounded p-4 space-y-2 max-h-60 overflow-y-auto">
         <h4 className="font-black text-white">قائمة المتابعين ({followers.length})</h4>
         {followers.length === 0 ? <p className="text-[#71767B]">لا يوجد متابعون مسجلون.</p> : followers.map((f) => (
           <div key={f.id} className="flex justify-between py-1 border-b border-[#2F3336]/40">

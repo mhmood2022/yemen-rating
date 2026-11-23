@@ -6,6 +6,9 @@ import {
   AccountSummaryRow,
   AdsCoverageKind,
   BadgeKind,
+  LinkedPageBrief,
+  PageKind,
+  PageStatusKind,
   PageSummaryRow,
   PeriodPreset,
   ProfileKind,
@@ -139,8 +142,8 @@ export async function fetchAccountsDashboardData(
     supabase.from('reports').select('id, reporter_id, reported_user_id, reported_item_type, reported_item_id, status'),
     supabase.from('user_support_messages').select('id, user_id, status, created_at'),
     supabase.from('admin_requests').select('id, type, user_id, status, created_at').in('type', ['support', 'report']),
-    supabase.from('businesses').select('id, owner_id, is_x_page'),
-    supabase.from('page_admins').select('business_id, user_id, is_active'),
+    supabase.from('businesses').select('id, name, slug, page_kind, business_type, status, is_active, is_hidden, owner_id, is_x_page'),
+    supabase.from('page_admins').select('business_id, user_id, role, is_active'),
   ]);
 
   const val = <T,>(res: PromiseSettledResult<{ data: T | null }>, fallback: T): T =>
@@ -163,24 +166,65 @@ export async function fetchAccountsDashboardData(
   const planMap = new Map(plans.map((p) => [p.id, p]));
 
   // خريطة الصفحات المملوكة لكل مستخدم
+  const normPageKind = (b: any): PageKind => {
+    const pk = String(b?.page_kind || '').toLowerCase();
+    if (pk === 'company' || pk === 'businessman' || pk === 'business') return pk as PageKind;
+    return b?.business_type === 'COMPANY' ? 'company' : 'business';
+  };
+  const normPageStatus = (b: any): PageStatusKind => {
+    if (b?.is_hidden || String(b?.status || '').toLowerCase() === 'hidden') return 'hidden';
+    if (b?.is_active === false || String(b?.status || '').toLowerCase() === 'suspended') return 'suspended';
+    if (String(b?.status || '').toLowerCase() === 'pending') return 'pending';
+    return 'active';
+  };
+
   const ownedPageIdsByUser = new Map<string, Set<string>>();
   const businessOwnerMap = new Map<string, string>();
+  const businessInfoMap = new Map<string, any>();
+  const linkedPagesByUser = new Map<string, LinkedPageBrief[]>();
+  const pushLinked = (uid: string, item: LinkedPageBrief) => {
+    if (!linkedPagesByUser.has(uid)) linkedPagesByUser.set(uid, []);
+    const list = linkedPagesByUser.get(uid)!;
+    if (!list.some((x) => x.id === item.id && x.relation === item.relation)) {
+      list.push(item);
+    }
+  };
+
   businesses.forEach((b) => {
+    businessInfoMap.set(b.id, b);
     if (b.owner_id) {
       businessOwnerMap.set(b.id, b.owner_id);
       if (!ownedPageIdsByUser.has(b.owner_id)) ownedPageIdsByUser.set(b.owner_id, new Set());
       ownedPageIdsByUser.get(b.owner_id)!.add(b.id);
+      pushLinked(b.owner_id, {
+        id: b.id,
+        name: b.name || '\u0635\u0641\u062d\u0629',
+        slug: b.slug || '',
+        page_kind: normPageKind(b),
+        status: normPageStatus(b),
+        relation: 'owner',
+      });
     }
   });
-
   const managedPagesByUser = new Map<string, number>();
   pageAdmins.forEach((pa) => {
     if (pa.is_active !== false && pa.user_id) {
       managedPagesByUser.set(pa.user_id, (managedPagesByUser.get(pa.user_id) || 0) + 1);
+      const b = businessInfoMap.get(pa.business_id);
+      if (b) {
+        pushLinked(pa.user_id, {
+          id: b.id,
+          name: b.name || '\u0635\u0641\u062d\u0629',
+          slug: b.slug || '',
+          page_kind: normPageKind(b),
+          status: normPageStatus(b),
+          relation: 'admin',
+          role: pa.role || 'admin',
+        });
+      }
     }
   });
 
-  // المتابعون والمتابَعون
   const followersCount = new Map<string, number>();
   const followingCount = new Map<string, number>();
   follows.forEach((f) => {
@@ -355,6 +399,7 @@ export async function fetchAccountsDashboardData(
       support_latest_status: supInfo?.latestStatus || null,
       owned_pages_count: ownedPagesCount,
       managed_pages_count: managedPagesByUser.get(p.id) || 0,
+      linked_pages: linkedPagesByUser.get(p.id) || [],
       created_at: p.created_at,
       last_activity_at: lastAct || null,
       moderation_status: normalizeAccountStatus(p),

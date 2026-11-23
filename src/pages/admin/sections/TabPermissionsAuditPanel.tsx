@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { AdminSelect, useAdminFeedback } from '../../../components/admin/accounts-pages/AndroidAdminKit';
 import { Shield, History, Save, RefreshCw, Check } from 'lucide-react';
 import {
   fetchStaffTabPermissions,
@@ -25,6 +26,7 @@ const PERM_LABELS: Array<{ key: keyof TabModulePermissions; label: string }> = [
 export const TabPermissionsAuditPanel: React.FC<TabPermissionsAuditPanelProps> = ({
   canManagePermissions,
 }) => {
+  const { showSuccess, showError } = useAdminFeedback();
   const [staffList, setStaffList] = useState<StaffTabPermissionEntry[]>([]);
   const [logs, setLogs] = useState<TabAuditLog[]>([]);
   const [moduleFilter, setModuleFilter] = useState<string>('all');
@@ -74,14 +76,14 @@ export const TabPermissionsAuditPanel: React.FC<TabPermissionsAuditPanelProps> =
   return (
     <div className="space-y-5">
       {statusMsg && (
-        <div className="px-3.5 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-2">
+        <div className="px-3.5 py-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-2">
           <Check size={14} />
           <span>{statusMsg}</span>
         </div>
       )}
 
       {canManagePermissions && (
-        <div className="bg-[#0B0F17] border border-[#2F3336] rounded-2xl p-4 space-y-3">
+        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-lg p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Shield size={16} className="text-[#FFC500]" />
@@ -103,7 +105,7 @@ export const TabPermissionsAuditPanel: React.FC<TabPermissionsAuditPanelProps> =
               {staffList.map((entry) => {
                 const isTopAdmin = entry.role === 'super_admin' || entry.role === 'admin';
                 return (
-                  <div key={entry.userId} className="bg-black border border-[#2F3336] rounded-xl p-3 space-y-2.5">
+                  <div key={entry.userId} className="bg-black border border-[#2F3336] rounded-lg p-3 space-y-2.5">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
                         <div className="text-xs font-black text-white">{entry.fullName}</div>
@@ -140,7 +142,7 @@ export const TabPermissionsAuditPanel: React.FC<TabPermissionsAuditPanelProps> =
                               className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-bold flex items-center justify-between cursor-pointer ${
                                 active
                                   ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
-                                  : 'border-[#2F3336] bg-[#0B0F17] text-[#71767B]'
+                                  : 'border-[#2F3336] bg-[#0B0B0B] text-[#71767B]'
                               }`}
                             >
                               <span>{p.label}</span>
@@ -159,24 +161,13 @@ export const TabPermissionsAuditPanel: React.FC<TabPermissionsAuditPanelProps> =
       )}
 
       {/* سجل العمليات الإدارية */}
-      <div className="bg-[#0B0F17] border border-[#2F3336] rounded-2xl p-4 space-y-3">
+      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-lg p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <History size={16} className="text-[#FFC500]" />
             <h3 className="text-xs sm:text-sm font-black text-white">سجل العمليات الإدارية للتبويبات</h3>
           </div>
-          <select
-            value={moduleFilter}
-            onChange={(e) => setModuleFilter(e.target.value)}
-            className="bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-1.5 text-xs text-white outline-none"
-          >
-            <option value="all">كل الوحدات</option>
-            <option value="tabs">إدارة التبويبات</option>
-            <option value="content">إدارة المحتوى</option>
-            <option value="forms">النماذج والقوائم</option>
-            <option value="ads">الإعلانات</option>
-            <option value="permissions">الصلاحيات</option>
-          </select>
+          <div className="min-w-[150px]"><AdminSelect compact title="الوحدة" value={moduleFilter} onChange={setModuleFilter} options={[{ value: 'all', label: 'كل الوحدات' }, { value: 'tabs', label: 'إدارة التبويبات' }, { value: 'content', label: 'إدارة المحتوى' }, { value: 'forms', label: 'النماذج والقوائم' }, { value: 'ads', label: 'الإعلانات' }, { value: 'permissions', label: 'الصلاحيات' }]} /></div>
         </div>
 
         {filteredLogs.length === 0 ? (
@@ -186,7 +177,7 @@ export const TabPermissionsAuditPanel: React.FC<TabPermissionsAuditPanelProps> =
             {filteredLogs.map((log) => (
               <div
                 key={log.id}
-                className="p-2.5 rounded-xl bg-black border border-[#2F3336] flex flex-wrap items-center justify-between gap-2 text-xs"
+                className="p-2.5 rounded-lg bg-black border border-[#2F3336] flex flex-wrap items-center justify-between gap-2 text-xs"
               >
                 <div className="space-y-0.5">
                   <div className="font-bold text-white">{log.action}</div>

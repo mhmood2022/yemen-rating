@@ -8,6 +8,16 @@ export type PageKind = 'business' | 'company' | 'businessman';
 export type PageStatusKind = 'active' | 'pending' | 'hidden' | 'suspended';
 export type PeriodPreset = '7d' | '30d' | '90d' | 'all' | 'custom';
 
+export interface LinkedPageBrief {
+  id: string;
+  name: string;
+  slug: string;
+  page_kind: PageKind;
+  status: PageStatusKind;
+  relation: 'owner' | 'admin';
+  role?: string;
+}
+
 export interface AccountSummaryRow {
   id: string;
   full_name: string;
@@ -45,6 +55,7 @@ export interface AccountSummaryRow {
   support_latest_status: string | null;
   owned_pages_count: number;
   managed_pages_count: number;
+  linked_pages?: LinkedPageBrief[];
   created_at: string;
   last_activity_at: string | null;
   moderation_status: AccountModerationStatus;

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { AccountDetailBundle, AccountSummaryRow } from '../../../types/adminAccountsPages';
 import { fetchAccountDetailBundle } from '../../../services/accountsAdminService';
 import { AccountKindPill, AccountStatusPill, BadgePill } from '../../../components/admin/accounts-pages/SharedAdminUI';
+import { toArabicErrorMessage, useBackClose } from '../../../components/admin/accounts-pages/AndroidAdminKit';
 import { AccountTabsPrimary } from './AccountTabsPrimary';
 import { AccountTabsModeration } from './AccountTabsModeration';
 import { X, RefreshCw, User, Activity, ShieldCheck, CreditCard, Megaphone, Flag, Headphones, History } from 'lucide-react';
@@ -32,6 +33,7 @@ export const AccountDetailModal: React.FC<Props> = ({
   const [activeTab, setActiveTab] = useState<(typeof TABS)[number]['id']>('info');
   const [bundle, setBundle] = useState<AccountDetailBundle | null>(null);
   const [loading, setLoading] = useState(true);
+  useBackClose(true, onClose);
 
   const loadBundle = useCallback(async () => {
     setLoading(true);
@@ -39,7 +41,7 @@ export const AccountDetailModal: React.FC<Props> = ({
       const data = await fetchAccountDetailBundle(account);
       setBundle(data);
     } catch (e: any) {
-      onToast(e?.message || 'تعذر تحميل تفاصيل الحساب', 'error');
+      onToast(toArabicErrorMessage(e, 'تعذر تحميل تفاصيل الحساب'), 'error');
     } finally {
       setLoading(false);
     }
@@ -50,15 +52,15 @@ export const AccountDetailModal: React.FC<Props> = ({
 
   return (
     <div className="fixed inset-0 z-[120] bg-black/85 flex items-center justify-center p-2 sm:p-4" dir="rtl" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-5xl max-h-[92vh] bg-black border border-[#2F3336] rounded-2xl flex flex-col overflow-hidden shadow-2xl">
+      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-5xl max-h-[92vh] bg-black border border-[#2F3336] rounded flex flex-col overflow-hidden shadow-2xl">
         <div className="relative h-24 bg-gradient-to-l from-[#111] via-[#0B0B0B] to-black border-b border-[#2F3336] shrink-0">
           {account.cover_url && <img src={account.cover_url} alt="" className="w-full h-full object-cover opacity-50" />}
           <div className="absolute top-3 left-3 flex items-center gap-2">
-            <button type="button" onClick={handleRefreshAll} className="p-2 rounded-xl bg-black/80 border border-[#2F3336] text-zinc-300 hover:text-white cursor-pointer" title="تحديث"><RefreshCw size={15} /></button>
-            <button type="button" onClick={onClose} className="p-2 rounded-xl bg-black/80 border border-[#2F3336] text-zinc-300 hover:text-white cursor-pointer" title="إغلاق"><X size={16} /></button>
+            <button type="button" onClick={handleRefreshAll} className="p-2 rounded bg-black/80 border border-[#2F3336] text-zinc-300 hover:text-white cursor-pointer" title="تحديث"><RefreshCw size={15} /></button>
+            <button type="button" onClick={onClose} className="p-2 rounded bg-black/80 border border-[#2F3336] text-zinc-300 hover:text-white cursor-pointer" title="إغلاق"><X size={16} /></button>
           </div>
           <div className="absolute -bottom-6 right-5 flex items-end gap-3">
-            <div className="w-16 h-16 rounded-2xl border-2 border-black bg-[#111] overflow-hidden flex items-center justify-center font-black text-[#FFC500] text-xl">
+            <div className="w-16 h-16 rounded border-2 border-black bg-[#111] overflow-hidden flex items-center justify-center font-black text-[#FFC500] text-xl">
               {account.avatar_url ? <img src={account.avatar_url} alt="" className="w-full h-full object-cover" /> : account.full_name[0]}
             </div>
             <div className="pb-1">
@@ -78,7 +80,7 @@ export const AccountDetailModal: React.FC<Props> = ({
             const active = activeTab === t.id;
             return (
               <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap cursor-pointer ${active ? 'bg-[#FFC500] text-black' : 'bg-[#111] text-zinc-400 hover:text-white'}`}>
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap cursor-pointer ${active ? 'bg-[#FFC500] text-black' : 'bg-[#111] text-zinc-400 hover:text-white'}`}>
                 <Icon size={13} /><span>{t.label}</span>
               </button>
             );

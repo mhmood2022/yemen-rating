@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BarChart3, RefreshCw, Eye, Heart, Megaphone, Layers, Sparkles, MessageSquare, AlertTriangle } from 'lucide-react';
 import type { CommunitySection } from '../../../services/sectionsService';
+import { AdminSelect, toArabicErrorMessage, useAdminFeedback } from '../../../components/admin/accounts-pages/AndroidAdminKit';
 import { fetchUnifiedTabsAnalytics, type UnifiedTabsAnalytics } from '../../../services/communityTabsAdminService';
 
 interface TabAnalyticsPanelProps {
@@ -29,41 +30,22 @@ export const TabAnalyticsPanel: React.FC<TabAnalyticsPanelProps> = ({ sections }
 
   return (
     <div className="space-y-4">
-      <div className="bg-[#0B0F17] border border-[#2F3336] rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2">
+      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded p-3 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-xs font-black text-white">
           <BarChart3 size={16} className="text-[#FFC500]" />
           <span>إحصائيات التبويبات الفعلية (بيانات حية من القاعدة)</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={sectionId}
-            onChange={(e) => setSectionId(e.target.value)}
-            className="bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-1.5 text-xs text-white outline-none"
-          >
-            <option value="all">جميع التبويبات</option>
-            <option value="community">المجتمع العام</option>
-            {sections.filter((s) => !s.isArchived).map((s) => (
-              <option key={s.id} value={s.id}>{s.label}</option>
-            ))}
-          </select>
+          <div className="min-w-[150px]"><AdminSelect compact title="التبويب" value={sectionId} onChange={setSectionId} options={[{ value: 'all', label: 'جميع التبويبات' }, { value: 'community', label: 'المجتمع العام' }, ...sections.filter((s) => !s.isArchived).map((s) => ({ value: s.id, label: s.label }))]} /></div>
 
-          <select
-            value={periodDays}
-            onChange={(e) => setPeriodDays(e.target.value as any)}
-            className="bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-1.5 text-xs text-white outline-none"
-          >
-            <option value="7">آخر 7 أيام</option>
-            <option value="30">آخر 30 يوماً</option>
-            <option value="90">آخر 90 يوماً</option>
-            <option value="all">كل الفترات</option>
-          </select>
+          <div className="min-w-[130px]"><AdminSelect compact title="الفترة" value={String(periodDays)} onChange={(v) => setPeriodDays(v as any)} options={[{ value: '7', label: 'آخر 7 أيام' }, { value: '30', label: 'آخر 30 يوماً' }, { value: '90', label: 'آخر 90 يوماً' }, { value: 'all', label: 'كل الفترات' }]} /></div>
 
           <button
             type="button"
             onClick={loadAnalytics}
             disabled={loading}
-            className="px-3 py-1.5 rounded-xl bg-black border border-[#2F3336] hover:border-white text-xs font-bold text-white flex items-center gap-1 cursor-pointer"
+            className="px-3 py-1.5 rounded bg-black border border-[#2F3336] hover:border-white text-xs font-bold text-white flex items-center gap-1 cursor-pointer"
           >
             <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
             <span>تحديث</span>
@@ -72,7 +54,7 @@ export const TabAnalyticsPanel: React.FC<TabAnalyticsPanelProps> = ({ sections }
       </div>
 
       {loading || !analytics ? (
-        <div className="py-12 text-center text-xs text-[#71767B] bg-[#0B0F17] border border-[#2F3336] rounded-2xl">
+        <div className="py-12 text-center text-xs text-[#71767B] bg-[#0B0B0B] border border-[#2F3336] rounded">
           جارِ احتساب الإحصائيات الفعلية...
         </div>
       ) : (
@@ -89,7 +71,7 @@ export const TabAnalyticsPanel: React.FC<TabAnalyticsPanelProps> = ({ sections }
             ].map((card) => {
               const Icon = card.icon;
               return (
-                <div key={card.label} className="bg-[#0B0F17] border border-[#2F3336] rounded-2xl p-3 space-y-1">
+                <div key={card.label} className="bg-[#0B0B0B] border border-[#2F3336] rounded p-3 space-y-1">
                   <div className="flex items-center justify-between text-[10px] text-[#71767B] font-bold">
                     <span>{card.label}</span>
                     <Icon size={13} className={card.cls} />
@@ -100,7 +82,7 @@ export const TabAnalyticsPanel: React.FC<TabAnalyticsPanelProps> = ({ sections }
             })}
           </div>
 
-          <div className="bg-[#0B0F17] border border-[#2F3336] rounded-2xl overflow-x-auto">
+          <div className="bg-[#0B0B0B] border border-[#2F3336] rounded overflow-x-auto">
             <table className="w-full text-right text-xs min-w-[620px]">
               <thead className="bg-black text-[#71767B] border-b border-[#2F3336]">
                 <tr>

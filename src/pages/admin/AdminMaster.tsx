@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getAccess, AccessInfo } from '../../lib/access';
+import { AdminFeedbackProvider } from '../../components/admin/accounts-pages/AndroidAdminKit';
 
 interface SystemNotification {
   id: string;
@@ -485,7 +486,9 @@ export const AdminMaster: React.FC = () => {
 
         {/* مساحة المحتوى */}
         <main className="flex-1 pt-16 p-4 lg:p-8 min-w-0">
-          <Outlet />
+          <AdminFeedbackProvider>
+            <Outlet />
+          </AdminFeedbackProvider>
         </main>
       </div>
       {/* نافذة تفاصيل الإشعار المنبثقة الشاملة */}

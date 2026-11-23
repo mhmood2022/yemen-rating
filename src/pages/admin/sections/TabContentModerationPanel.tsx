@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { AdminConfirmDialog, AdminSelect, toArabicErrorMessage, useAdminFeedback } from '../../../components/admin/accounts-pages/AndroidAdminKit';
 import {
   Search,
   RefreshCw,
@@ -34,6 +35,7 @@ export const TabContentModerationPanel: React.FC<TabContentModerationPanelProps>
   onGoToSection,
 }) => {
   const [items, setItems] = useState<UnifiedTabContentItem[]>([]);
+  const { showSuccess, showError } = useAdminFeedback();
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -134,7 +136,7 @@ export const TabContentModerationPanel: React.FC<TabContentModerationPanelProps>
     <div className="space-y-4">
       {feedback && (
         <div
-          className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold ${
+          className={`px-3.5 py-2.5 rounded-lg border text-xs font-bold ${
             feedback.type === 'success'
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
               : 'bg-red-500/10 border-red-500/30 text-red-300'
@@ -153,7 +155,7 @@ export const TabContentModerationPanel: React.FC<TabContentModerationPanelProps>
           { label: 'عليها بلاغات', val: counts.reported, color: 'text-rose-400' },
           { label: 'مخفية', val: counts.hidden, color: 'text-zinc-400' },
         ].map((st) => (
-          <div key={st.label} className="bg-[#0B0F17] border border-[#2F3336] rounded-xl p-2.5">
+          <div key={st.label} className="bg-[#0B0B0B] border border-[#2F3336] rounded-lg p-2.5">
             <div className="text-[10px] text-[#71767B] font-bold">{st.label}</div>
             <div className={`text-base font-black mt-0.5 ${st.color}`}>{st.val}</div>
           </div>
@@ -161,7 +163,7 @@ export const TabContentModerationPanel: React.FC<TabContentModerationPanelProps>
       </div>
 
       {/* شريط التصفية */}
-      <div className="bg-[#0B0F17] border border-[#2F3336] rounded-2xl p-3 space-y-2.5">
+      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-lg p-3 space-y-2.5">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative flex-1 min-w-[200px]">
             <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71767B]" />
@@ -170,49 +172,21 @@ export const TabContentModerationPanel: React.FC<TabContentModerationPanelProps>
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="ابحث بالعنوان، المحتوى، أو اسم صاحب المنشور..."
-              className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl pr-9 pl-3 py-2 text-xs text-white placeholder-[#71767B] outline-none"
+              className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-lg pr-9 pl-3 py-2 text-xs text-white placeholder-[#71767B] outline-none"
             />
           </div>
 
-          <select
-            value={sectionFilter}
-            onChange={(e) => setSectionFilter(e.target.value)}
-            className="bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-2 text-xs text-white outline-none"
-          >
-            <option value="all">جميع التبويبات</option>
-            <option value="community">المجتمع العام</option>
-            {sections.filter((s) => !s.isArchived).map((s) => (
-              <option key={s.id} value={s.id}>{s.label}</option>
-            ))}
-          </select>
+          <div className="min-w-[140px]"><AdminSelect compact title="التبويب" value={sectionFilter} onChange={setSectionFilter} options={[{ value: 'all', label: 'جميع التبويبات' }, { value: 'community', label: 'المجتمع العام' }, ...sections.filter((s) => !s.isArchived).map((s) => ({ value: s.id, label: s.label }))]} /></div>
 
-          <select
-            value={kindFilter}
-            onChange={(e) => setKindFilter(e.target.value as any)}
-            className="bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-2 text-xs text-white outline-none"
-          >
-            <option value="all">كل الأنواع (مجاني + مدفوع)</option>
-            <option value="free">تغريدات عادية مجانية</option>
-            <option value="specialized">إعلانات متخصصة مدفوعة</option>
-          </select>
+          <div className="min-w-[160px]"><AdminSelect compact title="النوع" value={kindFilter} onChange={(v) => setKindFilter(v as any)} options={[{ value: 'all', label: 'كل الأنواع (مجاني + مدفوع)' }, { value: 'free', label: 'تغريدات عادية مجانية' }, { value: 'specialized', label: 'إعلانات متخصصة مدفوعة' }]} /></div>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-2 text-xs text-white outline-none"
-          >
-            <option value="all">كل الحالات</option>
-            <option value="reported">عليها بلاغات فقط</option>
-            <option value="hidden">المخفية فقط</option>
-            <option value="pinned">المثبتة فقط</option>
-            <option value="featured">المميزة فقط</option>
-          </select>
+          <div className="min-w-[130px]"><AdminSelect compact title="الحالة" value={statusFilter} onChange={(v) => setStatusFilter(v as any)} options={[{ value: 'all', label: 'كل الحالات' }, { value: 'reported', label: 'عليها بلاغات فقط' }, { value: 'hidden', label: 'المخفية فقط' }, { value: 'pinned', label: 'المثبتة فقط' }, { value: 'featured', label: 'المميزة فقط' }]} /></div>
 
           <button
             type="button"
             onClick={loadContent}
             disabled={loading}
-            className="px-3 py-2 rounded-xl bg-black border border-[#2F3336] hover:border-white text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-2 rounded-lg bg-black border border-[#2F3336] hover:border-white text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer"
           >
             <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
             <span>تحديث</span>
@@ -222,11 +196,11 @@ export const TabContentModerationPanel: React.FC<TabContentModerationPanelProps>
 
       {/* قائمة المحتوى */}
       {loading ? (
-        <div className="py-12 text-center text-xs text-[#71767B] bg-[#0B0F17] border border-[#2F3336] rounded-2xl">
+        <div className="py-12 text-center text-xs text-[#71767B] bg-[#0B0B0B] border border-[#2F3336] rounded">
           جارِ تحميل المحتوى الموحد من جميع التبويبات...
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="py-12 text-center text-xs text-[#71767B] bg-[#0B0F17] border border-[#2F3336] rounded-2xl">
+        <div className="py-12 text-center text-xs text-[#71767B] bg-[#0B0B0B] border border-[#2F3336] rounded">
           لا توجد منشورات مطابقة للفلاتر المحددة.
         </div>
       ) : (
@@ -236,7 +210,7 @@ export const TabContentModerationPanel: React.FC<TabContentModerationPanelProps>
             return (
               <div
                 key={`${item.sourceTable}:${item.id}`}
-                className={`bg-[#0B0F17] border rounded-2xl p-3.5 space-y-2.5 transition ${
+                className={`bg-[#0B0B0B] border rounded-lg p-3.5 space-y-2.5 transition ${
                   item.isHidden ? 'border-red-500/30 opacity-80' : 'border-[#2F3336]'
                 }`}
               >
@@ -298,7 +272,7 @@ export const TabContentModerationPanel: React.FC<TabContentModerationPanelProps>
                     <img
                       src={item.imageUrl}
                       alt=""
-                      className="w-14 h-14 rounded-xl object-cover border border-[#2F3336] shrink-0 bg-black"
+                      className="w-14 h-14 rounded-lg object-cover border border-[#2F3336] shrink-0 bg-black"
                     />
                   )}
                   <div className="min-w-0 flex-1 space-y-1">
@@ -377,18 +351,7 @@ export const TabContentModerationPanel: React.FC<TabContentModerationPanelProps>
                       <span>{item.isFeatured ? 'إلغاء التمييز' : 'تمييز'}</span>
                     </button>
 
-                    <select
-                      disabled={isBusy}
-                      value={item.status}
-                      onChange={(e) => handleModerate(item, 'set_status', e.target.value)}
-                      className="bg-black border border-[#2F3336] focus:border-white rounded-lg px-2 py-1 text-[10px] text-white outline-none"
-                      title="تغيير حالة المنشور"
-                    >
-                      <option value="active">نشط (active)</option>
-                      <option value="pending">قيد المراجعة (pending)</option>
-                      <option value="hidden">مخفي (hidden)</option>
-                      <option value="rejected">مرفوض (rejected)</option>
-                    </select>
+                    <div className="w-36"><AdminSelect compact disabled={isBusy} title="تغيير حالة المنشور" value={item.status} onChange={(v) => handleModerate(item, 'set_status', v)} options={[{ value: 'active', label: 'نشط' }, { value: 'pending', label: 'قيد المراجعة' }, { value: 'hidden', label: 'مخفي' }, { value: 'rejected', label: 'مرفوض' }]} /></div>
                   </div>
 
                   <div className="flex items-center gap-1.5">
@@ -426,44 +389,24 @@ export const TabContentModerationPanel: React.FC<TabContentModerationPanelProps>
       )}
 
       {confirmDeleteItem && (
-        <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
-          onClick={() => setConfirmDeleteItem(null)}
-        >
-          <div
-            className="w-full max-w-sm bg-black border border-[#2F3336] rounded-2xl p-5 space-y-4 text-white"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-sm font-black text-red-400 flex items-center gap-2">
-              <Trash2 size={16} />
-              <span>تأكيد حذف المحتوى المخالف</span>
-            </h3>
-            <p className="text-xs text-zinc-300 leading-relaxed">
-              هل تريد حذف <strong className="text-white">"{confirmDeleteItem.title}"</strong> نهائياً من تبويب{' '}
-              <span className="text-[#FFC500]">{confirmDeleteItem.sectionLabel}</span>؟
-            </p>
-            <div className="flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setConfirmDeleteItem(null)}
-                className="px-4 py-1.5 rounded-full border border-[#2F3336] text-xs font-bold text-white cursor-pointer"
-              >
-                إلغاء
-              </button>
-              <button
-                type="button"
-                onClick={async () => {
-                  const target = confirmDeleteItem;
-                  setConfirmDeleteItem(null);
-                  await handleModerate(target, 'delete');
-                }}
-                className="px-4 py-1.5 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs font-black cursor-pointer"
-              >
-                حذف نهائي
-              </button>
-            </div>
-          </div>
-        </div>
+        <AdminConfirmDialog
+          open={Boolean(confirmDeleteItem)}
+          title="تأكيد حذف المحتوى المخالف"
+          description={`هل تريد حذف "${confirmDeleteItem.title}" نهائياً من تبويب ${confirmDeleteItem.sectionLabel}؟`}
+          confirmLabel="حذف نهائي"
+          variant="danger"
+          onCancel={() => setConfirmDeleteItem(null)}
+          onConfirm={async () => {
+            const target = confirmDeleteItem;
+            setConfirmDeleteItem(null);
+            try {
+              await handleModerate(target, 'delete');
+              showSuccess('تم حذف المحتوى بنجاح.');
+            } catch (err) {
+              showError(toArabicErrorMessage(err, 'تعذر حذف المحتوى.'));
+            }
+          }}
+        />
       )}
     </div>
   );

@@ -1,11 +1,28 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { PagesDashboardStats, PageSummaryRow, PeriodPreset } from '../../../types/adminAccountsPages';
-import { exportPagesToCsv, fetchPagesDashboardData } from '../../../services/pagesAdminService';
+import { PageKind, PagesDashboardStats, PageSummaryRow, PeriodPreset } from '../../../types/adminAccountsPages';
+import {
+  createAdminBusinessPage,
+  exportPagesToCsv,
+  fetchPagesDashboardData,
+  moderatePageRpc,
+  transferPageOwnershipRpc,
+  unlinkPageOwner,
+} from '../../../services/pagesAdminService';
 import { getAccess, AccessInfo } from '../../../lib/access';
 import { supabase } from '../../../lib/supabase';
 import { AdsCoveragePill, BadgePill, formatDateAr, PageKindPill, PageStatusPill, PeriodFilterBar, StatMiniCard, SubCyclePill, SubStatusPill } from '../../../components/admin/accounts-pages/SharedAdminUI';
+import {
+  AdminButton,
+  AdminConfirmDialog,
+  AdminSelect,
+  AdminSheetModal,
+  toArabicErrorMessage,
+  useAdminFeedback,
+  useBackClose,
+  useSectionViewState,
+} from '../../../components/admin/accounts-pages/AndroidAdminKit';
 import { PageDetailModal } from './PageDetailModal';
-import { Building2, PlusCircle, CheckCircle2, ShieldCheck, CreditCard, Clock, Megaphone, EyeOff, Flag, Search, RefreshCw, Columns3, Eye, Download, Star, Users, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Building2, PlusCircle, CheckCircle2, ShieldCheck, CreditCard, Clock, Megaphone, EyeOff, Flag, Search, RefreshCw, Columns3, Eye, Download, Star, Users, ChevronRight, ChevronLeft, Plus, Pencil, Link2, Unlink, Power, PowerOff } from 'lucide-react';
 const ALL_COLUMNS = [
   { id: 'page', label: 'الصفحة' }, { id: 'kind', label: 'النوع' }, { id: 'slug', label: 'الرابط' },
   { id: 'owner', label: 'المالك' }, { id: 'admins', label: 'المسؤولون' }, { id: 'followers', label: 'المتابعون' },
@@ -16,43 +33,96 @@ const ALL_COLUMNS = [
   { id: 'updated', label: 'التحديث' }, { id: 'status', label: 'الحالة' }, { id: 'details', label: 'التفاصيل' },
 ] as const;
 
+interface AccountCandidate { id: string; full_name: string; username: string; avatar_url: string | null; }
+const CREATE_DRAFT_KEY = 'yr_admin_create_page_draft_v1';
+
 export const PagesManager: React.FC = () => {
+  const { showSuccess, showError, showWarning } = useAdminFeedback();
   const [rows, setRows] = useState<PageSummaryRow[]>([]);
   const [stats, setStats] = useState<PagesDashboardStats | null>(null);
+  const [accounts, setAccounts] = useState<AccountCandidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [access, setAccess] = useState<AccessInfo | null>(null);
   const [hasSupabaseSession, setHasSupabaseSession] = useState(true);
-  const [includeLegacy, setIncludeLegacy] = useState(false);
-  const [period, setPeriod] = useState<PeriodPreset>('30d');
-  const [customFrom, setCustomFrom] = useState('');
-  const [customTo, setCustomTo] = useState('');
-  const [search, setSearch] = useState('');
-  const [kindFilter, setKindFilter] = useState('all');
-  const [badgeFilter, setBadgeFilter] = useState('all');
-  const [subFilter, setSubFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [sortBy, setSortBy] = useState<'newest' | 'followers' | 'rating' | 'posts' | 'reports'>('newest');
-  const [page, setPage] = useState(1);
+  const [view, patchView] = useSectionViewState(
+    'yr_admin_pages_view_v3',
+    {
+      includeLegacy: false,
+      period: '30d' as PeriodPreset,
+      customFrom: '',
+      customTo: '',
+      search: '',
+      kindFilter: 'all',
+      badgeFilter: 'all',
+      subFilter: 'all',
+      statusFilter: 'all',
+      sortBy: 'newest' as 'newest' | 'followers' | 'rating' | 'posts' | 'reports',
+      page: 1,
+    },
+    { ready: !loading }
+  );
+  const { includeLegacy, period, customFrom, customTo, search, kindFilter, badgeFilter, subFilter, statusFilter, sortBy, page } = view;
+  const setIncludeLegacy = (v: boolean) => patchView({ includeLegacy: v, page: 1 });
+  const setPeriod = (v: PeriodPreset) => patchView({ period: v, page: 1 });
+  const setCustomFrom = (v: string) => patchView({ customFrom: v });
+  const setCustomTo = (v: string) => patchView({ customTo: v });
+  const setSearch = (v: string) => patchView({ search: v, page: 1 });
+  const setKindFilter = (v: string) => patchView({ kindFilter: v, page: 1 });
+  const setBadgeFilter = (v: string) => patchView({ badgeFilter: v, page: 1 });
+  const setSubFilter = (v: string) => patchView({ subFilter: v, page: 1 });
+  const setStatusFilter = (v: string) => patchView({ statusFilter: v, page: 1 });
+  const setSortBy = (v: any) => patchView({ sortBy: v });
+  const setPage = (updater: number | ((prev: number) => number)) => {
+    const next = typeof updater === 'function' ? updater(page) : updater;
+    patchView({ page: next });
+  };
   const pageSize = 15;
   const [visibleCols, setVisibleCols] = useState<string[]>(ALL_COLUMNS.map((c) => c.id));
   const [colsOpen, setColsOpen] = useState(false);
   const [selectedPageId, setSelectedPageId] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  useBackClose(colsOpen, () => setColsOpen(false));
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createBusy, setCreateBusy] = useState(false);
+  const [createDraft, setCreateDraft] = useState<{
+    name: string; slug: string; pageKind: PageKind; city: string; phone: string; description: string; ownerId: string;
+  }>(() => {
+    try { const raw = sessionStorage.getItem(CREATE_DRAFT_KEY); if (raw) return JSON.parse(raw); } catch {}
+    return { name: '', slug: '', pageKind: 'business', city: 'صنعاء', phone: '', description: '', ownerId: '' };
+  });
+  useEffect(() => { try { sessionStorage.setItem(CREATE_DRAFT_KEY, JSON.stringify(createDraft)); } catch {} }, [createDraft]);
+
+  const [editTarget, setEditTarget] = useState<PageSummaryRow | null>(null);
+  const [editBusy, setEditBusy] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', slug: '', pageKind: 'business' as PageKind, city: '', phone: '', description: '' });
+
+  const [linkTarget, setLinkTarget] = useState<PageSummaryRow | null>(null);
+  const [accountQuery, setAccountQuery] = useState('');
+  const [selectedOwnerId, setSelectedOwnerId] = useState('');
+
+  const [confirmCfg, setConfirmCfg] = useState<{
+    open: boolean; title: string; description: string; confirmLabel: string; variant: 'danger' | 'warning'; requireReason?: boolean; onConfirm: (reason: string) => Promise<void>;
+  } | null>(null);
+
   const showToast = useCallback((msg: string, type: 'success' | 'error' = 'success') => {
-    setToast({ msg, type }); setTimeout(() => setToast(null), 4500);
-  }, []);
+    if (type === 'error') showError(msg);
+    else showSuccess(msg);
+  }, [showError, showSuccess]);
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [acc, sessRes, res] = await Promise.all([
+      const [acc, sessRes, res, profRes] = await Promise.all([
         getAccess(), supabase.auth.getSession(),
         fetchPagesDashboardData(period, includeLegacy, customFrom, customTo),
+        supabase.from('profiles').select('id, full_name, username, avatar_url').order('created_at', { ascending: false }),
       ]);
       setAccess(acc); setHasSupabaseSession(Boolean(sessRes.data?.session?.user));
       setRows(res.rows); setStats(res.stats);
-    } catch (e: any) { showToast(e?.message || 'تعذر التحميل', 'error'); }
+      setAccounts((profRes.data || []) as AccountCandidate[]);
+    } catch (e: any) { showError(toArabicErrorMessage(e, 'تعذر تحميل الصفحات'), () => loadData()); }
     finally { setLoading(false); }
-  }, [period, includeLegacy, customFrom, customTo, showToast]);
+  }, [period, includeLegacy, customFrom, customTo, showError]);
   useEffect(() => { loadData(); }, [loadData]);
   const canEdit = Boolean(access && (access.role === 'super_admin' || access.role === 'admin' || access.can('facilities.edit')));
   const canViewPrivate = Boolean(access && (access.role === 'super_admin' || access.role === 'admin' || access.can('users.edit')));
@@ -85,12 +155,17 @@ export const PagesManager: React.FC = () => {
           <p className="text-xs text-[#71767B] mt-0.5">إدارة صفحات المنشآت والشركات ورجال الأعمال المرتبطة بالحسابات الشخصية</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {canEdit && (
+            <button type="button" onClick={() => setCreateOpen(true)} className="px-3.5 py-2 rounded-lg bg-[#FFC500] hover:bg-[#e6b100] text-black text-xs font-black flex items-center gap-1.5 cursor-pointer">
+              <Plus size={15} /><span>إنشاء صفحة جديدة</span>
+            </button>
+          )}
           <PeriodFilterBar period={period} onPeriodChange={setPeriod} customFrom={customFrom} customTo={customTo} onCustomFromChange={setCustomFrom} onCustomToChange={setCustomTo} />
-          <button type="button" onClick={() => exportPagesToCsv(filtered)} className="px-3 py-2 rounded-xl bg-black border border-[#2F3336] text-xs font-bold flex items-center gap-1.5 cursor-pointer"><Download size={14} className="text-[#FFC500]" /><span>تصدير CSV</span></button>
-          <button type="button" onClick={loadData} className="px-3 py-2 rounded-xl bg-black border border-[#2F3336] text-xs font-bold flex items-center gap-1.5 cursor-pointer"><RefreshCw size={14} className={loading ? 'animate-spin text-[#FFC500]' : 'text-[#FFC500]'} /><span>تحديث</span></button>
+          <button type="button" onClick={() => exportPagesToCsv(filtered)} className="px-3 py-2 rounded bg-black border border-[#2F3336] text-xs font-bold flex items-center gap-1.5 cursor-pointer"><Download size={14} className="text-[#FFC500]" /><span>تصدير CSV</span></button>
+          <button type="button" onClick={loadData} className="px-3 py-2 rounded bg-black border border-[#2F3336] text-xs font-bold flex items-center gap-1.5 cursor-pointer"><RefreshCw size={14} className={loading ? 'animate-spin text-[#FFC500]' : 'text-[#FFC500]'} /><span>تحديث</span></button>
         </div>
       </div>
-      {!hasSupabaseSession && <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">ملاحظة: لتنفيذ التعديلات المحمية على الخادم، يلزم دخول المشرف عبر Google.</div>}
+      {!hasSupabaseSession && <div className="p-3 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs">ملاحظة: لتنفيذ التعديلات المحمية على الخادم، يلزم دخول المشرف عبر Google.</div>}
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-2.5">
           <StatMiniCard label="إجمالي الصفحات" value={stats.total} icon={<Building2 size={15} />} />
@@ -106,36 +181,36 @@ export const PagesManager: React.FC = () => {
       )}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="bg-black border border-[#2F3336] rounded-2xl p-3.5 space-y-2">
+          <div className="bg-black border border-[#2F3336] rounded p-3.5 space-y-2">
             <div className="text-xs font-black text-white flex items-center gap-1.5"><Users size={14} className="text-[#FFC500]" /> الصفحات الأعلى متابعة</div>
             {stats.topFollowed.length === 0 ? <p className="text-xs text-[#71767B]">لا توجد بيانات</p> : stats.topFollowed.map((p) => (
-              <button key={p.id} type="button" onClick={() => setSelectedPageId(p.id)} className="w-full flex items-center justify-between text-xs p-2 rounded-xl bg-[#0B0B0B] border border-[#2F3336] cursor-pointer"><span className="font-bold truncate">{p.name}</span><span className="text-[#FFC500] font-black">{p.followers_count} متابع</span></button>
+              <button key={p.id} type="button" onClick={() => setSelectedPageId(p.id)} className="w-full flex items-center justify-between text-xs p-2 rounded bg-[#0B0B0B] border border-[#2F3336] cursor-pointer"><span className="font-bold truncate">{p.name}</span><span className="text-[#FFC500] font-black">{p.followers_count} متابع</span></button>
             ))}
           </div>
-          <div className="bg-black border border-[#2F3336] rounded-2xl p-3.5 space-y-2">
+          <div className="bg-black border border-[#2F3336] rounded p-3.5 space-y-2">
             <div className="text-xs font-black text-white flex items-center gap-1.5"><Star size={14} className="text-[#FFC500]" /> الصفحات الأعلى تقييماً</div>
             {stats.topRated.length === 0 ? <p className="text-xs text-[#71767B]">لا توجد تقييمات</p> : stats.topRated.map((p) => (
-              <button key={p.id} type="button" onClick={() => setSelectedPageId(p.id)} className="w-full flex items-center justify-between text-xs p-2 rounded-xl bg-[#0B0B0B] border border-[#2F3336] cursor-pointer"><span className="font-bold truncate">{p.name}</span><span className="text-[#FFC500] font-black">{p.avg_rating} ★ ({p.reviews_count})</span></button>
+              <button key={p.id} type="button" onClick={() => setSelectedPageId(p.id)} className="w-full flex items-center justify-between text-xs p-2 rounded bg-[#0B0B0B] border border-[#2F3336] cursor-pointer"><span className="font-bold truncate">{p.name}</span><span className="text-[#FFC500] font-black">{p.avg_rating} ★ ({p.reviews_count})</span></button>
             ))}
           </div>
         </div>
       )}
-      <div className="bg-black border border-[#2F3336] rounded-2xl p-3.5 flex flex-col lg:flex-row gap-2.5">
+      <div className="bg-black border border-[#2F3336] rounded p-3.5 flex flex-col lg:flex-row gap-2.5">
         <div className="relative flex-1">
           <Search size={15} className="absolute right-3 top-2.5 text-[#71767B]" />
-          <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="بحث باسم الصفحة، الرابط، المالك، المدينة..." className="w-full bg-[#0B0B0B] border border-[#2F3336] focus:border-white rounded-xl pr-9 pl-3 py-2 text-xs text-white outline-none caret-white placeholder-[#71767B]" />
+          <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="بحث باسم الصفحة، الرابط، المالك، المدينة..." className="w-full bg-[#0B0B0B] border border-[#2F3336] focus:border-white rounded pr-9 pl-3 py-2 text-xs text-white outline-none caret-white placeholder-[#71767B]" />
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <label className="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-[#0B0B0B] border border-[#2F3336] cursor-pointer"><input type="checkbox" checked={includeLegacy} onChange={(e) => setIncludeLegacy(e.target.checked)} /><span>تضمين القديمة</span></label>
-          <select value={kindFilter} onChange={(e) => { setKindFilter(e.target.value); setPage(1); }} className="bg-[#0B0B0B] border border-[#2F3336] rounded-xl px-2.5 py-2 text-white outline-none"><option value="all">كل الأنواع</option><option value="business">منشأة</option><option value="company">شركة</option><option value="businessman">رجل أعمال</option></select>
-          <select value={badgeFilter} onChange={(e) => { setBadgeFilter(e.target.value); setPage(1); }} className="bg-[#0B0B0B] border border-[#2F3336] rounded-xl px-2.5 py-2 text-white outline-none"><option value="all">كل التوثيق</option><option value="gold">ذهبي</option><option value="silver">فضي</option><option value="none">بدون</option></select>
-          <select value={subFilter} onChange={(e) => { setSubFilter(e.target.value); setPage(1); }} className="bg-[#0B0B0B] border border-[#2F3336] rounded-xl px-2.5 py-2 text-white outline-none"><option value="all">كل الاشتراكات</option><option value="free">مجاني</option><option value="monthly">شهري</option><option value="yearly">سنوي</option></select>
-          <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="bg-[#0B0B0B] border border-[#2F3336] rounded-xl px-2.5 py-2 text-white outline-none"><option value="all">كل الحالات</option><option value="active">نشطة</option><option value="pending">معلقة</option><option value="hidden">مخفية</option><option value="suspended">موقوفة</option></select>
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)} className="bg-[#0B0B0B] border border-[#2F3336] rounded-xl px-2.5 py-2 text-white outline-none"><option value="newest">الأحدث إنشاءً</option><option value="followers">الأكثر متابعة</option><option value="rating">الأعلى تقييماً</option><option value="posts">الأكثر منشورات</option><option value="reports">الأكثر بلاغات</option></select>
+          <label className="inline-flex items-center gap-1.5 px-2.5 py-2 rounded bg-[#0B0B0B] border border-[#2F3336] cursor-pointer"><input type="checkbox" checked={includeLegacy} onChange={(e) => setIncludeLegacy(e.target.checked)} /><span>تضمين القديمة</span></label>
+          <div className="min-w-[115px]"><AdminSelect compact title="النوع" value={kindFilter} onChange={setKindFilter} options={[{ value: 'all', label: 'كل الأنواع' }, { value: 'business', label: 'منشأة' }, { value: 'company', label: 'شركة' }, { value: 'businessman', label: 'رجل أعمال' }]} /></div>
+          <div className="min-w-[115px]"><AdminSelect compact title="التوثيق" value={badgeFilter} onChange={setBadgeFilter} options={[{ value: 'all', label: 'كل التوثيق' }, { value: 'gold', label: 'ذهبي' }, { value: 'silver', label: 'فضي' }, { value: 'blue', label: 'أزرق' }, { value: 'none', label: 'بدون' }]} /></div>
+          <div className="min-w-[125px]"><AdminSelect compact title="الاشتراك" value={subFilter} onChange={setSubFilter} options={[{ value: 'all', label: 'كل الاشتراكات' }, { value: 'free', label: 'مجاني' }, { value: 'monthly', label: 'شهري' }, { value: 'yearly', label: 'سنوي' }]} /></div>
+          <div className="min-w-[115px]"><AdminSelect compact title="الحالة" value={statusFilter} onChange={setStatusFilter} options={[{ value: 'all', label: 'كل الحالات' }, { value: 'active', label: 'نشطة' }, { value: 'pending', label: 'معلقة' }, { value: 'hidden', label: 'مخفية' }, { value: 'suspended', label: 'موقوفة' }]} /></div>
+          <div className="min-w-[130px]"><AdminSelect compact title="الترتيب" value={sortBy} onChange={setSortBy} options={[{ value: 'newest', label: 'الأحدث إنشاءً' }, { value: 'followers', label: 'الأكثر متابعة' }, { value: 'rating', label: 'الأعلى تقييماً' }, { value: 'posts', label: 'الأكثر منشورات' }, { value: 'reports', label: 'الأكثر بلاغات' }]} /></div>
           <div className="relative">
-            <button type="button" onClick={() => setColsOpen((v) => !v)} className="px-3 py-2 rounded-xl bg-[#0B0B0B] border border-[#2F3336] hover:border-white flex items-center gap-1.5 cursor-pointer"><Columns3 size={14} className="text-[#FFC500]" /><span>الأعمدة ({visibleCols.length})</span></button>
+            <button type="button" onClick={() => setColsOpen((v) => !v)} className="px-3 py-2 rounded bg-[#0B0B0B] border border-[#2F3336] hover:border-white flex items-center gap-1.5 cursor-pointer"><Columns3 size={14} className="text-[#FFC500]" /><span>الأعمدة ({visibleCols.length})</span></button>
             {colsOpen && (
-              <div className="absolute left-0 top-full mt-1 w-56 bg-black border border-[#2F3336] rounded-xl p-2 z-30 shadow-2xl max-h-64 overflow-y-auto space-y-1">
+              <div className="absolute left-0 top-full mt-1 w-56 bg-black border border-[#2F3336] rounded p-2 z-30 shadow-2xl max-h-64 overflow-y-auto space-y-1">
                 {ALL_COLUMNS.map((c) => (
                   <label key={c.id} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-[#111] cursor-pointer text-[11px]">
                     <input type="checkbox" checked={visibleCols.includes(c.id)} onChange={() => setVisibleCols((prev) => prev.includes(c.id) ? prev.filter((x) => x !== c.id) : [...prev, c.id])} />
@@ -148,7 +223,7 @@ export const PagesManager: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-black border border-[#2F3336] rounded-2xl overflow-hidden">
+      <div className="bg-black border border-[#2F3336] rounded overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs border-collapse">
             <thead>
@@ -186,7 +261,7 @@ export const PagesManager: React.FC = () => {
                   {showCol('page') && (
                     <td className="p-3 whitespace-nowrap">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-[#111] border border-[#2F3336] overflow-hidden flex items-center justify-center font-black text-[#FFC500] shrink-0">
+                        <div className="w-8 h-8 rounded bg-[#111] border border-[#2F3336] overflow-hidden flex items-center justify-center font-black text-[#FFC500] shrink-0">
                           {r.logo_url ? <img src={r.logo_url} alt="" className="w-full h-full object-cover" /> : (r.name?.[0] || 'ص')}
                         </div>
                         <div className="min-w-0">
@@ -255,9 +330,40 @@ export const PagesManager: React.FC = () => {
                   {showCol('status') && <td className="p-3 whitespace-nowrap"><PageStatusPill status={r.status} /></td>}
                   {showCol('details') && (
                     <td className="p-3 text-center whitespace-nowrap">
-                      <button type="button" onClick={() => setSelectedPageId(r.id)} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#111] border border-[#2F3336] hover:border-white text-xs font-bold text-[#FFC500] cursor-pointer">
-                        <Eye size={13} /><span>عرض</span>
-                      </button>
+                      <div className="inline-flex items-center gap-1">
+                        <button type="button" onClick={() => setSelectedPageId(r.id)} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#FFC500] text-black text-xs font-black cursor-pointer">
+                          <Eye size={13} /><span>التفاصيل</span>
+                        </button>
+                        {canEdit && (
+                          <>
+                            <button type="button" onClick={() => { setEditTarget(r); setEditForm({ name: r.name, slug: r.slug, pageKind: r.page_kind, city: r.city || '', phone: canViewPrivate ? (r.phone || '') : '', description: r.description || '' }); }} title="تعديل بيانات الصفحة" className="p-1.5 rounded-lg bg-[#0B0B0B] border border-[#2F3336] hover:border-white text-zinc-200 cursor-pointer">
+                              <Pencil size={13} />
+                            </button>
+                            <button type="button" onClick={() => { setLinkTarget(r); setAccountQuery(''); setSelectedOwnerId(''); }} title="ربط بحساب" className="p-1.5 rounded-lg bg-[#0B0B0B] border border-[#2F3336] hover:border-[#FFC500] text-[#FFC500] cursor-pointer">
+                              <Link2 size={13} />
+                            </button>
+                            {r.owner_id && (
+                              <button type="button" onClick={() => setConfirmCfg({
+                                open: true, title: 'تأكيد إلغاء ربط الصفحة', description: `سيتم إلغاء ارتباط صفحة "${r.name}" بالحساب (${r.owner_name || 'المالك الحالي'}).`, confirmLabel: 'إلغاء الربط', variant: 'danger', requireReason: true,
+                                onConfirm: async (reason) => { try { await unlinkPageOwner({ businessId: r.id, reason }); setConfirmCfg(null); showSuccess('تم إلغاء ربط الصفحة بالحساب بنجاح.'); await loadData(); } catch (err) { showError(toArabicErrorMessage(err, 'تعذر إلغاء الربط.')); } },
+                              })} title="إلغاء الربط" className="p-1.5 rounded-lg bg-[#0B0B0B] border border-[#2F3336] hover:border-amber-400 text-amber-400 cursor-pointer">
+                                <Unlink size={13} />
+                              </button>
+                            )}
+                            <button type="button" onClick={() => {
+                              const active = r.status === 'active';
+                              setConfirmCfg({
+                                open: true, title: active ? 'تأكيد إيقاف الصفحة' : 'تأكيد تفعيل الصفحة',
+                                description: active ? `سيتم إيقاف صفحة "${r.name}" مؤقتاً.` : `سيتم إعادة تفعيل صفحة "${r.name}".`,
+                                confirmLabel: active ? 'إيقاف الصفحة' : 'تفعيل الصفحة', variant: active ? 'danger' : 'warning', requireReason: true,
+                                onConfirm: async (reason) => { try { await moderatePageRpc({ businessId: r.id, action: active ? 'suspend' : 'activate', reason }); setConfirmCfg(null); showSuccess(active ? 'تم إيقاف الصفحة بنجاح.' : 'تم تفعيل الصفحة بنجاح.'); await loadData(); } catch (err) { showError(toArabicErrorMessage(err, 'تعذر تحديث حالة الصفحة.')); } },
+                              });
+                            }} title={r.status === 'active' ? 'إيقاف الصفحة' : 'تفعيل الصفحة'} className={`p-1.5 rounded-lg bg-[#0B0B0B] border border-[#2F3336] cursor-pointer ${r.status === 'active' ? 'text-rose-400 hover:border-rose-400' : 'text-emerald-400 hover:border-emerald-400'}`}>
+                              {r.status === 'active' ? <PowerOff size={13} /> : <Power size={13} />}
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   )}
                 </tr>
@@ -287,11 +393,104 @@ export const PagesManager: React.FC = () => {
         />
       )}
 
-      {toast && (
-        <div className={`fixed bottom-5 left-5 z-[150] px-4 py-2.5 rounded-xl border text-xs font-bold shadow-2xl ${toast.type === 'error' ? 'bg-rose-950/90 border-rose-500/40 text-rose-200' : 'bg-emerald-950/90 border-emerald-500/40 text-emerald-200'}`}>
-          {toast.msg}
+      <AdminSheetModal open={createOpen} onClose={() => setCreateOpen(false)} title="إنشاء صفحة جديدة" subtitle="إضافة صفحة منشأة أو شركة أو رجل أعمال" icon={<Building2 size={17} className="text-[#FFC500]" />}>
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          if (!canEdit) return showError('لا تملك الصلاحية لتنفيذ هذه العملية.');
+          if (!createDraft.name.trim()) return showWarning('يرجى إدخال اسم الصفحة.');
+          setCreateBusy(true);
+          try {
+            await createAdminBusinessPage(createDraft);
+            setCreateDraft({ name: '', slug: '', pageKind: 'business', city: 'صنعاء', phone: '', description: '', ownerId: '' });
+            try { sessionStorage.removeItem(CREATE_DRAFT_KEY); } catch {}
+            setCreateOpen(false);
+            showSuccess('تم إنشاء الصفحة بنجاح.');
+            await loadData();
+          } catch (err) { showError(toArabicErrorMessage(err, 'تعذر إنشاء الصفحة، يرجى المحاولة مرة أخرى.')); }
+          finally { setCreateBusy(false); }
+        }} className="p-4 space-y-3 text-xs">
+          <div><label className="block text-[11px] font-bold text-[#71767B] mb-1">اسم الصفحة *</label><input required value={createDraft.name} onChange={(e) => setCreateDraft({ ...createDraft, name: e.target.value })} placeholder="مثال: شركة النخبة للتجارة" className="w-full h-10 bg-[#0B0B0B] border border-[#2F3336] focus:border-white rounded-lg px-3 text-white outline-none caret-white" /></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div><label className="block text-[11px] font-bold text-[#71767B] mb-1">المعرف (@slug)</label><input dir="ltr" value={createDraft.slug} onChange={(e) => setCreateDraft({ ...createDraft, slug: e.target.value })} placeholder="nokhba_trade" className="w-full h-10 bg-[#0B0B0B] border border-[#2F3336] focus:border-white rounded-lg px-3 text-white outline-none caret-white" /></div>
+            <div><label className="block text-[11px] font-bold text-[#71767B] mb-1">نوع الصفحة *</label><AdminSelect title="نوع الصفحة" value={createDraft.pageKind} onChange={(v) => setCreateDraft({ ...createDraft, pageKind: v as PageKind })} options={[{ value: 'business', label: 'منشأة' }, { value: 'company', label: 'شركة' }, { value: 'businessman', label: 'رجل أعمال' }]} /></div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div><label className="block text-[11px] font-bold text-[#71767B] mb-1">المدينة</label><input value={createDraft.city} onChange={(e) => setCreateDraft({ ...createDraft, city: e.target.value })} className="w-full h-10 bg-[#0B0B0B] border border-[#2F3336] focus:border-white rounded-lg px-3 text-white outline-none caret-white" /></div>
+            <div><label className="block text-[11px] font-bold text-[#71767B] mb-1">الهاتف</label><input dir="ltr" value={createDraft.phone} onChange={(e) => setCreateDraft({ ...createDraft, phone: e.target.value })} className="w-full h-10 bg-[#0B0B0B] border border-[#2F3336] focus:border-white rounded-lg px-3 text-white outline-none caret-white" /></div>
+          </div>
+          <div><label className="block text-[11px] font-bold text-[#71767B] mb-1">الحساب المالك المرتبط (اختياري)</label><AdminSelect searchable title="اختر الحساب المالك" value={createDraft.ownerId} onChange={(v) => setCreateDraft({ ...createDraft, ownerId: v })} options={[{ value: '', label: 'بدون ربط حالياً' }, ...accounts.map((a) => ({ value: a.id, label: a.full_name, hint: `@${a.username}`, avatarUrl: a.avatar_url }))]} /></div>
+          <div><label className="block text-[11px] font-bold text-[#71767B] mb-1">الوصف</label><textarea rows={3} value={createDraft.description} onChange={(e) => setCreateDraft({ ...createDraft, description: e.target.value })} className="w-full bg-[#0B0B0B] border border-[#2F3336] focus:border-white rounded-lg p-3 text-white outline-none caret-white resize-none" /></div>
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#2F3336]">
+            <AdminButton variant="secondary" onClick={() => setCreateOpen(false)}>إلغاء</AdminButton>
+            <AdminButton type="submit" variant="primary" loading={createBusy} icon={<Plus size={15} />}>إنشاء الصفحة</AdminButton>
+          </div>
+        </form>
+      </AdminSheetModal>
+
+      <AdminSheetModal open={Boolean(editTarget)} onClose={() => setEditTarget(null)} title={`تعديل: ${editTarget?.name || ''}`} icon={<Pencil size={16} className="text-[#FFC500]" />}>
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          if (!editTarget || !canEdit) return;
+          setEditBusy(true);
+          try {
+            await moderatePageRpc({ businessId: editTarget.id, action: 'edit_info', reason: 'تعديل من إدارة الصفحات', name: editForm.name.trim(), slug: editForm.slug.trim(), city: editForm.city.trim(), phone: canViewPrivate && editForm.phone.trim() ? editForm.phone.trim() : undefined, description: editForm.description.trim(), pageKind: editForm.pageKind });
+            setEditTarget(null); showSuccess('تم تحديث بيانات الصفحة بنجاح.'); await loadData();
+          } catch (err) { showError(toArabicErrorMessage(err, 'تعذر حفظ التغييرات.')); }
+          finally { setEditBusy(false); }
+        }} className="p-4 space-y-3 text-xs">
+          <div><label className="block text-[11px] font-bold text-[#71767B] mb-1">اسم الصفحة *</label><input required value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="w-full h-10 bg-[#0B0B0B] border border-[#2F3336] focus:border-white rounded-lg px-3 text-white outline-none caret-white" /></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div><label className="block text-[11px] font-bold text-[#71767B] mb-1">المعرف (@slug)</label><input dir="ltr" value={editForm.slug} onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })} className="w-full h-10 bg-[#0B0B0B] border border-[#2F3336] focus:border-white rounded-lg px-3 text-white outline-none caret-white" /></div>
+            <div><label className="block text-[11px] font-bold text-[#71767B] mb-1">نوع الصفحة</label><AdminSelect title="نوع الصفحة" value={editForm.pageKind} onChange={(v) => setEditForm({ ...editForm, pageKind: v as PageKind })} options={[{ value: 'business', label: 'منشأة' }, { value: 'company', label: 'شركة' }, { value: 'businessman', label: 'رجل أعمال' }]} /></div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div><label className="block text-[11px] font-bold text-[#71767B] mb-1">المدينة</label><input value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })} className="w-full h-10 bg-[#0B0B0B] border border-[#2F3336] focus:border-white rounded-lg px-3 text-white outline-none caret-white" /></div>
+            {canViewPrivate && <div><label className="block text-[11px] font-bold text-[#71767B] mb-1">الهاتف</label><input dir="ltr" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} className="w-full h-10 bg-[#0B0B0B] border border-[#2F3336] focus:border-white rounded-lg px-3 text-white outline-none caret-white" /></div>}
+          </div>
+          <div><label className="block text-[11px] font-bold text-[#71767B] mb-1">الوصف</label><textarea rows={3} value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} className="w-full bg-[#0B0B0B] border border-[#2F3336] focus:border-white rounded-lg p-3 text-white outline-none caret-white resize-none" /></div>
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#2F3336]"><AdminButton variant="secondary" onClick={() => setEditTarget(null)}>إلغاء</AdminButton><AdminButton type="submit" variant="primary" loading={editBusy}>حفظ التعديلات</AdminButton></div>
+        </form>
+      </AdminSheetModal>
+
+      <AdminSheetModal open={Boolean(linkTarget)} onClose={() => setLinkTarget(null)} title={`ربط "${linkTarget?.name || ''}" بحساب`} subtitle={linkTarget?.owner_name ? `المالك الحالي: ${linkTarget.owner_name}` : 'غير مرتبطة بحساب حالياً'} icon={<Link2 size={16} className="text-[#FFC500]" />}>
+        <div className="p-4 space-y-3 text-xs">
+          <div className="relative"><Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71767B]" /><input value={accountQuery} onChange={(e) => setAccountQuery(e.target.value)} placeholder="ابحث بالاسم أو @اسم_المستخدم..." className="w-full h-10 bg-[#0B0B0B] border border-[#2F3336] focus:border-white rounded-lg pr-9 pl-3 text-white outline-none caret-white" /></div>
+          <div className="max-h-64 overflow-y-auto divide-y divide-[#2F3336]/60 border border-[#2F3336] rounded-lg bg-[#0B0B0B]">
+            {accounts.filter((a) => !accountQuery.trim() || [a.full_name, a.username, a.id].some((v) => String(v || '').toLowerCase().includes(accountQuery.trim().toLowerCase()))).slice(0, 40).map((acc) => {
+              const isCur = linkTarget?.owner_id === acc.id;
+              const isSel = selectedOwnerId === acc.id;
+              return (
+                <button key={acc.id} type="button" disabled={isCur} onClick={() => setSelectedOwnerId(acc.id)} className={`w-full px-3 py-2.5 text-right flex items-center justify-between gap-2 cursor-pointer disabled:opacity-50 ${isSel ? 'bg-[#FFC500]/15 text-[#FFC500]' : 'hover:bg-[#141414] text-white'}`}>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded bg-[#14171C] border border-[#2F3336] overflow-hidden flex items-center justify-center font-black text-[#FFC500] shrink-0">
+                      {acc.avatar_url ? <img src={acc.avatar_url} alt="" className="w-full h-full object-cover" /> : (acc.full_name?.[0] || 'م')}
+                    </div>
+                    <div className="min-w-0"><div className="font-bold truncate">{acc.full_name}</div><div className="text-[11px] text-[#71767B]" dir="ltr">@{acc.username}</div></div>
+                  </div>
+                  {isCur ? <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold">المالك الحالي</span> : isSel ? <span className="text-[10px] px-2 py-0.5 rounded bg-[#FFC500] text-black font-black">محدد</span> : null}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#2F3336]">
+            <AdminButton variant="secondary" onClick={() => setLinkTarget(null)}>إلغاء</AdminButton>
+            <AdminButton variant="primary" disabled={!selectedOwnerId} onClick={() => {
+              if (!linkTarget || !selectedOwnerId) return;
+              if (linkTarget.owner_id === selectedOwnerId) return showWarning('هذه الصفحة مرتبطة بهذا الحساب بالفعل.');
+              const accObj = accounts.find((a) => a.id === selectedOwnerId);
+              const hasPrev = Boolean(linkTarget.owner_id);
+              setConfirmCfg({
+                open: true, title: hasPrev ? 'تأكيد تغيير الحساب المرتبط' : 'تأكيد ربط الصفحة بالحساب',
+                description: hasPrev ? `سيتم نقل ملكية "${linkTarget.name}" إلى "${accObj?.full_name || ''}".` : `سيتم ربط "${linkTarget.name}" بالحساب "${accObj?.full_name || ''}".`,
+                confirmLabel: 'تأكيد الربط', variant: 'warning', requireReason: true,
+                onConfirm: async (reason) => { try { await transferPageOwnershipRpc({ businessId: linkTarget.id, newOwnerId: selectedOwnerId, actionType: hasPrev ? 'transfer' : 'admin_assign', reason }); setConfirmCfg(null); setLinkTarget(null); showSuccess('تم ربط الصفحة بالحساب بنجاح.'); await loadData(); } catch (err) { showError(toArabicErrorMessage(err, 'تعذر الربط.')); } },
+              });
+            }} icon={<Link2 size={14} />}>متابعة وتأكيد الربط</AdminButton>
+          </div>
         </div>
-      )}
+      </AdminSheetModal>
+
+      {confirmCfg && <AdminConfirmDialog open={confirmCfg.open} title={confirmCfg.title} description={confirmCfg.description} confirmLabel={confirmCfg.confirmLabel} variant={confirmCfg.variant} requireReason={confirmCfg.requireReason} onCancel={() => setConfirmCfg(null)} onConfirm={confirmCfg.onConfirm} />}
     </div>
   );
 };

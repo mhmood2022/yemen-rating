@@ -9,10 +9,10 @@ import {
   BadgePill,
   formatDateAr,
   formatDateTimeAr,
-  ReasonConfirmModal,
   SubCyclePill,
   SubStatusPill,
 } from '../../../components/admin/accounts-pages/SharedAdminUI';
+import { AdminButton, AdminConfirmDialog, AdminSelect, toArabicErrorMessage } from '../../../components/admin/accounts-pages/AndroidAdminKit';
 import {
   manageSubscriptionRpc,
   maskEmail,
@@ -21,7 +21,8 @@ import {
   moderatePostRpc,
   verifyAccountRpc,
 } from '../../../services/accountsAdminService';
-import { Building2, Eye, EyeOff, AlertTriangle, ExternalLink, ShieldCheck } from 'lucide-react';
+import { managePageAdminRpc, unlinkPageOwner } from '../../../services/pagesAdminService';
+import { Building2, Eye, EyeOff, AlertTriangle, ExternalLink, ShieldCheck, Unlink } from 'lucide-react';
 
 interface Props {
   tab: 'info' | 'activity' | 'verification' | 'subscriptions';
@@ -72,14 +73,14 @@ export const AccountTabsPrimary: React.FC<Props> = ({
       onToast(successMsg, 'success');
       await onRefresh();
     } catch (e: any) {
-      onToast(e?.message || 'فشل تنفيذ الإجراء', 'error');
+      onToast(toArabicErrorMessage(e, 'تعذر تنفيذ الإجراء، يرجى المحاولة مرة أخرى.'), 'error');
     }
   };
 
   if (tab === 'info') {
     return (
       <div className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#0B0B0B] border border-[#2F3336] rounded p-4">
           <div className="space-y-2 text-xs">
             <div className="flex justify-between"><span className="text-[#71767B]">المعرف الداخلي:</span><span className="font-mono text-zinc-300">{account.id}</span></div>
             <div className="flex justify-between"><span className="text-[#71767B]">اسم المستخدم:</span><span className="text-white font-bold" dir="ltr">@{account.username}</span></div>
@@ -97,32 +98,27 @@ export const AccountTabsPrimary: React.FC<Props> = ({
               <div>
                 <label className="block text-[11px] text-[#71767B] mb-1">الاسم الكامل</label>
                 <input value={fullName} onChange={(e) => setFullName(e.target.value)} disabled={!canEdit}
-                  className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-2 text-white outline-none caret-white" />
+                  className="w-full bg-black border border-[#2F3336] focus:border-white rounded px-3 py-2 text-white outline-none caret-white" />
               </div>
               <div>
                 <label className="block text-[11px] text-[#71767B] mb-1">الهاتف</label>
                 <input value={canViewPrivate ? phone : maskPhone(phone, false)} onChange={(e) => setPhone(e.target.value)} disabled={!canEdit || !canViewPrivate}
-                  className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-2 text-white outline-none caret-white" dir="ltr" />
+                  className="w-full bg-black border border-[#2F3336] focus:border-white rounded px-3 py-2 text-white outline-none caret-white" dir="ltr" />
               </div>
               <div>
                 <label className="block text-[11px] text-[#71767B] mb-1">المدينة</label>
                 <input value={city} onChange={(e) => setCity(e.target.value)} disabled={!canEdit}
-                  className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-2 text-white outline-none caret-white" />
+                  className="w-full bg-black border border-[#2F3336] focus:border-white rounded px-3 py-2 text-white outline-none caret-white" />
               </div>
               <div>
                 <label className="block text-[11px] text-[#71767B] mb-1">نوع الحساب</label>
-                <select value={profileKind} onChange={(e) => setProfileKind(e.target.value as ProfileKind)} disabled={!canEdit}
-                  className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-2 text-white outline-none">
-                  <option value="personal">شخصي</option>
-                  <option value="business_owner">صاحب منشأة</option>
-                  <option value="businessman">رجل أعمال</option>
-                </select>
+                <AdminSelect title="نوع الحساب" disabled={!canEdit} value={profileKind} onChange={(v) => setProfileKind(v as ProfileKind)} options={[{ value: 'personal', label: 'شخصي' }, { value: 'business_owner', label: 'صاحب منشأة' }, { value: 'businessman', label: 'رجل أعمال' }]} />
               </div>
             </div>
             <div>
               <label className="block text-[11px] text-[#71767B] mb-1">النبذة التعريفية</label>
               <textarea rows={2} value={bio} onChange={(e) => setBio(e.target.value)} disabled={!canEdit}
-                className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl p-2.5 text-xs text-white outline-none caret-white resize-none" />
+                className="w-full bg-black border border-[#2F3336] focus:border-white rounded p-2.5 text-xs text-white outline-none caret-white resize-none" />
             </div>
             {canEdit && (
               <button
@@ -148,7 +144,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
                       }, 'تم حفظ بيانات الحساب وتوثيق الإجراء'),
                   })
                 }
-                className="px-4 py-2 rounded-xl bg-[#FFC500] text-black text-xs font-black cursor-pointer hover:opacity-90"
+                className="px-4 py-2 rounded bg-[#FFC500] text-black text-xs font-black cursor-pointer hover:opacity-90"
               >
                 حفظ التعديلات المسموح بها
               </button>
@@ -156,7 +152,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
           </div>
         </div>
 
-        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-3">
+        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded p-4 space-y-3">
           <h4 className="text-xs font-black text-white flex items-center gap-2">
             <Building2 size={15} className="text-[#FFC500]" />
             الصفحات العامة المرتبطة بالحساب ({ownedPages.length} مملوكة، {managedPages.length} مفوض بها)
@@ -166,7 +162,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {ownedPages.map((p) => (
-                <div key={p.id} className="p-3 rounded-xl bg-black border border-[#2F3336] flex items-center justify-between gap-2">
+                <div key={p.id} className="p-3 rounded bg-black border border-[#2F3336] flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-bold text-white truncate">{p.name}</span>
@@ -174,22 +170,22 @@ export const AccountTabsPrimary: React.FC<Props> = ({
                     </div>
                     <p className="text-[11px] text-[#71767B]" dir="ltr">@{p.slug}</p>
                   </div>
-                  <a href={`/business-page/${p.id}`} target="_blank" rel="noreferrer"
-                    className="p-1.5 rounded-lg bg-[#111] border border-[#2F3336] text-[#FFC500] hover:bg-[#FFC500]/10">
-                    <ExternalLink size={14} />
-                  </a>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {canEdit && <AdminButton variant="danger" size="sm" icon={<Unlink size={12} />} onClick={() => setConfirmState({ open: true, title: 'فك ارتباط الصفحة', desc: `سيتم فك ارتباط "${account.full_name}" عن ملكية "${p.name}".`, danger: true, action: async (reason) => runAction(async () => { await unlinkPageOwner({ businessId: p.id, reason }); setConfirmState(null); }, 'تم فك ارتباط الصفحة بنجاح') })}>فك الربط</AdminButton>}
+                    <a href={`/business-page/${p.id}`} target="_blank" rel="noreferrer" className="p-2 rounded bg-[#111] border border-[#2F3336] text-[#FFC500] hover:bg-[#FFC500]/10"><ExternalLink size={14} /></a>
+                  </div>
                 </div>
               ))}
               {managedPages.map((m) => (
-                <div key={m.business_id} className="p-3 rounded-xl bg-black border border-[#2F3336] flex items-center justify-between gap-2">
+                <div key={m.business_id} className="p-3 rounded bg-black border border-[#2F3336] flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-white truncate">{m.page_name}</p>
                     <p className="text-[11px] text-sky-400">مسؤول مفوض ({m.role})</p>
                   </div>
-                  <a href={`/business-page/${m.business_id}`} target="_blank" rel="noreferrer"
-                    className="p-1.5 rounded-lg bg-[#111] border border-[#2F3336] text-zinc-300">
-                    <ExternalLink size={14} />
-                  </a>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {canEdit && <AdminButton variant="danger" size="sm" icon={<Unlink size={12} />} onClick={() => setConfirmState({ open: true, title: 'إلغاء التفويض', desc: `سيتم فك تفويض "${account.full_name}" عن صفحة "${m.page_name}".`, danger: true, action: async (reason) => runAction(async () => { await managePageAdminRpc({ businessId: m.business_id, userId: account.id, operation: 'remove', reason }); setConfirmState(null); }, 'تم إلغاء التفويض بنجاح') })}>فك الربط</AdminButton>}
+                    <a href={`/business-page/${m.business_id}`} target="_blank" rel="noreferrer" className="p-2 rounded bg-[#111] border border-[#2F3336] text-zinc-300"><ExternalLink size={14} /></a>
+                  </div>
                 </div>
               ))}
             </div>
@@ -197,14 +193,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
         </div>
 
         {confirmState && (
-          <ReasonConfirmModal
-            open={confirmState.open}
-            title={confirmState.title}
-            description={confirmState.desc}
-            danger={confirmState.danger}
-            onCancel={() => setConfirmState(null)}
-            onConfirm={confirmState.action}
-          />
+          <AdminConfirmDialog open={confirmState.open} title={confirmState.title} description={confirmState.desc} variant={confirmState.danger ? 'danger' : 'warning'} requireDate={(confirmState as any).requireDate} requireReason onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />
         )}
       </div>
     );
@@ -222,7 +211,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
             { label: 'إعادة النشر', val: reposts.length },
             { label: 'مخفية إدارياً', val: hiddenPosts.length },
           ].map((s) => (
-            <div key={s.label} className="bg-[#0B0B0B] border border-[#2F3336] rounded-xl p-3">
+            <div key={s.label} className="bg-[#0B0B0B] border border-[#2F3336] rounded p-3">
               <div className="text-lg font-black text-white tabular-nums">{s.val}</div>
               <div className="text-[11px] text-[#71767B]">{s.label}</div>
             </div>
@@ -230,7 +219,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2 max-h-60 overflow-y-auto">
+          <div className="bg-[#0B0B0B] border border-[#2F3336] rounded p-4 space-y-2 max-h-60 overflow-y-auto">
             <h4 className="text-xs font-black text-white">المتابِعون ({followers.length})</h4>
             {followers.length === 0 ? <p className="text-xs text-[#71767B]">لا يوجد متابعون</p> : followers.map((f) => (
               <div key={f.id} className="flex items-center justify-between text-xs py-1 border-b border-[#2F3336]/50">
@@ -239,7 +228,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
               </div>
             ))}
           </div>
-          <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2 max-h-60 overflow-y-auto">
+          <div className="bg-[#0B0B0B] border border-[#2F3336] rounded p-4 space-y-2 max-h-60 overflow-y-auto">
             <h4 className="text-xs font-black text-white">يتابِع ({following.length})</h4>
             {following.length === 0 ? <p className="text-xs text-[#71767B]">لا يتابع أحداً</p> : following.map((f) => (
               <div key={f.id} className="flex items-center justify-between text-xs py-1 border-b border-[#2F3336]/50">
@@ -250,10 +239,10 @@ export const AccountTabsPrimary: React.FC<Props> = ({
           </div>
         </div>
 
-        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2.5 max-h-80 overflow-y-auto">
+        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded p-4 space-y-2.5 max-h-80 overflow-y-auto">
           <h4 className="text-xs font-black text-white">منشورات الحساب (بما فيها المخفية إدارياً)</h4>
           {posts.length === 0 ? <p className="text-xs text-[#71767B]">لا توجد منشورات شخصية.</p> : posts.map((p) => (
-            <div key={p.id} className={`p-3 rounded-xl border text-xs flex items-start justify-between gap-3 ${p.is_hidden ? 'bg-rose-950/20 border-rose-500/30' : 'bg-black border-[#2F3336]'}`}>
+            <div key={p.id} className={`p-3 rounded border text-xs flex items-start justify-between gap-3 ${p.is_hidden ? 'bg-rose-950/20 border-rose-500/30' : 'bg-black border-[#2F3336]'}`}>
               <div className="space-y-1 min-w-0">
                 <p className="text-zinc-200 whitespace-pre-wrap">{p.content || '(وسائط بدون نص)'}</p>
                 <div className="flex flex-wrap gap-3 text-[10px] text-[#71767B]">
@@ -290,7 +279,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
           ))}
         </div>
 
-        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2 max-h-56 overflow-y-auto">
+        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded p-4 space-y-2 max-h-56 overflow-y-auto">
           <h4 className="text-xs font-black text-white">أحدث التعليقات ({comments.length})</h4>
           {comments.length === 0 ? <p className="text-xs text-[#71767B]">لا توجد تعليقات.</p> : comments.slice(0, 30).map((c) => (
             <div key={c.id} className="p-2 rounded-lg bg-black border border-[#2F3336] text-xs">
@@ -301,14 +290,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
         </div>
 
         {confirmState && (
-          <ReasonConfirmModal
-            open={confirmState.open}
-            title={confirmState.title}
-            description={confirmState.desc}
-            danger={confirmState.danger}
-            onCancel={() => setConfirmState(null)}
-            onConfirm={confirmState.action}
-          />
+          <AdminConfirmDialog open={confirmState.open} title={confirmState.title} description={confirmState.desc} variant={confirmState.danger ? 'danger' : 'warning'} requireDate={(confirmState as any).requireDate} requireReason onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />
         )}
       </div>
     );
@@ -317,7 +299,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
   if (tab === 'verification') {
     return (
       <div className="space-y-4">
-        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded p-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
           <div className="space-y-2">
             <h4 className="font-black text-[#FFC500] flex items-center gap-1.5"><ShieldCheck size={15} /> حالة التوثيق الحالية</h4>
             <div className="flex justify-between"><span className="text-[#71767B]">الشارة:</span><BadgePill badge={account.badge_type} /></div>
@@ -333,18 +315,12 @@ export const AccountTabsPrimary: React.FC<Props> = ({
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-[11px] text-[#71767B] mb-1">نوع الشارة</label>
-                  <select value={badgeChoice} onChange={(e) => setBadgeChoice(e.target.value as any)}
-                    className="w-full bg-black border border-[#2F3336] rounded-xl px-3 py-2 text-white outline-none">
-                    <option value="blue">أزرق (حساب شخصي)</option>
-                    <option value="silver">فضي (رجل أعمال)</option>
-                    <option value="gold">ذهبي (خاص)</option>
-                    <option value="none">بدون (سحب التوثيق)</option>
-                  </select>
+                  <AdminSelect title="نوع الشارة" value={badgeChoice} onChange={(v) => setBadgeChoice(v as any)} options={[{ value: 'blue', label: 'أزرق (حساب شخصي)' }, { value: 'silver', label: 'فضي (رجل أعمال)' }, { value: 'gold', label: 'ذهبي (خاص)' }, { value: 'none', label: 'بدون (سحب التوثيق)' }]} />
                 </div>
                 <div>
                   <label className="block text-[11px] text-[#71767B] mb-1">تاريخ انتهاء الأهلية (اختياري)</label>
                   <input type="date" value={badgeExpires} onChange={(e) => setBadgeExpires(e.target.value)}
-                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-2 text-white outline-none caret-white" />
+                    className="w-full bg-black border border-[#2F3336] focus:border-white rounded px-3 py-2 text-white outline-none caret-white" />
                 </div>
               </div>
               <button
@@ -367,7 +343,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
                       }, 'تم تحديث شارة التوثيق بنجاح'),
                   })
                 }
-                className="px-4 py-2 rounded-xl bg-[#FFC500] text-black font-black text-xs cursor-pointer"
+                className="px-4 py-2 rounded bg-[#FFC500] text-black font-black text-xs cursor-pointer"
               >
                 اعتماد التوثيق وتسجيله
               </button>
@@ -376,14 +352,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
         </div>
 
         {confirmState && (
-          <ReasonConfirmModal
-            open={confirmState.open}
-            title={confirmState.title}
-            description={confirmState.desc}
-            danger={confirmState.danger}
-            onCancel={() => setConfirmState(null)}
-            onConfirm={confirmState.action}
-          />
+          <AdminConfirmDialog open={confirmState.open} title={confirmState.title} description={confirmState.desc} variant={confirmState.danger ? 'danger' : 'warning'} requireDate={(confirmState as any).requireDate} requireReason onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />
         )}
       </div>
     );
@@ -398,28 +367,18 @@ export const AccountTabsPrimary: React.FC<Props> = ({
   return (
     <div className="space-y-4">
       {expiringSoon && (
-        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
+        <div className="p-3 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
           <AlertTriangle size={15} />
           <span>تنبيه: يوجد اشتراك قريب من الانتهاء خلال 7 أيام!</span>
         </div>
       )}
 
       {canEdit && (
-        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-3">
+        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded p-4 space-y-3">
           <h4 className="text-xs font-black text-[#FFC500]">منح أو تفعيل اشتراك جديد للحساب</h4>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-            <select value={selectedPlanId} onChange={(e) => setSelectedPlanId(e.target.value)}
-              className="bg-black border border-[#2F3336] rounded-xl px-3 py-2 text-white outline-none">
-              <option value="">اختر الباقة</option>
-              {plans.map((pl) => (
-                <option key={pl.id} value={pl.id}>{pl.name} ({pl.price} {pl.currency})</option>
-              ))}
-            </select>
-            <select value={subDays} onChange={(e) => setSubDays(Number(e.target.value))}
-              className="bg-black border border-[#2F3336] rounded-xl px-3 py-2 text-white outline-none">
-              <option value={30}>شهري (30 يوماً)</option>
-              <option value={365}>سنوي (365 يوماً)</option>
-            </select>
+            <AdminSelect title="الباقة" value={selectedPlanId} onChange={setSelectedPlanId} options={[{ value: '', label: 'اختر الباقة' }, ...plans.map((pl) => ({ value: pl.id, label: `${pl.name} (${pl.price} ${pl.currency})` }))]} />
+            <AdminSelect title="مدة الاشتراك" value={String(subDays)} onChange={(v) => setSubDays(Number(v))} options={[{ value: '30', label: 'شهري (30 يوماً)' }, { value: '365', label: 'سنوي (365 يوماً)' }]} />
             <button
               type="button"
               onClick={() =>
@@ -440,7 +399,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
                     }, 'تم تفعيل الاشتراك'),
                 })
               }
-              className="px-4 py-2 rounded-xl bg-[#FFC500] text-black font-black cursor-pointer"
+              className="px-4 py-2 rounded bg-[#FFC500] text-black font-black cursor-pointer"
             >
               تفعيل الاشتراك
             </button>
@@ -448,10 +407,10 @@ export const AccountTabsPrimary: React.FC<Props> = ({
         </div>
       )}
 
-      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2.5">
+      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded p-4 space-y-2.5">
         <h4 className="text-xs font-black text-white">الاشتراكات الحالية والسابقة ({subscriptions.length})</h4>
         {subscriptions.length === 0 ? <p className="text-xs text-[#71767B]">لا توجد اشتراكات مسجلة.</p> : subscriptions.map((s) => (
-          <div key={s.id} className="p-3 rounded-xl bg-black border border-[#2F3336] flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div key={s.id} className="p-3 rounded bg-black border border-[#2F3336] flex flex-wrap items-center justify-between gap-2 text-xs">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="font-bold text-white">{s.plan?.name || 'باقة اشتراك'}</span>
@@ -487,20 +446,20 @@ export const AccountTabsPrimary: React.FC<Props> = ({
         ))}
       </div>
 
-      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2">
+      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded p-4 space-y-2">
         <h4 className="text-xs font-black text-white">سجل المدفوعات والإيصالات ({payments.length + paymentProofs.length})</h4>
         {payments.length === 0 && paymentProofs.length === 0 ? (
           <p className="text-xs text-[#71767B]">لا توجد مدفوعات أو سندات مرفوعة.</p>
         ) : (
           <div className="space-y-2 text-xs">
             {payments.map((p) => (
-              <div key={p.id} className="p-2.5 rounded-xl bg-black border border-[#2F3336] flex justify-between items-center">
+              <div key={p.id} className="p-2.5 rounded bg-black border border-[#2F3336] flex justify-between items-center">
                 <span>{p.service_type} — {p.amount} {p.currency} (مرجع: {p.reference_number || '—'})</span>
                 <span className="text-[#FFC500] font-bold">{p.status}</span>
               </div>
             ))}
             {paymentProofs.map((pr) => (
-              <div key={pr.id} className="p-2.5 rounded-xl bg-black border border-[#2F3336] flex justify-between items-center">
+              <div key={pr.id} className="p-2.5 rounded bg-black border border-[#2F3336] flex justify-between items-center">
                 <span>سند دفع: {pr.amount} {pr.currency} ({pr.payment_method})</span>
                 <div className="flex items-center gap-2">
                   {pr.proof_url && <a href={pr.proof_url} target="_blank" rel="noreferrer" className="text-sky-400 underline">الإيصال</a>}
@@ -513,14 +472,7 @@ export const AccountTabsPrimary: React.FC<Props> = ({
       </div>
 
       {confirmState && (
-        <ReasonConfirmModal
-          open={confirmState.open}
-          title={confirmState.title}
-          description={confirmState.desc}
-          danger={confirmState.danger}
-          onCancel={() => setConfirmState(null)}
-          onConfirm={confirmState.action}
-        />
+        <AdminConfirmDialog open={confirmState.open} title={confirmState.title} description={confirmState.desc} variant={confirmState.danger ? 'danger' : 'warning'} requireDate={(confirmState as any).requireDate} requireReason onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />
       )}
     </div>
   );

@@ -3,8 +3,8 @@ import { AccountDetailBundle } from '../../../types/adminAccountsPages';
 import {
   formatDateAr,
   formatDateTimeAr,
-  ReasonConfirmModal,
 } from '../../../components/admin/accounts-pages/SharedAdminUI';
+import { AdminConfirmDialog, toArabicErrorMessage } from '../../../components/admin/accounts-pages/AndroidAdminKit';
 import {
   moderateAccountRpc,
   replyAdminRequestTicket,
@@ -46,7 +46,7 @@ export const AccountTabsModeration: React.FC<Props> = ({
       onToast(okMsg, 'success');
       await onRefresh();
     } catch (e: any) {
-      onToast(e?.message || 'فشل تنفيذ الإجراء', 'error');
+      onToast(toArabicErrorMessage(e, 'تعذر تنفيذ الإجراء، يرجى المحاولة مرة أخرى.'), 'error');
     }
   };
 
@@ -57,7 +57,7 @@ export const AccountTabsModeration: React.FC<Props> = ({
         {ads.length === 0 ? (
           <p className="text-xs text-[#71767B]">لا توجد إعلانات مرتبطة بهذا الحساب.</p>
         ) : ads.map((ad) => (
-          <div key={`${ad.sourceTable}-${ad.id}`} className="p-3 rounded-xl bg-[#0B0B0B] border border-[#2F3336] flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div key={`${ad.sourceTable}-${ad.id}`} className="p-3 rounded bg-[#0B0B0B] border border-[#2F3336] flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="space-y-1">
               <div className="font-bold text-white">{ad.title} <span className="text-[#FFC500]">({ad.kind})</span></div>
               <div className="text-[11px] text-[#71767B]">
@@ -87,17 +87,17 @@ export const AccountTabsModeration: React.FC<Props> = ({
             )}
           </div>
         ))}
-        {confirmState && <ReasonConfirmModal open={confirmState.open} title={confirmState.title} description={confirmState.desc} danger={confirmState.danger} onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />}
+        {confirmState && <AdminConfirmDialog open={confirmState.open} title={confirmState.title} description={confirmState.desc} variant={confirmState.danger ? 'danger' : 'warning'} requireDate={(confirmState as any).requireDate} requireReason onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />}
       </div>
     );
   }
 
   if (tab === 'reports') {
     const renderList = (title: string, items: any[], isReceived: boolean) => (
-      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2.5">
+      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded p-4 space-y-2.5">
         <h4 className="text-xs font-black text-white">{title} ({items.length})</h4>
         {items.length === 0 ? <p className="text-xs text-[#71767B]">لا توجد بلاغات.</p> : items.map((r) => (
-          <div key={r.id} className="p-3 rounded-xl bg-black border border-[#2F3336] space-y-1.5 text-xs">
+          <div key={r.id} className="p-3 rounded bg-black border border-[#2F3336] space-y-1.5 text-xs">
             <div className="flex justify-between gap-2">
               <span className="font-bold text-white">النوع: {r.reported_item_type} • السبب: {r.reason}</span>
               <span className="text-[11px] text-[#FFC500]">{r.status}</span>
@@ -126,7 +126,7 @@ export const AccountTabsModeration: React.FC<Props> = ({
       <div className="space-y-4">
         {renderList('البلاغات الواردة على الحساب', reportsReceived, true)}
         {renderList('البلاغات المقدمة من الحساب', reportsSubmitted, false)}
-        {confirmState && <ReasonConfirmModal open={confirmState.open} title={confirmState.title} description={confirmState.desc} onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />}
+        {confirmState && <AdminConfirmDialog open={confirmState.open} title={confirmState.title} description={confirmState.desc} variant={confirmState.danger ? 'danger' : 'warning'} requireDate={(confirmState as any).requireDate} requireReason onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />}
       </div>
     );
   }
@@ -136,14 +136,14 @@ export const AccountTabsModeration: React.FC<Props> = ({
       <div className="space-y-3">
         <h4 className="text-xs font-black text-white">طلبات الدعم والشكاوى ({supportTickets.length})</h4>
         {supportTickets.length === 0 ? <p className="text-xs text-[#71767B]">لا توجد طلبات دعم لهذا الحساب.</p> : supportTickets.map((t) => (
-          <div key={t.id} className="p-3.5 rounded-2xl bg-[#0B0B0B] border border-[#2F3336] space-y-2 text-xs">
+          <div key={t.id} className="p-3.5 rounded bg-[#0B0B0B] border border-[#2F3336] space-y-2 text-xs">
             <div className="flex justify-between items-center">
               <span className="font-bold text-[#FFC500]">{t.source === 'admin_requests' ? 'طلب نظام موحد' : 'رسالة دعم'}</span>
               <span className="text-[11px] text-zinc-300">{t.status || 'pending'} • {formatDateTimeAr(t.created_at)}</span>
             </div>
             <p className="text-zinc-200 whitespace-pre-wrap">{t.message}</p>
             {t.reply && (
-              <div className="p-2.5 rounded-xl bg-black border border-emerald-500/30 text-emerald-300 text-[11px]">
+              <div className="p-2.5 rounded bg-black border border-emerald-500/30 text-emerald-300 text-[11px]">
                 <strong>الرد:</strong> {t.reply} {t.replied_at ? `(${formatDateAr(t.replied_at)})` : ''}
               </div>
             )}
@@ -153,7 +153,7 @@ export const AccountTabsModeration: React.FC<Props> = ({
                   value={replyDrafts[t.id] || ''}
                   onChange={(e) => setReplyDrafts((prev) => ({ ...prev, [t.id]: e.target.value }))}
                   placeholder={t.source === 'admin_requests' ? 'اكتب رداً أو ملاحظة للطلب الموحد...' : 'اكتب رداً للمستخدم...'}
-                  className="flex-1 min-w-[180px] bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-1.5 text-white outline-none caret-white"
+                  className="flex-1 min-w-[180px] bg-black border border-[#2F3336] focus:border-white rounded px-3 py-1.5 text-white outline-none caret-white"
                 />
                 <button
                   type="button"
@@ -169,7 +169,7 @@ export const AccountTabsModeration: React.FC<Props> = ({
                       setReplyDrafts((p) => ({ ...p, [t.id]: '' }));
                     }, 'تم إرسال الرد بنجاح');
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-[#FFC500] text-black font-black flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 rounded bg-[#FFC500] text-black font-black flex items-center gap-1 cursor-pointer"
                 >
                   <Send size={13} /><span>رد</span>
                 </button>
@@ -183,7 +183,7 @@ export const AccountTabsModeration: React.FC<Props> = ({
                         setReplyDrafts((p) => ({ ...p, [t.id]: '' }));
                       }, 'تم رد وإغلاق الطلب');
                     }}
-                    className="px-3 py-1.5 rounded-xl bg-zinc-800 text-white font-bold cursor-pointer"
+                    className="px-3 py-1.5 rounded bg-zinc-800 text-white font-bold cursor-pointer"
                   >
                     إغلاق الطلب
                   </button>
@@ -206,7 +206,7 @@ export const AccountTabsModeration: React.FC<Props> = ({
           setConfirmState(null);
         }, `تم تنفيذ الإجراء: ${label}`),
       })}
-      className={`px-3 py-1.5 rounded-xl text-xs font-bold border cursor-pointer ${danger ? 'bg-rose-500/15 text-rose-400 border-rose-500/30' : 'bg-[#111] text-white border-[#2F3336] hover:border-white'}`}
+      className={`px-3 py-1.5 rounded text-xs font-bold border cursor-pointer ${danger ? 'bg-rose-500/15 text-rose-400 border-rose-500/30' : 'bg-[#111] text-white border-[#2F3336] hover:border-white'}`}
     >
       {label}
     </button>
@@ -215,7 +215,7 @@ export const AccountTabsModeration: React.FC<Props> = ({
   return (
     <div className="space-y-4">
       {canEdit && (
-        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-3">
+        <div className="bg-[#0B0B0B] border border-[#2F3336] rounded p-4 space-y-3">
           <h4 className="text-xs font-black text-[#FFC500] flex items-center gap-1.5"><ShieldAlert size={15} /> أدوات الرقابة والإجراءات الإدارية</h4>
           <div className="flex flex-wrap gap-2">
             {actBtn('توجيه تحذير', 'warn', 'توجيه تحذير إداري', 'سيُحفظ التحذير في سجل مخالفات الحساب.')}
@@ -229,10 +229,10 @@ export const AccountTabsModeration: React.FC<Props> = ({
         </div>
       )}
 
-      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-2xl p-4 space-y-2.5">
+      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded p-4 space-y-2.5">
         <h4 className="text-xs font-black text-white">سجل المخالفات والإجراءات الإدارية ({moderationLogs.length})</h4>
         {moderationLogs.length === 0 ? <p className="text-xs text-[#71767B]">لا توجد إجراءات مسجلة لهذا الحساب.</p> : moderationLogs.map((log) => (
-          <div key={log.id} className="p-3 rounded-xl bg-black border border-[#2F3336] text-xs space-y-1">
+          <div key={log.id} className="p-3 rounded bg-black border border-[#2F3336] text-xs space-y-1">
             <div className="flex justify-between items-center">
               <span className="font-bold text-[#FFC500]">{log.action_type}</span>
               <span className="text-[10px] text-[#71767B]">{formatDateTimeAr(log.created_at)}</span>
@@ -242,7 +242,7 @@ export const AccountTabsModeration: React.FC<Props> = ({
           </div>
         ))}
       </div>
-      {confirmState && <ReasonConfirmModal open={confirmState.open} title={confirmState.title} description={confirmState.desc} danger={confirmState.danger} requireDate={confirmState.requireDate} onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />}
+      {confirmState && <AdminConfirmDialog open={confirmState.open} title={confirmState.title} description={confirmState.desc} variant={confirmState.danger ? 'danger' : 'warning'} requireDate={(confirmState as any).requireDate} requireReason onCancel={() => setConfirmState(null)} onConfirm={confirmState.action} />}
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { AdminSelect, useAdminFeedback, useBackClose } from '../../../components/admin/accounts-pages/AndroidAdminKit';
 import {
   Plus,
   Pencil,
@@ -48,6 +49,7 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
   selectedSectionId,
   onSelectSectionId,
 }) => {
+  const { showSuccess, showWarning, showError } = useAdminFeedback();
   const activeSections = sections.filter((s) => !s.isArchived);
   const [fields, setFields] = useState<TabFormField[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +58,7 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
 
   // نافذة إضافة/تعديل حقل
   const [isFieldModalOpen, setIsFieldModalOpen] = useState(false);
+  useBackClose(isFieldModalOpen, () => setIsFieldModalOpen(false));
   const [editingField, setEditingField] = useState<TabFormField | null>(null);
   const [fLabel, setFLabel] = useState('');
   const [fKey, setFKey] = useState('');
@@ -90,8 +93,9 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
   }, [selectedSectionId]);
 
   const showNotice = (type: 'success' | 'warning' | 'error', text: string) => {
-    setNotice({ type, text });
-    setTimeout(() => setNotice(null), 4000);
+    if (type === 'success') showSuccess(text);
+    else if (type === 'warning') showWarning(text);
+    else showError(text);
   };
 
   const openAddField = () => {
@@ -224,7 +228,7 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
     <div className="space-y-4">
       {notice && (
         <div
-          className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold ${
+          className={`px-3.5 py-2.5 rounded-lg border text-xs font-bold ${
             notice.type === 'success'
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
               : notice.type === 'warning'
@@ -237,7 +241,7 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
       )}
 
       {/* اختيار التبويب المستقل */}
-      <div className="bg-[#0B0F17] border border-[#2F3336] rounded-2xl p-3 space-y-2">
+      <div className="bg-[#0B0B0B] border border-[#2F3336] rounded-lg p-3 space-y-2">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="text-xs font-bold text-[#71767B]">
             اختر التبويب لإدارة نموذجه وحقوله المستقلة (لا تتداخل القوائم بين الأقسام):
@@ -277,11 +281,11 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <div className={selectedSelectField ? 'lg:col-span-7 space-y-2' : 'lg:col-span-12 space-y-2'}>
           {loading ? (
-            <div className="py-12 text-center text-xs text-[#71767B] bg-[#0B0F17] border border-[#2F3336] rounded-2xl">
+            <div className="py-12 text-center text-xs text-[#71767B] bg-[#0B0B0B] border border-[#2F3336] rounded">
               جارِ تحميل حقول النموذج...
             </div>
           ) : fields.length === 0 ? (
-            <div className="py-12 text-center text-xs text-[#71767B] bg-[#0B0F17] border border-[#2F3336] rounded-2xl space-y-2">
+            <div className="py-12 text-center text-xs text-[#71767B] bg-[#0B0B0B] border border-[#2F3336] rounded-lg space-y-2">
               <p className="text-white font-bold">لا توجد حقول مخصصة لهذا التبويب بعد</p>
               <p>اضغط على "إضافة حقل جديد" لبناء نموذج الإدخال الخاص بهذا القسم.</p>
             </div>
@@ -289,7 +293,7 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
             fields.map((field, idx) => (
               <div
                 key={field.id}
-                className={`bg-[#0B0F17] border rounded-2xl p-3 flex items-center justify-between gap-2 transition ${
+                className={`bg-[#0B0B0B] border rounded-lg p-3 flex items-center justify-between gap-2 transition ${
                   selectedFieldId === field.id ? 'border-[#FFC500]' : 'border-[#2F3336]'
                 } ${!field.is_active ? 'opacity-60' : ''}`}
               >
@@ -381,7 +385,7 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
 
         {/* إدارة خيارات القائمة المنسدلة */}
         {selectedSelectField && (
-          <div className="lg:col-span-5 bg-[#0B0F17] border border-[#FFC500]/40 rounded-2xl p-4 space-y-3 h-fit">
+          <div className="lg:col-span-5 bg-[#0B0B0B] border border-[#FFC500]/40 rounded-lg p-4 space-y-3 h-fit">
             <div className="flex items-center justify-between border-b border-[#2F3336] pb-2">
               <div>
                 <h4 className="text-xs font-black text-white">خيارات القائمة: {selectedSelectField.label}</h4>
@@ -402,11 +406,11 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
                 value={newOptLabel}
                 onChange={(e) => setNewOptLabel(e.target.value)}
                 placeholder={editingOpt ? 'تعديل نص الخيار...' : 'أضف خياراً جديداً...'}
-                className="flex-1 bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl px-3 py-2 text-xs text-white outline-none"
+                className="flex-1 bg-black border border-[#2F3336] focus:border-white caret-white rounded-lg px-3 py-2 text-xs text-white outline-none"
               />
               <button
                 type="submit"
-                className="px-3 py-2 rounded-xl bg-[#FFC500] text-black text-xs font-black cursor-pointer shrink-0"
+                className="px-3 py-2 rounded-lg bg-[#FFC500] text-black text-xs font-black cursor-pointer shrink-0"
               >
                 {editingOpt ? 'حفظ' : 'إضافة'}
               </button>
@@ -418,7 +422,7 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
                     setNewOptLabel('');
                     setNewOptValue('');
                   }}
-                  className="p-2 rounded-xl border border-[#2F3336] text-xs text-zinc-400 cursor-pointer"
+                  className="p-2 rounded-lg border border-[#2F3336] text-xs text-zinc-400 cursor-pointer"
                 >
                   <X size={13} />
                 </button>
@@ -429,7 +433,7 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
               {selectedSelectField.options.map((opt, idx) => (
                 <div
                   key={opt.id}
-                  className={`p-2 rounded-xl bg-black border border-[#2F3336] flex items-center justify-between gap-2 ${
+                  className={`p-2 rounded-lg bg-black border border-[#2F3336] flex items-center justify-between gap-2 ${
                     !opt.is_active ? 'opacity-50' : ''
                   }`}
                 >
@@ -454,7 +458,7 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
                     <button
                       type="button"
                       onClick={() => handleToggleOption(opt)}
-                      className={`p-1 rounded cursor-pointer ${opt.is_active ? 'text-emerald-400' : 'text-zinc-500'}`}
+                      className={`p-1 rounded-lg cursor-pointer ${opt.is_active ? 'text-emerald-400' : 'text-zinc-500'}`}
                       title={opt.is_active ? 'إيقاف الخيار' : 'تفعيل الخيار'}
                     >
                       {opt.is_active ? <Eye size={12} /> : <EyeOff size={12} />}
@@ -495,7 +499,7 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
           onClick={() => setIsFieldModalOpen(false)}
         >
           <div
-            className="w-full max-w-md bg-black border border-[#2F3336] rounded-2xl overflow-hidden text-white"
+            className="w-full max-w-md bg-black border border-[#2F3336] rounded-lg overflow-hidden text-white"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="px-4 py-3 border-b border-[#2F3336] flex items-center justify-between">
@@ -513,7 +517,7 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
                   value={fLabel}
                   onChange={(e) => setFLabel(e.target.value)}
                   placeholder="مثال: سعة البطارية، المساحة، المؤهل..."
-                  className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl px-3 py-2 text-xs text-white outline-none"
+                  className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-lg px-3 py-2 text-xs text-white outline-none"
                   required
                 />
               </div>
@@ -527,22 +531,14 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
                     value={fKey}
                     onChange={(e) => setFKey(e.target.value)}
                     placeholder="example: storage_gb"
-                    className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl px-3 py-2 text-xs text-white outline-none font-mono"
+                    className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-lg px-3 py-2 text-xs text-white outline-none font-mono"
                   />
                 </div>
               )}
 
               <div>
                 <label className="block text-xs font-bold mb-1">نوع الحقل</label>
-                <select
-                  value={fType}
-                  onChange={(e) => setFType(e.target.value as TabFieldType)}
-                  className="w-full bg-black border border-[#2F3336] focus:border-white rounded-xl px-3 py-2 text-xs text-white outline-none"
-                >
-                  {FIELD_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
-                  ))}
-                </select>
+                <AdminSelect title="نوع الحقل" value={fType} onChange={(v) => setFType(v as TabFieldType)} options={FIELD_TYPES} />
               </div>
 
               <div>
@@ -552,7 +548,7 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
                   value={fPlaceholder}
                   onChange={(e) => setFPlaceholder(e.target.value)}
                   placeholder="مثال: اختر النوع..."
-                  className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-xl px-3 py-2 text-xs text-white outline-none"
+                  className="w-full bg-black border border-[#2F3336] focus:border-white caret-white rounded-lg px-3 py-2 text-xs text-white outline-none"
                 />
               </div>
 
@@ -567,7 +563,7 @@ export const TabFormsBuilderPanel: React.FC<TabFormsBuilderPanelProps> = ({
                     key={opt.label}
                     type="button"
                     onClick={() => opt.set(!opt.val)}
-                    className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center justify-between cursor-pointer ${
+                    className={`px-3 py-2 rounded-lg border text-xs font-bold flex items-center justify-between cursor-pointer ${
                       opt.val ? 'border-[#FFC500]/50 bg-[#FFC500]/10 text-white' : 'border-[#2F3336] text-[#71767B]'
                     }`}
                   >
