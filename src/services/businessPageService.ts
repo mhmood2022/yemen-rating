@@ -1,5 +1,12 @@
+import { WorkingSchedule } from '../utils/workingHours';
 import { supabase } from '../lib/supabase';
 import { checkUserActionAllowed, uploadSocialImage } from './socialService';
+
+export interface BusinessBranchItem {
+  name: string;
+  map_url?: string;
+  phone?: string;
+}
 
 export interface BusinessPageRecord {
   id: string;
@@ -7,8 +14,19 @@ export interface BusinessPageRecord {
   name: string;
   username: string;
   businessType: string;
+  categoryId?: string | null;
+  categoryName?: string;
+  categoryShortName?: string;
   city: string;
+  address?: string;
   phone: string;
+  whatsapp?: string;
+  email?: string;
+  website?: string;
+  mapUrl?: string;
+  workingHours?: string;
+  workingSchedule?: WorkingSchedule | null;
+  branches?: BusinessBranchItem[];
   description: string;
   avatarUrl: string;
   coverUrl: string;
@@ -32,7 +50,9 @@ export interface BusinessReviewRecord {
   createdAt: string;
 }
 
-export function mapBusinessToPage(row: any): BusinessPageRecord {
+export function mapBusinessToPage(row: any, catOrIdx?: string | number, arrOrShort?: string | any[]): BusinessPageRecord {
+  const catName = typeof catOrIdx === "string" ? catOrIdx : "";
+  const shortName = typeof arrOrShort === "string" ? arrOrShort : "";
   const rawBadge = row?.badge_type || row?.verified_badge_type;
   const verificationType =
     rawBadge && rawBadge !== 'none'
@@ -41,14 +61,27 @@ export function mapBusinessToPage(row: any): BusinessPageRecord {
       ? 'gold'
       : 'none';
 
+  let sec = row?.sections_config || {};
+  if (typeof sec === 'string') { try { sec = JSON.parse(sec); } catch { sec = {}; } }
   return {
     id: row.id,
-    ownerId: row.owner_id || row.claimed_by || '',
+    ownerId: row.owner_id || row.claimed_by_user_id || row.claimed_by || '',
     name: row.name || 'صفحة منشأة',
     username: row.slug || row.username || 'business',
     businessType: row.business_type || 'SHOP',
+    categoryId: row.category_id || null,
+    categoryName: catName || '',
+    categoryShortName: shortName || row?.sub_category || catName || '',
     city: row.city || 'صنعاء',
+    address: row.address || '',
     phone: row.phone || '',
+    whatsapp: row.whatsapp || '',
+    email: row.email || '',
+    website: row.website_url || row.website || '',
+    mapUrl: row.map_url || '',
+    workingHours: row.working_hours || '',
+    workingSchedule: sec?.working_schedule || null,
+    branches: Array.isArray(row.branches) ? row.branches : [],
     description: row.description || '',
     avatarUrl: row.logo_url || '',
     coverUrl: row.cover_url || '',
@@ -59,6 +92,12 @@ export function mapBusinessToPage(row: any): BusinessPageRecord {
     followersCount: Number(row.followers_count || 0),
     createdAt: row.created_at,
   };
+}
+
+async function hydrateBusiness(row: any): Promise<BusinessPageRecord> {
+  if (!row?.category_id) return mapBusinessToPage(row);
+  const { data: cat } = await supabase.from('categories').select('name, short_name').eq('id', row.category_id).maybeSingle();
+  return mapBusinessToPage(row, cat?.name || '', (cat as any)?.short_name || '');
 }
 
 async function dataUrlToUploadUrl(dataUrl: string, folder: string): Promise<string> {
@@ -85,7 +124,7 @@ export async function getMyBusinessPage(userId: string): Promise<BusinessPageRec
     .maybeSingle();
 
   if (error || !data) return null;
-  return mapBusinessToPage(data);
+  return await hydrateBusiness(data);
 }
 
 export async function getBusinessPageById(businessIdOrSlug: string): Promise<BusinessPageRecord | null> {
@@ -97,7 +136,7 @@ export async function getBusinessPageById(businessIdOrSlug: string): Promise<Bus
 
   const { data, error } = await query.maybeSingle();
   if (error || !data) return null;
-  return mapBusinessToPage(data);
+  return await hydrateBusiness(data);
 }
 
 export async function createBusinessPage(
@@ -106,6 +145,8 @@ export async function createBusinessPage(
     name: string;
     username: string;
     businessType: string;
+    categoryId?: string | null;
+    subCategory?: string;
     city: string;
     phone: string;
     description: string;
@@ -129,6 +170,8 @@ export async function createBusinessPage(
       name: draft.name.trim(),
       slug: cleanSlug,
       business_type: draft.businessType || 'SHOP',
+      category_id: draft.categoryId || null,
+      sub_category: draft.subCategory || null,
       city: draft.city || 'صنعاء',
       phone: draft.phone?.trim() || null,
       description: draft.description?.trim() || null,
@@ -156,7 +199,7 @@ export async function createBusinessPage(
       return { page: null, error: error.message };
     }
 
-    return { page: mapBusinessToPage(data) };
+    return { page: await hydrateBusiness(data) };
   } catch (err: any) {
     return { page: null, error: err?.message || 'حدث خطأ أثناء إنشاء الصفحة' };
   }
@@ -173,6 +216,13 @@ export async function updateBusinessPage(
     description?: string;
     avatarUrl?: string;
     coverUrl?: string;
+    whatsapp?: string;
+    email?: string;
+    website?: string;
+    mapUrl?: string;
+    workingHours?: string;
+    workingSchedule?: WorkingSchedule | null;
+    branches?: BusinessBranchItem[];
   }
 ): Promise<{ ok: boolean; page?: BusinessPageRecord; error?: string }> {
   if (!businessId || !ownerId) {
@@ -182,7 +232,19 @@ export async function updateBusinessPage(
   if (updates.name !== undefined) payload.name = updates.name;
   if (updates.username !== undefined) payload.slug = updates.username.replace(/^@+/, '').trim().toLowerCase();
   if (updates.city !== undefined) payload.city = updates.city;
-  if (updates.phone !== undefined) payload.phone = updates.phone;
+  if (updates.phone !== undefined) payload.phone = updates.phone || null;
+  if (updates.whatsapp !== undefined) payload.whatsapp = updates.whatsapp || null;
+  if (updates.email !== undefined) payload.email = updates.email || null;
+  if (updates.website !== undefined) { payload.website_url = updates.website || null; payload.website = updates.website || null; }
+  if (updates.mapUrl !== undefined) payload.map_url = updates.mapUrl || null;
+  if (updates.workingHours !== undefined) payload.working_hours = updates.workingHours || null;
+  if (updates.workingSchedule !== undefined) {
+    const { data: cur } = await supabase.from('businesses').select('sections_config').eq('id', businessId).maybeSingle();
+    let curSec = cur?.sections_config || {};
+    if (typeof curSec === 'string') { try { curSec = JSON.parse(curSec); } catch { curSec = {}; } }
+    payload.sections_config = { ...curSec, working_hours: updates.workingHours || null, working_schedule: updates.workingSchedule };
+  }
+  if (updates.branches !== undefined) payload.branches = updates.branches;
   if (updates.description !== undefined) payload.description = updates.description;
   if (updates.avatarUrl !== undefined) payload.logo_url = updates.avatarUrl;
   if (updates.coverUrl !== undefined) payload.cover_url = updates.coverUrl;
@@ -200,7 +262,7 @@ export async function updateBusinessPage(
     return { ok: false, error: error.message };
   }
   if (!data) return { ok: false, error: 'لم يتم تحديث أي صف في businesses' };
-  return { ok: true, page: mapBusinessToPage(data) };
+  return { ok: true, page: await hydrateBusiness(data) };
 }
 
 export async function getBusinessPosts(businessId: string, currentUserId?: string): Promise<any[]> {

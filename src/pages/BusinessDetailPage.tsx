@@ -13,6 +13,7 @@ function getSafeOfferString(item: any): string {
 }
 
 import React, { useState } from 'react';
+import { RatingStars } from '../components/common/RatingStars';
 import { YRBusiness } from '../types/database.types';
 import { VerifiedBadge } from '../components/common/VerifiedBadge';
 
@@ -42,18 +43,9 @@ export const BusinessDetailPage: React.FC<BusinessDetailPageProps> = ({ business
     );
   }
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    for (let i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.push(<i key={i} className="fa-solid fa-star text-amber-400 text-xs"></i>);
-      } else {
-        stars.push(<i key={i} className="fa-regular fa-star text-gray-600 text-xs"></i>);
-      }
-    }
-    return stars;
-  };
+  const renderStars = (rating: number) => (
+    <RatingStars rating={Number(rating) || 0} size={12} emptyColorClass="text-gray-600" />
+  );
 
   const handleAddReview = (e: React.FormEvent) => {
     e.preventDefault();

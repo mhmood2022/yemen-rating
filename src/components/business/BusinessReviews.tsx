@@ -1,4 +1,5 @@
 import React from 'react';
+import { RatingStars } from '../common/RatingStars';
 import { Star, CheckCircle2, MessageSquare } from 'lucide-react';
 import { BusinessReview } from '../../types/business';
 import { Card } from '../ui/Card';
@@ -32,14 +33,8 @@ export const BusinessReviews: React.FC<{ reviews?: BusinessReview[] }> = ({ revi
             <span className="text-[11px] text-[#94A3B8]">{rev.date}</span>
           </div>
 
-          <div className="flex items-center gap-1 mb-2">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <Star
-                key={s}
-                size={13}
-                className={s <= Math.round(rev.rating) ? 'text-[#F5C400] fill-[#F5C400]' : 'text-[#CBD5E1]'}
-              />
-            ))}
+          <div className="mb-2">
+            <RatingStars rating={rev.rating} size={13} gapClassName="gap-1" emptyColorClass="text-[#CBD5E1]" />
           </div>
 
           <p className="text-xs sm:text-sm text-[#475569] leading-relaxed">{rev.comment}</p>

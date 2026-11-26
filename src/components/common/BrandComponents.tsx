@@ -1,4 +1,5 @@
 import React from "react";
+import { RatingStars } from './RatingStars';
 import { Star, Shield } from "lucide-react";
 
 export const YemenRatingLogo: React.FC<{ isDark?: boolean; className?: string }> = ({ className = "" }) => {
@@ -26,18 +27,11 @@ export const GreenStarRating: React.FC<{ rating: number; maxStars?: number; size
   size = 14
 }) => {
   return (
-    <div className="flex items-center gap-0.5" dir="ltr">
-      {Array.from({ length: maxStars }).map((_, idx) => {
-        const isFilled = idx < Math.round(rating);
-        return (
-          <Star
-            key={idx}
-            size={size}
-            className={isFilled ? "text-[#FFC500]" : "text-[#E4EBE4]"}
-            fill={isFilled ? "#FFC500" : "currentColor"}
-          />
-        );
-      })}
-    </div>
+    <RatingStars
+      rating={rating}
+      maxStars={maxStars}
+      size={size}
+      emptyColorClass="text-[#E4EBE4]"
+    />
   );
 };

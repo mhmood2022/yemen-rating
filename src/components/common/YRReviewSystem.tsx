@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { RatingStars } from './RatingStars';
 import { XSpinner } from '../ui/LoadingSpinner';
 import { 
   Star, 
@@ -135,18 +136,7 @@ export const YRReviewSystem: React.FC<YRReviewSystemProps> = ({ entityType, enti
             <div className="text-2xl font-black text-[#FFC500] leading-none">{avgRating}</div>
             <div className="text-[10px] font-bold text-slate-400 mt-1">{reviews.length} تقييم مسجل</div>
           </div>
-          <div className="flex items-center gap-0.5">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <Star
-                key={s}
-                className={`w-3.5 h-3.5 ${
-                  s <= Math.round(Number(avgRating))
-                    ? 'text-[#FFC500] fill-[#FFC500]'
-                    : 'text-slate-700'
-                }`}
-              />
-            ))}
-          </div>
+          <RatingStars rating={Number(avgRating) || 0} size={14} emptyColorClass="text-slate-700" />
         </div>
       </div>
 
@@ -300,17 +290,8 @@ export const YRReviewSystem: React.FC<YRReviewSystemProps> = ({ entityType, enti
                     </div>
 
                     {/* نجوم المراجعة */}
-                    <div className="flex items-center gap-0.5 bg-[#070B13] border border-[#1E293B] px-2 py-1 rounded-lg">
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star
-                          key={s}
-                          className={`w-3 h-3 ${
-                            s <= starsCount
-                              ? 'text-[#FFC500] fill-[#FFC500]'
-                              : 'text-slate-800'
-                          }`}
-                        />
-                      ))}
+                    <div className="flex items-center bg-[#070B13] border border-[#1E293B] px-2 py-1 rounded-lg">
+                      <RatingStars rating={Number(rev.rating || (rev as any).stars) || 0} size={12} emptyColorClass="text-slate-800" />
                     </div>
                   </div>
 

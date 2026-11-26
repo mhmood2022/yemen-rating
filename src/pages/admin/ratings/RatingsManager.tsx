@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { RatingStars } from '../../../components/common/RatingStars';
 import { XSpinner } from '../../../components/ui/LoadingSpinner';
 import {
   Star,
@@ -502,11 +503,7 @@ export const RatingsManager: React.FC = () => {
                     <div className="space-y-1.5 text-right flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-bold text-white">{r.user_name || 'زائر موثق'}</span>
-                        <div className="flex text-[#FFC500] gap-0.5">
-                          {Array.from({ length: starsCount }).map((_, i) => (
-                            <Star key={i} className="w-3 h-3 fill-[#FFC500]" />
-                          ))}
-                        </div>
+                        <RatingStars rating={Number(r.stars ?? r.rating) || 0} size={12} emptyColorClass="text-slate-700" />
                         {targetBiz && (
                           <span className="text-[10px] px-2 py-0.5 rounded bg-[#050811] text-slate-400 border border-[#1E293B]">
                             {targetBiz.name}

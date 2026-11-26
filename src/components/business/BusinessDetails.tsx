@@ -1,4 +1,5 @@
 import { YRBadge, BadgeType } from '../common/YRBadge';
+import { RatingStars } from '../common/RatingStars';
 import React, { useState } from 'react';
 import {
   Star, MapPin, Phone, ArrowRight, Share2, ShieldCheck, CheckCircle2,
@@ -116,8 +117,9 @@ export const BusinessDetails: React.FC<BusinessDetailsProps> = ({ business, onBa
               </div>
 
               <div className="flex items-center gap-3 mt-2 text-xs sm:text-sm text-zinc-400 flex-wrap">
-                <span className="flex items-center gap-1 text-amber-400 font-black">
-                  <Star className="w-4 h-4 fill-amber-400" /> {business.rating} ({business.reviewsCount} تقييم)
+                <span className="flex items-center gap-1.5 text-amber-400 font-black">
+                  <RatingStars rating={Number(business.rating) || 0} size={14} />
+                  <span>{Number(business.rating || 0).toFixed(1)} ({business.reviewsCount} تقييم)</span>
                 </span>
                 <span>•</span>
                 <span className="flex items-center gap-1">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { RatingStars } from '../../components/common/RatingStars';
 import {
   Bell, LogOut, Settings, TrendingUp, Eye, PhoneCall,
   MessageSquare, Crown, Star, X, MessageCircle, User,
@@ -326,11 +327,9 @@ export const OwnerDashboardPage: React.FC = () => {
                             </div>
                             
                             {/* Stars */}
-                            <div className="flex items-center gap-0.5 mt-1">
-                              {[1,2,3,4,5].map(s => (
-                                <Star key={s} size={12} className={s <= rev.stars ? 'fill-[#FFC500] text-[#FFC500]' : 'text-zinc-700'} />
-                              ))}
-                              <span className="text-xs text-zinc-500 mr-1">{rev.stars}.0</span>
+                            <div className="flex items-center gap-1 mt-1">
+                              <RatingStars rating={Number(rev.stars) || 0} size={12} emptyColorClass="text-zinc-700" />
+                              <span className="text-xs text-zinc-500 mr-1">{Number(rev.stars || 0).toFixed(1)}</span>
                             </div>
                             
                             {/* Comment */}

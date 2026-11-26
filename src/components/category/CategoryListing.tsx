@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { RatingStars } from '../common/RatingStars';
 import { XSpinner } from '../ui/LoadingSpinner';
 import {
   Star, MapPin, Phone, ArrowRight, Frown, CheckCircle2,
@@ -277,8 +278,9 @@ function UnifiedBusinessCard({ item, onSelect }: { item: BusinessItem; onSelect:
                 <ShieldCheck className="w-3 h-3" /> غير مطالب به
               </span>
             )}
-            <span className="bg-black  text-amber-400 text-[11px] font-black px-2 py-0.5 rounded-lg flex items-center gap-1 border border-amber-500/20">
-              <Star className="w-3 h-3 fill-amber-400" /> {item.rating}
+            <span className="bg-black text-amber-400 text-[11px] font-black px-2 py-0.5 rounded-lg flex items-center gap-1.5 border border-amber-500/20">
+              <RatingStars rating={Number(item.rating) || 0} size={11} />
+              <span>{Number(item.rating || 0).toFixed(1)}</span>
             </span>
           </div>
         </div>

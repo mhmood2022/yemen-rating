@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { RatingStars } from '../components/common/RatingStars';
 import { 
   Search, MapPin, Star, Building2, Store, Utensils, Hotel, 
   HeartPulse, Landmark, Layers, ChevronDown, Check, Phone, MessageSquare
@@ -197,9 +198,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onSelectBusiness }) => {
                   </div>
 
                   <div className="pt-2 border-t border-white/5 flex items-center justify-between">
-                    <div className="flex items-center gap-0.5 text-[#FFC500]">
-                      <Star size={11} className="fill-[#FFC500]" />
-                      <span className="text-[10px] font-mono font-bold">{Number(b.rating || 5).toFixed(1)}</span>
+                    <div className="flex items-center gap-1 text-[#FFC500]">
+                      <RatingStars rating={Number(b.rating) || 0} size={11} />
+                      <span className="text-[10px] font-mono font-bold">{Number(b.rating || 0).toFixed(1)}</span>
                     </div>
 
                     <button className="px-3 py-1 rounded-lg bg-[#FFC500] hover:bg-[#E5B200] text-black font-bold text-[10px] transition cursor-pointer">

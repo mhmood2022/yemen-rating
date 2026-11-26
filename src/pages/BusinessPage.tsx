@@ -1,4 +1,6 @@
 import { ReplyBar } from '../components/community/ReplyBar';
+import { RatingStars } from '../components/common/RatingStars';
+import { DAYS_AR, WorkingSchedule, createDefaultSchedule, formatTimeAr, summarizeSchedule, getLiveOpenStatus } from '../utils/workingHours';
 import { XSpinner } from '../components/ui/LoadingSpinner';
 import { XActionBar } from '../components/feed/XActionBar';
 import { XVideoPlayer } from '../components/feed/XVideoPlayer';
@@ -50,7 +52,7 @@ import { Star, ArrowRight, ArrowLeft, BarChart2,
   Flag,
   Globe,
   Video,
-  CreditCard, Building2 } from 'lucide-react';
+  CreditCard, Building2, Briefcase, Clock } from 'lucide-react';
 import { AuthModal } from '../components/auth/AuthModal';
 import { ReportPage } from '../components/community/ReportPage';
 import { RateBusinessModal } from '../components/reviews/RateBusinessModal';
@@ -192,6 +194,49 @@ const VerifiedBadge: React.FC<{ type?: string | boolean; size?: number }> = ({ t
     </svg>
   );
 };
+
+const BUSINESS_CATEGORY_LABELS: Record<string, string> = {
+  SHOP: 'المحلات والمتاجر',
+  BANK: 'البنوك والصرافة',
+  WALLET: 'المحافظ الإلكترونية',
+  TRANSPORT: 'شركات النقل',
+  HOSPITAL: 'المستشفيات',
+  CLINIC: 'العيادات',
+  LAB: 'المختبرات',
+  PHARMACY: 'الصيدليات',
+  UNIVERSITY: 'الجامعات',
+  SCHOOL: 'المدارس',
+  HOTEL: 'الفنادق',
+  CHALET: 'الشاليهات',
+  PARK: 'الحدائق',
+  HALL: 'صالات الأفراح',
+  BARBER: 'الحلاقون',
+  SALON: 'الكوافير',
+  STEAM_BATH: 'الحمامات البخارية',
+  CAFE: 'الكافيهات',
+  BUFFET: 'البوفيهات',
+  RESTAURANT: 'المطاعم والأغذية',
+  SUPERMARKET: 'السوبرماركت',
+  SHOPPING_CENTER: 'مراكز التسوق',
+  MALL: 'المولات',
+  CLEANING: 'شركات التنظيف',
+  CAR_SHOWROOM: 'معارض السيارات',
+  MOTORCYCLE_SHOWROOM: 'معارض الدراجات النارية',
+  CLOTHING_SHOES: 'محلات الملابس والأحذية',
+  GOLD: 'محلات الذهب',
+  POULTRY: 'مزارع الدواجن',
+  OPTICS: 'البصريات والسمعيات',
+  ENERGY: 'أنظمة الطاقة',
+  TECH: 'تكنولوجيا',
+  PHONES: 'سوق الهواتف',
+  SERVICE: 'خدمات عامة',
+};
+
+function formatBusinessCategory(raw?: string | null): string {
+  const val = (raw || '').trim();
+  if (!val) return '';
+  return BUSINESS_CATEGORY_LABELS[val] || BUSINESS_CATEGORY_LABELS[val.toUpperCase()] || val;
+}
 
 export const BusinessPage: React.FC = () => {
   const { id: routeBusinessId } = useParams<{ id?: string }>();
@@ -581,7 +626,32 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
   const [editBio, setEditBio] = useState('');
   const [editLocation, setEditLocation] = useState('');
   const [editBirthDate, setEditBirthDate] = useState('');
+  const [editWhatsapp, setEditWhatsapp] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editWebsite, setEditWebsite] = useState('');
+  const [editMapUrl, setEditMapUrl] = useState('');
+  const [editBranches, setEditBranches] = useState<{ name: string; map_url?: string; phone?: string }[]>([]);
+  const [editSchedule, setEditSchedule] = useState<WorkingSchedule>(createDefaultSchedule);
+  const [infoModalKind, setInfoModalKind] = useState<'branches' | 'hours' | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
+
+  useEffect(() => {
+    if (!isEditModalOpen) return;
+    setEditName(name); setEditBio(bio); setEditLocation(location || businessPage?.city || '');
+    setEditUsername(username); setEditPhone(phone || businessPage?.phone || '');
+    setEditWhatsapp((businessPage?.whatsapp || '').replace(/^\+?967/, ''));
+    setEditEmail(businessPage?.email || email || '');
+    setEditWebsite(businessPage?.website || ''); setEditMapUrl(businessPage?.mapUrl || '');
+    setEditBranches(Array.isArray(businessPage?.branches) ? businessPage!.branches! : []);
+    if (businessPage?.workingSchedule) setEditSchedule(businessPage.workingSchedule);
+    else {
+      const def = createDefaultSchedule();
+      const wh = (businessPage?.workingHours || '').trim();
+      if (wh === 'بدون ساعات عمل') def.mode = 'none';
+      else if (wh.includes('24')) def.mode = '24h';
+      setEditSchedule(def);
+    }
+  }, [isEditModalOpen]);
 
   // منشور جديد
   const [newPostText, setNewPostText] = useState('');
@@ -852,12 +922,17 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
         return;
       }
 
+      const cleanWa = editWhatsapp.trim().replace(/[^\d]/g, '');
+      const nextWa = cleanWa ? (cleanWa.startsWith('967') ? `+${cleanWa}` : `+967${cleanWa}`) : '';
+      const rawWeb = editWebsite.trim();
+      const nextWeb = rawWeb && rawWeb !== 'http://' && rawWeb !== 'https://' ? rawWeb : '';
+      const rawMap = editMapUrl.trim();
+      const nextMap = rawMap && rawMap !== 'http://' && rawMap !== 'https://' ? rawMap : '';
+      const nextBranches = editBranches.filter((b) => b.name.trim() || (b.map_url && b.map_url.trim()));
+      const nextHours = summarizeSchedule(editSchedule);
       const res = await updateBusinessPage(activeBizId, ownerUid, {
-        name: nextName,
-        username: nextUsername,
-        phone: nextPhone,
-        description: nextBio,
-        city: nextLocation,
+        name: nextName, username: nextUsername, phone: nextPhone, whatsapp: nextWa, email: editEmail.trim(),
+        website: nextWeb, mapUrl: nextMap, branches: nextBranches, workingHours: nextHours, workingSchedule: editSchedule, description: nextBio, city: nextLocation,
       });
       if (!res.ok) {
         showToast('تعذر الحفظ: ' + (res.error || 'خطأ'));
@@ -1754,14 +1829,65 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                 <span>{(verificationType && verificationType !== 'none') ? 'ترقية الاشتراك' : 'وثّق حسابك'}</span>
               </button>
             ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIsDmOpen(true)}
-                  className="w-9 h-9 rounded-full border border-[#536471] hover:bg-white/10 active:scale-95 text-white flex items-center justify-center transition"
-                  title="مراسلة خاصة"
-                >
-                  <Mail size={16} />
-                </button>
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const rawSite = ((businessPage as any)?.website || '').trim();
+                      if (!rawSite) {
+                        showToast('لم يتم إضافة موقع إلكتروني لهذه المنشأة بعد');
+                        return;
+                      }
+                      const href = rawSite.startsWith('http') ? rawSite : `https://${rawSite}`;
+                      window.open(href, '_blank', 'noopener,noreferrer');
+                    }}
+                    className="p-1 text-white/90 hover:text-[#FFC500] active:scale-95 transition"
+                    title="الموقع الإلكتروني"
+                  >
+                    <Globe size={17} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const rawPhone = (phone || businessPage?.phone || '').trim();
+                      if (!rawPhone) {
+                        showToast('لم يتم إضافة رقم اتصال لهذه المنشأة بعد');
+                        return;
+                      }
+                      window.location.href = `tel:${rawPhone}`;
+                    }}
+                    className="p-1 text-white/90 hover:text-[#FFC500] active:scale-95 transition"
+                    title="اتصال"
+                  >
+                    <Phone size={17} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const rawWa = ((businessPage as any)?.whatsapp || phone || businessPage?.phone || '').trim();
+                      const digits = rawWa.replace(/[^\d]/g, '');
+                      if (!digits) {
+                        showToast('لم يتم إضافة رقم واتساب لهذه المنشأة بعد');
+                        return;
+                      }
+                      const waNum = digits.length === 9 && digits.startsWith('7') ? `967${digits}` : digits;
+                      window.open(`https://wa.me/${waNum}`, '_blank', 'noopener,noreferrer');
+                    }}
+                    className="p-1 text-white/90 hover:text-[#FFC500] active:scale-95 transition"
+                    title="واتساب"
+                  >
+                    <i className="fa-brands fa-whatsapp text-[18px] leading-none" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsDmOpen(true)}
+                    className="p-1 text-white/90 hover:text-[#FFC500] active:scale-95 transition"
+                    title="مراسلة خاصة"
+                  >
+                    <Mail size={17} />
+                  </button>
+                </div>
                 <button
                   onClick={handleToggleFollow}
                   className={`px-5 py-1.5 rounded-full text-sm font-bold transition active:scale-95 ${
@@ -1796,15 +1922,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
             onClick={() => setActiveTab('reviews')}
             className="mt-1.5 inline-flex items-center gap-1.5 text-xs hover:opacity-85 transition"
           >
-            <span className="flex items-center gap-0.5">
-              {[1, 2, 3, 4, 5].map((s) => (
-                <Star
-                  key={s}
-                  size={13}
-                  className={s <= Math.round(bizRating) ? 'text-[#FFC500] fill-[#FFC500]' : 'text-[#71767B]'}
-                />
-              ))}
-            </span>
+            <RatingStars rating={bizRating} size={13} />
             <span className="font-bold text-white">{bizRating > 0 ? bizRating.toFixed(1) : '0.0'}</span>
             <span className="text-[#71767B]">({bizReviewCount.toLocaleString('ar-EG')} تقييم)</span>
           </button>
@@ -1826,12 +1944,44 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
 
         {/* 5. البيانات (أيقونات رمادية هادئة) */}
         <div className="flex flex-wrap items-center gap-y-1 gap-x-3 mt-2.5 text-[11px] text-[#71767B]">
-          {location && (
+          {(location || businessPage?.city) && (
             <div className="flex items-center gap-1">
-              <MapPin size={15} />
-              <span>{location}</span>
+              <MapPin size={15} className="text-[#FFC500] shrink-0" />
+              <span>{location || businessPage?.city}</span>
             </div>
           )}
+          {(businessPage?.categoryShortName || businessPage?.categoryName || formatBusinessCategory(businessPage?.businessType)) && (
+            <div className="flex items-center gap-1">
+              <Briefcase size={15} className="text-[#FFC500] shrink-0" />
+              <span>{businessPage?.categoryShortName || businessPage?.categoryName || formatBusinessCategory(businessPage?.businessType)}</span>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              if (!businessPage?.mapUrl && !(businessPage?.branches?.length)) {
+                showToast('الموقع على الخريطة والفروع غير محددة بعد');
+                return;
+              }
+              setInfoModalKind('branches');
+            }}
+            className="flex items-center gap-1 hover:text-white active:scale-95 transition"
+          >
+            <MapPin size={15} className="text-[#FFC500] shrink-0" />
+            <span>الموقع والفروع{(businessPage?.branches?.length || 0) > 0 ? ` (${businessPage!.branches!.length})` : ''}</span>
+          </button>
+          {(() => {
+            const st = getLiveOpenStatus(businessPage?.workingSchedule, businessPage?.workingHours);
+            return (
+              <button type="button" onClick={() => {
+                if (!st.hasHours && !businessPage?.workingHours) { showToast('ساعات العمل غير محددة بعد'); return; }
+                setInfoModalKind('hours');
+              }} className="flex items-center gap-1 hover:text-white active:scale-95 transition">
+                <Clock size={15} className="text-[#FFC500] shrink-0" />
+                <span className={st.hasHours ? (st.isOpen ? 'text-emerald-400 font-bold' : 'text-rose-500 font-bold') : ''}>{st.text}</span>
+              </button>
+            );
+          })()}
           {joinDate && (
             <div className="flex items-center gap-1">
               <Calendar size={15} />
@@ -1904,10 +2054,10 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
           ) : (
             <button
               onClick={() => setIsRateModalOpen(true)}
-              className="w-full py-2 px-4 rounded-full border border-[#536471] hover:bg-white/10 active:scale-[0.98] text-white text-sm font-bold transition flex items-center justify-center gap-1.5"
+              className="w-full py-2 px-4 rounded-full bg-[#FFC500] hover:bg-[#e6b100] active:scale-[0.98] text-black text-sm font-bold transition flex items-center justify-center gap-1.5"
             >
-              <Star size={14} className="text-[#FFC500] shrink-0" />
-              <span>تقييم</span>
+              <Star size={14} className="text-black fill-black shrink-0" />
+              <span>قيّم الصفحة</span>
             </button>
           )}
         </div>
@@ -2004,11 +2154,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                     </div>
                     <span className="text-[11px] text-[#71767B]">{rev.createdAt}</span>
                   </div>
-                  <div className="flex items-center gap-0.5">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} size={13} className={s <= rev.stars ? 'text-[#FFC500] fill-[#FFC500]' : 'text-[#71767B]'} />
-                    ))}
-                  </div>
+                  <RatingStars rating={rev.stars} size={13} />
                   <p className="text-[13.5px] leading-[20px] text-[#D6D9DB] whitespace-pre-wrap">{rev.comment}</p>
                 </div>
               ))
@@ -2475,18 +2621,167 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
                 />
               </div>
 
-              {/* الهاتف */}
+              {/* الهاتف والواتساب في صف واحد */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="relative border-b border-[#2F3336] focus-within:border-white transition py-1">
+                  <label className="block text-[#71767B] text-xs font-bold mb-1">رقم الهاتف</label>
+                  <input
+                    type="tel"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                    className="w-full bg-transparent text-white text-base pb-2 outline-none placeholder-[#71767B] caret-white"
+                    placeholder="77xxxxxxx"
+                    dir="ltr"
+                  />
+                </div>
+                <div className="relative border-b border-[#2F3336] focus-within:border-white transition py-1">
+                  <label className="block text-[#71767B] text-xs font-bold mb-1">رقم الواتساب</label>
+                  <div className="flex items-center gap-1.5 pb-2" dir="ltr">
+                    <span className="text-xs text-[#71767B] font-mono shrink-0">+967</span>
+                    <input
+                      type="tel"
+                      value={editWhatsapp}
+                      onChange={(e) => setEditWhatsapp(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                      className="w-full bg-transparent text-white text-base outline-none placeholder-[#71767B] caret-white"
+                      placeholder="77xxxxxxx"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* البريد الإلكتروني */}
               <div className="relative border-b border-[#2F3336] focus-within:border-white transition py-1">
-                <label className="block text-[#71767B] text-xs font-bold mb-1">رقم الهاتف</label>
+                <label className="block text-[#71767B] text-xs font-bold mb-1">البريد الإلكتروني</label>
                 <input
-                  type="tel"
-                  value={editPhone}
-                  onChange={(e) => setEditPhone(e.target.value)}
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
-                  className="w-full bg-transparent text-white text-base pb-2 outline-none placeholder-[#71767B]"
-                  placeholder="+967 77xxxxxxx"
+                  className="w-full bg-transparent text-white text-base pb-2 outline-none placeholder-[#71767B] caret-white"
+                  placeholder="info@example.com"
                   dir="ltr"
                 />
+              </div>
+
+              {/* الموقع الإلكتروني */}
+              <div className="relative border-b border-[#2F3336] focus-within:border-white transition py-1">
+                <label className="block text-[#71767B] text-xs font-bold mb-1">الموقع الإلكتروني</label>
+                <input
+                  type="url"
+                  value={editWebsite}
+                  onChange={(e) => setEditWebsite(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                  className="w-full bg-transparent text-white text-base pb-2 outline-none placeholder-[#71767B] caret-white"
+                  placeholder="https://"
+                  dir="ltr"
+                />
+              </div>
+
+              {/* الخريطة والفروع */}
+              <div className="space-y-2.5 border-b border-[#2F3336] focus-within:border-white transition py-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <label className="text-[#71767B] text-xs font-bold">الخريطة والفروع</label>
+                  <button
+                    type="button"
+                    onClick={() => setEditBranches((prev) => [...prev, { name: `فرع ${prev.length + 1}`, map_url: '' }])}
+                    className="text-[11px] font-bold text-white/80 hover:text-white transition"
+                  >
+                    + إضافة فرع
+                  </button>
+                </div>
+                <div className="flex items-center gap-2 pb-1">
+                  <span className="text-xs text-[#71767B] shrink-0">الرئيسي :</span>
+                  <input
+                    type="url"
+                    value={editMapUrl}
+                    onChange={(e) => setEditMapUrl(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                    className="w-full bg-transparent text-white text-sm outline-none placeholder-[#71767B] caret-white"
+                    placeholder="https://maps.google.com/..."
+                    dir="ltr"
+                  />
+                </div>
+                {editBranches.map((br, idx) => (
+                  <div key={idx} className="grid grid-cols-12 gap-2 items-center pt-1.5 border-t border-[#2F3336]/50">
+                    <input
+                      type="text"
+                      value={br.name}
+                      onChange={(e) => setEditBranches((prev) => prev.map((x, i) => i === idx ? { ...x, name: e.target.value } : x))}
+                      placeholder={`اسم الفرع ${idx + 1}`}
+                      className="col-span-4 bg-transparent text-white text-xs py-1 outline-none placeholder-[#71767B] caret-white"
+                    />
+                    <input
+                      type="url"
+                      value={br.map_url || ''}
+                      onChange={(e) => setEditBranches((prev) => prev.map((x, i) => i === idx ? { ...x, map_url: e.target.value } : x))}
+                      placeholder="https:// رابط الخريطة"
+                      dir="ltr"
+                      className="col-span-7 bg-transparent text-white text-xs py-1 outline-none placeholder-[#71767B] caret-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setEditBranches((prev) => prev.filter((_, i) => i !== idx))}
+                      className="col-span-1 text-[#71767B] hover:text-rose-400 flex justify-end"
+                      title="حذف الفرع"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* ساعات العمل */}
+              <div className="space-y-3 border-b border-[#2F3336] py-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label className="text-[#71767B] text-xs font-bold">ساعات العمل</label>
+                  <div className="flex items-center gap-4 text-xs text-white/90">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input type="checkbox" checked={editSchedule.mode === 'custom'} onChange={() => setEditSchedule({ ...editSchedule, mode: 'custom' })} className="accent-white w-3.5 h-3.5" />
+                      <span>تحديد الأيام</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input type="checkbox" checked={editSchedule.mode === '24h'} onChange={(e) => setEditSchedule({ ...editSchedule, mode: e.target.checked ? '24h' : 'custom' })} className="accent-white w-3.5 h-3.5" />
+                      <span>مفتوح 24 ساعة</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input type="checkbox" checked={editSchedule.mode === 'none'} onChange={(e) => setEditSchedule({ ...editSchedule, mode: e.target.checked ? 'none' : 'custom' })} className="accent-white w-3.5 h-3.5" />
+                      <span>بدون ساعات عمل</span>
+                    </label>
+                  </div>
+                </div>
+                {editSchedule.mode === 'custom' && (
+                  <div className="space-y-2 pt-1">
+                    {DAYS_AR.map((d, idx) => {
+                      const dayVal = editSchedule.days[d.key];
+                      return (
+                        <div key={d.key} className="flex flex-wrap items-center justify-between gap-2 py-1.5 border-b border-[#2F3336]/50 last:border-b-0 text-xs">
+                          <label className="flex items-center gap-2 cursor-pointer min-w-[82px]">
+                            <input type="checkbox" checked={dayVal.open} onChange={(e) => setEditSchedule({ ...editSchedule, days: { ...editSchedule.days, [d.key]: { ...dayVal, open: e.target.checked } } })} className="accent-white w-3.5 h-3.5" />
+                            <span className={dayVal.open ? 'text-white font-bold' : 'text-[#71767B]'}>{d.label}</span>
+                          </label>
+                          {dayVal.open ? (
+                            <div className="flex items-center gap-1.5" dir="ltr">
+                              <input type="time" value={dayVal.from} onChange={(e) => setEditSchedule({ ...editSchedule, days: { ...editSchedule.days, [d.key]: { ...dayVal, from: e.target.value } } })} className="bg-transparent border-b border-[#2F3336] focus:border-white text-white text-xs py-0.5 outline-none" />
+                              <span className="text-[#71767B]">-</span>
+                              <input type="time" value={dayVal.to} onChange={(e) => setEditSchedule({ ...editSchedule, days: { ...editSchedule.days, [d.key]: { ...dayVal, to: e.target.value } } })} className="bg-transparent border-b border-[#2F3336] focus:border-white text-white text-xs py-0.5 outline-none" />
+                              {idx === 0 && (
+                                <button type="button" onClick={() => {
+                                  const nextDays = { ...editSchedule.days };
+                                  DAYS_AR.forEach((x) => { if (nextDays[x.key].open) nextDays[x.key] = { ...nextDays[x.key], from: dayVal.from, to: dayVal.to }; });
+                                  setEditSchedule({ ...editSchedule, days: nextDays });
+                                }} className="text-[10px] text-[#71767B] hover:text-white px-1.5 py-0.5 rounded border border-[#2F3336]">تعميم</button>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-rose-500 font-bold text-xs">عطلة</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* زر تسجيل الخروج (أسفل الصفحة) */}
@@ -2507,6 +2802,76 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
 
       {/* مودال منشور جديد (تصميم منصة X المتوافق مع الكيبورد) */}
       
+      {infoModalKind && businessPage && (
+        <div className="fixed inset-0 z-[120] bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" dir="rtl" onClick={() => setInfoModalKind(null)}>
+          <div className="w-full sm:max-w-md bg-black border-t sm:border border-[#2F3336] rounded-t-3xl sm:rounded-3xl p-5 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto -mt-1 sm:hidden" />
+            {infoModalKind === 'branches' ? (
+              <>
+                <div className="flex items-center justify-between pb-2.5 border-b border-[#2F3336]">
+                  <h3 className="text-white text-sm font-bold flex items-center gap-2"><MapPin size={16} className="text-[#FFC500]" /><span>الموقع والفروع</span></h3>
+                  <button type="button" onClick={() => setInfoModalKind(null)} className="text-[#71767B] hover:text-white"><X size={16} /></button>
+                </div>
+                <div className="space-y-2.5 text-xs">
+                  {businessPage.mapUrl && (
+                    <a href={businessPage.mapUrl.startsWith('http') ? businessPage.mapUrl : `https://${businessPage.mapUrl}`} target="_blank" rel="noopener noreferrer" className="block p-3 rounded-xl border border-[#2F3336] hover:border-white/50 text-white">
+                      <div className="font-bold">الفرع الرئيسي — {businessPage.city}</div>
+                      <div className="text-[11px] text-[#71767B] truncate mt-0.5" dir="ltr">{businessPage.mapUrl}</div>
+                    </a>
+                  )}
+                  {(businessPage.branches || []).map((br, i) => (
+                    <div key={i} className="p-3 rounded-xl border border-[#2F3336] text-white space-y-1">
+                      <div className="font-bold">{br.name}</div>
+                      {br.map_url && <a href={br.map_url.startsWith('http') ? br.map_url : `https://${br.map_url}`} target="_blank" rel="noopener noreferrer" className="text-[11px] text-[#71767B] hover:text-white block truncate" dir="ltr">{br.map_url}</a>}
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              (() => {
+                const st = getLiveOpenStatus(businessPage.workingSchedule, businessPage.workingHours);
+                const sched = businessPage.workingSchedule;
+                return (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-white text-base font-bold">الساعات</h3>
+                      <button type="button" onClick={() => setInfoModalKind(null)} className="text-[#71767B] hover:text-white"><X size={16} /></button>
+                    </div>
+                    <div className="flex items-center gap-2.5 pb-3 border-b border-[#2F3336]">
+                      <div className="w-7 h-7 rounded-full border-2 border-[#FFC500] flex items-center justify-center shrink-0">
+                        <Clock size={14} className="text-[#FFC500]" />
+                      </div>
+                      <span className={`text-sm font-bold ${st.isOpen ? 'text-emerald-400' : 'text-rose-500'}`}>{st.text}</span>
+                    </div>
+                    <div className="rounded-2xl border border-[#2F3336] p-4 space-y-2.5">
+                      {sched?.mode === '24h' ? (
+                        <div className="text-center text-sm font-bold text-emerald-400 py-2">مفتوح 24 ساعة طوال أيام الأسبوع</div>
+                      ) : sched ? (
+                        DAYS_AR.map((d) => {
+                          const dv = sched.days[d.key];
+                          return (
+                            <div key={d.key} className="flex items-center justify-between gap-4 text-sm">
+                              <span className="text-white font-bold">{d.label}</span>
+                              {dv?.open ? (
+                                <span className="text-white tabular-nums">{formatTimeAr(dv.from)} - {formatTimeAr(dv.to)}</span>
+                              ) : (
+                                <span className="text-rose-500 font-bold">عطلة</span>
+                              )}
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-sm text-white leading-relaxed">{businessPage.workingHours}</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Custom Logout Modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center flex-nowrap min-w-0 w-full  justify-center p-4" dir="rtl">

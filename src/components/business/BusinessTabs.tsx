@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { RatingStars } from '../common/RatingStars';
 import { BusinessItem } from '../../types/business';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -198,11 +199,7 @@ export const BusinessTabs: React.FC<BusinessTabsProps> = ({ business, onNavigate
 
               {/* Stars Score summary */}
               <div className="flex items-center gap-1 text-xs font-extrabold text-[#000000] dark:text-white">
-                <div className="flex items-center gap-0.5">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} size={11} className="text-[#F5C400] fill-[#F5C400]" />
-                  ))}
-                </div>
+                <RatingStars rating={business.rating} size={11} />
                 <span>{business.rating.toFixed(1)} / 5</span>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { RatingStars } from '../common/RatingStars';
 import { LATEST_REVIEWS } from '../../data/demoHome';
 import { Star, User } from 'lucide-react';
 import { Card } from '../ui/Card';
@@ -48,16 +49,7 @@ export const HomeReviewsWidget: React.FC<{ onNavigate: (path: string) => void }>
 
             <div className="flex items-center justify-between pt-0.5">
               <span className="text-[9px] text-[#71717A]">{review.timeAgo}</span>
-              <div className="flex items-center gap-0.5">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star
-                    key={s}
-                    size={10}
-                    strokeWidth={2}
-                    className="text-[#F5C400] fill-[#F5C400]"
-                  />
-                ))}
-              </div>
+              <RatingStars rating={Number((review as any).rating ?? (review as any).stars ?? 5)} size={10} />
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { RatingStars } from '../common/RatingStars';
 import { 
   Building2, MapPin, Phone, Globe, Mail, 
   MessageCircle, Star, ShieldCheck, ArrowRight, 
@@ -200,7 +201,7 @@ export const BankProfileView: React.FC<{
 
             {/* التقييم */}
             <div className="flex items-center gap-1.5 bg-[#161619] p-1.5 px-2.5 rounded-xl border border-[#27272A] w-fit">
-              <Star size={14} className="text-[#FFC500] fill-[#FFC500]" />
+              <RatingStars rating={Number(bank.rating) || 0} size={13} />
               <b className="text-xs font-black text-white font-mono">{bank.rating.toFixed(1)}</b>
               <span className="text-[9px] text-[#9CA3AF]">({bank.reviewsCount} تقييم)</span>
             </div>

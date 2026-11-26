@@ -1,4 +1,5 @@
 import React from 'react';
+import { RatingStars } from '../common/RatingStars';
 import { Heart, ArrowRight, Star, MapPin, Phone } from 'lucide-react';
 import { SAMPLE_BUSINESSES } from '../../data/mockData';
 import { VerifiedBadge } from '../common/VerifiedBadge';
@@ -47,9 +48,9 @@ export const FavoritesPage: React.FC<{ onBack: () => void; onSelectBusiness: (b:
                 <p className="text-[11px] text-zinc-400 mt-1 line-clamp-1">{item.address}</p>
               </div>
               <div className="flex items-center justify-between pt-2 border-t border-zinc-800/80 text-xs">
-                <span className="flex items-center gap-1 text-yellow-400 font-bold">
-                  <Star className="w-3.5 h-3.5 fill-amber-400" />
-                  {item.rating}
+                <span className="flex items-center gap-1.5 text-yellow-400 font-bold">
+                  <RatingStars rating={Number(item.rating) || 0} size={12} />
+                  <span>{Number(item.rating || 0).toFixed(1)}</span>
                 </span>
                 <span className="text-yellow-400 font-semibold text-[11px]">عرض المنشأة ←</span>
               </div>

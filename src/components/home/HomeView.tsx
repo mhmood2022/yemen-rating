@@ -1,4 +1,5 @@
 import { JobCard } from '../jobs/JobCard';
+import { RatingStars } from '../common/RatingStars';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -346,10 +347,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       <MapPin size={11} className="text-[#FFC500]" />
                       <span>{item.city || 'اليمن'}</span>
                     </div>
-                    <div className="flex items-center justify-center gap-0.5 text-[#FFC500] my-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={11} className="fill-[#FFC500]" />
-                      ))}
+                    <div className="flex items-center justify-center my-1">
+                      <RatingStars rating={Number(item.score ?? item.rating ?? 0)} size={11} />
                     </div>
                   </div>
 
@@ -514,10 +513,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <MapPin size={11} className="text-[#FFC500]" />
                     <span>{item.city || 'صنعاء'}</span>
                   </div>
-                  <div className="flex items-center justify-center gap-0.5 text-[#FFC500] my-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={11} className="fill-[#FFC500]" />
-                    ))}
+                  <div className="flex items-center justify-center my-1">
+                    <RatingStars rating={Number(item.score ?? item.rating ?? 0)} size={11} />
                   </div>
                   <span className="text-[10px] font-mono text-zinc-400 font-bold block">
                     {Number(item.score).toFixed(1)} من 5 ({item.count} تقييم)
@@ -663,10 +660,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         <MapPin size={11} className="text-[#FFC500]" />
                         <span>{item.city || "اليمن"}</span>
                       </div>
-                      <div className="flex items-center justify-center gap-0.5 text-[#FFC500] my-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={11} className="fill-[#FFC500]" />
-                        ))}
+                      <div className="flex items-center justify-center my-1">
+                        <RatingStars rating={Number(item.score ?? item.rating ?? 0)} size={11} />
                       </div>
                     </div>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { RatingStars } from '../common/RatingStars';
 import { Landmark, Wallet, MapPin, Star, CheckCircle2, Flame, ArrowLeft, Layers, Users } from 'lucide-react';
 import { BankWalletItem } from '../../types/banksWallets';
 import { Card } from '../ui/Card';
@@ -91,8 +92,8 @@ export const BankWalletCard: React.FC<BankWalletCardProps> = ({ item, onNavigate
 
       <div className="pt-3 border-t border-[#F1F5F9] dark:border-[#222222] flex items-center justify-between gap-2 mt-auto">
         <div className="flex items-center gap-1.5">
-          <div className="flex items-center gap-1 text-xs font-bold text-[#000000] dark:text-white">
-            <Star size={14} strokeWidth={1.75} className="text-[#F5C400] fill-[#F5C400]" />
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#000000] dark:text-white">
+            <RatingStars rating={Number(item.rating) || 0} size={12} />
             <span>{item.rating.toFixed(1)}</span>
           </div>
           <span className="text-[11px] text-[#94A3B8] dark:text-[#71717A]">({item.reviewCount} تقييم)</span>

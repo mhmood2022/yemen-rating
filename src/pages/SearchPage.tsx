@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ArrowRight, X, SlidersHorizontal, User, Sparkles, Clock, Users, Image as ImageIcon, Heart, MessageCircle, Repeat2, Share, MoreHorizontal, BadgeCheck } from 'lucide-react';
+import { Search, ArrowRight, X, SlidersHorizontal, User, Sparkles, Clock, Users, Image as ImageIcon, Heart, MessageCircle, Repeat2, Share, MoreHorizontal, BadgeCheck, Building2, MapPin } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
-type FilterType = 'top' | 'latest' | 'people' | 'media';
+type FilterType = 'top' | 'latest' | 'businesses' | 'people' | 'media';
 
 interface UserResult {
   id: string;
@@ -29,6 +29,7 @@ export const SearchPage: React.FC = () => {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('top');
   const [users, setUsers] = useState<UserResult[]>([]);
+  const [businesses, setBusinesses] = useState<any[]>([]);
   const [posts, setPosts] = useState<PostResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -38,6 +39,7 @@ export const SearchPage: React.FC = () => {
   useEffect(() => {
     if (!query.trim()) {
       setUsers([]);
+      setBusinesses([]);
       setPosts([]);
       setHasSearched(false);
       return;
@@ -49,6 +51,31 @@ export const SearchPage: React.FC = () => {
       const searchTerm = `%${query}%`;
 
       try {
+        // 0. البحث في المنشآت (بالاسم والمدينة والتصنيف العام)
+        if (filter === 'top' || filter === 'businesses') {
+          const { data: matchedCats } = await supabase
+            .from('categories')
+            .select('id, name, short_name')
+            .or(`name.ilike.${searchTerm},short_name.ilike.${searchTerm}`);
+          const catMap = new Map((matchedCats || []).map((c: any) => [c.id, c]));
+          const catIds = (matchedCats || []).map((c: any) => c.id);
+          let bizQ = supabase.from('businesses').select('id, name, slug, city, logo_url, is_verified, category_id, sub_category').limit(12);
+          if (catIds.length > 0) {
+            bizQ = bizQ.or(`name.ilike.${searchTerm},city.ilike.${searchTerm},description.ilike.${searchTerm},category_id.in.(${catIds.join(',')})`);
+          } else {
+            bizQ = bizQ.or(`name.ilike.${searchTerm},city.ilike.${searchTerm},description.ilike.${searchTerm}`);
+          }
+          const { data: bizRes } = await bizQ;
+          const allBizCatIds = [...new Set((bizRes || []).map((b: any) => b.category_id).filter((id: string) => id && !catMap.has(id)))];
+          if (allBizCatIds.length > 0) {
+            const { data: extraCats } = await supabase.from('categories').select('id, name, short_name').in('id', allBizCatIds);
+            (extraCats || []).forEach((c: any) => catMap.set(c.id, c));
+          }
+          setBusinesses((bizRes || []).map((b: any) => ({ ...b, shortLabel: catMap.get(b.category_id)?.short_name || b.sub_category || catMap.get(b.category_id)?.name || '' })));
+        } else {
+          setBusinesses([]);
+        }
+
         // 1. البحث في المستخدمين (profiles)
         if (filter === 'top' || filter === 'latest' || filter === 'people') {
           const { data: usersData } = await supabase
@@ -119,6 +146,7 @@ export const SearchPage: React.FC = () => {
   const tabs = [
     { id: 'top', label: 'الأعلى', icon: Sparkles },
     { id: 'latest', label: 'الأحدث', icon: Clock },
+    { id: 'businesses', label: 'المنشآت', icon: Building2 },
     { id: 'people', label: 'الأشخاص', icon: Users },
     { id: 'media', label: 'الوسائط', icon: ImageIcon },
   ];
@@ -180,15 +208,37 @@ export const SearchPage: React.FC = () => {
       {loading && <div className="text-center py-10 text-zinc-500 text-sm">جاري البحث...</div>}
 
       {/* لا توجد نتائج */}
-      {!loading && hasSearched && users.length === 0 && posts.length === 0 && (
+      {!loading && hasSearched && users.length === 0 && posts.length === 0 && businesses.length === 0 && (
         <div className="text-center py-20 text-zinc-500 text-sm px-4">
           لا توجد نتائج مطابقة لـ "{query}"
         </div>
       )}
 
       {/* عرض النتائج */}
-      {!loading && (users.length > 0 || posts.length > 0) && (
+      {!loading && (users.length > 0 || posts.length > 0 || businesses.length > 0) && (
         <div>
+          {/* قسم المنشآت */}
+          {(filter === 'top' || filter === 'businesses') && businesses.length > 0 && (
+            <div className="border-b border-[#2F3336]">
+              {filter === 'top' && <h3 className="px-4 py-3 text-lg font-bold">المنشآت</h3>}
+              {businesses.map((b) => (
+                <div key={b.id} onClick={() => navigate(`/business-page/${b.id}`)} className="flex items-center gap-3 px-4 py-3 hover:bg-[#080808] cursor-pointer transition border-b border-[#2F3336] last:border-0">
+                  <div className="w-12 h-12 rounded-full bg-[#16181C] border border-[#2F3336] overflow-hidden shrink-0 flex items-center justify-center">
+                    {b.logo_url ? <img src={b.logo_url} alt={b.name} className="w-full h-full object-cover" /> : <Building2 size={22} className="text-zinc-500" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className="text-[15px] font-bold text-white truncate">{b.name}</p>
+                      {b.is_verified && <BadgeCheck size={16} className="text-[#FFC500] shrink-0" />}
+                      {b.shortLabel && <span className="px-2 py-0.5 rounded-full bg-[#111111] border border-[#2F3336] text-[10.5px] font-bold text-zinc-300">{b.shortLabel}</span>}
+                    </div>
+                    <p className="text-[12px] text-zinc-500 flex items-center gap-1 mt-0.5"><MapPin size={12} /><span>{b.city || 'اليمن'}</span></p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* قسم الأشخاص (يظهر فقط في تبويب الأشخاص أو الأعلى) */}
           {(filter === 'top' || filter === 'people') && users.length > 0 && (
             <div className="border-b border-[#2F3336]">

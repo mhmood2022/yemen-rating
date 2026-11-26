@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { RatingStars } from '../../../components/common/RatingStars';
 import { XSpinner } from '../../../components/ui/LoadingSpinner';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
@@ -11,6 +12,7 @@ import { supabase } from '../../../lib/supabase';
 import { YRBadge, BadgeType } from '../../../components/common/YRBadge';
 import { AdBanner } from '../../../components/common/AdBanner';
 import { ClaimOwnershipModal } from '../../../components/business/ClaimOwnershipModal';
+import { YEMEN_GOVERNORATES, UnifiedTaxonomyCategory, fetchUnifiedBusinessTaxonomy } from '../../../constants/businessTaxonomy';
 
 export const CATEGORY_CONFIG: { [slug: string]: { name: string; icon: any } } = {
   'all': { name: 'المنشآت والشركات', icon: Layers },
@@ -36,14 +38,7 @@ export const CATEGORY_CONFIG: { [slug: string]: { name: string; icon: any } } = 
 
 const CITIES_LIST = [
   { id: 'all', name: 'كل المدن والمحافظات' },
-  { id: 'صنعاء', name: 'صنعاء' },
-  { id: 'عدن', name: 'عدن' },
-  { id: 'تعز', name: 'تعز' },
-  { id: 'الحديدة', name: 'الحديدة' },
-  { id: 'حضرموت', name: 'حضرموت' },
-  { id: 'إب', name: 'إب' },
-  { id: 'ذمار', name: 'ذمار' },
-  { id: 'مأرب', name: 'مأرب' }
+  ...YEMEN_GOVERNORATES.map((g) => ({ id: g, name: g })),
 ];
 
 export const BusinessesPage: React.FC = () => {
@@ -63,6 +58,11 @@ export const BusinessesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [selectedCity, setSelectedCity] = useState(() => searchParams.get('city') || 'all');
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
+  const [taxMains, setTaxMains] = useState<UnifiedTaxonomyCategory[]>([]);
+  const [taxSubsByParent, setTaxSubsByParent] = useState<Record<string, UnifiedTaxonomyCategory[]>>({});
+  const [taxAllSubs, setTaxAllSubs] = useState<UnifiedTaxonomyCategory[]>([]);
+  const catDropdownRef = useRef<HTMLDivElement>(null);
   const cityDropdownRef = useRef<HTMLDivElement>(null);
 
   // مودال إثبات الملكية الحقيقي
@@ -71,9 +71,8 @@ export const BusinessesPage: React.FC = () => {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (cityDropdownRef.current && !cityDropdownRef.current.contains(e.target as Node)) {
-        setCityDropdownOpen(false);
-      }
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(e.target as Node)) setCityDropdownOpen(false);
+      if (catDropdownRef.current && !catDropdownRef.current.contains(e.target as Node)) setCatDropdownOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -85,14 +84,22 @@ export const BusinessesPage: React.FC = () => {
       try {
         let query = supabase.from('businesses').select('*');
 
+        const tax = await fetchUnifiedBusinessTaxonomy();
+        setTaxMains(tax.mains); setTaxSubsByParent(tax.subsByParent); setTaxAllSubs(tax.allSubs);
         if (currentCategorySlug !== 'all') {
-          const { data: catData } = await supabase.from('categories').select('id, name, slug');
-          const matchedCat = (catData || []).find(
-            c => c.slug === currentCategorySlug || c.id === currentCategorySlug || c.name === currentCategorySlug
-          );
-          if (matchedCat) {
-            query = query.eq('category_id', matchedCat.id);
+          const allCats = [...tax.mains, ...tax.allSubs];
+          const matched = allCats.find((c) => c.slug === currentCategorySlug || c.id === currentCategorySlug || c.name === currentCategorySlug);
+          if (matched) {
+            setCategoryTitle(matched.name);
+            if (matched.category_level === 'main') {
+              const subIds = (tax.subsByParent[matched.id] || []).map((x) => x.id);
+              if (subIds.length > 0) query = query.in('category_id', subIds);
+            } else {
+              query = query.eq('category_id', matched.id);
+            }
           }
+        } else {
+          setCategoryTitle('المنشآت والشركات');
         }
 
         const [bizRes, revRes] = await Promise.all([
@@ -211,8 +218,8 @@ export const BusinessesPage: React.FC = () => {
         ))}
       </div>
 
-      {/* شريط البحث والمدينة */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4 bg-black p-2.5 rounded-2xl border border-[#2F3336]">
+      {/* شريط البحث والتصنيف العام والمحافظة */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4 bg-black p-2.5 rounded-2xl border border-[#2F3336]">
         <div className="sm:col-span-2 relative">
           <Search className="w-4 h-4 text-zinc-500 absolute right-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -224,6 +231,27 @@ export const BusinessesPage: React.FC = () => {
           />
         </div>
 
+        <div className="relative" ref={catDropdownRef}>
+          <button type="button" onClick={() => setCatDropdownOpen(!catDropdownOpen)} className="w-full bg-[#111111] hover:bg-[#1A1A1A] border border-[#2F3336] focus:border-white text-zinc-200 px-3.5 py-2.5 rounded-xl text-xs outline-none transition cursor-pointer flex items-center justify-between font-bold">
+            <span className="truncate">{currentCategorySlug === 'all' ? 'كل التصنيفات' : categoryTitle}</span>
+            <ChevronDown className={`w-4 h-4 text-[#71767B] transition-transform duration-200 ${catDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {catDropdownOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1.5 z-40 bg-black border border-[#2F3336] rounded-xl shadow-2xl p-1.5 max-h-72 overflow-y-auto space-y-1 text-right">
+              <div onClick={() => { setSearchParams({ category: 'all' }); setCatDropdownOpen(false); }} className={`px-3 py-2 rounded-lg text-xs font-bold cursor-pointer ${currentCategorySlug === 'all' ? 'bg-white/10 text-white' : 'text-zinc-300 hover:bg-[#111111]'}`}>كل التصنيفات</div>
+              {taxMains.map((m) => (
+                <div key={m.id} className="space-y-0.5 pt-1 border-t border-[#2F3336]/50">
+                  <div onClick={() => { setSearchParams({ category: m.slug }); setCatDropdownOpen(false); }} className="px-2.5 py-1.5 rounded-lg text-[11px] font-black text-[#71767B] hover:text-white cursor-pointer">{m.name}</div>
+                  {(taxSubsByParent[m.id] || []).map((sub) => (
+                    <div key={sub.id} onClick={() => { setSearchParams({ category: sub.slug }); setCatDropdownOpen(false); }} className={`px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer flex items-center justify-between ${currentCategorySlug === sub.slug ? 'bg-white/10 text-white' : 'text-zinc-300 hover:bg-[#111111]'}`}>
+                      <span>{sub.name}</span>{currentCategorySlug === sub.slug && <Check size={13} className="text-[#FFC500]" />}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="relative" ref={cityDropdownRef}>
           <button
             type="button"
@@ -348,16 +376,20 @@ export const BusinessesPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* الموقع الجغرافي */}
-                    <div className="flex items-center justify-start gap-1 text-xs text-zinc-400">
-                      <MapPin size={13} className="text-[#EAB308] shrink-0" />
-                      <span>{item.city || item.address || 'اليمن'}</span>
+                    {/* التصنيف المختصر والموقع الجغرافي */}
+                    <div className="flex flex-wrap items-center justify-start gap-2 text-xs text-zinc-400">
+                      <span className="inline-flex items-center gap-1"><MapPin size={13} className="text-[#EAB308] shrink-0" /><span>{item.city || item.address || 'اليمن'}</span></span>
+                      {(taxAllSubs.find((x) => x.id === item.category_id)?.short_name || item.sub_category) && (
+                        <span className="px-2 py-0.5 rounded-full bg-[#111111] border border-[#2F3336] text-[10.5px] font-bold text-zinc-300">
+                          {taxAllSubs.find((x) => x.id === item.category_id)?.short_name || item.sub_category}
+                        </span>
+                      )}
                     </div>
 
                     {/* التقييم الحقيقي المماثل تماماً لكرت البنك */}
                     {rev.count > 0 ? (
                       <div className="flex items-center justify-start gap-1.5 text-xs font-bold pt-0.5">
-                        <Star size={13} className="fill-[#EAB308] text-[#EAB308]" />
+                        <RatingStars rating={Number(rev.avg) || 0} size={13} />
                         <span className="text-white font-mono font-bold">{rev.avg}</span>
                         <span className="text-zinc-400 text-[11px] font-normal">({rev.count} تقييم)</span>
                       </div>
