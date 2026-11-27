@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import { NavLink, useLocation } from 'react-router-dom';
 import { OFFICIAL_CATEGORIES } from '../../data/categories';
 import {
@@ -20,6 +21,8 @@ import {
   FileText,
   Inbox,
   LayoutGrid,
+  ClipboardList,
+  Tag,
 } from 'lucide-react';
 
 const ADMIN_OPERATIONS = [
@@ -37,6 +40,8 @@ const ADMIN_OPERATIONS = [
   { id: 'ratings', label: 'التحكم بالتقييمات والنسب', icon: Star, path: '/admin/ratings' },
   { id: 'categories', label: 'إدارة التصنيفات الرسمية', icon: FolderTree, path: '/admin/categories' },
   { id: 'ads', label: 'الإعلانات و YR Ads', icon: Megaphone, path: '/admin/ads' },
+  { id: 'ad_orders', label: 'طلبات الاشتراكات الإعلانية', icon: ClipboardList, path: '/admin/ads?tab=orders' },
+  { id: 'ad_pricing', label: 'أسعار وباقات الإعلانات', icon: Tag, path: '/admin/ads?tab=pricing' },
   { id: 'auctions', label: 'المزادات والعمولات', icon: Gavel, path: '/admin/auctions' },
   { id: 'markets', label: 'الأسواق ومؤشرات الأسعار', icon: Store, path: '/admin/markets' },
   { id: 'users', label: 'المستخدمون والأدوار', icon: Users, path: '/admin/users' },
@@ -46,6 +51,64 @@ const ADMIN_OPERATIONS = [
 export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const location = useLocation();
   const [sectorsOpen, setSectorsOpen] = useState(true);
+  const [badgeCounts, setBadgeCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    let active = true;
+    const fetchCounts = async () => {
+      try {
+        const [adOrdRes, subRes, proofRes, notifRes, supportRes] = await Promise.allSettled([
+          supabase
+            .from('ad_subscription_orders')
+            .select('id', { count: 'exact', head: true })
+            .in('status', ['pending_review', 'pending_payment']),
+          supabase
+            .from('subscriptions')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'PENDING'),
+          supabase
+            .from('payment_proofs')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'PENDING'),
+          supabase
+            .from('admin_notifications')
+            .select('id', { count: 'exact', head: true })
+            .eq('is_read', false),
+          supabase
+            .from('user_support_messages')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'PENDING'),
+        ]);
+
+        const getCnt = (r: PromiseSettledResult<any>) =>
+          r.status === 'fulfilled' ? Number(r.value?.count || 0) : 0;
+
+        const adOrders = getCnt(adOrdRes);
+        const subs = getCnt(subRes);
+        const proofs = getCnt(proofRes);
+        const notifs = getCnt(notifRes);
+        const supports = getCnt(supportRes);
+        const total = adOrders + subs + proofs + notifs + supports;
+
+        if (!active) return;
+        setBadgeCounts({
+          dashboard: total,
+          ad_orders: adOrders,
+          ads: adOrders,
+          subscriptions: subs,
+          payments: proofs,
+          operations: notifs + supports,
+        });
+      } catch {}
+    };
+
+    fetchCounts();
+    const timer = setInterval(fetchCounts, 20000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [location.pathname, location.search]);
 
   // توجيه كل تصنيف إلى شاشته المتخصصة بدقة
   const getCategoryPath = (slug: string) => {
@@ -110,24 +173,40 @@ export const AdminSidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = 
               أدوات الإدارة والعمليات
             </p>
             {ADMIN_OPERATIONS.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path && (!location.search || item.path !== '/admin/companies');
-              return (
-                <NavLink
-                  key={item.id}
-                  to={item.path}
-                  onClick={() => { if (window.innerWidth < 1024) onClose(); }}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-150 ${
-                    isActive
-                      ? 'bg-[#FFC500] text-black shadow-md shadow-yellow-500/10'
-                      : 'text-gray-300 hover:text-white hover:bg-[#111111]'
-                  }`}
-                >
-                  <Icon size={16} className="shrink-0 text-[#FFC500]" />
-                  <span className={isActive ? "text-black font-bold" : "text-gray-300"}>{item.label}</span>
-                </NavLink>
-              );
-            })}
+                const Icon = item.icon;
+                const isActive = item.path.includes('?')
+                  ? `${location.pathname}${location.search}` === item.path
+                  : location.pathname === item.path &&
+                    (!location.search || (item.path !== '/admin/companies' && item.path !== '/admin/ads'));
+                const count = badgeCounts[item.id] || 0;
+                return (
+                  <NavLink
+                    key={item.id}
+                    to={item.path}
+                    onClick={() => { if (window.innerWidth < 1024) onClose(); }}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-bold transition-all duration-150 ${
+                      isActive
+                        ? 'bg-[#FFC500] text-black shadow-md shadow-yellow-500/10'
+                        : 'text-gray-300 hover:text-white hover:bg-[#111111]'
+                    }`}
+                  >
+                    <div className="relative shrink-0">
+                      <Icon size={16} className={isActive ? 'text-black' : 'text-[#FFC500]'} />
+                      {count > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 w-2.5 h-2.5 rounded-full bg-red-600 ring-2 ring-black" />
+                      )}
+                    </div>
+                    <span className={`flex-1 truncate ${isActive ? 'text-black font-bold' : 'text-gray-300'}`}>
+                      {item.label}
+                    </span>
+                    {count > 0 && (
+                      <span className="px-1.5 min-w-[20px] h-5 rounded-full bg-red-600 text-white text-[10px] font-black flex items-center justify-center shrink-0 shadow">
+                        {count > 99 ? '+99' : count}
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              })}
           </div>
 
           {/* 2. قطاعات وتصنيفات الموقع الرسمي الـ 34 */}

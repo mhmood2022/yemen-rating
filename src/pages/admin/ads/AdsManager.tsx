@@ -13,7 +13,11 @@ import {
   Eye,
   MousePointer,
   Calendar,
+  Tag,
+  ClipboardList,
 } from 'lucide-react';
+import { AdsManagerTab } from '../subscriptions/tabs/AdsManagerTab';
+import { AdPricingManagerTab } from '../subscriptions/tabs/AdPricingManagerTab';
 import {
   adsDatabaseService,
   ExtendedAdRecord,
@@ -41,6 +45,13 @@ export const AdsManager: React.FC = () => {
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
   const [ads, setAds] = useState<ExtendedAdRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [adsMainTab, setAdsMainTab] = useState<'campaigns' | 'orders' | 'pricing'>(() => {
+    try {
+      const t = new URLSearchParams(window.location.search).get('tab');
+      if (t === 'orders' || t === 'pricing') return t;
+    } catch {}
+    return 'campaigns';
+  });
   const [viewFormat, setViewFormat] = useState<'grid' | 'table'>('grid');
   const [sectionFilter, setSectionFilter] = useState<string>('all_filter');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'paused'>('all');
@@ -128,6 +139,47 @@ export const AdsManager: React.FC = () => {
         </div>
       )}
 
+      {/* شريط أقسام إدارة الإعلانات */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        {[
+          { id: 'campaigns', label: 'حملات البانر النشطة', icon: Megaphone },
+          { id: 'orders', label: 'الاشتراكات الإعلانية والحجوزات', icon: ClipboardList },
+          { id: 'pricing', label: 'أسعار وباقات الإعلانات', icon: Tag },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const active = adsMainTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setAdsMainTab(tab.id as any)}
+              className={`px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 whitespace-nowrap transition ${
+                active
+                  ? 'bg-[#FFC500] text-black shadow-lg'
+                  : 'bg-[#0B0F17] text-zinc-300 border border-[#2F3336] hover:text-white'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {adsMainTab === 'orders' && (
+        <div className="bg-black border border-[#2F3336] rounded-2xl p-4">
+          <AdsManagerTab />
+        </div>
+      )}
+
+      {adsMainTab === 'pricing' && (
+        <div className="bg-black border border-[#2F3336] rounded-2xl p-4">
+          <AdPricingManagerTab />
+        </div>
+      )}
+
+      {adsMainTab === 'campaigns' && (
+        <>
       {/* الهيدر */}
       <div className="bg-[#0B0F17] p-3.5 sm:p-4 rounded-xl border border-[#2F3336] space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2.5">
@@ -508,6 +560,8 @@ export const AdsManager: React.FC = () => {
             </tbody>
           </table>
         </div>
+      )}
+        </>
       )}
     </div>
   );

@@ -5,7 +5,6 @@ import { bankService } from '../../services/bankService';
 import { YRReviewSystem } from '../../components/common/YRReviewSystem';
 import { YRBadge } from '../../components/common/YRBadge';
 import { AdBanner } from '../../components/common/AdBanner';
-import { ClaimOwnershipModal } from '../../components/business/ClaimOwnershipModal';
 import { BankEntity } from '../../types/schema.types';
 
 export const BankProfilePage: React.FC = () => {
@@ -13,7 +12,6 @@ export const BankProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [bank, setBank] = useState<BankEntity | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showClaimModal, setShowClaimModal] = useState(false);
 
   useEffect(() => {
     if (slug) {
@@ -35,14 +33,6 @@ export const BankProfilePage: React.FC = () => {
         <button onClick={() => navigate('/banks')} className="px-3 py-1.5 rounded-xl bg-[#161619] border border-[#FFC500]/40 text-xs font-black text-[#FFC500] flex items-center gap-1.5">
           <ArrowRight size={13} className="rtl:rotate-180" /> الرجوع للبنوك
         </button>
-        {!bank.is_verified && bank.ownership_status === 'UNCLAIMED' && (
-          <button 
-            onClick={() => setShowClaimModal(true)}
-            className="px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-xs font-bold text-amber-400 flex items-center gap-1.5"
-          >
-            طلب إثبات ملكية الصفحة
-          </button>
-        )}
       </div>
 
       <div className="bg-[#0F0F12] rounded-3xl border border-[#222226] overflow-hidden shadow-2xl relative">
@@ -74,15 +64,7 @@ export const BankProfilePage: React.FC = () => {
 
       <YRReviewSystem entityType="bank" entityId={bank.id} initialReviews={[]} />
       
-      {showClaimModal && (
-        <ClaimOwnershipModal
-          isOpen={showClaimModal}
-          onClose={() => setShowClaimModal(false)}
-          onSuccess={() => alert('تم إرسال طلبك بنجاح!')}
-          businessId={bank.id}
-          businessName={bank.name}
-        />
-      )}
+
     <AdBanner placementId="bank_profile_footer" className="mt-4" />
     </div>
   );

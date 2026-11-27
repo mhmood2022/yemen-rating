@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../../lib/supabase';
 import { Link } from 'react-router-dom';
 import {
   Building2,
@@ -19,7 +20,15 @@ import {
 } from 'lucide-react';
 
 export const AdminDashboardOverview: React.FC = () => {
-  // الأرقام الحقيقية المعتمدة للمنصة - تفتح فوراً بدون أي تأخير أو دوران
+  const [pendingAdOrders, setPendingAdOrders] = useState<number>(0);
+
+  useEffect(() => {
+    supabase
+      .from('ad_subscription_orders')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['pending_review', 'pending_payment'])
+      .then(({ count }) => setPendingAdOrders(Number(count || 0)), () => {});
+  }, []);
   const mainStats = [
     {
       title: 'إجمالي المنشآت والأنشطة',
@@ -58,13 +67,13 @@ export const AdminDashboardOverview: React.FC = () => {
       path: '/admin/claims',
     },
     {
-      title: 'الحملات الإعلانية YR Ads',
-      value: '0',
-      unit: 'إعلان نشط',
-      change: 'استوديو توليد الإعلانات',
+      title: 'طلبات واشتراكات الإعلانات',
+      value: String(pendingAdOrders),
+      unit: 'طلب إعلاني معلق',
+      change: pendingAdOrders > 0 ? 'يوجد طلبات بانتظار المراجعة' : 'اضغط لإدارة الإعلانات والأسعار',
       icon: Megaphone,
       color: '#EC4899',
-      path: '/admin/ads',
+      path: '/admin/ads?tab=orders',
     },
     {
       title: 'المزادات والصفقات',

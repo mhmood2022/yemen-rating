@@ -9,9 +9,8 @@ import {
   Loader2, Frown, Layers, ShieldCheck, ArrowLeft, Star
 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
-import { YRBadge, BadgeType } from '../../../components/common/YRBadge';
+import { InstitutionalBusinessCard } from '../../../components/business/InstitutionalBusinessCard';
 import { AdBanner } from '../../../components/common/AdBanner';
-import { ClaimOwnershipModal } from '../../../components/business/ClaimOwnershipModal';
 import { YEMEN_GOVERNORATES, UnifiedTaxonomyCategory, fetchUnifiedBusinessTaxonomy } from '../../../constants/businessTaxonomy';
 
 export const CATEGORY_CONFIG: { [slug: string]: { name: string; icon: any } } = {
@@ -65,9 +64,7 @@ export const BusinessesPage: React.FC = () => {
   const catDropdownRef = useRef<HTMLDivElement>(null);
   const cityDropdownRef = useRef<HTMLDivElement>(null);
 
-  // مودال إثبات الملكية الحقيقي
-  const [claimModalOpen, setClaimModalOpen] = useState(false);
-  const [selectedBusinessForClaim, setSelectedBusinessForClaim] = useState<{ id: string; name: string } | null>(null);
+
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -174,11 +171,7 @@ export const BusinessesPage: React.FC = () => {
     { id: 'transport', name: 'نقل' }
   ];
 
-  const handleOpenClaim = (e: React.MouseEvent, b: any) => {
-    e.stopPropagation();
-    const targetSlug = b.slug || b.id;
-    window.location.href = "/bank.html?slug=" + targetSlug + "&claim=true";
-  };
+
 
   return (
     <div dir="rtl" className="min-h-screen bg-black text-white font-['Cairo'] pb-16 px-3 sm:px-4 max-w-7xl mx-auto pt-1">
@@ -306,138 +299,28 @@ export const BusinessesPage: React.FC = () => {
           </button>
         </div>
       ) : (
-        /* شبكة الكروت المطابقة طبق الأصل لبنية كرت البنك الفاخر */
+        /* بطاقات المنشآت المؤسسية الموحدة */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((item) => {
             const liveRev = reviewsMap.get(item.id);
-            const adminRating = Number(item.rating || 0);
-            const adminCount = Number(item.review_count || 0);
-            const rev = {
-              avg: adminRating > 0 ? adminRating : (liveRev?.avg || 0),
-              count: adminCount > 0 ? adminCount : (liveRev?.count || 0)
-            };
-            const isUnclaimed = !item.is_verified || item.is_verified === 'false' || item.ownership_status === 'UNCLAIMED';
-
+            const avg = Number(item.rating || 0) > 0 ? Number(item.rating) : (liveRev?.avg || 0);
+            const cnt = Number(item.review_count || 0) > 0 ? Number(item.review_count) : (liveRev?.count || 0);
+            const catObj = taxAllSubs.find((x) => x.id === item.category_id);
+            const shortCat = catObj?.short_name || catObj?.name || item.sub_category;
             return (
-              <article
+              <InstitutionalBusinessCard
                 key={item.id}
-                onClick={() => navigate(`/businesses/${item.slug || item.id}`)}
-                className="bg-black font-['Cairo'] border border-[#2F3336] rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between transition hover:border-zinc-700 cursor-pointer group"
-              >
-                <div>
-                  {/* الغلاف الواسع المفتوح بدون أي قص أو شارات فوقه */}
-                  <div className="relative w-full h-48 bg-black flex items-center justify-center overflow-hidden border-b border-[#2F3336]">
-                    {item.cover_url || item.logo_url ? (
-                      <img
-                        src={item.cover_url || item.logo_url}
-                        alt={item.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-[#111111] flex items-center justify-center text-[#EAB308]">
-                        <Building size={48} />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* الشعار المربع وزر إثبات الملكية المتداخل بنفس هندسة كرت البنك */}
-                  <div className="px-4 relative flex items-start justify-between -mt-5 mb-2">
-                    <div className="relative z-10">
-                      <div className="w-16 h-16 rounded-2xl bg-black shadow-2xl border-2 border-[#2F3336] flex items-center justify-center overflow-hidden shrink-0">
-                        {item.logo_url ? (
-                          <img src={item.logo_url} alt={item.name} className="w-full h-full object-cover rounded-2xl" />
-                        ) : (
-                          <Building className="text-[#EAB308] text-2xl" size={26} />
-                        )}
-                      </div>
-                    </div>
-
-                    {isUnclaimed && (
-                      <div>
-                        <button
-                          type="button"
-                          onClick={(e) => handleOpenClaim(e, item)}
-                          className="inline-flex items-center gap-1.5 bg-[#2A0E0E] hover:bg-[#3D1414] border border-[#661F1F] text-[#F87171] text-xs font-bold px-3 py-1.5 rounded-full shadow-md transition active:scale-95 cursor-pointer mt-2"
-                        >
-                          <ShieldCheck className="text-[#EF4444]" size={14} />
-                          <span>إثبات ملكية الصفحة</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* البيانات الأساسية */}
-                  <div className="px-4 pt-1 pb-3 text-right space-y-1.5">
-                    {/* اسم المنشأة والشارة بجواره بمسافة مريحة */}
-                    <div className="flex items-center justify-start gap-2">
-                      <h2 className="text-sm sm:text-base font-black text-white leading-tight">{item.name}</h2>
-                      {item.badge_type && item.badge_type !== 'none' && (
-                        <YRBadge type={item.badge_type as BadgeType} size={18} />
-                      )}
-                    </div>
-
-                    {/* التصنيف المختصر والموقع الجغرافي */}
-                    <div className="flex flex-wrap items-center justify-start gap-2 text-xs text-zinc-400">
-                      <span className="inline-flex items-center gap-1"><MapPin size={13} className="text-[#EAB308] shrink-0" /><span>{item.city || item.address || 'اليمن'}</span></span>
-                      {(taxAllSubs.find((x) => x.id === item.category_id)?.short_name || item.sub_category) && (
-                        <span className="px-2 py-0.5 rounded-full bg-[#111111] border border-[#2F3336] text-[10.5px] font-bold text-zinc-300">
-                          {taxAllSubs.find((x) => x.id === item.category_id)?.short_name || item.sub_category}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* التقييم الحقيقي المماثل تماماً لكرت البنك */}
-                    {rev.count > 0 ? (
-                      <div className="flex items-center justify-start gap-1.5 text-xs font-bold pt-0.5">
-                        <RatingStars rating={Number(rev.avg) || 0} size={13} />
-                        <span className="text-white font-mono font-bold">{rev.avg}</span>
-                        <span className="text-zinc-400 text-[11px] font-normal">({rev.count} تقييم)</span>
-                      </div>
-                    ) : (
-                      <div className="text-right pt-0.5">
-                        <span className="text-zinc-500 text-xs font-normal">لا توجد تقييمات بعد</span>
-                      </div>
-                    )}
-
-                    {item.description && (
-                      <p className="text-xs text-zinc-300 leading-relaxed pt-1 line-clamp-2">
-                        {item.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* زر العرض الأصفر العريض المعتمد */}
-                <div className="p-4 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/businesses/${item.slug || item.id}`)}
-                    className="w-full py-2.5 rounded-xl bg-[#EAB308] hover:bg-[#CA8A04] text-black font-black text-sm flex items-center justify-center gap-2 shadow transition active:scale-98 cursor-pointer font-['Cairo']"
-                  >
-                    <span>عرض صفحة المنشأة</span>
-                    <ArrowLeft size={15} />
-                  </button>
-                </div>
-              </article>
+                business={item}
+                categoryLabel={shortCat}
+                categorySlug={catObj?.slug || currentCategorySlug}
+                liveRating={avg}
+                liveReviewCount={cnt}
+                onOpen={() => navigate(`/business-page/${item.id}`)}
+              />
             );
           })}
         </div>
       )}
-
-      {/* نافذة إثبات الملكية التفاعلية الحقيقية */}
-      {claimModalOpen && selectedBusinessForClaim && (
-        <ClaimOwnershipModal
-          isOpen={claimModalOpen}
-          onClose={() => setClaimModalOpen(false)}
-          onSuccess={() => alert('تم إرسال طلب إثبات الملكية بنجاح')}
-          businessId={selectedBusinessForClaim.id}
-          businessName={selectedBusinessForClaim.name}
-        />
-      )}
-
-      <div className="w-full mt-6">
-        <AdBanner placementId="2" className="w-full !rounded-none" />
-      </div>
     </div>
   );
 };

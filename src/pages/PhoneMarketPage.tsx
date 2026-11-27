@@ -2,11 +2,17 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { XSpinner } from '../components/ui/LoadingSpinner';
 import {
   Smartphone, Phone, MessageCircle, ArrowRight, Plus, X,
-  Upload, Trash2, User, Camera, MoreHorizontal, Globe
+  Upload, Trash2, User, Camera, MoreHorizontal, Globe, Megaphone
 } from 'lucide-react';
 import { XActionBar } from '../components/feed/XActionBar';
 import { AdBanner } from '../components/common/AdBanner';
 import { MarketSponsorSlot } from '../components/ads/MarketSponsorSlot';
+import { AdSubscriptionWizardModal } from '../components/ads/AdSubscriptionWizardModal';
+import {
+  adSubscriptionsService,
+  AdProductType,
+  AdSubscriptionOrder,
+} from '../services/adSubscriptionsService';
 import { YRSelect, YRSelectOption } from '../components/common/YRSelect';
 import {
   XSearchFilterBar, XFilterModal, YEMEN_GOV_FILTER_OPTIONS,
@@ -551,6 +557,10 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
   const [adHighlightsText, setAdHighlightsText] = useState('');
   const [adCtaLabel, setAdCtaLabel] = useState('تواصل معنا');
   const [accountPlanKey, setAccountPlanKey] = useState<'regular' | 'vip' | 'vip_pro'>('regular');
+  const [isAdWizardOpen, setIsAdWizardOpen] = useState(false);
+  const [adWizardInitialType, setAdWizardInitialType] = useState<AdProductType | null>('phone_feed');
+  const [activePhoneAdOrders, setActivePhoneAdOrders] = useState<AdSubscriptionOrder[]>([]);
+  const [highlightPost, setHighlightPost] = useState(false);
   const [activeVipIdx, setActiveVipIdx] = useState(0);
   const [isSubscriptionExpired, setIsSubscriptionExpired] = useState(false);
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null);
@@ -581,6 +591,30 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
   const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
+    adSubscriptionsService
+      .getActivePhoneAdPosts()
+      .then((cloudPosts) => {
+        if (!cloudPosts || cloudPosts.length === 0) return;
+        const mapped = cloudPosts
+          .map((cp) => ({
+            ...(cp.item_payload || {}),
+            id: cp.id,
+            adTier: cp.ad_tier || cp.item_payload?.adTier || 'basic',
+            createdAt: cp.created_at || cp.item_payload?.createdAt || new Date().toISOString(),
+            expiresAt: cp.ends_at,
+          }))
+          .filter((x: any) => Boolean(x && x.name)) as PhoneDeviceItem[];
+        if (mapped.length === 0) return;
+        setPhonesList((prev) => {
+          const existingIds = new Set(prev.map((x) => x.id));
+          const fresh = mapped.filter((m: any) => !existingIds.has(m.id));
+          return fresh.length > 0 ? [...fresh, ...prev] : prev;
+        });
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     let active = true;
     const loadIdentity = async () => {
       try {
@@ -595,6 +629,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
           setAccountPlanKey('regular');
           setIsSubscriptionExpired(false);
           setSubscriptionEndDate(null);
+          setActivePhoneAdOrders([]);
           return;
         }
 
@@ -624,6 +659,15 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
           if (biz.phone) setSellerPhone((prev) => prev || normalizeYemenPhone(biz.phone!.replace(/^(\+?967)/, '')));
           if (biz.city) setPhoneCity(biz.city);
         }
+
+        adSubscriptionsService
+          .getMyActivePhoneOrders(uid)
+          .then((ords) => {
+            if (active) setActivePhoneAdOrders(ords || []);
+          })
+          .catch(() => {
+            if (active) setActivePhoneAdOrders([]);
+          });
 
         const subRow: any = latestSub;
         const endDateStr: string | null = subRow?.end_date || null;
@@ -722,15 +766,41 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
     touchStartX.current = null;
   };
 
+  const activePhoneAdOrder = useMemo(() => {
+    return (
+      activePhoneAdOrders.find((o) => o.remaining_posts > 0) ||
+      activePhoneAdOrders[0] ||
+      null
+    );
+  }, [activePhoneAdOrders]);
+
   const tierLimits = useMemo(() => {
-    if (accountPlanKey === 'vip_pro') {
-      return { label: 'مشترك VIP احترافي', dailyFree: 20, monthlyFeatured: 8, canBasic: true, canPro: true, canVip: true };
-    }
-    if (accountPlanKey === 'vip') {
-      return { label: 'مشترك VIP', dailyFree: 10, monthlyFeatured: 4, canBasic: true, canPro: true, canVip: false };
-    }
-    return { label: 'مستخدم عادي', dailyFree: 3, monthlyFeatured: 0, canBasic: false, canPro: false, canVip: false };
-  }, [accountPlanKey]);
+    const dailyFree = accountPlanKey === 'vip_pro' ? 20 : accountPlanKey === 'vip' ? 10 : 3;
+    const freeLabel =
+      accountPlanKey === 'vip_pro'
+        ? 'مشترك VIP احترافي'
+        : accountPlanKey === 'vip'
+          ? 'مشترك VIP'
+          : 'مستخدم عادي';
+
+    const vt = (activePhoneAdOrder?.package_visual_tier || '').toLowerCase();
+    const hasActiveOrder = Boolean(activePhoneAdOrder && activePhoneAdOrder.remaining_posts > 0);
+    const canBasic = hasActiveOrder;
+    const canPro = hasActiveOrder && (vt === 'pro' || vt === 'vip');
+    const canVip = hasActiveOrder && vt === 'vip';
+
+    return {
+      label: freeLabel,
+      dailyFree,
+      monthlyFeatured: activePhoneAdOrder?.post_quota ?? 0,
+      remainingPosts: activePhoneAdOrder?.remaining_posts ?? 0,
+      remainingHighlights: activePhoneAdOrder?.remaining_highlights ?? 0,
+      adPackageName: activePhoneAdOrder?.package_name_snapshot || null,
+      canBasic,
+      canPro,
+      canVip,
+    };
+  }, [accountPlanKey, activePhoneAdOrder]);
 
   const activeAuthorKey = currentUserId || 'guest_local';
 
@@ -753,25 +823,24 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
   const limitBlockReason = useMemo(() => {
     if (composeKind === 'free') {
       if (usageStats.todayFreeCount >= tierLimits.dailyFree) {
-        return `انتهى الحد اليومي للنشر المجاني (${usageStats.todayFreeCount}/${tierLimits.dailyFree} تغريدات يومياً لباقة ${tierLimits.label}). حاول غداً أو رقِّ باقتك لزيادة الحد.`;
+        return `انتهى الحد اليومي للنشر المجاني (${usageStats.todayFreeCount}/${tierLimits.dailyFree} تغريدات يومياً لباقة ${tierLimits.label}). حاول غداً أو اشترك في باقة إعلانات سوق الهاتف.`;
       }
       return null;
     }
-    if (isSubscriptionExpired) {
-      const dateTxt = subscriptionEndDate ? ` (${new Date(subscriptionEndDate).toLocaleDateString('ar-YE')})` : '';
-      return `انتهت صلاحية اشتراكك المدفوع${dateTxt}. جدّد الاشتراك للاستمرار في نشر التغريدات المميزة.`;
+    if (!activePhoneAdOrder) {
+      return 'للنشر كإعلان تجاري مميز في سوق الهاتف، اشترك أولاً في إحدى باقات إعلانات سوق الهاتف (البداية / التاجر / المحترف / VIP).';
     }
-    if (tierLimits.monthlyFeatured === 0) {
-      return 'باقة المستخدم العادي (3 تغريدات مجانية يومياً) لا تشمل التغريدات المميزة. اشترك في VIP (4 شهرياً) أو VIP احترافي (8 شهرياً).';
+    if (activePhoneAdOrder.remaining_posts <= 0) {
+      return `انتهى رصيد المنشورات المتاح في باقتك (${activePhoneAdOrder.post_quota}/${activePhoneAdOrder.post_quota}). جدّد الباقة أو اشترك بباقة جديدة.`;
     }
     if (selectedAdTier === 'vip' && !tierLimits.canVip) {
-      return 'باقة VIP المثبتة متاحة لمشتركي باقة VIP احترافي فقط (8 تغريدات مميزة شهرياً).';
+      return 'باقة VIP المثبتة في رأس السوق متاحة لمشتركي باقة VIP فقط. يمكنك اختيار الأساسية/الاحترافية أو ترقية باقتك.';
     }
-    if (usageStats.monthFeaturedCount >= tierLimits.monthlyFeatured) {
-      return `انتهى رصيدك الشهري من التغريدات المميزة (${usageStats.monthFeaturedCount}/${tierLimits.monthlyFeatured} لباقة ${tierLimits.label}). يتجدد الشهر القادم أو عند الترقية.`;
+    if (selectedAdTier === 'pro' && !tierLimits.canPro) {
+      return 'الإطار الذهبي الاحترافي متاح لمشتركي باقة المحترف أو VIP. يمكنك اختيار الأساسية أو ترقية باقتك.';
     }
     return null;
-  }, [composeKind, usageStats, tierLimits, isSubscriptionExpired, subscriptionEndDate, selectedAdTier]);
+  }, [composeKind, usageStats, tierLimits, activePhoneAdOrder, selectedAdTier]);
 
   const togglePhoneLike = (phoneId: string) => {
     setPhonesList((prev) => {
@@ -931,6 +1000,21 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
         viewsCount: composeKind === 'paid' ? 1 : undefined,
         createdAt: new Date().toISOString(),
       };
+
+      if (composeKind === 'paid' && activePhoneAdOrder) {
+        const cloudPost = await adSubscriptionsService.publishPhoneFeaturedAd({
+          orderId: activePhoneAdOrder.id,
+          adTier: (resolvedTier === 'free' ? 'basic' : resolvedTier) as 'basic' | 'pro' | 'vip',
+          highlight: Boolean(highlightPost && activePhoneAdOrder.remaining_highlights > 0),
+          itemPayload: newEntry,
+        });
+        newEntry.id = cloudPost.id;
+        newEntry.expiresAt = cloudPost.ends_at;
+        if (currentUserId) {
+          adSubscriptionsService.getMyActivePhoneOrders(currentUserId).then(setActivePhoneAdOrders).catch(() => {});
+        }
+        setHighlightPost(false);
+      }
 
       setPhonesList(prev => {
         const updated = [newEntry, ...prev];
@@ -1092,6 +1176,16 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setAdWizardInitialType(null);
+                setIsAdWizardOpen(true);
+              }}
+              className="px-3 py-1.5 rounded-xl bg-zinc-900 border border-[#FFC500]/50 text-[#FFC500] font-black text-[11px] hover:bg-[#FFC500]/10 transition-all flex items-center gap-1 cursor-pointer"
+            >
+              <Megaphone size={13} />
+              <span>باقات الإعلانات</span>
+            </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
               className="px-3 py-1.5 rounded-xl bg-[#FFC500] text-black font-black text-[11px] hover:bg-[#FFC500]/90 transition-all flex items-center gap-1 cursor-pointer shadow-sm"
@@ -1438,7 +1532,30 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
           {embedded && <MarketSponsorSlot section="phones" />}
           <div className={embedded ? "px-3 pt-2.5 pb-2.5 space-y-2 bg-black border-b border-[#2F3336]/40" : "space-y-2 bg-[#0F0F12] p-2.5 rounded-2xl border border-[#222226]"}>
             <XSearchFilterBar searchQuery={searchQuery} onSearchChange={setSearchQuery} placeholder="ابحث في سوق الهواتف والأجهزة..." activeFiltersCount={activeFiltersCount} onOpenFilter={() => setIsFilterModalOpen(true)} sectionIcon={<Smartphone size={18} className="text-[#FFC500]" />} />
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+              <button
+                type="button"
+                onClick={() => { setAdWizardInitialType('phone_feed'); setIsAdWizardOpen(true); }}
+                className="px-2.5 py-1 rounded-full bg-[#FFC500]/15 border border-[#FFC500]/40 text-[#FFC500] text-[10.5px] font-black whitespace-nowrap hover:bg-[#FFC500]/25 transition cursor-pointer"
+              >
+                + اشتراك إعلانات سوق الهاتف
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAdWizardInitialType('sponsor'); setIsAdWizardOpen(true); }}
+                className="px-2.5 py-1 rounded-full bg-[#16181C] border border-[#2F3336] text-zinc-200 text-[10.5px] font-bold whitespace-nowrap hover:border-[#FFC500]/50 transition cursor-pointer"
+              >
+                رعاية القسم (راعي)
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAdWizardInitialType('banner'); setIsAdWizardOpen(true); }}
+                className="px-2.5 py-1 rounded-full bg-[#16181C] border border-[#2F3336] text-zinc-200 text-[10.5px] font-bold whitespace-nowrap hover:border-[#FFC500]/50 transition cursor-pointer"
+              >
+                حجز بانر إعلاني
+              </button>
             </div>
+          </div>
 
           {currentVipPhone && (
             <PhoneVipBanner
@@ -1769,12 +1886,18 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-[#71767B] px-0.5">
-                  <span>باقتك: <strong className="text-white">{tierLimits.label}</strong></span>
+                <div className="flex items-center justify-between text-[11px] text-[#71767B] px-0.5 gap-2 flex-wrap">
+                  <span>
+                    {composeKind === 'free' ? (
+                      <>باقتك: <strong className="text-white">{tierLimits.label}</strong></>
+                    ) : (
+                      <>الاشتراك الإعلاني: <strong className="text-[#FFC500]">{tierLimits.adPackageName || 'غير مشترك'}</strong></>
+                    )}
+                  </span>
                   <span>
                     {composeKind === 'free'
                       ? `المجاني اليوم: ${usageStats.todayFreeCount} / ${tierLimits.dailyFree}`
-                      : `المميزة هذا الشهر: ${usageStats.monthFeaturedCount} / ${tierLimits.monthlyFeatured}`}
+                      : `المتبقي: ${tierLimits.remainingPosts} / ${tierLimits.monthlyFeatured} منشور · إبراز: ${tierLimits.remainingHighlights}`}
                   </span>
                 </div>
 
@@ -1791,13 +1914,7 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                           type="button"
                           onClick={() => {
                             if (pkg.locked) {
-                              showToast(
-                                pkg.id === 'vip'
-                                  ? 'باقة VIP المثبتة متاحة لمشتركي VIP احترافي'
-                                  : 'الإعلانات الممولة متاحة لمشتركي VIP و VIP احترافي',
-                                'error',
-                                3500
-                              );
+                              showToast('افتح نافذة اشتراك إعلانات سوق الهاتف لاختيار الباقة المناسبة', 'error', 3000);
                             }
                             setSelectedAdTier(pkg.id);
                           }}
@@ -1814,7 +1931,18 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                         </button>
                       ))}
                     </div>
-
+                    {activePhoneAdOrder && activePhoneAdOrder.remaining_highlights > 0 && (
+                      <label className="flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-zinc-950 border border-[#FFC500]/30 text-[11px] cursor-pointer">
+                        <span className="text-zinc-200 font-bold">
+                          إبراز المنشور (المتبقي من رصيد الإبراز: {activePhoneAdOrder.remaining_highlights})
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={highlightPost}
+                          onChange={(e) => setHighlightPost(e.target.checked)}
+                        />
+                      </label>
+                    )}
                   </div>
                 )}
 
@@ -1825,11 +1953,12 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
                       type="button"
                       onClick={() => {
                         setIsAddModalOpen(false);
-                        onNavigate('/premium');
+                        setAdWizardInitialType('phone_feed');
+                        setIsAdWizardOpen(true);
                       }}
                       className="px-3 py-1 rounded-full bg-[#FFC500] text-black font-black shrink-0 cursor-pointer"
                     >
-                      {isSubscriptionExpired ? 'تجديد الاشتراك' : 'ترقية الباقة'}
+                      اشترك بإعلانات الهاتف
                     </button>
                   </div>
                 )}
@@ -2133,6 +2262,20 @@ export const PhoneMarketPage: React.FC<{ onNavigate: (path: string) => void; emb
             options: YEMEN_GOV_FILTER_OPTIONS,
           },
         ]}
+      />
+
+      <AdSubscriptionWizardModal
+        isOpen={isAdWizardOpen}
+        onClose={() => setIsAdWizardOpen(false)}
+        initialAdType={adWizardInitialType}
+        initialSectionId="phones"
+        businessId={myBusinessPage?.id || null}
+        onOrderSubmitted={() => {
+          if (currentUserId) {
+            adSubscriptionsService.getMyActivePhoneOrders(currentUserId).then(setActivePhoneAdOrders).catch(() => {});
+          }
+          showToast('تم إرسال طلب الاشتراك الإعلاني بنجاح وبانتظار مراجعة الإدارة', 'success', 4000);
+        }}
       />
     </div>
   );

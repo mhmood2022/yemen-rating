@@ -653,6 +653,12 @@ const [activeMenuPost, setActiveMenuPost] = useState<Post | null>(null);
     }
   }, [isEditModalOpen]);
 
+  useEffect(() => {
+    if (searchParams.get('edit') === '1' && isOwner && businessPage?.id) {
+      setIsEditModalOpen(true);
+    }
+  }, [searchParams, isOwner, businessPage?.id]);
+
   // منشور جديد
   const [newPostText, setNewPostText] = useState('');
   const [replyToPost, setReplyToPost] = useState<Post | null>(null);
@@ -2024,13 +2030,11 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
         <div className="grid grid-cols-2 gap-3 mt-4">
           {isOwner ? (
             <button
-              onClick={() => {
-                setEditName(name); setEditPhone(phone); setEditUsername(username); setEditBio(bio); setEditLocation(location);
-                setIsEditModalOpen(true);
-              }}
-              className="w-full py-2 px-4 rounded-full border border-[#536471] hover:bg-white/10 active:scale-[0.98] text-white text-sm font-bold transition flex items-center justify-center gap-1.5"
+              onClick={() => navigate(businessPage?.id ? `/owner?id=${businessPage.id}` : '/owner')}
+              className="w-full py-2 px-4 rounded-full bg-white hover:bg-gray-200 active:scale-[0.98] text-black text-sm font-black transition flex items-center justify-center gap-1.5"
             >
-              <span>تعديل صفحة المنشأة</span>
+              <BarChart2 size={15} className="text-black shrink-0" />
+              <span>إدارة الصفحة</span>
             </button>
           ) : (
             <button
