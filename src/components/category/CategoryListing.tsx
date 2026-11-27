@@ -64,8 +64,9 @@ export const CategoryListing: React.FC<CategoryListingProps> = ({
 
         const { data: bRows, error } = await query.order('created_at', { ascending: false });
 
-        if (!error && bRows && bRows.length > 0 && isMounted) {
-          const mapped: BusinessItem[] = bRows.map(b => ({
+        const visibleRows = (bRows || []).filter((b: any) => !b.is_hidden && String(b.status || '').toLowerCase() !== 'hidden');
+        if (!error && visibleRows.length > 0 && isMounted) {
+          const mapped: BusinessItem[] = visibleRows.map(b => ({
             id: b.id,
             name: b.name,
             slug: b.slug || b.id,

@@ -32,7 +32,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
-export type SpecializedCardStyle = 'phone' | 'property' | 'job' | 'auction' | 'custom';
+export type SpecializedCardStyle = 'showcase' | 'phone' | 'property' | 'job' | 'auction' | 'custom';
 
 export interface CommunitySection {
   id: string;

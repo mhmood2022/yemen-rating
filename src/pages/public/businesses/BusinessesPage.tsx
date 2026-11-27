@@ -11,6 +11,7 @@ import {
 import { supabase } from '../../../lib/supabase';
 import { InstitutionalBusinessCard } from '../../../components/business/InstitutionalBusinessCard';
 import { AdBanner } from '../../../components/common/AdBanner';
+import { MarketSponsorSlot } from '../../../components/ads/MarketSponsorSlot';
 import { YEMEN_GOVERNORATES, UnifiedTaxonomyCategory, fetchUnifiedBusinessTaxonomy } from '../../../constants/businessTaxonomy';
 
 export const CATEGORY_CONFIG: { [slug: string]: { name: string; icon: any } } = {
@@ -40,7 +41,7 @@ const CITIES_LIST = [
   ...YEMEN_GOVERNORATES.map((g) => ({ id: g, name: g })),
 ];
 
-export const BusinessesPage: React.FC = () => {
+export const BusinessesPage: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -105,7 +106,7 @@ export const BusinessesPage: React.FC = () => {
         ]);
 
         if (bizRes.data) {
-          setBusinesses(bizRes.data);
+          setBusinesses(bizRes.data.filter((b: any) => !b.is_hidden && String(b.status || '').toLowerCase() !== 'hidden'));
         }
 
         if (revRes.data) {
@@ -174,8 +175,10 @@ export const BusinessesPage: React.FC = () => {
 
 
   return (
-    <div dir="rtl" className="min-h-screen bg-black text-white font-['Cairo'] pb-16 px-3 sm:px-4 max-w-7xl mx-auto pt-1">
+    <div dir="rtl" className={embedded ? "bg-black text-white font-['Cairo'] pb-16 pt-1" : "min-h-screen bg-black text-white font-['Cairo'] pb-16 px-3 sm:px-4 max-w-7xl mx-auto pt-1"}>
+      {embedded && <MarketSponsorSlot section="businesses" />}
       {/* رأس الصفحة */}
+      {!embedded && (
       <div className="mb-2.5 flex items-center justify-between border-b border-[#2F3336]/70 pb-2">
         <div className="flex items-center gap-2 text-right">
           <CategoryIcon className="w-5 h-5 text-[#EAB308] shrink-0" />
@@ -193,8 +196,10 @@ export const BusinessesPage: React.FC = () => {
           <ArrowRight size={20} strokeWidth={2.5} />
         </button>
       </div>
+      )}
 
       {/* شريط الفلاتر السريعة */}
+      <div className={embedded ? "px-3" : ""}>
       <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none">
         {quickFilterTabs.map(tab => (
           <button
@@ -282,6 +287,7 @@ export const BusinessesPage: React.FC = () => {
         </div>
       </div>
 
+      </div>
       {loading ? (
         <div className="py-16 text-center flex flex-col items-center justify-center">
           <XSpinner size={28} className="mb-2" />
@@ -300,7 +306,7 @@ export const BusinessesPage: React.FC = () => {
         </div>
       ) : (
         /* بطاقات المنشآت المؤسسية الموحدة */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className={embedded ? "grid grid-cols-1 gap-4 px-3" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"}>
           {filtered.map((item) => {
             const liveRev = reviewsMap.get(item.id);
             const avg = Number(item.rating || 0) > 0 ? Number(item.rating) : (liveRev?.avg || 0);

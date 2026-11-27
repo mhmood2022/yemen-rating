@@ -43,7 +43,7 @@ export const bankService = {
       console.error('Error fetching banks:', error);
       return [];
     }
-    return data.map(mapBankData);
+    return (data || []).filter((b: any) => !b.is_hidden && String(b.status || '').toLowerCase() !== 'hidden').map(mapBankData);
   },
 
   // جلب بنك واحد
@@ -64,7 +64,7 @@ export const bankService = {
       data = nameData;
     }
 
-    if (error || !data) return null;
+    if (error || !data || data.is_hidden || String(data.status || '').toLowerCase() === 'hidden') return null;
     return mapBankData(data);
   },
 

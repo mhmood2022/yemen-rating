@@ -81,7 +81,7 @@ const pickFeatureIcon = (label: string, slugOrLabel: string): React.ElementType 
   if (t.includes('بكالوريوس') || t.includes('ماجستير') || t.includes('تخصص') || t.includes('مناهج')) return BookOpen;
   if (s.includes('rest') || s.includes('مطعم') || t.includes('أكل') || t.includes('مشاوي') || t.includes('بحرية')) return Utensils;
   if (s.includes('car') || s.includes('سيار') || t.includes('تويوتا') || t.includes('هيونداي') || t.includes('موديل')) return Car;
-  if (s.includes('univ') || s.includes('جامع') || s.includes('school')) return GraduationCap;
+  if (s.includes('univ') || s.includes('جامع') || t.includes('school')) return GraduationCap;
   return CheckCircle2;
 };
 
@@ -112,7 +112,6 @@ export const InstitutionalBusinessCard: React.FC<InstitutionalBusinessCardProps>
   const reviewCount = Number(liveReviewCount ?? business.review_count ?? business.reviews_count ?? 0);
   const hasRatings = avgRating > 0 && reviewCount > 0;
 
-  // عدد الصور الحقيقية
   const mediaCount = useMemo(() => {
     const imgs = new Set<string>();
     if (business.cover_url) imgs.add(business.cover_url);
@@ -130,7 +129,6 @@ export const InstitutionalBusinessCard: React.FC<InstitutionalBusinessCardProps>
     return imgs.size;
   }, [business]);
 
-  // استخراج المزايا والخدمات الحقيقية المتكيفة حسب نشاط المنشأة
   const featureChips = useMemo(() => {
     const out: string[] = [];
     const pushUnique = (val: string) => {
@@ -221,21 +219,17 @@ export const InstitutionalBusinessCard: React.FC<InstitutionalBusinessCardProps>
     } catch {}
   };
 
-  const handleCardOpen = () => {
-    onOpen?.(business);
-  };
-
   const subtitle = business.tagline || business.slogan || (business.slug ? `@${business.slug}` : '');
 
   return (
     <article
       dir="rtl"
-      onClick={handleCardOpen}
-      className="bg-[#070709] border border-[#2F3336] hover:border-[#FFC500]/55 rounded-3xl overflow-hidden shadow-xl transition duration-200 flex flex-col justify-between cursor-pointer group"
+      onClick={() => onOpen?.(business)}
+      className="bg-[#050507] border border-[#2F3336] hover:border-[#FFC500]/55 rounded-3xl overflow-hidden shadow-2xl transition duration-200 flex flex-col justify-between cursor-pointer group"
     >
       <div>
-        {/* 1. الغلاف العلوي */}
-        <div className="relative h-40 sm:h-44 w-full bg-[#111318] overflow-hidden">
+        {/* 1. صورة الغلاف */}
+        <div className="relative h-44 sm:h-48 w-full bg-[#111318] overflow-hidden">
           {business.cover_url ? (
             <img
               src={business.cover_url}
@@ -243,19 +237,19 @@ export const InstitutionalBusinessCard: React.FC<InstitutionalBusinessCardProps>
               className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-[#16181C] via-[#0D0F14] to-black flex items-center justify-center">
-              <CategoryIcon className="w-14 h-14 text-[#FFC500]/15" />
+            <div className="w-full h-full bg-gradient-to-br from-[#16181C] via-[#0B0D12] to-black flex items-center justify-center">
+              <CategoryIcon className="w-16 h-16 text-[#FFC500]/15" />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#070709] via-black/15 to-black/45" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050507] via-black/10 to-black/45" />
 
-          {/* شارة النشاط (أعلى اليمين) */}
+          {/* شارة نوع النشاط أعلى اليمين */}
           <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-white text-[11px] font-bold flex items-center gap-1.5 shadow">
             <CategoryIcon size={13} className="text-[#FFC500]" />
             <span>{resolvedCategory}</span>
           </div>
 
-          {/* عداد الصور (أعلى اليسار) */}
+          {/* عداد الصور أعلى اليسار */}
           {mediaCount > 0 && (
             <div
               className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-white text-[11px] font-bold flex items-center gap-1.5 shadow"
@@ -267,11 +261,11 @@ export const InstitutionalBusinessCard: React.FC<InstitutionalBusinessCardProps>
           )}
         </div>
 
-        {/* 2. جسم البطاقة (الأفاتار في اليمين + العنوان + التقييم + الخدمات + الوصف) */}
+        {/* 2. الجسم */}
         <div className="px-4 pt-3 pb-3 space-y-3">
-          {/* الصف العلوي: الشعار في الجهة اليمنى RTL + الاسم والشارة */}
+          {/* الشعار في الجهة اليمنى RTL + الاسم والشارة */}
           <div className="flex items-start gap-3">
-            <div className="-mt-11 sm:-mt-12 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#0F1014] border-2 border-[#2F3336] p-1 shadow-2xl overflow-hidden shrink-0 flex items-center justify-center relative z-10">
+            <div className="-mt-12 sm:-mt-14 w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#0D0F13] border-2 border-[#2F3336] p-1 shadow-2xl overflow-hidden shrink-0 flex items-center justify-center relative z-10">
               {business.logo_url ? (
                 <img
                   src={business.logo_url}
@@ -300,7 +294,7 @@ export const InstitutionalBusinessCard: React.FC<InstitutionalBusinessCardProps>
             </div>
           </div>
 
-          {/* الموقع والتقييم الحقيقي */}
+          {/* الموقع + التقييم الحقيقي */}
           <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
             <span className="flex items-center gap-1.5 text-zinc-300 font-semibold min-w-0">
               <MapPin size={14} className="text-[#FFC500] shrink-0" />
@@ -324,7 +318,7 @@ export const InstitutionalBusinessCard: React.FC<InstitutionalBusinessCardProps>
             )}
           </div>
 
-          {/* الخدمات والمميزات المتكيفة مع النشاط */}
+          {/* الخدمات والمزايا حسب النشاط */}
           {featureChips.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {featureChips.slice(0, 4).map((feat, idx) => {
@@ -332,7 +326,7 @@ export const InstitutionalBusinessCard: React.FC<InstitutionalBusinessCardProps>
                 return (
                   <span
                     key={`${feat}-${idx}`}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#16181C] border border-[#2F3336] text-zinc-200 text-[11px] font-bold"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#16181C] border border-[#2F3336] text-zinc-200 text-[11px] font-bold"
                   >
                     <FIcon size={12} className="text-[#FFC500] shrink-0" />
                     <span>{feat}</span>
@@ -340,21 +334,21 @@ export const InstitutionalBusinessCard: React.FC<InstitutionalBusinessCardProps>
                 );
               })}
               {featureChips.length > 4 && (
-                <span className="px-2 py-1 rounded-full bg-[#111318] border border-[#2F3336] text-[10.5px] font-bold text-[#71767B]">
+                <span className="px-2.5 py-1 rounded-full bg-[#111318] border border-[#2F3336] text-[10.5px] font-bold text-[#71767B]">
                   +{featureChips.length - 4}
                 </span>
               )}
             </div>
           )}
 
-          {/* صندوق الوصف القابل للتوسيع */}
+          {/* الوصف القابل للتوسيع */}
           {business.description && (
             <div
               onClick={(e) => {
                 e.stopPropagation();
                 setExpanded((v) => !v);
               }}
-              className="rounded-2xl bg-[#111318] border border-[#2F3336] px-3.5 py-2.5 flex items-start justify-between gap-2 hover:border-zinc-600 transition"
+              className="rounded-2xl bg-[#111318] border border-[#2F3336]/80 px-3.5 py-2.5 flex items-start justify-between gap-2 hover:border-zinc-600 transition"
             >
               <p
                 className={`text-xs text-zinc-300 leading-relaxed flex-1 ${
@@ -373,13 +367,13 @@ export const InstitutionalBusinessCard: React.FC<InstitutionalBusinessCardProps>
             </div>
           )}
 
-          {/* شريط التفاعل: المقيمون + الهاتف + الخريطة */}
+          {/* شريط المعلومات الثلاثي النظيف بأسلوب الصورة المرجعية */}
           <div
             onClick={(e) => e.stopPropagation()}
-            className="grid grid-cols-3 gap-2 pt-1 text-[11px]"
+            className="flex items-center justify-between gap-2 pt-1 text-[11px]"
           >
-            {/* المقيمون / حالة التوثيق */}
-            <div className="flex items-center gap-1.5 min-w-0 bg-[#111318] border border-[#2F3336] rounded-xl px-2.5 py-2">
+            {/* المقيمون */}
+            <div className="flex items-center gap-1.5 min-w-0">
               {reviewerAvatars.length > 0 ? (
                 <div className="flex -space-x-2 space-x-reverse shrink-0">
                   {reviewerAvatars.slice(0, 3).map((av, i) => (
@@ -387,36 +381,47 @@ export const InstitutionalBusinessCard: React.FC<InstitutionalBusinessCardProps>
                       key={i}
                       src={av}
                       alt=""
-                      className="w-6 h-6 rounded-full object-cover border border-black"
+                      className="w-7 h-7 rounded-full object-cover border-2 border-[#050507]"
                     />
                   ))}
                 </div>
               ) : (
-                <ShieldCheck size={15} className="text-[#FFC500] shrink-0" />
+                <div className="w-8 h-8 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center shrink-0">
+                  <ShieldCheck size={14} className="text-[#FFC500]" />
+                </div>
               )}
-              <span className="font-bold text-white truncate">
-                {reviewCount > 0 ? `+${reviewCount} مقيم` : 'منشأة مسجلة'}
-              </span>
+              <div className="min-w-0 leading-tight">
+                <p className="font-black text-white truncate">
+                  {reviewCount > 0 ? `+${reviewCount.toLocaleString('en-US')}` : 'مسجل'}
+                </p>
+                <p className="text-[10px] text-[#71767B]">
+                  {reviewCount > 0 ? 'مقيم' : 'بانتظار التقييم'}
+                </p>
+              </div>
             </div>
 
-            {/* الاتصال */}
+            {/* الهاتف */}
             {business.phone ? (
               <a
                 href={`tel:${business.phone}`}
-                className="flex items-center justify-center gap-1.5 bg-[#111318] border border-[#2F3336] hover:border-[#FFC500]/50 rounded-xl px-2 py-2 text-center transition min-w-0"
+                className="flex items-center gap-2 hover:opacity-85 transition min-w-0"
               >
-                <Phone size={14} className="text-[#FFC500] shrink-0" />
-                <div className="min-w-0 text-right">
-                  <p className="font-black text-white truncate text-[10.5px]" dir="ltr">
+                <div className="w-8 h-8 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center shrink-0">
+                  <Phone size={14} className="text-[#FFC500]" />
+                </div>
+                <div className="min-w-0 text-right leading-tight">
+                  <p className="font-black text-white truncate text-[11px]" dir="ltr">
                     {business.phone}
                   </p>
-                  <p className="text-[9.5px] text-[#71767B]">للاتصال</p>
+                  <p className="text-[10px] text-[#71767B]">للاتصال</p>
                 </div>
               </a>
             ) : (
-              <div className="flex items-center justify-center gap-1 bg-[#111318] border border-[#2F3336] rounded-xl px-2 py-2 text-[#71767B]">
-                <Phone size={13} />
-                <span className="text-[10px]">غير مضاف</span>
+              <div className="flex items-center gap-1.5 text-[#71767B]">
+                <div className="w-8 h-8 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center shrink-0">
+                  <Phone size={13} />
+                </div>
+                <span className="text-[10px]">لا يوجد رقم</span>
               </div>
             )}
 
@@ -425,24 +430,28 @@ export const InstitutionalBusinessCard: React.FC<InstitutionalBusinessCardProps>
               href={mapHref}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center justify-center gap-1.5 bg-[#111318] border border-[#2F3336] hover:border-[#FFC500]/50 rounded-xl px-2 py-2 text-zinc-200 font-bold transition min-w-0"
+              className="flex items-center gap-1.5 hover:opacity-85 transition min-w-0"
             >
-              <MapPin size={14} className="text-[#FFC500] shrink-0" />
-              <span className="truncate text-[10.5px]">عرض على الخريطة</span>
+              <div className="w-8 h-8 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center shrink-0">
+                <MapPin size={14} className="text-[#FFC500]" />
+              </div>
+              <span className="font-bold text-zinc-200 truncate text-[10.5px]">
+                عرض على الخريطة
+              </span>
             </a>
           </div>
         </div>
       </div>
 
-      {/* 3. شريط الإجراءات السفلي */}
+      {/* 3. أزرار الإجراءات السفلية */}
       <div
         onClick={(e) => e.stopPropagation()}
         className="px-4 pb-4 pt-1 flex items-center gap-2"
       >
         <button
           type="button"
-          onClick={handleCardOpen}
-          className="flex-1 py-2.5 px-4 rounded-2xl bg-[#FFC500] hover:bg-[#e6b100] active:scale-[0.98] text-black text-sm font-black flex items-center justify-center gap-1.5 transition shadow"
+          onClick={() => onOpen?.(business)}
+          className="flex-1 py-3 px-4 rounded-2xl bg-[#FFC500] hover:bg-[#e6b100] active:scale-[0.98] text-black text-sm font-black flex items-center justify-center gap-1.5 transition shadow"
         >
           <span>عرض التفاصيل الكاملة</span>
           <ChevronLeft size={17} />

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>معاينة بطاقة المنشأة بأسلوب X</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-[#E7E9EA] font-sans antialiased">
+<div class="max-w-[600px] mx-auto min-h-screen border-x border-[#2F3336] bg-black">
+  <div class="px-3 py-2.5 border-b border-[#2F3336] flex items-center justify-between">
+    <span class="text-[13px] font-bold text-[#E7E9EA]">دليل المنشآت (معاينة X)</span>
+    <span class="px-3 py-1 rounded-full bg-[#FFC500] text-black text-[11px] font-black">+ إضافة منشأة</span>
+  </div>
+  <div class="px-3 py-2 border-b border-[#2F3336] space-y-1.5 text-[11px]">
+    <div class="flex gap-1.5 overflow-x-auto">
+      <span class="text-[#71767B] self-center">النوع:</span>
+      <span class="px-2.5 py-0.5 rounded-full bg-[#E7E9EA] text-black font-bold">الكل</span>
+      <span class="px-2.5 py-0.5 rounded-full bg-[#FFC500] text-black font-bold">مستشفيات</span>
+      <span class="px-2.5 py-0.5 rounded-full border border-[#2F3336] text-[#D6D9DB]">مطاعم</span>
+      <span class="px-2.5 py-0.5 rounded-full border border-[#2F3336] text-[#D6D9DB]">فنادق</span>
+    </div>
+    <div class="flex gap-1.5 overflow-x-auto">
+      <span class="text-[#71767B] self-center">المكان:</span>
+      <span class="px-2.5 py-0.5 rounded-full bg-[#E7E9EA] text-black font-bold">كل الأماكن</span>
+      <span class="px-2.5 py-0.5 rounded-full bg-[#1D9BF0] text-white font-bold">صنعاء</span>
+      <span class="px-2.5 py-0.5 rounded-full border border-[#2F3336] text-[#D6D9DB]">عدن</span>
+      <span class="px-2.5 py-0.5 rounded-full border border-[#2F3336] text-[#D6D9DB]">تعز</span>
+    </div>
+  </div>
+  <div class="divide-y divide-[#2F3336]">
+    <article class="p-3 hover:bg-white/[0.03] transition">
+      <div class="flex gap-3">
+        <div class="w-12 h-12 rounded-full bg-zinc-900 border border-[#2F3336] shrink-0 overflow-hidden flex items-center justify-center font-black text-[#1D9BF0] text-xs">الشفاء</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1 flex-nowrap">
+            <span class="font-bold text-[#E7E9EA] text-[12.5px] truncate">مستشفى الشفاء العام</span>
+            <span class="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1D9BF0] text-white text-[9px] shrink-0">✓</span>
+            <span class="text-[11.5px] text-[#71767B] truncate">@مستشفى</span>
+            <span class="text-[#71767B] text-[10.5px]">· الآن</span>
+          </div>
+          <p class="text-[12px] text-[#71767B] mt-0.5">رعاية صحية متميزة .. لصحة أفضل</p>
+          <div class="flex flex-wrap items-center gap-3 mt-1 text-[11.5px]">
+            <span class="text-[#D6D9DB]">📍 صنعاء - شارع الستين</span>
+            <span class="text-[#E7E9EA] font-bold"><span class="text-[#FFC500]">★</span> 4.8 / 5 <span class="text-[#71767B] font-normal">(1,250 تقييم)</span></span>
+          </div>
+          <div class="mt-2.5 rounded-2xl overflow-hidden border border-[#2F3336] bg-zinc-950 relative">
+            <img src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=900&q=80" class="w-full h-48 object-cover" />
+            <span class="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-black/75 border border-white/15 text-[11px] font-bold">🩺 مستشفى</span>
+            <span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-full bg-black/75 border border-white/15 text-[11px] font-bold">1/5 🖼</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mt-2.5 text-[11px]">
+            <span class="px-2.5 py-0.5 rounded-full border border-[#2F3336]">طب عام</span>
+            <span class="px-2.5 py-0.5 rounded-full border border-[#2F3336]">الطوارئ 24/7</span>
+            <span class="px-2.5 py-0.5 rounded-full border border-[#2F3336]">مختبرات متطورة</span>
+            <span class="px-2.5 py-0.5 rounded-full border border-[#2F3336]">أقسام متخصصة</span>
+          </div>
+          <p id="desc" class="mt-2 text-[13.5px] leading-[20px] text-[#D6D9DB] line-clamp-2">
+            مستشفى الشفاء العام من أبرز المستشفيات في اليمن، يقدم خدمات طبية متكاملة بأحدث الأجهزة وكادر طبي متخصص على مدار الساعة.
+          </p>
+          <button onclick="document.getElementById('desc').classList.toggle('line-clamp-2')" class="text-[11.5px] font-bold text-[#1D9BF0]">عرض المزيد ⌄</button>
+          <div class="mt-3 pt-2.5 border-t border-[#2F3336]/70 flex flex-wrap items-center justify-between gap-2 text-[11.5px]">
+            <div class="flex flex-wrap items-center gap-3 text-[#71767B]">
+              <span>👥 +1.2K مقيم</span>
+              <a href="tel:012345678" class="text-emerald-400 font-bold" dir="ltr">📞 01 2345678</a>
+              <span class="text-[#1D9BF0] font-bold">🧭 الخريطة</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[#71767B] px-1.5">↗</span>
+              <span class="text-[#FFC500] px-1.5">🔖</span>
+              <button class="px-3 py-1 rounded-full bg-[#FFC500] text-black font-black">التفاصيل ‹</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+</div>
+</body>
+</html>

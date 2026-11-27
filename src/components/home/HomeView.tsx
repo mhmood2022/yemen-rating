@@ -62,7 +62,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         if (!isMounted) return;
 
-        if (busRes.status === 'fulfilled' && busRes.value.data) setLiveBusinesses(busRes.value.data);
+        if (busRes.status === 'fulfilled' && busRes.value.data) setLiveBusinesses(busRes.value.data.filter((b: any) => !b.is_hidden && String(b.status || '').toLowerCase() !== 'hidden'));
         if (bankRes.status === 'fulfilled' && bankRes.value.data) setLiveBanks(bankRes.value.data);
         if (jobRes.status === 'fulfilled' && jobRes.value.data) setLiveJobs(jobRes.value.data);
         if (propRes.status === 'fulfilled' && propRes.value.data) setLiveProperties(propRes.value.data);

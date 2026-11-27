@@ -3,11 +3,12 @@ import { NotificationsPage } from './pages/NotificationsPage';
 import { CommunityFeedPage } from './pages/CommunityFeedPage';
 import PostEngagementsPage from './pages/PostEngagementsPage';
 import { SearchPage } from './pages/SearchPage';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 
 // الهيكل الموحد App Shell
 import { AppShell } from './components/layout/AppShell';
+import { NetworkStatusBanner } from './components/common/NetworkStatusBanner';
 
 // الصفحات الرئيسية والأدلة
 import { HomeView } from './components/home/HomeView';
@@ -86,6 +87,59 @@ const HomeRoute: React.FC = () => {
 };
 
 export function App() {
+  useEffect(() => {
+    let locked = false;
+    let savedY = 0;
+    const syncLock = () => {
+      const overlays = Array.from(document.querySelectorAll('.fixed.inset-0')).filter((el) => {
+        const cls = typeof el.className === 'string' ? el.className : '';
+        if (cls.includes('pointer-events-none') || cls.includes('hidden')) return false;
+        const st = window.getComputedStyle(el);
+        if (st.display === 'none' || st.visibility === 'hidden' || st.pointerEvents === 'none') return false;
+        const rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 120;
+      });
+      const shouldLock = overlays.length > 0;
+      if (shouldLock && !locked) {
+        locked = true;
+        savedY = window.scrollY || window.pageYOffset || 0;
+        document.documentElement.classList.add('yr-modal-scroll-lock');
+        document.body.classList.add('yr-modal-scroll-lock');
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${savedY}px`;
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.width = '100%';
+      } else if (!shouldLock && locked) {
+        locked = false;
+        document.documentElement.classList.remove('yr-modal-scroll-lock');
+        document.body.classList.remove('yr-modal-scroll-lock');
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        window.scrollTo(0, savedY);
+      }
+    };
+    const obs = new MutationObserver(syncLock);
+    obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+    syncLock();
+    return () => {
+      obs.disconnect();
+      if (locked) {
+        document.documentElement.classList.remove('yr-modal-scroll-lock');
+        document.body.classList.remove('yr-modal-scroll-lock');
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        window.scrollTo(0, savedY);
+      }
+    };
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>
@@ -175,6 +229,7 @@ export function App() {
         <Route path="/my-payments" element={<MyPaymentsPage />} />
         <Route path="/login" element={<AppShell><AccountPage /></AppShell>} />
       </Routes>
+      <NetworkStatusBanner />
     </BrowserRouter>
   );
 }

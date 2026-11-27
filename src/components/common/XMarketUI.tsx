@@ -148,31 +148,32 @@ export const XFilterModal: React.FC<{
   fields: { label: string; value: string; options: YRSelectOption[]; onChange: (v: string) => void }[];
 }> = ({ isOpen, onClose, title, activeFiltersCount, onReset, resultsCount, fields }) => {
   if (!isOpen) return null;
+  const orderedFields = [...fields].sort((a, b) => b.options.length - a.options.length);
   return (
-    <div data-no-tab-swipe="true" className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center" onClick={onClose}>
-      <div dir="rtl" onClick={(e) => e.stopPropagation()} className="w-full sm:max-w-md bg-black border-t sm:border border-[#2F3336] rounded-t-3xl sm:rounded-2xl shadow-2xl">
-        <div className="w-10 h-1 rounded-full bg-[#2F3336] mx-auto mt-2.5 sm:hidden" />
-        <div className="px-4 py-3 border-b border-[#2F3336] flex items-center justify-between">
+    <div data-no-tab-swipe="true" className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center overscroll-contain" onClick={onClose}>
+      <div dir="rtl" onClick={(e) => e.stopPropagation()} className="w-full sm:max-w-lg min-h-[72vh] sm:min-h-[500px] max-h-[90vh] flex flex-col bg-black border-t sm:border border-[#2F3336] rounded-t-3xl sm:rounded-2xl shadow-2xl">
+        <div className="w-12 h-1 rounded-full bg-[#2F3336] mx-auto mt-3 sm:hidden shrink-0" />
+        <div className="px-5 py-3.5 border-b border-[#2F3336] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
-            <button type="button" onClick={onClose} aria-label="إغلاق" className="w-8 h-8 rounded-full hover:bg-white/10 text-white flex items-center justify-center cursor-pointer">
-              <X size={18} />
+            <button type="button" onClick={onClose} aria-label="إغلاق" className="w-9 h-9 rounded-full hover:bg-white/10 text-white flex items-center justify-center cursor-pointer">
+              <X size={19} />
             </button>
-            <h3 className="text-[15px] font-black text-white">{title}</h3>
+            <h3 className="text-base font-black text-white">{title}</h3>
           </div>
           <button type="button" onClick={onReset} disabled={activeFiltersCount === 0} className={`text-xs font-bold ${activeFiltersCount > 0 ? 'text-white hover:text-white/80 cursor-pointer' : 'text-[#71767B]/50 cursor-default'}`}>
             إعادة ضبط
           </button>
         </div>
-        <div className="p-3.5 space-y-2.5">
-          {fields.map((f) => (
+        <div className="flex-1 p-5 space-y-4">
+          {orderedFields.map((f) => (
             <div key={f.label}>
-              <label className="text-xs font-bold text-[#71767B] block mb-1.5">{f.label}</label>
-              <YRSelect compact value={f.value} onChange={f.onChange} options={f.options} />
+              <label className="text-[13px] font-bold text-[#71767B] block mb-2">{f.label}</label>
+              <YRSelect value={f.value} onChange={f.onChange} options={f.options} />
             </div>
           ))}
         </div>
-        <div className="px-4 py-3 border-t border-[#2F3336] bg-black rounded-b-2xl">
-          <button type="button" onClick={onClose} className="w-full py-2.5 rounded-full bg-white hover:bg-white/90 text-black font-black text-sm transition-all cursor-pointer">
+        <div className="px-5 py-3.5 border-t border-[#2F3336] bg-black rounded-b-2xl shrink-0">
+          <button type="button" onClick={onClose} className="w-full py-3 rounded-full bg-white hover:bg-white/90 text-black font-black text-sm transition-all cursor-pointer">
             عرض النتائج ({resultsCount})
           </button>
         </div>

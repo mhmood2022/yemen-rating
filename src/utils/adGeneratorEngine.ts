@@ -43,6 +43,7 @@ export const SECTION_LABEL_MAP: Record<string, string> = {
   properties: 'سوق العقارات',
   auctions: 'سوق المزادات',
   community: 'المجتمع',
+  businesses: 'دليل المنشآت',
   all: 'جميع الأقسام',
 };
 

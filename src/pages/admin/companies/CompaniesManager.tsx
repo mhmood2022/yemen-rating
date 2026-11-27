@@ -473,6 +473,8 @@ export const CompaniesManager: React.FC = () => {
       const list = bData || [];
       const enriched: BusinessRecord[] = list.map((b: any) => ({
         ...b,
+        is_hidden: Boolean(b.is_hidden || String(b.status || '').toLowerCase() === 'hidden'),
+        status: (b.is_hidden || String(b.status || '').toLowerCase() === 'hidden') ? 'hidden' : (b.status || 'active'),
         gallery_urls: Array.isArray(b.gallery_urls) ? b.gallery_urls : [],
         category_name: catMap[b.category_id]?.name || 'منشأة عامة',
         category_slug: catMap[b.category_id]?.slug || '',
@@ -490,6 +492,20 @@ export const CompaniesManager: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const [togglingHideId, setTogglingHideId] = useState<string | null>(null);
+  const handleToggleHideBusiness = async (b: BusinessRecord) => {
+    if (togglingHideId) return;
+    const willHide = !(b.status === 'hidden' || Boolean((b as any).is_hidden));
+    setTogglingHideId(b.id);
+    try {
+      const { error } = await supabase.from('businesses').update({ is_hidden: willHide, status: willHide ? 'hidden' : 'active', updated_at: new Date().toISOString() }).eq('id', b.id);
+      if (error) throw error;
+      setBusinesses((prev) => prev.map((item) => item.id === b.id ? { ...item, is_hidden: willHide, status: willHide ? 'hidden' : 'active' } : item));
+      setSuccessToast(willHide ? `تم إخفاء "${b.name}" من الدليل والموقع والبحث بنجاح` : `تمت إعادة إظهار "${b.name}" في الدليل والموقع والبحث بنجاح`);
+      setTimeout(() => setSuccessToast(null), 4000);
+    } catch (err: any) { alert('تعذر تحديث حالة الظهور: ' + (err?.message || 'خطأ')); } finally { setTogglingHideId(null); }
+  };
 
   const filteredBusinesses = useMemo(() => {
     return businesses.filter(b => {
@@ -702,6 +718,7 @@ export const CompaniesManager: React.FC = () => {
       gallery_urls: cleanGallery,
       badge_type: formData.badge_type,
       is_verified: formData.is_verified,
+      is_hidden: formData.status === 'hidden',
       status: formData.status,
       claim_status: formData.claim_status,
       rating: formData.rating ? Number(formData.rating) : 0,
@@ -1015,9 +1032,11 @@ export const CompaniesManager: React.FC = () => {
                     تعديل شامل
                   </button>
 
-                    <button
-                      type="button"
-                      onClick={() => setBusinessToDelete(b)}
+                    <button type="button" disabled={togglingHideId === b.id} onClick={() => handleToggleHideBusiness(b)} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer border ${b.status === 'hidden' ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/25' : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border-amber-500/25'}`} title={b.status === 'hidden' ? 'إظهار المنشأة' : 'إخفاء المنشأة'}>
+                      {togglingHideId === b.id ? <Loader2 size={13} className="animate-spin" /> : b.status === 'hidden' ? <Eye size={13} /> : <EyeOff size={13} />}
+                      <span>{b.status === 'hidden' ? 'إظهار' : 'إخفاء'}</span>
+                    </button>
+                    <button type="button" onClick={() => setBusinessToDelete(b)}
                       className="px-3 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-all flex items-center justify-center gap-1 active:scale-95 cursor-pointer border border-red-500/20"
                       title="حذف المنشأة نهائياً"
                     >

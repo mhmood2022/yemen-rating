@@ -49,6 +49,7 @@ import { TabPermissionsAuditPanel } from './TabPermissionsAuditPanel';
 type AdminMainTab = 'tabs' | 'content' | 'forms' | 'analytics' | 'permissions';
 
 const CARD_STYLE_OPTIONS: Array<{ value: SpecializedCardStyle; label: string }> = [
+  { value: 'showcase', label: 'بطاقة منشأة / دليل احترافية (أسلوب X)' },
   { value: 'phone', label: 'بطاقة هواتف' },
   { value: 'property', label: 'بطاقة عقارات' },
   { value: 'job', label: 'بطاقة وظائف' },

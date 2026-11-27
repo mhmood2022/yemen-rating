@@ -23,6 +23,7 @@ import { PhoneMarketPage } from './PhoneMarketPage';
 import { JobsPage } from '../components/pages/JobsPage';
 import { RealEstatePage } from '../components/pages/RealEstatePage';
 import { AuctionsPage } from '../components/pages/AuctionsPage';
+import { CommunityBusinessesDirectory } from '../components/community/CommunityBusinessesDirectory';
 import { CommunitySection, SECTIONS_UPDATED_EVENT, fetchCommunitySections, getCachedCommunitySections, getSectionIcon } from '../services/sectionsService';
 import { XSearchFilterBar, XFilterModal, YEMEN_GOV_FILTER_OPTIONS } from '../components/common/XMarketUI';
 import { AdBanner } from '../components/common/AdBanner';
@@ -258,6 +259,30 @@ export const CommunityFeedPage: React.FC = () => {
   const reloadFeedRef = useRef<(() => void) | null>(null);
   const [hasActiveSpace, setHasActiveSpace] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [hideHeaderOnScroll, setHideHeaderOnScroll] = useState(false);
+  const lastScrollYRef = useRef<number>(0);
+
+  useEffect(() => {
+    lastScrollYRef.current = window.scrollY || 0;
+    const onScrollHideHeader = () => {
+      if (document.body.style.position === 'fixed') return;
+      const curY = window.scrollY || window.pageYOffset || 0;
+      const diff = curY - lastScrollYRef.current;
+      if (curY <= 50) {
+        setHideHeaderOnScroll(false);
+        lastScrollYRef.current = curY;
+      } else if (diff > 10 && curY > 90) {
+        setHideHeaderOnScroll(true);
+        lastScrollYRef.current = curY;
+      } else if (diff < -8) {
+        setHideHeaderOnScroll(false);
+        lastScrollYRef.current = curY;
+      }
+    };
+    window.addEventListener('scroll', onScrollHideHeader, { passive: true });
+    return () => window.removeEventListener('scroll', onScrollHideHeader);
+  }, []);
+
   const [visibleTweetsCount, setVisibleTweetsCount] = useState(12);
   const [isLoadingMoreTweets, setIsLoadingMoreTweets] = useState(false);
   const feedBottomRef = useRef<HTMLDivElement | null>(null);
@@ -283,6 +308,12 @@ export const CommunityFeedPage: React.FC = () => {
   const [customCityFilter, setCustomCityFilter] = useState('all');
   const [customSortBy, setCustomSortBy] = useState('newest');
   const [showCustomFilterModal, setShowCustomFilterModal] = useState(false);
+  const [customBizTypeFilter, setCustomBizTypeFilter] = useState('all');
+  const [showcaseMeta, setShowcaseMeta] = useState<{
+    categories: [string, number][];
+    totalCount: number;
+    filteredCount: number;
+  }>({ categories: [], totalCount: 0, filteredCount: 0 });
   const [customSlot1AdId, setCustomSlot1AdId] = useState<string | null | undefined>(undefined);
   const [specializedComposerTick, setSpecializedComposerTick] = useState(0);
 
@@ -301,9 +332,13 @@ export const CommunityFeedPage: React.FC = () => {
   const inSubSectionsMode = Boolean(activeParentSectionId && activeSubSections.length > 0);
 
   useEffect(() => {
+    const sec = openCommunitySections.find((s) => s.id === activeTab);
+    const isShowcase = sec?.specializedCardStyle === 'showcase';
+    setHideHeaderOnScroll(false);
     setCustomSearchQuery('');
     setCustomCityFilter('all');
-    setCustomSortBy('newest');
+    setCustomBizTypeFilter('all');
+    setCustomSortBy(isShowcase ? 'rating' : 'newest');
   }, [activeTab]);
 
   useEffect(() => {
@@ -1895,7 +1930,7 @@ const handleAddComment = async (e?: React.FormEvent) => {
       )}
 
       {/* الهيدر العلوي بنمط منصة X الأصلي */}
-      <header className="sticky top-0 z-40 bg-black/95 backdrop-blur-md">
+      <header className={`sticky top-0 z-40 bg-black/95 backdrop-blur-md transition-transform duration-300 ease-out will-change-transform ${hideHeaderOnScroll ? '-translate-y-full pointer-events-none' : 'translate-y-0'}`}>
         {/* الشريط العلوي */}
         <div className={`px-4 flex items-center justify-between relative transition-all duration-300 overflow-hidden ${(isScrolled || isSectionTab) ? 'h-0 py-0 opacity-0 pointer-events-none' : 'h-[58px] py-2.5 opacity-100'}`}>
           {(() => {
@@ -2019,8 +2054,12 @@ const handleAddComment = async (e?: React.FormEvent) => {
       <div key={activeTab} className="animate-[fadeIn_0.3s_ease-in-out]">
         {isCustomSectionTab && currentCustomSection && (() => {
           const SecIcon = getSectionIcon(currentCustomSection.iconName);
+          const isShowcaseSection = currentCustomSection.specializedCardStyle === 'showcase';
+          const defaultCustomSort = isShowcaseSection ? 'rating' : 'newest';
           const customActiveFiltersCount =
-            (customCityFilter !== 'all' ? 1 : 0) + (customSortBy !== 'newest' ? 1 : 0);
+            (isShowcaseSection && customBizTypeFilter !== 'all' ? 1 : 0) +
+            (customCityFilter !== 'all' ? 1 : 0) +
+            (customSortBy !== defaultCustomSort ? 1 : 0);
           return (
             <>
               <MarketSponsorSlot section={currentCustomSection.id} />
@@ -2061,6 +2100,8 @@ const handleAddComment = async (e?: React.FormEvent) => {
                   searchQuery={customSearchQuery}
                   cityFilter={customCityFilter}
                   sortBy={customSortBy}
+                  bizTypeFilter={customBizTypeFilter}
+                  onShowcaseMetaChange={setShowcaseMeta}
                   externalOpenComposerSignal={specializedComposerTick}
                 />
               )}
@@ -2070,11 +2111,28 @@ const handleAddComment = async (e?: React.FormEvent) => {
                 title={`فلترة ${currentCustomSection.label}`}
                 activeFiltersCount={customActiveFiltersCount}
                 onReset={() => {
+                  setCustomBizTypeFilter('all');
                   setCustomCityFilter('all');
-                  setCustomSortBy('newest');
+                  setCustomSortBy(defaultCustomSort);
                 }}
-                resultsCount={displayedTweets.length}
+                resultsCount={isShowcaseSection ? showcaseMeta.filteredCount : displayedTweets.length}
                 fields={[
+                  ...(isShowcaseSection && showcaseMeta.categories.length > 0
+                    ? [
+                        {
+                          label: 'نوع المنشأة / التصنيف',
+                          value: customBizTypeFilter,
+                          options: [
+                            { value: 'all', label: 'الكل' },
+                            ...showcaseMeta.categories.map(([cat]) => ({
+                              value: cat,
+                              label: cat,
+                            })),
+                          ],
+                          onChange: setCustomBizTypeFilter,
+                        },
+                      ]
+                    : []),
                   {
                     label: 'المحافظة / المدينة',
                     value: customCityFilter,
@@ -2084,11 +2142,17 @@ const handleAddComment = async (e?: React.FormEvent) => {
                   {
                     label: 'ترتيب العرض',
                     value: customSortBy,
-                    options: [
-                      { value: 'newest', label: 'الأحدث أولاً' },
-                      { value: 'oldest', label: 'الأقدم أولاً' },
-                      { value: 'popular', label: 'الأكثر تفاعلاً' },
-                    ],
+                    options: isShowcaseSection
+                      ? [
+                          { value: 'rating', label: 'الأعلى تقييماً' },
+                          { value: 'reviews', label: 'الأكثر تقييماً' },
+                          { value: 'newest', label: 'الأحدث أولاً' },
+                        ]
+                      : [
+                          { value: 'newest', label: 'الأحدث أولاً' },
+                          { value: 'oldest', label: 'الأقدم أولاً' },
+                          { value: 'popular', label: 'الأكثر تفاعلاً' },
+                        ],
                     onChange: setCustomSortBy,
                   },
                 ]}
@@ -2165,20 +2229,20 @@ const handleAddComment = async (e?: React.FormEvent) => {
             <div className="py-24 flex items-center justify-center">
               <XSpinner size={28} />
             </div>
-          ) : (
+          ) : isCustomSectionTab && currentCustomSection?.specializedCardStyle === 'showcase' ? null : (
             <div className="text-center py-20 text-zinc-500 text-xs px-4">
             {isCustomSectionTab && currentCustomSection ? (
               <div className="space-y-4">
-                <AdBanner section={currentCustomSection.id} slot="slot_1" onAdResolved={setCustomSlot1AdId} className="!my-0 border-x-0" />
+                {currentCustomSection.specializedCardStyle !== 'showcase' && <AdBanner section={currentCustomSection.id} slot="slot_1" onAdResolved={setCustomSlot1AdId} className="!my-0 border-x-0" />}
                 {currentCustomSection.allowFreeTweets !== false ? (
                   <div className="space-y-1.5 py-6">
                     <p className="font-bold text-white text-sm">لا توجد تغريدات عادية حديثة</p>
                     <p className="text-[#71767B] text-xs">اضغط (+) لنشر أول تغريدة أو إعلان</p>
                   </div>
                 ) : (
-                  <p className="text-[#71767B] text-xs py-2">التغريدات العادية غير مفعلة في هذا القسم</p>
+                  currentCustomSection.specializedCardStyle !== 'showcase' ? <p className="text-[#71767B] text-xs py-2">التغريدات العادية غير مفعلة في هذا القسم</p> : null
                 )}
-                <AdBanner section={currentCustomSection.id} slot="slot_2" enabled={customSlot1AdId !== undefined} excludeAdIds={customSlot1AdId ? [customSlot1AdId] : []} className="!my-0 border-x-0" />
+                {currentCustomSection.specializedCardStyle !== 'showcase' && <AdBanner section={currentCustomSection.id} slot="slot_2" enabled={customSlot1AdId !== undefined} excludeAdIds={customSlot1AdId ? [customSlot1AdId] : []} className="!my-0 border-x-0" />}
               </div>
             ) : activeTab === 'forYou' 
           ? 'لا توجد منشورات حتى الآن في المجتمع. كن أول من يغرد!' 

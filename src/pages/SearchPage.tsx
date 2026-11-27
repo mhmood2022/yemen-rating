@@ -30,6 +30,7 @@ export const SearchPage: React.FC = () => {
   const [filter, setFilter] = useState<FilterType>('top');
   const [users, setUsers] = useState<UserResult[]>([]);
   const [businesses, setBusinesses] = useState<any[]>([]);
+  const [hiddenBizMatchesCount, setHiddenBizMatchesCount] = useState(0);
   const [posts, setPosts] = useState<PostResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -40,6 +41,7 @@ export const SearchPage: React.FC = () => {
     if (!query.trim()) {
       setUsers([]);
       setBusinesses([]);
+      setHiddenBizMatchesCount(0);
       setPosts([]);
       setHasSearched(false);
       return;
@@ -59,19 +61,35 @@ export const SearchPage: React.FC = () => {
             .or(`name.ilike.${searchTerm},short_name.ilike.${searchTerm}`);
           const catMap = new Map((matchedCats || []).map((c: any) => [c.id, c]));
           const catIds = (matchedCats || []).map((c: any) => c.id);
-          let bizQ = supabase.from('businesses').select('id, name, slug, city, logo_url, is_verified, category_id, sub_category').limit(12);
+          let bizQ = supabase.from('businesses').select('id, name, slug, city, logo_url, is_verified, category_id, sub_category, is_hidden, status').limit(12);
           if (catIds.length > 0) {
-            bizQ = bizQ.or(`name.ilike.${searchTerm},city.ilike.${searchTerm},description.ilike.${searchTerm},category_id.in.(${catIds.join(',')})`);
+            bizQ = bizQ.or(`name.ilike.${searchTerm},sub_category.ilike.${searchTerm},city.ilike.${searchTerm},category_id.in.(${catIds.join(',')})`);
           } else {
-            bizQ = bizQ.or(`name.ilike.${searchTerm},city.ilike.${searchTerm},description.ilike.${searchTerm}`);
+            bizQ = bizQ.or(`name.ilike.${searchTerm},sub_category.ilike.${searchTerm},city.ilike.${searchTerm}`);
           }
           const { data: bizRes } = await bizQ;
-          const allBizCatIds = [...new Set((bizRes || []).map((b: any) => b.category_id).filter((id: string) => id && !catMap.has(id)))];
+          const qLower = query.trim().toLowerCase();
+          const visibleBiz = (bizRes || [])
+            .filter((b: any) => !b.is_hidden && String(b.status || '').toLowerCase() !== 'hidden')
+            .sort((a: any, b: any) => {
+              const aName = String(a.name || '').toLowerCase().includes(qLower) ? 1 : 0;
+              const bName = String(b.name || '').toLowerCase().includes(qLower) ? 1 : 0;
+              return bName - aName;
+            });
+          const hiddenMatched = (bizRes || []).filter((b: any) => {
+            const isHidden = b.is_hidden || String(b.status || '').toLowerCase() === 'hidden';
+            if (!isHidden) return false;
+            const bName = String(b.name || '').toLowerCase();
+            const bSlug = String(b.slug || '').toLowerCase();
+            return bName.includes(qLower) || bSlug.includes(qLower);
+          });
+          setHiddenBizMatchesCount(visibleBiz.length === 0 ? hiddenMatched.length : 0);
+          const allBizCatIds = [...new Set(visibleBiz.map((b: any) => b.category_id).filter((id: string) => id && !catMap.has(id)))];
           if (allBizCatIds.length > 0) {
             const { data: extraCats } = await supabase.from('categories').select('id, name, short_name').in('id', allBizCatIds);
             (extraCats || []).forEach((c: any) => catMap.set(c.id, c));
           }
-          setBusinesses((bizRes || []).map((b: any) => ({ ...b, shortLabel: catMap.get(b.category_id)?.short_name || b.sub_category || catMap.get(b.category_id)?.name || '' })));
+          setBusinesses(visibleBiz.map((b: any) => ({ ...b, shortLabel: catMap.get(b.category_id)?.short_name || b.sub_category || catMap.get(b.category_id)?.name || '' })));
         } else {
           setBusinesses([]);
         }
@@ -208,7 +226,13 @@ export const SearchPage: React.FC = () => {
       {loading && <div className="text-center py-10 text-zinc-500 text-sm">جاري البحث...</div>}
 
       {/* لا توجد نتائج */}
-      {!loading && hasSearched && users.length === 0 && posts.length === 0 && businesses.length === 0 && (
+      {!loading && hasSearched && (filter === 'top' || filter === 'businesses') && hiddenBizMatchesCount > 0 && (
+        <div className="text-center py-8 px-4 space-y-1">
+          <p className="text-sm font-bold text-zinc-300">هذه المنشأة غير متاحة للعرض حالياً</p>
+          <p className="text-xs text-zinc-500">تم إيقاف عرض هذه المنشأة مؤقتاً في الدليل ونتائج البحث، وقد تكون قيد المراجعة الإدارية.</p>
+        </div>
+      )}
+      {!loading && hasSearched && users.length === 0 && posts.length === 0 && businesses.length === 0 && hiddenBizMatchesCount === 0 && (
         <div className="text-center py-20 text-zinc-500 text-sm px-4">
           لا توجد نتائج مطابقة لـ "{query}"
         </div>

@@ -29,7 +29,7 @@ export const fetchBusinesses = async (categorySlug?: string): Promise<YRBusiness
       console.error('Supabase fetch error:', error);
       return [];
     }
-    return data || [];
+    return (data || []).filter((b: any) => !b.is_hidden && String(b.status || '').toLowerCase() !== 'hidden');
   } catch (err) {
     console.error('Database connection error:', err);
     return [];
