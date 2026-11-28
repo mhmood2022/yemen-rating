@@ -5,7 +5,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { SearchInput } from '../../components/ui/SearchInput';
-import { Select } from '../../components/ui/Select';
+import { YRSelect as Select } from '../../components/common/YRSelect';
 import { AdPreviewModal } from '../../components/admin/AdPreviewModal';
 import { AdEditorModal } from '../../components/admin/AdEditorModal';
 import {

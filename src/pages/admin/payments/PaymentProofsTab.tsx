@@ -211,7 +211,7 @@ export const PaymentProofsTab: React.FC = () => {
         { status: 'APPROVED' }
       );
       
-      await sendSubscriptionNotification({ userId: proof.user_id, scope: proof.scope, entityName: proof.business_name, serviceName: proof.plan_name || 'تفعيل الاشتراك', status: 'approved' });
+      await sendSubscriptionNotification({ userId: proof.user_id, scope: proof.scope, businessId: proof.business_id, entityName: proof.business_name, serviceName: proof.plan_name || 'تفعيل الاشتراك', status: 'approved' });
       showToast('تم قبول السند وتفعيل الخدمة', 'success');
       fetchProofs();
     } catch (err: any) {
@@ -239,7 +239,7 @@ export const PaymentProofsTab: React.FC = () => {
       );
       
       if (rejectModal.subscription_id) { await supabase.from('subscriptions').update({ status: 'REJECTED' }).eq('id', rejectModal.subscription_id); }
-      await sendSubscriptionNotification({ userId: rejectModal.user_id, scope: rejectModal.scope, entityName: rejectModal.business_name, serviceName: rejectModal.plan_name || 'طلب الاشتراك', status: 'rejected', reason: rejectReason });
+      await sendSubscriptionNotification({ userId: rejectModal.user_id, scope: rejectModal.scope, businessId: rejectModal.business_id, entityName: rejectModal.business_name, serviceName: rejectModal.plan_name || 'طلب الاشتراك', status: 'rejected', reason: rejectReason });
       showToast('تم رفض السند', 'success');
       setRejectModal(null);
       setRejectReason('');

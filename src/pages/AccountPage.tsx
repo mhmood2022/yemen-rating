@@ -1516,7 +1516,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
     localStorage.removeItem('sb-auth-token');
     showToast('تم تسجيل الخروج بنجاح 👋');
     setTimeout(() => {
-      navigate('/');
+      navigate('/account', { replace: true });
       window.location.reload();
     }, 300);
   };
@@ -1533,30 +1533,39 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
 
   // إذا لم يكن مسجل دخول وليس هناك بروفايل لشخص آخر يتصفحه: عرض شاشة تسجيل الدخول
   if (!sessionUser && !targetIdParam) {
-  
-
-  return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 text-center font-['Tahoma',sans-serif]" dir="rtl">
-        <div className="w-14 h-14 rounded-3xl bg-[#141E30] border border-[#2F3336] flex items-center justify-center mb-5 text-[#FFC500] shadow-2xl">
-          <Lock size={36} />
+    return (
+      <div
+        className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 text-center"
+        dir="rtl"
+      >
+        <div className="w-full max-w-xs flex flex-col items-center">
+          <img
+            src="/icon-512.png"
+            alt="Yemen Rating"
+            className="w-28 h-28 object-contain mb-10 select-none"
+          />
+          <div className="flex flex-col items-center gap-3 mb-7">
+            <Lock size={24} className="text-white/90" />
+            <h2 className="text-xl font-black text-white">
+              تسجيل الدخول إلى حسابك
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAuthModalOpen(true)}
+            className="w-full py-3.5 rounded-full bg-white hover:bg-[#E7E9EA] active:scale-95 text-black font-black text-sm transition cursor-pointer"
+          >
+            تسجيل الدخول
+          </button>
         </div>
-        <h2 className="text-xl font-black mb-2">تسجيل الدخول إلى حسابك</h2>
-        <p className="text-xs text-zinc-400 max-w-sm mb-6 leading-relaxed">
-          سجّل دخولك بحسابك الحقيقي للوصول إلى ملفك الشخصي، وتغيير صورتك وغلافك، ومشاركة تغريداتك مع مجتمع يمن ريتنج.
-        </p>
-        <button
-          onClick={() => setAuthModalOpen(true)}
-          className="w-full max-w-xs py-3.5 rounded-full bg-[#FFC500] hover:bg-[#E5B200] active:scale-95 text-white font-black text-sm transition shadow-[0_8px_25px_rgba(29,155,240,0.4)]"
-        >
-          تسجيل الدخول / إنشاء حساب
-        </button>
-        <AuthModal isOpen={authModalOpen} onClose={() => { setAuthModalOpen(false); loadProfile(); }} defaultMode="login" />
+        <AuthModal
+          isOpen={authModalOpen}
+          onClose={() => { setAuthModalOpen(false); loadProfile(); }}
+          defaultMode="login"
+        />
       </div>
     );
   }
-
-
-
 
   const handleSaveEdit = async () => {
     if (!editingPost || !editPostText.trim()) return;

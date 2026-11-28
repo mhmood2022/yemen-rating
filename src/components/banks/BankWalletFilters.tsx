@@ -2,7 +2,7 @@ import React from 'react';
 import { CITIES_LIST } from '../../data/demoBusinesses';
 import { BankWalletFilterState } from '../../types/banksWallets';
 import { SearchInput } from '../ui/SearchInput';
-import { Select } from '../ui/Select';
+import { YRSelect as Select } from '../common/YRSelect';
 import { Landmark, Wallet, SlidersHorizontal } from 'lucide-react';
 import { cn } from '../../lib/utils';
 

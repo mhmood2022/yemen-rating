@@ -2,7 +2,7 @@ import React from 'react';
 import { CITIES_LIST, CATEGORIES_LIST } from '../../data/demoBusinesses';
 import { DirectoryFilterState } from '../../types/business';
 import { Button } from '../ui/Button';
-import { Select } from '../ui/Select';
+import { YRSelect as Select } from '../common/YRSelect';
 import { SlidersHorizontal, RotateCcw } from 'lucide-react';
 import { cn } from '../../lib/utils';
 

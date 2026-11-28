@@ -4,14 +4,17 @@ import { CommunityFeedPage } from './pages/CommunityFeedPage';
 import PostEngagementsPage from './pages/PostEngagementsPage';
 import { SearchPage } from './pages/SearchPage';
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 // الهيكل الموحد App Shell
+import { ThemeProvider } from './context/ThemeContext';
+import { AuthProvider } from './context/AuthContext';
+import { ModalProvider } from './context/ModalContext';
+import { ToastProvider } from './components/ui/Toast';
 import { AppShell } from './components/layout/AppShell';
 import { NetworkStatusBanner } from './components/common/NetworkStatusBanner';
 
 // الصفحات الرئيسية والأدلة
-import { HomeView } from './components/home/HomeView';
 import { BanksPage } from './pages/public/banks/BanksPage';
 import { BusinessesPage } from './pages/public/businesses/BusinessesPage';
 import { PhoneMarketPage } from './pages/PhoneMarketPage';
@@ -19,7 +22,6 @@ import { AuctionsPage } from './components/pages/AuctionsPage';
 import { RealEstatePage } from './components/pages/RealEstatePage';
 import { JobsPage } from './components/pages/JobsPage';
 import { ExchangeRatesPage } from './components/pages/ExchangeRatesPage';
-import { SAMPLE_BUSINESSES } from './data/mockData';
 
 // القوالب الديناميكية الموحدة Master Templates
 import { BankProfilePage } from './pages/templates/BankProfilePage';
@@ -67,24 +69,6 @@ import { AnalyticsFinanceManager } from './pages/admin/analytics/AnalyticsFinanc
 import { SectionsManager } from './pages/admin/sections/SectionsManager';
 import FollowersPage from './pages/social/FollowersPage';
 
-
-const HomeRoute: React.FC = () => {
-  const navigate = useNavigate();
-  return (
-    <AppShell>
-      <HomeView
-        businesses={SAMPLE_BUSINESSES}
-        onSelectCategory={(slug) => navigate('/directory?category=' + encodeURIComponent(slug))}
-        onSelectBusiness={(biz) => navigate('/businesses/' + biz.id)}
-        onNavigateAuctions={() => navigate('/auctions')}
-        onNavigateRealEstate={() => navigate('/properties')}
-        onNavigateJobs={() => navigate('/jobs')}
-        onNavigateExchangeRates={() => navigate('/exchange-rates')}
-        onNavigatePhones={() => navigate('/phones')}
-      />
-    </AppShell>
-  );
-};
 
 export function App() {
   useEffect(() => {
@@ -141,11 +125,14 @@ export function App() {
   }, []);
 
   return (
-    <BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+        <ModalProvider>
+          <BrowserRouter>
       <Routes>
         
         {/* المسارات العامة الموحدة داخل الـ App Shell */}
-        <Route path="/" element={<HomeRoute />} />
+        <Route path="/" element={<CommunityFeedPage />} />
         <Route path="/prices" element={<AppShell><ExchangeRatesPage onBack={() => window.history.back()} /></AppShell>} />
         
         {/* مسارات البنوك (دليل + قالب ديناميكي) */}
@@ -210,14 +197,14 @@ export function App() {
           <Route path="settings" element={<SettingsAuditManager />} />
         </Route>
 
-        <Route path="*" element={<HomeRoute />} />
+        <Route path="*" element={<CommunityFeedPage />} />
 
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/feed" element={<CommunityFeedPage />} />
         <Route path="/post/:id/engagements" element={<PostEngagementsPage />} />
-        <Route path="/community" element={<AppShell><CommunityFeedPage /></AppShell>} />
-        <Route path="/tweets" element={<AppShell><CommunityFeedPage /></AppShell>} />
+        <Route path="/community" element={<CommunityFeedPage />} />
+        <Route path="/tweets" element={<CommunityFeedPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/business-page" element={<BusinessPage />} />
         <Route path="/business-page/:id" element={<BusinessPage />} />
@@ -231,6 +218,10 @@ export function App() {
       </Routes>
       <NetworkStatusBanner />
     </BrowserRouter>
+          <ToastProvider />
+        </ModalProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

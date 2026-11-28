@@ -382,7 +382,7 @@ export const adSubscriptionsService = {
     });
     if (error) throw error;
     const ord = data as AdSubscriptionOrder;
-    await sendSubscriptionNotification({ userId: ord.user_id, scope: ord.business_id ? 'business' : 'account', entityName: ord.business_name || (params.adPayload?.advertiser_name as string) || null, serviceName: ord.package_name_snapshot || 'اشتراك إعلاني', status: 'pending' });
+    await sendSubscriptionNotification({ userId: ord.user_id, scope: ord.business_id ? 'business' : 'account', businessId: ord.business_id, entityName: ord.business_name || (params.adPayload?.advertiser_name as string) || null, serviceName: ord.package_name_snapshot || 'اشتراك إعلاني', status: 'pending' });
     return ord;
   },
 
@@ -402,7 +402,7 @@ export const adSubscriptionsService = {
     });
     if (error) throw error;
     const ord = data as AdSubscriptionOrder;
-    await sendSubscriptionNotification({ userId: ord.user_id, scope: ord.business_id ? 'business' : 'account', entityName: ord.business_name || null, serviceName: ord.package_name_snapshot || 'اشتراك إعلاني', status: 'pending' });
+    await sendSubscriptionNotification({ userId: ord.user_id, scope: ord.business_id ? 'business' : 'account', businessId: ord.business_id, entityName: ord.business_name || null, serviceName: ord.package_name_snapshot || 'اشتراك إعلاني', status: 'pending' });
     return ord;
   },
 

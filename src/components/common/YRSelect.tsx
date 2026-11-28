@@ -7,6 +7,8 @@ export interface YRSelectOption {
 }
 
 interface YRSelectProps {
+  label?: string;
+  error?: string;
   value: string;
   options: YRSelectOption[];
   onChange: (value: string) => void;
@@ -17,6 +19,8 @@ interface YRSelectProps {
 }
 
 export const YRSelect: React.FC<YRSelectProps> = ({
+  label,
+  error,
   value,
   options,
   onChange,
@@ -50,7 +54,11 @@ export const YRSelect: React.FC<YRSelectProps> = ({
   const displayLabel = selectedOption ? selectedOption.label : (value || placeholder);
 
   return (
-    <div ref={containerRef} className={`relative w-full ${className}`} dir="rtl">
+    <div className="w-full text-right space-y-1" dir="rtl">
+      {label && (
+        <label className="block text-xs font-bold text-[#A1A1AA]">{label}</label>
+      )}
+      <div ref={containerRef} className={`relative w-full ${className}`}>
       <button
         type="button"
         onClick={() => { setOpen((prev) => !prev); setQuery(''); }}
@@ -105,6 +113,8 @@ export const YRSelect: React.FC<YRSelectProps> = ({
           </div>
         </div>
       )}
+      </div>
+      {error && <p className="text-[11px] text-red-400 font-semibold">{error}</p>}
     </div>
   );
 };

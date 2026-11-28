@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RatingStars } from '../../components/common/RatingStars';
+import { VerifiedBadge } from '../../components/common/VerifiedBadge';
 import { SupportModal } from '../../components/support/SupportModal';
 import { ReportPage } from '../../components/community/ReportPage';
 import { AdSubscriptionWizardModal } from '../../components/ads/AdSubscriptionWizardModal';
@@ -454,7 +455,10 @@ export const OwnerDashboardPage: React.FC = () => {
           <div className="flex items-center gap-2.5 min-w-0">
             <button onClick={() => navigate(publicBusinessPath)} className="w-9 h-9 rounded-full hover:bg-[#16181C] border border-[#2F3336] flex items-center justify-center shrink-0 transition cursor-pointer" title="العودة لصفحة المنشأة"><ArrowRight size={17} /></button>
             <div className="min-w-0">
-              <h1 className="text-sm sm:text-base font-black truncate">{businessData.name || 'لوحة المالك'}</h1>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <h1 className="text-sm sm:text-base font-black truncate">{businessData.name || 'لوحة المالك'}</h1>
+                {businessData.is_verified && <VerifiedBadge type={(businessData.badge_type && businessData.badge_type !== 'none' ? businessData.badge_type : 'gold') as any} size={15} className="shrink-0" />}
+              </div>
               <p className="text-[11px] text-[#71767B] truncate">إدارة المنشأة والإحصائيات</p>
             </div>
           </div>
@@ -482,7 +486,10 @@ export const OwnerDashboardPage: React.FC = () => {
                   <div className="w-14 h-14 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-white font-black text-lg shrink-0">{(businessData.name || 'م').charAt(0)}</div>
                 )}
                 <div className="min-w-0 space-y-1">
-                  <h2 className="text-base font-black text-white truncate">{businessData.name}</h2>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <h2 className="text-base font-black text-white truncate">{businessData.name}</h2>
+                    {businessData.is_verified && <VerifiedBadge type={(businessData.badge_type && businessData.badge_type !== 'none' ? businessData.badge_type : 'gold') as any} size={16} className="shrink-0" />}
+                  </div>
                   {businessData.slug && <p className="text-xs text-[#71767B] truncate" dir="ltr" style={{ textAlign: 'right' }}>@{businessData.slug}</p>}
                   <div className="flex items-center gap-1.5 text-xs flex-wrap pt-0.5">
                     <span className="text-zinc-300 font-bold">التقييمات</span>
@@ -499,7 +506,7 @@ export const OwnerDashboardPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
-              <button onClick={() => navigate('/notifications')} className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition cursor-pointer">
+              <button onClick={() => navigate(`/notifications?scope=business&businessId=${businessData.id}&businessName=${encodeURIComponent(businessData.name || '')}`)} className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition cursor-pointer">
                 <div className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-[#FFC500] shrink-0"><Bell size={16} /></div>
                 <div className="min-w-0"><p className="text-xs font-black text-white">الإشعارات</p><p className="text-[10px] text-[#71767B] truncate">التنبيهات والتفاعلات</p></div>
               </button>
@@ -541,7 +548,7 @@ export const OwnerDashboardPage: React.FC = () => {
               <>
                 <div className="grid grid-cols-3 gap-2">
                   <StatCard label="المشاهدات" value={statsData?.views ?? businessData.views_count ?? 0} color="text-white" />
-                  <StatCard label="توثيق الشارة" value={extraCounts.badgeVerified} color="text-white" />
+                  <StatCard label="توثيق الشارة" value={extraCounts.badgeVerified} color="text-white" badge={businessData.is_verified ? <VerifiedBadge type={(businessData.badge_type && businessData.badge_type !== 'none' ? businessData.badge_type : 'gold') as any} size={18} className="shrink-0" /> : undefined} />
                   <StatCard label="الاشتراكات" value={activeSubsCount} color="text-white" />
                   <StatCard label="إعلان بانر" value={bannerAdsCount} color="text-emerald-400" />
                   <StatCard label="إعلان راعي" value={sponsorAdsCount} color="text-emerald-400" />
@@ -754,10 +761,13 @@ export const OwnerDashboardPage: React.FC = () => {
   );
 };
 
-const StatCard: React.FC<{ label: string; value: number; color: string }> = ({ label, value, color }) => (
+const StatCard: React.FC<{ label: string; value: number; color: string; badge?: React.ReactNode }> = ({ label, value, color, badge }) => (
   <div className="bg-[#080808] rounded-2xl border border-[#2F3336] p-3 flex flex-col justify-between min-h-[68px]">
     <p className="text-[10.5px] sm:text-[11px] text-[#71767B] leading-tight truncate">{label}</p>
-    <p className={`text-lg sm:text-xl font-black mt-1 tabular-nums ${color}`}>{Number(value || 0).toLocaleString('en-US')}</p>
+    <div className="flex items-center justify-between gap-1.5 mt-1">
+      <p className={`text-lg sm:text-xl font-black tabular-nums ${color}`}>{Number(value || 0).toLocaleString('en-US')}</p>
+      {badge}
+    </div>
   </div>
 );
 

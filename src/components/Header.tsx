@@ -31,13 +31,9 @@ export const Header: React.FC<HeaderProps> = ({
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { setUnreadCount(0); return; }
         
-        const { count } = await supabase
-          .from('notifications')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .eq('read', false);
-        
-        setUnreadCount(count || 0);
+        const { data: unreadRows } = await supabase.from('notifications').select('id, title, message').eq('user_id', user.id).eq('read', false).limit(100);
+        const accUnread = (unreadRows || []).filter((n: any) => !String(n.title || '').startsWith('[BIZ') && !String(n.message || '').includes('لصفحة المنشأة')).length;
+        setUnreadCount(accUnread);
       } catch (e) {
         console.warn('Header count error:', e);
       }
@@ -149,12 +145,12 @@ export const Header: React.FC<HeaderProps> = ({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="ابحث عن مستخدم، منشور، منشأة..."
                   autoFocus
-                  className="w-full pr-10 pl-3 py-2.5 bg-black border border-[#2F3336] rounded-xl text-white text-sm focus:border-[#1D9BF0] focus:outline-none"
+                  className="w-full pr-10 pl-3 py-2.5 bg-black border border-[#2F3336] rounded-xl text-white text-sm focus:border-[#FFC500] focus:outline-none"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full mt-3 py-2.5 bg-[#1D9BF0] hover:bg-[#1A8CD8] text-white rounded-xl text-sm font-bold transition"
+                className="w-full mt-3 py-2.5 bg-[#FFC500] hover:bg-[#E6B200] text-black rounded-xl text-sm font-bold transition"
               >
                 بحث
               </button>

@@ -1,4 +1,5 @@
 import { XActionBar } from '../components/feed/XActionBar';
+import { AuthModal } from '../components/auth/AuthModal';
 
 import { XSpinner } from '../components/ui/LoadingSpinner';
 import { XVideoPlayer } from '../components/feed/XVideoPlayer';
@@ -206,6 +207,8 @@ export const CommunityFeedPage: React.FC = () => {
 
   const navigate = useNavigate();
   const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
+  const [authChecked, setAuthChecked] = useState<boolean>(false);
   const [activeMenuPost, setActiveMenuPost] = useState<any>(null);
   const [shareMenuPost, setShareMenuPost] = useState<any>(null);
   const routerLocation = useLocation();
@@ -472,9 +475,13 @@ export const CommunityFeedPage: React.FC = () => {
     (async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        setCurrentUserId(user.id);
-        const meta = user.user_metadata || {};
+      if (!user) {
+        setAuthChecked(true);
+        return;
+      }
+      setCurrentUserId(user.id);
+      setAuthChecked(true);
+      const meta = user.user_metadata || {};
         if (meta.full_name || meta.name) setMyName(meta.full_name || meta.name);
         if (meta.avatar_url || meta.picture) setMyAvatar(meta.avatar_url || meta.picture);
 
@@ -491,9 +498,11 @@ export const CommunityFeedPage: React.FC = () => {
         }
       } catch (e) {
         console.warn("myProfile exception:", e);
-      }
+      setAuthChecked(true);
+    }
     })();
   }, []);
+
   const [unreadNotifs, setUnreadNotifs] = useState(0);
 
   // صندوق التغريد
@@ -1934,42 +1943,50 @@ const handleAddComment = async (e?: React.FormEvent) => {
         {/* الشريط العلوي */}
         <div className={`px-4 flex items-center justify-between relative transition-all duration-300 overflow-hidden ${(isScrolled || isSectionTab) ? 'h-0 py-0 opacity-0 pointer-events-none' : 'h-[58px] py-2.5 opacity-100'}`}>
           {(() => {
-            const isBizHeader = Boolean(publishAsBusiness && myBusinessPage);
-            const headerAvatar = isBizHeader ? (myBusinessPage?.avatarUrl || '') : myAvatar;
-            const headerName = isBizHeader ? (myBusinessPage?.name || 'المنشأة') : myName;
-            return (
-              <button
-                onClick={() => {
-                  if (isBizHeader && myBusinessPage) {
-                    navigate(`/business-page/${myBusinessPage.id}`, {
-                      state: {
-                        ...myBusinessPage,
-                        isOwner: true,
-                        viewerName: myName,
-                        viewerUsername: myUsername,
-                        viewerAvatar: myAvatar,
-                      },
-                    });
-                  } else {
-                    navigate("/account");
-                  }
-                }}
-                title={isBizHeader ? (myBusinessPage?.name || "صفحة المنشأة") : "ملفي الشخصي"}
-                className="relative group flex-shrink-0"
-              >
-                <div className="w-[38px] h-[38px] rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold shrink-0 shadow-sm">
-                  {headerAvatar ? (
-                    <img src={headerAvatar} alt={headerName} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-white text-[15px] font-bold">{headerName ? headerName[0] : "؟"}</span>
-                  )}
-                </div>
-                <span className="absolute bottom-[1px] right-[1px] w-[9px] h-[9px] bg-emerald-500 rounded-full border-[1.5px] border-black" />
-              </button>
-            );
-          })()}
+          const isBizHeader = Boolean(publishAsBusiness && myBusinessPage);
+          const headerAvatar = isBizHeader
+            ? (myBusinessPage?.avatarUrl || '')
+            : myAvatar;
+          const headerName = isBizHeader
+            ? (myBusinessPage?.name || 'المنشأة')
+            : myName;
+          return (
+            <button
+              onClick={() => {
+                if (!currentUserId) {
+                  navigate("/account");
+                } else if (isBizHeader && myBusinessPage) {
+                  navigate(`/business-page/${myBusinessPage.id}`, {
+                    state: {
+                      ...myBusinessPage,
+                      isOwner: true,
+                      viewerName: myName,
+                      viewerUsername: myUsername,
+                      viewerAvatar: myAvatar,
+                    },
+                  });
+                } else {
+                  navigate("/account");
+                }
+              }}
+              title={isBizHeader ? (myBusinessPage?.name || "صفحة المنشأة") : "ملفي الشخصي"}
+              className="relative group flex-shrink-0"
+            >
+              <div className="w-[38px] h-[38px] rounded-full bg-zinc-900 border border-[#2F3336] overflow-hidden flex items-center justify-center font-bold shrink-0 shadow-sm">
+                {headerAvatar ? (
+                  <img src={headerAvatar} alt={headerName} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-white text-[15px] font-bold">
+                    {headerName ? headerName[0] : "؟"}
+                  </span>
+                )}
+              </div>
+              <span className="absolute bottom-[1px] right-[1px] w-[9px] h-[9px] bg-emerald-500 rounded-full border-[1.5px] border-black" />
+            </button>
+          );
+        })()}
 
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+                  <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
             <img src="/yr-community-logo.png" alt="Yemen Rating" className="w-7 h-7 object-contain hover:opacity-85 transition" />
           </div>
 
@@ -2918,6 +2935,16 @@ displayedTweets.slice(0, visibleTweetsCount).map((tweet, tweetIdx, visibleList) 
       )}
 
       {!reportingItem && !viewingDetailTweet && <MobileBottomNav onNavigate={(path) => navigate(path)} />}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => {
+          setIsAuthOpen(false);
+          if (routerLocation.search.includes('auth=login')) {
+            navigate('/', { replace: true });
+          }
+        }}
+        defaultMode="login"
+      />
 
       
       {/* نافذة تعديل التغريدة */}

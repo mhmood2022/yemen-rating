@@ -4,7 +4,7 @@ import { BusinessItem } from '../../types/business';
 import { BusinessCard } from '../../components/business/BusinessCard';
 import { YrAdBanner } from '../../components/ads/YrAdBanner';
 import { SearchInput } from '../../components/ui/SearchInput';
-import { Select } from '../../components/ui/Select';
+import { YRSelect as Select } from '../../components/common/YRSelect';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { CITIES_LIST } from '../../data/demoBusinesses';
 import { ArrowRight, Star, ShieldCheck, Sparkles, Building2, Loader2 } from 'lucide-react';

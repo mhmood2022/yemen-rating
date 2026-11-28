@@ -24,7 +24,7 @@ class ErrorBoundary extends React.Component<
     if (this.state.hasError) {
       return (
         <div style={{ padding: '24px', direction: 'rtl', fontFamily: 'Cairo, sans-serif', textAlign: 'center' }}>
-          <h2 style={{ color: '#000000', marginBottom: '8px' }}>يمن ريتغ — تعذر تحميل الواجهة</h2>
+          <h2 style={{ color: '#000000', marginBottom: '8px' }}>يمن ريتنج — تعذر تحميل الواجهة</h2>
           <p style={{ color: '#DC2626', fontSize: '14px', marginBottom: '16px' }}>{this.state.error?.message}</p>
           <button
             onClick={() => window.location.reload()}

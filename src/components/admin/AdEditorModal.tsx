@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { Select } from '../ui/Select';
+import { YRSelect as Select } from '../common/YRSelect';
 import { AdItem, AdPlacement, AdStatus, AdType } from '../../types/ads';
 import { useAdmin } from '../../context/AdminContext';
 import { Megaphone, Link, Calendar, DollarSign, Image } from 'lucide-react';

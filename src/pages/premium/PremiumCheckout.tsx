@@ -186,7 +186,7 @@ export const PremiumCheckout: React.FC = () => {
         await supabase.rpc('verify_payment_proof', { p_proof_id: proofData.id });
       }
 
-      await sendSubscriptionNotification({ userId: user.id, scope, entityName: isBiz ? bizName : null, serviceName: plan.name, status: 'pending' });
+      await sendSubscriptionNotification({ userId: user.id, scope, businessId: isBiz ? bizId : null, entityName: isBiz ? bizName : null, serviceName: plan.name, status: 'pending' });
       setSuccess(true);
     } catch (err: any) {
       console.error(err);

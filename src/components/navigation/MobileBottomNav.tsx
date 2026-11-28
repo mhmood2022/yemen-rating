@@ -36,13 +36,9 @@ export const MobileBottomNav: React.FC<{ onNavigate?: (path: string) => void }> 
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { setUnreadCount(0); return; }
         
-        const { count } = await supabase
-          .from('notifications')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .eq('read', false);
-        
-        setUnreadCount(count || 0);
+        const { data: unreadRows } = await supabase.from('notifications').select('id, title, message').eq('user_id', user.id).eq('read', false).limit(100);
+        const accUnread = (unreadRows || []).filter((n: any) => !String(n.title || '').startsWith('[BIZ') && !String(n.message || '').includes('لصفحة المنشأة')).length;
+        setUnreadCount(accUnread);
       } catch (e) {
         console.warn('Nav notif count error:', e);
       }

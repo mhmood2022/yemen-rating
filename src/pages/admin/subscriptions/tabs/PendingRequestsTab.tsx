@@ -115,7 +115,7 @@ export const PendingRequestsTab: React.FC = () => {
         if (error) throw new Error('فشل القبول: ' + error.message);
       }
 
-      await sendSubscriptionNotification({ userId: req.user_id, scope: req.scope, entityName: req.business_name, serviceName: req.plan_name, status: 'approved' });
+      await sendSubscriptionNotification({ userId: req.user_id, scope: req.scope, businessId: req.business_id, entityName: req.business_name, serviceName: req.plan_name, status: 'approved' });
       showToast('تم القبول وتفعيل الشارة', 'success');
       fetchRequests();
     } catch (err: any) {
@@ -129,7 +129,7 @@ export const PendingRequestsTab: React.FC = () => {
     if (!confirm('رفض الطلب؟')) return;
     try {
       await supabase.from('subscriptions').update({ status: 'REJECTED' }).eq('id', id);
-      await sendSubscriptionNotification({ userId: req.user_id, scope: req.scope, entityName: req.business_name, serviceName: req.plan_name, status: 'rejected' });
+      await sendSubscriptionNotification({ userId: req.user_id, scope: req.scope, businessId: req.business_id, entityName: req.business_name, serviceName: req.plan_name, status: 'rejected' });
       showToast('تم الرفض', 'success');
       fetchRequests();
     } catch { showToast('خطأ', 'error'); }

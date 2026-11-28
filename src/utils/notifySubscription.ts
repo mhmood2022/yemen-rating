@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 export async function sendSubscriptionNotification(params: {
   userId?: string | null;
   scope: 'account' | 'business';
+  businessId?: string | null;
   entityName?: string | null;
   serviceName: string;
   status: 'pending' | 'approved' | 'rejected';
@@ -28,6 +29,7 @@ export async function sendSubscriptionNotification(params: {
       message = `تم رفض طلب "${params.serviceName}" ${targetLabel}${params.reason ? ` — السبب: ${params.reason}` : '.'}`;
     }
 
+    const prefix = params.scope === 'business' ? (params.businessId ? `[BIZ:${params.businessId}] ` : '[BIZ] ') : '';
     const { data: auth } = await supabase.auth.getUser();
     const actorId = auth?.user?.id || params.userId;
 
@@ -37,7 +39,7 @@ export async function sendSubscriptionNotification(params: {
       actor_name: params.scope === 'business' && params.entityName ? params.entityName : 'إدارة يمن ريتنج',
       actor_avatar: null,
       post_id: null,
-      title: title.slice(0, 100),
+      title: `${prefix}${title}`.slice(0, 100),
       message,
       type: 'system',
       read: false,

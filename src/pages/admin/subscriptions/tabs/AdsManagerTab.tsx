@@ -188,9 +188,9 @@ export const AdsManagerTab: React.FC = () => {
         action === 'extend' ? new Date(customEndDate).toISOString() : undefined
       );
       if (action === 'approve_activate' || action === 'approve_only') {
-        await sendSubscriptionNotification({ userId: order.user_id, scope: order.business_id ? 'business' : 'account', entityName: order.business_name || order.user_name, serviceName: order.package_name_snapshot, status: 'approved' });
+        await sendSubscriptionNotification({ userId: order.user_id, scope: order.business_id ? 'business' : 'account', businessId: order.business_id, entityName: order.business_name || order.user_name, serviceName: order.package_name_snapshot, status: 'approved' });
       } else if (action === 'reject') {
-        await sendSubscriptionNotification({ userId: order.user_id, scope: order.business_id ? 'business' : 'account', entityName: order.business_name || order.user_name, serviceName: order.package_name_snapshot, status: 'rejected', reason: adminNotes || null });
+        await sendSubscriptionNotification({ userId: order.user_id, scope: order.business_id ? 'business' : 'account', businessId: order.business_id, entityName: order.business_name || order.user_name, serviceName: order.package_name_snapshot, status: 'rejected', reason: adminNotes || null });
       }
       showToast('تم تنفيذ الإجراء وتحديث الحالة بنجاح');
       setSelectedOrder(null);

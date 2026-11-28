@@ -268,39 +268,6 @@ input[type="range"] {
   color: #000000 !important;
 }
 
-
-
-
-
-/* ===== YEMEN RATING - CLEAN REFINED THEME ===== */
-html, body, #root, #__next, main {
-  background-color: #000000 !important;
-  color: #ffffff !important;
-}
-
-/* شريط البحث الخارجي فقط بدون لمس الحقول التي بداخله */
-[class*="search-bar"], [class*="search-container"] {
-  background-color: #0a0e1a !important;
-  border: 1px solid #1a2538 !important;
-  border-radius: 14px;
-}
-
-/* منع تكرار البراويز على حقل الإدخال والقائمة المنسدلة داخل البحث */
-[class*="search"] input,
-[class*="search"] select,
-[class*="search"] [role="button"] {
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  background-color: transparent !important;
-}
-
-/* بطاقات الخدمات (العيادات، المستشفيات...) فقط باللون المطلوب */
-.category-card, [class*="service-card"] {
-  background-color: #0a0e1a !important;
-  border: 1px solid #18233c !important;
-}
-
 /* ===== X-Style Slow Indeterminate Arc Spinner ===== */
 @keyframes yrXSpinRotate {
   0% {
@@ -333,4 +300,13 @@ html, body, #root, #__next, main {
 
 .yr-x-spinner-arc {
   animation: yrXSpinDash 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Scrollbar utilities & Modal scroll lock (migrated safely) */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+html, body { overscroll-behavior-y: none; }
+html.yr-modal-scroll-lock, body.yr-modal-scroll-lock {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
 }
