@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Check, Crown, Zap, Star } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { VerifiedBadge } from '../../components/common/VerifiedBadge';
@@ -17,6 +17,10 @@ interface Plan {
 
 export const PremiumPage: React.FC = () => {
   const navigate = useNavigate();
+  const [sp] = useSearchParams();
+  const isBiz = sp.get('scope') === 'business';
+  const bizId = sp.get('businessId') || '';
+  const bizName = sp.get('businessName') || '';
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -67,7 +71,7 @@ export const PremiumPage: React.FC = () => {
         <button onClick={() => navigate(-1)} className="p-2 hover:bg-[#181818] rounded-full transition">
           <ArrowRight className="w-5 h-5" />
         </button>
-        <h1 className="font-bold text-lg">توثيق الحساب</h1>
+        <h1 className="font-bold text-lg">{isBiz ? 'توثيق صفحة المنشأة' : 'توثيق الحساب الشخصي'}</h1>
       </div>
 
       {/* Hero Section */}
@@ -75,7 +79,8 @@ export const PremiumPage: React.FC = () => {
         <div className="w-16 h-16 rounded-full bg-[#FFC500]/10 border border-[#FFC500]/30 flex items-center justify-center mx-auto mb-4">
           <Crown className="w-8 h-8 text-[#FFC500]" />
         </div>
-        <h1 className="text-3xl font-black mb-2">ارتقِ بحسابك</h1>
+        <h1 className="text-3xl font-black mb-2">{isBiz ? 'ارتقِ بصفحة منشأتك' : 'ارتقِ بحسابك'}</h1>
+        {isBiz && bizName && <div className="inline-block px-3 py-1 mb-2 rounded-full bg-[#16181C] border border-[#2F3336] text-xs font-bold text-[#FFC500]">المنشأة: {bizName}</div>}
         <p className="text-zinc-400 text-sm max-w-md mx-auto">
           احصل على شارة التوثيق، وزد مصداقية حسابك على منصة يمن ريتنج.
         </p>
@@ -128,7 +133,7 @@ export const PremiumPage: React.FC = () => {
 
               {/* زر الاشتراك */}
               <button 
-                onClick={() => navigate(`/premium/checkout/${plan.id}`)}
+                onClick={() => navigate(`/premium/checkout/${plan.id}${isBiz ? `?scope=business&businessId=${encodeURIComponent(bizId)}&businessName=${encodeURIComponent(bizName)}` : '?scope=account'}`)}
                 className="w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition active:opacity-80"
                 style={{ background: '#FFC500', color: '#000' }}
               >

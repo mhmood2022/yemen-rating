@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { sendSubscriptionNotification } from '../utils/notifySubscription';
 import { uploadSocialImage } from './socialService';
 
 export type AdProductType = 'phone_feed' | 'sponsor' | 'banner';
@@ -380,7 +381,9 @@ export const adSubscriptionsService = {
       p_payment_proof_hash: params.paymentProofHash || null,
     });
     if (error) throw error;
-    return data as AdSubscriptionOrder;
+    const ord = data as AdSubscriptionOrder;
+    await sendSubscriptionNotification({ userId: ord.user_id, scope: ord.business_id ? 'business' : 'account', entityName: ord.business_name || (params.adPayload?.advertiser_name as string) || null, serviceName: ord.package_name_snapshot || 'اشتراك إعلاني', status: 'pending' });
+    return ord;
   },
 
   async attachPaymentProof(params: {
@@ -398,7 +401,9 @@ export const adSubscriptionsService = {
       p_proof_hash: params.proofHash || null,
     });
     if (error) throw error;
-    return data as AdSubscriptionOrder;
+    const ord = data as AdSubscriptionOrder;
+    await sendSubscriptionNotification({ userId: ord.user_id, scope: ord.business_id ? 'business' : 'account', entityName: ord.business_name || null, serviceName: ord.package_name_snapshot || 'اشتراك إعلاني', status: 'pending' });
+    return ord;
   },
 
   async getMyOrders(userId?: string): Promise<AdSubscriptionOrder[]> {

@@ -8,9 +8,10 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   currentUser?: { id: string; name: string } | null;
+  businessContext?: { id: string; name: string } | null;
 }
 
-export const SupportModal: React.FC<Props> = ({ isOpen, onClose, currentUser }) => {
+export const SupportModal: React.FC<Props> = ({ isOpen, onClose, currentUser, businessContext = null }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'new' | 'history'>('new');
   const [message, setMessage] = useState('');
@@ -29,7 +30,11 @@ export const SupportModal: React.FC<Props> = ({ isOpen, onClose, currentUser }) 
       .select('*')
       .eq('user_id', currentUser.id)
       .order('created_at', { ascending: false });
-    setMyMessages(data || []);
+    setMyMessages((data || []).filter((m: any) => {
+      const meta = m?.metadata || {};
+      const isBiz = meta?.scope === 'business' || Boolean(meta?.business_id) || String(m?.message || '').includes('[بلاغ من لوحة المالك]') || String(m?.message || '').includes('[دعم المنشأة');
+      return businessContext?.id ? (meta?.business_id === businessContext.id || String(m?.message || '').includes(`(${businessContext.id})`)) : !isBiz;
+    }));
     setLoadingHistory(false);
   };
 
@@ -37,7 +42,7 @@ export const SupportModal: React.FC<Props> = ({ isOpen, onClose, currentUser }) 
     if (isOpen && activeTab === 'history' && currentUser?.id) {
       fetchMessages();
     }
-  }, [isOpen, activeTab, currentUser]);
+  }, [isOpen, activeTab, currentUser, businessContext?.id]);
 
   if (!isOpen) return null;
 
@@ -47,9 +52,10 @@ export const SupportModal: React.FC<Props> = ({ isOpen, onClose, currentUser }) 
     try {
       const { error } = await supabase.from('user_support_messages').insert({
         user_id: currentUser?.id || null,
-        user_name: currentUser?.name || 'مستخدم',
+        user_name: businessContext?.name || currentUser?.name || 'مستخدم',
         message: message.trim(),
         status: 'PENDING',
+        metadata: businessContext?.id ? { scope: 'business', business_id: businessContext.id, business_name: businessContext.name } : { scope: 'account' },
       });
       if (error) throw error;
       setSent(true);
@@ -109,7 +115,7 @@ export const SupportModal: React.FC<Props> = ({ isOpen, onClose, currentUser }) 
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#FFC50020', border: '1px solid #FFC50040' }}>
               <MessageCircle className="w-4 h-4" style={{ color: '#FFC500' }} />
             </div>
-            <h3 className="text-base font-bold" style={{ color: '#FFFFFF' }}>الدعم الفني</h3>
+            <h3 className="text-base font-bold" style={{ color: '#FFFFFF' }}>{businessContext?.name ? `دعم المنشأة: ${businessContext.name}` : 'الدعم الفني للحساب'}</h3>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#1F2024' }}>
             <X className="w-4 h-4" style={{ color: '#FFFFFF' }} />

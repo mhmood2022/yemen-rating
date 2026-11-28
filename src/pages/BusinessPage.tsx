@@ -1847,7 +1847,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
           <div className={`relative z-10 transition-all duration-300 ${isScrolled ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-100'}`}>
             {isOwner ? (
               <button
-                onClick={() => navigate('/premium')}
+                onClick={() => navigate(`/premium?scope=business&businessId=${businessPage?.id || ''}&businessName=${encodeURIComponent(businessPage?.name || '')}`)}
                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-zinc-700 bg-black/60 hover:bg-white/10 active:scale-95 text-white text-xs font-bold transition"
               >
                 <VerifiedBadge 
@@ -3543,6 +3543,7 @@ const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'avat
         isOpen={isSupportOpen}
         onClose={() => setIsSupportOpen(false)}
         currentUser={currentUserId ? { id: currentUserId, name: myName } : null}
+        businessContext={businessPage?.id ? { id: businessPage.id, name: businessPage.name } : null}
       />
 
       {/* 🖼️ مشغل الصور العالمي للحساب */}

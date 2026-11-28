@@ -46,6 +46,7 @@ interface Props {
   initialSectionId?: string;
   initialSlotKey?: string;
   businessId?: string | null;
+  entityScope?: 'account' | 'business';
   onOrderSubmitted?: (order: AdSubscriptionOrder) => void;
 }
 
@@ -88,6 +89,7 @@ export const AdSubscriptionWizardModal: React.FC<Props> = ({
   initialSectionId = 'phones',
   initialSlotKey = 'all',
   businessId = null,
+  entityScope,
   onOrderSubmitted,
 }) => {
   const [step, setStep] = useState<WizardStep>('type');
@@ -163,15 +165,15 @@ export const AdSubscriptionWizardModal: React.FC<Props> = ({
       if (uid) {
         const [{ data: prof }, { data: biz }] = await Promise.all([
           supabase.from('profiles').select('full_name').eq('id', uid).maybeSingle(),
-          businessId
-            ? supabase.from('businesses').select('id, name, logo_url').eq('id', businessId).maybeSingle()
-            : supabase.from('businesses').select('id, name, logo_url').eq('owner_id', uid).limit(1).maybeSingle(),
+          (entityScope === 'business' || Boolean(businessId)) && businessId ? supabase.from('businesses').select('id, name, logo_url').eq('id', businessId).maybeSingle() : Promise.resolve({ data: null }),
         ]);
         if (biz) {
           setDetectedBizId(biz.id);
           setAdvertiserName((prev) => prev || biz.name || '');
           setLinkUrl((prev) => prev || `/business-page/${biz.id}`);
-        } else if (prof?.full_name) {
+        } else {
+            setDetectedBizId(null);
+            if (prof?.full_name)
           setAdvertiserName((prev) => prev || prof.full_name);
         }
       }

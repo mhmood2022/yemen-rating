@@ -44,6 +44,9 @@ export const ActiveSubscribersTab: React.FC = () => {
 
         const { data: profiles } = await supabase.from('profiles').select('id, full_name, username, avatar_url').in('id', userIds);
         const { data: plans } = await supabase.from('subscription_plans').select('id, name, badge_type').in('id', planIds);
+        const bizIds = [...new Set(activeSubs.map((s: any) => { const m = String(s.notes || '').match(/\[BIZ_VERIFY:([^|\]]+)/); return m ? m[1] : null; }).filter(Boolean))];
+        const { data: bizRows } = bizIds.length > 0 ? await supabase.from('businesses').select('id, name, slug, logo_url').in('id', bizIds) : { data: [] };
+        const bizMap = new Map((bizRows || []).map((b: any) => [b.id, b]));
 
         const profileMap = new Map((profiles || []).map(p => [p.id, p]));
         const planMap = new Map((plans || []).map(p => [p.id, p]));
@@ -51,11 +54,14 @@ export const ActiveSubscribersTab: React.FC = () => {
         const formatted = activeSubs.map(s => {
           const prof = profileMap.get(s.user_id);
           const plan = planMap.get(s.plan_id);
+          const m = String(s.notes || '').match(/\[BIZ_VERIFY:([^|\]]+)(?:\|([^\]]+))?\]/);
+          const bizObj = m ? bizMap.get(m[1]) : null;
+          const bizName = bizObj?.name || (m && m[2]) || null;
           return {
             id: s.id,
-            user_name: prof?.full_name || 'مستخدم',
-            username: prof?.username || 'user',
-            avatar_url: prof?.avatar_url || null,
+            user_name: m ? `${bizName || 'منشأة'} (منشأة)` : (prof?.full_name || 'مستخدم'),
+            username: m ? (bizObj?.slug || 'business') : (prof?.username || 'user'),
+            avatar_url: m ? (bizObj?.logo_url || null) : (prof?.avatar_url || null),
             plan_name: plan?.name || 'باقة',
             plan_badge: plan?.badge_type || 'none',
             start_date: s.start_date,

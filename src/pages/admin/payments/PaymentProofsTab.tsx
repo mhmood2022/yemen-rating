@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Receipt, Eye, CheckCircle2, XCircle, X, Clock, CreditCard, Wallet } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
+import { sendSubscriptionNotification } from '../../../utils/notifySubscription';
 import { VerifiedBadge } from '../../../components/common/VerifiedBadge';
 
 interface PaymentProof {
@@ -19,6 +20,10 @@ interface PaymentProof {
   subscription_id: string | null;
   plan_name?: string;
   plan_badge?: string;
+  plan_duration?: number;
+  scope: 'account' | 'business';
+  business_id?: string | null;
+  business_name?: string | null;
   verification_status?: string | null;
   verification_notes?: { warnings?: Array<{ message: string }> } | null;
 }
@@ -88,10 +93,10 @@ export const PaymentProofsTab: React.FC = () => {
       if (subIds.length > 0) {
         const { data: subs } = await supabase
           .from('subscriptions')
-          .select('id, plan:subscription_plans(name, badge_type)')
+          .select('id, notes, plan:subscription_plans(name, badge_type, duration_days)')
           .in('id', subIds);
         (subs || []).forEach((s: any) => {
-          planMap.set(s.id, { name: s.plan?.name || 'اشتراك', badge: s.plan?.badge_type });
+          planMap.set(s.id, { name: s.plan?.name || 'اشتراك', badge: s.plan?.badge_type, duration: s.plan?.duration_days || 30, notes: s.notes || '' });
         });
       }
 
@@ -107,13 +112,24 @@ export const PaymentProofsTab: React.FC = () => {
         });
       }
 
+      const bizIds = [...new Set(proofsData.map((p: any) => { const raw = `${p.subscription_id ? (planMap.get(p.subscription_id)?.notes || '') : ''} ${p.admin_notes || ''}`; const m = raw.match(/\[BIZ_VERIFY:([^|\]]+)/); return m ? m[1] : null; }).filter(Boolean))];
+      const { data: bizRows } = bizIds.length > 0 ? await supabase.from('businesses').select('id, name, logo_url').in('id', bizIds) : { data: [] };
+      const bizMap = new Map((bizRows || []).map((b: any) => [b.id, b]));
       const formatted: PaymentProof[] = proofsData.map((p: any) => {
         const prof = profileMap.get(p.user_id);
         const planInfo = p.subscription_id ? planMap.get(p.subscription_id) : null;
+        const m = `${planInfo?.notes || ''} ${p.admin_notes || ''}`.match(/\[BIZ_VERIFY:([^|\]]+)(?:\|([^\]]+))?\]/);
+        const bizId = m ? m[1] : null;
+        const bizObj = bizId ? bizMap.get(bizId) : null;
+        const bizName = bizObj?.name || (m && m[2]) || null;
         return {
           ...p,
-          user_name: prof?.full_name || 'مستخدم',
-          user_avatar: prof?.avatar_url || null,
+          scope: bizId ? 'business' : 'account',
+          business_id: bizId,
+          business_name: bizName,
+          plan_duration: planInfo?.duration || 30,
+          user_name: bizId ? `${bizName || 'منشأة'} (منشأة)` : (prof?.full_name || 'مستخدم'),
+          user_avatar: bizId ? (bizObj?.logo_url || null) : (prof?.avatar_url || null),
           payment_method_name: methodNameMap.get(p.payment_method) || p.payment_method,
           plan_name: planInfo?.name || (p.subscription_id ? 'اشتراك' : 'خدمة أخرى'),
           plan_badge: planInfo?.badge || 'none',
@@ -168,8 +184,17 @@ export const PaymentProofsTab: React.FC = () => {
     if (!confirm('قبول هذا السند؟ سيتم تفعيل الخدمة.')) return;
     try {
       if (proof.subscription_id) {
-        const { error } = await supabase.rpc('approve_subscription', { sub_id: proof.subscription_id });
-        if (error) throw error;
+        if (proof.scope === 'business' && proof.business_id) {
+          const now = new Date();
+          const end = new Date(now.getTime() + (proof.plan_duration || 30) * 86400000);
+          const { error: sErr } = await supabase.from('subscriptions').update({ status: 'ACTIVE', start_date: now.toISOString(), end_date: end.toISOString() }).eq('id', proof.subscription_id);
+          if (sErr) throw sErr;
+          const { error: bErr } = await supabase.from('businesses').update({ is_verified: true, badge_type: proof.plan_badge && proof.plan_badge !== 'none' ? proof.plan_badge : 'gold' }).eq('id', proof.business_id);
+          if (bErr) throw bErr;
+        } else {
+          const { error } = await supabase.rpc('approve_subscription', { sub_id: proof.subscription_id });
+          if (error) throw error;
+        }
       }
       await supabase.from('payment_proofs').update({ 
         status: 'APPROVED', 
@@ -186,6 +211,7 @@ export const PaymentProofsTab: React.FC = () => {
         { status: 'APPROVED' }
       );
       
+      await sendSubscriptionNotification({ userId: proof.user_id, scope: proof.scope, entityName: proof.business_name, serviceName: proof.plan_name || 'تفعيل الاشتراك', status: 'approved' });
       showToast('تم قبول السند وتفعيل الخدمة', 'success');
       fetchProofs();
     } catch (err: any) {
@@ -212,6 +238,8 @@ export const PaymentProofsTab: React.FC = () => {
         { status: 'REJECTED', reason: rejectReason }
       );
       
+      if (rejectModal.subscription_id) { await supabase.from('subscriptions').update({ status: 'REJECTED' }).eq('id', rejectModal.subscription_id); }
+      await sendSubscriptionNotification({ userId: rejectModal.user_id, scope: rejectModal.scope, entityName: rejectModal.business_name, serviceName: rejectModal.plan_name || 'طلب الاشتراك', status: 'rejected', reason: rejectReason });
       showToast('تم رفض السند', 'success');
       setRejectModal(null);
       setRejectReason('');

@@ -92,6 +92,7 @@ export const OwnerDashboardPage: React.FC = () => {
   const [isAdWizardOpen, setIsAdWizardOpen] = useState(false);
   const [adWizardType, setAdWizardType] = useState<AdProductType | null>(null);
   const [myAdOrders, setMyAdOrders] = useState<AdSubscriptionOrder[]>([]);
+  const [extraCounts, setExtraCounts] = useState({ support: 0, reports: 0, badgeVerified: 0 });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -132,7 +133,15 @@ export const OwnerDashboardPage: React.FC = () => {
             .order('created_at', { ascending: false });
           setReviewsList(revs || []);
           if (session?.user?.id) {
-            adSubscriptionsService.getMyOrders(session.user.id).then(setMyAdOrders).catch(() => {});
+            adSubscriptionsService.getMyOrders(session.user.id).then((orders) => setMyAdOrders((orders || []).filter((o) => o.business_id === biz.id))).catch(() => {});
+            (async () => {
+              try {
+                const { data: msgs } = await supabase.from('user_support_messages').select('id, message').eq('user_id', session.user.id);
+                const rows = (msgs || []).filter((m: any) => m?.metadata?.business_id === biz.id || String(m?.message || '').includes(`(${biz.id})`));
+                const repCnt = rows.filter((m: any) => m?.metadata?.kind === 'report' || String(m.message || '').includes('[بلاغ')).length;
+                setExtraCounts({ support: Math.max(0, rows.length - repCnt), reports: repCnt, badgeVerified: biz?.is_verified ? 1 : 0 });
+              } catch {}
+            })();
           }
         }
       } catch (err) {
@@ -201,7 +210,9 @@ export const OwnerDashboardPage: React.FC = () => {
         user_name: currentUser?.name || businessData.name || 'مالك منشأة',
         message: msg,
         status: 'PENDING',
+        metadata: { scope: 'business', kind: 'report', business_id: businessData.id, business_name: businessData.name },
       });
+      setExtraCounts((p) => ({ ...p, reports: p.reports + 1 }));
     } catch (err) {
       console.error(err);
     }
@@ -431,300 +442,142 @@ export const OwnerDashboardPage: React.FC = () => {
     </div>
   );
 
+  const bannerAdsCount = myAdOrders.filter((o) => o.ad_type === 'banner').length;
+  const sponsorAdsCount = myAdOrders.filter((o) => o.ad_type === 'sponsor').length;
+  const featuredAdsCount = myAdOrders.filter((o) => o.ad_type === 'phone_feed' || (o.ad_type as any) === 'featured' || (o.ad_type as any) === 'promoted').length;
+  const activeSubsCount = myAdOrders.filter((o) => o.status === 'active').length || myAdOrders.length;
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col pb-20" dir="rtl">
-        {/* هيدر X الموحد للمالك */}
-        <header className="sticky top-0 z-30 bg-black/90 backdrop-blur-md border-b border-[#2F3336]">
-          <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <button
-                onClick={() => navigate(publicBusinessPath)}
-                className="w-9 h-9 rounded-full hover:bg-[#16181C] border border-[#2F3336] flex items-center justify-center shrink-0 transition"
-                title="العودة لصفحة المنشأة"
-              >
-                <ArrowRight size={17} />
-              </button>
-              <div className="min-w-0">
-                <h1 className="text-sm sm:text-base font-black truncate">{businessData.name || 'لوحة المالك'}</h1>
-                <p className="text-[11px] text-[#71767B] truncate">إدارة المنشأة والإحصائيات</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1.5 shrink-0">
-              <button
-                onClick={() => navigate('/notifications')}
-                className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] hover:border-[#FFC500]/50 flex items-center justify-center text-white transition"
-                title="الإشعارات"
-              >
-                <Bell size={16} />
-              </button>
-              <button
-                onClick={() => setIsSupportOpen(true)}
-                className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] hover:border-[#FFC500]/50 flex items-center justify-center text-white transition"
-                title="الدعم الفني"
-              >
-                <MessageCircle size={16} />
-              </button>
-              <button
-                onClick={() => navigate(publicBusinessPath)}
-                className="px-3.5 py-2 rounded-full bg-[#FFC500] hover:bg-[#e6b100] text-black text-xs font-black flex items-center gap-1.5 transition"
-              >
-                <ExternalLink size={13} />
-                <span>صفحة المنشأة</span>
-              </button>
+      <header className="sticky top-0 z-30 bg-black/90 backdrop-blur-md border-b border-[#2F3336]">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button onClick={() => navigate(publicBusinessPath)} className="w-9 h-9 rounded-full hover:bg-[#16181C] border border-[#2F3336] flex items-center justify-center shrink-0 transition cursor-pointer" title="العودة لصفحة المنشأة"><ArrowRight size={17} /></button>
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-base font-black truncate">{businessData.name || 'لوحة المالك'}</h1>
+              <p className="text-[11px] text-[#71767B] truncate">إدارة المنشأة والإحصائيات</p>
             </div>
           </div>
+          <button onClick={() => navigate(publicBusinessPath)} className="px-3.5 py-2 rounded-full bg-white hover:bg-zinc-200 text-black text-xs font-black flex items-center gap-1.5 shrink-0 transition cursor-pointer">
+            <ExternalLink size={13} /><span>صفحة المنشأة</span>
+          </button>
+        </div>
+      </header>
 
-          {/* شريط التبويبات السريع */}
-          <div className="max-w-4xl mx-auto flex items-center border-t border-[#2F3336]/70 overflow-x-auto no-scrollbar">
-            {tabsNav.map((tab) => {
-              const active = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 min-w-fit px-4 py-3 text-xs sm:text-sm font-bold whitespace-nowrap relative transition ${
-                    active ? 'text-white font-black' : 'text-[#71767B] hover:text-zinc-300'
-                  }`}
-                >
-                  <span>{tab.label}</span>
-                  {active && (
-                    <span className="absolute bottom-0 left-4 right-4 h-1 rounded-full bg-[#FFC500]" />
-                  )}
-                </button>
-              );
-            })}
-            <button
-              onClick={() => navigate(editBusinessPath)}
-              className="flex-1 min-w-fit px-4 py-3 text-xs sm:text-sm font-bold whitespace-nowrap text-[#FFC500] hover:text-[#e6b100] flex items-center justify-center gap-1.5 transition"
-            >
-              <Edit3 size={13} />
-              <span>تعديل المنشأة</span>
-            </button>
+      <main className="flex-1 max-w-4xl w-full mx-auto px-3 sm:px-4 py-4 space-y-5">
+        {activeTab !== 'overview' && (
+          <div className="flex items-center justify-between border-b border-[#2F3336] pb-2.5">
+            <button type="button" onClick={() => setActiveTab('overview')} className="inline-flex items-center gap-1.5 text-xs font-bold text-white hover:text-[#FFC500] transition cursor-pointer"><ArrowRight size={15} /><span>العودة إلى الرئيسية</span></button>
+            <span className="text-xs font-black text-[#71767B]">{activeTab === 'ads' ? 'إدارة الإعلانات' : activeTab === 'reviews' ? 'إدارة التقييمات' : 'الإحصائيات'}</span>
           </div>
-        </header>
+        )}
 
-        <main className="flex-1 max-w-4xl w-full mx-auto px-3 sm:px-4 py-4 space-y-4">
-          {/* بطاقة المنشأة وأزرار الخدمات السريعة في الملخص */}
-          {activeTab === 'overview' && (
-            <>
-              <div className="rounded-2xl border border-[#2F3336] bg-[#080808] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3 min-w-0">
-                  {businessData.logo_url ? (
-                    <img
-                      src={businessData.logo_url}
-                      alt={businessData.name}
-                      className="w-14 h-14 rounded-full object-cover border border-[#2F3336] shrink-0"
-                    />
-                  ) : (
-                    <div className="w-14 h-14 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-[#FFC500] font-black text-lg shrink-0">
-                      {(businessData.name || 'م').charAt(0)}
-                    </div>
-                  )}
-                  <div className="min-w-0 space-y-1">
-                    <h2 className="text-base font-black text-white truncate">{businessData.name}</h2>
-                    <div className="flex items-center gap-2 text-xs text-[#71767B] flex-wrap">
-                      {businessData.slug && <span dir="ltr">@{businessData.slug}</span>}
-                      <span className="inline-flex items-center gap-1 text-white font-bold">
-                        <Star size={12} className="text-[#FFC500] fill-[#FFC500]" />
-                        {Number(statsData?.avg_rating ?? businessData.rating ?? 0).toFixed(1)}
-                      </span>
-                      <span>({statsData?.total_reviews ?? reviewsList.length} تقييم)</span>
-                    </div>
+        {activeTab === 'overview' && (
+          <>
+            <div className="rounded-2xl border border-[#2F3336] bg-[#080808] p-4 space-y-4">
+              <div className="flex items-center gap-3.5 min-w-0">
+                {businessData.logo_url ? (
+                  <img src={businessData.logo_url} alt={businessData.name} className="w-14 h-14 rounded-full object-cover border border-[#2F3336] shrink-0" />
+                ) : (
+                  <div className="w-14 h-14 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-white font-black text-lg shrink-0">{(businessData.name || 'م').charAt(0)}</div>
+                )}
+                <div className="min-w-0 space-y-1">
+                  <h2 className="text-base font-black text-white truncate">{businessData.name}</h2>
+                  {businessData.slug && <p className="text-xs text-[#71767B] truncate" dir="ltr" style={{ textAlign: 'right' }}>@{businessData.slug}</p>}
+                  <div className="flex items-center gap-1.5 text-xs flex-wrap pt-0.5">
+                    <span className="text-zinc-300 font-bold">التقييمات</span>
+                    <RatingStars rating={Number(statsData?.avg_rating ?? businessData.rating ?? 0)} size={12} />
+                    <span className="font-bold text-white tabular-nums">{Number(statsData?.avg_rating ?? businessData.rating ?? 0).toFixed(1)}</span>
+                    <span className="text-[#71767B]">({statsData?.total_reviews ?? reviewsList.length} تقييم)</span>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2 flex-wrap">
-                  <button
-                    onClick={() => navigate(editBusinessPath)}
-                    className="px-4 py-2 rounded-full bg-[#FFC500] text-black text-xs font-black flex items-center gap-1.5 transition"
-                  >
-                    <Edit3 size={13} />
-                    <span>تعديل صفحة المنشأة</span>
-                  </button>
-                  <button
-                    onClick={() => navigate(publicBusinessPath)}
-                    className="px-4 py-2 rounded-full border border-[#2F3336] hover:bg-[#16181C] text-xs font-bold text-white flex items-center gap-1.5 transition"
-                  >
-                    <Eye size={13} />
-                    <span>عرض كزائر</span>
-                  </button>
-                </div>
               </div>
-
-              {/* شبكة أزرار المالك السريعة */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                <button
-                  onClick={() => navigate('/notifications')}
-                  className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition"
-                >
-                  <div className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-[#FFC500] shrink-0">
-                    <Bell size={16} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-black text-white">الإشعارات</p>
-                    <p className="text-[10px] text-[#71767B] truncate">التنبيهات والتفاعلات</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => navigate('/premium')}
-                  className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition"
-                >
-                  <div className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-[#FFC500] shrink-0">
-                    <Crown size={16} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-black text-white">توثيق الشارة</p>
-                    <p className="text-[10px] text-[#71767B] truncate">باقات التوثيق</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('ads')}
-                  className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition"
-                >
-                  <div className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-[#FFC500] shrink-0">
-                    <Megaphone size={16} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-black text-white">الإعلانات</p>
-                    <p className="text-[10px] text-[#71767B] truncate">ترويج وظهور مميز</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => navigate('/my-payments')}
-                  className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition"
-                >
-                  <div className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-[#FFC500] shrink-0">
-                    <CreditCard size={16} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-black text-white">المدفوعات</p>
-                    <p className="text-[10px] text-[#71767B] truncate">الفواتير والعمليات</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setIsSupportOpen(true)}
-                  className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition"
-                >
-                  <div className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-[#FFC500] shrink-0">
-                    <MessageCircle size={16} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-black text-white">الدعم الفني</p>
-                    <p className="text-[10px] text-[#71767B] truncate">تواصل مع الإدارة</p>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() =>
-                    setReportTarget({ name: businessData.name, context: 'بلاغ عام من لوحة المنشأة' })
-                  }
-                  className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition"
-                >
-                  <div className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-rose-400 shrink-0">
-                    <Flag size={16} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-black text-white">البلاغات</p>
-                    <p className="text-[10px] text-[#71767B] truncate">إبلاغ عن مشكلة</p>
-                  </div>
-                </button>
+              <div className="grid grid-cols-2 gap-2.5">
+                <button onClick={() => navigate(editBusinessPath)} className="py-2.5 px-3 rounded-full bg-white hover:bg-zinc-200 text-black text-xs font-black flex items-center justify-center gap-1.5 transition cursor-pointer"><Edit3 size={13} /><span>تعديل صفحة المنشأة</span></button>
+                <button onClick={() => navigate(publicBusinessPath)} className="py-2.5 px-3 rounded-full bg-black border border-[#2F3336] hover:bg-[#16181C] text-xs font-bold text-white flex items-center justify-center gap-1.5 transition cursor-pointer"><Eye size={13} /><span>عرض كزائر</span></button>
               </div>
-            </>
-          )}
-
-          {/* تبويب الملخص والإحصائيات */}
-          {(activeTab === 'overview' || activeTab === 'stats') && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <h2 className="text-base font-black flex items-center gap-2">
-                  <TrendingUp size={18} className="text-[#FFC500]" />
-                  <span>الإحصائيات والتحليلات</span>
-                </h2>
-
-                <div className="flex gap-1.5 overflow-x-auto pb-1">
-                  {[
-                    { label: 'اليوم', days: 1 },
-                    { label: '7 أيام', days: 7 },
-                    { label: '30 يوم', days: 30 },
-                    { label: '3 أشهر', days: 90 },
-                    { label: '12 شهر', days: 365 },
-                  ].map((p) => (
-                    <button
-                      key={p.days}
-                      onClick={() => setStatsPeriod(p.days)}
-                      className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition ${
-                        statsPeriod === p.days
-                          ? 'bg-[#FFC500] text-black font-black'
-                          : 'bg-[#16181C] border border-[#2F3336] text-zinc-400 hover:text-white'
-                      }`}
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {loadingStats ? (
-                <div className="text-center text-[#71767B] py-10 text-xs">جاري تحميل الإحصائيات...</div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                    <StatCard label="الزيارات" value={statsData?.views ?? businessData.views_count ?? 0} color="text-white" />
-                    <StatCard label="زوار مميزون" value={statsData?.unique_views ?? 0} color="text-white" />
-                    <StatCard label="نقرات الهاتف" value={statsData?.phone_clicks ?? businessData.call_clicks ?? 0} color="text-emerald-400" />
-                    <StatCard label="نقرات الواتساب" value={statsData?.whatsapp_clicks ?? businessData.whatsapp_clicks ?? 0} color="text-emerald-400" />
-                    <StatCard label="فتح الموقع" value={statsData?.website_clicks ?? 0} color="text-sky-400" />
-                    <StatCard label="إجمالي التقييمات" value={statsData?.total_reviews ?? reviewsList.length} color="text-[#FFC500]" />
-                    <StatCard label="تقييمات جديدة" value={statsData?.new_reviews ?? 0} color="text-[#FFC500]" />
-                    <StatCard label="بدون رد" value={statsData?.unanswered_reviews ?? unansweredCount} color="text-amber-400" />
-                    <StatCard label="تم الرد" value={statsData?.answered_reviews ?? answeredCount} color="text-emerald-400" />
-                  </div>
-
-                  {statsData && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="bg-[#080808] rounded-2xl border border-[#2F3336] p-4">
-                        <h3 className="text-sm font-bold mb-3">تطور الزيارات</h3>
-                        <LineChart data={statsData.views_trend || []} />
-                      </div>
-
-                      <div className="bg-[#080808] rounded-2xl border border-[#2F3336] p-4">
-                        <h3 className="text-sm font-bold mb-3">توزيع التقييمات</h3>
-                        <DonutChart
-                          distribution={statsData.rating_distribution || {}}
-                          total={statsData.total_reviews || reviewsList.length}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="space-y-3 pt-1">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-base font-black flex items-center gap-2">
-                        <MessageSquare size={17} className="text-[#FFC500]" />
-                        <span>أحدث تقييمات العملاء ({reviewsList.length})</span>
-                      </h3>
-                      {activeTab === 'overview' && reviewsList.length > 3 && (
-                        <button
-                          onClick={() => setActiveTab('reviews')}
-                          className="text-xs font-bold text-[#FFC500] hover:underline"
-                        >
-                          عرض الكل
-                        </button>
-                      )}
-                    </div>
-                    {renderReviewsList(activeTab === 'overview' ? reviewsList.slice(0, 5) : reviewsList)}
-                  </div>
-                </>
-              )}
             </div>
-          )}
 
-          {/* تبويب التقييمات والردود */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <button onClick={() => navigate('/notifications')} className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition cursor-pointer">
+                <div className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-[#FFC500] shrink-0"><Bell size={16} /></div>
+                <div className="min-w-0"><p className="text-xs font-black text-white">الإشعارات</p><p className="text-[10px] text-[#71767B] truncate">التنبيهات والتفاعلات</p></div>
+              </button>
+              <button onClick={() => navigate(`/premium?scope=business&businessId=${businessData.id}&businessName=${encodeURIComponent(businessData.name || '')}`)} className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition cursor-pointer">
+                <div className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-[#FFC500] shrink-0"><Crown size={16} /></div>
+                <div className="min-w-0"><p className="text-xs font-black text-white">توثيق الشارة</p><p className="text-[10px] text-[#71767B] truncate">باقات التوثيق</p></div>
+              </button>
+              <button onClick={() => setActiveTab('ads')} className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition cursor-pointer">
+                <div className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-[#FFC500] shrink-0"><Megaphone size={16} /></div>
+                <div className="min-w-0"><p className="text-xs font-black text-white">الإعلانات</p><p className="text-[10px] text-[#71767B] truncate">ترويج وظهور مميز</p></div>
+              </button>
+              <button onClick={() => navigate(`/my-payments?scope=business&businessId=${businessData.id}&businessName=${encodeURIComponent(businessData.name || '')}`)} className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition cursor-pointer">
+                <div className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-[#FFC500] shrink-0"><CreditCard size={16} /></div>
+                <div className="min-w-0"><p className="text-xs font-black text-white">المدفوعات</p><p className="text-[10px] text-[#71767B] truncate">الفواتير والعمليات</p></div>
+              </button>
+              <button onClick={() => setIsSupportOpen(true)} className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition cursor-pointer">
+                <div className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-[#FFC500] shrink-0"><MessageCircle size={16} /></div>
+                <div className="min-w-0"><p className="text-xs font-black text-white">الدعم الفني</p><p className="text-[10px] text-[#71767B] truncate">تواصل مع الإدارة</p></div>
+              </button>
+              <button onClick={() => setReportTarget({ name: businessData.name, context: 'بلاغ عام من لوحة المنشأة' })} className="flex items-center gap-2.5 p-3.5 rounded-2xl border border-[#2F3336] bg-[#080808] hover:bg-[#111] text-right transition cursor-pointer">
+                <div className="w-9 h-9 rounded-full bg-[#16181C] border border-[#2F3336] flex items-center justify-center text-rose-400 shrink-0"><Flag size={16} /></div>
+                <div className="min-w-0"><p className="text-xs font-black text-white">البلاغات</p><p className="text-[10px] text-[#71767B] truncate">إبلاغ عن مشكلة</p></div>
+              </button>
+            </div>
+          </>
+        )}
+
+        {(activeTab === 'overview' || activeTab === 'stats') && (
+          <div className="space-y-4">
+            <h2 className="text-base font-black flex items-center gap-2"><TrendingUp size={18} className="text-[#FFC500]" /><span>الإحصائيات والتحليلات</span></h2>
+            <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+              {[{ label: 'اليوم', days: 1 }, { label: '7 أيام', days: 7 }, { label: '30 يوم', days: 30 }, { label: '3 أشهر', days: 90 }, { label: '12 شهر', days: 365 }].map((p) => (
+                <button key={p.days} onClick={() => setStatsPeriod(p.days)} className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition cursor-pointer ${statsPeriod === p.days ? 'bg-white text-black font-black' : 'bg-[#111111] border border-[#2F3336] text-zinc-400 hover:text-white'}`}>{p.label}</button>
+              ))}
+            </div>
+            {loadingStats ? (
+              <div className="text-center text-[#71767B] py-10 text-xs">جاري تحميل الإحصائيات...</div>
+            ) : (
+              <>
+                <div className="grid grid-cols-3 gap-2">
+                  <StatCard label="المشاهدات" value={statsData?.views ?? businessData.views_count ?? 0} color="text-white" />
+                  <StatCard label="توثيق الشارة" value={extraCounts.badgeVerified} color="text-white" />
+                  <StatCard label="الاشتراكات" value={activeSubsCount} color="text-white" />
+                  <StatCard label="إعلان بانر" value={bannerAdsCount} color="text-emerald-400" />
+                  <StatCard label="إعلان راعي" value={sponsorAdsCount} color="text-emerald-400" />
+                  <StatCard label="إعلان مميز / ممول" value={featuredAdsCount} color="text-emerald-400" />
+                  <StatCard label="نقر الواتساب" value={statsData?.whatsapp_clicks ?? businessData.whatsapp_clicks ?? 0} color="text-[#FFC500]" />
+                  <StatCard label="نقر اتصال" value={statsData?.phone_clicks ?? businessData.call_clicks ?? 0} color="text-sky-400" />
+                  <StatCard label="زيارات الموقع" value={statsData?.website_clicks ?? businessData.website_clicks ?? 0} color="text-sky-400" />
+                  <StatCard label="إجمالي التقييمات" value={statsData?.total_reviews ?? reviewsList.length} color="text-[#FFC500]" />
+                  <StatCard label="الدعم" value={extraCounts.support} color="text-[#FFC500]" />
+                  <StatCard label="البلاغات" value={extraCounts.reports} color="text-[#FFC500]" />
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  <MiniStat label="زوار مميزون" value={statsData?.unique_views ?? 0} color="text-white" />
+                  <MiniStat label="تقييمات جديدة" value={statsData?.new_reviews ?? 0} color="text-[#FFC500]" />
+                  <MiniStat label="بدون رد" value={statsData?.unanswered_reviews ?? unansweredCount} color="text-amber-400" />
+                  <MiniStat label="تم الرد" value={statsData?.answered_reviews ?? answeredCount} color="text-emerald-400" />
+                </div>
+                <div className="space-y-3 pt-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-black flex items-center gap-2"><MessageSquare size={17} className="text-[#FFC500]" /><span>أحدث تقييمات العملاء ({reviewsList.length})</span></h3>
+                    {activeTab === 'overview' && reviewsList.length > 3 && <button onClick={() => setActiveTab('reviews')} className="text-xs font-bold text-white hover:underline cursor-pointer">عرض الكل</button>}
+                  </div>
+                  {renderReviewsList(activeTab === 'overview' ? reviewsList.slice(0, 5) : reviewsList)}
+                </div>
+                {statsData && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                    <div className="bg-[#080808] rounded-2xl border border-[#2F3336] p-4"><h3 className="text-sm font-bold mb-3">توزيع التقييمات</h3><DonutChart distribution={statsData.rating_distribution || {}} total={statsData.total_reviews || reviewsList.length} /></div>
+                    <div className="bg-[#080808] rounded-2xl border border-[#2F3336] p-4"><h3 className="text-sm font-bold mb-3">تطور الزيارات</h3><LineChart data={statsData.views_trend || []} /></div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+      {/* تبويب التقييمات والردود */}
           {activeTab === 'reviews' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-2">
@@ -886,6 +739,7 @@ export const OwnerDashboardPage: React.FC = () => {
         isOpen={isSupportOpen}
         onClose={() => setIsSupportOpen(false)}
         currentUser={currentUser}
+        businessContext={businessData?.id ? { id: businessData.id, name: businessData.name } : null}
       />
 
       {reportTarget && (
@@ -901,8 +755,15 @@ export const OwnerDashboardPage: React.FC = () => {
 };
 
 const StatCard: React.FC<{ label: string; value: number; color: string }> = ({ label, value, color }) => (
-  <div className="bg-[#080808] rounded-2xl border border-[#2F3336] p-3.5">
-    <p className="text-[11px] text-[#71767B]">{label}</p>
-    <p className={`text-2xl font-black mt-0.5 ${color}`}>{Number(value || 0).toLocaleString('en-US')}</p>
+  <div className="bg-[#080808] rounded-2xl border border-[#2F3336] p-3 flex flex-col justify-between min-h-[68px]">
+    <p className="text-[10.5px] sm:text-[11px] text-[#71767B] leading-tight truncate">{label}</p>
+    <p className={`text-lg sm:text-xl font-black mt-1 tabular-nums ${color}`}>{Number(value || 0).toLocaleString('en-US')}</p>
+  </div>
+);
+
+const MiniStat: React.FC<{ label: string; value: number; color: string }> = ({ label, value, color }) => (
+  <div className="bg-black rounded-xl border border-[#2F3336]/80 px-2.5 py-2 text-center">
+    <p className="text-[10px] text-[#71767B] truncate">{label}</p>
+    <p className={`text-sm font-black mt-0.5 tabular-nums ${color}`}>{Number(value || 0).toLocaleString('en-US')}</p>
   </div>
 );

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Upload, CheckCircle2, CreditCard, Copy, Check, X, ChevronDown } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { sendSubscriptionNotification } from '../../utils/notifySubscription';
 import { VerifiedBadge } from '../../components/common/VerifiedBadge';
 
 interface Plan {
@@ -58,6 +59,11 @@ const calculateSHA256 = async (file: File): Promise<string> => {
 
 export const PremiumCheckout: React.FC = () => {
   const { planId } = useParams();
+  const [sp] = useSearchParams();
+  const scope = sp.get('scope') === 'business' ? 'business' : 'account';
+  const isBiz = scope === 'business';
+  const bizId = sp.get('businessId') || '';
+  const bizName = sp.get('businessName') || '';
   const navigate = useNavigate();
   const [plan, setPlan] = useState<Plan | null>(null);
   const [methods, setMethods] = useState<PaymentMethod[]>([]);
@@ -119,7 +125,7 @@ export const PremiumCheckout: React.FC = () => {
       // 1. إنشاء طلب اشتراك
       const { data: subData, error: subError } = await supabase
         .from('subscriptions')
-        .insert({ user_id: user.id, plan_id: plan.id, status: 'PENDING' })
+        .insert({ user_id: user.id, plan_id: plan.id, status: 'PENDING', ...(isBiz && bizId ? { notes: `[BIZ_VERIFY:${bizId}|${bizName}]` } : {}) })
         .select()
         .single();
       if (subError) throw subError;
@@ -167,13 +173,20 @@ export const PremiumCheckout: React.FC = () => {
         expected_currency: plan.currency,
         reference_number: referenceNumber,
         status: 'PENDING',
+        ...(isBiz && bizId ? { admin_notes: `[BIZ_VERIFY:${bizId}|${bizName}]` } : {}),
       }).select().single();
 
       // 4. تشغيل التحقق التلقائي
       if (proofData?.id) {
+        try {
+          const prev = JSON.parse(localStorage.getItem('yr_scoped_payments_v1') || '{}');
+          prev[proofData.id] = { scope, businessId: bizId || null, businessName: bizName || null, subId: subData.id };
+          localStorage.setItem('yr_scoped_payments_v1', JSON.stringify(prev));
+        } catch {}
         await supabase.rpc('verify_payment_proof', { p_proof_id: proofData.id });
       }
 
+      await sendSubscriptionNotification({ userId: user.id, scope, entityName: isBiz ? bizName : null, serviceName: plan.name, status: 'pending' });
       setSuccess(true);
     } catch (err: any) {
       console.error(err);
@@ -192,7 +205,7 @@ export const PremiumCheckout: React.FC = () => {
         <CheckCircle2 className="w-20 h-20 text-green-500 mb-4" />
         <h1 className="text-2xl font-bold mb-2">تم استلام طلبك بنجاح!</h1>
         <p className="text-zinc-400 mb-6">سيتم مراجعة إثبات الدفع من قبل الإدارة وتفعيل الاشتراك قريباً.</p>
-        <button onClick={() => navigate('/account')} className="px-6 py-2.5 bg-[#FFC500] text-black font-bold rounded-xl">العودة للحساب</button>
+        <button onClick={() => navigate(isBiz ? (bizId ? `/owner?id=${bizId}` : '/owner') : '/account')} className="px-6 py-2.5 bg-[#FFC500] text-black font-bold rounded-xl">{isBiz ? 'العودة لإدارة المنشأة' : 'العودة للحساب'}</button>
       </div>
     );
   }
@@ -201,7 +214,7 @@ export const PremiumCheckout: React.FC = () => {
     <div className="min-h-screen bg-black text-white pb-20" dir="rtl">
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur border-b border-[#2F3336] px-4 py-3 flex items-center gap-4">
         <button onClick={() => navigate(-1)} className="p-2 hover:bg-[#181818] rounded-full transition"><ArrowRight className="w-5 h-5" /></button>
-        <h1 className="font-bold text-lg">إتمام الاشتراك</h1>
+        <h1 className="font-bold text-lg">{isBiz ? `توثيق منشأة${bizName ? `: ${bizName}` : ''}` : 'توثيق الحساب الشخصي'}</h1>
       </div>
 
       <div className="p-4 max-w-lg mx-auto space-y-6">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle2, XCircle, Clock, Eye } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
+import { sendSubscriptionNotification } from '../../../../utils/notifySubscription';
 import { VerifiedBadge } from '../../../../components/common/VerifiedBadge';
 
 interface PendingRequest {
@@ -15,6 +16,9 @@ interface PendingRequest {
   plan_duration: number;
   proof_url: string | null;
   created_at: string;
+  scope: 'account' | 'business';
+  business_id?: string | null;
+  business_name?: string | null;
 }
 
 export const PendingRequestsTab: React.FC = () => {
@@ -50,6 +54,9 @@ export const PendingRequestsTab: React.FC = () => {
       const { data: profiles } = await supabase.from('profiles').select('id, full_name, avatar_url').in('id', userIds);
       const { data: plans } = await supabase.from('subscription_plans').select('id, name, badge_type, price, currency, duration_days').in('id', planIds);
       const { data: proofs } = await supabase.from('payment_proofs').select('subscription_id, proof_url').in('subscription_id', subIds);
+      const bizIds = [...new Set(subs.map((s: any) => { const m = String(s.notes || '').match(/\[BIZ_VERIFY:([^|\]]+)/); return m ? m[1] : null; }).filter(Boolean))];
+      const { data: bizRows } = bizIds.length > 0 ? await supabase.from('businesses').select('id, name, logo_url').in('id', bizIds) : { data: [] };
+      const bizMap = new Map((bizRows || []).map((b: any) => [b.id, b]));
 
       const profileMap = new Map((profiles || []).map(p => [p.id, p]));
       const planMap = new Map((plans || []).map(p => [p.id, p]));
@@ -58,11 +65,18 @@ export const PendingRequestsTab: React.FC = () => {
       const formatted = subs.map((s: any) => {
         const prof = profileMap.get(s.user_id);
         const plan = planMap.get(s.plan_id);
+        const m = String(s.notes || '').match(/\[BIZ_VERIFY:([^|\]]+)(?:\|([^\]]+))?\]/);
+        const bizId = m ? m[1] : null;
+        const bizObj = bizId ? bizMap.get(bizId) : null;
+        const bizName = bizObj?.name || (m && m[2]) || null;
         return {
           id: s.id,
           user_id: s.user_id,
-          user_name: prof?.full_name || 'مستخدم',
-          user_avatar: prof?.avatar_url || null,
+          scope: bizId ? 'business' : 'account',
+          business_id: bizId,
+          business_name: bizName,
+          user_name: bizId ? (bizName || 'منشأة') : (prof?.full_name || 'مستخدم'),
+          user_avatar: bizId ? (bizObj?.logo_url || null) : (prof?.avatar_url || null),
           plan_name: plan?.name || 'باقة',
           plan_badge: plan?.badge_type || 'none',
           plan_price: plan?.price || 0,
@@ -70,7 +84,7 @@ export const PendingRequestsTab: React.FC = () => {
           plan_duration: plan?.duration_days || 30,
           proof_url: proofMap.get(s.id) || null,
           created_at: s.created_at,
-        };
+        } as PendingRequest;
       });
 
       setRequests(formatted);
@@ -88,14 +102,20 @@ export const PendingRequestsTab: React.FC = () => {
     if (!confirm(`قبول طلب ${req.user_name}؟`)) return;
 
     try {
-      // استدعاء دالة SQL (RPC) للقبول
-      const { error } = await supabase.rpc('approve_subscription', { sub_id: req.id });
-
-      if (error) {
-        console.error('❌ RPC Error:', error);
-        throw new Error('فشل القبول: ' + error.message);
+      if (req.scope === 'business' && req.business_id) {
+        const now = new Date();
+        const end = new Date(now.getTime() + (req.plan_duration || 30) * 86400000);
+        const { error: subUpErr } = await supabase.from('subscriptions').update({ status: 'ACTIVE', start_date: now.toISOString(), end_date: end.toISOString() }).eq('id', req.id);
+        if (subUpErr) throw new Error('فشل تحديث الاشتراك: ' + subUpErr.message);
+        await supabase.from('payment_proofs').update({ status: 'APPROVED', reviewed_at: now.toISOString() }).eq('subscription_id', req.id);
+        const { error: bizErr } = await supabase.from('businesses').update({ is_verified: true, badge_type: req.plan_badge && req.plan_badge !== 'none' ? req.plan_badge : 'gold' }).eq('id', req.business_id);
+        if (bizErr) throw new Error('فشل توثيق المنشأة: ' + bizErr.message);
+      } else {
+        const { error } = await supabase.rpc('approve_subscription', { sub_id: req.id });
+        if (error) throw new Error('فشل القبول: ' + error.message);
       }
 
+      await sendSubscriptionNotification({ userId: req.user_id, scope: req.scope, entityName: req.business_name, serviceName: req.plan_name, status: 'approved' });
       showToast('تم القبول وتفعيل الشارة', 'success');
       fetchRequests();
     } catch (err: any) {
@@ -104,10 +124,12 @@ export const PendingRequestsTab: React.FC = () => {
     }
   };
 
-  const handleReject = async (id: string) => {
+  const handleReject = async (req: PendingRequest) => {
+    const id = req.id;
     if (!confirm('رفض الطلب؟')) return;
     try {
       await supabase.from('subscriptions').update({ status: 'REJECTED' }).eq('id', id);
+      await sendSubscriptionNotification({ userId: req.user_id, scope: req.scope, entityName: req.business_name, serviceName: req.plan_name, status: 'rejected' });
       showToast('تم الرفض', 'success');
       fetchRequests();
     } catch { showToast('خطأ', 'error'); }
@@ -141,6 +163,7 @@ export const PendingRequestsTab: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-white">{req.user_name}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${req.scope === 'business' ? 'bg-[#FFC500]/15 text-[#FFC500]' : 'bg-sky-500/15 text-sky-400'}`}>{req.scope === 'business' ? 'صفحة منشأة' : 'حساب شخصي'}</span>
                     <VerifiedBadge type={req.plan_badge as any} size={16} />
                   </div>
                   <span className="text-xs text-zinc-500 flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(req.created_at).toLocaleDateString('ar-YE')}</span>
@@ -157,7 +180,7 @@ export const PendingRequestsTab: React.FC = () => {
                   <a href={req.proof_url} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg bg-blue-600/20 text-blue-400 text-xs font-bold flex items-center gap-1 flex-1 md:flex-none"><Eye className="w-4 h-4" /> الإثبات</a>
                 )}
                 <button onClick={() => handleApprove(req)} className="px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-bold flex items-center gap-1 flex-1 md:flex-none"><CheckCircle2 className="w-4 h-4" /> قبول</button>
-                <button onClick={() => handleReject(req.id)} className="px-3 py-2 rounded-lg bg-red-600/20 text-red-400 border border-red-600/30 text-xs font-bold flex items-center gap-1 flex-1 md:flex-none"><XCircle className="w-4 h-4" /> رفض</button>
+                <button onClick={() => handleReject(req)} className="px-3 py-2 rounded-lg bg-red-600/20 text-red-400 border border-red-600/30 text-xs font-bold flex items-center gap-1 flex-1 md:flex-none"><XCircle className="w-4 h-4" /> رفض</button>
               </div>
             </div>
           </div>
